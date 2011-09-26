@@ -9,7 +9,7 @@ _dummy := $(shell [ -d $(BUILD_DIR)/script ] || mkdir -p $(BUILD_DIR)/script)
 _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
-	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite \
+	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
 	script/parser script/script script/sparser \
 	sys/error_logger sys/frame_allocator sys/memory \
 	game
@@ -24,7 +24,7 @@ MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
 INCLUDES=-I./
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor
-FLAGS=-rdynamic -std=gnu++0x -O2 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
+FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
 
 include Makefile.local
 

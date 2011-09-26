@@ -21,11 +21,11 @@ public:
 		size_t GenQuads(const char *str, float2 *posBuf, float2 *uvBuf, size_t bufSize) const;
 		void Draw(const char *str) const;
 
-		template <typename... Args>
-		void Draw(const Args& ...args) const { Draw((string)Stringize(args...)); }
+	//	template <typename... Args>
+	//	void Draw(const Args ...args) const { Draw((string)Stringize(args...)); }
 
-		template <typename... Args>
-		void DrawAt(int2 pos, const Args& ...args) const { SetPos(pos); Draw((string)Stringize(args...)); }
+	//	template <typename... Args>
+	//	void DrawAt(int2 pos, const Args& ...args) const { SetPos(pos); Draw((string)Stringize(args...)); }
 
 		void SetPos(int2 v) const { pos = v; }
 		void AddPos(int2 v) const { pos += float2(v); }

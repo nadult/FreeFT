@@ -258,6 +258,7 @@ namespace gfx
 		}
 
 		out.Resize(size.x, size.y);
+		memset(&out(0, 0), 0, size.x * size.y * 4);
 
 		for(int l = 0; l < 4; l++) {
 			int id = ids[l];
@@ -304,7 +305,8 @@ namespace gfx
 				out++;
 		return out;
 	}
-	Texture Sprite::GetFrame(int seqId, int frameId, int dirId) const {
+
+	Texture Sprite::GetFrame(int seqId, int frameId, int dirId, Rect *rect) const {
 		const Sequence &seq = sequences[seqId];
 
 		for(int n = 0; n < seq.frames.size(); n++)
@@ -316,6 +318,9 @@ namespace gfx
 				frameId--;
 			}
 		const Animation &anim = anims[seq.animId];
+
+		if(rect)
+			*rect = anim.rects[frameId * anim.numDirs + dirId];
 
 		return anim.GetFrame(frameId, dirId);
 	}

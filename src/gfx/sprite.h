@@ -1,3 +1,6 @@
+#ifndef GFX_SPRITE_H
+#define GFX_SPRITE_H
+
 #include "gfx/texture.h"
 
 namespace gfx {
@@ -47,7 +50,7 @@ namespace gfx {
 	
 		int NumDirs(int seqId) const { return anims[sequences[seqId].animId].numDirs; }
 		int NumFrames(int seqId) const;
-		Texture GetFrame(int seqId, int frameId, int dirId) const;
+		Texture GetFrame(int seqId, int frameId, int dirId, Rect *rect = NULL) const;
 
 		Texture texture;
 		vector<Frame> frames;
@@ -56,3 +59,6 @@ namespace gfx {
 	};
 
 };
+
+#endif
+

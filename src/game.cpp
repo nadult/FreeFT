@@ -4,6 +4,7 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/sprite.h"
+#include "gfx/tile.h"
 
 using namespace gfx;
 
@@ -28,13 +29,20 @@ int safe_main(int argc, char **argv)
 		Loader loader("../refs/sprites/robots/Behemoth.spr");
 		spr.LoadFromSpr(loader);
 	}
-	for(int n = 0; n < spr.sequences.size(); n++)
+	for(uint n = 0; n < spr.sequences.size(); n++)
 		printf("Sequence %s: %d frames\n", spr.sequences[n].name.c_str(), (int)spr.sequences[n].frames.size());
-	for(int n = 0; n < spr.anims.size(); n++)
+	for(uint n = 0; n < spr.anims.size(); n++)
 		printf("Anim %s: %d frames %d dirs; offset: %d\n",
 				spr.anims[n].name.c_str(), spr.anims[n].numFrames, spr.anims[n].numDirs, spr.anims[n].offset);
 
 	uint seqId = 0, dirId = 0, frameId = 0;
+
+	Tile tile; {
+		Loader loader("../refs/tiles/Test/Amelia_Airheart/Generic_Object_Metal_AAplaneMain_O1_1_SE.til");
+		loader & tile;
+	}
+	DTexture tex2;
+	tex2.SetSurface(tile.texture);
 
 	while(PollEvents()) {
 		float frameTime = GetTime();
@@ -42,7 +50,7 @@ int safe_main(int argc, char **argv)
 		if(IsKeyPressed(Key_esc))
 			break;
 
-		Clear({255, 0, 0});
+		Clear({128, 64, 0});
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -50,17 +58,31 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_down)) dirId--;
 		frameId++;
 
-		tex1.SetSurface(spr.GetFrame(seqId, frameId / 5 % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId)));
-//		printf("Size: %d %d\n", tex1.Width(), tex1.Height());
+		tex2.Bind();
+		DrawQuad(0, 0, tex2.Width() * 2, tex2.Height() * 2);
+
+		Sprite::Rect rect;
+
+		Texture frame = spr.GetFrame(seqId, frameId / 5 % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId), &rect);
+		tex1.SetSurface(frame);
 		tex1.Bind();
 
-		DrawQuad(100, 100, tex1.Width() * 2, tex1.Height() * 2);
+		rect.left *= 2; rect.right *= 2;
+		rect.bottom *= 2; rect.top *= 2;
+		int2 size(rect.right - rect.left, rect.bottom - rect.top);
+		DrawQuad(100 + rect.left, 100 + rect.top, size.x, size.y);
 
 		fontTex.Bind();
 		font.SetPos(int2(400, 100));
 		font.SetSize(int2(60, 40));
-		font.Draw("Hello world!");
 
+		{
+			char buf[256];
+			sprintf(buf, "Rect: %d %d %d %d", rect.left, rect.top, rect.right, rect.bottom);
+
+			//TODO: jakis dziwny bug wstringize jak sie to zapoda
+			font.Draw(buf);
+		}
 
 		SwapBuffers();
 		frameTime = GetTime() - frameTime;
