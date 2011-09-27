@@ -50,12 +50,15 @@ namespace gfx {
 	
 		int NumDirs(int seqId) const { return anims[sequences[seqId].animId].numDirs; }
 		int NumFrames(int seqId) const;
+
 		Texture GetFrame(int seqId, int frameId, int dirId, Rect *rect = NULL) const;
 
 		Texture texture;
 		vector<Frame> frames;
 		vector<Animation> anims;
 		vector<Sequence> sequences;
+
+		int2 offset;
 	};
 
 };

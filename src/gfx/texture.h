@@ -105,7 +105,7 @@ namespace gfx
 
 		int Width() const { return width; }
 		int Height() const { return height; }
-		int Size() const { return data.size(); }
+		int2 Size() const { return int2(width, height); }
 		bool IsEmpty() const { return data.empty(); }
 
 		TextureFormat GetFormat() const { return TextureFormat(TI_A8B8G8R8); }

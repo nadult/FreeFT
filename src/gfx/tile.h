@@ -10,6 +10,7 @@ namespace gfx
 		void Serialize(Serializer &sr);
 
 		Texture texture;
+		int2 offset;
 	};
 
 }

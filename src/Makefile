@@ -12,7 +12,7 @@ FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
 	script/parser script/script script/sparser \
 	sys/error_logger sys/frame_allocator sys/memory \
-	game
+	game base
 
 MAIN_FILES=game
 SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))

@@ -125,7 +125,13 @@ namespace gfx
 	void Sprite::LoadFromSpr(Serializer &sr) {
 		sr.Signature("<sprite>", 9);
 
-		char header[16];
+		i16 type; sr & type;
+		u8 sizeX, sizeY, sizeZ; sr(sizeZ, sizeY, sizeX);
+
+		i32 posX, posY; sr(posX, posY);
+		offset = int2(posX, posY);
+
+		char header[3];
 		sr.Data(header, sizeof(header));
 
 		i32 numSeqs; sr & numSeqs;
@@ -145,6 +151,7 @@ namespace gfx
 			sr.Seek(sr.Pos() + int(numFrames) * 4);
 
 			i32 nameLen; sr & nameLen;
+			Assert(nameLen >= 0 && nameLen <= 256);
 			sequence.name.resize(nameLen);
 			sr.Data(&sequence.name[0], nameLen);
 			i16 animId; sr & animId;
@@ -162,6 +169,7 @@ namespace gfx
 			anim.offset = offset;
 
 			i32 nameLen; sr & nameLen;
+			Assert(nameLen >= 0 && nameLen <= 256);
 			anim.name.resize(nameLen);
 			sr.Data(&anim.name[0], nameLen);
 			

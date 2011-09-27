@@ -118,4 +118,6 @@ SERIALIZE_AS_POD(Color)
 
 #define COUNTOF(array)   (sizeof(array) / sizeof(array[0]))
 
+const vector<string> FindFiles(const char *dirName, const char *ext, bool recursive = false);
+
 #endif

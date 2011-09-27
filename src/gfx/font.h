@@ -21,6 +21,7 @@ public:
 		size_t GenQuads(const char *str, float2 *posBuf, float2 *uvBuf, size_t bufSize) const;
 		void Draw(const char *str) const;
 
+	//TODO: jakis dziwny bug wstringize jak sie to zapoda
 	//	template <typename... Args>
 	//	void Draw(const Args ...args) const { Draw((string)Stringize(args...)); }
 
