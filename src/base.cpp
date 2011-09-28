@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <cstring>
 
+float g_FloatParam[16];
 
 static void FindFiles(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);

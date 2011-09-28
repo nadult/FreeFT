@@ -11,6 +11,7 @@ namespace gfx
 
 		Texture texture;
 		int2 offset;
+		int3 bbox;
 	};
 
 }

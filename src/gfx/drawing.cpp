@@ -25,6 +25,52 @@ namespace gfx
 
 		glEnd();
 	}
+	
+	void DrawBBox(int2 pos, int3 size) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glBegin(GL_QUADS);
+
+		float px = pos.x;
+		float py = pos.y;
+
+		float sx = size.x * 7;
+		float sy = size.y * 7;
+		float sz = size.z * 7;
+
+		float xMul = 0.8571f;
+		float yMul = 0.43f;
+
+		float2 pt[8] = {
+			{px - sx * xMul, py - sx * yMul - sy},
+			{px - (sx - sz) * xMul, py - (sx + sz) * yMul - sy},
+			{px + sz * xMul, py - sz * yMul - sy},
+			{px, py - sy},
+			{px - sx * xMul, py - sx * yMul},
+			{px - (sx - sz) * xMul, py - (sx + sz) * yMul},
+			{px + sz * xMul, py - sz * yMul},
+			{px, py}
+		};
+
+		int indices[5 * 4] = {
+			1, 2, 6, 5,
+			0, 1, 5, 4,
+			
+			0, 3, 7, 4,
+			3, 2, 6, 7,
+			1, 2, 3, 0,
+		};
+
+		glColor3f(0.8f, 0.8f, 0.8f);
+		for(int n = 0; n < 4 * 2; n++)
+			glVertex2f(pt[indices[n]].x, pt[indices[n]].y);
+		
+		glColor3f(1.0f, 1.0f, 1.0f);
+		for(int n = 4 * 2; n < 4 * 5; n++)
+			glVertex2f(pt[indices[n]].x, pt[indices[n]].y);
+
+		glEnd();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 
 	void Clear(Color color) {
 		float4 col = color;

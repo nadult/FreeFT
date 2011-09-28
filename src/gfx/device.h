@@ -140,6 +140,7 @@ namespace gfx
 	inline void DrawQuad(int x, int y, int w, int h) { DrawQuad(int2(x, y), int2(w, h)); }
 
 	void DrawQuad(int2 pos, int2 size, float2 uv0, float2 uv1);
+	void DrawBBox(int2 pos, int3 size);
 
 	void Clear(Color color);
 

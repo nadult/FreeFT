@@ -17,6 +17,8 @@ namespace
 	void DrawTile(int id, int2 pos) {
 		dTiles[id]->Bind();
 		int2 offset = tiles[id].offset;
+		if(offset.x > 1000 || offset.y > 1000)
+			offset = int2(0, 0);
 		int2 size = tiles[id].texture.Size();
 		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y);
 	}
@@ -27,6 +29,15 @@ namespace
 		
 		bool operator<(const Splat &rhs) const {
 			return pos.y == rhs.pos.y? pos.x < rhs.pos.x : pos.y < rhs.pos.y;
+		}
+
+		void Draw(int2 viewPos) {
+			DrawTile(tileId, pos * 6 - viewPos);
+		}
+
+		void DrawBBox(int2 viewPos) {
+			DTexture::Bind0();
+			::DrawBBox(pos * 6 - viewPos, tiles[tileId].bbox);
 		}
 	};
 
@@ -49,6 +60,7 @@ int safe_main(int argc, char **argv)
 	SetBlendingMode(bmNormal);
 
 	Sprite spr; {
+//		Loader loader("../refs/sprites/robots/Behemoth.spr");
 		Loader loader("../refs/sprites/characters/LeatherMale.spr");
 	//	Loader loader("../refs/sprites/robots/RobotTurrets/PopupTurret.spr");
 		spr.LoadFromSpr(loader);
@@ -60,11 +72,10 @@ int safe_main(int argc, char **argv)
 				spr.anims[n].name.c_str(), spr.anims[n].numFrames, spr.anims[n].numDirs, spr.anims[n].offset);
 
 
-	uint seqId = 0, dirId = 0, frameId = 0, tileId = 0;
+	int seqId = 0, dirId = 0, frameId = 0, tileId = 0;
 
-	vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/Grass/", ".til", 1);
-	if(fileNames.size() > 50)
-		fileNames.resize(50);
+	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
+	vector<string> fileNames = FindFiles("../refs/tiles/Test/", ".til", 1);
 	tiles.resize(fileNames.size());
 	dTiles.resize(tiles.size());
 
@@ -77,9 +88,17 @@ int safe_main(int argc, char **argv)
 		dTiles[n]->SetSurface(tiles[n].texture);
 	}
 
+	g_FloatParam[0] = 0.86f;
+	g_FloatParam[1] = 0.43f;
+
 	DTexture sprTex;
 	double lastFrameTime = GetTime();
 	bool showSprite = true;
+	bool showBBoxes = false;
+
+	int2 viewPos(0, 0);
+	int2 oldScreenPos = GetMousePos();
+//	oldScreenPos -= oldScreenPos % 18;
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -87,9 +106,14 @@ int safe_main(int argc, char **argv)
 
 		Clear({128, 64, 0});
 		
-		int2 mousePos = GetMousePos();
-		mousePos.x -= mousePos.x % 18;
-		mousePos.y -= mousePos.y % 18;
+		int2 screenPos = GetMousePos();
+//		screenPos -= screenPos % 18;
+		int2 worldPos = screenPos + viewPos;
+		
+		if(IsMouseKeyPressed(2))
+			viewPos -= screenPos - oldScreenPos;
+		oldScreenPos = screenPos;
+
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -97,21 +121,41 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_down)) dirId--;
 		if(IsKeyDown(Key_pageup)) tileId++;
 		if(IsKeyDown(Key_pagedown)) tileId--;
+
+		if(IsKeyPressed('T')) g_FloatParam[0] += 0.0001f;
+		if(IsKeyPressed('G')) g_FloatParam[0] -= 0.0001f;
+		if(IsKeyPressed('Y')) g_FloatParam[1] += 0.0001f;
+		if(IsKeyPressed('H')) g_FloatParam[2] -= 0.0001f;
+		
 		if(IsKeyDown(Key_space)) showSprite ^= 1;
+		if(IsKeyDown(Key_f1)) showBBoxes ^= 1;
+
+		tileId += GetMouseWheelMove();
 
 		frameId++;
 		seqId %= spr.sequences.size();
 		tileId %= tiles.size();
+	
+		int2 tileOffset = int2(tiles[tileId].bbox.x, tiles[tileId].bbox.z) * 3;
+		int2 tilePos = worldPos + tileOffset;
+
+		Splat newSplat{tilePos / 6, tileId};
 
 		if(IsMouseKeyDown(1)) {
-			splats.push_back(Splat{mousePos, tileId});
+			splats.push_back(newSplat);
 			std::sort(splats.begin(), splats.end());
 		}
 		for(uint n = 0; n < splats.size(); n++)
-			DrawTile(splats[n].tileId, splats[n].pos);
+			splats[n].Draw(viewPos);
 
-		if(!showSprite)
-			DrawTile(tileId, mousePos);
+		if(showBBoxes)
+			for(uint n = 0; n < splats.size(); n++)
+				splats[n].DrawBBox(viewPos);
+		if(!showSprite) {
+			newSplat.Draw(viewPos);
+			if(showBBoxes)
+				newSplat.DrawBBox(viewPos);
+		}
 
 		Sprite::Rect rect;
 
@@ -121,7 +165,13 @@ int safe_main(int argc, char **argv)
 			sprTex.Bind();
 
 			int2 size(rect.right - rect.left, rect.bottom - rect.top);
-			DrawQuad(mousePos.x + rect.left - spr.offset.x, mousePos.y + rect.top - spr.offset.y, size.x, size.y);
+			int2 pos = screenPos;
+			DrawQuad(pos.x + rect.left - spr.offset.x, pos.y + rect.top - spr.offset.y, size.x, size.y);
+
+			if(showBBoxes) {
+				DTexture::Bind0();
+				DrawBBox(pos, spr.bbox);
+			}
 		}
 
 		char text[256];
@@ -141,7 +191,8 @@ int safe_main(int argc, char **argv)
 		lastFrameTime = time;
 
 		font.SetPos(int2(400, 20));
-		sprintf(text, "Frame time: %f ms\n", frameTime * 1000.0f);
+		sprintf(text, "Frame time: %f ms; %.4f %.4f;  %d %d\n", frameTime * 1000.0f,
+				g_FloatParam[0], g_FloatParam[1], worldPos.x / 6, worldPos.y / 6);
 		font.Draw(text);
 		
 		SwapBuffers();

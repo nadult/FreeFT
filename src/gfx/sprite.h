@@ -59,6 +59,7 @@ namespace gfx {
 		vector<Sequence> sequences;
 
 		int2 offset;
+		int3 bbox;
 	};
 
 };

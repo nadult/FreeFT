@@ -11,6 +11,8 @@ typedef unsigned int uint;
 
 struct uint2;
 
+extern float g_FloatParam[16];
+
 struct int2
 {
 	int2(int x, int y) : x(x), y(y) { }
@@ -19,11 +21,30 @@ struct int2
 
 	int2 operator+(const int2 rhs) const { return int2(x + rhs.x, y + rhs.y); }
 	int2 operator-(const int2 rhs) const { return int2(x - rhs.x, y - rhs.y); }
+	int2 operator*(int s) const { return int2(x * s, y * s); }
+	int2 operator/(int s) const { return int2(x / s, y / s); }
+	int2 operator%(int s) const { return int2(x % s, y % s); }
 
 	bool operator==(const int2 &rhs) const { return x == rhs.x && y == rhs.y; }
 	bool operator!=(const int2 &rhs) const { return x != rhs.x || y != rhs.y; }
 
 	int x, y;
+};
+
+struct int3
+{
+	int3(int x, int y, int z) : x(x), y(y), z(z) { }
+	int3() { }
+
+	int3 operator+(const int3 rhs) const { return int3(x + rhs.x, y + rhs.y, z + rhs.z); }
+	int3 operator-(const int3 rhs) const { return int3(x - rhs.x, y - rhs.y, z - rhs.z); }
+	int3 operator*(int s) const { return int3(x * s, y * s, z * s); }
+	int3 operator/(int s) const { return int3(x / s, y / s, z / s); }
+
+	bool operator==(const int3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
+	bool operator!=(const int3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
+
+	int x, y, z;
 };
 
 struct uint2

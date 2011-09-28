@@ -127,6 +127,9 @@ namespace gfx
 
 		i16 type; sr & type;
 		u8 sizeX, sizeY, sizeZ; sr(sizeZ, sizeY, sizeX);
+		bbox.x = sizeX;
+		bbox.y = sizeY;
+		bbox.z = sizeZ;
 
 		i32 posX, posY; sr(posX, posY);
 		offset = int2(posX, posY);

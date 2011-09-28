@@ -40,6 +40,9 @@ namespace gfx
 			int command = cmd & 3;
 			u8 buf[128];
 
+			if(dst + n_pixels > end)
+				n_pixels = end - dst;
+
 			if(command == 0)
 				for(int n = 0; n < n_pixels; n++)
 					*dst++ = Color(0x00000000);
