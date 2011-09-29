@@ -24,6 +24,7 @@ struct int2
 	int2 operator*(int s) const { return int2(x * s, y * s); }
 	int2 operator/(int s) const { return int2(x / s, y / s); }
 	int2 operator%(int s) const { return int2(x % s, y % s); }
+	int2 operator-() const { return int2(-x, -y); }
 
 	bool operator==(const int2 &rhs) const { return x == rhs.x && y == rhs.y; }
 	bool operator!=(const int2 &rhs) const { return x != rhs.x || y != rhs.y; }
@@ -82,6 +83,24 @@ struct float2
 	float x, y;
 };
 
+struct float3
+{
+	float3(float x, float y, float z) : x(x), y(y), z(z) { }
+	float3(int3 xyz) :x(xyz.x), y(xyz.y), z(xyz.z) { }
+	float3() { }
+	explicit operator int3() const { return int3((int)x, (int)y, (int)z); }
+
+	float3 operator+(const float3 rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.y); }
+	float3 operator-(const float3 rhs) const { return float3(x - rhs.x, y - rhs.y, z - rhs.z); }
+	float3 operator*(float s) const { return float3(x * s, y * s, z * s); }
+	float3 operator-() const { return float3(-x, -y, -z); }
+	
+	bool operator==(const float3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
+	bool operator!=(const float3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
+
+	float x, y, z;
+};
+
 struct float4
 {
 	float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { }
@@ -105,6 +124,12 @@ template <class T> inline void operator+=(T &a, T b) { a = a + b; }
 template <class T> inline void operator-=(T &a, T b) { a = a - b; }
 
 template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
+
+float2 WorldToScreen(float3 pos);
+float2 ScreenToWorld(float2 pos);
+
+inline float2 WorldToScreen(float2 pos) { return WorldToScreen({pos.x, 0.0f, pos.y}); }
+
 
 struct Color
 {

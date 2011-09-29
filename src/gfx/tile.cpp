@@ -13,15 +13,12 @@ namespace gfx
 			sr & dummy;
 		}
 
-
 		u8 size_x, size_y, size_z;
 		sr(size_z, size_y, size_x);
 		bbox.x = size_x;
 		bbox.y = size_y;
 		bbox.z = size_z;
 		
-		printf("Type: %x;  size: %d %d %d\n", type, (int)size_x, (int)size_y, (int)size_z);
-
 		i32 posX, posY; sr(posX, posY);
 		offset = int2(posX, posY);
 
@@ -34,6 +31,18 @@ namespace gfx
 		sr(dummy2, zarCount);
 
 		texture.LoadZAR(sr);	
+	}
+
+	void Tile::LoadDTexture() {
+		dTexture = new DTexture;
+		dTexture->SetSurface(texture);
+	}
+
+	void Tile::Draw(int2 pos) {
+		dTexture->Bind();
+
+		int2 size = texture.Size();
+		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y);
 	}
 
 }

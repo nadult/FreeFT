@@ -8,6 +8,23 @@
 
 float g_FloatParam[16];
 
+float2 WorldToScreen(float3 pos) {
+	float xMul = 0.8571f * 7.0f;
+	float yMul = 0.4300f * 7.0f;
+
+	return float2((pos.x - pos.z) * xMul, (pos.x + pos.z) * yMul - pos.y * 7.0f);
+}
+
+float2 ScreenToWorld(float2 pos) {
+	float xMul = 0.5f / (0.8571f * 7.0f);
+	float yMul = 0.5f / (0.4300f * 7.0f);
+
+	float x = pos.x * xMul;
+	float y = pos.y * yMul;
+
+	return float2(y + x, y - x);
+}
+
 static void FindFiles(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);
 	if(!dp)

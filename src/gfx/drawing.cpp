@@ -33,22 +33,19 @@ namespace gfx
 		float px = pos.x;
 		float py = pos.y;
 
-		float sx = size.x * 7;
-		float sy = size.y * 7;
-		float sz = size.z * 7;
-
-		float xMul = 0.8571f;
-		float yMul = 0.43f;
+		float2 vx = -WorldToScreen(int3(size.x, 0, 0));
+		float2 vy =  WorldToScreen(int3(0, size.y, 0));
+		float2 vz = -WorldToScreen(int3(0, 0, size.z));
 
 		float2 pt[8] = {
-			{px - sx * xMul, py - sx * yMul - sy},
-			{px - (sx - sz) * xMul, py - (sx + sz) * yMul - sy},
-			{px + sz * xMul, py - sz * yMul - sy},
-			{px, py - sy},
-			{px - sx * xMul, py - sx * yMul},
-			{px - (sx - sz) * xMul, py - (sx + sz) * yMul},
-			{px + sz * xMul, py - sz * yMul},
-			{px, py}
+			vx + vy,
+			vx + vy + vz,
+			vz + vy,
+			vy,
+			vx,
+			vx + vz,
+			vz,
+			float2(0, 0),
 		};
 
 		int indices[5 * 4] = {
@@ -62,11 +59,11 @@ namespace gfx
 
 		glColor3f(0.8f, 0.8f, 0.8f);
 		for(int n = 0; n < 4 * 2; n++)
-			glVertex2f(pt[indices[n]].x, pt[indices[n]].y);
+			glVertex2f(px + pt[indices[n]].x, py + pt[indices[n]].y);
 		
 		glColor3f(1.0f, 1.0f, 1.0f);
 		for(int n = 4 * 2; n < 4 * 5; n++)
-			glVertex2f(pt[indices[n]].x, pt[indices[n]].y);
+			glVertex2f(px + pt[indices[n]].x, py + pt[indices[n]].y);
 
 		glEnd();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

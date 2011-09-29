@@ -6,22 +6,13 @@
 #include "gfx/font.h"
 #include "gfx/sprite.h"
 #include "gfx/tile.h"
+#include "tile_map.h"
 
 using namespace gfx;
 
 namespace
 {
 	vector<Tile> tiles;
-	vector<Ptr<DTexture>> dTiles;
-
-	void DrawTile(int id, int2 pos) {
-		dTiles[id]->Bind();
-		int2 offset = tiles[id].offset;
-		if(offset.x > 1000 || offset.y > 1000)
-			offset = int2(0, 0);
-		int2 size = tiles[id].texture.Size();
-		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y);
-	}
 
 	struct Splat {
 		int2 pos;
@@ -32,7 +23,7 @@ namespace
 		}
 
 		void Draw(int2 viewPos) {
-			DrawTile(tileId, pos * 6 - viewPos);
+			tiles[tileId].Draw(pos * 6 - viewPos);
 		}
 
 		void DrawBBox(int2 viewPos) {
@@ -42,7 +33,6 @@ namespace
 	};
 
 	vector<Splat> splats;
-
 }
 
 int safe_main(int argc, char **argv)
@@ -77,15 +67,11 @@ int safe_main(int argc, char **argv)
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
 	vector<string> fileNames = FindFiles("../refs/tiles/Test/", ".til", 1);
 	tiles.resize(fileNames.size());
-	dTiles.resize(tiles.size());
 
 	for(uint n = 0; n < fileNames.size(); n++) {
 		printf("Loading: %s\n", fileNames[n].c_str());
 		Loader(fileNames[n]) & tiles[n];
-	}
-	for(uint n = 0; n < tiles.size(); n++) {
-		dTiles[n] = new DTexture;
-		dTiles[n]->SetSurface(tiles[n].texture);
+		tiles[n].LoadDTexture();
 	}
 
 	g_FloatParam[0] = 0.86f;
@@ -98,7 +84,10 @@ int safe_main(int argc, char **argv)
 
 	int2 viewPos(0, 0);
 	int2 oldScreenPos = GetMousePos();
-//	oldScreenPos -= oldScreenPos % 18;
+
+	TileMap tileMap;
+	tileMap.Resize({16 * 64, 16 * 64});
+	TileMapEditor editor(tileMap);
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -107,13 +96,11 @@ int safe_main(int argc, char **argv)
 		Clear({128, 64, 0});
 		
 		int2 screenPos = GetMousePos();
-//		screenPos -= screenPos % 18;
-		int2 worldPos = screenPos + viewPos;
-		
 		if(IsMouseKeyPressed(2))
 			viewPos -= screenPos - oldScreenPos;
 		oldScreenPos = screenPos;
-
+		
+		int2 worldPos = int2(ScreenToWorld(screenPos + viewPos));
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -136,25 +123,21 @@ int safe_main(int argc, char **argv)
 		seqId %= spr.sequences.size();
 		tileId %= tiles.size();
 	
-		int2 tileOffset = int2(tiles[tileId].bbox.x, tiles[tileId].bbox.z) * 3;
-		int2 tilePos = worldPos + tileOffset;
-
-		Splat newSplat{tilePos / 6, tileId};
-
 		if(IsMouseKeyDown(1)) {
-			splats.push_back(newSplat);
-			std::sort(splats.begin(), splats.end());
+			try {
+				editor.AddTile(&tiles[tileId], int3(worldPos.x, 0, worldPos.y));
+			}
+			catch(const Exception &ex) {
+				printf("Exception: %s\n", ex.what());
+			}
 		}
-		for(uint n = 0; n < splats.size(); n++)
-			splats[n].Draw(viewPos);
 
-		if(showBBoxes)
-			for(uint n = 0; n < splats.size(); n++)
-				splats[n].DrawBBox(viewPos);
+		tileMap.Render(viewPos, showBBoxes);
+
 		if(!showSprite) {
-			newSplat.Draw(viewPos);
-			if(showBBoxes)
-				newSplat.DrawBBox(viewPos);
+			tiles[tileId].Draw(int2(WorldToScreen(worldPos)) - viewPos);
+//			if(showBBoxes)
+//				newSplat.DrawBBox(viewPos);
 		}
 
 		Sprite::Rect rect;
@@ -182,8 +165,9 @@ int safe_main(int argc, char **argv)
 		if(showSprite)
 			sprintf(text, "Rect: %d %d %d %d", rect.left, rect.top, rect.right, rect.bottom);
 		else
-			sprintf(text, "Pos: %d %d Size: %d %d", tiles[tileId].offset.x, tiles[tileId].offset.y,
-						tiles[tileId].texture.Width(), tiles[tileId].texture.Height());
+			sprintf(text, "Pos: %d %d Size: %d %d (%d, %d, %d)", tiles[tileId].offset.x, tiles[tileId].offset.y,
+						tiles[tileId].texture.Width(), tiles[tileId].texture.Height(),
+						tiles[tileId].bbox.x, tiles[tileId].bbox.y, tiles[tileId].bbox.z);
 		font.Draw(text);
 
 		double time = GetTime();
@@ -191,8 +175,8 @@ int safe_main(int argc, char **argv)
 		lastFrameTime = time;
 
 		font.SetPos(int2(400, 20));
-		sprintf(text, "Frame time: %f ms; %.4f %.4f;  %d %d\n", frameTime * 1000.0f,
-				g_FloatParam[0], g_FloatParam[1], worldPos.x / 6, worldPos.y / 6);
+		sprintf(text, "Frame time: %f ms; %.4f %.4f;  WPos: %d %d\n", frameTime * 1000.0f,
+				g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y);
 		font.Draw(text);
 		
 		SwapBuffers();
