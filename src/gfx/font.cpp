@@ -127,9 +127,14 @@ namespace gfx
 	{
 		size_t len   = std::min(strlen(str), bufSize / 4);
 		float  scale = 4.0f;
+		float2 startPos = pos;
 
 		for(size_t n = 0; n < len; n++) {
 			u8 c = ((u8 *)str)[n];
+			if(c == '\n') {
+				pos = startPos + float2(0, size.y * 1.1f);
+				startPos = pos;
+			}
 
 			const float2 &p1   = chars[c * 2 + 0], &p2 = chars[c * 2 + 1];
 			float2       sp    = float2(pos) + float2(offset[c].x * size.x, offset[c].y * size.y) * scale;
@@ -154,8 +159,8 @@ namespace gfx
 	}
 
 	void Font::Draw(const char *str) const {
-		float2 tpos[256], tuv[256];
-		int num = GenQuads(str, tpos, tuv, 256);
+		float2 tpos[1024], tuv[1024];
+		int num = GenQuads(str, tpos, tuv, 1024);
 
 		glBegin(GL_QUADS);
 		glColor3f(1.0f, 1.0f, 1.0f);

@@ -38,7 +38,12 @@ namespace gfx
 		dTexture->SetSurface(texture);
 	}
 
-	void Tile::Draw(int2 pos) {
+	IRect Tile::GetBounds() const {
+		int2 size = texture.Size();
+		return IRect(0, 0, size.x, size.y) - offset;
+	}
+
+	void Tile::Draw(int2 pos) const {
 		dTexture->Bind();
 
 		int2 size = texture.Size();

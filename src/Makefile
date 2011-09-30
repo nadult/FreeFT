@@ -11,19 +11,23 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
 	script/parser script/script script/sparser \
-	sys/error_logger sys/frame_allocator sys/memory \
+	sys/error_logger sys/frame_allocator sys/memory sys/profiler \
 	game base tile_map
 
 MAIN_FILES=game
 SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
 
-LIBS=-L/usr/lib -lglfw -lbaselib -lpng -lz
+#WX_LIBS=`/usr/local/bin/wx-config --libs`
+#GTK_LIBS=`pkg-config --libs`
+LIBS=-L/usr/lib -L/usr/local/lib64 -lglfw -lbaselib -lpng -lz
 
 LINUX_LIBS=$(LIBS) -lXrandr -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
+#WX_INCLUDES=`/usr/local/bin/wx-config --cflags`
+#GTK_INCLUDES=`pkg-config gtkmm-2.4 --cflags`
 INCLUDES=-I./
 
-NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor
+NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type
 FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
 
 include Makefile.local

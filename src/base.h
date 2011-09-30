@@ -48,6 +48,22 @@ struct int3
 	int x, y, z;
 };
 
+struct int4
+{
+	int4(int x, int y, int z, int w) : x(x), y(y), z(z), w(w) { }
+	int4() { }
+
+	int4 operator+(const int4 rhs) const { return int4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); }
+	int4 operator-(const int4 rhs) const { return int4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
+	int4 operator*(int s) const { return int4(x * s, y * s, z * s, w * s); }
+	int4 operator/(int s) const { return int4(x / s, y / s, z / s, w / s); }
+
+	bool operator==(const int4 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w; }
+	bool operator!=(const int4 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w; }
+
+	int x, y, z, w;
+};
+
 struct uint2
 {
 	uint2(uint x, uint y) :x(x), y(y) { }
@@ -111,17 +127,55 @@ struct float4
 	float4 operator*(float s) const { return float4(x * s, y * s, z * s, w * s); }
 	float4 operator/(float s) const { return *this * (1.0f / s); }
 	float4 operator-() const { return float4(-x, -y, -z, -w); }
+	
+	bool operator==(const float4 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w; }
+	bool operator!=(const float4 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w; }
 
 	float x, y, z, w;
 };
 
+template <class Type2>
+struct Rect
+{
+	typedef decltype(Type2().x) Type;
+
+	Rect(Type2 min, Type2 max) :min(min), max(max) { }
+	Rect(Type minX, Type minY, Type maxX, Type maxY) :min(minX, minY), max(maxX, maxY) { }
+	Rect() { }
+
+	Type Width() const { return max.x - min.x; }
+	Type Height() const { return max.y - min.y; }
+	Type2 Size() const { return max - min; }
+
+	Rect operator+(const Type2 &offset) const { return Rect(min + offset, max + offset); }
+	Rect operator-(const Type2 &offset) const { return Rect(min - offset, max - offset); }
+
+	Rect operator+(const Rect &rhs) { return Rect(Min(min, rhs.min), Max(max, rhs.max)); }
+
+	bool IsEmpty() const { return max.x <= min.x && max.y <= min.y; }
+
+	Type2 min, max;
+};
+
+template <class T>
+bool Overlaps(const Rect<T> &a, const Rect<T> &b) {
+	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
+			(b.min.y < a.max.y && a.min.y < b.max.y);
+}
+
+typedef Rect<int2> IRect;
+typedef Rect<float2> FRect;
+
 template <class T> inline T Max(T a, T b) { return a > b? a : b; }
 template <class T> inline T Min(T a, T b) { return a < b? a : b; }
 
+inline const int2 Min(const int2 &lhs, const int2 &rhs) { return int2(Min(lhs.x, rhs.x), Min(lhs.y, rhs.y)); }
+inline const int2 Max(const int2 &lhs, const int2 &rhs) { return int2(Max(lhs.x, rhs.x), Max(lhs.y, rhs.y)); }
+
 template <class T> inline const T Clamp(T obj, T min, T max) { return Min(Max(obj, min), max); }
 
-template <class T> inline void operator+=(T &a, T b) { a = a + b; }
-template <class T> inline void operator-=(T &a, T b) { a = a - b; }
+template <class T, class T1> inline void operator+=(T &a, T1 b) { a = a + b; }
+template <class T, class T1> inline void operator-=(T &a, T1 b) { a = a - b; }
 
 template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
@@ -157,13 +211,19 @@ inline Color SwapBR(Color col) {
 }
 
 SERIALIZE_AS_POD(int2)
+SERIALIZE_AS_POD(int3)
+SERIALIZE_AS_POD(int4)
 SERIALIZE_AS_POD(float2)
+SERIALIZE_AS_POD(float3)
 SERIALIZE_AS_POD(float4)
+SERIALIZE_AS_POD(IRect)
+SERIALIZE_AS_POD(FRect)
 SERIALIZE_AS_POD(Color)
 
 
 #define COUNTOF(array)   (sizeof(array) / sizeof(array[0]))
 
 const vector<string> FindFiles(const char *dirName, const char *ext, bool recursive = false);
+//string OpenFileDialog(bool save);
 
 #endif

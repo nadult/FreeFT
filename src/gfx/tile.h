@@ -10,10 +10,13 @@ namespace gfx
 	struct Tile {
 		void Serialize(Serializer &sr);
 		void LoadDTexture();
-		void Draw(int2 pos);
+		void Draw(int2 pos) const;
 
+		string name;
 		Texture texture;
 		Ptr<DTexture> dTexture;
+
+		IRect GetBounds() const;
 
 		int2 offset;
 		int3 bbox;

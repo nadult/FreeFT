@@ -16,7 +16,7 @@ namespace gfx
 
 		void Serialize(Serializer &sr);
 
-		void Bind();
+		void Bind() const;
 		static void Bind0();
 		void Create(int mips);
 		
@@ -141,6 +141,7 @@ namespace gfx
 
 	void DrawQuad(int2 pos, int2 size, float2 uv0, float2 uv1);
 	void DrawBBox(int2 pos, int3 size);
+	void DrawLine(int2 pos, int3 p1, int3 p2, Color color);
 
 	void Clear(Color color);
 

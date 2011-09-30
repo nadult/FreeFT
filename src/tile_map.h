@@ -13,6 +13,8 @@ public:
 	enum { maxTiles = 65536 };
 
 	struct Node {
+		Node() :screenBounds(0, 0, 0, 0) { }
+
 		enum {
 			sizeX = 16,
 			sizeY = 256,
@@ -37,12 +39,16 @@ public:
 			}
 		};
 
+		void Serialize(Serializer&);
+
 		vector<Instance> instances;
+		IRect screenBounds;
 	};
 
 	void Resize(int2 size);
 	void Clear();
-	void Render(int2 viewPos, bool showBBoxes) const;
+	void Render(const IRect &view, bool showBBoxes) const;
+	void Serialize(Serializer&, std::map<string, const gfx::Tile*> *tileDict = NULL);
 
 	Node& operator()(int2 pos) { return nodes[pos.x + pos.y * size.x]; }
 	const Node& operator()(int2 pos) const { return nodes[pos.x + pos.y * size.x]; }
@@ -51,9 +57,11 @@ public:
 
 protected:
 	vector<Node> nodes;
-	vector<gfx::Tile*> tiles;
+	vector<const gfx::Tile*> tiles;
 	int2 size;
 };
+
+SERIALIZE_AS_POD(TileMap::Node::Instance);
 
 class TileMapEditor {
 public:
@@ -62,9 +70,11 @@ public:
 
 	TileMapEditor(TileMap &map);
 
-	void AddTile(gfx::Tile *tile, int3 pos);
+	// Tile has to exist as long as TileMap does
+	void AddTile(const gfx::Tile &tile, int3 pos);
+	void Fill(const gfx::Tile &tile, int3 minPos, int3 maxPos);
 
 protected:
-	TileMap &tileMap;
-	std::map<gfx::Tile*, TileId> tile2Id;
+	TileMap *tileMap;
+	std::map<const gfx::Tile*, TileId> tile2Id;
 };

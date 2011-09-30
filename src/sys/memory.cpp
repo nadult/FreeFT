@@ -19,7 +19,7 @@ namespace sys {
 		void *out = malloc(size);
 
 		if(!out) {
-			printf("Allocation error!\nTODO: write proper out of memory handler.\n");
+			printf("Allocation error (requested bytes: %llu)!\nTODO: write proper out of memory handler.\n", size);
 			exit(0);
 		}
 

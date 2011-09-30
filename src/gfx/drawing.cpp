@@ -25,7 +25,20 @@ namespace gfx
 
 		glEnd();
 	}
-	
+
+	void DrawLine(int2 pos, int3 wp1, int3 wp2, Color color) {
+		glBegin(GL_LINES);
+
+		float2 p1 = WorldToScreen(wp1) + float2(pos);
+		float2 p2 = WorldToScreen(wp2) + float2(pos);
+
+		glColor4i(color.r, color.g, color.b, color.a);
+		glVertex2f(p1.x, p1.y);
+		glVertex2f(p2.x, p2.y);
+
+		glEnd();
+	}
+
 	void DrawBBox(int2 pos, int3 size) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBegin(GL_QUADS);

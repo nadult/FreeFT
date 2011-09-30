@@ -102,7 +102,7 @@ namespace gfx
 			SetSurface(surface);
 	}
 
-	void DTexture::Bind() {
+	void DTexture::Bind() const {
 		Assert(IsValid());
 		::glBindTexture(GL_TEXTURE_2D, id);
 	}

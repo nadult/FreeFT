@@ -7,6 +7,7 @@
 #include "gfx/sprite.h"
 #include "gfx/tile.h"
 #include "tile_map.h"
+#include "sys/profiler.h"
 
 using namespace gfx;
 
@@ -14,25 +15,6 @@ namespace
 {
 	vector<Tile> tiles;
 
-	struct Splat {
-		int2 pos;
-		int tileId;
-		
-		bool operator<(const Splat &rhs) const {
-			return pos.y == rhs.pos.y? pos.x < rhs.pos.x : pos.y < rhs.pos.y;
-		}
-
-		void Draw(int2 viewPos) {
-			tiles[tileId].Draw(pos * 6 - viewPos);
-		}
-
-		void DrawBBox(int2 viewPos) {
-			DTexture::Bind0();
-			::DrawBBox(pos * 6 - viewPos, tiles[tileId].bbox);
-		}
-	};
-
-	vector<Splat> splats;
 }
 
 int safe_main(int argc, char **argv)
@@ -55,11 +37,13 @@ int safe_main(int argc, char **argv)
 	//	Loader loader("../refs/sprites/robots/RobotTurrets/PopupTurret.spr");
 		spr.LoadFromSpr(loader);
 	}
+	/*
 	for(uint n = 0; n < spr.sequences.size(); n++)
 		printf("Sequence %s: %d frames\n", spr.sequences[n].name.c_str(), (int)spr.sequences[n].frames.size());
 	for(uint n = 0; n < spr.anims.size(); n++)
 		printf("Anim %s: %d frames %d dirs; offset: %d\n",
 				spr.anims[n].name.c_str(), spr.anims[n].numFrames, spr.anims[n].numDirs, spr.anims[n].offset);
+				*/
 
 
 	int seqId = 0, dirId = 0, frameId = 0, tileId = 0;
@@ -69,8 +53,8 @@ int safe_main(int argc, char **argv)
 	tiles.resize(fileNames.size());
 
 	for(uint n = 0; n < fileNames.size(); n++) {
-		printf("Loading: %s\n", fileNames[n].c_str());
 		Loader(fileNames[n]) & tiles[n];
+		tiles[n].name = fileNames[n];
 		tiles[n].LoadDTexture();
 	}
 
@@ -82,12 +66,14 @@ int safe_main(int argc, char **argv)
 	bool showSprite = true;
 	bool showBBoxes = false;
 
-	int2 viewPos(0, 0);
 	int2 oldScreenPos = GetMousePos();
 
 	TileMap tileMap;
 	tileMap.Resize({16 * 64, 16 * 64});
 	TileMapEditor editor(tileMap);
+
+	IRect view(0, 0, res.x, res.y);
+	int2 clickPos(0, 0);
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -97,10 +83,10 @@ int safe_main(int argc, char **argv)
 		
 		int2 screenPos = GetMousePos();
 		if(IsMouseKeyPressed(2))
-			viewPos -= screenPos - oldScreenPos;
+			view -= screenPos - oldScreenPos;
 		oldScreenPos = screenPos;
 		
-		int2 worldPos = int2(ScreenToWorld(screenPos + viewPos));
+		int2 worldPos = int2(ScreenToWorld(screenPos + view.min));
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -108,6 +94,36 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_down)) dirId--;
 		if(IsKeyDown(Key_pageup)) tileId++;
 		if(IsKeyDown(Key_pagedown)) tileId--;
+
+		if(IsKeyDown(Key_f5)) {
+			string fileName = "../data/test.map";
+			if(fileName.size())
+				Saver(fileName) & tileMap;
+		}
+		if(IsKeyDown(Key_f8)) {
+			string fileName = "../data/test.map";
+			if(fileName.size()) {
+				std::map<string, const gfx::Tile*> dict;
+				for(uint n = 0; n < tiles.size(); n++)
+					dict[tiles[n].name] = &tiles[n];
+				
+				try {
+					Loader ldr(fileName);
+					try { tileMap.Serialize(ldr, &dict); }
+					catch(...) {
+						tileMap.Clear();
+						tileMap.Resize({256, 256});
+						editor = TileMapEditor(tileMap);
+						throw;
+					}
+					editor = TileMapEditor(tileMap);
+				}
+				catch(const Exception &ex) {
+					printf("Exception caught: %s\n", ex.What());
+				}
+			}
+		}
+
 
 		if(IsKeyPressed('T')) g_FloatParam[0] += 0.0001f;
 		if(IsKeyPressed('G')) g_FloatParam[0] -= 0.0001f;
@@ -122,22 +138,32 @@ int safe_main(int argc, char **argv)
 		frameId++;
 		seqId %= spr.sequences.size();
 		tileId %= tiles.size();
+			
+		tileMap.Render(view, showBBoxes);
 	
-		if(IsMouseKeyDown(1)) {
-			try {
-				editor.AddTile(&tiles[tileId], int3(worldPos.x, 0, worldPos.y));
-			}
-			catch(const Exception &ex) {
-				printf("Exception: %s\n", ex.what());
-			}
-		}
-
-		tileMap.Render(viewPos, showBBoxes);
-
 		if(!showSprite) {
-			tiles[tileId].Draw(int2(WorldToScreen(worldPos)) - viewPos);
-//			if(showBBoxes)
-//				newSplat.DrawBBox(viewPos);
+			if(IsMouseKeyDown(1)) {
+				try {
+					editor.AddTile(tiles[tileId], int3(worldPos.x, 0, worldPos.y));
+				}
+				catch(const Exception &ex) {
+					printf("Exception: %s\n", ex.what());
+				}
+			}
+				
+			int3 p1(Min(clickPos.x, worldPos.x), 0, Min(clickPos.y, worldPos.y));
+			int3 p2(Max(clickPos.x, worldPos.x), 1, Max(clickPos.y, worldPos.y));
+			
+			if(IsMouseKeyDown(0))
+				clickPos = worldPos;
+			if(IsMouseKeyUp(0)) {
+				printf("Filling:\n");
+				editor.Fill(tiles[tileId], p1, p2);
+			}
+			if(IsMouseKeyPressed(0))
+				DrawBBox(int2(WorldToScreen(p1)) - view.min, (p1 - p2));
+
+			tiles[tileId].Draw(int2(WorldToScreen(worldPos)) - view.min);
 		}
 
 		Sprite::Rect rect;
@@ -159,24 +185,18 @@ int safe_main(int argc, char **argv)
 
 		char text[256];
 		fontTex.Bind();
-		font.SetPos(int2(400, 0));
-		font.SetSize(int2(30, 20));
-
-		if(showSprite)
-			sprintf(text, "Rect: %d %d %d %d", rect.left, rect.top, rect.right, rect.bottom);
-		else
-			sprintf(text, "Pos: %d %d Size: %d %d (%d, %d, %d)", tiles[tileId].offset.x, tiles[tileId].offset.y,
-						tiles[tileId].texture.Width(), tiles[tileId].texture.Height(),
-						tiles[tileId].bbox.x, tiles[tileId].bbox.y, tiles[tileId].bbox.z);
-		font.Draw(text);
+		font.SetSize(int2(35, 25));
 
 		double time = GetTime();
 		double frameTime = time - lastFrameTime;
 		lastFrameTime = time;
 
-		font.SetPos(int2(400, 20));
-		sprintf(text, "Frame time: %f ms; %.4f %.4f;  WPos: %d %d\n", frameTime * 1000.0f,
-				g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y);
+		string profData = Profiler::GetStats();
+		Profiler::NextFrame();
+
+		font.SetPos(int2(0, 0));
+		sprintf(text, "Frame time: %.2f ms; %.4f %.4f;  WPos: %d %d\n%s", frameTime * 1000.0f,
+				g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y, profData.c_str());
 		font.Draw(text);
 		
 		SwapBuffers();
