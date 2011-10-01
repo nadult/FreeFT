@@ -25,12 +25,15 @@ namespace gfx
 		}
 
 		void SetTextureData(int level, TextureFormat fmt, int width, int height, const void *pixels) {
+			Assert(width <= 4096 && height <= 4096);
+
 			if(fmt.IsCompressed()) {
 				ThrowException("Texture compression is not supported");
 			}
 			else {
 				glTexImage2D(GL_TEXTURE_2D, level, fmt.GlInternal(), width, height, 0,
 								fmt.GlFormat(), fmt.GlType(), pixels);
+
 				TestGlError("Error while loading texture surface to the device");
 			}
 		}

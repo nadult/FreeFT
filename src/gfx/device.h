@@ -143,7 +143,7 @@ namespace gfx
 		{ DrawQuad(int2(x, y), int2(w, h), col); }
 
 	void DrawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color(255, 255, 255));
-	void DrawBBox(int2 pos, int3 size);
+	void DrawBBox(int2 pos, int3 size, Color col = Color(255, 255, 255));
 	void DrawLine(int2 pos, int3 p1, int3 p2, Color color = Color(255, 255, 255));
 
 	void Clear(Color color);

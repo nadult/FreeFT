@@ -21,8 +21,6 @@ int safe_main(int argc, char **argv)
 {
 	int2 res(1280, 720);
 	
-	g_FloatParam[0] = 0.8572f;
-	g_FloatParam[1] = 0.42855f;
 
 	CreateWindow(res, false);
 	SetWindowTitle("FT remake version 0.0");
@@ -75,7 +73,10 @@ int safe_main(int argc, char **argv)
 	TileMapEditor editor(tileMap);
 
 	IRect view(0, 0, res.x, res.y);
-	int2 clickPos(0, 0);
+	int3 clickPos(0, 0, 0), worldPos(0, 0, 0);
+
+	double lastSFrameTime = GetTime();
+	double sframeTime = 1.0 / 16.0;
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -88,7 +89,11 @@ int safe_main(int argc, char **argv)
 			view -= screenPos - oldScreenPos;
 		oldScreenPos = screenPos;
 		
-		int2 worldPos = int2(ScreenToWorld(screenPos + view.min));
+		{
+			int2 wp(ScreenToWorld(screenPos + view.min));
+			worldPos.x = wp.x;
+			worldPos.z = wp.y;
+		}
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -96,6 +101,9 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_down)) dirId--;
 		if(IsKeyDown(Key_pageup)) tileId++;
 		if(IsKeyDown(Key_pagedown)) tileId--;
+		if(IsKeyDown(Key_kp_add)) worldPos.y++;
+		if(IsKeyDown(Key_kp_subtract)) worldPos.y--;
+		Clamp(worldPos.y, 0, 255);
 
 		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
@@ -137,7 +145,14 @@ int safe_main(int argc, char **argv)
 
 		tileId += GetMouseWheelMove();
 
-		frameId++;
+		if(GetTime() - lastSFrameTime > sframeTime) {
+			if(lastSFrameTime > sframeTime * 2.0)
+				lastSFrameTime = GetTime();
+			else
+				lastSFrameTime += sframeTime;
+			frameId++;
+		}
+
 		seqId %= spr.sequences.size();
 		tileId %= tiles.size();
 			
@@ -146,32 +161,30 @@ int safe_main(int argc, char **argv)
 		if(!showSprite) {
 			if(IsMouseKeyDown(1)) {
 				try {
-					editor.AddTile(tiles[tileId], int3(worldPos.x, 0, worldPos.y));
+					editor.AddTile(tiles[tileId], worldPos);
 				}
 				catch(const Exception &ex) {
 					printf("Exception: %s\n", ex.what());
 				}
 			}
 				
-			int3 p1(Min(clickPos.x, worldPos.x), 0, Min(clickPos.y, worldPos.y));
-			int3 p2(Max(clickPos.x, worldPos.x), 1, Max(clickPos.y, worldPos.y));
+			int3 p1(Min(clickPos.x, worldPos.x), worldPos.y, Min(clickPos.z, worldPos.z));
+			int3 p2(Max(clickPos.x, worldPos.x), worldPos.y, Max(clickPos.z, worldPos.z));
 			
 			if(IsMouseKeyDown(0))
 				clickPos = worldPos;
-			if(IsMouseKeyUp(0)) {
-				printf("Filling:\n");
+			if(IsMouseKeyUp(0))
 				editor.Fill(tiles[tileId], p1, p2);
-			}
 			if(IsMouseKeyPressed(0))
 				DrawBBox(int2(WorldToScreen(p1)) - view.min, p2 - p1);
 
-			editor.DrawPlacingHelpers(view, tiles[tileId], int3(worldPos.x, 0, worldPos.y));
+			editor.DrawPlacingHelpers(view, tiles[tileId], worldPos);
 		}
 
 		Sprite::Rect rect;
 
 		if(showSprite) {
-			Texture frame = spr.GetFrame(seqId, frameId / 5 % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId), &rect);
+			Texture frame = spr.GetFrame(seqId, frameId % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId), &rect);
 			sprTex.SetSurface(frame);
 			sprTex.Bind();
 

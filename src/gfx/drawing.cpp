@@ -68,7 +68,7 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawBBox(int2 pos, int3 size) {
+	void DrawBBox(int2 pos, int3 size, Color col) {
 		float px = pos.x;
 		float py = pos.y;
 
@@ -92,11 +92,11 @@ namespace gfx
 		int front[] = {5, 4, 0, 1, 2, 6, 5, 1, 0, 3, 2};
 
 		glBegin(GL_LINE_STRIP);
-		glColor3f(0.6f, 0.6f, 0.6f);
+		glColor4ub(col.r >> 1, col.g >> 1, col.b >> 1, col.a);
 		for(int n = 0; n < COUNTOF(back); n++)
 			glVertex2f(pt[back[n]].x, pt[back[n]].y);
 
-		glColor3f(1.0f, 1.0f, 1.0f);
+		glColor4ub(col.r, col.g, col.b, col.a);
 		for(int n = 0; n < COUNTOF(front); n++)
 			glVertex2f(pt[front[n]].x, pt[front[n]].y);
 		glEnd();

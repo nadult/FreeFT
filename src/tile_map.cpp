@@ -152,13 +152,14 @@ bool TileMapEditor::TestPosition(int3 pos, int3 box) const {
 
 	for(int nx = nodeRect.min.x; nx <= nodeRect.max.x; nx++)
 		for(int ny = nodeRect.min.y; ny <= nodeRect.max.y; ny++) {
-			int3 nodePos(nx * Node::sizeX, 0, ny * Node::sizeY);
+			int3 nodePos(nx * Node::sizeX, 0, ny * Node::sizeZ);
 			const Node &node = (*tileMap)({nx, ny});
 
 			for(int i = 0; i < node.instances.size(); i++) {
 				const Node::Instance &instance = node.instances[i];
 				int3 tilePos = instance.GetPos() + nodePos;
 				IBox tileBox(tilePos, tilePos + tileMap->tiles[instance.id]->bbox);
+
 				if(Overlaps(tileBox, worldBox))
 					return false;
 			}
@@ -176,14 +177,31 @@ void TileMapEditor::DrawPlacingHelpers(const IRect &view, const gfx::Tile &tile,
 	tile.Draw(int2(WorldToScreen(pos)) - view.min, color);
 	gfx::DTexture::Bind0();
 	gfx::DrawBBox(int2(WorldToScreen(pos)) - view.min, tile.bbox);
+
+	int3 size(tileMap->size.x * Node::sizeX, Node::sizeY, tileMap->size.y * Node::sizeZ);
+	int3 bbox = tile.bbox;
+
+	gfx::DrawLine(-view.min, int3(0, pos.y, pos.z), int3(size.x, pos.y, pos.z), Color(0, 255, 0, 127));
+	gfx::DrawLine(-view.min, int3(0, pos.y, pos.z + bbox.z), int3(size.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
+	
+	gfx::DrawLine(-view.min, int3(pos.x, pos.y, 0), int3(pos.x, pos.y, size.z), Color(0, 255, 0, 127));
+	gfx::DrawLine(-view.min, int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, size.z), Color(0, 255, 0, 127));
+
+	gfx::DrawBBox(int2(WorldToScreen(int3(pos.x, 0, pos.z))) - view.min, int3(tile.bbox.x, pos.y, tile.bbox.z), Color(0, 0, 255, 127));
+	
+	gfx::DrawLine(-view.min, int3(0, 0, pos.z), int3(size.x, 0, pos.z), Color(0, 0, 255, 127));
+	gfx::DrawLine(-view.min, int3(0, 0, pos.z + bbox.z), int3(size.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
+	
+	gfx::DrawLine(-view.min, int3(pos.x, 0, 0), int3(pos.x, 0, size.z), Color(0, 0, 255, 127));
+	gfx::DrawLine(-view.min, int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, size.z), Color(0, 0, 255, 127));
 }
 
 void TileMapEditor::Fill(const gfx::Tile &tile, int3 min, int3 max) {
 	int3 bbox = tile.bbox;
 
-	for(int x = min.x; x < max.x; x += bbox.x)
-		for(int y = min.y; y < max.y; y += bbox.y)
-			for(int z = min.z; z < max.z; z += bbox.z) {
+	for(int x = min.x; x <= max.x; x += bbox.x)
+		for(int y = min.y; y <= max.y; y += bbox.y)
+			for(int z = min.z; z <= max.z; z += bbox.z) {
 				try { AddTile(tile, int3(x, y, z)); }
 				catch(...) { }
 			}
