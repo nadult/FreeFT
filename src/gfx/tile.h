@@ -10,7 +10,7 @@ namespace gfx
 	struct Tile {
 		void Serialize(Serializer &sr);
 		void LoadDTexture();
-		void Draw(int2 pos) const;
+		void Draw(int2 pos, Color color = Color(255, 255, 255)) const;
 
 		string name;
 		Texture texture;

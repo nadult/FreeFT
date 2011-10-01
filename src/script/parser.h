@@ -1,7 +1,9 @@
 #ifndef NEWBORN_SCRIPT_PARSER_H
 #define NEWBORN_SCRIPT_PARSER_H
 
-#include "base.h"
+#include <baselib.h>
+
+using namespace baselib;
 
 namespace parser {
 

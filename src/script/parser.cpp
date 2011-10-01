@@ -1,4 +1,3 @@
-#include "script/parser.h"
 #include <limits.h>
 #include <string.h>
 #include <stack>
@@ -14,6 +13,7 @@
 #include <boost/spirit/phoenix/primitives.hpp>
 #include <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix/functions.hpp>
+#include "script/parser.h"
 
 using namespace std;
 using namespace boost::spirit;

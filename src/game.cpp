@@ -20,6 +20,9 @@ namespace
 int safe_main(int argc, char **argv)
 {
 	int2 res(1280, 720);
+	
+	g_FloatParam[0] = 0.8572f;
+	g_FloatParam[1] = 0.42855f;
 
 	CreateWindow(res, false);
 	SetWindowTitle("FT remake version 0.0");
@@ -27,13 +30,15 @@ int safe_main(int argc, char **argv)
 	DTexture tex;
 	Loader("../data/epic_boobs.png") & tex;
 
+	const char *mapName = argc > 1? argv[1] : "../data/test.map";
+
 	Font font("../data/fonts/font1.fnt");
 	DTexture fontTex; Loader("../data/fonts/font1_00.png") & fontTex;
 	SetBlendingMode(bmNormal);
 
 	Sprite spr; {
-//		Loader loader("../refs/sprites/robots/Behemoth.spr");
-		Loader loader("../refs/sprites/characters/LeatherMale.spr");
+		Loader loader("../refs/sprites/robots/Behemoth.spr");
+	//	Loader loader("../refs/sprites/characters/LeatherMale.spr");
 	//	Loader loader("../refs/sprites/robots/RobotTurrets/PopupTurret.spr");
 		spr.LoadFromSpr(loader);
 	}
@@ -44,7 +49,6 @@ int safe_main(int argc, char **argv)
 		printf("Anim %s: %d frames %d dirs; offset: %d\n",
 				spr.anims[n].name.c_str(), spr.anims[n].numFrames, spr.anims[n].numDirs, spr.anims[n].offset);
 				*/
-
 
 	int seqId = 0, dirId = 0, frameId = 0, tileId = 0;
 
@@ -58,8 +62,6 @@ int safe_main(int argc, char **argv)
 		tiles[n].LoadDTexture();
 	}
 
-	g_FloatParam[0] = 0.86f;
-	g_FloatParam[1] = 0.43f;
 
 	DTexture sprTex;
 	double lastFrameTime = GetTime();
@@ -96,12 +98,12 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_pagedown)) tileId--;
 
 		if(IsKeyDown(Key_f5)) {
-			string fileName = "../data/test.map";
+			string fileName = mapName;
 			if(fileName.size())
 				Saver(fileName) & tileMap;
 		}
 		if(IsKeyDown(Key_f8)) {
-			string fileName = "../data/test.map";
+			string fileName = mapName;
 			if(fileName.size()) {
 				std::map<string, const gfx::Tile*> dict;
 				for(uint n = 0; n < tiles.size(); n++)
@@ -125,10 +127,10 @@ int safe_main(int argc, char **argv)
 		}
 
 
-		if(IsKeyPressed('T')) g_FloatParam[0] += 0.0001f;
-		if(IsKeyPressed('G')) g_FloatParam[0] -= 0.0001f;
-		if(IsKeyPressed('Y')) g_FloatParam[1] += 0.0001f;
-		if(IsKeyPressed('H')) g_FloatParam[2] -= 0.0001f;
+		if(IsKeyPressed('T')) g_FloatParam[0] += 0.00001f;
+		if(IsKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
+		if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
+		if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
 		if(IsKeyDown(Key_space)) showSprite ^= 1;
 		if(IsKeyDown(Key_f1)) showBBoxes ^= 1;
@@ -161,9 +163,9 @@ int safe_main(int argc, char **argv)
 				editor.Fill(tiles[tileId], p1, p2);
 			}
 			if(IsMouseKeyPressed(0))
-				DrawBBox(int2(WorldToScreen(p1)) - view.min, (p1 - p2));
+				DrawBBox(int2(WorldToScreen(p1)) - view.min, p2 - p1);
 
-			tiles[tileId].Draw(int2(WorldToScreen(worldPos)) - view.min);
+			editor.DrawPlacingHelpers(view, tiles[tileId], int3(worldPos.x, 0, worldPos.y));
 		}
 
 		Sprite::Rect rect;
@@ -195,7 +197,7 @@ int safe_main(int argc, char **argv)
 		Profiler::NextFrame();
 
 		font.SetPos(int2(0, 0));
-		sprintf(text, "Frame time: %.2f ms; %.4f %.4f;  WPos: %d %d\n%s", frameTime * 1000.0f,
+		sprintf(text, "Frame time: %.2f ms; %.6f %.6f;  WPos: %d %d\n%s", frameTime * 1000.0f,
 				g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y, profData.c_str());
 		font.Draw(text);
 		

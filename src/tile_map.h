@@ -74,6 +74,12 @@ public:
 	void AddTile(const gfx::Tile &tile, int3 pos);
 	void Fill(const gfx::Tile &tile, int3 minPos, int3 maxPos);
 
+	void DrawPlacingHelpers(const IRect &view, const gfx::Tile &tile, int3 pos) const;
+
+	// returns true if box doesn't collide with any of the tiles
+	bool TestPosition(int3 pos, int3 box) const;
+
+
 protected:
 	TileMap *tileMap;
 	std::map<const gfx::Tile*, TileId> tile2Id;

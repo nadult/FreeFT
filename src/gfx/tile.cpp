@@ -30,7 +30,9 @@ namespace gfx
 		i32 zarCount;
 		sr(dummy2, zarCount);
 
-		texture.LoadZAR(sr);	
+		texture.LoadZAR(sr);
+
+		offset -= int2(WorldToScreen(int3(bbox.x, 0, bbox.z)));
 	}
 
 	void Tile::LoadDTexture() {
@@ -43,11 +45,11 @@ namespace gfx
 		return IRect(0, 0, size.x, size.y) - offset;
 	}
 
-	void Tile::Draw(int2 pos) const {
+	void Tile::Draw(int2 pos, Color col) const {
 		dTexture->Bind();
 
 		int2 size = texture.Size();
-		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y);
+		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y, col);
 	}
 
 }

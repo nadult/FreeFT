@@ -157,14 +157,48 @@ struct Rect
 	Type2 min, max;
 };
 
+template <class Type3>
+struct Box
+{
+	typedef decltype(Type3().x) Type;
+
+	Box(Type3 min, Type3 max) :min(min), max(max) { }
+	Box(Type minX, Type minY, Type minZ, Type maxX, Type maxY, Type maxZ)
+		:min(minX, minY, minZ), max(maxX, maxY, maxZ) { }
+	Box() { }
+
+	Type Width() const { return max.x - min.x; }
+	Type Height() const { return max.y - min.y; }
+	Type Depth() const { return max.z - min.z; }
+	Type3 Size() const { return max - min; }
+
+	Box operator+(const Type3 &offset) const { return Box(min + offset, max + offset); }
+	Box operator-(const Type3 &offset) const { return Box(min - offset, max - offset); }
+
+	Box operator+(const Box &rhs) { return Box(Min(min, rhs.min), Max(max, rhs.max)); }
+
+	bool IsEmpty() const { return max.x <= min.x && max.y <= min.y && max.z <= min.z; }
+
+	Type3 min, max;
+};
+
 template <class T>
 bool Overlaps(const Rect<T> &a, const Rect<T> &b) {
 	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
 			(b.min.y < a.max.y && a.min.y < b.max.y);
 }
 
+template <class T>
+bool Overlaps(const Box<T> &a, const Box<T> &b) {
+	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
+			(b.min.y < a.max.y && a.min.y < b.max.y) &&
+			(b.min.z < a.max.z && a.min.z < b.max.z);
+}
+
 typedef Rect<int2> IRect;
 typedef Rect<float2> FRect;
+typedef Box<int3> IBox;
+typedef Box<float3> FBox;
 
 template <class T> inline T Max(T a, T b) { return a > b? a : b; }
 template <class T> inline T Min(T a, T b) { return a < b? a : b; }

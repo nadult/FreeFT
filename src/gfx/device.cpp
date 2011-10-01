@@ -50,6 +50,9 @@ namespace
 
 namespace gfx
 {
+
+	void InitViewport(int2 size);
+
 	static void InitDevice() {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
@@ -62,21 +65,6 @@ namespace gfx
 		glDepthMask(0);
 	}
 
-	static void InitViewport(int2 size) {
-		glViewport(0, 0, size.x, size.y);
-		glLoadIdentity();
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, size.x, 0, size.y, -1.0f, 1.0f);
-		glEnable(GL_TEXTURE_2D);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		glTranslatef(0.0f, size.y, 0.0f);
-		glScalef(1.0f, -1.0f, 1.0f);
-	}
 
 	void CreateWindow(int2 size, bool full) {
 		if(isCreated)

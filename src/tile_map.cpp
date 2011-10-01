@@ -57,7 +57,7 @@ void TileMap::Render(const IRect &view, bool showBBoxes) const {
 
 	if(showBBoxes) {
 		gfx::DTexture::Bind0();
-		gfx::DrawBBox(-view.min, int3(-size.x * Node::sizeX, 64, -size.y * Node::sizeZ));
+		gfx::DrawBBox(-view.min, int3(size.x * Node::sizeX, 64, size.y * Node::sizeZ));
 	}
 
 	int vNodes = 0, vTiles = 0;
@@ -69,6 +69,9 @@ void TileMap::Render(const IRect &view, bool showBBoxes) const {
 	
 	for(uint n = 0; n < nodes.size(); n++) {
 		const Node &node = nodes[n];
+		if(node.screenBounds.IsEmpty())
+			continue;
+
 		int3 nodePos((n % size.x) * Node::sizeX, 0, (n / size.x) * Node::sizeZ);
 		IRect screenBounds = node.screenBounds + int2(WorldToScreen(nodePos));
 		// possible error from rounding node & tile positions
@@ -105,6 +108,9 @@ TileMapEditor::TileMapEditor(TileMap &tileMap) :tileMap(&tileMap) {
 void TileMapEditor::AddTile(const gfx::Tile &rTile, int3 pos) {
 	const gfx::Tile *tile = &rTile;
 
+	if(!TestPosition(pos, tile->bbox))
+		return;
+
 	auto it = tile2Id.find(tile);
 	if(it == tile2Id.end()) {
 		if(tileMap->tiles.size() == TileMap::maxTiles)
@@ -131,6 +137,45 @@ void TileMapEditor::AddTile(const gfx::Tile &rTile, int3 pos) {
 	node.instances.push_back(newInst);
 	std::sort(node.instances.begin(), node.instances.end());
 	node.screenBounds += tile->GetBounds() + int2(WorldToScreen(newInst.GetPos()));
+}
+
+bool TileMapEditor::TestPosition(int3 pos, int3 box) const {
+	IRect nodeRect(pos.x / Node::sizeX, pos.z / Node::sizeZ,
+					(pos.x + box.x - 1) / Node::sizeX, (pos.z + box.x - 1) / Node::sizeZ);
+	IBox worldBox(pos, pos + box);
+
+	if(pos.x < 0 || pos.y < 0 || pos.z < 0)
+		return false;
+	if(worldBox.max.x > tileMap->size.x * Node::sizeX ||
+		worldBox.max.y > Node::sizeY || worldBox.max.z > tileMap->size.y * Node::sizeZ)
+		return false;
+
+	for(int nx = nodeRect.min.x; nx <= nodeRect.max.x; nx++)
+		for(int ny = nodeRect.min.y; ny <= nodeRect.max.y; ny++) {
+			int3 nodePos(nx * Node::sizeX, 0, ny * Node::sizeY);
+			const Node &node = (*tileMap)({nx, ny});
+
+			for(int i = 0; i < node.instances.size(); i++) {
+				const Node::Instance &instance = node.instances[i];
+				int3 tilePos = instance.GetPos() + nodePos;
+				IBox tileBox(tilePos, tilePos + tileMap->tiles[instance.id]->bbox);
+				if(Overlaps(tileBox, worldBox))
+					return false;
+			}
+
+		}
+
+	return true;
+}
+
+void TileMapEditor::DrawPlacingHelpers(const IRect &view, const gfx::Tile &tile, int3 pos) const {
+	bool collides = !TestPosition(pos, tile.bbox);
+
+	Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
+
+	tile.Draw(int2(WorldToScreen(pos)) - view.min, color);
+	gfx::DTexture::Bind0();
+	gfx::DrawBBox(int2(WorldToScreen(pos)) - view.min, tile.bbox);
 }
 
 void TileMapEditor::Fill(const gfx::Tile &tile, int3 min, int3 max) {
