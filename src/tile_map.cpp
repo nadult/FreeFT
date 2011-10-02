@@ -5,7 +5,7 @@
 #include "sys/profiler.h"
 
 TileInstance::TileInstance(const gfx::Tile *tile, const int3 &pos)
-	:tile(tile) {
+	:flags(0), tile(tile) {
 	Assert(tile);
 	SetPos(pos);
 }

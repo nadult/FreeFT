@@ -11,6 +11,13 @@ namespace SelectionMode {
 	};
 };
 
+namespace InstanceFlags {
+	enum Type {
+		isSelected = 1,
+		seeThrough = 2,
+	};
+};
+
 typedef u16 TileId;
 
 struct TileInstance {
@@ -19,14 +26,8 @@ struct TileInstance {
 	u8 y;
 	u16 flags;
 
-
-	enum Flags {
-		fIsSelected = 1,
-		fSeeThrough = 2,
-	};
-
-	bool IsSelected() const { return flags & fIsSelected; }
-	void Select(bool select) { flags = select? flags | fIsSelected : flags & ~fIsSelected; }
+	bool IsSelected() const { return flags & InstanceFlags::isSelected; }
+	void Select(bool select) { flags = select? flags | InstanceFlags::isSelected : flags & ~InstanceFlags::isSelected; }
 
 	TileInstance() :tile(0), flags(0) { }
 	TileInstance(const gfx::Tile *tile, const int3 &pos);

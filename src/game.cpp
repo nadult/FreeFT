@@ -17,6 +17,32 @@ namespace
 
 }
 
+void DrawGrid(const IBox &box, int2 nodeSize, int y) {
+	DTexture::Bind0();
+
+	//TODO: proper drawing when y != 0
+	for(int x = box.min.x - box.min.x % nodeSize.x; x <= box.max.x; x += nodeSize.x)
+		DrawLine(int3(x, y, box.min.z), int3(x, y, box.max.z), Color(255, 255, 255, 64));
+	for(int z = box.min.z - box.min.z % nodeSize.y; z <= box.max.z; z += nodeSize.y)
+		DrawLine(int3(box.min.x, y, z), int3(box.max.x, y, z), Color(255, 255, 255, 64));
+}
+
+void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 position) {
+	Sprite::Rect rect;
+	Texture frame = spr.GetFrame(seqId, frameId % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId), &rect);
+	
+	DTexture sprTex;
+	sprTex.SetSurface(frame);
+	sprTex.Bind();
+
+	int2 size(rect.right - rect.left, rect.bottom - rect.top);
+	int2 pos = int2(WorldToScreen(position));
+	DrawQuad(pos.x + rect.left - spr.offset.x, pos.y + rect.top - spr.offset.y, size.x, size.y);
+
+	DTexture::Bind0();
+	DrawBBox(IBox(position, position + spr.bbox));
+}
+
 int safe_main(int argc, char **argv)
 {
 	int2 res(1280, 720);
@@ -35,18 +61,11 @@ int safe_main(int argc, char **argv)
 	SetBlendingMode(bmNormal);
 
 	Sprite spr; {
-		Loader loader("../refs/sprites/robots/Behemoth.spr");
-	//	Loader loader("../refs/sprites/characters/LeatherMale.spr");
+	//	Loader loader("../refs/sprites/robots/Behemoth.spr");
+		Loader loader("../refs/sprites/characters/LeatherFemale.spr");
 	//	Loader loader("../refs/sprites/robots/RobotTurrets/PopupTurret.spr");
 		spr.LoadFromSpr(loader);
 	}
-	/*
-	for(uint n = 0; n < spr.sequences.size(); n++)
-		printf("Sequence %s: %d frames\n", spr.sequences[n].name.c_str(), (int)spr.sequences[n].frames.size());
-	for(uint n = 0; n < spr.anims.size(); n++)
-		printf("Anim %s: %d frames %d dirs; offset: %d\n",
-				spr.anims[n].name.c_str(), spr.anims[n].numFrames, spr.anims[n].numDirs, spr.anims[n].offset);
-				*/
 
 	int seqId = 0, dirId = 0, frameId = 0, tileId = 0;
 
@@ -60,11 +79,8 @@ int safe_main(int argc, char **argv)
 		tiles[n].LoadDTexture();
 	}
 
-
-	DTexture sprTex;
 	double lastFrameTime = GetTime();
-	bool showSprite = true;
-	bool showBBoxes = false;
+	bool showGrid = false;
 
 	int2 oldScreenPos = GetMousePos();
 
@@ -73,6 +89,7 @@ int safe_main(int argc, char **argv)
 
 	IRect view(0, 0, res.x, res.y);
 	int3 clickPos(0, 0, 0), worldPos(0, 0, 0);
+	int2 gridSize(3, 3);
 
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
@@ -86,11 +103,6 @@ int safe_main(int argc, char **argv)
 		if(IsMouseKeyPressed(2))
 			view -= GetMouseMove();
 		
-		{
-			int2 wp(ScreenToWorld(GetMousePos() + view.min));
-			worldPos.x = wp.x;
-			worldPos.z = wp.y;
-		}
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -100,8 +112,7 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_pagedown)) tileId--;
 		if(IsKeyDown(Key_kp_add)) worldPos.y++;
 		if(IsKeyDown(Key_kp_subtract)) worldPos.y--;
-		Clamp(worldPos.y, 0, 255);
-
+	
 		/*
 		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
@@ -131,14 +142,38 @@ int safe_main(int argc, char **argv)
 		}
 		*/
 
-
 		if(IsKeyPressed('T')) g_FloatParam[0] += 0.00001f;
 		if(IsKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
 		if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 		if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		if(IsKeyDown(Key_space)) showSprite ^= 1;
-		if(IsKeyDown(Key_f1)) showBBoxes ^= 1;
+		if(IsKeyDown(Key_f2)) {
+			if(showGrid) {
+				if(gridSize.x == 3)
+					gridSize = int2(6, 6);
+				else if(gridSize.x == 6)
+					gridSize = int2(9, 9);
+				else {
+					gridSize = int2(3, 3);
+					showGrid = false;
+				}
+			}
+			else
+				showGrid = true;
+		}
+
+		{
+			int2 wp(ScreenToWorld(GetMousePos() + view.min));
+			worldPos.x = wp.x;
+			worldPos.z = wp.y;
+		}
+		Clamp(worldPos.y, 0, 255);
+
+		if(showGrid) {
+			worldPos.x -= worldPos.x % gridSize.x;
+			worldPos.z -= worldPos.z % gridSize.y;
+		}
+
 
 		tileId += GetMouseWheelMove();
 		if(tileId < 0)
@@ -156,67 +191,48 @@ int safe_main(int argc, char **argv)
 		seqId %= spr.sequences.size();
 		
 		LookAt(view.min);	
+		if(showGrid) {
+			int2 p[4] = {
+				(int2)ScreenToWorld((float2)view.min),
+				(int2)ScreenToWorld((float2)view.max),
+				(int2)ScreenToWorld((float2){view.min.x, view.max.y}),
+				(int2)ScreenToWorld((float2){view.max.x, view.min.y}) };
+
+			int2 min = Min(Min(p[0], p[1]), Min(p[2], p[3]));
+			int2 max = Max(Max(p[0], p[1]), Max(p[2], p[3]));
+			IBox box(min.x, 0, min.y, max.x, 0, max.y);
+			DrawGrid(box, gridSize, worldPos.y);
+		}
 		tileMap.Render(view);
-	
-		if(!showSprite) {
 
-			if(IsMouseKeyDown(1)) {
-				try {
-					tileMap.AddTile(tiles[tileId], worldPos);
-				}
-				catch(const Exception &ex) {
-					printf("Exception: %s\n", ex.what());
-				}
-			}
-				
-			int3 p1(Min(clickPos.x, worldPos.x), Min(clickPos.y, worldPos.y), Min(clickPos.z, worldPos.z));
-			int3 p2(Max(clickPos.x, worldPos.x), Max(clickPos.y, worldPos.y), Max(clickPos.z, worldPos.z));
-			
-			if(IsMouseKeyDown(0))
-				clickPos = worldPos;
-			if(IsMouseKeyUp(0)) {
-				if(IsKeyPressed(Key_lshift))
-					tileMap.Fill(tiles[tileId], IBox(p1, p2));
-				else {
-					tileMap.Select(IBox(p1, p2 + int3(0, 1, 0)),
-							IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
-				}
-			}
-			if(IsKeyPressed(Key_lshift)) {
-				tileMap.DrawPlacingHelpers(tiles[tileId], worldPos);
-				tileMap.DrawBoxHelpers(IBox(worldPos, worldPos + tiles[tileId].bbox));
-			}
-			else if(IsMouseKeyPressed(0)) {
-				if(!IBox(p1, p2).IsEmpty())
-					tileMap.DrawBoxHelpers(IBox(p1, p2));
-			}
-
-			if(IsMouseKeyPressed(0)) {
-				DTexture::Bind0();
-				DrawBBox(IBox(p1, p2));
-			}
-
-			if(IsKeyPressed(Key_del))
-				tileMap.DeleteSelected();
-
-		}
-
-		Sprite::Rect rect;
-
-		if(showSprite) {
-			Texture frame = spr.GetFrame(seqId, frameId % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId), &rect);
-			sprTex.SetSurface(frame);
-			sprTex.Bind();
-
-			int2 size(rect.right - rect.left, rect.bottom - rect.top);
-			int2 pos = int2(WorldToScreen(worldPos));
-			DrawQuad(pos.x + rect.left - spr.offset.x, pos.y + rect.top - spr.offset.y, size.x, size.y);
-
-			if(showBBoxes) {
-				DTexture::Bind0();
-				DrawBBox(IBox(worldPos, worldPos + spr.bbox));
+		IBox selection(
+			int3(Min(clickPos.x, worldPos.x), Min(clickPos.y, worldPos.y), Min(clickPos.z, worldPos.z)),
+			int3(Max(clickPos.x, worldPos.x), Max(clickPos.y, worldPos.y), Max(clickPos.z, worldPos.z)) );
+		
+		if(IsMouseKeyDown(0))
+			clickPos = worldPos;
+		if(IsMouseKeyUp(0)) {
+			if(IsKeyPressed(Key_lshift))
+				tileMap.Fill(tiles[tileId], selection);
+			else {
+				tileMap.Select(IBox(selection.min, selection.max + int3(0, 1, 0)),
+						IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
 			}
 		}
+		if(IsKeyPressed(Key_lshift)) {
+			tileMap.DrawPlacingHelpers(tiles[tileId], worldPos);
+			tileMap.DrawBoxHelpers(IBox(worldPos, worldPos + tiles[tileId].bbox));
+		}
+		else if(IsMouseKeyPressed(0)) {
+			if(!selection.IsEmpty())
+				tileMap.DrawBoxHelpers(selection);
+		}
+		if(IsMouseKeyPressed(0)) {
+			DTexture::Bind0();
+			DrawBBox(selection);
+		}
+		if(IsKeyPressed(Key_del))
+			tileMap.DeleteSelected();
 
 		{
 			LookAt({0, 0});
