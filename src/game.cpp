@@ -70,7 +70,6 @@ int safe_main(int argc, char **argv)
 
 	TileMap tileMap;
 	tileMap.Resize({16 * 64, 16 * 64});
-	TileMapEditor editor(tileMap);
 
 	IRect view(0, 0, res.x, res.y);
 	int3 clickPos(0, 0, 0), worldPos(0, 0, 0);
@@ -84,13 +83,11 @@ int safe_main(int argc, char **argv)
 
 		Clear({128, 64, 0});
 		
-		int2 screenPos = GetMousePos();
 		if(IsMouseKeyPressed(2))
-			view -= screenPos - oldScreenPos;
-		oldScreenPos = screenPos;
+			view -= GetMouseMove();
 		
 		{
-			int2 wp(ScreenToWorld(screenPos + view.min));
+			int2 wp(ScreenToWorld(GetMousePos() + view.min));
 			worldPos.x = wp.x;
 			worldPos.z = wp.y;
 		}
@@ -105,6 +102,7 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_kp_subtract)) worldPos.y--;
 		Clamp(worldPos.y, 0, 255);
 
+		/*
 		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
 			if(fileName.size())
@@ -123,16 +121,15 @@ int safe_main(int argc, char **argv)
 					catch(...) {
 						tileMap.Clear();
 						tileMap.Resize({256, 256});
-						editor = TileMapEditor(tileMap);
 						throw;
 					}
-					editor = TileMapEditor(tileMap);
 				}
 				catch(const Exception &ex) {
 					printf("Exception caught: %s\n", ex.What());
 				}
 			}
 		}
+		*/
 
 
 		if(IsKeyPressed('T')) g_FloatParam[0] += 0.00001f;
@@ -144,6 +141,9 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_f1)) showBBoxes ^= 1;
 
 		tileId += GetMouseWheelMove();
+		if(tileId < 0)
+			tileId += tiles.size();
+		tileId %= tiles.size();
 
 		if(GetTime() - lastSFrameTime > sframeTime) {
 			if(lastSFrameTime > sframeTime * 2.0)
@@ -154,31 +154,51 @@ int safe_main(int argc, char **argv)
 		}
 
 		seqId %= spr.sequences.size();
-		tileId %= tiles.size();
-			
-		tileMap.Render(view, showBBoxes);
+		
+		LookAt(view.min);	
+		tileMap.Render(view);
 	
 		if(!showSprite) {
+
 			if(IsMouseKeyDown(1)) {
 				try {
-					editor.AddTile(tiles[tileId], worldPos);
+					tileMap.AddTile(tiles[tileId], worldPos);
 				}
 				catch(const Exception &ex) {
 					printf("Exception: %s\n", ex.what());
 				}
 			}
 				
-			int3 p1(Min(clickPos.x, worldPos.x), worldPos.y, Min(clickPos.z, worldPos.z));
-			int3 p2(Max(clickPos.x, worldPos.x), worldPos.y, Max(clickPos.z, worldPos.z));
+			int3 p1(Min(clickPos.x, worldPos.x), Min(clickPos.y, worldPos.y), Min(clickPos.z, worldPos.z));
+			int3 p2(Max(clickPos.x, worldPos.x), Max(clickPos.y, worldPos.y), Max(clickPos.z, worldPos.z));
 			
 			if(IsMouseKeyDown(0))
 				clickPos = worldPos;
-			if(IsMouseKeyUp(0))
-				editor.Fill(tiles[tileId], p1, p2);
-			if(IsMouseKeyPressed(0))
-				DrawBBox(int2(WorldToScreen(p1)) - view.min, p2 - p1);
+			if(IsMouseKeyUp(0)) {
+				if(IsKeyPressed(Key_lshift))
+					tileMap.Fill(tiles[tileId], IBox(p1, p2));
+				else {
+					tileMap.Select(IBox(p1, p2 + int3(0, 1, 0)),
+							IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
+				}
+			}
+			if(IsKeyPressed(Key_lshift)) {
+				tileMap.DrawPlacingHelpers(tiles[tileId], worldPos);
+				tileMap.DrawBoxHelpers(IBox(worldPos, worldPos + tiles[tileId].bbox));
+			}
+			else if(IsMouseKeyPressed(0)) {
+				if(!IBox(p1, p2).IsEmpty())
+					tileMap.DrawBoxHelpers(IBox(p1, p2));
+			}
 
-			editor.DrawPlacingHelpers(view, tiles[tileId], worldPos);
+			if(IsMouseKeyPressed(0)) {
+				DTexture::Bind0();
+				DrawBBox(IBox(p1, p2));
+			}
+
+			if(IsKeyPressed(Key_del))
+				tileMap.DeleteSelected();
+
 		}
 
 		Sprite::Rect rect;
@@ -189,30 +209,33 @@ int safe_main(int argc, char **argv)
 			sprTex.Bind();
 
 			int2 size(rect.right - rect.left, rect.bottom - rect.top);
-			int2 pos = screenPos;
+			int2 pos = int2(WorldToScreen(worldPos));
 			DrawQuad(pos.x + rect.left - spr.offset.x, pos.y + rect.top - spr.offset.y, size.x, size.y);
 
 			if(showBBoxes) {
 				DTexture::Bind0();
-				DrawBBox(pos, spr.bbox);
+				DrawBBox(IBox(worldPos, worldPos + spr.bbox));
 			}
 		}
 
-		char text[256];
-		fontTex.Bind();
-		font.SetSize(int2(35, 25));
+		{
+			LookAt({0, 0});
+			char text[256];
+			fontTex.Bind();
+			font.SetSize(int2(35, 25));
 
-		double time = GetTime();
-		double frameTime = time - lastFrameTime;
-		lastFrameTime = time;
+			double time = GetTime();
+			double frameTime = time - lastFrameTime;
+			lastFrameTime = time;
 
-		string profData = Profiler::GetStats();
-		Profiler::NextFrame();
+			string profData = Profiler::GetStats();
+			Profiler::NextFrame();
 
-		font.SetPos(int2(0, 0));
-		sprintf(text, "Frame time: %.2f ms; %.6f %.6f;  WPos: %d %d\n%s", frameTime * 1000.0f,
-				g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y, profData.c_str());
-		font.Draw(text);
+			font.SetPos(int2(5, 5));
+			sprintf(text, "Frame time: %.2f ms; %.6f %.6f;  WPos: %d %d %d\n%s", frameTime * 1000.0f,
+					g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y, worldPos.z, profData.c_str());
+			font.Draw(text);
+		}
 		
 		SwapBuffers();
 	}

@@ -178,6 +178,11 @@ struct Box
 	Box operator+(const Box &rhs) { return Box(Min(min, rhs.min), Max(max, rhs.max)); }
 
 	bool IsEmpty() const { return max.x <= min.x && max.y <= min.y && max.z <= min.z; }
+	bool IsInside(const int3 &point) {
+		return	point.x >= min.x && point.x < max.x &&
+				point.y >= min.y && point.y < max.y &&
+				point.z >= min.z && point.z < max.z;
+	}
 
 	Type3 min, max;
 };
@@ -205,6 +210,9 @@ template <class T> inline T Min(T a, T b) { return a < b? a : b; }
 
 inline const int2 Min(const int2 &lhs, const int2 &rhs) { return int2(Min(lhs.x, rhs.x), Min(lhs.y, rhs.y)); }
 inline const int2 Max(const int2 &lhs, const int2 &rhs) { return int2(Max(lhs.x, rhs.x), Max(lhs.y, rhs.y)); }
+
+inline const int3 Min(const int3 &lhs, const int3 &rhs) { return int3(Min(lhs.x, rhs.x), Min(lhs.y, rhs.y), Min(lhs.z, rhs.z)); }
+inline const int3 Max(const int3 &lhs, const int3 &rhs) { return int3(Max(lhs.x, rhs.x), Max(lhs.y, rhs.y), Max(lhs.z, rhs.z)); }
 
 template <class T> inline const T Clamp(T obj, T min, T max) { return Min(Max(obj, min), max); }
 
@@ -252,6 +260,8 @@ SERIALIZE_AS_POD(float3)
 SERIALIZE_AS_POD(float4)
 SERIALIZE_AS_POD(IRect)
 SERIALIZE_AS_POD(FRect)
+SERIALIZE_AS_POD(IBox)
+SERIALIZE_AS_POD(FBox)
 SERIALIZE_AS_POD(Color)
 
 

@@ -3,6 +3,7 @@
 
 namespace gfx
 {
+
 	static float defaultMtx[16];
 
 	void InitViewport(int2 size) {
@@ -23,12 +24,9 @@ namespace gfx
 		glGetFloatv(GL_MODELVIEW_MATRIX, defaultMtx);
 	}
 
-	void SetupIsometricView(int2 viewPos) {
+	void LookAt(int2 pos) {
 		glLoadMatrixf(defaultMtx);
-	}
-
-	void Setup2DView() {
-		glLoadMatrixf(defaultMtx);
+		glTranslatef(-pos.x, -pos.y, 0.0f);
 	}
 
 	void DrawQuad(int2 pos, int2 size, Color color) {
@@ -55,11 +53,11 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawLine(int2 pos, int3 wp1, int3 wp2, Color color) {
+	void DrawLine(int3 wp1, int3 wp2, Color color) {
 		glBegin(GL_LINES);
 
-		float2 p1 = WorldToScreen(wp1) + float2(pos);
-		float2 p2 = WorldToScreen(wp2) + float2(pos);
+		float2 p1 = WorldToScreen(wp1);
+		float2 p2 = WorldToScreen(wp2);
 
 		glColor4ub(color.r, color.g, color.b, color.a);
 		glVertex2f(p1.x, p1.y);
@@ -68,24 +66,21 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawBBox(int2 pos, int3 size, Color col) {
-		float px = pos.x;
-		float py = pos.y;
-
-		float2 vx = WorldToScreen(int3(size.x, 0, 0));
-		float2 vy = WorldToScreen(int3(0, size.y, 0));
-		float2 vz = WorldToScreen(int3(0, 0, size.z));
-		float2 fpos(pos);
+	void DrawBBox(const IBox &box, Color col) {
+		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
+		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
+		float2 vz = WorldToScreen(int3(0, 0, box.Depth()));
+		float2 pos = WorldToScreen(box.min);
 
 		float2 pt[8] = {
-			fpos + vx + vy,
-			fpos + vx + vy + vz,
-			fpos + vz + vy,
-			fpos + vy,
-			fpos + vx,
-			fpos + vx + vz,
-			fpos + vz,
-			fpos + float2(0, 0),
+			pos + vx + vy,
+			pos + vx + vy + vz,
+			pos + vz + vy,
+			pos + vy,
+			pos + vx,
+			pos + vx + vz,
+			pos + vz,
+			pos,
 		};
 
 		int back[] = {6, 7, 3, 7, 4};
