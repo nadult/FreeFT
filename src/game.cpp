@@ -43,6 +43,57 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 	DrawBBox(IBox(position, position + spr.bbox));
 }
 
+struct TileSelector {
+public:
+	TileSelector() :offset(0), tileId(0) { }
+
+	void Loop(int2 res) {
+		if(IsMouseKeyPressed(2))
+			offset += GetMouseMove().y;
+		offset += GetMouseWheelMove() * res.y / 8;
+		LookAt({0, 0});
+		Draw(res);
+	}
+
+	void Draw(int2 res) {
+		int2 pos(0, offset);
+		int maxy = 0;
+		int2 mousePos = GetMousePos();
+
+		for(uint n = 0; n < tiles.size(); n++) {
+			const Tile &tile = tiles[n];
+			IRect bounds = tile.GetBounds();
+
+			if(bounds.Width() + pos.x > res.x && pos.x != 0) {
+				pos = int2(0, pos.y + maxy);
+				if(pos.y >= res.y)
+					break;
+				maxy = 0;
+			}
+			
+			if(IRect(pos, pos + bounds.Size()).IsInside(mousePos))
+				tileId = n;
+
+			if(pos.y + bounds.Height() >= 0) {
+				tile.Draw(pos - bounds.min);
+				if(tileId == n) {
+					DTexture::Bind0();
+					DrawRect(IRect(pos, pos + bounds.Size()));
+				}
+			}
+
+			pos.x += bounds.Width();
+			maxy = Max(maxy, bounds.Height());
+		}
+	}
+
+	int GetTileId() { return tileId; }
+
+protected:
+	int offset;
+	int tileId;
+};
+
 int safe_main(int argc, char **argv)
 {
 	int2 res(1280, 720);
@@ -67,7 +118,7 @@ int safe_main(int argc, char **argv)
 		spr.LoadFromSpr(loader);
 	}
 
-	int seqId = 0, dirId = 0, frameId = 0, tileId = 0;
+	int seqId = 0, dirId = 0, frameId = 0;
 
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
 	vector<string> fileNames = FindFiles("../refs/tiles/Test/", ".til", 1);
@@ -91,6 +142,8 @@ int safe_main(int argc, char **argv)
 	int3 clickPos(0, 0, 0), worldPos(0, 0, 0);
 	int2 gridSize(3, 3);
 
+	TileSelector selector;
+
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
 
@@ -108,8 +161,6 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_left)) seqId--;
 		if(IsKeyDown(Key_up)) dirId++;
 		if(IsKeyDown(Key_down)) dirId--;
-		if(IsKeyDown(Key_pageup)) tileId++;
-		if(IsKeyDown(Key_pagedown)) tileId--;
 		if(IsKeyDown(Key_kp_add)) worldPos.y++;
 		if(IsKeyDown(Key_kp_subtract)) worldPos.y--;
 	
@@ -174,11 +225,7 @@ int safe_main(int argc, char **argv)
 			worldPos.z -= worldPos.z % gridSize.y;
 		}
 
-
-		tileId += GetMouseWheelMove();
-		if(tileId < 0)
-			tileId += tiles.size();
-		tileId %= tiles.size();
+		int tileId = selector.GetTileId();
 
 		if(GetTime() - lastSFrameTime > sframeTime) {
 			if(lastSFrameTime > sframeTime * 2.0)
@@ -190,49 +237,55 @@ int safe_main(int argc, char **argv)
 
 		seqId %= spr.sequences.size();
 		
-		LookAt(view.min);	
-		if(showGrid) {
-			int2 p[4] = {
-				(int2)ScreenToWorld((float2)view.min),
-				(int2)ScreenToWorld((float2)view.max),
-				(int2)ScreenToWorld((float2){view.min.x, view.max.y}),
-				(int2)ScreenToWorld((float2){view.max.x, view.min.y}) };
-
-			int2 min = Min(Min(p[0], p[1]), Min(p[2], p[3]));
-			int2 max = Max(Max(p[0], p[1]), Max(p[2], p[3]));
-			IBox box(min.x, 0, min.y, max.x, 0, max.y);
-			DrawGrid(box, gridSize, worldPos.y);
+		if(IsKeyPressed(Key_space)) {
+			selector.Loop(res);
 		}
-		tileMap.Render(view);
+		else {
+			LookAt(view.min);
 
-		IBox selection(
-			int3(Min(clickPos.x, worldPos.x), Min(clickPos.y, worldPos.y), Min(clickPos.z, worldPos.z)),
-			int3(Max(clickPos.x, worldPos.x), Max(clickPos.y, worldPos.y), Max(clickPos.z, worldPos.z)) );
-		
-		if(IsMouseKeyDown(0))
-			clickPos = worldPos;
-		if(IsMouseKeyUp(0)) {
-			if(IsKeyPressed(Key_lshift))
-				tileMap.Fill(tiles[tileId], selection);
-			else {
-				tileMap.Select(IBox(selection.min, selection.max + int3(0, 1, 0)),
-						IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
+			if(showGrid) {
+				int2 p[4] = {
+					(int2)ScreenToWorld((float2)view.min),
+					(int2)ScreenToWorld((float2)view.max),
+					(int2)ScreenToWorld((float2){view.min.x, view.max.y}),
+					(int2)ScreenToWorld((float2){view.max.x, view.min.y}) };
+
+				int2 min = Min(Min(p[0], p[1]), Min(p[2], p[3]));
+				int2 max = Max(Max(p[0], p[1]), Max(p[2], p[3]));
+				IBox box(min.x, 0, min.y, max.x, 0, max.y);
+				DrawGrid(box, gridSize, worldPos.y);
 			}
+			tileMap.Render(view);
+
+			IBox selection(
+				int3(Min(clickPos.x, worldPos.x), Min(clickPos.y, worldPos.y), Min(clickPos.z, worldPos.z)),
+				int3(Max(clickPos.x, worldPos.x), Max(clickPos.y, worldPos.y), Max(clickPos.z, worldPos.z)) );
+			
+			if(IsMouseKeyDown(0))
+				clickPos = worldPos;
+			if(IsMouseKeyUp(0)) {
+				if(IsKeyPressed(Key_lshift))
+					tileMap.Fill(tiles[tileId], selection);
+				else {
+					tileMap.Select(IBox(selection.min, selection.max + int3(0, 1, 0)),
+							IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
+				}
+			}
+			if(IsKeyPressed(Key_lshift)) {
+				tileMap.DrawPlacingHelpers(tiles[tileId], worldPos);
+				tileMap.DrawBoxHelpers(IBox(worldPos, worldPos + tiles[tileId].bbox));
+			}
+			else if(IsMouseKeyPressed(0)) {
+				if(!selection.IsEmpty())
+					tileMap.DrawBoxHelpers(selection);
+			}
+			if(IsMouseKeyPressed(0)) {
+				DTexture::Bind0();
+				DrawBBox(selection);
+			}
+			if(IsKeyPressed(Key_del))
+				tileMap.DeleteSelected();
 		}
-		if(IsKeyPressed(Key_lshift)) {
-			tileMap.DrawPlacingHelpers(tiles[tileId], worldPos);
-			tileMap.DrawBoxHelpers(IBox(worldPos, worldPos + tiles[tileId].bbox));
-		}
-		else if(IsMouseKeyPressed(0)) {
-			if(!selection.IsEmpty())
-				tileMap.DrawBoxHelpers(selection);
-		}
-		if(IsMouseKeyPressed(0)) {
-			DTexture::Bind0();
-			DrawBBox(selection);
-		}
-		if(IsKeyPressed(Key_del))
-			tileMap.DeleteSelected();
 
 		{
 			LookAt({0, 0});

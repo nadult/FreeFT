@@ -153,6 +153,10 @@ struct Rect
 	Rect operator+(const Rect &rhs) { return Rect(Min(min, rhs.min), Max(max, rhs.max)); }
 
 	bool IsEmpty() const { return max.x <= min.x && max.y <= min.y; }
+	bool IsInside(const int2 &point) {
+		return	point.x >= min.x && point.x < max.x &&
+				point.y >= min.y && point.y < max.y;
+	}
 
 	Type2 min, max;
 };

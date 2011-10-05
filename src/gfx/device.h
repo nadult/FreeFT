@@ -144,6 +144,7 @@ namespace gfx
 	void DrawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color(255, 255, 255));
 
 	void DrawBBox(const IBox &box, Color col = Color(255, 255, 255));
+	void DrawRect(const IRect &box, Color col = Color(255, 255, 255));
 	void DrawLine(int3 p1, int3 p2, Color color = Color(255, 255, 255));
 
 	void Clear(Color color);

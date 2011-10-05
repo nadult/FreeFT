@@ -66,6 +66,19 @@ namespace gfx
 		glEnd();
 	}
 
+	void DrawRect(const IRect &rect, Color col) {
+		glBegin(GL_LINE_STRIP);
+		glColor4ub(col.r, col.g, col.b, col.a);
+
+		glVertex2i(rect.min.x, rect.min.y);
+		glVertex2i(rect.max.x, rect.min.y);
+		glVertex2i(rect.max.x, rect.max.y);
+		glVertex2i(rect.min.x, rect.max.y);
+		glVertex2i(rect.min.x, rect.min.y);
+
+		glEnd();
+	}
+
 	void DrawBBox(const IBox &box, Color col) {
 		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
 		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
