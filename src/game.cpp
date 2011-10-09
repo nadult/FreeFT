@@ -76,7 +76,7 @@ public:
 
 			if(pos.y + bounds.Height() >= 0) {
 				tile.Draw(pos - bounds.min);
-				if(tileId == n) {
+				if(tileId == (int)n) {
 					DTexture::Bind0();
 					DrawRect(IRect(pos, pos + bounds.Size()));
 				}
@@ -100,7 +100,7 @@ int safe_main(int argc, char **argv)
 	
 
 	CreateWindow(res, false);
-	SetWindowTitle("FT remake version 0.0");
+	SetWindowTitle("FT remake version 0.01");
 
 	DTexture tex;
 	Loader("../data/epic_boobs.png") & tex;
@@ -121,11 +121,21 @@ int safe_main(int argc, char **argv)
 	int seqId = 0, dirId = 0, frameId = 0;
 
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	vector<string> fileNames = FindFiles("../refs/tiles/Test/", ".til", 1);
+	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/", ".til", 1);
 	tiles.resize(fileNames.size());
 
 	for(uint n = 0; n < fileNames.size(); n++) {
-		Loader(fileNames[n]) & tiles[n];
+		if(n * 100 / tiles.size() > (n - 1) * 100 / tiles.size()) {
+			printf(".");
+			fflush(stdout);
+		}
+
+		try {
+			Loader(fileNames[n]) & tiles[n];
+		}
+		catch(...) {
+			tiles[n] = Tile();
+		}
 		tiles[n].name = fileNames[n];
 		tiles[n].LoadDTexture();
 	}
@@ -301,8 +311,8 @@ int safe_main(int argc, char **argv)
 			Profiler::NextFrame();
 
 			font.SetPos(int2(5, 5));
-			sprintf(text, "Frame time: %.2f ms; %.6f %.6f;  WPos: %d %d %d\n%s", frameTime * 1000.0f,
-					g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y, worldPos.z, profData.c_str());
+			sprintf(text, "Frame time: %.2f ms; %.6f %.6f;  WPos: %d %d %d\nTile: %s", frameTime * 1000.0f,
+					g_FloatParam[0], g_FloatParam[1], worldPos.x, worldPos.y, worldPos.z, tiles[tileId].name.c_str());
 			font.Draw(text);
 		}
 		
