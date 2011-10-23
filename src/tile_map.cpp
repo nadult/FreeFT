@@ -289,9 +289,9 @@ void TileMap::DrawBoxHelpers(const IBox &box) const {
 void TileMap::Fill(const gfx::Tile &tile, const IBox &box) {
 	int3 bbox = tile.bbox;
 
-	for(int x = box.min.x; x <= box.max.x; x += bbox.x)
-		for(int y = box.min.y; y <= box.max.y; y += bbox.y)
-			for(int z = box.min.z; z <= box.max.z; z += bbox.z) {
+	for(int x = box.min.x; x < box.max.x; x += bbox.x)
+		for(int y = box.min.y; y < box.max.y; y += bbox.y)
+			for(int z = box.min.z; z < box.max.z; z += bbox.z) {
 				try { AddTile(tile, int3(x, y, z)); }
 				catch(...) { }
 			}

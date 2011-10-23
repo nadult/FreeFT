@@ -15,6 +15,8 @@
 
 #include "script/parser.h"
 
+using namespace script;
+
 namespace
 {
 	namespace fusion = boost::fusion;
@@ -22,18 +24,42 @@ namespace
 	namespace qi = boost::spirit::qi;
 	namespace ascii = boost::spirit::ascii;
 
-	///////////////////////////////////////////////////////////////////////////
-	//  Our mini XML tree representation
-	///////////////////////////////////////////////////////////////////////////
-	//[tutorial_xml1_structures
 	struct mini_xml;
 
 	typedef boost::variant<boost::recursive_wrapper<mini_xml>, std::string> mini_xml_node;
 
 	struct mini_xml
 	{
-		std::string name;						   // tag name
-		std::vector<mini_xml_node> children;		// children
+		std::string name;
+		std::vector<mini_xml_node> children;
+	};
+
+	struct String {
+		String() :size(0), start(0) { }
+
+		void Add(char c, vector<char> &buffer) {
+			if(size == 0)
+				start = (int)buffer.size();
+
+			buffer.push_back(c);
+			size++;
+		}
+
+		int start, size;
+	};
+
+	struct Tuple {
+		enum { maxSize = 32 };
+
+		Tuple() :size(0) { }
+
+		void AddElement(const Variant &elem) {
+			InputAssert(size < maxSize);
+			elements[size++] = elem;
+		}
+
+		Variant elements[maxSize];
+		int size;
 	};
 }
 
@@ -49,6 +75,10 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 namespace
 {
+		
+	phoenix::function<PushImpl> const Push = PushImpl();
+	phoenix::function<PopImpl> const Pop = PopImpl();
+	phoenix::function<TopImpl> const Top = TopImpl();
 
 	///////////////////////////////////////////////////////////////////////////
 	//  Our mini XML grammar definition
@@ -57,6 +87,10 @@ namespace
 	template <typename Iterator>
 	struct mini_xml_grammar : qi::grammar<Iterator, mini_xml(), ascii::space_type>
 	{
+		vector<char> stringBuffer;
+
+		void operator+=(char c) { }
+
 		mini_xml_grammar() : mini_xml_grammar::base_type(xml)
 		{
 			using qi::lit;
@@ -70,6 +104,8 @@ namespace
 
 			text = lexeme[+(char_ - '<')		[_val += _1]];
 			node = (xml | text)				 [_val = _1];
+
+			vString = lexeme['"' >> *(char_ - '"') [_T += _1] >> '"'];
 
 			start_tag =
 					'<'
@@ -90,6 +126,9 @@ namespace
 				>>  end_tag(at_c<0>(_val))
 			;
 		}
+
+		qi::rule<Iterator, String(), ascii::space_type> vString;
+		qi::rule<Iterator, Variant(), ascii::space_type> value;
 
 		qi::rule<Iterator, mini_xml(), ascii::space_type> xml;
 		qi::rule<Iterator, mini_xml_node(), ascii::space_type> node;

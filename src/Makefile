@@ -10,7 +10,7 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
-	sys/frame_allocator sys/memory sys/profiler script/parser \
+	sys/frame_allocator sys/memory sys/profiler \
 	game base tile_map
 #	sys/error_logger script/parser script/script script/sparser
 

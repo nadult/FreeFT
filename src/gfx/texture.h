@@ -97,6 +97,7 @@ namespace gfx
 	public:
 		Texture(int width, int height);
 		Texture(Texture&&);
+		Texture(const Texture&) = default;
 		Texture();
 
 		// poprzednie dane zostaja utracone

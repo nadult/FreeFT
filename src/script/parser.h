@@ -34,9 +34,32 @@ namespace script
 		Variant& operator()(int id, int tupleId)
 			{ return data[id + tupleId * tupleSize]; }
 
+		void Add(const Variant *tupleBegin, const Variant *tupleEnd) {
+			if(tupleSize == 0)
+				tupleSize = tupleEnd - tupleEnd;
+			InputAssert(tupleSize == tupleEnd - tupleBegin);
+
+			if(data.size())
+				for(int n = 0; n < tupleSize; n++)
+					InputAssert(data[n].type == tupleBegin[n].type);
+
+			data.resize(data.size() + tupleSize);
+			memcpy(&data[data.size() - tupleSize], tupleBegin, tupleSize * sizeof(Variant));
+		}
+
+		void RebuildStrings() {
+		}
+
 	protected:
 		vector<Variant> data;
+		vector<char> strings;
 		int tupleSize;
 	};
+
+	class Script {
+	public:
+		std::map<string, Array> arrays;
+	};
+
 
 }
