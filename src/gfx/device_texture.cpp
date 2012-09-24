@@ -25,7 +25,7 @@ namespace gfx
 		}
 
 		void SetTextureData(int level, TextureFormat fmt, int width, int height, const void *pixels) {
-			Assert(width <= 4096 && height <= 4096);
+			DAssert(width <= 4096 && height <= 4096);
 
 			if(fmt.IsCompressed()) {
 				ThrowException("Texture compression is not supported");
@@ -106,7 +106,7 @@ namespace gfx
 	}
 
 	void DTexture::Bind() const {
-		Assert(IsValid());
+		DAssert(IsValid());
 		::glBindTexture(GL_TEXTURE_2D, id);
 	}
 
@@ -115,7 +115,7 @@ namespace gfx
 	}
 	
 	void DTexture::CreateMip(int level, int w, int h, TextureFormat fmt) {
-		Assert(IsValid());
+		DAssert(IsValid());
 
 		GLint gl_id;
 		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
@@ -127,7 +127,7 @@ namespace gfx
 	}
 	
 	void DTexture::UpdateMip(int mip, int x, int y, int w, int h, void *pix, int pixelsInRow) {
-		Assert(IsValid());
+		DAssert(IsValid());
 
 		GLint gl_id;
 		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
@@ -141,7 +141,7 @@ namespace gfx
 	}
 
 	TextureFormat DTexture::GetFormat() const {
-		Assert(IsValid());
+		DAssert(IsValid());
 
 		GLint internal = 0, gl_id;
 		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);

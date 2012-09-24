@@ -101,11 +101,11 @@ namespace gfx
 
 		glBegin(GL_LINE_STRIP);
 		glColor4ub(col.r >> 1, col.g >> 1, col.b >> 1, col.a);
-		for(int n = 0; n < COUNTOF(back); n++)
+		for(size_t n = 0; n < COUNTOF(back); n++)
 			glVertex2f(pt[back[n]].x, pt[back[n]].y);
 
 		glColor4ub(col.r, col.g, col.b, col.a);
-		for(int n = 0; n < COUNTOF(front); n++)
+		for(size_t n = 0; n < COUNTOF(front); n++)
 			glVertex2f(pt[front[n]].x, pt[front[n]].y);
 		glEnd();
 	}

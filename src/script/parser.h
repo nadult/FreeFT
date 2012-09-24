@@ -37,11 +37,11 @@ namespace script
 		void Add(const Variant *tupleBegin, const Variant *tupleEnd) {
 			if(tupleSize == 0)
 				tupleSize = tupleEnd - tupleEnd;
-			InputAssert(tupleSize == tupleEnd - tupleBegin);
+			Assert(tupleSize == tupleEnd - tupleBegin);
 
 			if(data.size())
 				for(int n = 0; n < tupleSize; n++)
-					InputAssert(data[n].type == tupleBegin[n].type);
+					Assert(data[n].type == tupleBegin[n].type);
 
 			data.resize(data.size() + tupleSize);
 			memcpy(&data[data.size() - tupleSize], tupleBegin, tupleSize * sizeof(Variant));

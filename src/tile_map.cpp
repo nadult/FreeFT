@@ -6,7 +6,7 @@
 
 TileInstance::TileInstance(const gfx::Tile *tile, const int3 &pos)
 	:flags(0), tile(tile) {
-	Assert(tile);
+	DAssert(tile);
 	SetPos(pos);
 }
 
@@ -25,8 +25,8 @@ IRect TileInstance::GetScreenRect() const {
 }
 
 void TileInstance::SetPos(int3 pos) {
-	Assert(pos.x < TileMapNode::sizeX && pos.y < TileMapNode::sizeY && pos.z < TileMapNode::sizeZ);
-	Assert(pos.x >= 0 && pos.y >= 0 && pos.z >= 0);
+	DAssert(pos.x < TileMapNode::sizeX && pos.y < TileMapNode::sizeY && pos.z < TileMapNode::sizeZ);
+	DAssert(pos.x >= 0 && pos.y >= 0 && pos.z >= 0);
 	xz = u8(pos.x | (pos.z << 4));
 	y  = u8(pos.y);
 }
@@ -54,7 +54,7 @@ bool TileMapNode::IsColliding(const IBox &box) const {
 
 	for(uint i = 0; i < instances.size(); i++) {
 		const TileInstance &instance = instances[i];
-		Assert(instance.tile);
+		DAssert(instance.tile);
 
 		int3 tilePos = instance.GetPos();
 		IBox tileBox(tilePos, tilePos + instance.tile->bbox);
@@ -74,7 +74,7 @@ void TileMapNode::AddTile(const gfx::Tile &tile, int3 pos) {
 	if(IsColliding(IBox(pos, pos + tile.bbox)))
 		return;
 	
-	Assert(IsInside(pos));
+	DAssert(IsInside(pos));
 
 	TileInstance inst(&tile, pos);
 	instances.push_back(inst);
@@ -147,7 +147,7 @@ void TileMapNode::DeleteSelected() {
 /*
 void TileMap::Serialize(Serializer &sr, std::map<string, const gfx::Tile*> *tileDict) {
 	if(sr.IsLoading()) {
-		Assert(tileDict);
+		DAssert(tileDict);
 		Clear();
 	}
 

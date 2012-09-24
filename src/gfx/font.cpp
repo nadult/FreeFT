@@ -89,7 +89,7 @@ namespace gfx
 
 			Scan(f, buf, 1024);
 			int id = atoi(buf + 3);
-			InputAssert(id >= 0 && id <= 255);
+			Assert(id >= 0 && id <= 255);
 
 			Scan(f, buf, 1024);
 			int x = atoi(buf + 2);
