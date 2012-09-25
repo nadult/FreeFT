@@ -46,7 +46,41 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 }
 
 float Compare(const Tile &a, const Tile &b) {
-	return 0.0f;
+	int2 offset = b.offset - a.offset - int2(WorldToScreen(float3(a.bbox.x, 0.0f, 0.0f)));
+	int2 aSize = a.texture.Size(), bSize = b.texture.Size();
+	int2 size(Min(aSize.x, bSize.x), Min(aSize.y, bSize.y));
+
+//	printf("Size: %dx%d\n", aSize.x, aSize.y);
+//	printf("Offset: %dx%d\n", offset.x, offset.y);
+	
+	int2 min(offset.x < 0? -offset.x : 0, offset.y < 0? -offset.y : 0);
+	int2 max(offset.x > 0? size.x - offset.x : size.x, offset.y > 0? size.y - offset.y : size.y);
+	
+	int missed = 0, matched = 0;
+	for(int y = min.y; y < max.y; y++)
+		for(int x = min.x; x < max.x; x++) {
+			Color aPix = a.texture(x, y);
+			Color bPix = b.texture(x + offset.x, y + offset.y);
+				
+			if(!aPix.a || !bPix.a)
+				missed++;
+			else {
+				int rdist = abs((int)aPix.r - (int)bPix.r);
+				int gdist = abs((int)aPix.g - (int)bPix.g);
+				int bdist = abs((int)aPix.b - (int)bPix.b);
+
+				int dist = Max(rdist, Max(gdist, bdist));
+				if(dist < 20)
+					matched++;	
+			}
+		}
+
+	char text[256];
+	snprintf(text, sizeof(text), "size: %dx%d  off: %dx%d  matches: %d/%d", size.x, size.y, offset.x, offset.y,
+				matched, (max.x - min.x) * (max.y - min.y) - missed);
+	font.Draw(text);
+
+	return float(matched) / float((max.x - min.x) * (max.y - min.y));
 }
 
 struct TileSelector {
@@ -61,13 +95,11 @@ public:
 		Draw(res);
 
 		LookAt({0, 0});
-		char text[256];
 		fontTex.Bind();
 		font.SetSize(int2(35, 25));
 
 		font.SetPos(int2(5, 65));
-		sprintf(text, "Score: %.2f", Compare(tiles[cmpId[0]], tiles[cmpId[1]]));
-		font.Draw(text);
+		Compare(tiles[cmpId[0]], tiles[cmpId[1]]);
 	}
 
 	void Draw(int2 res) {
@@ -121,7 +153,6 @@ protected:
 int safe_main(int argc, char **argv)
 {
 	int2 res(1024, 600);
-	
 
 	CreateWindow(res, true);
 	SetWindowTitle("FT remake version 0.01");
@@ -129,7 +160,7 @@ int safe_main(int argc, char **argv)
 //	DTexture tex;
 //	Loader("../data/epic_boobs.png") & tex;
 
-	const char *mapName = argc > 1? argv[1] : "../data/test.map";
+	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
 
 	font = Font("../data/fonts/font1.fnt");
 	Loader("../data/fonts/font1_00.png") & fontTex;
