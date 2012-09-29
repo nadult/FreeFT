@@ -54,7 +54,7 @@ namespace
 		Tuple() :size(0) { }
 
 		void AddElement(const Variant &elem) {
-			InputAssert(size < maxSize);
+			Assert(size < maxSize);
 			elements[size++] = elem;
 		}
 

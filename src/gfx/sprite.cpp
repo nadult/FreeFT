@@ -38,7 +38,7 @@ namespace
 				strm.avail_out = CHUNK;
 				strm.next_out = out;
 				ret = inflate(&strm, Z_NO_FLUSH);
-				Assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+				DAssert(ret != Z_STREAM_ERROR);  /* state not clobbered */
 
 				switch (ret) {
 				case Z_NEED_DICT:
@@ -79,7 +79,7 @@ namespace gfx
 		if(zar_type != 0x33 && zar_type != 0x34)
 			ThrowException("Wrong zar type: ", (int)zar_type);
 
-		Assert(!has_palette);
+		DAssert(!has_palette);
 
 		u8 defaultCol = 0;
 		u32 rleSize; sr & rleSize;
@@ -156,7 +156,7 @@ namespace gfx
 			sr.Seek(sr.Pos() + int(numFrames) * 4);
 
 			i32 nameLen; sr & nameLen;
-			Assert(nameLen >= 0 && nameLen <= 256);
+			DAssert(nameLen >= 0 && nameLen <= 256);
 			sequence.name.resize(nameLen);
 			sr.Data(&sequence.name[0], nameLen);
 			i16 animId; sr & animId;
@@ -174,7 +174,7 @@ namespace gfx
 			anim.offset = offset;
 
 			i32 nameLen; sr & nameLen;
-			Assert(nameLen >= 0 && nameLen <= 256);
+			DAssert(nameLen >= 0 && nameLen <= 256);
 			anim.name.resize(nameLen);
 			sr.Data(&anim.name[0], nameLen);
 			
@@ -217,7 +217,7 @@ namespace gfx
 				i32 plainSize = 0;
 				sr & plainSize;
 				Inflate(sr, data, size - 4);
-				Assert((int)data.size() == plainSize);
+				DAssert((int)data.size() == plainSize);
 			}
 
 			PStream imgStream(new DataStream(data));
@@ -236,7 +236,7 @@ namespace gfx
 			anim.points.resize(numImages, int2(0, 0));
 
 			for(int n = 0; n < numImages; n++) {
-				Assert(imgSr.Pos() < imgSr.Size());
+				DAssert(imgSr.Pos() < imgSr.Size());
 				char type; imgSr & type;
 
 				if(type == 1) {

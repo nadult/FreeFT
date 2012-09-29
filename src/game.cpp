@@ -14,6 +14,8 @@ using namespace gfx;
 namespace
 {
 	vector<Tile> tiles;
+	Font font;
+	DTexture fontTex;
 
 }
 
@@ -43,16 +45,61 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 	DrawBBox(IBox(position, position + spr.bbox));
 }
 
+float Compare(const Tile &a, const Tile &b) {
+	int2 offset = b.offset - a.offset - int2(WorldToScreen(float3(a.bbox.x, 0.0f, 0.0f)));
+	int2 aSize = a.texture.Size(), bSize = b.texture.Size();
+	int2 size(Min(aSize.x, bSize.x), Min(aSize.y, bSize.y));
+
+//	printf("Size: %dx%d\n", aSize.x, aSize.y);
+//	printf("Offset: %dx%d\n", offset.x, offset.y);
+	
+	int2 min(offset.x < 0? -offset.x : 0, offset.y < 0? -offset.y : 0);
+	int2 max(offset.x > 0? size.x - offset.x : size.x, offset.y > 0? size.y - offset.y : size.y);
+	
+	int missed = 0, matched = 0;
+	for(int y = min.y; y < max.y; y++)
+		for(int x = min.x; x < max.x; x++) {
+			Color aPix = a.texture(x, y);
+			Color bPix = b.texture(x + offset.x, y + offset.y);
+				
+			if(!aPix.a || !bPix.a)
+				missed++;
+			else {
+				int rdist = abs((int)aPix.r - (int)bPix.r);
+				int gdist = abs((int)aPix.g - (int)bPix.g);
+				int bdist = abs((int)aPix.b - (int)bPix.b);
+
+				int dist = Max(rdist, Max(gdist, bdist));
+				if(dist < 20)
+					matched++;	
+			}
+		}
+
+	char text[256];
+	snprintf(text, sizeof(text), "size: %dx%d  off: %dx%d  matches: %d/%d", size.x, size.y, offset.x, offset.y,
+				matched, (max.x - min.x) * (max.y - min.y) - missed);
+	font.Draw(text);
+
+	return float(matched) / float((max.x - min.x) * (max.y - min.y));
+}
+
 struct TileSelector {
 public:
-	TileSelector() :offset(0), tileId(0) { }
+	TileSelector() :offset(0), tileId(0) { cmpId[0] = cmpId[1] = 0; }
 
 	void Loop(int2 res) {
-		if(IsMouseKeyPressed(2))
+		if(IsKeyPressed(Key_lctrl) || IsMouseKeyPressed(2))
 			offset += GetMouseMove().y;
 		offset += GetMouseWheelMove() * res.y / 8;
 		LookAt({0, 0});
 		Draw(res);
+
+		LookAt({0, 0});
+		fontTex.Bind();
+		font.SetSize(int2(35, 25));
+
+		font.SetPos(int2(5, 65));
+		Compare(tiles[cmpId[0]], tiles[cmpId[1]]);
 	}
 
 	void Draw(int2 res) {
@@ -71,15 +118,24 @@ public:
 				maxy = 0;
 			}
 			
-			if(IRect(pos, pos + bounds.Size()).IsInside(mousePos))
+			if(IRect(pos, pos + bounds.Size()).IsInside(mousePos)) {
 				tileId = n;
+				if(IsKeyPressed('1'))
+					cmpId[0] = n;
+				if(IsKeyPressed('2'))
+					cmpId[1] = n;
+			}
 
 			if(pos.y + bounds.Height() >= 0) {
 				tile.Draw(pos - bounds.min);
-				if(tileId == (int)n) {
-					DTexture::Bind0();
+				DTexture::Bind0();
+
+				if(tileId == (int)n)
 					DrawRect(IRect(pos, pos + bounds.Size()));
-				}
+				if(cmpId[0] == (int)n)
+					DrawRect(IRect(pos, pos + bounds.Size()), Color(255, 0, 0));
+				if(cmpId[1] == (int)n)
+					DrawRect(IRect(pos, pos + bounds.Size()), Color(0, 255, 0));
 			}
 
 			pos.x += bounds.Width();
@@ -91,31 +147,30 @@ public:
 
 protected:
 	int offset;
-	int tileId;
+	int tileId, cmpId[2];
 };
 
 int safe_main(int argc, char **argv)
 {
-	int2 res(1280, 720);
-	
+	int2 res(1024, 600);
 
-	CreateWindow(res, false);
+	CreateWindow(res, true);
 	SetWindowTitle("FT remake version 0.01");
 
-	DTexture tex;
-	Loader("../data/epic_boobs.png") & tex;
+//	DTexture tex;
+//	Loader("../data/epic_boobs.png") & tex;
 
-	const char *mapName = argc > 1? argv[1] : "../data/test.map";
+	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
 
-	Font font("../data/fonts/font1.fnt");
-	DTexture fontTex; Loader("../data/fonts/font1_00.png") & fontTex;
+	font = Font("../data/fonts/font1.fnt");
+	Loader("../data/fonts/font1_00.png") & fontTex;
 	SetBlendingMode(bmNormal);
 
 	Sprite spr; {
 	//	Loader loader("../refs/sprites/robots/Behemoth.spr");
 		Loader loader("../refs/sprites/characters/LeatherFemale.spr");
 	//	Loader loader("../refs/sprites/robots/RobotTurrets/PopupTurret.spr");
-		spr.LoadFromSpr(loader);
+	//	spr.LoadFromSpr(loader);
 	}
 
 	int seqId = 0, dirId = 0, frameId = 0;
@@ -124,6 +179,7 @@ int safe_main(int argc, char **argv)
 	vector<string> fileNames = FindFiles("../refs/tiles/", ".til", 1);
 	tiles.resize(fileNames.size());
 
+	printf("Loading... ");
 	for(uint n = 0; n < fileNames.size(); n++) {
 		if(n * 100 / tiles.size() > (n - 1) * 100 / tiles.size()) {
 			printf(".");
@@ -139,6 +195,7 @@ int safe_main(int argc, char **argv)
 		tiles[n].name = fileNames[n];
 		tiles[n].LoadDTexture();
 	}
+	printf("\n");
 
 	double lastFrameTime = GetTime();
 	bool showGrid = false;
@@ -156,6 +213,7 @@ int safe_main(int argc, char **argv)
 
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
+	bool selectMode = false;
 
 	//TODO: algorytm sprawzajacy ktore tile do siebie pasuja (porownujacy pixele)
 
@@ -165,9 +223,6 @@ int safe_main(int argc, char **argv)
 
 		Clear({128, 64, 0});
 		
-		if(IsMouseKeyPressed(2))
-			view -= GetMouseMove();
-		
 	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
@@ -175,9 +230,9 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_down)) dirId--;
 		if(IsKeyDown(Key_kp_add)) worldPos.y++;
 		if(IsKeyDown(Key_kp_subtract)) worldPos.y--;
-	
-		/*
-		if(IsKeyDown(Key_f5)) {
+		if(IsKeyDown(Key_space)) selectMode ^= 1;
+		
+/*		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
 			if(fileName.size())
 				Saver(fileName) & tileMap;
@@ -202,13 +257,12 @@ int safe_main(int argc, char **argv)
 					printf("Exception caught: %s\n", ex.What());
 				}
 			}
-		}
-		*/
+		} */
 
-		if(IsKeyPressed('T')) g_FloatParam[0] += 0.00001f;
-		if(IsKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
-		if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
-		if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
+	//	if(IsKeyPressed('T')) g_FloatParam[0] += 0.00001f;
+	//	if(IsKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
+	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
+	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
 		if(IsKeyDown(Key_f2)) {
 			if(showGrid) {
@@ -224,9 +278,6 @@ int safe_main(int argc, char **argv)
 			else
 				showGrid = true;
 		}
-
-		if(IsMouseKeyDown(0))
-			clickPos = worldPos;
 
 		{
 			int2 wp(ScreenToWorld(GetMousePos() + view.min - (int2)WorldToScreen(int3(0, worldPos.y, 0))));
@@ -251,12 +302,18 @@ int safe_main(int argc, char **argv)
 			frameId++;
 		}
 
-		seqId %= spr.sequences.size();
+		if(!spr.sequences.empty())
+			seqId %= spr.sequences.size();
 		
-		if(IsKeyPressed(Key_space)) {
+		if(selectMode) {
 			selector.Loop(res);
 		}
 		else {
+			if((IsKeyPressed(Key_lctrl) && !IsMouseKeyPressed(0)) || IsMouseKeyPressed(2))
+				view -= GetMouseMove();
+			if(IsMouseKeyDown(0))
+				clickPos = worldPos;
+
 			LookAt(view.min);
 
 			if(showGrid) {
