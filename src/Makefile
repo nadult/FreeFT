@@ -21,7 +21,7 @@ SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
 #GTK_LIBS=`pkg-config --libs`
 LIBS=-L/usr/lib -L/usr/local/lib64 -lglfw -lbaselib -lpng -lz
 
-LINUX_LIBS=$(LIBS) -lXrandr -lGL -lGLU
+LINUX_LIBS=$(LIBS) -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
 #WX_INCLUDES=`/usr/local/bin/wx-config --cflags`
 #GTK_INCLUDES=`pkg-config gtkmm-2.4 --cflags`

@@ -52,4 +52,8 @@ namespace gfx
 		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y, col);
 	}
 
+	float Similarity(const Tile &a, const Tile &b, int3 offset) {
+		return 0.0f;	
+	}
+
 }

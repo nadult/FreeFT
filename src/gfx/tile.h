@@ -22,6 +22,8 @@ namespace gfx
 		int3 bbox;
 	};
 
+	float Similarity(const Tile &a, const Tile &b, int3 offsetBToA);
+
 }
 
 

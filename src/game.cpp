@@ -121,7 +121,7 @@ int safe_main(int argc, char **argv)
 	int seqId = 0, dirId = 0, frameId = 0;
 
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/", ".til", 1);
+	vector<string> fileNames = FindFiles("../refs/tiles/", ".til", 1);
 	tiles.resize(fileNames.size());
 
 	for(uint n = 0; n < fileNames.size(); n++) {
@@ -156,6 +156,8 @@ int safe_main(int argc, char **argv)
 
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
+
+	//TODO: algorytm sprawzajacy ktore tile do siebie pasuja (porownujacy pixele)
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -261,8 +263,8 @@ int safe_main(int argc, char **argv)
 				int2 p[4] = {
 					(int2)ScreenToWorld((float2)view.min),
 					(int2)ScreenToWorld((float2)view.max),
-					(int2)ScreenToWorld((float2){view.min.x, view.max.y}),
-					(int2)ScreenToWorld((float2){view.max.x, view.min.y}) };
+					(int2)ScreenToWorld((float2){(float)view.min.x, (float)view.max.y}),
+					(int2)ScreenToWorld((float2){(float)view.max.x, (float)view.min.y}) };
 
 				int2 min = Min(Min(p[0], p[1]), Min(p[2], p[3]));
 				int2 max = Max(Max(p[0], p[1]), Max(p[2], p[3]));

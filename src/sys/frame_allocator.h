@@ -58,7 +58,7 @@ namespace sys {
 	{
 	public:
 		typedef size_t size_type;
-		typedef ptrdiff_t difference_type;
+		typedef size_t difference_type;
 		typedef T* pointer;
 		typedef const T* const_pointer;
 		typedef T& reference;
