@@ -1,3 +1,6 @@
+#ifndef TILE_MAP_H
+#define TILE_MAP_H
+
 #include "base.h"
 #include <map>
 
@@ -115,3 +118,5 @@ protected:
 };
 
 SERIALIZE_AS_POD(TileInstance);
+
+#endif

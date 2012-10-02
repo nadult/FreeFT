@@ -1,4 +1,4 @@
-all: game
+all: editor
 
 BUILD_DIR=/tmp/build
 
@@ -11,10 +11,10 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
 	sys/frame_allocator sys/memory sys/profiler \
-	game base tile_map
+	editor base tile_map tile_group
 #	sys/error_logger script/parser script/script script/sparser
 
-MAIN_FILES=game
+MAIN_FILES=editor
 SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
 
 #WX_LIBS=`/usr/local/bin/wx-config --libs`
@@ -54,11 +54,11 @@ $(OBJECTS): $(BUILD_DIR)/%.o: %.cpp
 $(MGW_OBJECTS): $(BUILD_DIR)/%_.o: %.cpp
 	$(MGW_CXX) $(FLAGS) $(INCLUDES) -c $*.cpp -o $@
 
-game: $(SHARED_OBJECTS) $(BUILD_DIR)/game.o
+editor: $(SHARED_OBJECTS) $(BUILD_DIR)/editor.o
 	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
 
 clean:
-	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend game
+	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor
 	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/script $(BUILD_DIR)/io $(BUILD_DIR)/sys
 	-rmdir $(BUILD_DIR)
 

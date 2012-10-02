@@ -7,6 +7,7 @@
 #include "gfx/sprite.h"
 #include "gfx/tile.h"
 #include "tile_map.h"
+#include "tile_group.h"
 #include "sys/profiler.h"
 
 using namespace gfx;
@@ -177,6 +178,7 @@ int safe_main(int argc, char **argv)
 
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
 	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/", ".til", 1);
+	//vector<string> fileNames = FindFiles("../refs/tiles/VAULT/", ".til", 1);
 	tiles.resize(fileNames.size());
 
 	printf("Loading... ");

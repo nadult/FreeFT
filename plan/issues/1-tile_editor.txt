@@ -7,8 +7,12 @@ Prosty edytor tile-ów:
 3. poza tym przydałby się wygodny edytor, najepiej nie wymagający używania myszy: poruszanie kursorem za pomocą strzałek,
    ekran podzielony na dwa: z lewej lista tile-ów, poza tym jakieś wsparcie w dopasowaniu tile-ów (6h)
 
-+ESTIMATED_TIME: 16h
+Nieprzewidziane rzeczy do zrobienia:
+- manager zasobów do tile-ów (2h)
+  do wektora dodajemy mapę nazwa->idx
+
++ESTIMATED_TIME: 18h
 +TIME_SPENT: 0h
 
 +WORK_LOG:
-02.10.12: 15:30 - 
+02.10.12: 15:30 - 18:50
