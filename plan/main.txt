@@ -4,17 +4,13 @@
 
 
 1. Prosty edytor map
- - łatwe rostawianie tile-ów:
-   - dla każdego tile-a informacja jakie inne tile pasują z jakiej strony
-   - na podstawie tych informacji, można zrobić prosty losowy generator ładnych kawałków map
-   - poza tym przydałby się wygodny edytor, najepiej nie wymagający używania myszy
+ - prosty edytor tile-ów:
+   issues/1-tile_editor.txt
+
  - rozstawianie encji i edycja ich parametrów
 
 2. Prosta gra:
  - poruszanie się postacią
  - strzelanie i niszczenie obiektów
  - interakcja z otoczeniem, kolizje
-
-
-
 

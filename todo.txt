@@ -1,1 +1,6 @@
 - zrobić plan tak jak w newlang
+- Zrobić plan na miesiąc / max dwa roboty
+- Celem jest coś co można zamieścić na nma-fallout:
+  prosty edytor map: tile, encje, podstawowe skryptowanie, coś jak w 2d rpg
+  poruszanie się postacią, strzelanie, niszczenie obiektów, odpalanie skryptów
+

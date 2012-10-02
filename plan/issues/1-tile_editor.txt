@@ -1,0 +1,14 @@
+Prosty edytor tile-ów:
+1. Dla każdego tile-a informacja jakie inne tile pasują z jakiej strony: informacje trzymamy w strukturze
+   TileGroup: lista tile-ów + info o dopasowaniu, serializacja do xml, prosta edycja (6h)
+2. na podstawie tych informacji, można zrobić prosty (płaski) losowy generator ładnych kawałków map: zaznaczamy region
+   i algorytm losuje tile biąrąc pod uwagę info o dopasowaniu. Przydałyby się też wagi przy każdym tile-u, tzn jaka
+   szansa że zostanie wygenerowany  (4h)
+3. poza tym przydałby się wygodny edytor, najepiej nie wymagający używania myszy: poruszanie kursorem za pomocą strzałek,
+   ekran podzielony na dwa: z lewej lista tile-ów, poza tym jakieś wsparcie w dopasowaniu tile-ów (6h)
+
++ESTIMATED_TIME: 16h
++TIME_SPENT: 0h
+
++WORK_LOG:
+02.10.12: 15:30 - 
