@@ -1,0 +1,16 @@
+
+0. Szczegółowy opis co trzeba zrobić w każdym z punktów, zastanowienie się ile czasu co zajmie,
+   plik issue dla każdego podpunktu
+
+
+1. Prosty edytor map
+ - prosty edytor tile-ów:
+   issues/1-tile_editor.txt
+
+ - rozstawianie encji i edycja ich parametrów
+
+2. Prosta gra:
+ - poruszanie się postacią
+ - strzelanie i niszczenie obiektów
+ - interakcja z otoczeniem, kolizje
+
