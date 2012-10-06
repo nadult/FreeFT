@@ -16,3 +16,4 @@ Nieprzewidziane rzeczy do zrobienia:
 
 +WORK_LOG:
 02.10.12: 15:30 - 18:50
+06.10.12: 14:30 - 15:30
