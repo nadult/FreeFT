@@ -104,8 +104,8 @@ void TileMapEditor::draw(const Tile *new_tile) {
 		int2 p[4] = {
 			(int2)ScreenToWorld((float2)m_view.min),
 			(int2)ScreenToWorld((float2)m_view.max),
-			(int2)ScreenToWorld((float2){m_view.min.x, m_view.max.y}),
-			(int2)ScreenToWorld((float2){m_view.max.x, m_view.min.y}) };
+			(int2)ScreenToWorld(float2(m_view.min.x, m_view.max.y)),
+			(int2)ScreenToWorld(float2(m_view.max.x, m_view.min.y)) };
 
 		int2 min = Min(Min(p[0], p[1]), Min(p[2], p[3]));
 		int2 max = Max(Max(p[0], p[1]), Max(p[2], p[3]));

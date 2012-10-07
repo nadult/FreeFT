@@ -10,6 +10,8 @@
 #include "tile_group.h"
 #include "sys/profiler.h"
 #include "tile_map_editor.h"
+#include "tile_selector.h"
+#include "tile_group_editor.h"
 
 using namespace gfx;
 
@@ -36,116 +38,11 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 	DrawBBox(IBox(position, position + spr.bbox));
 }
 
-float Compare(const Tile &a, const Tile &b) {
-	int2 offset = b.offset - a.offset - int2(WorldToScreen(float3(a.bbox.x, 0.0f, 0.0f)));
-	int2 aSize = a.texture.Size(), bSize = b.texture.Size();
-	int2 size(Min(aSize.x, bSize.x), Min(aSize.y, bSize.y));
-
-//	printf("Size: %dx%d\n", aSize.x, aSize.y);
-//	printf("Offset: %dx%d\n", offset.x, offset.y);
-	
-	int2 min(offset.x < 0? -offset.x : 0, offset.y < 0? -offset.y : 0);
-	int2 max(offset.x > 0? size.x - offset.x : size.x, offset.y > 0? size.y - offset.y : size.y);
-	
-	int missed = 0, matched = 0;
-	for(int y = min.y; y < max.y; y++)
-		for(int x = min.x; x < max.x; x++) {
-			Color aPix = a.texture(x, y);
-			Color bPix = b.texture(x + offset.x, y + offset.y);
-				
-			if(!aPix.a || !bPix.a)
-				missed++;
-			else {
-				int rdist = abs((int)aPix.r - (int)bPix.r);
-				int gdist = abs((int)aPix.g - (int)bPix.g);
-				int bdist = abs((int)aPix.b - (int)bPix.b);
-
-				int dist = Max(rdist, Max(gdist, bdist));
-				if(dist < 20)
-					matched++;	
-			}
-		}
-
-	char text[256];
-	snprintf(text, sizeof(text), "size: %dx%d  off: %dx%d  matches: %d/%d", size.x, size.y, offset.x, offset.y,
-				matched, (max.x - min.x) * (max.y - min.y) - missed);
-	font.Draw(text);
-
-	return float(matched) / float((max.x - min.x) * (max.y - min.y));
-}
-
-struct TileSelector {
-public:
-	TileSelector() :offset(0), tileId(0) { cmpId[0] = cmpId[1] = 0; }
-
-	void loop(int2 res) {
-		if(IsKeyPressed(Key_lctrl) || IsMouseKeyPressed(2))
-			offset += GetMouseMove().y;
-		offset += GetMouseWheelMove() * res.y / 8;
-		LookAt({0, 0});
-		draw(res);
-
-		LookAt({0, 0});
-		fontTex.Bind();
-		font.SetSize(int2(35, 25));
-
-		font.SetPos(int2(5, 65));
-		Compare(tiles[cmpId[0]], tiles[cmpId[1]]);
-	}
-
-	void draw(int2 res) {
-		int2 pos(0, offset);
-		int maxy = 0;
-		int2 mousePos = GetMousePos();
-
-		for(uint n = 0; n < tiles.size(); n++) {
-			const Tile &tile = tiles[n];
-			IRect bounds = tile.GetBounds();
-
-			if(bounds.Width() + pos.x > res.x && pos.x != 0) {
-				pos = int2(0, pos.y + maxy);
-				if(pos.y >= res.y)
-					break;
-				maxy = 0;
-			}
-			
-			if(IRect(pos, pos + bounds.Size()).IsInside(mousePos)) {
-				tileId = n;
-				if(IsKeyPressed('1'))
-					cmpId[0] = n;
-				if(IsKeyPressed('2'))
-					cmpId[1] = n;
-			}
-
-			if(pos.y + bounds.Height() >= 0) {
-				tile.Draw(pos - bounds.min);
-				DTexture::Bind0();
-
-				if(tileId == (int)n)
-					DrawRect(IRect(pos, pos + bounds.Size()));
-				if(cmpId[0] == (int)n)
-					DrawRect(IRect(pos, pos + bounds.Size()), Color(255, 0, 0));
-				if(cmpId[1] == (int)n)
-					DrawRect(IRect(pos, pos + bounds.Size()), Color(0, 255, 0));
-			}
-
-			pos.x += bounds.Width();
-			maxy = Max(maxy, bounds.Height());
-		}
-	}
-
-	int GetTileId() { return tileId; }
-
-protected:
-	int offset;
-	int tileId, cmpId[2];
-};
-
 int safe_main(int argc, char **argv)
 {
 	int2 res(1024, 600);
 
-	CreateWindow(res, true);
+	CreateWindow(res, false);
 	SetWindowTitle("FT remake version 0.01");
 
 //	DTexture tex;
@@ -191,14 +88,15 @@ int safe_main(int argc, char **argv)
 
 	double lastFrameTime = GetTime();
 
-	int2 oldScreenPos = GetMousePos();
-
 	TileMap tile_map;
 	tile_map.Resize({16 * 64, 16 * 64});
 
-	TileSelector selector;
+	TileSelector selector(res);
 	TileMapEditor editor(res);
+	TileGroupEditor groupEditor(res);
+
 	editor.setTileMap(&tile_map);
+	selector.setSource(&tiles);
 
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
@@ -251,7 +149,7 @@ int safe_main(int argc, char **argv)
 	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		int tileId = selector.GetTileId();
+		int tileId = selector.tileId();
 
 		if(GetTime() - lastSFrameTime > sframeTime) {
 			if(lastSFrameTime > sframeTime * 2.0)
@@ -265,7 +163,7 @@ int safe_main(int argc, char **argv)
 			seqId %= spr.sequences.size();
 		
 		if(selectMode)
-			selector.loop(res);
+			selector.loop();
 		else
 			editor.loop(tileId >= 0 && tileId < tiles.size()? &tiles[tileId] : 0);
 

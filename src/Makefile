@@ -11,7 +11,7 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
 	sys/frame_allocator sys/memory sys/profiler \
-	editor base tile_map tile_map_editor tile_group
+	editor base tile_map tile_map_editor tile_group tile_selector tile_group_editor
 #	sys/error_logger script/parser script/script script/sparser
 
 MAIN_FILES=editor
@@ -30,7 +30,7 @@ INCLUDES=-I./
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder
 FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
 
-include Makefile.local
+-include Makefile.local
 
 MGW_CXX=i686-mingw32-g++
 
