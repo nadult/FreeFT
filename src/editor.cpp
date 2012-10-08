@@ -12,6 +12,9 @@
 #include "tile_map_editor.h"
 #include "tile_selector.h"
 #include "tile_group_editor.h"
+#include "rapidxml_print.hpp"
+#include <fstream>
+#include <unistd.h>
 
 using namespace gfx;
 
@@ -88,6 +91,15 @@ int safe_main(int argc, char **argv)
 	tile_map.Resize({16 * 64, 16 * 64});
 
 	TileGroup tile_group;
+	if(access("tile_group.xml", R_OK) == 0) {
+		string text;
+		Loader ldr("tile_group.xml");
+		text.resize(ldr.Size());
+		ldr.Data(&text[0], ldr.Size());
+		XMLDocument doc;
+		doc.parse<0>(&text[0]); 
+		tile_group.loadFromXML(doc, tiles);
+	}
 
 	TileSelector selector(res);
 	TileMapEditor editor(res);
@@ -207,6 +219,14 @@ int safe_main(int argc, char **argv)
 		}
 		
 		SwapBuffers();
+	}
+
+	{
+		XMLDocument doc;
+		tile_group.saveToXML(doc);
+
+		std::fstream file("tile_group.xml", std::fstream::out);
+		file << doc;
 	}
 
 	DestroyWindow();

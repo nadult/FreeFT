@@ -37,6 +37,9 @@ public:
 	const Entry& operator[](int idx) const { return m_entries[idx]; }
 	int size() const { return (int)m_entries.size(); }
 
+	void saveToXML(XMLDocument&) const;
+	void loadFromXML(const XMLDocument&, const vector<gfx::Tile>&);
+
 protected:
 	vector<Entry> m_entries;
 	friend class TileGroupEditor;

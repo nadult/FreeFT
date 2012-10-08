@@ -25,7 +25,7 @@ LINUX_LIBS=$(LIBS) -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
 #WX_INCLUDES=`/usr/local/bin/wx-config --cflags`
 #GTK_INCLUDES=`pkg-config gtkmm-2.4 --cflags`
-INCLUDES=-I./
+INCLUDES=-I./ -Irapidxml-1.13/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder
 FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)

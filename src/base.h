@@ -2,6 +2,7 @@
 #define BASE_H
 
 #include <baselib.h>
+#include "rapidxml.hpp"
 
 using namespace baselib;
 
@@ -276,5 +277,10 @@ SERIALIZE_AS_POD(Color)
 
 const vector<string> FindFiles(const char *dirName, const char *ext, bool recursive = false);
 //string OpenFileDialog(bool save);
+
+typedef rapidxml::xml_node<> XMLNode;
+typedef rapidxml::xml_attribute<> XMLAttribute;
+typedef rapidxml::xml_document<> XMLDocument;
+
 
 #endif
