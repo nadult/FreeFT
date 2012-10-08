@@ -127,7 +127,7 @@ void TileGroupEditor::loop() {
 			for(int e = 0; e < m_tile_group->size(); e++)
 				entries.push_back(&(*m_tile_group)[e]);
 
-			sort(entries.begin(), entries.end(), [](const TileGroup::Entry *a, const TileGroup::Entry *b)
+			stable_sort(entries.begin(), entries.end(), [](const TileGroup::Entry *a, const TileGroup::Entry *b)
 					{ return a->m_tiles.size() > b->m_tiles.size(); } );
 
 			for(int e = 0; e < (int)entries.size(); e++) {
@@ -259,22 +259,33 @@ void TileGroupEditor::loop() {
 
 		if(m_selected_match_id >= 0 && m_selected_match_id < entry.m_matches.size()) {
 			TileGroup::Match &match = entry.m_matches[m_selected_match_id];
-			
-			if(IsKeyDown(Key_up))    match.m_offset.z--;
-			if(IsKeyDown(Key_down))  match.m_offset.z++;
-			if(IsKeyDown(Key_left))  match.m_offset.x--;
-			if(IsKeyDown(Key_right)) match.m_offset.x++;
-			if(IsKeyDown(Key_pageup))   match.m_offset.y++;
-			if(IsKeyDown(Key_pagedown)) match.m_offset.y--;
+		
+			struct { int key; int3 offset; } actions[] = {
+				{ Key_kp_1, int3( 0, 0,  1) },
+				{ Key_kp_2, int3( 1, 0,  1) },
+				{ Key_kp_3, int3( 1, 0,  0) },
+				{ Key_kp_4, int3(-1, 0,  1) },
+				{ Key_kp_6, int3( 1, 0, -1) },
+				{ Key_kp_7, int3(-1, 0,  0) },
+				{ Key_kp_8, int3(-1, 0, -1) },
+				{ Key_kp_9, int3( 0, 0, -1) },
+				{ Key_kp_add,		int3(0,  1, 0) },
+				{ Key_kp_subtract,	int3(0, -1, 0) } };
+
+			for(int a = 0; a < COUNTOF(actions); a++)
+				if(IsKeyDown(actions[a].key)) {
+					match.m_offset += actions[a].offset;
+					break;
+				}
 		}
 
 		for(int m = 0; m < (int)entry.m_matches.size(); m++) {
-			int2 offset = -tile->GetBounds().min - (int2)WorldToScreen(int3(3, 3, 3));
+			int2 offset = -tile->GetBounds().min;
 
 			const TileGroup::Entry matched_entry = (*m_tile_group)[entry.m_matches[m].m_entry_id];
 			const gfx::Tile *matched_tile = matched_entry.representative();
 			const TileGroup::Match match = entry.m_matches[m];
-			int2 matched_offset = (int2)WorldToScreen(match.m_offset + int3(3, 3, 3));
+			int2 matched_offset = WorldToScreen(match.m_offset);
 
 			bool draw_first = match.m_offset.z > 0 || (match.m_offset.z >= 0 && match.m_offset.x > 0);
 			IRect tile_rect(pos, pos + tile->GetBounds().Size());

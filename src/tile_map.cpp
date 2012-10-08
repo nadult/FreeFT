@@ -197,7 +197,7 @@ void TileMap::Render(const IRect &view) const {
 			continue;
 
 		int3 nodePos = GetNodePos(n);
-		IRect screenRect = node.GetScreenRect() + int2(WorldToScreen(nodePos));
+		IRect screenRect = node.GetScreenRect() + WorldToScreen(nodePos);
 		// possible error from rounding node & tile positions
 		screenRect.min -= int2(2, 2);
 		screenRect.max += int2(2, 2);
@@ -209,7 +209,7 @@ void TileMap::Render(const IRect &view) const {
 			const TileInstance &instance = node.instances[i];
 			const gfx::Tile *tile = instance.tile;
 			int3 pos = instance.GetPos() + nodePos;
-			int2 screenPos = int2(WorldToScreen(pos));
+			int2 screenPos = WorldToScreen(pos);
 
 			vTiles++;
 			tile->Draw(screenPos);

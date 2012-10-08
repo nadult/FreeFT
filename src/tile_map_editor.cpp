@@ -33,7 +33,7 @@ void TileMapEditor::loop(const Tile *new_tile) {
 	if(IsKeyDown(Key_kp_subtract))
 		m_world_pos.y--;
 
-	if(IsKeyDown(Key_f2)) {
+	if(IsKeyDown('G')) {
 		if(m_show_grid) {
 			if(m_grid_size.x == 3)
 				m_grid_size = int2(6, 6);

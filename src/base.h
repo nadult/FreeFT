@@ -226,9 +226,12 @@ template <class T, class T1> inline void operator-=(T &a, T1 b) { a = a - b; }
 template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
 float2 WorldToScreen(float3 pos);
-float2 ScreenToWorld(float2 pos);
+int2 WorldToScreen(int3 pos);
 
-inline float2 WorldToScreen(float2 pos) { return WorldToScreen({pos.x, 0.0f, pos.y}); }
+float2 ScreenToWorld(float2 pos);
+int2 ScreenToWorld(int2 pos);
+
+inline float2 WorldToScreen(float2 pos) { return WorldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
 
 struct Color
