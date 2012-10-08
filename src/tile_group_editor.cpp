@@ -1,5 +1,7 @@
 #include "tile_group_editor.h"
 #include "gfx/device.h"
+#include "tile_group.h"
+#include <algorithm>
 
 using namespace gfx;
 
@@ -42,66 +44,208 @@ float Compare(const Tile &a, const Tile &b) {
 	return float(matched) / float((max.x - min.x) * (max.y - min.y));
 }*/
 
-TileGroupEditor::TileGroupEditor(int2 res) :m_view(0, 0, res.x, res.y), m_offset(0), m_tile_id(0) {
-	cmpId[0] = cmpId[1] = 0;
+TileGroupEditor::TileGroupEditor(int2 res) :m_view(0, 0, res.x, res.y) {
 	m_tiles = nullptr;
 	m_tile_group = nullptr;
+	m_selected_tile = nullptr;
+
+	m_font = Font::mgr["font1"];
+	m_font_texture = Font::tex_mgr["font1"];
+	m_mode = mAddRemove;
+	m_offset[0] = m_offset[1] = 0;
 }
 
 void TileGroupEditor::loop() {
-	if(IsKeyPressed(Key_lctrl) || IsMouseKeyPressed(2))
-		m_offset += GetMouseMove().y;
-	m_offset += GetMouseWheelMove() * m_view.Height() / 8;
-	LookAt({0, 0});
-	draw();
+	Assert(m_tiles && m_tile_group);
 
-	LookAt({0, 0});
+	if(IsKeyDown(Key_space)) {
+		m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);
+		m_selected_tile = nullptr;
+	}
+
+	IRect top_rect = m_view, bottom_rect = m_view;
+	if(m_mode == mModify)
+		bottom_rect.min.y = top_rect.max.y = top_rect.min.y + (top_rect.Height()) * 3 / 5;
+	else
+		bottom_rect.min.y = top_rect.max.y;
+
+	int2 mouse_pos = GetMousePos();
+	bool mouse_is_up = top_rect.IsInside(mouse_pos);
+
+	if(mouse_is_up) {
+		if(IsKeyPressed(Key_lctrl) || IsMouseKeyPressed(2))
+			m_offset[m_mode] += GetMouseMove().y;
+		m_offset[m_mode] += GetMouseWheelMove() * m_view.Height() / 8;
+		if(m_offset[m_mode] > 100)
+			m_offset[m_mode] = 100;
+	}
+
+
+	struct TileInstance {
+		IRect rect;
+		const gfx::Tile *tile;
+		int index;
+	};
+
+	// Only visible tiles
+	vector<TileInstance> instances; {
+		instances.reserve(m_tiles->size());
+		int2 pos(0, m_offset[m_mode]);
+		int maxy = 0;
+
+		if(m_mode == mAddRemove) {
+			for(int n = 0; n < (int)m_tiles->size(); n++) {
+				const gfx::Tile *tile = &(*m_tiles)[n];
+				IRect bounds = tile->GetBounds();
+
+				if(bounds.Width() + pos.x > m_view.Width() && pos.x != 0) {
+					pos = int2(0, pos.y + maxy);
+					if(pos.y >= top_rect.Height())
+						break;
+					maxy = 0;
+				}
+			
+				if(pos.y + bounds.max.y >= top_rect.min.y)
+					instances.push_back({IRect(pos, pos + bounds.Size()), tile, n});
+	
+				pos.x += bounds.Width() + 2;
+				maxy = Max(maxy, bounds.Height() + 2);
+			}
+		}
+		else if(m_mode == mModify) {
+			vector<const TileGroup::Entry*> entries;
+			entries.reserve(m_tile_group->size());
+
+			for(int e = 0; e < m_tile_group->size(); e++)
+				entries.push_back(&(*m_tile_group)[e]);
+
+			sort(entries.begin(), entries.end(), [](const TileGroup::Entry *a, const TileGroup::Entry *b)
+					{ return a->m_tiles.size() > b->m_tiles.size(); } );
+
+			for(int e = 0; e < (int)entries.size(); e++) {
+				const TileGroup::Entry &entry = *entries[e];
+				for(int t = 0; t < (int)entry.m_tiles.size(); t++) {
+					const gfx::Tile *tile = entry.m_tiles[t];
+					IRect bounds = tile->GetBounds();
+
+					if( (bounds.Width() + pos.x > m_view.Width() && pos.x != 0) || (!instances.empty() &&
+							e != instances.back().index && entries[e - 1]->m_tiles.size() > 1) ) {
+						pos = int2(0, pos.y + maxy);
+						if(pos.y >= top_rect.Height())
+							break;
+						maxy = 0;
+					}
+				
+					if(pos.y + bounds.max.y >= top_rect.min.y)
+						instances.push_back({IRect(pos, pos + bounds.Size()), tile, e});
+
+					pos.x += bounds.Width() + 2;
+					maxy = Max(maxy, bounds.Height() + 2);
+				}
+			}
+		}
+	}
+		
+	for(int n = 0; n < (int)m_tiles->size(); n++)
+		(*m_tiles)[n].m_temp = 0;
+
+	int mouse_over_id = -1;
+	for(int n = 0; n < (int)instances.size(); n++)
+		if(instances[n].rect.IsInside(mouse_pos)) {
+			mouse_over_id = n;
+			break;
+		}
+
+	if(m_mode == mAddRemove) {
+		if(IsMouseKeyDown(0) && mouse_is_up && mouse_over_id != -1) {
+			int entry_id = m_tile_group->findEntry(instances[mouse_over_id].tile);
+			if(entry_id == -1)
+				m_tile_group->addTile(instances[mouse_over_id].tile);
+			else
+				m_tile_group->removeTile(instances[mouse_over_id].tile);
+		}
+	
+		for(int e = 0; e < m_tile_group->size(); e++) {
+			const TileGroup::Entry &entry = (*m_tile_group)[e];
+			for(int t = 0; t < (int)entry.m_tiles.size(); t++)
+				entry.m_tiles[t]->m_temp = 1;
+		}
+	}
+	else {
+		if(IsMouseKeyDown(0) && mouse_is_up)
+			m_selected_tile = mouse_over_id == -1? nullptr : instances[mouse_over_id].tile;
+		int selected_entry_id = m_selected_tile? m_tile_group->findEntry(m_selected_tile) : -1;
+
+		if(IsKeyDown('G') && mouse_is_up && mouse_over_id != -1 && selected_entry_id != -1) {
+			const gfx::Tile *mouse_over_tile = instances[mouse_over_id].tile;
+			int entry_id = m_tile_group->findEntry(mouse_over_tile);
+
+			if(entry_id == selected_entry_id && mouse_over_tile != m_selected_tile) {
+				m_tile_group->removeTile(mouse_over_tile);
+				m_tile_group->addTile(mouse_over_tile);
+			}
+			else
+				m_tile_group->mergeEntries(entry_id, selected_entry_id);
+		}
+
+		if(selected_entry_id != -1)	{
+			const TileGroup::Entry &entry = (*m_tile_group)[selected_entry_id];
+			for(int t = 0; t < (int)entry.m_tiles.size(); t++)
+				entry.m_tiles[t]->m_temp = 1;
+		}
+
+		//TODO: brać pod uwagę że podczas normalnego rysowania tile będzie przesunięty o boundsy
+	}
+
 	//fontTex.Bind();
 	//font.SetSize(int2(35, 25));
 
 	//font.SetPos(int2(5, 65));
 	//Compare(tiles[cmpId[0]], tiles[cmpId[1]]);
-}
-
-void TileGroupEditor::draw() {
-	int2 pos(0, m_offset);
-	int maxy = 0;
-	int2 mousePos = GetMousePos();
+	
 	LookAt(m_view.min);
 
-	for(int n = 0, count = tileCount(); n < count; n++) {
-		const Tile *tile = getTile(n);
-		IRect bounds = tile->GetBounds();
+	DTexture::Bind0();
+	SetScissorTest(true);
+	SetScissorRect(bottom_rect);
+	Clear(Color(128, 48, 0));
+	
+	SetScissorRect(top_rect);
 
-		if(bounds.Width() + pos.x > m_view.Width() && pos.x != 0) {
-			pos = int2(0, pos.y + maxy);
-			if(pos.y >= m_view.Height())
-				break;
-			maxy = 0;
-		}
-		
-		if(IRect(pos, pos + bounds.Size()).IsInside(mousePos)) {
-			m_tile_id = n;
-			if(IsKeyPressed('1'))
-				cmpId[0] = n;
-			if(IsKeyPressed('2'))
-				cmpId[1] = n;
-		}
-
-		if(pos.y + bounds.Height() >= 0) {
-			tile->Draw(pos - bounds.min);
-			DTexture::Bind0();
-
-			if(m_tile_id == (int)n)
-				DrawRect(IRect(pos, pos + bounds.Size()));
-			if(cmpId[0] == (int)n)
-				DrawRect(IRect(pos, pos + bounds.Size()), Color(255, 0, 0));
-			if(cmpId[1] == (int)n)
-				DrawRect(IRect(pos, pos + bounds.Size()), Color(0, 255, 0));
-		}
-
-		pos.x += bounds.Width() + 2;
-		maxy = Max(maxy, bounds.Height() + 2);
+	for(int n = 0; n < (int)instances.size(); n++) {
+		const TileInstance &inst = instances[n];
+		inst.tile->Draw(inst.rect.min - inst.tile->GetBounds().min);
 	}
+
+	DTexture::Bind0();
+	for(int n = 0; n < (int)instances.size(); n++) {
+		const TileInstance &inst = instances[n];
+
+		if(inst.tile->m_temp)
+			DrawRect(inst.rect, Color(255, 0, 0));
+		if(m_mode == mAddRemove? mouse_over_id == n : m_selected_tile == inst.tile)
+			DrawRect(IRect(inst.rect.min - int2(1, 1), inst.rect.max + int2(1, 1)), Color(255, 255, 255));
+	}
+
+	SetScissorTest(false);
 }
 
+void TileGroupEditor::setSource(const vector<gfx::Tile> *tiles) {
+	m_tiles = tiles;
+}
+
+void TileGroupEditor::setTarget(TileGroup* tile_group) {
+	m_tile_group = tile_group;
+}
+
+int TileGroupEditor::tileCount() const {
+	return m_tiles? (int)m_tiles->size() : 0;
+}
+
+const gfx::Tile *TileGroupEditor::getTile(int idx) const {
+	return m_tiles? &(*m_tiles)[idx] : nullptr;
+}
+
+const char *TileGroupEditor::title() const {
+	return m_mode == mAddRemove? "TileGroupEditor::adding/removing" : "TileGroupEditor::modifying";
+}

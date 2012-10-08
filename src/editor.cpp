@@ -18,8 +18,6 @@ using namespace gfx;
 namespace
 {
 	vector<Tile> tiles;
-	Font font;
-	DTexture fontTex;
 }
 
 void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 position) {
@@ -50,8 +48,6 @@ int safe_main(int argc, char **argv)
 
 	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
 
-	font = Font("../data/fonts/font1.fnt");
-	Loader("../data/fonts/font1_00.png") & fontTex;
 	SetBlendingMode(bmNormal);
 
 	Sprite spr; {
@@ -64,7 +60,7 @@ int safe_main(int argc, char **argv)
 	int seqId = 0, dirId = 0, frameId = 0;
 
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/", ".til", 1);
+	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
 	//vector<string> fileNames = FindFiles("../refs/tiles/VAULT/", ".til", 1);
 	tiles.resize(fileNames.size());
 
@@ -91,18 +87,34 @@ int safe_main(int argc, char **argv)
 	TileMap tile_map;
 	tile_map.Resize({16 * 64, 16 * 64});
 
+	TileGroup tile_group;
+
 	TileSelector selector(res);
 	TileMapEditor editor(res);
-	TileGroupEditor groupEditor(res);
+	TileGroupEditor group_editor(res);
 
 	editor.setTileMap(&tile_map);
+	group_editor.setSource(&tiles);
+	group_editor.setTarget(&tile_group);
 	selector.setSource(&tiles);
 
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
-	bool selectMode = false;
 
-	//TODO: algorytm sprawzajacy ktore tile do siebie pasuja (porownujacy pixele)
+	enum {
+		mTileMapEditor,
+		mTileSelector,
+		mTileGroupEditor,
+	} mode = mTileMapEditor;
+
+	const char *mode_name[] = {
+		"TileMap editor",
+		"Tile selector",
+		"TileGroup editor",
+	};
+
+	PFont font = Font::mgr["font1"];
+	PTexture fontTex = Font::tex_mgr["font1"];
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -110,12 +122,17 @@ int safe_main(int argc, char **argv)
 
 		Clear({128, 64, 0});
 		
-	
 		if(IsKeyDown(Key_right)) seqId++;
 		if(IsKeyDown(Key_left)) seqId--;
 		if(IsKeyDown(Key_up)) dirId++;
 		if(IsKeyDown(Key_down)) dirId--;
-		if(IsKeyDown(Key_space)) selectMode ^= 1;
+
+		if(IsKeyDown(Key_f1) || (mode == mTileSelector && IsKeyDown(Key_space)))
+			mode = mTileMapEditor;
+		else if(IsKeyDown(Key_f2) || (mode == mTileMapEditor && IsKeyDown(Key_space)))
+			mode = mTileSelector;
+		else if(IsKeyDown(Key_f3))
+			mode = mTileGroupEditor;
 		
 /*		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
@@ -149,7 +166,7 @@ int safe_main(int argc, char **argv)
 	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		int tileId = selector.tileId();
+		int tile_id = selector.tileId();
 
 		if(GetTime() - lastSFrameTime > sframeTime) {
 			if(lastSFrameTime > sframeTime * 2.0)
@@ -161,17 +178,18 @@ int safe_main(int argc, char **argv)
 
 		if(!spr.sequences.empty())
 			seqId %= spr.sequences.size();
-		
-		if(selectMode)
+	
+		if(mode == mTileMapEditor)
+			editor.loop(tile_id >= 0 && tile_id < tiles.size()? &tiles[tile_id] : 0);
+		else if(mode == mTileSelector)
 			selector.loop();
-		else
-			editor.loop(tileId >= 0 && tileId < tiles.size()? &tiles[tileId] : 0);
+		else if( mode == mTileGroupEditor)
+			group_editor.loop();
 
 		{
 			LookAt({0, 0});
 			char text[256];
-			fontTex.Bind();
-			font.SetSize(int2(35, 25));
+			fontTex->Bind();
 
 			double time = GetTime();
 			double frameTime = time - lastFrameTime;
@@ -180,10 +198,12 @@ int safe_main(int argc, char **argv)
 			string profData = Profiler::GetStats();
 			Profiler::NextFrame();
 
-			font.SetPos(int2(5, 5));
-			sprintf(text, "Frame time: %.2f ms; %.6f %.6f;  WPos: %d %d %d\nTile: %s", frameTime * 1000.0f,
-					g_FloatParam[0], g_FloatParam[1], 0, 0, 0, /*worldPos.x, worldPos.y, worldPos.z,*/ tiles[tileId].name.c_str());
-			font.Draw(text);
+			font->SetSize(int2(25, 18));
+			font->SetPos(int2(5, 5));
+
+			sprintf(text, "%s", mode == mTileGroupEditor? group_editor.title() : mode_name[mode]);
+
+			font->Draw(text);
 		}
 		
 		SwapBuffers();

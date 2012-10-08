@@ -20,6 +20,8 @@ namespace gfx
 
 		int2 offset;
 		int3 bbox;
+
+		mutable uint m_temp;
 	};
 
 	float Similarity(const Tile &a, const Tile &b, int3 offsetBToA);

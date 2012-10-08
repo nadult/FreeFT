@@ -4,9 +4,11 @@
 namespace gfx
 {
 
-	static float defaultMtx[16];
+	static float s_default_matrix[16];
+	static int2 s_viewport_size;
 
 	void InitViewport(int2 size) {
+		s_viewport_size = size;
 		glViewport(0, 0, size.x, size.y);
 		glLoadIdentity();
 
@@ -21,11 +23,11 @@ namespace gfx
 		glTranslatef(0.0f, size.y, 0.0f);
 		glScalef(1.0f, -1.0f, 1.0f);
 
-		glGetFloatv(GL_MODELVIEW_MATRIX, defaultMtx);
+		glGetFloatv(GL_MODELVIEW_MATRIX, s_default_matrix);
 	}
 
 	void LookAt(int2 pos) {
-		glLoadMatrixf(defaultMtx);
+		glLoadMatrixf(s_default_matrix);
 		glTranslatef(-pos.x, -pos.y, 0.0f);
 	}
 
@@ -126,4 +128,16 @@ namespace gfx
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
+	void SetScissorRect(const IRect &rect) {
+		glScissor(rect.min.x, s_viewport_size.y - rect.max.y, rect.Width(), rect.Height());
+	}
+
+	void SetScissorTest(bool is_enabled) {
+		if(is_enabled)
+			glEnable(GL_SCISSOR_TEST);
+		else
+			glDisable(GL_SCISSOR_TEST);
+	}
+
 }
+

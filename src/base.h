@@ -153,7 +153,7 @@ struct Rect
 	Rect operator+(const Rect &rhs) { return Rect(Min(min, rhs.min), Max(max, rhs.max)); }
 
 	bool IsEmpty() const { return max.x <= min.x || max.y <= min.y; }
-	bool IsInside(const int2 &point) {
+	bool IsInside(const int2 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y;
 	}
@@ -182,7 +182,7 @@ struct Box
 	Box operator+(const Box &rhs) { return Box(Min(min, rhs.min), Max(max, rhs.max)); }
 
 	bool IsEmpty() const { return max.x <= min.x || max.y <= min.y || max.z <= min.z; }
-	bool IsInside(const int3 &point) {
+	bool IsInside(const int3 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y &&
 				point.z >= min.z && point.z < max.z;

@@ -3,6 +3,8 @@
 
 #include "base.h"
 #include "gfx/tile.h"
+#include "gfx/font.h"
+#include "gfx/device.h"
 
 class TileGroup;
 
@@ -11,32 +13,29 @@ public:
 	TileGroupEditor(int2 res);
 
 	void loop();
-	void draw();
 
-	int tileId() const { return m_tile_id; }
+	void setSource(const vector<gfx::Tile> *tiles);
+	void setTarget(TileGroup* tile_group);
+	int tileCount() const;
+	const gfx::Tile *getTile(int idx) const;
 
-	void setSource(const vector<gfx::Tile> *tiles) {
-		m_tiles = tiles;
-		m_tile_group = nullptr;
-	}
-	void setSource(const TileGroup* tile_group) {
-		m_tiles = nullptr;
-		m_tile_group = tile_group;
-	}
-	int tileCount() const {
-		return m_tiles? (int)m_tiles->size() : 0;
-	}
-	const gfx::Tile *getTile(int idx) const {
-		return m_tiles? &(*m_tiles)[idx] : nullptr;
-	}
+	const char *title() const;
 
 protected:
 	const vector<gfx::Tile> *m_tiles;
-	const TileGroup *m_tile_group;
+	TileGroup *m_tile_group;
 
+	gfx::PFont m_font;
+	gfx::PTexture m_font_texture;
 	IRect m_view;
-	int m_offset;
-	int m_tile_id, cmpId[2];
+
+	int m_offset[2];
+	const gfx::Tile *m_selected_tile;
+
+	enum {
+		mAddRemove, // add / remove tiles to / from group
+		mModify, // modify tiles relations
+	} m_mode;
 };
 
 

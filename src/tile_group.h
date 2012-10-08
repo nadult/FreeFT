@@ -7,31 +7,30 @@
 class TileGroup {
 public:	
 	struct Match {
-		int m_tile_id;
+		int m_entry_id;
 		int3 m_offset; 
 	};
 
 	struct Entry {
-		const gfx::Tile *m_tile;
-		int m_parent_id;
+		vector<const gfx::Tile*> m_tiles;
 		vector<Match> m_matches;
 	};
 
-	void addEntry(const gfx::Tile* tile);
-	void removeEntry(int idx);
+	void addTile(const gfx::Tile*);
+	void removeTile(const gfx::Tile*);
+
+	int findEntry(const gfx::Tile*) const;
+	void removeEntry(int entry_id);
+	void mergeEntries(int src_entry_id, int target_entry_id);
+
 	void clear();
 
-	void addMatch(int tile_idx, int matched_tile_idx, int3 offset);
-	void removeMatch(int tile_idx, int matched_tile_idx);
-	void clearMatches(int tile_idx);
-
-	// -1 means no parent
-	void setParentTile(int tile_id, int parent_id);
+	void addMatch(int entry_id, int target_id, int3 offset);
+	void removeMatch(int entry_id, int target_id);
+	void clearMatches(int entry_id);
 
 	const Entry& operator[](int idx) const { return m_entries[idx]; }
 	int size() const { return (int)m_entries.size(); }
-	vector<Match>& getMatches(int tile_idx);
-	const vector<Match>& getMatches(int tile_idx) const;
 
 protected:
 	vector<Entry> m_entries;

@@ -46,6 +46,8 @@ namespace gfx
 		int2 size;
 	};
 
+	typedef Ptr<DTexture> PTexture;
+
 	enum KeyId
 	{
 		Key_unknown		=-1,
@@ -155,6 +157,8 @@ namespace gfx
 	};
 
 	void SetBlendingMode(BlendingMode mode);
+	void SetScissorRect(const IRect &rect);
+	void SetScissorTest(bool is_enabled);
 
 }
 

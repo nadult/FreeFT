@@ -1,14 +1,15 @@
 #include "gfx/font.h"
 #include "gfx/device.h"
 #include <iostream>
-#include <fstream>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include <GL/gl.h>
 
 namespace
 {
-	void Scan(std::fstream&f, char *buf, int bufSize)
+	template <class Stream>
+	void Scan(Stream &f, char *buf, int bufSize)
 	{
 		for(int n = 0; n < bufSize; n++) {
 			if(!f.good()) {
@@ -33,22 +34,29 @@ namespace
 
 namespace gfx
 {
-	Font::Font(const char *fontFileName)
-	{
-		std::fstream f(fontFileName, std::fstream::in);
+	void Font::Serialize(Serializer &sr) {
+		//TODO: loading from binary format
+		//TODO: loading kerning data
+		//TODO: unicode support
+
+		string buffer;
+		buffer.resize(sr.Size(), '\0');
+		sr.Data(&buffer[0], sr.Size());
+
+		std::stringstream ss(buffer);
 
 		char  buf[1024];
 		float scaleW = 0.0f, scaleH = 0.0f;
 		int   num;
 
 		while(true) {
-			if(!f.good())
-				ThrowException("Error while parsing font file: ", fontFileName);
+			if(!ss.good())
+				ThrowException("Error while parsing font data");
 
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			if(strncmp(buf, "charset=", 8) == 0) {
 				if(strcmp(buf + 8, "\"ANSI\"") != 0 && strcmp(buf + 8, "\"ASCII\""))
-					ThrowException("Only ansi/ascii charsets are supported. Font: ", fontFileName);
+					ThrowException("Only ansi/ascii charsets are supported.");
 			}
 			else if(strncmp(buf, "scaleW=", 7) == 0)
 				scaleW = atof(buf + 7);
@@ -56,10 +64,10 @@ namespace gfx
 				scaleH = atof(buf + 7);
 			else if(strncmp(buf, "pages=", 6) == 0) {
 				if(atoi(buf + 6) != 1)
-					ThrowException("Multi-page fonts not supported. Font: ", fontFileName);
+					ThrowException("Multi-page fonts not supported.");
 			}
 			else if(strcmp(buf, "chars") == 0)   {
-				Scan(f, buf, 1024);
+				Scan(ss, buf, 1024);
 				if(strncmp(buf, "count=", 6) == 0) {
 					num = atoi(buf + 6);
 					break;
@@ -79,32 +87,32 @@ namespace gfx
 
 		for(int l = 0; l < num; l++) {
 			while(true) {
-				Scan(f, buf, 1024);
-				if(!f.good())
-					ThrowException("Error while parsing font file: ", fontFileName);
+				Scan(ss, buf, 1024);
+				if(!ss.good())
+					ThrowException("Error while parsing font file.");
 
 				if(strcmp(buf, "char") == 0)
 					break;
 			}
 
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int id = atoi(buf + 3);
 			Assert(id >= 0 && id <= 255);
 
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int x = atoi(buf + 2);
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int y = atoi(buf + 2);
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int w = atoi(buf + 6);
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int h = atoi(buf + 7);
 
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int xoff = atoi(buf + 8);
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int yoff = atoi(buf + 8);
-			Scan(f, buf, 1024);
+			Scan(ss, buf, 1024);
 			int xadv = atoi(buf + 9);
 
 			float2 pos  = float2(x / scaleW, y / scaleH);
@@ -118,7 +126,6 @@ namespace gfx
 
 		xadvance[' '] = (advMid / float(num)) / scaleW;
 
-		f.close();
 		pos  = float2(0, 0);
 		size = float2(24, 24);
 	}
@@ -177,4 +184,6 @@ namespace gfx
 		glEnd();
 	}
 
+	ResourceMgr<Font> Font::mgr("../data/fonts/", ".fnt");
+	ResourceMgr<DTexture> Font::tex_mgr("../data/fonts/", "_00.png");
 }
