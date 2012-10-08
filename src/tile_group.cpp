@@ -75,15 +75,14 @@ void TileGroup::addMatch(int entry_id, int matched_entry_id, int3 offset) {
 	m_entries[entry_id].m_matches.push_back(Match{matched_entry_id, offset});
 }
 	
-void TileGroup::removeMatch(int entry_id, int matched_entry_id) {
-	DAssert(entry_id < size() && matched_entry_id < size() && entry_id >= 0 && matched_entry_id >= 0);	
+void TileGroup::removeMatch(int entry_id, int match_id) {
+	DAssert(entry_id < size() && entry_id >= 0);
 
 	vector<Match> &matches = m_entries[entry_id].m_matches;
-	for(int n = 0; n < (int)matches.size(); n++)
-		if(matches[n].m_entry_id == matched_entry_id) {
-			matches[n--] = matches.back();
-			matches.pop_back();
-		}
+	DAssert(match_id >= 0 && match_id < matches.size());
+
+	matches[match_id] = matches.back();
+	matches.pop_back();
 }
 
 void TileGroup::clearMatches(int entry_id) {

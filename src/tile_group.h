@@ -12,6 +12,11 @@ public:
 	};
 
 	struct Entry {
+		const gfx::Tile* representative() const {
+			DAssert(!m_tiles.empty());
+			return m_tiles.front();
+		}
+
 		vector<const gfx::Tile*> m_tiles;
 		vector<Match> m_matches;
 	};
@@ -26,7 +31,7 @@ public:
 	void clear();
 
 	void addMatch(int entry_id, int target_id, int3 offset);
-	void removeMatch(int entry_id, int target_id);
+	void removeMatch(int entry_id, int match_id);
 	void clearMatches(int entry_id);
 
 	const Entry& operator[](int idx) const { return m_entries[idx]; }
@@ -34,6 +39,7 @@ public:
 
 protected:
 	vector<Entry> m_entries;
+	friend class TileGroupEditor;
 };
 
 

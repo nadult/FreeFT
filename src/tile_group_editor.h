@@ -29,8 +29,9 @@ protected:
 	gfx::PTexture m_font_texture;
 	IRect m_view;
 
-	int m_offset[2];
+	int m_offset[3];
 	const gfx::Tile *m_selected_tile;
+	int m_selected_match_id;
 
 	enum {
 		mAddRemove, // add / remove tiles to / from group
