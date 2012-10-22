@@ -1,7 +1,8 @@
 Prosty edytor tile-ów:
 1. Dla każdego tile-a informacja jakie inne tile pasują z jakiej strony: informacje trzymamy w strukturze
    TileGroup: lista tile-ów + info o dopasowaniu, serializacja do xml, prosta edycja (6h) DONE
-
+1a. Specjalizowany TileGroup dla płaskich tile-ów podłogowych (każdy tile ma 8 liczb opisujących rodzaj
+   powierzchni na brzegach i kantach (3h)
 2. na podstawie tych informacji, można zrobić prosty (płaski) losowy generator ładnych kawałków map: zaznaczamy region
    i algorytm losuje tile biąrąc pod uwagę info o dopasowaniu. Przydałyby się też wagi przy każdym tile-u, tzn jaka
    szansa że zostanie wygenerowany  (4h)
@@ -20,3 +21,5 @@ Nieprzewidziane rzeczy do zrobienia:
 06.10.12: 14:30 - 15:30													(1.00h)
 07.10.12: 14:30 - 15:00, 15:30 - 16:30, 17:00 - 18:30, 19:50 - 22:50	(5.00h)
 08.10.12: 11:30 - 14:30, 16:30 - 17:30, 19:30 - 22:00					(6.50h)
+21.10.12: 15:30 - 16:30
+22.10.12: 12:30 - 

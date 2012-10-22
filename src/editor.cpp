@@ -64,6 +64,7 @@ int safe_main(int argc, char **argv)
 
 	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
 	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
+	//vector<string> fileNames = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
 	//vector<string> fileNames = FindFiles("../refs/tiles/VAULT/", ".til", 1);
 	tiles.resize(fileNames.size());
 
@@ -90,7 +91,7 @@ int safe_main(int argc, char **argv)
 	TileMap tile_map;
 	tile_map.Resize({16 * 64, 16 * 64});
 
-	TileGroup tile_group;
+	FloorTileGroup tile_group;
 	if(access("tile_group.xml", R_OK) == 0) {
 		string text;
 		Loader ldr("tile_group.xml");
@@ -103,7 +104,7 @@ int safe_main(int argc, char **argv)
 
 	TileSelector selector(res);
 	TileMapEditor editor(res);
-	TileGroupEditor group_editor(res);
+	FloorTileGroupEditor group_editor(res);
 
 	editor.setTileMap(&tile_map);
 	group_editor.setSource(&tiles);
@@ -122,7 +123,7 @@ int safe_main(int argc, char **argv)
 	const char *mode_name[] = {
 		"TileMap editor",
 		"Tile selector",
-		"TileGroup editor",
+		"FloorTileGroup editor",
 	};
 
 	PFont font = Font::mgr["font1"];
