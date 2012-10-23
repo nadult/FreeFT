@@ -134,7 +134,7 @@ int safe_main(int argc, char **argv)
 	PTexture fontTex = Font::tex_mgr["font1"];
 
 	ui::Window main_window(IRect{0, 0, res.x, res.y}, Color(0, 0, 0, 0)); {
-		int left_width = 300;
+		int left_width = 320;
 
 		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
 		ui::Window *right = new ui::Window(IRect(left_width, 0, res.x, res.y), Color(0, 255, 0));
@@ -143,7 +143,7 @@ int safe_main(int argc, char **argv)
 
 		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
 		left ->addChild((ui::PWindow)selector);
-		right->addChild((ui::PWindow)new ui::Button(IRect(0, 200, left_width, 230), "Test Button #2"));
+		right->addChild((ui::PWindow)new ui::Button(IRect(25, 0, left_width + 25, 30), "Test Button #2"));
 
 		main_window.addChild((ui::PWindow)left);
 		main_window.addChild((ui::PWindow)right);
