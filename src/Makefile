@@ -4,6 +4,7 @@ BUILD_DIR=/tmp/build
 
 _dummy := $(shell [ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR))
 _dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
+_dummy := $(shell [ -d $(BUILD_DIR)/ui ] || mkdir -p $(BUILD_DIR)/ui)
 _dummy := $(shell [ -d $(BUILD_DIR)/io ] || mkdir -p $(BUILD_DIR)/io)
 _dummy := $(shell [ -d $(BUILD_DIR)/script ] || mkdir -p $(BUILD_DIR)/script)
 _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
@@ -11,20 +12,17 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
 	sys/frame_allocator sys/memory sys/profiler \
-	editor base tile_map tile_map_editor tile_group tile_selector tile_group_editor
+	editor base tile_map tile_map_editor tile_group tile_selector tile_group_editor \
+	ui/window ui/button
 #	sys/error_logger script/parser script/script script/sparser
 
 MAIN_FILES=editor
 SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
 
-#WX_LIBS=`/usr/local/bin/wx-config --libs`
-#GTK_LIBS=`pkg-config --libs`
 LIBS=-L/usr/lib -L/usr/local/lib64 -lglfw -lbaselib -lpng -lz
 
 LINUX_LIBS=$(LIBS) -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
-#WX_INCLUDES=`/usr/local/bin/wx-config --cflags`
-#GTK_INCLUDES=`pkg-config gtkmm-2.4 --cflags`
 INCLUDES=-I./ -Irapidxml-1.13/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder
@@ -59,7 +57,7 @@ editor: $(SHARED_OBJECTS) $(BUILD_DIR)/editor.o
 
 clean:
 	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor
-	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/script $(BUILD_DIR)/io $(BUILD_DIR)/sys
+	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/script $(BUILD_DIR)/io $(BUILD_DIR)/sys $(BUILD_DIR)/ui
 	-rmdir $(BUILD_DIR)
 
 $(BUILD_DIR)/.depend: $(DEPS)

@@ -5,6 +5,9 @@ using namespace gfx;
 
 
 TileMapEditor::TileMapEditor(int2 res) :m_show_grid(false), m_grid_size(3, 3), m_tile_map(0) {
+	m_tile_group = nullptr;
+	m_selected_tile = 0;
+
 	m_view = IRect(0, 0, res.x, res.y);
 	m_click_pos = int3(0, 0, 0);
 	m_world_pos = int3(0, 0, 0);
@@ -49,6 +52,22 @@ void TileMapEditor::loop(const Tile *new_tile) {
 	}
 
 	{
+		struct { KeyId key; int3 offset; } actions[] = {
+			{ Key_kp_1, {  0, 0,  1 } }, 
+			{ Key_kp_2, {  1, 0,  1 } },
+			{ Key_kp_3, {  1, 0,  0 } },
+			{ Key_kp_6, {  1, 0, -1 } },
+			{ Key_kp_9, {  0, 0, -1 } },
+			{ Key_kp_8, { -1, 0, -1 } },
+			{ Key_kp_7, { -1, 0,  0 } },
+			{ Key_kp_4, { -1, 0,  1 } } };
+		
+		for(int n = 0; n < COUNTOF(actions); n++)
+			if(IsKeyDown(actions[n].key))
+				m_view += WorldToScreen(actions[n].offset * m_grid_size.x);
+	}
+
+	{
 		int2 wp(ScreenToWorld(GetMousePos() + m_view.min - (int2)WorldToScreen(int3(0, m_world_pos.y, 0))));
 
 		m_world_pos.x = wp.x;
@@ -87,6 +106,9 @@ void TileMapEditor::loop(const Tile *new_tile) {
 						IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
 			}
 		}
+	}
+	if(IsKeyDown('T') && m_tile_group) {
+			
 	}
 
 	if(IsKeyPressed(Key_del))

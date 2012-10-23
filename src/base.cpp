@@ -30,7 +30,7 @@ int2 ScreenToWorld(int2 pos) {
 	return int2(y + x, y - x);
 }
 
-static void FindFiles(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
+static void FindFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);
 	if(!dp)
 		ThrowException("Error while opening directory ", dirName, ": ", strerror(errno));
@@ -50,7 +50,7 @@ static void FindFiles(vector<string> &out, const char *dirName, const char *ext,
 
 			if(S_ISDIR(fileInfo.st_mode) && recursive) {
 				if(strcmp(dirp->d_name, ".") && strcmp(dirp->d_name, ".."))
-					FindFiles(out, fullName, ext, recursive);
+					FindFiles_(out, fullName, ext, recursive);
 			}
 			else {
 				size_t len = strlen(dirp->d_name);
@@ -66,14 +66,11 @@ static void FindFiles(vector<string> &out, const char *dirName, const char *ext,
 	closedir(dp);
 }
 
-const vector<string> FindFiles(const char *tDirName, const char *ext, bool recursive) {
+void FindFiles(vector<string> &out, const char *tDirName, const char *ext, bool recursive) {
 	string dirName = tDirName;
 	if(!dirName.empty() && dirName[dirName.size() - 1] == '/')
 		dirName.resize(dirName.size() - 1);
-
-	vector<string> out;
-	FindFiles(out, dirName.c_str(), ext, recursive);
-	return out;
+	FindFiles_(out, dirName.c_str(), ext, recursive);
 }
 
 /* 

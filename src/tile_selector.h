@@ -3,15 +3,18 @@
 
 #include "base.h"
 #include "gfx/tile.h"
+#include "ui/window.h"
 
 class TileGroup;
 
-class TileSelector {
+class TileSelector: public ui::Window {
 public:
-	TileSelector(int2 res);
+	TileSelector(IRect rect);
 
-	void loop();
-	void draw();
+	virtual void drawContents() const;
+
+	virtual bool onMouseClick(int2 pos, int key);
+	virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
 
 	int tileId() const { return m_tile_id; }
 
@@ -34,7 +37,6 @@ protected:
 	const vector<gfx::Tile> *m_tiles;
 	const TileGroup *m_tile_group;
 
-	IRect m_view;
 	int m_offset;
 	int m_tile_id;
 };

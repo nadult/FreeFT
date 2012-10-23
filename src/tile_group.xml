@@ -254,6 +254,58 @@
 <entry tile="../refs/tiles/Mountains/Mountain FLOORS/Snow/Mountain_Floor_Gravel_Snowtorockconcave_F_16_Nw.til" group_id="2" weight="0.000000"/>
 <entry tile="../refs/tiles/Mountains/Mountain FLOORS/Snow/Mountain_Floor_Gravel_Snowtorockconcave_F_30_Se.til" group_id="5" weight="0.000000"/>
 <entry tile="../refs/tiles/Mountains/Mountain FLOORS/Snow/Mountain_Floor_Gravel_Snowtodirtconcave_F_50_Se.til" group_id="6" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_3_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_2_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_2_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_1_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_1_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_3_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_2_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_5_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_1_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_5_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_5_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_2_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_5_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_8_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_5_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_4_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_1_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_8_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_5_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_5_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_1_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_7_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_2_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_6_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_4_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_2_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_7_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_4_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_3_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_8_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_7_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_6_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_6_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_2_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_3_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_4_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_8_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_4_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_3_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_7_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_1_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_1_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_2_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_3_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_6_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_1_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_4_NW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_3_SW.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_4_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_4_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_3_SE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_5_NE.til" group_id="25" weight="0.000000"/>
 <group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="1"/>
 <group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="1"/>
 <group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="2" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
@@ -279,4 +331,5 @@
 <group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="2" side_surf_7="2"/>
 <group side_surf_0="3" side_surf_1="1" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
 <group side_surf_0="1" side_surf_1="1" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="1"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
 

@@ -3,38 +3,29 @@
 
 using namespace gfx;
 
-TileSelector::TileSelector(int2 res) :m_view(0, 0, res.x, res.y), m_offset(0), m_tile_id(0) {
+TileSelector::TileSelector(IRect rect) :Window(rect, Color(0, 0, 0)), m_offset(0), m_tile_id(0) {
 	m_tiles = nullptr;
 	m_tile_group = nullptr;
 }
 
-void TileSelector::loop() {
-	if(IsKeyPressed(Key_lctrl) || IsMouseKeyPressed(2))
-		m_offset += GetMouseMove().y;
-	m_offset += GetMouseWheelMove() * m_view.Height() / 8;
-
-	draw();
-}
-
-void TileSelector::draw() {
+void TileSelector::drawContents() const {
 	int2 pos(0, m_offset);
 	int maxy = 0;
-	int2 mousePos = GetMousePos();
-	LookAt(m_view.min);
+//	int2 mousePos = GetMousePos();
 
 	for(int n = 0, count = tileCount(); n < count; n++) {
 		const Tile *tile = getTile(n);
 		IRect bounds = tile->GetBounds();
 
-		if(bounds.Width() + pos.x > m_view.Width() && pos.x != 0) {
+		if(bounds.Width() + pos.x > rect().Width() && pos.x != 0) {
 			pos = int2(0, pos.y + maxy);
-			if(pos.y >= m_view.Height())
+			if(pos.y >= rect().Height())
 				break;
 			maxy = 0;
 		}
 		
-		if(IRect(pos, pos + bounds.Size()).IsInside(mousePos))
-			m_tile_id = n;
+//		if(IRect(pos, pos + bounds.Size()).IsInside(mousePos))
+//			m_tile_id = n;
 
 		if(pos.y + bounds.Height() >= 0) {
 			tile->Draw(pos - bounds.min);
@@ -47,5 +38,16 @@ void TileSelector::draw() {
 		pos.x += bounds.Width() + 2;
 		maxy = Max(maxy, bounds.Height() + 2);
 	}
+}
+
+bool TileSelector::onMouseClick(int2 pos, int key) {
+	return false;
+}
+
+bool TileSelector::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
+	if(key == 2 || (IsKeyPressed(Key_lctrl) && key == 0))
+		m_offset += GetMouseMove().y;
+	m_offset += GetMouseWheelMove() * rect().Height() / 8;
+	return true;
 }
 

@@ -23,7 +23,7 @@ namespace gfx
 		}
 
 		Color defaultCol(0, 0, 0);
-		if(zar_type == 0x34) {
+		if(zar_type == 0x34 || zar_type == 0x33) {  // TODO: 0x33 has no palette in some cases???
 			u32 def; sr & def;
 			if(def < palette.size())
 				defaultCol = palette[def];

@@ -1,4 +1,5 @@
 #include "gfx/tile.h"
+#include <cstring>
 
 
 namespace gfx
@@ -22,8 +23,12 @@ namespace gfx
 		i32 posX, posY; sr(posX, posY);
 		offset = int2(posX, posY);
 
-		char unknown[13];
-		sr.Data(unknown, type == '9'? 11 : type == 0x3031? 12 : 13);
+		i32 width, height;
+		sr(width, height);
+
+		char unknown[5];
+		int unk_size = type == '9'? 3 : type == 0x3031? 4 : 5;
+		sr.Data(unknown, unk_size);
 
 		sr.Signature("<tiledata>\0001", 12);
 		u8 dummy2;

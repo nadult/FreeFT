@@ -1,0 +1,14 @@
+Prosty UI:
+- okna: rysowanie, przycinanie, kontrola inputów, akcje myszy nie wychodzą poza okno (jak się coś przeciąga, etc.) 3h
+- buttony 2h
+- taby 2h
+- lista tile-ów (przewijana?) 3h
+
+
+
++ESTIMATED_TIME: 10h
++TIME_SPENT: 0h
+
+
++WORK_LOG:
+23.10.12: 15:30 - 20:00

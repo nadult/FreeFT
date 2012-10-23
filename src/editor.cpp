@@ -15,6 +15,8 @@
 #include "rapidxml_print.hpp"
 #include <fstream>
 #include <unistd.h>
+#include "ui/window.h"
+#include "ui/button.h"
 
 using namespace gfx;
 
@@ -41,7 +43,7 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 
 int safe_main(int argc, char **argv)
 {
-	int2 res(1024, 600);
+	int2 res(960, 1000);
 
 	CreateWindow(res, false);
 	SetWindowTitle("FT remake version 0.01");
@@ -62,37 +64,40 @@ int safe_main(int argc, char **argv)
 
 	int seqId = 0, dirId = 0, frameId = 0;
 
-	//vector<string> fileNames = FindFiles("../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	vector<string> fileNames = FindFiles("../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
-	//vector<string> fileNames = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
-	//vector<string> fileNames = FindFiles("../refs/tiles/VAULT/", ".til", 1);
-	tiles.resize(fileNames.size());
+	vector<string> file_names;
+	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
+	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
+	FindFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
+//	FindFiles(file_names, "../refs/tiles/", ".til", 1);
+	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
+	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
+	tiles.resize(file_names.size());
 
 	printf("Loading... ");
-	for(uint n = 0; n < fileNames.size(); n++) {
+	for(uint n = 0; n < file_names.size(); n++) {
 		if(n * 100 / tiles.size() > (n - 1) * 100 / tiles.size()) {
 			printf(".");
 			fflush(stdout);
 		}
 
 		try {
-			Loader(fileNames[n]) & tiles[n];
+			Loader(file_names[n]) & tiles[n];
 		}
 		catch(...) {
 			tiles[n] = Tile();
 		}
-		tiles[n].name = fileNames[n];
+		tiles[n].name = file_names[n];
 		tiles[n].LoadDTexture();
 	}
 	printf("\n");
 
-	double lastFrameTime = GetTime();
+	//double lastFrameTime = GetTime();
 
 	TileMap tile_map;
 	tile_map.Resize({16 * 64, 16 * 64});
 
 	FloorTileGroup tile_group;
-	if(access("tile_group.xml", R_OK) == 0) {
+/*	if(access("tile_group.xml", R_OK) == 0) {
 		string text;
 		Loader ldr("tile_group.xml");
 		text.resize(ldr.Size());
@@ -100,16 +105,15 @@ int safe_main(int argc, char **argv)
 		XMLDocument doc;
 		doc.parse<0>(&text[0]); 
 		tile_group.loadFromXML(doc, tiles);
-	}
+	}*/
 
-	TileSelector selector(res);
 	TileMapEditor editor(res);
 	FloorTileGroupEditor group_editor(res);
 
 	editor.setTileMap(&tile_map);
 	group_editor.setSource(&tiles);
 	group_editor.setTarget(&tile_group);
-	selector.setSource(&tiles);
+	editor.setTileGroup(&tile_group);
 
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
@@ -128,6 +132,22 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["font1"];
 	PTexture fontTex = Font::tex_mgr["font1"];
+
+	ui::Window main_window(IRect{0, 0, res.x, res.y}, Color(0, 0, 0, 0)); {
+		int left_width = 300;
+
+		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
+		ui::Window *right = new ui::Window(IRect(left_width, 0, res.x, res.y), Color(0, 255, 0));
+		TileSelector *selector = new TileSelector(IRect(0, 30, left_width, res.y));
+		selector->setSource(&tiles);
+
+		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
+		left ->addChild((ui::PWindow)selector);
+		right->addChild((ui::PWindow)new ui::Button(IRect(0, 200, left_width, 230), "Test Button #2"));
+
+		main_window.addChild((ui::PWindow)left);
+		main_window.addChild((ui::PWindow)right);
+	}
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))
@@ -179,13 +199,14 @@ int safe_main(int argc, char **argv)
 	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		int tile_id = selector.tileId();
+		int tile_id = 0;//selector.tileId();
 
 		if(GetTime() - lastSFrameTime > sframeTime) {
 			if(lastSFrameTime > sframeTime * 2.0)
 				lastSFrameTime = GetTime();
 			else
 				lastSFrameTime += sframeTime;
+
 			frameId++;
 		}
 
@@ -193,42 +214,45 @@ int safe_main(int argc, char **argv)
 			seqId %= spr.sequences.size();
 	
 		if(mode == mTileMapEditor)
-			editor.loop(tile_id >= 0 && tile_id < tiles.size()? &tiles[tile_id] : 0);
-		else if(mode == mTileSelector)
-			selector.loop();
+			editor.loop(tile_id >= 0 && tile_id < (int)tiles.size()? &tiles[tile_id] : 0);
+	//	else if(mode == mTileSelector)
+	//		selector.loop();
 		else if( mode == mTileGroupEditor)
 			group_editor.loop();
+
+		main_window.handleInput();
+		main_window.draw();
 
 		{
 			LookAt({0, 0});
 			char text[256];
 			fontTex->Bind();
 
-			double time = GetTime();
-			double frameTime = time - lastFrameTime;
-			lastFrameTime = time;
-
+			//double time = GetTime();
+			//double frameTime = time - lastFrameTime;
+			//lastFrameTime = time;
+			
 			string profData = Profiler::GetStats();
 			Profiler::NextFrame();
 
-			font->SetSize(int2(25, 18));
-			font->SetPos(int2(5, 5));
+		//	font->SetSize(int2(25, 18));
+		//	font->SetPos(int2(5, 5));
 
-			sprintf(text, "%s", mode == mTileGroupEditor? group_editor.title() : mode_name[mode]);
+		//	sprintf(text, "%s", mode == mTileGroupEditor? group_editor.title() : mode_name[mode]);
 
-			font->Draw(text);
+		//	font->Draw(text);
 		}
 		
 		SwapBuffers();
 	}
 
-	{
+/*	{
 		XMLDocument doc;
 		tile_group.saveToXML(doc);
 
 		std::fstream file("tile_group.xml", std::fstream::out);
 		file << doc;
-	}
+	} */
 
 	DestroyWindow();
 
