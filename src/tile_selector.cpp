@@ -4,25 +4,13 @@
 using namespace gfx;
 
 TileSelector::TileSelector(IRect rect) :Window(rect, Color(0, 0, 0)), m_offset(0, 0), m_tile_list(rect.Width(), 2) {
-	m_tiles = nullptr;
-	m_tile_group = nullptr;
 	m_selection = nullptr;
 }
 
-void TileSelector::setSource(const vector<gfx::Tile> *tiles) {
-	m_tiles = tiles;
-	m_tile_group = nullptr;
+void TileSelector::updateTiles() {
 	m_tile_list.m_entries.clear();
-
-	for(int n = 0; n < (int)m_tiles->size(); n++)
-		m_tile_list.add(&(*m_tiles)[n]);
+	Tile::mgr.IterateOver( [&m_tile_list](const string &name, const Ptr<Tile> &tile) { m_tile_list.add(&*tile); } );
 	m_tile_list.update();
-	m_selection = nullptr;
-}
-void TileSelector::setSource(const TileGroup* tile_group) {
-	m_tiles = nullptr;
-	m_tile_group = tile_group;
-	m_tile_list.m_entries.clear();
 	m_selection = nullptr;
 }
 

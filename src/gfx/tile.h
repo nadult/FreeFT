@@ -7,7 +7,7 @@
 namespace gfx
 {
 
-	struct Tile {
+	struct Tile: public Resource {
 		void Serialize(Serializer &sr);
 		void LoadDTexture();
 		void Draw(int2 pos, Color color = Color(255, 255, 255)) const;
@@ -20,6 +20,8 @@ namespace gfx
 
 		int2 offset;
 		int3 bbox;
+
+		static ResourceMgr<Tile> mgr;
 
 		mutable uint m_temp;
 	};

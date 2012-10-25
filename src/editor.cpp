@@ -20,10 +20,6 @@
 
 using namespace gfx;
 
-namespace
-{
-	vector<Tile> tiles;
-}
 
 void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 position) {
 	Sprite::Rect rect;
@@ -71,23 +67,17 @@ int safe_main(int argc, char **argv)
 //	FindFiles(file_names, "../refs/tiles/", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
-	tiles.resize(file_names.size());
 
 	printf("Loading... ");
 	for(uint n = 0; n < file_names.size(); n++) {
-		if(n * 100 / tiles.size() > (n - 1) * 100 / tiles.size()) {
+		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
 			fflush(stdout);
 		}
 
-		try {
-			Loader(file_names[n]) & tiles[n];
-		}
-		catch(...) {
-			tiles[n] = Tile();
-		}
-		tiles[n].name = file_names[n];
-		tiles[n].LoadDTexture();
+		Ptr<Tile> tile = Tile::mgr.Load(file_names[n]);
+		tile->name = file_names[n];
+		tile->LoadDTexture();
 	}
 	printf("\n");
 
@@ -107,28 +97,8 @@ int safe_main(int argc, char **argv)
 		tile_group.loadFromXML(doc, tiles);
 	}*/
 
-	TileMapEditor editor(res);
-	FloorTileGroupEditor group_editor(res);
-
-	editor.setTileMap(&tile_map);
-	group_editor.setSource(&tiles);
-	group_editor.setTarget(&tile_group);
-	editor.setTileGroup(&tile_group);
-
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
-
-	enum {
-		mTileMapEditor,
-		mTileSelector,
-		mTileGroupEditor,
-	} mode = mTileMapEditor;
-
-	const char *mode_name[] = {
-		"TileMap editor",
-		"Tile selector",
-		"FloorTileGroup editor",
-	};
 
 	PFont font = Font::mgr["font1"];
 	PTexture fontTex = Font::tex_mgr["font1"];
@@ -139,7 +109,7 @@ int safe_main(int argc, char **argv)
 		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
 		ui::Window *right = new ui::Window(IRect(left_width, 0, res.x, res.y), Color(0, 255, 0));
 		TileSelector *selector = new TileSelector(IRect(0, 30, left_width, res.y));
-		selector->setSource(&tiles);
+		selector->updateTiles();
 
 		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
 		left ->addChild((ui::PWindow)selector);
@@ -160,13 +130,6 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_up)) dirId++;
 		if(IsKeyDown(Key_down)) dirId--;
 
-		if(IsKeyDown(Key_f1) || (mode == mTileSelector && IsKeyDown(Key_space)))
-			mode = mTileMapEditor;
-		else if(IsKeyDown(Key_f2) || (mode == mTileMapEditor && IsKeyDown(Key_space)))
-			mode = mTileSelector;
-		else if(IsKeyDown(Key_f3))
-			mode = mTileGroupEditor;
-		
 /*		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
 			if(fileName.size())
@@ -213,13 +176,6 @@ int safe_main(int argc, char **argv)
 		if(!spr.sequences.empty())
 			seqId %= spr.sequences.size();
 	
-		if(mode == mTileMapEditor)
-			editor.loop(tile_id >= 0 && tile_id < (int)tiles.size()? &tiles[tile_id] : 0);
-	//	else if(mode == mTileSelector)
-	//		selector.loop();
-		else if( mode == mTileGroupEditor)
-			group_editor.loop();
-
 		main_window.handleInput();
 		main_window.draw();
 
@@ -234,13 +190,6 @@ int safe_main(int argc, char **argv)
 			
 			string profData = Profiler::GetStats();
 			Profiler::NextFrame();
-
-		//	font->SetSize(int2(25, 18));
-		//	font->SetPos(int2(5, 5));
-
-		//	sprintf(text, "%s", mode == mTileGroupEditor? group_editor.title() : mode_name[mode]);
-
-		//	font->Draw(text);
 		}
 		
 		SwapBuffers();

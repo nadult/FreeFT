@@ -61,4 +61,6 @@ namespace gfx
 		return 0.0f;	
 	}
 
+	ResourceMgr<Tile> Tile::mgr("", "");
+
 }

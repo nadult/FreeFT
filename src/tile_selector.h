@@ -18,16 +18,10 @@ public:
 	virtual bool onMouseClick(int2 pos, int key);
 	virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
 
-	void setSource(const vector<gfx::Tile> *tiles);
-	void setSource(const TileGroup* tile_group);
-
-	int tileCount() const					{ return m_tiles? (int)m_tiles->size() : 0; }
-	const gfx::Tile *getTile(int idx) const	{ return m_tiles? &(*m_tiles)[idx] : nullptr; }
+	void updateTiles();
 
 protected:
 	ui::TileList m_tile_list;
-	const vector<gfx::Tile> *m_tiles;
-	const TileGroup *m_tile_group;
 
 	int2 m_offset;
 	const ui::TileList::Entry *m_selection;

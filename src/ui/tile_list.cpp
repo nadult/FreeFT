@@ -23,7 +23,7 @@ namespace ui
 
 	void TileList::add(const gfx::Tile *tile, int group) {
 		DAssert(tile);
-		m_entries.push_back(Entry{tile, int2(0, 0), tile->texture.Size(), group});
+		m_entries.push_back(Entry{tile, int2(0, 0), tile->GetBounds().Size(), group});
 	}
 
 	void TileList::clear() {

@@ -46,7 +46,11 @@ struct int3
 	bool operator==(const int3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
 	bool operator!=(const int3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
 
-	int x, y, z;
+	union {
+		int2 xy;
+		struct { int x; int y; };
+	};
+	int z;
 };
 
 struct int4
