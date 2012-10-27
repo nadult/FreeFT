@@ -3,13 +3,13 @@
 
 using namespace gfx;
 
-TileSelector::TileSelector(IRect rect) :Window(rect, Color(0, 0, 0)), m_offset(0, 0), m_tile_list(rect.Width(), 2) {
+TileSelector::TileSelector(IRect rect) :Window(rect, Color(60, 60, 60)), m_offset(0, 0), m_tile_list(rect.Width(), 2) {
 	m_selection = nullptr;
 }
 
 void TileSelector::updateTiles() {
 	m_tile_list.m_entries.clear();
-	Tile::mgr.IterateOver( [&m_tile_list](const string &name, const Ptr<Tile> &tile) { m_tile_list.add(&*tile); } );
+	Tile::mgr.IterateOver( [&](const string &name, const Ptr<Tile> &tile) { m_tile_list.add(&*tile); } );
 	m_tile_list.update();
 	m_selection = nullptr;
 }

@@ -39,10 +39,11 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 
 int safe_main(int argc, char **argv)
 {
-	int2 res(960, 1000);
+	int2 res(1024, 600);
 
-	CreateWindow(res, false);
+	CreateWindow(res, true);
 	SetWindowTitle("FT remake version 0.01");
+	GrabMouse(false);
 
 //	DTexture tex;
 //	Loader("../data/epic_boobs.png") & tex;
@@ -107,16 +108,17 @@ int safe_main(int argc, char **argv)
 		int left_width = 320;
 
 		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
-		ui::Window *right = new ui::Window(IRect(left_width, 0, res.x, res.y), Color(0, 255, 0));
+		TileMapEditor *editor = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
 		TileSelector *selector = new TileSelector(IRect(0, 30, left_width, res.y));
 		selector->updateTiles();
+		editor->setTileMap(&tile_map);
 
 		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
 		left ->addChild((ui::PWindow)selector);
-		right->addChild((ui::PWindow)new ui::Button(IRect(25, 0, left_width + 25, 30), "Test Button #2"));
+		//right->addChild((ui::PWindow)new ui::Button(IRect(25, 0, left_width + 25, 30), "Test Button #2"));
 
 		main_window.addChild((ui::PWindow)left);
-		main_window.addChild((ui::PWindow)right);
+		main_window.addChild((ui::PWindow)editor);
 	}
 
 	while(PollEvents()) {

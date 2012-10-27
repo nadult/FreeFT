@@ -97,6 +97,7 @@ public:
 	Node& operator()(int2 pos) { return nodes[pos.x + pos.y * size.x]; }
 	const Node& operator()(int2 pos) const { return nodes[pos.x + pos.y * size.x]; }
 
+	IBox boundingBox() const;
 	int3 GetNodePos(int id) const { return int3((id % size.x) * Node::sizeX, 0, (id / size.x) * Node::sizeZ); }
 
 	// Tile has to exist as long as TileMap does

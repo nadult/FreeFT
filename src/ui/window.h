@@ -23,6 +23,7 @@ namespace ui
 
 		void setRect(IRect rect);
 		IRect rect() const { return m_rect; }
+		IRect clippedRect() const { return m_clipped_rect; }
 
 		void setBackgroundColor(Color col) { m_background_color = col; }
 	

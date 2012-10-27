@@ -178,11 +178,15 @@ void TileMap::Serialize(Serializer &sr, std::map<string, const gfx::Tile*> *tile
 	}
 }*/
 
+IBox TileMap::boundingBox() const {
+	return IBox(0, 0, 0, size.x * Node::sizeX, 64, size.y * Node::sizeZ);
+}
+
 void TileMap::Render(const IRect &view) const {
 	PROFILE(tRendering)
 
 	gfx::DTexture::Bind0();
-	gfx::DrawBBox(IBox(0, 0, 0, size.x * Node::sizeX, 64, size.y * Node::sizeZ));
+	gfx::DrawBBox(boundingBox());
 
 	int vNodes = 0, vTiles = 0;
 	{

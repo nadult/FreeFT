@@ -8,9 +8,11 @@ TileMapEditor::TileMapEditor(IRect rect)
 	:ui::Window(rect, Color(0, 0, 0)), m_show_grid(false), m_grid_size(3, 3), m_tile_map(0), m_new_tile(nullptr) {
 	m_tile_group = nullptr;
 
-	m_view_pos = int3(0, 0, 0);
+	m_view_pos = int2(0, 0);
+	m_view_pos_y = 0;
 	m_click_pos = int3(0, 0, 0);
 	m_world_pos = int3(0, 0, 0);
+	m_is_selecting = false;
 }
 
 void TileMapEditor::drawGrid(const IBox &box, int2 node_size, int y) {
@@ -64,11 +66,11 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 		
 		for(int n = 0; n < COUNTOF(actions); n++)
 			if(IsKeyDown(actions[n].key))
-				m_view_pos.xy += WorldToScreen(actions[n].offset * m_grid_size.x);
+				m_view_pos += WorldToScreen(actions[n].offset * m_grid_size.x);
 	}
 
 	{
-		int2 wp(ScreenToWorld(GetMousePos() + m_view_pos.xy - (int2)WorldToScreen(int3(0, m_world_pos.y, 0))));
+		int2 wp(ScreenToWorld(mouse_pos + m_view_pos - (int2)WorldToScreen(int3(0, m_world_pos.y, 0))));
 
 		m_world_pos.x = wp.x;
 		m_world_pos.z = wp.y;
@@ -115,7 +117,7 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 	
 bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
 	if((IsKeyPressed(Key_lctrl) && key == 0) || key == 2) {
-		m_view_pos.xy -= GetMouseMove();
+		m_view_pos -= GetMouseMove();
 		return true;
 	}
 
@@ -124,21 +126,27 @@ bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final
 
 void TileMapEditor::drawContents() const {
 	Assert(m_tile_map);
-	int2 wsize = rect().Size();
+
+	IRect view_rect = clippedRect() - m_view_pos;
+	LookAt(-view_rect.min);
+	int2 wsize = view_rect.Size();
 
 	if(m_show_grid) {
 		int2 p[4] = {
-			ScreenToWorld(m_view_pos.xy),
-			ScreenToWorld(m_view_pos.xy + wsize),
-			ScreenToWorld(int2{m_view_pos.x, m_view_pos.y + wsize.y}),
-			ScreenToWorld(int2{m_view_pos.x + wsize.x, m_view_pos.y}) };
+			ScreenToWorld(m_view_pos + int2(0, 0)),
+			ScreenToWorld(m_view_pos + int2(0, wsize.y)),
+			ScreenToWorld(m_view_pos + int2(wsize.x, wsize.y)),
+			ScreenToWorld(m_view_pos + int2(wsize.x, 0)) };
 
 		int2 min = Min(Min(p[0], p[1]), Min(p[2], p[3]));
 		int2 max = Max(Max(p[0], p[1]), Max(p[2], p[3]));
 		IBox box(min.x, 0, min.y, max.x, 0, max.y);
-		drawGrid(box, m_grid_size, 0);//m_world_pos.y);
+		IBox bbox = m_tile_map->boundingBox();
+		box = IBox(Max(box.min, bbox.min), Min(box.max, bbox.max));
+
+		drawGrid(box, m_grid_size, m_view_pos_y);
 	}
-	m_tile_map->Render(IRect(m_view_pos.xy, m_view_pos.xy + wsize));
+	m_tile_map->Render(view_rect);
 
 
 	if(m_new_tile && IsKeyPressed(Key_lshift)) {
@@ -146,7 +154,9 @@ void TileMapEditor::drawContents() const {
 		m_tile_map->DrawBoxHelpers(IBox(m_world_pos, m_world_pos + m_new_tile->bbox));
 	}
 
-	m_tile_map->DrawBoxHelpers(m_selection);
-	DTexture::Bind0();
-	DrawBBox(m_selection);
+	if(m_is_selecting) {
+		m_tile_map->DrawBoxHelpers(m_selection);
+		DTexture::Bind0();
+		DrawBBox(m_selection);
+	}
 }

@@ -33,11 +33,13 @@ private:
 	const FloorTileGroup *m_tile_group;
 	const gfx::Tile *m_new_tile;
 	
-	int3 m_view_pos;
+	int2 m_view_pos;
+	int m_view_pos_y;
+
 	IBox m_selection;
 	int3 m_click_pos, m_world_pos;
 	int2 m_grid_size;
-	bool m_show_grid;
+	bool m_show_grid, m_is_selecting;
 };
 
 
