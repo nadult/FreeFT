@@ -231,6 +231,10 @@ template <class T, class T1> inline void operator-=(T &a, T1 b) { a = a - b; }
 
 template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
+inline int3 AsXZ(int2 pos) { return int3(pos.x, 0, pos.y); }
+inline int3 AsXY(int2 pos) { return int3(pos.x, pos.y, 0); }
+inline int3 AsXZY(int2 pos, int y) { return int3(pos.x, y, pos.y); }
+
 float2 WorldToScreen(float3 pos);
 int2 WorldToScreen(int3 pos);
 

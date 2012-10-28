@@ -205,8 +205,8 @@ void TileMap::Render(const IRect &view) const {
 		// possible error from rounding node & tile positions
 		screenRect.min -= int2(2, 2);
 		screenRect.max += int2(2, 2);
-		if(!Overlaps(screenRect, view))
-			continue;
+//		if(!Overlaps(screenRect, view))
+//			continue;
 		vNodes++;
 
 		for(uint i = 0; i < node.instances.size(); i++) {

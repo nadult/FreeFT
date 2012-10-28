@@ -8,10 +8,8 @@ TileMapEditor::TileMapEditor(IRect rect)
 	:ui::Window(rect, Color(0, 0, 0)), m_show_grid(false), m_grid_size(3, 3), m_tile_map(0), m_new_tile(nullptr) {
 	m_tile_group = nullptr;
 
+	m_cursor_pos = int3(0, 0, 0);
 	m_view_pos = int2(0, 0);
-	m_view_pos_y = 0;
-	m_click_pos = int3(0, 0, 0);
-	m_world_pos = int3(0, 0, 0);
 	m_is_selecting = false;
 }
 
@@ -33,10 +31,15 @@ void TileMapEditor::setTileMap(TileMap *new_tile_map) {
 void TileMapEditor::onInput(int2 mouse_pos) {
 	Assert(m_tile_map);
 
+	m_cursor_pos = AsXZY(ScreenToWorld(mouse_pos + m_view_pos), m_cursor_pos.y);
+	if(m_show_grid) {
+		m_cursor_pos.x -= m_cursor_pos.x % m_grid_size.x;
+		m_cursor_pos.z -= m_cursor_pos.z % m_grid_size.y;
+	}
 	if(IsKeyDown(Key_kp_add))
-		m_world_pos.y++;
+		m_cursor_pos.y++;
 	if(IsKeyDown(Key_kp_subtract))
-		m_world_pos.y--;
+		m_cursor_pos.y--;
 
 	if(IsKeyDown('G')) {
 		if(m_show_grid) {
@@ -69,44 +72,6 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 				m_view_pos += WorldToScreen(actions[n].offset * m_grid_size.x);
 	}
 
-	{
-		int2 wp(ScreenToWorld(mouse_pos + m_view_pos - (int2)WorldToScreen(int3(0, m_world_pos.y, 0))));
-
-		m_world_pos.x = wp.x;
-		m_world_pos.z = wp.y;
-	}
-	Clamp(m_world_pos.y, 0, 255);
-
-	if(m_show_grid) {
-		m_world_pos.x -= m_world_pos.x % m_grid_size.x;
-		m_world_pos.z -= m_world_pos.z % m_grid_size.y;
-	}
-
-	if(IsMouseKeyDown(0))
-		m_click_pos = m_world_pos;
-
-	m_selection = IBox(
-		int3(Min(m_click_pos.x, m_world_pos.x), Min(m_click_pos.y, m_world_pos.y), Min(m_click_pos.z, m_world_pos.z)),
-		int3(Max(m_click_pos.x, m_world_pos.x), Max(m_click_pos.y, m_world_pos.y), Max(m_click_pos.z, m_world_pos.z)) );
-	if(m_world_pos.y == m_click_pos.y)
-		m_selection.max.y++;
-
-	if(m_new_tile) {
-		if((!IsMouseKeyPressed(0) && !IsMouseKeyUp(0)) || m_selection.IsEmpty()) {
-			m_selection.min = m_world_pos;
-			m_selection.max = m_selection.min + (IsKeyPressed(Key_lshift)?
-				int3(m_new_tile->bbox.x, 1, m_new_tile->bbox.z) : int3(m_grid_size.x, 1, m_grid_size.y));
-		}
-
-		if(IsMouseKeyUp(0)) {
-			if(IsKeyPressed(Key_lshift))
-				m_tile_map->Fill(*m_new_tile, m_selection);
-			else {
-				m_tile_map->Select(IBox(m_selection.min, m_selection.max + int3(0, 1, 0)),
-						IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
-			}
-		}
-	}
 	if(IsKeyDown('T') && m_tile_group) {
 			
 	}
@@ -118,6 +83,40 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
 	if((IsKeyPressed(Key_lctrl) && key == 0) || key == 2) {
 		m_view_pos -= GetMouseMove();
+		return true;
+	}
+	else if(key == 0) {
+		int3 start_pos = AsXZ(ScreenToWorld(start + m_view_pos));
+		int3 end_pos = AsXZ(ScreenToWorld(current + m_view_pos));
+
+		if(m_show_grid) {
+			start_pos += AsXZ(m_grid_size / 2);
+			end_pos += AsXZ(m_grid_size / 2);
+			start_pos.x -= start_pos.x % m_grid_size.x;
+			start_pos.z -= start_pos.z % m_grid_size.y;
+			end_pos.x   -= end_pos.x   % m_grid_size.x;
+			end_pos.z   -= end_pos.z   % m_grid_size.y;
+		}
+
+		m_selection = IBox(Min(start_pos, end_pos), Max(start_pos, end_pos));
+		m_is_selecting = !is_final;
+		if(is_final) {
+			if(IsKeyPressed(Key_lshift) && m_new_tile)
+				m_tile_map->Fill(*m_new_tile, IBox(m_selection.min, m_selection.max + int3(0, m_new_tile->bbox.y, 0)));
+			else
+				m_tile_map->Select(IBox(m_selection.min, m_selection.max + int3(0, 1, 0)),
+						IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
+		}
+
+		return true;
+	}
+
+	return false;
+}
+	
+bool TileMapEditor::onMouseClick(int2 pos, int key, bool up) {
+	if(key == 0 && IsKeyPressed(Key_lshift) && m_new_tile && up) {
+		m_tile_map->Fill(*m_new_tile, IBox(m_cursor_pos, m_cursor_pos + m_new_tile->bbox));
 		return true;
 	}
 
@@ -144,14 +143,15 @@ void TileMapEditor::drawContents() const {
 		IBox bbox = m_tile_map->boundingBox();
 		box = IBox(Max(box.min, bbox.min), Min(box.max, bbox.max));
 
-		drawGrid(box, m_grid_size, m_view_pos_y);
+		drawGrid(box, m_grid_size, m_cursor_pos.y);
 	}
-	m_tile_map->Render(view_rect);
+	m_tile_map->Render(IRect(m_view_pos, m_view_pos + wsize));
 
 
-	if(m_new_tile && IsKeyPressed(Key_lshift)) {
-		m_tile_map->DrawPlacingHelpers(*m_new_tile, m_world_pos);
-		m_tile_map->DrawBoxHelpers(IBox(m_world_pos, m_world_pos + m_new_tile->bbox));
+	if(m_new_tile && IsKeyPressed(Key_lshift) && !m_is_selecting) {
+		int3 pos = m_is_selecting? m_selection.min : m_cursor_pos;
+		m_tile_map->DrawPlacingHelpers(*m_new_tile, pos);
+		m_tile_map->DrawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
 	}
 
 	if(m_is_selecting) {

@@ -25,6 +25,7 @@ public:
 	virtual void drawContents() const;
 	virtual void onInput(int2 mouse_pos);
 	virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
+	virtual bool onMouseClick(int2 pos, int key, bool up);
 
 	static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
@@ -32,12 +33,11 @@ private:
 	TileMap *m_tile_map;
 	const FloorTileGroup *m_tile_group;
 	const gfx::Tile *m_new_tile;
-	
-	int2 m_view_pos;
-	int m_view_pos_y;
 
+	int3 m_cursor_pos;	
 	IBox m_selection;
-	int3 m_click_pos, m_world_pos;
+	int2 m_view_pos;
+
 	int2 m_grid_size;
 	bool m_show_grid, m_is_selecting;
 };

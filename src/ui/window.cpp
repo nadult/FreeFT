@@ -26,13 +26,24 @@ namespace ui
 
 			if(!IsMouseKeyPressed(m_dragging_mode - 1))
 				finished_dragging = true;
+
+			if(!m_is_dragging)
+				for(int k = 0; k < 3; k++)
+					if(IsMouseKeyUp(k)) {
+						click = k + 1;
+						break;
+					}
 		}
 		else {
-			for(int k = 0; k < 3; k++)
+			for(int k = 0; k < 3; k++) {
 				if(IsMouseKeyDown(k)) {
-					m_dragging_mode = click = k + 1;
+					m_dragging_mode = k + 1;
+					if(!click)
+						click = k + 1;
 					m_drag_start = mouse_pos;
+					break;
 				}
+			}
 		}
 
 		int2 focus_point = m_dragging_mode? m_drag_start : mouse_pos;
@@ -53,7 +64,7 @@ namespace ui
 			if(m_is_dragging)
 				is_handled = onMouseDrag(m_drag_start, mouse_pos, m_dragging_mode - 1, finished_dragging);
 			else if(click)
-				is_handled = onMouseClick(mouse_pos, click - 1);
+				is_handled = onMouseClick(mouse_pos, click - 1, IsMouseKeyUp(click - 1));
 
 			if(!is_handled)
 				onInput(mouse_pos);

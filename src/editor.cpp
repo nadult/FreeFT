@@ -20,6 +20,40 @@
 
 using namespace gfx;
 
+class MainWindow: public ui::Window
+{
+public:
+	MainWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color(0, 0, 0, 0)) {
+		int left_width = 320;
+
+		m_map.Resize({16 * 64, 16 * 64});
+
+		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
+
+		//TODO: except. safety
+		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
+		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
+		m_selector->updateTiles();
+		m_mapper->setTileMap(&m_map);
+
+		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
+		left ->addChild((ui::PWindow)m_selector);
+		//right->addChild((ui::PWindow)new ui::Button(IRect(25, 0, left_width + 25, 30), "Test Button #2"));
+
+		addChild((ui::PWindow)left);
+		addChild((ui::PWindow)m_mapper);
+	}
+
+	virtual void handleInput() {
+		ui::Window::handleInput();
+		m_mapper->setNewTile(m_selector->selection());
+	}
+
+	TileMap m_map;
+	TileMapEditor* m_mapper;
+	TileSelector*  m_selector;
+};
+
 
 void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 position) {
 	Sprite::Rect rect;
@@ -39,9 +73,9 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 
 int safe_main(int argc, char **argv)
 {
-	int2 res(1024, 600);
+	int2 res(1024, 1024);
 
-	CreateWindow(res, true);
+	CreateWindow(res, false);
 	SetWindowTitle("FT remake version 0.01");
 	GrabMouse(false);
 
@@ -84,8 +118,6 @@ int safe_main(int argc, char **argv)
 
 	//double lastFrameTime = GetTime();
 
-	TileMap tile_map;
-	tile_map.Resize({16 * 64, 16 * 64});
 
 	FloorTileGroup tile_group;
 /*	if(access("tile_group.xml", R_OK) == 0) {
@@ -104,22 +136,7 @@ int safe_main(int argc, char **argv)
 	PFont font = Font::mgr["font1"];
 	PTexture fontTex = Font::tex_mgr["font1"];
 
-	ui::Window main_window(IRect{0, 0, res.x, res.y}, Color(0, 0, 0, 0)); {
-		int left_width = 320;
-
-		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
-		TileMapEditor *editor = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
-		TileSelector *selector = new TileSelector(IRect(0, 30, left_width, res.y));
-		selector->updateTiles();
-		editor->setTileMap(&tile_map);
-
-		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
-		left ->addChild((ui::PWindow)selector);
-		//right->addChild((ui::PWindow)new ui::Button(IRect(25, 0, left_width + 25, 30), "Test Button #2"));
-
-		main_window.addChild((ui::PWindow)left);
-		main_window.addChild((ui::PWindow)editor);
-	}
+	MainWindow main_window(res);
 
 	while(PollEvents()) {
 		if(IsKeyPressed(Key_esc))

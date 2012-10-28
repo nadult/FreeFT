@@ -33,7 +33,7 @@ namespace ui
 		virtual void onIdle();
 
 		// each on*** function should return true if the event was handled
-		virtual bool onMouseClick(int2 pos, int key) { return false; }
+		virtual bool onMouseClick(int2 pos, int key, bool up) { return false; }
 		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final) { return false; }
 
 	private:

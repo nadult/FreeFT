@@ -34,8 +34,8 @@ void TileSelector::onInput(int2 mouse_pos) {
 	m_offset.y = Clamp(m_offset.y, 0, m_tile_list.m_height);
 }
 
-bool TileSelector::onMouseClick(int2 pos, int key) {
-	if(key == 0 && !IsKeyPressed(Key_lctrl)) {
+bool TileSelector::onMouseClick(int2 pos, int key, bool up) {
+	if(key == 0 && !IsKeyPressed(Key_lctrl) && !up) {
 		m_selection = m_tile_list.find(pos + m_offset);
 		return true;
 	}
