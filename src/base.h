@@ -42,6 +42,7 @@ struct int3
 	int3 operator-(const int3 rhs) const { return int3(x - rhs.x, y - rhs.y, z - rhs.z); }
 	int3 operator*(int s) const { return int3(x * s, y * s, z * s); }
 	int3 operator/(int s) const { return int3(x / s, y / s, z / s); }
+	int3 operator%(int s) const { return int3(x % s, y % s, z % s); }
 
 	bool operator==(const int3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
 	bool operator!=(const int3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }

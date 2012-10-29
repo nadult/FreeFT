@@ -7,6 +7,7 @@
 namespace ui
 {
 
+	class Button;
 	class Window;
 	typedef std::unique_ptr<Window> PWindow;
 
@@ -26,6 +27,12 @@ namespace ui
 		IRect clippedRect() const { return m_clipped_rect; }
 
 		void setBackgroundColor(Color col) { m_background_color = col; }
+		Window* parent() const { return m_parent; }
+
+		void setVisible(bool is_visible) { m_is_visible = is_visible; }
+		bool isVisible() const { return m_is_visible; }
+		
+		virtual void onButtonPressed(Button *button);
 	
 	protected:
 		virtual void drawContents() const { }
@@ -49,6 +56,7 @@ namespace ui
 		int2 m_drag_start;
 		int m_dragging_mode;
 		bool m_is_dragging;
+		bool m_is_visible;
 	};
 
 }

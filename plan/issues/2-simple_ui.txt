@@ -4,6 +4,10 @@ Prosty UI:
 - taby 2h
 - lista tile-ów (przewijana?) 3h
 - konwersja starych menusow do nowego ui 2h
+- drobne poprawki w interfejsie:
+  - zaznaczanie jest chujowe
+  - poruszanie się za pomocą klawiatury
+  - jakoś przerobić dragging?
 
 
 
@@ -16,3 +20,4 @@ Prosty UI:
 25.10.12: 21:15 - 22:25  (1.1666 h)
 27.10.12: 22:20 - 23:10  (0.8333 h)
 28.10.12: 12:30 - 13:30
+29.10.12: 15:50 - 

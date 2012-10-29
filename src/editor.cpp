@@ -20,28 +20,52 @@
 
 using namespace gfx;
 
+enum EditorMode {
+	emMapEdition,
+	emTileGroupEdition,
+
+	emCount,
+};
+
+static const char *s_mode_names[] = {
+	"Mode: map edition",
+	"Mode: tile group edition",
+};
+
 class MainWindow: public ui::Window
 {
 public:
 	MainWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color(0, 0, 0, 0)) {
 		int left_width = 320;
 
-		m_map.Resize({16 * 64, 16 * 64});
-
-		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
+		m_mode = emMapEdition;
+		m_map.resize({16 * 64, 16 * 64});
 
 		//TODO: except. safety
 		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
+		m_grouper = new FloorTileGroupEditor(IRect(left_width, 0, res.x, res.y));
 		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
+		m_mode_button = new ui::Button(IRect(0, 0, left_width, 30), s_mode_names[m_mode]);
+
 		m_selector->updateTiles();
 		m_mapper->setTileMap(&m_map);
+		m_grouper->setTarget(&m_group);
 
-		left ->addChild((ui::PWindow)new ui::Button(IRect(0, 0, left_width, 30), "Test Button #1"));
-		left ->addChild((ui::PWindow)m_selector);
-		//right->addChild((ui::PWindow)new ui::Button(IRect(25, 0, left_width + 25, 30), "Test Button #2"));
+		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
+		left->addChild((ui::PWindow)m_mode_button);
+		left->addChild((ui::PWindow)m_selector);
 
 		addChild((ui::PWindow)left);
 		addChild((ui::PWindow)m_mapper);
+	}
+
+	virtual void onButtonPressed(ui::Button *button) {
+		if(button == m_mode_button) {
+			m_mode = (EditorMode)((m_mode + 1) % emCount);
+			m_mapper->setVisible(m_mode == emMapEdition);
+			m_grouper->setVisible(m_mode == emTileGroupEdition);
+			button->setText(s_mode_names[m_mode]);
+		}
 	}
 
 	virtual void handleInput() {
@@ -49,9 +73,15 @@ public:
 		m_mapper->setNewTile(m_selector->selection());
 	}
 
-	TileMap m_map;
-	TileMapEditor* m_mapper;
-	TileSelector*  m_selector;
+	EditorMode		m_mode;
+
+	TileMap			m_map;
+	FloorTileGroup	m_group;
+
+	TileMapEditor	*m_mapper;
+	FloorTileGroupEditor *m_grouper;
+	TileSelector	*m_selector;
+	ui::Button		*m_mode_button;
 };
 
 
@@ -73,7 +103,7 @@ void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 
 
 int safe_main(int argc, char **argv)
 {
-	int2 res(1024, 1024);
+	int2 res(1920, 900);
 
 	CreateWindow(res, false);
 	SetWindowTitle("FT remake version 0.01");
@@ -181,8 +211,6 @@ int safe_main(int argc, char **argv)
 	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		int tile_id = 0;//selector.tileId();
-
 		if(GetTime() - lastSFrameTime > sframeTime) {
 			if(lastSFrameTime > sframeTime * 2.0)
 				lastSFrameTime = GetTime();
@@ -197,8 +225,12 @@ int safe_main(int argc, char **argv)
 	
 		main_window.handleInput();
 		main_window.draw();
+		LookAt({0, 0});
+		int2 mpos = GetMousePos();
+	//	DrawLine(mpos - int2{10, 0}, mpos + int2{10, 0}, Color(255, 255, 255));
+	//	DrawLine(mpos - int2{0, 10}, mpos + int2{0, 10}, Color(255, 255, 255));
 
-		{
+		/*{
 			LookAt({0, 0});
 			char text[256];
 			fontTex->Bind();
@@ -209,7 +241,7 @@ int safe_main(int argc, char **argv)
 			
 			string profData = Profiler::GetStats();
 			Profiler::NextFrame();
-		}
+		}*/
 		
 		SwapBuffers();
 	}

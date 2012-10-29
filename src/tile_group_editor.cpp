@@ -9,8 +9,9 @@ using namespace gfx;
 
 
 
-FloorTileGroupEditor::FloorTileGroupEditor(int2 res) :m_view(0, 0, res.x, res.y) {
-	m_tiles = nullptr;
+FloorTileGroupEditor::FloorTileGroupEditor(IRect rect) :ui::Window(rect, Color(0, 0, 0)) {
+	m_view = clippedRect();
+
 	m_tile_group = nullptr;
 	m_selected_tile = nullptr;
 
@@ -23,8 +24,8 @@ FloorTileGroupEditor::FloorTileGroupEditor(int2 res) :m_view(0, 0, res.x, res.y)
 	m_select_mode = 0;
 }
 
-void FloorTileGroupEditor::loop() {
-	Assert(m_tiles && m_tile_group);
+void FloorTileGroupEditor::onInput(int2 mouse_pos) {
+	Assert(m_tile_group);
 
 	if(IsKeyDown(Key_space)) {
 		m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);
@@ -37,7 +38,6 @@ void FloorTileGroupEditor::loop() {
 	else
 		bottom_rect.min.y = top_rect.max.y;
 
-	int2 mouse_pos = GetMousePos();
 	bool mouse_is_up = top_rect.IsInside(mouse_pos);
 
 	if(mouse_is_up) {
@@ -63,12 +63,12 @@ void FloorTileGroupEditor::loop() {
 
 	// Only visible tiles
 	vector<TileInstance> instances; {
-		instances.reserve(m_tiles->size());
+		//instances.reserve(m_tiles->size());
 		int2 pos(0, m_offset[m_mode]);
 		int maxy = 0;
 
 		if(m_mode == mAddRemove) {
-			for(int n = 0; n < (int)m_tiles->size(); n++) {
+			/*for(int n = 0; n < (int)m_tiles->size(); n++) {
 				const gfx::Tile *tile = &(*m_tiles)[n];
 				IRect bounds = tile->GetBounds();
 
@@ -84,7 +84,7 @@ void FloorTileGroupEditor::loop() {
 	
 				pos.x += bounds.Width() + 2;
 				maxy = Max(maxy, bounds.Height() + 2);
-			}
+			}*/
 		}
 		else if(m_mode == mModify) {
 			struct TEntry {
@@ -129,8 +129,8 @@ void FloorTileGroupEditor::loop() {
 		}
 	}
 		
-	for(int n = 0; n < (int)m_tiles->size(); n++)
-		(*m_tiles)[n].m_temp = 0;
+//	for(int n = 0; n < (int)m_tiles->size(); n++)
+//		(*m_tiles)[n].m_temp = 0;
 
 	int mouse_over_id = -1;
 	for(int n = 0; n < (int)instances.size(); n++)
@@ -298,22 +298,10 @@ void FloorTileGroupEditor::loop() {
 	SetScissorTest(false);
 }
 
-void FloorTileGroupEditor::setSource(const vector<gfx::Tile> *tiles) {
-	m_tiles = tiles;
+void FloorTileGroupEditor::drawContents() const {
+
 }
 
 void FloorTileGroupEditor::setTarget(FloorTileGroup* tile_group) {
 	m_tile_group = tile_group;
-}
-
-int FloorTileGroupEditor::tileCount() const {
-	return m_tiles? (int)m_tiles->size() : 0;
-}
-
-const gfx::Tile *FloorTileGroupEditor::getTile(int idx) const {
-	return m_tiles? &(*m_tiles)[idx] : nullptr;
-}
-
-const char *FloorTileGroupEditor::title() const {
-	return m_mode == mAddRemove? "FloorTileGroupEditor::adding/removing" : "TileGroupEditor::modifying";
 }

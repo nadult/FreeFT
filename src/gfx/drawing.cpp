@@ -55,6 +55,16 @@ namespace gfx
 		glEnd();
 	}
 
+	void DrawLine(int2 p1, int2 p2, Color color) {
+		glBegin(GL_LINES);
+
+		glColor4ub(color.r, color.g, color.b, color.a);
+		glVertex2i(p1.x, p1.y);
+		glVertex2i(p2.x, p2.y);
+
+		glEnd();
+	}
+
 	void DrawLine(int3 wp1, int3 wp2, Color color) {
 		glBegin(GL_LINES);
 

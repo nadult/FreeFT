@@ -7,10 +7,9 @@ namespace ui
 {
 
 	Window::Window(IRect rect, Color background_color)
-		:m_parent(nullptr), m_background_color(background_color) {
+		:m_parent(nullptr), m_background_color(background_color), m_is_visible(true) {
 			m_drag_start = int2(0, 0);
 			m_dragging_mode = 0;
-			m_is_dragging = false;
 
 			setRect(rect);
 		}
@@ -18,28 +17,15 @@ namespace ui
 	void Window::handleInput() {
 		int2 mouse_pos = GetMousePos() - m_clipped_rect.min;
 		bool finished_dragging = false;
-		int click = 0;
 
 		if(m_dragging_mode) {
-			if(mouse_pos != m_drag_start)
-				m_is_dragging = true;
-
 			if(!IsMouseKeyPressed(m_dragging_mode - 1))
 				finished_dragging = true;
-
-			if(!m_is_dragging)
-				for(int k = 0; k < 3; k++)
-					if(IsMouseKeyUp(k)) {
-						click = k + 1;
-						break;
-					}
 		}
 		else {
 			for(int k = 0; k < 3; k++) {
 				if(IsMouseKeyDown(k)) {
 					m_dragging_mode = k + 1;
-					if(!click)
-						click = k + 1;
 					m_drag_start = mouse_pos;
 					break;
 				}
@@ -51,6 +37,8 @@ namespace ui
 
 		for(int n = 0; n < (int)m_children.size(); n++) {
 			Window *child = m_children[n].get();
+			if(!child->isVisible())
+				continue;
 
 			if(child->rect().IsInside(focus_point)) {
 				child->handleInput();
@@ -61,19 +49,17 @@ namespace ui
 		}
 
 		if(!is_handled) {
-			if(m_is_dragging)
+			if(m_dragging_mode) {
 				is_handled = onMouseDrag(m_drag_start, mouse_pos, m_dragging_mode - 1, finished_dragging);
-			else if(click)
-				is_handled = onMouseClick(mouse_pos, click - 1, IsMouseKeyUp(click - 1));
-
+				if(!is_handled)
+					is_handled = onMouseClick(mouse_pos, m_dragging_mode - 1, finished_dragging);
+			}
 			if(!is_handled)
 				onInput(mouse_pos);
 		}
 
-		if(finished_dragging) {
+		if(finished_dragging)
 			m_dragging_mode = 0;
-			m_is_dragging = false;
-		}
 	}
 
 	void Window::onIdle() {
@@ -94,7 +80,8 @@ namespace ui
 		drawContents();
 
 		for(int n = 0; n < (int)m_children.size(); n++)
-			m_children[n]->draw();
+			if(m_children[n]->isVisible())
+				m_children[n]->draw();
 		
 		if(!m_parent)
 			SetScissorTest(false);	
@@ -111,6 +98,11 @@ namespace ui
 		DAssert(!m_dragging_mode);
 		m_rect = rect;
 		updateRects();
+	}
+
+	void Window::onButtonPressed(Button *button) {
+		if(parent())
+			parent()->onButtonPressed(button);
 	}
 
 	void Window::updateRects() {

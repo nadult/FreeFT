@@ -25,6 +25,8 @@ namespace ui
 
 	void Button::onInput(int2 mouse_pos) {
 		setBackgroundColor(IsMouseKeyPressed(0)? s_colors[2] : s_colors[1]);
+		if(IsMouseKeyUp(0) && parent() && clippedRect().IsInside(mouse_pos))
+			parent()->onButtonPressed(this);
 	}
 
 	void Button::onIdle() {

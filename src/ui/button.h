@@ -12,10 +12,10 @@ namespace ui
 	public:
 		Button(IRect rect, const char *text);
 
-
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual void onIdle();
+		virtual void setText(const char *text) { m_text = text; }
 
 	protected:
 		string m_text;

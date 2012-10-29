@@ -23,7 +23,11 @@ void TileSelector::drawContents() const {
 	if(m_selection) {	
 		DTexture::Bind0();
 		int2 pos = m_selection->m_pos - m_offset;
-		DrawRect(IRect(pos, pos + m_selection->m_size));
+
+		LookAt(-clippedRect().min - pos - m_selection->m_tile->offset);
+		IBox box(int3(0, 0, 0), m_selection->m_tile->bbox);
+		DrawBBox(box, Color(255, 255, 255));
+	//	DrawRect(IRect(pos, pos + m_selection->m_size));
 	}
 }
 	

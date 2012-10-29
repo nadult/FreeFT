@@ -5,56 +5,20 @@
 #include "gfx/tile.h"
 #include "gfx/font.h"
 #include "gfx/device.h"
+#include "ui/window.h"
 
-class TileGroup;
 class FloorTileGroup;
 
-class TileGroupEditor {
+class FloorTileGroupEditor: public ui::Window {
 public:
-	TileGroupEditor(int2 res);
+	FloorTileGroupEditor(IRect rect);
 
-	void loop();
+	virtual void onInput(int2 mouse_pos);
+	virtual void drawContents() const;
 
-	void setSource(const vector<gfx::Tile> *tiles);
-	void setTarget(TileGroup* tile_group);
-	int tileCount() const;
-	const gfx::Tile *getTile(int idx) const;
-
-	const char *title() const;
-
-protected:
-	const vector<gfx::Tile> *m_tiles;
-	TileGroup *m_tile_group;
-
-	gfx::PFont m_font;
-	gfx::PTexture m_font_texture;
-	IRect m_view;
-
-	int m_offset[3];
-	const gfx::Tile *m_selected_tile;
-	int m_selected_match_id;
-
-	enum {
-		mAddRemove, // add / remove tiles to / from group
-		mModify, // modify tiles relations
-	} m_mode;
-};
-
-class FloorTileGroupEditor {
-public:
-	FloorTileGroupEditor(int2 res);
-
-	void loop();
-
-	void setSource(const vector<gfx::Tile> *tiles);
 	void setTarget(FloorTileGroup* tile_group);
-	int tileCount() const;
-	const gfx::Tile *getTile(int idx) const;
-
-	const char *title() const;
 
 protected:
-	const vector<gfx::Tile> *m_tiles;
 	FloorTileGroup *m_tile_group;
 
 	gfx::PFont m_font;

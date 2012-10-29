@@ -25,7 +25,6 @@ public:
 	virtual void drawContents() const;
 	virtual void onInput(int2 mouse_pos);
 	virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
-	virtual bool onMouseClick(int2 pos, int key, bool up);
 
 	static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
