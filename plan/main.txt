@@ -7,8 +7,8 @@
  - prosty edytor tile-ów:
    issues/1-tile_editor.txt
 
- - prostu ui:
-	issues/2-simple_ui.txt
+ - proste ui:
+   issues/2-simple_ui.txt DONE
 
  - rozstawianie encji i edycja ich parametrów
 

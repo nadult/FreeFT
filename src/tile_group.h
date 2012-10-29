@@ -4,7 +4,7 @@
 #include "gfx/tile.h"
 
 
-class FloorTileGroup {
+class TileGroup {
 public:	
 	struct Entry {
 		const gfx::Tile *m_tile;
@@ -23,6 +23,9 @@ public:
 	void addEntry(const gfx::Tile*);
 	int findEntry(const gfx::Tile*) const;
 
+	bool isValidEntryId(int id) const { return id >= 0 && id < entryCount(); }
+	bool isValidEntryId(int id, const gfx::Tile *tile) const { return isValidEntryId(id) && entryTile(id) == tile; }
+
 	void setEntryGroup(int entry_id, int group_id);
 	void removeEntry(int entry_id);
 
@@ -40,14 +43,14 @@ public:
 	int groupEntryCount(int group_id) const { return m_groups[group_id].m_entry_count; }
 
 	void saveToXML(XMLDocument&) const;
-	void loadFromXML(const XMLDocument&, const vector<gfx::Tile>&);
+	void loadFromXML(const XMLDocument&);
 
 protected:
 	void decGroupEntryCount(int group_id);
 
 	vector<Entry> m_entries;
 	vector<Group> m_groups;
-	friend class FloorTileGroupEditor;
+	friend class TileGroupEditor;
 };
 
 

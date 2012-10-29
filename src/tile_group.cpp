@@ -40,12 +40,12 @@ static const char *getStringAttribute(XMLNode *node, const char *name) {
 	return attrib? attrib->value() : 0;
 }
 
-FloorTileGroup::Group::Group() :m_entry_count(0) {
+TileGroup::Group::Group() :m_entry_count(0) {
 	for(int n = 0; n < sideCount; n++)
 	   m_side_surf[n] = -1;	
 }
 
-void FloorTileGroup::addEntry(const gfx::Tile *tile) {
+void TileGroup::addEntry(const gfx::Tile *tile) {
 	DAssert(tile);
 
 	Entry new_entry;
@@ -57,14 +57,14 @@ void FloorTileGroup::addEntry(const gfx::Tile *tile) {
 
 }
 
-int FloorTileGroup::findEntry(const gfx::Tile *tile) const {
+int TileGroup::findEntry(const gfx::Tile *tile) const {
 	for(int n = 0; n < entryCount(); n++)
 		if(m_entries[n].m_tile == tile)
 			return n;
 	return -1;
 }
 
-void FloorTileGroup::decGroupEntryCount(int group_id) {
+void TileGroup::decGroupEntryCount(int group_id) {
 	DAssert(group_id >= 0 && group_id < groupCount());
 
 	if(!--m_groups[group_id].m_entry_count) {
@@ -77,7 +77,7 @@ void FloorTileGroup::decGroupEntryCount(int group_id) {
 	}
 }
 
-void FloorTileGroup::setEntryGroup(int entry_id, int group_id) {
+void TileGroup::setEntryGroup(int entry_id, int group_id) {
 	DAssert(entry_id >= 0 && entry_id < entryCount() && group_id >= 0 && group_id <= groupCount());
 
 	int last_group = m_entries[entry_id].m_group_id;
@@ -91,7 +91,7 @@ void FloorTileGroup::setEntryGroup(int entry_id, int group_id) {
 	decGroupEntryCount(last_group);
 }
 
-void FloorTileGroup::removeEntry(int entry_id) {
+void TileGroup::removeEntry(int entry_id) {
 	DAssert(entry_id >= 0 && entry_id < entryCount());
 
 	int group_id = m_entries[entry_id].m_group_id;
@@ -100,12 +100,12 @@ void FloorTileGroup::removeEntry(int entry_id) {
 	decGroupEntryCount(group_id);
 }
 
-void FloorTileGroup::clear() {
+void TileGroup::clear() {
 	m_groups.clear();
 	m_entries.clear();
 }
 
-void FloorTileGroup::saveToXML(XMLDocument &doc) const {
+void TileGroup::saveToXML(XMLDocument &doc) const {
 	for(int n = 0; n < entryCount(); n++) {
 		const Entry &entry = m_entries[n];
 		XMLNode *entry_node = doc.allocate_node(node_element, "entry");
@@ -133,19 +133,16 @@ void FloorTileGroup::saveToXML(XMLDocument &doc) const {
 	}
 }
 
-void FloorTileGroup::loadFromXML(const XMLDocument &doc, const vector<gfx::Tile> &tiles) {
+void TileGroup::loadFromXML(const XMLDocument &doc) {
 	clear();
 
 	XMLNode *node = doc.first_node("entry");
-	std::map<string, int> tile_map;
-	for(int n = 0; n < (int)tiles.size(); n++)
-		tile_map[tiles[n].name] = n;
 
 	while(node) {
 		Entry entry;
-		auto it = tile_map.find(getStringAttribute(node, "tile"));
-		Assert(it != tile_map.end());
-		entry.m_tile = &tiles[it->second];
+		Ptr<gfx::Tile> tile = gfx::Tile::mgr[getStringAttribute(node, "tile")];
+
+		entry.m_tile = &*tile;
 		entry.m_group_id = getIntAttribute(node, "group_id");
 		entry.m_weight = getFloatAttribute(node, "weight");
 		m_entries.push_back(entry);

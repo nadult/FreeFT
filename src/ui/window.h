@@ -4,6 +4,8 @@
 #include "base.h"
 #include <memory>
 
+namespace gfx { class Tile; }
+
 namespace ui
 {
 
@@ -40,6 +42,8 @@ namespace ui
 		virtual void onIdle();
 
 		// each on*** function should return true if the event was handled
+		// TODO: pass key_modifier along with key (so when user presses LMB with CTRL, it will
+		// be passed until LMB is released)
 		virtual bool onMouseClick(int2 pos, int key, bool up) { return false; }
 		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final) { return false; }
 

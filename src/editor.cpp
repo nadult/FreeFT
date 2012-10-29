@@ -31,7 +31,6 @@ static const char *s_mode_names[] = {
 	"Mode: map edition",
 	"Mode: tile group edition",
 };
-
 class MainWindow: public ui::Window
 {
 public:
@@ -40,14 +39,25 @@ public:
 
 		m_mode = emMapEdition;
 		m_map.resize({16 * 64, 16 * 64});
+	
+		if(access("tile_group.xml", R_OK) == 0) {
+			string text;
+			Loader ldr("tile_group.xml");
+			text.resize(ldr.Size());
+			ldr.Data(&text[0], ldr.Size());
+			XMLDocument doc;
+			doc.parse<0>(&text[0]); 
+			m_group.loadFromXML(doc);
+		}
 
 		//TODO: except. safety
 		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
-		m_grouper = new FloorTileGroupEditor(IRect(left_width, 0, res.x, res.y));
+		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
 		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
 		m_mode_button = new ui::Button(IRect(0, 0, left_width, 30), s_mode_names[m_mode]);
 
-		m_selector->updateTiles();
+		m_selector->setModel(new ui::AllTilesModel);
+
 		m_mapper->setTileMap(&m_map);
 		m_grouper->setTarget(&m_group);
 
@@ -57,6 +67,8 @@ public:
 
 		addChild((ui::PWindow)left);
 		addChild((ui::PWindow)m_mapper);
+		addChild((ui::PWindow)m_grouper);
+		m_grouper->setVisible(false);
 	}
 
 	virtual void onButtonPressed(ui::Button *button) {
@@ -76,10 +88,10 @@ public:
 	EditorMode		m_mode;
 
 	TileMap			m_map;
-	FloorTileGroup	m_group;
+	TileGroup		m_group;
 
 	TileMapEditor	*m_mapper;
-	FloorTileGroupEditor *m_grouper;
+	TileGroupEditor *m_grouper;
 	TileSelector	*m_selector;
 	ui::Button		*m_mode_button;
 };
@@ -147,19 +159,6 @@ int safe_main(int argc, char **argv)
 	printf("\n");
 
 	//double lastFrameTime = GetTime();
-
-
-	FloorTileGroup tile_group;
-/*	if(access("tile_group.xml", R_OK) == 0) {
-		string text;
-		Loader ldr("tile_group.xml");
-		text.resize(ldr.Size());
-		ldr.Data(&text[0], ldr.Size());
-		XMLDocument doc;
-		doc.parse<0>(&text[0]); 
-		tile_group.loadFromXML(doc, tiles);
-	}*/
-
 	double lastSFrameTime = GetTime();
 	double sframeTime = 1.0 / 16.0;
 
@@ -226,7 +225,7 @@ int safe_main(int argc, char **argv)
 		main_window.handleInput();
 		main_window.draw();
 		LookAt({0, 0});
-		int2 mpos = GetMousePos();
+	//	int2 mpos = GetMousePos();
 	//	DrawLine(mpos - int2{10, 0}, mpos + int2{10, 0}, Color(255, 255, 255));
 	//	DrawLine(mpos - int2{0, 10}, mpos + int2{0, 10}, Color(255, 255, 255));
 

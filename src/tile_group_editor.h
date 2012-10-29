@@ -6,30 +6,35 @@
 #include "gfx/font.h"
 #include "gfx/device.h"
 #include "ui/window.h"
+#include "ui/tile_list.h"
 
-class FloorTileGroup;
+class TileGroup;
 
-class FloorTileGroupEditor: public ui::Window {
+class TileGroupEditor: public ui::Window {
 public:
-	FloorTileGroupEditor(IRect rect);
+	TileGroupEditor(IRect rect);
 
 	virtual void onInput(int2 mouse_pos);
+	virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
 	virtual void drawContents() const;
 
-	void setTarget(FloorTileGroup* tile_group);
+	void setTarget(TileGroup* tile_group);
 
 protected:
-	FloorTileGroup *m_tile_group;
+	void updateSelector();
+
+	ui::TileList m_tile_list;
+	TileGroup *m_tile_group;
 
 	gfx::PFont m_font;
 	gfx::PTexture m_font_texture;
 	IRect m_view;
 
-	int m_offset[3];
-	const gfx::Tile *m_selected_tile;
-	int m_selected_match_id;
+	int2 m_offset[3];
+	int m_selected_group_id;
 	int m_selected_surface_id;
 	int m_select_mode;
+	int m_selection_mode;
 	enum {
 		mAddRemove, // add / remove tiles to / from group
 		mModify, // modify tiles relations
