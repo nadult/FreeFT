@@ -17,9 +17,10 @@ namespace ui
 	void Window::handleInput() {
 		int2 mouse_pos = GetMousePos() - m_clipped_rect.min;
 		bool finished_dragging = false;
+		bool escape = IsKeyDown(Key_esc);
 
 		if(m_dragging_mode) {
-			if(!IsMouseKeyPressed(m_dragging_mode - 1))
+			if(!IsMouseKeyPressed(m_dragging_mode - 1) || escape)
 				finished_dragging = true;
 		}
 		else {
@@ -49,7 +50,9 @@ namespace ui
 		}
 
 		if(!is_handled) {
-			if(m_dragging_mode) {
+			if(escape)
+				is_handled = onEscape();
+			if(m_dragging_mode && !is_handled) {
 				is_handled = onMouseDrag(m_drag_start, mouse_pos, m_dragging_mode - 1, finished_dragging);
 				if(!is_handled)
 					is_handled = onMouseClick(mouse_pos, m_dragging_mode - 1, finished_dragging);

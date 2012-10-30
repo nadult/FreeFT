@@ -192,6 +192,7 @@ void TileGroupEditor::drawContents() const {
 			"mud",
 			"mud_cracked",
 			"sand",
+			"green goo",
 		};
 
 		m_font->SetPos(int2(0, 10));

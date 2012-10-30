@@ -301,16 +301,6 @@ bool TileMap::testPosition(int3 pos, int3 box) const {
 	return true;
 }
 
-void TileMap::drawPlacingHelpers(const gfx::Tile &tile, int3 pos) const {
-	bool collides = !testPosition(pos, tile.bbox);
-
-	Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
-
-	tile.Draw(int2(WorldToScreen(pos)), color);
-	gfx::DTexture::Bind0();
-	gfx::DrawBBox(IBox(pos, pos + tile.bbox));
-}
-
 void TileMap::drawBoxHelpers(const IBox &box) const {
 	gfx::DTexture::Bind0();
 

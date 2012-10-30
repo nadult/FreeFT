@@ -306,6 +306,53 @@
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_4_NE.til" group_id="25" weight="0.000000"/>
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_3_SE.til" group_id="25" weight="0.000000"/>
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_5_NE.til" group_id="25" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCENTRE_F_1_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCENTRE_F_2_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCENTRE_F_3_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCENTRE_F_4_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCENTRE_F_5_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCONCAVEsw_F_1_SE.til" group_id="31" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCONCAVEse_F_1_SE.til" group_id="39" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCONCAVEnw_F_1_SE.til" group_id="33" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCONCAVEne_F_1_SE.til" group_id="34" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCENTRE_F_3_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCENTRE_F_05_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopCENTRE_F_04_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubSIDEw_F_1_SE.til" group_id="29" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubSIDEs_F_1_SE.til" group_id="35" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubSIDEn_F_1_SE.til" group_id="32" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubSIDEe_F_2_SE.til" group_id="37" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXsw_F_2_SE.til" group_id="27" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXsw_F_1_SE.til" group_id="27" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXse_F_2_SE.til" group_id="28" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXse_F_1_SE.til" group_id="28" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXnw_F_2_SE.til" group_id="38" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXnw_F_1_SE.til" group_id="38" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXne_F_2_SE.til" group_id="30" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONVEXne_F_1_SE.til" group_id="30" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCONCAVEse_F_1_SE.til" group_id="39" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopBubCENTRE_F_6_SE.til" group_id="26" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_1_NE.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_1_NW.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_1_SE.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_1_SW.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_2_NE.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_2_NW.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_2_SE.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopPatch_F_2_SW.til" group_id="36" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopSIDEe_F_1_SE.til" group_id="37" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopSIDEn_F_1_SE.til" group_id="32" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopSIDEs_F_1_SE.til" group_id="35" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_GoopSIDEw_F_1_SE.til" group_id="29" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Concave_F_09_SE.til" group_id="39" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_04_SE.til" group_id="37" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_05_SE.til" group_id="32" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_07_SE.til" group_id="35" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_08_SE.til" group_id="37" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_09_SE.til" group_id="32" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_10_SE.til" group_id="29" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_11_SE.til" group_id="35" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_loor_Water_GoopBubCONVEXsw_F_2_SE.til" group_id="27" weight="0.000000"/>
 <group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="9" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="2" side_surf_4="9" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
@@ -332,4 +379,18 @@
 <group side_surf_0="9" side_surf_1="1" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
 <group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="8" side_surf_1="8" side_surf_2="8" side_surf_3="8" side_surf_4="8" side_surf_5="8" side_surf_6="8" side_surf_7="8"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="9" side_surf_5="8" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="8"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="9" side_surf_3="8" side_surf_4="8" side_surf_5="8" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="9" side_surf_3="8" side_surf_4="9" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="8" side_surf_1="8" side_surf_2="9" side_surf_3="3" side_surf_4="9" side_surf_5="8" side_surf_6="8" side_surf_7="8"/>
+<group side_surf_0="9" side_surf_1="8" side_surf_2="8" side_surf_3="8" side_surf_4="9" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="8" side_surf_1="8" side_surf_2="8" side_surf_3="8" side_surf_4="9" side_surf_5="3" side_surf_6="9" side_surf_7="8"/>
+<group side_surf_0="9" side_surf_1="8" side_surf_2="8" side_surf_3="8" side_surf_4="8" side_surf_5="8" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="9" side_surf_5="8" side_surf_6="8" side_surf_7="8"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="8" side_surf_1="8" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="8"/>
+<group side_surf_0="9" side_surf_1="8" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="9" side_surf_3="8" side_surf_4="8" side_surf_5="8" side_surf_6="8" side_surf_7="8"/>
 

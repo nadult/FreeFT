@@ -9,10 +9,11 @@ using namespace gfx;
 TileMapEditor::TileMapEditor(IRect rect)
 	:ui::Window(rect, Color(0, 0, 0)), m_show_grid(false), m_grid_size(1, 1), m_tile_map(0), m_new_tile(nullptr) {
 	m_tile_group = nullptr;
-	m_cursor_pos = int3(0, 0, 0);
 	m_view_pos = int2(0, 0);
 	m_is_selecting = false;
 	m_mode = mSelecting;
+
+	m_cursor_height = 0;
 }
 
 void TileMapEditor::drawGrid(const IBox &box, int2 node_size, int y) {
@@ -33,15 +34,11 @@ void TileMapEditor::setTileMap(TileMap *new_tile_map) {
 void TileMapEditor::onInput(int2 mouse_pos) {
 	Assert(m_tile_map);
 
-	m_cursor_pos = AsXZY(ScreenToWorld(mouse_pos + m_view_pos), m_cursor_pos.y);
-	if(m_show_grid) {
-		m_cursor_pos.x -= m_cursor_pos.x % m_grid_size.x;
-		m_cursor_pos.z -= m_cursor_pos.z % m_grid_size.y;
-	}
+	m_selection = computeCursor(mouse_pos, mouse_pos);
 	if(IsKeyDown(Key_kp_add))
-		m_cursor_pos.y++;
+		m_cursor_height++;
 	if(IsKeyDown(Key_kp_subtract))
-		m_cursor_pos.y--;
+		m_cursor_height--;
 
 	if(IsKeyDown('G')) {
 		if(m_show_grid) {
@@ -90,27 +87,73 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 	if(IsKeyPressed(Key_del))
 		m_tile_map->deleteSelected();
 }
+
+IBox TileMapEditor::computeCursor(int2 start, int2 end) const {
+	float2 height_off = WorldToScreen(int3(0, m_cursor_height, 0));
+	int3 gbox = AsXZY(m_grid_size, 1);
+
+	bool select_mode = m_mode == mSelecting || m_mode == mAutoFilling;
+	int3 bbox = m_new_tile && !select_mode? m_new_tile->bbox : gbox;
+
+	int3 start_pos = AsXZ((int2)( ScreenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
+	int3 end_pos   = AsXZ((int2)( ScreenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
+
+	start_pos.y = end_pos.y = m_cursor_height;
 	
+	{
+		int apos1 = start_pos.x % gbox.x;
+		int apos2 = apos1 - gbox.x + bbox.x;
+		start_pos.x -= apos1 < gbox.x - apos1 || bbox.x >= gbox.x? apos1 : apos2;
+	}
+	{
+		int apos1 = start_pos.z % gbox.z;
+		int apos2 = apos1 - gbox.z + bbox.z;
+		start_pos.z -= apos1 < gbox.z - apos1 || bbox.z >= gbox.z? apos1 : apos2;
+	}
+	if(end == start)
+		end_pos = start_pos;
+	
+	int3 dir(end_pos.x >= start_pos.x? 1 : -1, 1, end_pos.z >= start_pos.z? 1 : -1);
+	int3 size(abs(end_pos.x - start_pos.x), 1, abs(end_pos.z - start_pos.z));
+	size += bbox - int3(1, 1, 1);
+	size.x -= size.x % bbox.x;
+	size.z -= size.z % bbox.z;
+	size = Max(bbox, size);
+
+	if(dir.x < 0)
+		start_pos.x += bbox.x;
+	if(dir.z < 0)
+		start_pos.z += bbox.z;
+	end_pos = start_pos + dir * size;
+
+	if(start_pos.x > end_pos.x) Swap(start_pos.x, end_pos.x);
+	if(start_pos.z > end_pos.z) Swap(start_pos.z, end_pos.z);
+	
+	if(m_tile_map) {
+		IBox map_box = m_tile_map->boundingBox();
+		start_pos = Clamp(start_pos, map_box.min, map_box.max);
+		end_pos = Clamp(end_pos, map_box.min, map_box.max);
+	}
+
+	if(select_mode)
+		end_pos.y = start_pos.y;
+
+	return IBox(start_pos, end_pos);
+
+}
+
+bool TileMapEditor::onEscape() {
+	m_is_selecting = false;
+	return true;
+}
+
 bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
 	if((IsKeyPressed(Key_lctrl) && key == 0) || key == 2) {
 		m_view_pos -= GetMouseMove();
 		return true;
 	}
 	else if(key == 0) {
-		int3 start_pos = AsXZ((int2)( ScreenToWorld(float2(start + m_view_pos)) + float2(0.5f, 0.5f) ));
-		int3 end_pos = AsXZ((int2)( ScreenToWorld(float2(current + m_view_pos)) + float2(0.5f, 0.5f) ));
-		if(start_pos.x > end_pos.x) Swap(start_pos.x, end_pos.x);
-		if(start_pos.z > end_pos.z) Swap(start_pos.z, end_pos.z);
-
-		if(m_show_grid) {
-			start_pos.x -= start_pos.x % m_grid_size.x;
-			start_pos.z -= start_pos.z % m_grid_size.y;
-			end_pos += AsXZ(m_grid_size - int2(start_pos.x != end_pos.x, start_pos.z != end_pos.z));
-			end_pos.x -= end_pos.x % m_grid_size.x;
-			end_pos.z -= end_pos.z % m_grid_size.y;
-		}
-
-		m_selection = IBox(start_pos, end_pos);
+		m_selection = computeCursor(start, current);
 		m_is_selecting = !is_final;
 		if(is_final) {
 			if(m_mode == mSelecting) {
@@ -118,7 +161,7 @@ bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final
 						IsKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
 			}
 			else if(m_mode == mPlacing && m_new_tile) {
-				m_tile_map->fill(*m_new_tile, IBox(m_selection.min, m_selection.max + int3(0, m_new_tile->bbox.y, 0)));
+				m_tile_map->fill(*m_new_tile, IBox(m_selection.min, m_selection.max));
 			}
 			else if(m_mode == mPlacingRandom && m_new_tile && m_tile_group) {
 				int entry_id = m_tile_group->findEntry(m_new_tile);
@@ -246,20 +289,30 @@ void TileMapEditor::drawContents() const {
 		IBox bbox = m_tile_map->boundingBox();
 		box = IBox(Max(box.min, bbox.min), Min(box.max, bbox.max));
 
-		drawGrid(box, m_grid_size, m_cursor_pos.y);
+		drawGrid(box, m_grid_size, m_cursor_height);
 	}
 
-	if(m_new_tile && IsKeyPressed(Key_lshift) && !m_is_selecting) {
-		int3 pos = m_is_selecting? m_selection.min : m_cursor_pos;
-		m_tile_map->drawPlacingHelpers(*m_new_tile, pos);
-		m_tile_map->drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
+	if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom) && m_new_tile) {
+		int3 pos = m_selection.min;
+		int3 bbox = m_new_tile->bbox;
+	
+		for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
+			for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
+				int3 pos(x, m_selection.min.y, z);
+
+				bool collides = !m_tile_map->testPosition(pos, bbox);
+				Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
+
+				m_new_tile->Draw(int2(WorldToScreen(pos)), color);
+				gfx::DTexture::Bind0();
+				gfx::DrawBBox(IBox(pos, pos + bbox));
+			}
+//		m_tile_map->drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
 	}
 
-	if(m_is_selecting) {
-		m_tile_map->drawBoxHelpers(m_selection);
-		DTexture::Bind0();
-		DrawBBox(m_selection);
-	}
+//	m_tile_map->drawBoxHelpers(m_selection);
+	DTexture::Bind0();
+	DrawBBox(m_selection);
 	
 	LookAt(-clippedRect().min);
 	gfx::PFont font        = Font::mgr["font1"];
@@ -277,6 +330,7 @@ void TileMapEditor::drawContents() const {
 	font->SetPos(int2(0, clippedRect().Height() - 25));
 
 	char text[64];
-	snprintf(text, sizeof(text), "Mode: %s", mode_names[m_mode]);
+	snprintf(text, sizeof(text), "Cursor: (%d, %d, %d)  Mode: %s\n",
+			m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode]);
 	font->Draw(text);
 }

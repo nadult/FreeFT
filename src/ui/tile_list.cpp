@@ -78,6 +78,7 @@ namespace ui
 			if(next_width + cur_pos.x > m_max_width || (next_group != entry.m_group_id && entry.m_group_size > 1)) {
 				cur_pos.x = 0;
 				cur_pos.y += m_spacing + cur_height;
+				cur_height = 0;
 			}
 		}
 

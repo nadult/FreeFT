@@ -208,9 +208,6 @@ int safe_main(int argc, char **argv)
 	MainWindow main_window(res);
 
 	while(PollEvents()) {
-		if(IsKeyPressed(Key_esc))
-			break;
-
 		Clear({128, 64, 0});
 		
 		if(IsKeyDown(Key_right)) seqId++;

@@ -25,6 +25,7 @@ public:
 	virtual void drawContents() const;
 	virtual void onInput(int2 mouse_pos);
 	virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
+	virtual bool onEscape();
 
 	static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
@@ -32,6 +33,8 @@ private:
 	TileMap *m_tile_map;
 	const TileGroup *m_tile_group;
 	const gfx::Tile *m_new_tile;
+
+	IBox computeCursor(int2 start, int2 end) const;
 	
 	enum Mode {
 		mSelecting,
@@ -42,7 +45,7 @@ private:
 		mCount,
 	} m_mode;
 
-	int3 m_cursor_pos;	
+	int m_cursor_height;
 	IBox m_selection;
 	int2 m_view_pos;
 
