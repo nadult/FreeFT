@@ -306,30 +306,30 @@
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_4_NE.til" group_id="25" weight="0.000000"/>
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTraised_F_3_SE.til" group_id="25" weight="0.000000"/>
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Plain/Village_Floor_Gravel_DIRTflat_F_5_NE.til" group_id="25" weight="0.000000"/>
-<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="1"/>
-<group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="1"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="2" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="1"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="1"/>
+<group side_surf_0="9" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="9" side_surf_7="1"/>
+<group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="2" side_surf_4="9" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
+<group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="2" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="3" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="2"/>
-<group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="1" side_surf_6="2" side_surf_7="2"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="3"/>
-<group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="1" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="2"/>
-<group side_surf_0="3" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
-<group side_surf_0="1" side_surf_1="3" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="3" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="1" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
-<group side_surf_0="2" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="2"/>
-<group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="2" side_surf_1="1" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="2"/>
-<group side_surf_0="1" side_surf_1="2" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
-<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="1" side_surf_6="3" side_surf_7="3"/>
-<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="3" side_surf_7="3"/>
-<group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="2" side_surf_7="2"/>
-<group side_surf_0="3" side_surf_1="1" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
-<group side_surf_0="1" side_surf_1="1" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="1"/>
+<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="9" side_surf_5="2" side_surf_6="9" side_surf_7="1"/>
+<group side_surf_0="1" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="9" side_surf_5="3" side_surf_6="9" side_surf_7="1"/>
+<group side_surf_0="9" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="9" side_surf_7="2"/>
+<group side_surf_0="2" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="9" side_surf_5="1" side_surf_6="9" side_surf_7="2"/>
+<group side_surf_0="9" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="2" side_surf_1="2" side_surf_2="9" side_surf_3="1" side_surf_4="9" side_surf_5="2" side_surf_6="2" side_surf_7="2"/>
+<group side_surf_0="9" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="9" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="9" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
+<group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="3" side_surf_4="9" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="9" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="9" side_surf_3="1" side_surf_4="9" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="9" side_surf_1="1" side_surf_2="1" side_surf_3="1" side_surf_4="9" side_surf_5="2" side_surf_6="2" side_surf_7="2"/>
+<group side_surf_0="9" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="9" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
+<group side_surf_0="9" side_surf_1="1" side_surf_2="9" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="2" side_surf_7="2"/>
+<group side_surf_0="9" side_surf_1="2" side_surf_2="9" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="9" side_surf_5="1" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="9" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="2" side_surf_1="2" side_surf_2="9" side_surf_3="1" side_surf_4="1" side_surf_5="1" side_surf_6="9" side_surf_7="2"/>
+<group side_surf_0="9" side_surf_1="1" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
 

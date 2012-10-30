@@ -6,8 +6,8 @@ Prosty edytor tile-ów:
 2. na podstawie tych informacji, można zrobić prosty (płaski) losowy generator ładnych kawałków map: zaznaczamy region
    i algorytm losuje tile biąrąc pod uwagę info o dopasowaniu. Przydałyby się też wagi przy każdym tile-u, tzn jaka
    szansa że zostanie wygenerowany  (4h)
-3. poza tym przydałby się wygodny edytor, najepiej nie wymagający używania myszy: poruszanie kursorem za pomocą strzałek,
-   ekran podzielony na dwa: z lewej lista tile-ów, poza tym jakieś wsparcie w dopasowaniu tile-ów (6h)
+3. poza tym przydałby się wygodny edytor, ekran podzielony na dwa: z lewej lista tile-ów,
+   poza tym jakieś wsparcie w dopasowaniu tile-ów (6h) DONE
 
 Nieprzewidziane rzeczy do zrobienia:
 - manager zasobów do tile-ów (2h)
@@ -24,3 +24,4 @@ Nieprzewidziane rzeczy do zrobienia:
 08.10.12: 11:30 - 14:30, 16:30 - 17:30, 19:30 - 22:00					(6.50h)
 21.10.12: 15:30 - 16:30
 22.10.12: 12:30 - 15:00, 18:30 - 19:30
+30.10.12: 9:40 - 

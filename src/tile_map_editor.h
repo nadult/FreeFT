@@ -5,7 +5,7 @@
 #include "gfx/tile.h"
 #include "ui/window.h"
 
-class FloorTileGroup;
+class TileGroup;
 
 class TileMapCursor
 {
@@ -19,7 +19,7 @@ public:
 	TileMapEditor(IRect rect);
 
 	void setTileMap(TileMap*);
-	void setTileGroup(const FloorTileGroup *tile_group) { m_tile_group = tile_group; }
+	void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
 	void setNewTile(const gfx::Tile *tile) { m_new_tile = tile; }
 		
 	virtual void drawContents() const;
@@ -30,8 +30,17 @@ public:
 
 private:
 	TileMap *m_tile_map;
-	const FloorTileGroup *m_tile_group;
+	const TileGroup *m_tile_group;
 	const gfx::Tile *m_new_tile;
+	
+	enum Mode {
+		mSelecting,
+		mPlacing,
+		mPlacingRandom,
+		mAutoFilling,
+
+		mCount,
+	} m_mode;
 
 	int3 m_cursor_pos;	
 	IBox m_selection;

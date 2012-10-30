@@ -292,5 +292,12 @@ typedef rapidxml::xml_node<> XMLNode;
 typedef rapidxml::xml_attribute<> XMLAttribute;
 typedef rapidxml::xml_document<> XMLDocument;
 
+void addAttribute(XMLNode *node, const char *name, float value);
+void addAttribute(XMLNode *node, const char *name, int value);
+void addAttribute(XMLNode *node, const char *name, const char *value);
+int getIntAttribute(XMLNode *node, const char *name);
+int getFloatAttribute(XMLNode *node, const char *name);
+const char *getStringAttribute(XMLNode *node, const char *name);
+
 
 #endif

@@ -47,6 +47,11 @@ void TileSelector::onInput(int2 mouse_pos) {
 	int wheel = GetMouseWheelMove();
 	if(wheel)
 		m_offset.y -= wheel * rect().Height() / 16;
+	if(IsKeyDown(Key_pageup))
+		m_offset.y -= rect().Height();
+	if(IsKeyDown(Key_pagedown))
+		m_offset.y += rect().Height();
+
 	m_offset.y = Clamp(m_offset.y, 0, m_tile_list.m_height);
 }
 

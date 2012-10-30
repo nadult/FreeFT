@@ -164,16 +164,6 @@ void TileGroupEditor::drawContents() const {
 		DrawQuad(-edit_rect.Size() / 2, edit_rect.Size(), Color(80, 80, 80));
 		DrawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
-		int3 offsets[TileGroup::Group::sideCount] = {
-			{  0, 0,  1 },
-			{  1, 0,  1 },
-			{  1, 0,  0 },
-			{  1, 0, -1 },
-			{  0, 0, -1 },
-			{ -1, 0, -1 },
-			{ -1, 0,  0 },
-	   		{ -1, 0,  1 } };
-	
 		m_font_texture->Bind();
 		m_font->SetSize(int2(35, 25));
 		m_font->SetPos(int2(0, 0));
@@ -181,7 +171,7 @@ void TileGroupEditor::drawContents() const {
 		char text[32];
 
 		for(int n = 0; n < TileGroup::Group::sideCount; n++) {
-			LookAt(-center - WorldToScreen(offsets[n] * 9));
+			LookAt(-center - WorldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
 			snprintf(text, sizeof(text), "%d", m_tile_group->groupSurface(m_selected_group_id, n));
 			m_font->SetPos(int2(0, 0));
 			m_font->Draw(text);

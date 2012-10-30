@@ -5,43 +5,43 @@
 #include "sys/profiler.h"
 
 TileInstance::TileInstance(const gfx::Tile *tile, const int3 &pos)
-	:flags(0), tile(tile) {
-	DAssert(tile);
+	:m_flags(0), m_tile(tile) {
+	DAssert(m_tile);
 	setPos(pos);
 }
 
 
 int3 TileInstance::pos() const {
-	return int3(int(xz) & 15, int(y), int(xz) >> 4);
+	return int3(int(m_xz) & 15, int(m_y), int(m_xz) >> 4);
 }
 
 IBox TileInstance::boundingBox() const {
 	int3 pos = this->pos();
-	return IBox(pos, pos + tile->bbox);
+	return IBox(pos, pos + m_tile->bbox);
 }
 
 IRect TileInstance::screenRect() const {
-	return tile->GetBounds() + int2(WorldToScreen(pos()));
+	return m_tile->GetBounds() + int2(WorldToScreen(pos()));
 }
 
 void TileInstance::setPos(int3 pos) {
 	DAssert(pos.x < TileMapNode::sizeX && pos.y < TileMapNode::sizeY && pos.z < TileMapNode::sizeZ);
 	DAssert(pos.x >= 0 && pos.y >= 0 && pos.z >= 0);
-	xz = u8(pos.x | (pos.z << 4));
-	y  = u8(pos.y);
+	m_xz = u8(pos.x | (pos.z << 4));
+	m_y  = u8(pos.y);
 }
 
 void TileMap::resize(int2 newSize) {
 	clear();
 
-	//TODO: properly covert nodes to new coordinates
-	size = int2(newSize.x / Node::sizeX, newSize.y / Node::sizeZ);
-	nodes.resize(size.x * size.y);
+	//TODO: properly covert m_nodes to new coordinates
+	m_size = int2(newSize.x / Node::sizeX, newSize.y / Node::sizeZ);
+	m_nodes.resize(m_size.x * m_size.y);
 }
 
 void TileMap::clear() {
-	size = int2(0, 0);
-	nodes.clear();
+	m_size = int2(0, 0);
+	m_nodes.clear();
 }
 
 bool TileMapNode::isColliding(const IBox &box) const {
@@ -50,10 +50,10 @@ bool TileMapNode::isColliding(const IBox &box) const {
 
 	for(uint i = 0; i < m_instances.size(); i++) {
 		const TileInstance &instance = m_instances[i];
-		DAssert(instance.tile);
+		DAssert(instance.m_tile);
 
 		int3 tilePos = instance.pos();
-		IBox tileBox(tilePos, tilePos + instance.tile->bbox);
+		IBox tileBox(tilePos, tilePos + instance.m_tile->bbox);
 
 		if(Overlaps(tileBox, box))
 			return true;
@@ -65,9 +65,16 @@ bool TileMapNode::isColliding(const IBox &box) const {
 bool TileMapNode::isInside(const int3 &point) const {
 	return IBox(0, 0, 0, sizeX, sizeY, sizeZ).IsInside(point);
 }
+	
+const TileInstance *TileMapNode::at(int3 pos) const {
+	for(int n = 0; n < (int)m_instances.size(); n++)
+		if(m_instances[n].pos() == pos)
+			return &m_instances[n];
+	return nullptr;
+}
 
-void TileMapNode::addTile(const gfx::Tile &tile, int3 pos) {
-	if(isColliding(IBox(pos, pos + tile.bbox)))
+void TileMapNode::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
+	if(test_for_collision && isColliding(IBox(pos, pos + tile.bbox)))
 		return;
 	
 	DAssert(isInside(pos));
@@ -140,41 +147,80 @@ void TileMapNode::deleteSelected() {
 	m_any_selected = false;
 }
 
+using namespace rapidxml;
+
 void TileMap::loadFromXML(const XMLDocument &doc) {
-	clear();
+	XMLNode *mnode = doc.first_node("map");
+	Assert(mnode);
+	int2 size(getIntAttribute(mnode, "size_x"), getIntAttribute(mnode, "size_y"));
+	Assert(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
+	resize(size);
+
+	std::map<int, const gfx::Tile*> tile_indices; //TODO: convert to vector
+
+	XMLNode *tnode = doc.first_node("tile");
+	while(tnode) {
+		tile_indices[getIntAttribute(tnode, "id")] = &*gfx::Tile::mgr[tnode->value()];
+		tnode = tnode->next_sibling("tile"); 
+	}
+
+	XMLNode *inode = doc.first_node("instance");
+	while(inode) {
+		int id = getIntAttribute(inode, "id");
+		int3 pos(getIntAttribute(inode, "pos_x"), getIntAttribute(inode, "pos_y"), getIntAttribute(inode, "pos_z"));
+		auto it = tile_indices.find(id);
+		Assert(it != tile_indices.end());
+
+		addTile(*it->second, pos, false);
+
+		inode = inode->next_sibling("instance");
+	}
 }
 
 void TileMap::saveToXML(XMLDocument &doc) const {
-/*
-	sr & size;
-	sr & nodes;
-	u32 nTiles = tiles.size();
-	sr & nTiles;
+	std::map<const gfx::Tile*, int> tile_indices;
 
-	if(sr.IsLoading()) {
-		tiles.resize(nTiles);
-		for(uint n = 0; n < tiles.size(); n++) {
-			string name; sr & name;
-			auto it = tileDict->find(name);
-			if(it == tileDict->end())
-				ThrowException("Tile not found: ", name);
+	XMLNode *mnode = doc.allocate_node(node_element, "map");
+	doc.append_node(mnode);
+	addAttribute(mnode, "size_x", m_size.x * Node::sizeX);
+	addAttribute(mnode, "size_y", m_size.y * Node::sizeZ);
 
-			tiles[n] = it->second;
+	for(int n = 0; n < (int)m_nodes.size(); n++) {
+		const TileMapNode &node = m_nodes[n];
+		for(int i = 0; i < (int)node.m_instances.size(); i++) {
+			const gfx::Tile *tile = node.m_instances[i].m_tile;
+			auto it = tile_indices.find(tile);
+			if(it == tile_indices.end())
+				tile_indices[tile] = (int)tile_indices.size();
 		}
-	
-		for(uint n = 0; n < tiles.size(); n++)
-			tile2Id.insert(std::make_pair(tiles[n], TileId(n)));
 	}
-	else {
-		for(uint n = 0; n < tiles.size(); n++) {
-			string tmp = tiles[n]->name;
-			sr & tmp;
+
+	for(auto it = tile_indices.begin(); it != tile_indices.end(); ++it) {
+		XMLNode *node = doc.allocate_node(node_element, "tile", doc.allocate_string(it->first->name.c_str()));
+		doc.append_node(node);
+		addAttribute(node, "id", it->second);
+	}
+
+	for(int n = 0; n < (int)m_nodes.size(); n++) {
+		const TileMapNode &node = m_nodes[n];
+		int3 node_pos = nodePos(n);
+
+		for(int i = 0; i < (int)node.m_instances.size(); i++) {
+			const TileInstance &inst = node.m_instances[i];
+			int id = tile_indices[inst.m_tile];
+			int3 pos = node_pos + inst.pos();
+			XMLNode *node = doc.allocate_node(node_element, "instance");
+			doc.append_node(node);
+			addAttribute(node, "id", id);
+			addAttribute(node, "pos_x", pos.x);
+			addAttribute(node, "pos_y", pos.y);
+			addAttribute(node, "pos_z", pos.z);
 		}
-	}*/
+	}
 }
 
 IBox TileMap::boundingBox() const {
-	return IBox(0, 0, 0, size.x * Node::sizeX, 64, size.y * Node::sizeZ);
+	return IBox(0, 0, 0, m_size.x * Node::sizeX, 64, m_size.y * Node::sizeZ);
 }
 
 void TileMap::render(const IRect &view) const {
@@ -190,8 +236,8 @@ void TileMap::render(const IRect &view) const {
 	//TODO: selecting visible nodes
 	//TODO: sorting tiles
 	
-	for(uint n = 0; n < nodes.size(); n++) {
-		const Node &node = nodes[n];
+	for(uint n = 0; n < m_nodes.size(); n++) {
+		const Node &node = m_nodes[n];
 		if(!node.instanceCount())
 			continue;
 
@@ -206,7 +252,7 @@ void TileMap::render(const IRect &view) const {
 
 		for(uint i = 0; i < node.m_instances.size(); i++) {
 			const TileInstance &instance = node.m_instances[i];
-			const gfx::Tile *tile = instance.tile;
+			const gfx::Tile *tile = instance.m_tile;
 			int3 pos = instance.pos() + node_pos;
 			int2 screenPos = WorldToScreen(pos);
 
@@ -223,12 +269,14 @@ void TileMap::render(const IRect &view) const {
 	Profiler::UpdateCounter(Profiler::cRenderedTiles, vTiles);
 }
 
-void TileMap::addTile(const gfx::Tile &tile, int3 pos) {
+void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
 	if(!testPosition(pos, tile.bbox))
 		return;
 
 	int2 nodeCoord(pos.x / Node::sizeX, pos.z / Node::sizeZ);
-	(*this)(nodeCoord).addTile(tile, pos - int3(nodeCoord.x * Node::sizeX, 0, nodeCoord.y * Node::sizeZ));
+	int3 node_pos = pos - int3(nodeCoord.x * Node::sizeX, 0, nodeCoord.y * Node::sizeZ);
+
+	(*this)(nodeCoord).addTile(tile, node_pos, test_for_collision);
 }
 
 bool TileMap::testPosition(int3 pos, int3 box) const {
@@ -239,14 +287,14 @@ bool TileMap::testPosition(int3 pos, int3 box) const {
 	if(pos.x < 0 || pos.y < 0 || pos.z < 0)
 		return false;
 
-	if(worldBox.max.x > size.x * Node::sizeX ||
-		worldBox.max.y > Node::sizeY || worldBox.max.z > size.y * Node::sizeZ)
+	if(worldBox.max.x > m_size.x * Node::sizeX ||
+		worldBox.max.y > Node::sizeY || worldBox.max.z > m_size.y * Node::sizeZ)
 		return false;
 
-	for(uint n = 0; n < nodes.size(); n++) {
+	for(uint n = 0; n < m_nodes.size(); n++) {
 		IBox bbox(pos, pos + box);
 		bbox -= nodePos(n);
-		if(nodes[n].isColliding(bbox))
+		if(m_nodes[n].isColliding(bbox))
 			return false;
 	}
 
@@ -267,7 +315,7 @@ void TileMap::drawBoxHelpers(const IBox &box) const {
 	gfx::DTexture::Bind0();
 
 	int3 pos = box.min, bbox = box.max - box.min;
-	int3 tsize(size.x * Node::sizeX, Node::sizeY, size.y * Node::sizeZ);
+	int3 tsize(m_size.x * Node::sizeX, Node::sizeY, m_size.y * Node::sizeZ);
 
 	gfx::DrawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
 	gfx::DrawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
@@ -303,14 +351,21 @@ void PrintBox(IBox box) {
 }
 
 void TileMap::select(const IBox &box, SelectionMode::Type mode) {
-	for(uint n = 0, count = nodes.size(); n < count; n++)
-		nodes[n].select(box - nodePos(n), mode);
+	for(uint n = 0, count = m_nodes.size(); n < count; n++)
+		m_nodes[n].select(box - nodePos(n), mode);
 	//TODO: faster selection for other modes
 }
 
+const TileInstance *TileMap::at(int3 pos) const {
+	int id = pos.x / Node::sizeX + (pos.z / Node::sizeZ) * m_size.x;
+	DAssert(id >= 0 && id < (int)m_nodes.size());
+
+	return m_nodes[id].at(pos - nodePos(id));
+}
+
 void TileMap::deleteSelected() {
-	for(uint n = 0, count = nodes.size(); n < count; n++)
-		nodes[n].deleteSelected();
+	for(uint n = 0, count = m_nodes.size(); n < count; n++)
+		m_nodes[n].deleteSelected();
 }
 
 void TileMap::moveSelected(int3 offset) {

@@ -17,7 +17,8 @@ public:
 
 		enum { sideCount = 8 };
 		int m_entry_count;
-		int m_side_surf[sideCount];
+		int m_side_surf[sideCount]; // order: CCW starting from '1' on keypad
+		static int3 s_side_offsets[sideCount];
 	};
 
 	void addEntry(const gfx::Tile*);
@@ -37,6 +38,7 @@ public:
 
 	void setGroupSurface(int group_id, int side, int surface) { m_groups[group_id].m_side_surf[side] = surface; }
 	int  groupSurface(int group_id, int side) const { return m_groups[group_id].m_side_surf[side]; }
+	const int* groupSurface(int group_id) const { return m_groups[group_id].m_side_surf; }
 
 	int entryCount() const { return (int)m_entries.size(); }
 	int groupCount() const { return (int)m_groups.size(); }

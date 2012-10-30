@@ -73,60 +73,42 @@ void FindFiles(vector<string> &out, const char *tDirName, const char *ext, bool 
 	FindFiles_(out, dirName.c_str(), ext, recursive);
 }
 
-/* 
+using namespace rapidxml;
 
-#include <wx/app.h>
-#include <wx/utils.h>
-#include <wx/filedlg.h> 
-
-string OpenFileDialog(bool save) {
-	wxInitialize();
-
-	wxString fileName = wxFileSelector("Choose file", "", "", ".map", ".", save?wxFD_SAVE : wxFD_OPEN);
-	return fileName.fn_str();
+void addAttribute(XMLNode *node, const char *name, float value) {
+	XMLDocument *doc = node->document();
+	char str_value[64];
+	snprintf(str_value, sizeof(str_value), "%f", value);
+	XMLAttribute *attrib = doc->allocate_attribute(name, doc->allocate_string(str_value));
+	node->append_attribute(attrib);
 }
 
-#include <gtkmm.h>
-
-namespace
-{
-
-	Gtk::Main *gtkMain = 0;
-
-	void FreeGtk() {
-		if(gtkMain) {
-			delete gtkMain;
-			gtkMain = 0;
-		}
-	}
-
+void addAttribute(XMLNode *node, const char *name, int value) {
+	XMLDocument *doc = node->document();
+	char str_value[32];
+	sprintf(str_value, "%d", value);
+	XMLAttribute *attrib = doc->allocate_attribute(name, doc->allocate_string(str_value));
+	node->append_attribute(attrib);
 }
 
-string OpenFileDialog(bool save) {
-	if(!gtkMain) {
-		gtkMain = new Gtk::Main(0, 0);
-		atexit(FreeGtk);
-	}
-
-	string fileName; {
-		Gtk::FileChooserDialog dialog("Please choose a file",
-			  save? Gtk::FILE_CHOOSER_ACTION_SAVE : Gtk::FILE_CHOOSER_ACTION_OPEN);
-
-		//Add response buttons the the dialog:
-		dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-		dialog.add_button(save? "Save" : "Open", Gtk::RESPONSE_OK);
-
-		Gtk::FileFilter filter;
-		filter.set_name("tile map files");
-		filter.add_pattern("*.tilemap");
-		dialog.add_filter(filter);
-
-		if(dialog.run() == Gtk::RESPONSE_OK)
-			fileName = dialog.get_filename().c_str();
-	}
-	delete gtkMain;
-
-	return fileName;
+void addAttribute(XMLNode *node, const char *name, const char *value) {
+	XMLDocument *doc = node->document();
+	XMLAttribute *attrib = doc->allocate_attribute(name, doc->allocate_string(value));
+	node->append_attribute(attrib);
 }
 
-*/
+int getIntAttribute(XMLNode *node, const char *name) {
+	XMLAttribute *attrib = node->first_attribute(name);
+	return attrib? atoi(attrib->value()) : 0;
+}
+
+int getFloatAttribute(XMLNode *node, const char *name) {
+	XMLAttribute *attrib = node->first_attribute(name);
+	return attrib? atof(attrib->value()) : 0;
+}
+
+const char *getStringAttribute(XMLNode *node, const char *name) {
+	XMLAttribute *attrib = node->first_attribute(name);
+	return attrib? attrib->value() : 0;
+}
+

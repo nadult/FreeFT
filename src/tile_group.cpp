@@ -3,42 +3,15 @@
 
 using namespace rapidxml;
 
-static void addAttribute(XMLNode *node, const char *name, float value) {
-	XMLDocument *doc = node->document();
-	char str_value[64];
-	snprintf(str_value, sizeof(str_value), "%f", value);
-	XMLAttribute *attrib = doc->allocate_attribute(name, doc->allocate_string(str_value));
-	node->append_attribute(attrib);
-}
-
-static void addAttribute(XMLNode *node, const char *name, int value) {
-	XMLDocument *doc = node->document();
-	char str_value[32];
-	sprintf(str_value, "%d", value);
-	XMLAttribute *attrib = doc->allocate_attribute(name, doc->allocate_string(str_value));
-	node->append_attribute(attrib);
-}
-
-static void addAttribute(XMLNode *node, const char *name, const char *value) {
-	XMLDocument *doc = node->document();
-	XMLAttribute *attrib = doc->allocate_attribute(name, doc->allocate_string(value));
-	node->append_attribute(attrib);
-}
-
-static int getIntAttribute(XMLNode *node, const char *name) {
-	XMLAttribute *attrib = node->first_attribute(name);
-	return attrib? atoi(attrib->value()) : 0;
-}
-
-static int getFloatAttribute(XMLNode *node, const char *name) {
-	XMLAttribute *attrib = node->first_attribute(name);
-	return attrib? atof(attrib->value()) : 0;
-}
-
-static const char *getStringAttribute(XMLNode *node, const char *name) {
-	XMLAttribute *attrib = node->first_attribute(name);
-	return attrib? attrib->value() : 0;
-}
+int3 TileGroup::Group::s_side_offsets[TileGroup::Group::sideCount] = {
+	{  0, 0,  1 },
+	{  1, 0,  1 },
+	{  1, 0,  0 },
+	{  1, 0, -1 },
+	{  0, 0, -1 },
+	{ -1, 0, -1 },
+	{ -1, 0,  0 },
+	{ -1, 0,  1 } };
 
 TileGroup::Group::Group() :m_entry_count(0) {
 	for(int n = 0; n < sideCount; n++)

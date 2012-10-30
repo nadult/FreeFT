@@ -39,30 +39,26 @@ public:
 
 		m_mode = emMapEdition;
 		m_map.resize({16 * 64, 16 * 64});
-	
-		if(access("tile_group.xml", R_OK) == 0) {
-			string text;
-			Loader ldr("tile_group.xml");
-			text.resize(ldr.Size());
-			ldr.Data(&text[0], ldr.Size());
-			XMLDocument doc;
-			doc.parse<0>(&text[0]); 
-			m_group.loadFromXML(doc);
-		}
+
+		load();	
 
 		//TODO: except. safety
 		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
 		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
 		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
-		m_mode_button = new ui::Button(IRect(0, 0, left_width, 30), s_mode_names[m_mode]);
+
+		m_mode_button = new ui::Button(IRect(0, 0, left_width * 2 / 3, 30), s_mode_names[m_mode]);
+		m_save_button = new ui::Button(IRect(left_width * 2 / 3 + 2, 0, left_width, 30), "Save");
 
 		m_selector->setModel(new ui::AllTilesModel);
 
 		m_mapper->setTileMap(&m_map);
+		m_mapper->setTileGroup(&m_group);
 		m_grouper->setTarget(&m_group);
 
 		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
 		left->addChild((ui::PWindow)m_mode_button);
+		left->addChild((ui::PWindow)m_save_button);
 		left->addChild((ui::PWindow)m_selector);
 
 		addChild((ui::PWindow)left);
@@ -78,11 +74,52 @@ public:
 			m_grouper->setVisible(m_mode == emTileGroupEdition);
 			button->setText(s_mode_names[m_mode]);
 		}
+		else if(button == m_save_button)
+			save();
 	}
 
 	virtual void handleInput() {
 		ui::Window::handleInput();
 		m_mapper->setNewTile(m_selector->selection());
+	}
+
+	void load() {
+		if(access("tile_group.xml", R_OK) == 0) {
+			string text;
+			Loader ldr("tile_group.xml");
+			text.resize(ldr.Size());
+			ldr.Data(&text[0], ldr.Size());
+			XMLDocument doc;
+			doc.parse<0>(&text[0]); 
+			m_group.loadFromXML(doc);
+		}
+		if(access("tile_map.xml", R_OK) == 0) {
+			string text;
+			Loader ldr("tile_map.xml");
+			text.resize(ldr.Size());
+			ldr.Data(&text[0], ldr.Size());
+			XMLDocument doc;
+			doc.parse<0>(&text[0]); 
+			m_map.loadFromXML(doc);
+		}
+
+	}
+
+	void save() {
+		XMLDocument doc;
+
+		if(m_mode == emMapEdition) {
+			m_map.saveToXML(doc);
+			std::fstream file("tile_map.xml", std::fstream::out);
+			printf("Saving tile map\n");
+			file << doc;
+		}
+		else if(m_mode == emTileGroupEdition) {
+			m_group.saveToXML(doc);
+			std::fstream file("tile_group.xml", std::fstream::out);
+			printf("Saving tile group\n");
+			file << doc;
+		}
 	}
 
 	EditorMode		m_mode;
@@ -93,7 +130,9 @@ public:
 	TileMapEditor	*m_mapper;
 	TileGroupEditor *m_grouper;
 	TileSelector	*m_selector;
+
 	ui::Button		*m_mode_button;
+	ui::Button		*m_save_button;
 };
 
 
@@ -141,6 +180,7 @@ int safe_main(int argc, char **argv)
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
+	FindFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
 //	FindFiles(file_names, "../refs/tiles/", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
@@ -244,14 +284,6 @@ int safe_main(int argc, char **argv)
 		
 		SwapBuffers();
 	}
-
-/*	{
-		XMLDocument doc;
-		tile_group.saveToXML(doc);
-
-		std::fstream file("tile_group.xml", std::fstream::out);
-		file << doc;
-	} */
 
 	DestroyWindow();
 
