@@ -5,23 +5,23 @@ Prosty edytor tile-ów:
    powierzchni na brzegach i kantach (3h) DONE
 2. na podstawie tych informacji, można zrobić prosty (płaski) losowy generator ładnych kawałków map: zaznaczamy region
    i algorytm losuje tile biąrąc pod uwagę info o dopasowaniu. Przydałyby się też wagi przy każdym tile-u, tzn jaka
-   szansa że zostanie wygenerowany  (4h)
+   szansa że zostanie wygenerowany  (4h)  DONE
 3. poza tym przydałby się wygodny edytor, ekran podzielony na dwa: z lewej lista tile-ów,
    poza tym jakieś wsparcie w dopasowaniu tile-ów (6h) DONE
 
 Nieprzewidziane rzeczy do zrobienia:
-- manager zasobów do tile-ów (2h)
-  do wektora dodajemy mapę nazwa->idx
-- UI
+- manager zasobów do tile-ów (2h) DONE
+- UI DONE
 
 +ESTIMATED_TIME: 18h
-+TIME_SPENT: 0h
++TIME_SPENT: 27h
++FINISHED
 
 +WORK_LOG:
 02.10.12: 15:30 - 18:50													(3.33h)
 06.10.12: 14:30 - 15:30													(1.00h)
 07.10.12: 14:30 - 15:00, 15:30 - 16:30, 17:00 - 18:30, 19:50 - 22:50	(5.00h)
 08.10.12: 11:30 - 14:30, 16:30 - 17:30, 19:30 - 22:00					(6.50h)
-21.10.12: 15:30 - 16:30
-22.10.12: 12:30 - 15:00, 18:30 - 19:30
-30.10.12: 9:40 - 13:20, 15:00 - 
+21.10.12: 15:30 - 16:30													(1.00h)
+22.10.12: 12:30 - 15:00, 18:30 - 19:30									(3.50h)
+30.10.12: 9:40 - 13:20, 15:00 - 18:00 									(6.66h)

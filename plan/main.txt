@@ -5,7 +5,7 @@
 
 1. Prosty edytor map
  - prosty edytor tile-ów:
-   issues/1-tile_editor.txt
+   issues/1-tile_editor.txt DONE
 
  - proste ui:
    issues/2-simple_ui.txt DONE
