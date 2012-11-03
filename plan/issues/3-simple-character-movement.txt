@@ -11,5 +11,4 @@ Prosty system poruszania się postacią:
 +TIME_SPENT: 0h
 
 +WORK_LOG:
-
-
+03.11.12: 17:15 - 18:30, 19:00 -21:00 

@@ -98,6 +98,7 @@ struct float2
 	float2 operator+(const float2 rhs) const { return float2(x + rhs.x, y + rhs.y); }
 	float2 operator-(const float2 rhs) const { return float2(x - rhs.x, y - rhs.y); }
 	float2 operator*(float s) const { return float2(x * s, y * s); }
+	float2 operator/(float s) const { return *this * (1.0f / s); }
 	float2 operator-() const { return float2(-x, -y); }
 	
 	bool operator==(const float2 &rhs) const { return x == rhs.x && y == rhs.y; }
@@ -113,9 +114,10 @@ struct float3
 	float3() { }
 	explicit operator int3() const { return int3((int)x, (int)y, (int)z); }
 
-	float3 operator+(const float3 rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.y); }
+	float3 operator+(const float3 rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.z); }
 	float3 operator-(const float3 rhs) const { return float3(x - rhs.x, y - rhs.y, z - rhs.z); }
 	float3 operator*(float s) const { return float3(x * s, y * s, z * s); }
+	float3 operator/(float s) const { return *this * (1.0f / s); }
 	float3 operator-() const { return float3(-x, -y, -z); }
 	
 	bool operator==(const float3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
@@ -228,14 +230,21 @@ inline const int3 Max(const int3 &lhs, const int3 &rhs) { return int3(Max(lhs.x,
 
 template <class T> inline const T Clamp(T obj, T min, T max) { return Min(Max(obj, min), max); }
 
-template <class T, class T1> inline void operator+=(T &a, T1 b) { a = a + b; }
-template <class T, class T1> inline void operator-=(T &a, T1 b) { a = a - b; }
+template <class T, class T1> inline const T& operator+=(T &a, const T1 &b) { a = a + b; return a; }
+template <class T, class T1> inline const T& operator-=(T &a, const T1 &b) { a = a - b; return a; }
 
 template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
 inline int3 AsXZ(int2 pos) { return int3(pos.x, 0, pos.y); }
 inline int3 AsXY(int2 pos) { return int3(pos.x, pos.y, 0); }
 inline int3 AsXZY(int2 pos, int y) { return int3(pos.x, y, pos.y); }
+
+inline float Dot(float2 a, float2 b) { return a.x * b.x + a.y * b.y; }
+inline float Dot(float3 a, float3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+inline float Dot(float4 a, float4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+
+inline float LengthSq(float3 v) { return Dot(v, v); }
+inline float DistanceSq(const float3 &a, const float3 &b) { return LengthSq(a - b); }
 
 float2 WorldToScreen(float3 pos);
 int2 WorldToScreen(int3 pos);

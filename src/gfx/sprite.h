@@ -5,9 +5,10 @@
 
 namespace gfx {
 
-	class Sprite {
+	class Sprite: public RefCounter {
 	public:
 		void LoadFromSpr(Serializer &sr);
+		void Serialize(Serializer &sr);
 
 		struct Image {
 			Image() :size(0, 0) { }
@@ -19,9 +20,9 @@ namespace gfx {
 		};
 
 		struct Sequence {
-			string name;
-			vector<int> frames;
-			int animId;
+			string m_name;
+			vector<int> m_frames;
+			int m_anim_id;
 
 		};
 
@@ -31,15 +32,15 @@ namespace gfx {
 		};
 
 		struct Animation {
-			string name;
+			string m_name;
 			vector<Rect> rects;
 			vector<Image> images;
 			vector<Color> palettes[4];
 			vector<int2> points;
 
-			Texture GetFrame(int frameId, int dirId) const;
+			Texture getFrame(int frameId, int dirId) const;
 
-			int firstFrame, numFrames, numDirs, offset;
+			int m_first_frame, m_frame_count, m_dir_count, m_offset;
 			int type;
 		};
 
@@ -48,19 +49,25 @@ namespace gfx {
 			short width, height;
 		};
 	
-		int NumDirs(int seqId) const { return anims[sequences[seqId].animId].numDirs; }
-		int NumFrames(int seqId) const;
+		int dirCount(int seq_id) const { return m_anims[m_sequences[seq_id].m_anim_id].m_dir_count; }
+		int frameCount(int seq_id) const;
 
-		Texture GetFrame(int seqId, int frameId, int dirId, Rect *rect = NULL) const;
+		Texture getFrame(int seq_id, int frameId, int dirId, Rect *rect = nullptr) const;
+		int findSequence(const char *name) const;
 
-		Texture texture;
-		vector<Frame> frames;
-		vector<Animation> anims;
-		vector<Sequence> sequences;
+		static int findDir(int dx, int dz);
 
-		int2 offset;
-		int3 bbox;
+		vector<Frame> m_frames;
+		vector<Animation> m_anims;
+		vector<Sequence> m_sequences;
+
+		int2 m_offset;
+		int3 m_bbox;
+		
+		static ResourceMgr<Sprite> mgr;
 	};
+
+	typedef Ptr<Sprite> PSprite;
 
 };
 
