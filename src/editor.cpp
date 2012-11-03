@@ -31,6 +31,7 @@ static const char *s_mode_names[] = {
 	"Mode: map edition",
 	"Mode: tile group edition",
 };
+
 class MainWindow: public ui::Window
 {
 public:
@@ -84,18 +85,18 @@ public:
 	}
 
 	void load() {
-		if(access("tile_group.xml", R_OK) == 0) {
+		if(access("../data/tile_group.xml", R_OK) == 0) {
 			string text;
-			Loader ldr("tile_group.xml");
+			Loader ldr("../data/tile_group.xml");
 			text.resize(ldr.Size());
 			ldr.Data(&text[0], ldr.Size());
 			XMLDocument doc;
 			doc.parse<0>(&text[0]); 
 			m_group.loadFromXML(doc);
 		}
-		if(access("tile_map.xml", R_OK) == 0) {
+		if(access("../data/tile_map.xml", R_OK) == 0) {
 			string text;
-			Loader ldr("tile_map.xml");
+			Loader ldr("../data/tile_map.xml");
 			text.resize(ldr.Size());
 			ldr.Data(&text[0], ldr.Size());
 			XMLDocument doc;
@@ -110,13 +111,13 @@ public:
 
 		if(m_mode == emMapEdition) {
 			m_map.saveToXML(doc);
-			std::fstream file("tile_map.xml", std::fstream::out);
+			std::fstream file("../data/tile_map.xml", std::fstream::out);
 			printf("Saving tile map\n");
 			file << doc;
 		}
 		else if(m_mode == emTileGroupEdition) {
 			m_group.saveToXML(doc);
-			std::fstream file("tile_group.xml", std::fstream::out);
+			std::fstream file("../data/tile_group.xml", std::fstream::out);
 			printf("Saving tile group\n");
 			file << doc;
 		}
@@ -157,7 +158,7 @@ int safe_main(int argc, char **argv)
 	int2 res(1920, 900);
 
 	CreateWindow(res, false);
-	SetWindowTitle("FT remake version 0.01");
+	SetWindowTitle("FTremake::editor ver 0.02");
 	GrabMouse(false);
 
 //	DTexture tex;
@@ -166,15 +167,6 @@ int safe_main(int argc, char **argv)
 	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
 
 	SetBlendingMode(bmNormal);
-
-	Sprite spr; {
-	//	Loader loader("../refs/sprites/robots/Behemoth.spr");
-		Loader loader("../refs/sprites/characters/LeatherFemale.spr");
-	//	Loader loader("../refs/sprites/robots/RobotTurrets/PopupTurret.spr");
-	//	spr.LoadFromSpr(loader);
-	}
-
-	int seqId = 0, dirId = 0, frameId = 0;
 
 	vector<string> file_names;
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
@@ -210,11 +202,6 @@ int safe_main(int argc, char **argv)
 	while(PollEvents()) {
 		Clear({128, 64, 0});
 		
-		if(IsKeyDown(Key_right)) seqId++;
-		if(IsKeyDown(Key_left)) seqId--;
-		if(IsKeyDown(Key_up)) dirId++;
-		if(IsKeyDown(Key_down)) dirId--;
-
 /*		if(IsKeyDown(Key_f5)) {
 			string fileName = mapName;
 			if(fileName.size())
@@ -247,37 +234,12 @@ int safe_main(int argc, char **argv)
 	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		if(GetTime() - lastSFrameTime > sframeTime) {
-			if(lastSFrameTime > sframeTime * 2.0)
-				lastSFrameTime = GetTime();
-			else
-				lastSFrameTime += sframeTime;
-
-			frameId++;
-		}
-
-		if(!spr.sequences.empty())
-			seqId %= spr.sequences.size();
-	
 		main_window.handleInput();
 		main_window.draw();
 		LookAt({0, 0});
 	//	int2 mpos = GetMousePos();
 	//	DrawLine(mpos - int2{10, 0}, mpos + int2{10, 0}, Color(255, 255, 255));
 	//	DrawLine(mpos - int2{0, 10}, mpos + int2{0, 10}, Color(255, 255, 255));
-
-		/*{
-			LookAt({0, 0});
-			char text[256];
-			fontTex->Bind();
-
-			//double time = GetTime();
-			//double frameTime = time - lastFrameTime;
-			//lastFrameTime = time;
-			
-			string profData = Profiler::GetStats();
-			Profiler::NextFrame();
-		}*/
 		
 		SwapBuffers();
 	}

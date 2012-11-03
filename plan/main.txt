@@ -10,10 +10,18 @@
  - proste ui:
    issues/2-simple_ui.txt DONE
 
+ - drobne rzeczy do zrobienia:
+	- wagi dla tile-ów w tile-grupach
+	- lepsza wizualizacja tile-ów, ich bboxów, etc. w edytorze
+	- lepsze sortowanie przed wyświetlaniem tile-ów
+	- dokończenie refactoringu nazewnictwa
+
  - rozstawianie encji i edycja ich parametrów
 
 2. Prosta gra:
  - poruszanie się postacią
+   issues/3-simple-character-movement.txt
+
  - strzelanie i niszczenie obiektów
  - interakcja z otoczeniem, kolizje
 

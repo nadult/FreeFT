@@ -1,0 +1,15 @@
+Prosty system poruszania się postacią:
+1. Klikamy gdzieś i postać ma tam dojść / dobiec
+  - struktura danych do wyznaczania kolizji (prosta, tzn. grid / mapa wysokości min/max) 3h
+  - kolizje z otoczeniem 2h
+  - prosty algorytm wyszukiwania ścieżki 2h
+2. Proste animacje: stanie, bieganie 3h
+3. Postać może trzymać różne przedmioty w rękach, a także może stać/kucać/leżeć 3h
+4. Animacje nie powinny być przerywane w trakcie odtwarzania (pewnie z pewnymi wyjątkami) 2h
+
++ESTIMATED_TIME: 15h
++TIME_SPENT: 0h
+
++WORK_LOG:
+
+
