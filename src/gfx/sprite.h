@@ -55,6 +55,8 @@ namespace gfx {
 		Texture getFrame(int seq_id, int frameId, int dirId, Rect *rect = nullptr) const;
 		int findSequence(const char *name) const;
 
+		void printInfo() const;
+
 		static int findDir(int dx, int dz);
 
 		vector<Frame> m_frames;

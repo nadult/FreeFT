@@ -5,6 +5,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <cstring>
+#include <cmath>
 
 float g_FloatParam[16];
 
@@ -29,6 +30,18 @@ int2 ScreenToWorld(int2 pos) {
 
 	return int2(y + x, y - x);
 }
+
+
+float Dot(const float2 &a, const float2 &b) { return a.x * b.x + a.y * b.y; }
+float Dot(const float3 &a, const float3 &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+float Dot(const float4 &a, const float4 &b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+
+float LengthSq(const float3 &v) { return Dot(v, v); }
+float DistanceSq(const float3 &a, const float3 &b) { return LengthSq(a - b); }
+
+float Length(const float3 &v) { return sqrt(LengthSq(v)); }
+float Distance(const float3 &a, const float3 &b) { return sqrt(DistanceSq(a, b)); }
+
 
 static void FindFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);

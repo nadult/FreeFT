@@ -372,6 +372,19 @@ namespace gfx
 		return 0;
 	}
 
+	void Sprite::printInfo() const {
+		for(int a = 0; a < (int)m_anims.size(); a++) {
+			const Sprite::Animation &anim = m_anims[a];
+			printf("Anim %d: %s (%d*%d frames)\n", a, anim.m_name.c_str(),
+					(int)anim.images.size() / anim.m_dir_count, anim.m_dir_count);
+		}
+		for(int s = 0; s < (int)m_sequences.size(); s++) {
+			const Sprite::Sequence &seq = m_sequences[s];
+			printf("Seq %d: %s (%d frames) -> anim: %d\n", s, seq.m_name.c_str(),
+					(int)seq.m_frames.size(), seq.m_anim_id);
+		}
+	}
+
 	ResourceMgr<Sprite> Sprite::mgr("../refs/sprites/", ".spr");
 
 }

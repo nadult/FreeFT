@@ -239,12 +239,16 @@ inline int3 AsXZ(int2 pos) { return int3(pos.x, 0, pos.y); }
 inline int3 AsXY(int2 pos) { return int3(pos.x, pos.y, 0); }
 inline int3 AsXZY(int2 pos, int y) { return int3(pos.x, y, pos.y); }
 
-inline float Dot(float2 a, float2 b) { return a.x * b.x + a.y * b.y; }
-inline float Dot(float3 a, float3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-inline float Dot(float4 a, float4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+float Dot(const float2 &a, const float2 &b);
+float Dot(const float3 &a, const float3 &b);
+float Dot(const float4 &a, const float4 &b);
 
-inline float LengthSq(float3 v) { return Dot(v, v); }
-inline float DistanceSq(const float3 &a, const float3 &b) { return LengthSq(a - b); }
+
+float LengthSq(const float3&);
+float DistanceSq(const float3&, const float3&);
+
+float Length(const float3&);
+float Distance(const float3&, const float3&);
 
 float2 WorldToScreen(float3 pos);
 int2 WorldToScreen(int3 pos);
@@ -308,6 +312,22 @@ void addAttribute(XMLNode *node, const char *name, const char *value);
 int getIntAttribute(XMLNode *node, const char *name);
 int getFloatAttribute(XMLNode *node, const char *name);
 const char *getStringAttribute(XMLNode *node, const char *name);
+
+
+
+//TODO: move somewhere else
+class Entity {
+public:
+	Entity(int3 bbox, int3 pos) :m_bbox(bbox), m_pos((float3)pos) { }
+	virtual ~Entity() { }
+
+	virtual void draw() const {
+
+	}
+
+	float3 m_pos;
+	int3 m_bbox;
+};
 
 
 #endif
