@@ -1,9 +1,8 @@
 #ifndef ACTOR_H
 #define ACTOR_H
 
-#include "base.h"
-#include <gfx/sprite.h>
-
+#include "entity.h"
+#include "gfx/sprite.h"
 
 class Actor: public Entity {
 public:
@@ -46,15 +45,14 @@ public:
 	static Order makeDoNothingOrder() { return Order{oDoNothing, int3(), 0}; }
 	static Order makeChangeStanceOrder(int target_stance) { return Order{oChangeStance, int3(), target_stance}; }
 
-	void addOrder(Order order);
+	void setNextOrder(Order order);
 	void think(double current_time, double time_delta);
 
-	void draw() const;
+	virtual void addToRender(gfx::SceneRenderer&) const;
 
 protected:
 	void issueNextOrder();
 	void issueMoveOrder();
-	void fixPos();
 
 	void setSequence(ActionId action);
 	void lookAt(int3 pos);
@@ -64,7 +62,7 @@ protected:
 
 	// orders
 	bool m_issue_next_order;
-	Order m_current_order;
+	Order m_order;
 	Order m_next_order;
 
 	// animation state

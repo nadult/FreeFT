@@ -48,11 +48,11 @@ struct int3
 	bool operator==(const int3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
 	bool operator!=(const int3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
 
-	union {
-		int2 xy;
-		struct { int x; int y; };
-	};
-	int z;
+	int2 xy() const { return int2(x, y); }
+	int2 xz() const { return int2(x, z); }
+	int2 yz() const { return int2(y, z); }
+
+	int x, y, z;
 };
 
 struct int4
@@ -122,6 +122,10 @@ struct float3
 	
 	bool operator==(const float3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
 	bool operator!=(const float3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
+
+	float2 xy() const { return float2(x, y); }
+	float2 xz() const { return float2(x, z); }
+	float2 yz() const { return float2(y, z); }
 
 	float x, y, z;
 };
@@ -250,13 +254,13 @@ float DistanceSq(const float3&, const float3&);
 float Length(const float3&);
 float Distance(const float3&, const float3&);
 
-float2 WorldToScreen(float3 pos);
-int2 WorldToScreen(int3 pos);
+float3 WorldToScreen(float3 pos);
+int3 WorldToScreen(int3 pos);
 
 float2 ScreenToWorld(float2 pos);
 int2 ScreenToWorld(int2 pos);
 
-inline float2 WorldToScreen(float2 pos) { return WorldToScreen(float3(pos.x, 0.0f, pos.y)); }
+inline float3 WorldToScreen(float2 pos) { return WorldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
 
 struct Color
@@ -312,22 +316,6 @@ void addAttribute(XMLNode *node, const char *name, const char *value);
 int getIntAttribute(XMLNode *node, const char *name);
 int getFloatAttribute(XMLNode *node, const char *name);
 const char *getStringAttribute(XMLNode *node, const char *name);
-
-
-
-//TODO: move somewhere else
-class Entity {
-public:
-	Entity(int3 bbox, int3 pos) :m_bbox(bbox), m_pos((float3)pos) { }
-	virtual ~Entity() { }
-
-	virtual void draw() const {
-
-	}
-
-	float3 m_pos;
-	int3 m_bbox;
-};
 
 
 #endif

@@ -134,7 +134,7 @@ namespace gfx
 		i32 posX, posY; sr(posX, posY);
 		m_offset = int2(posX, posY);
 		
-		m_offset -= int2(WorldToScreen(int3(m_bbox.x, 0, m_bbox.z)));
+		m_offset -= WorldToScreen(int3(m_bbox.x, 0, m_bbox.z)).xy();
 
 		char header[3];
 		sr.Data(header, sizeof(header));

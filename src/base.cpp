@@ -9,12 +9,25 @@
 
 float g_FloatParam[16];
 
-float2 WorldToScreen(float3 pos) {
-	return float2(6.0f * (pos.x - pos.z), 3.0f * (pos.x + pos.z) - 7.0f * pos.y);
+/* World To Screen Matrix:
+ * 			    | 6  3  7|
+ * 		*	    | 0 -7  6|
+ * 			    |-6  3  7|
+ *
+ * [WX WY WZ]   [SX SY SZ]
+ *
+ */
+
+float3 WorldToScreen(float3 pos) {
+	return float3(	6.0f * (pos.x - pos.z),
+					3.0f * (pos.x + pos.z) - 7.0f * pos.y,
+					7.0f * (pos.x + pos.z) + 6.0f * pos.y);
 }
 
-int2 WorldToScreen(int3 pos) {
-	return int2(6 * (pos.x - pos.z), 3 * (pos.x + pos.z) - 7 * pos.y);
+int3 WorldToScreen(int3 pos) {
+	return int3(	6 * (pos.x - pos.z),
+					3 * (pos.x + pos.z) - 7 * pos.y,
+					7 * (pos.x + pos.z) - 6 * pos.y);
 }
 
 float2 ScreenToWorld(float2 pos) {

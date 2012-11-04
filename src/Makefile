@@ -1,4 +1,4 @@
-all: editor
+all: editor game
 
 BUILD_DIR=/tmp/build
 
@@ -10,9 +10,10 @@ _dummy := $(shell [ -d $(BUILD_DIR)/script ] || mkdir -p $(BUILD_DIR)/script)
 _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
-	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile \
+	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler \
-	editor game base tile_map tile_map_editor tile_group tile_selector tile_group_editor actor \
+	editor game base tile_map actor entity \
+	tile_map_editor tile_group tile_selector tile_group_editor \
 	ui/window ui/button ui/tile_list
 #	sys/error_logger script/parser script/script script/sparser
 
@@ -59,7 +60,7 @@ game: $(SHARED_OBJECTS) $(BUILD_DIR)/game.o
 	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
 
 clean:
-	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor
+	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor game
 	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/script $(BUILD_DIR)/io $(BUILD_DIR)/sys $(BUILD_DIR)/ui
 	-rmdir $(BUILD_DIR)
 

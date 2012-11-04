@@ -1,5 +1,6 @@
 #include "actor.h"
-#include <gfx/device.h>
+#include "gfx/device.h"
+#include "gfx/scene_renderer.h"
 
 using namespace gfx;
 
@@ -11,12 +12,12 @@ Actor::Actor(const char *spr_name, int3 pos) :Entity(int3(1, 1, 1), pos) {
 
 	setSequence(aStanding);
 	lookAt(int3(0, 0, 0));
-	m_current_order = m_next_order = makeDoNothingOrder();
+	m_order = m_next_order = makeDoNothingOrder();
 
-	m_sprite->printInfo();
+//	m_sprite->printInfo();
 }
 
-void Actor::addOrder(Order order) {
+void Actor::setNextOrder(Order order) {
 	m_next_order = order;
 }
 
@@ -24,7 +25,7 @@ void Actor::think(double current_time, double time_delta) {
 	if(m_issue_next_order)
 		issueNextOrder();
 
-	OrderId order_id = m_current_order.m_id;
+	OrderId order_id = m_order.m_id;
 	if(order_id == oDoNothing) {
 		fixPos();
 		setSequence(aStanding);
@@ -33,8 +34,8 @@ void Actor::think(double current_time, double time_delta) {
 	else if(order_id == oMove) {
 		DAssert(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
 		
-		setSequence(m_current_order.m_flags? aRunning : aWalking);
-		float speed = m_current_order.m_flags? 20.0f:
+		setSequence(m_order.m_flags? aRunning : aWalking);
+		float speed = m_order.m_flags? 20.0f:
 			m_stance == sStanding? 10.0f : m_stance == sCrouching? 6.0f : 3.5f;
 
 		float dist = speed * time_delta;
@@ -54,7 +55,7 @@ void Actor::think(double current_time, double time_delta) {
 
 				if(++m_path_pos == (int)m_path.size() || m_next_order.m_id != oDoNothing) {
 					lookAt(target);
-					m_pos = target;
+					setPos(target);
 					m_path.clear();
 					m_issue_next_order = true;
 					break;
@@ -66,35 +67,30 @@ void Actor::think(double current_time, double time_delta) {
 				m_path_t = diff.x? (new_x - m_last_pos.x) / float(diff.x) : (new_z - m_last_pos.z) / float(diff.z);
 				float3 new_pos = (float3)m_last_pos + float3(diff) * m_path_t;
 				lookAt(target);
-				m_pos = new_pos;
+				setPos(new_pos);
 				break;
 			}
 		}
 	}
 	else if(order_id == oChangeStance)
-		setSequence(m_current_order.m_flags < 0? aStanceDown : aStanceUp);
+		setSequence(m_order.m_flags < 0? aStanceDown : aStanceUp);
 
 	animate(current_time);
 }
 
-void Actor::draw() const {
+void Actor::addToRender(gfx::SceneRenderer &out) const {
 	Sprite::Rect rect;
-	Texture frame =
-		m_sprite->getFrame(m_seq_id, m_frame_id, m_dir, &rect);
 
-	DTexture sprTex;
-	sprTex.SetSurface(frame);
-	sprTex.Bind();
+	PTexture spr_tex = new DTexture;
+	spr_tex->SetSurface(m_sprite->getFrame(m_seq_id, m_frame_id, m_dir, &rect));
 
-	int2 size(rect.right - rect.left, rect.bottom - rect.top);
-	float2 pos = WorldToScreen(m_pos);
-
-	DrawQuad(pos.x + rect.left - m_sprite->m_offset.x, pos.y + rect.top - m_sprite->m_offset.y, size.x, size.y);
+	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
+	out.addBBox(boundingBox());
 }
 
 void Actor::issueNextOrder() {
-	if(m_current_order.m_id == oChangeStance) {
-		m_stance = (StanceId)(m_stance - m_current_order.m_flags);
+	if(m_order.m_id == oChangeStance) {
+		m_stance = (StanceId)(m_stance - m_order.m_flags);
 		DAssert(m_stance >= 0 && m_stance < stanceCount);
 	}
 
@@ -108,7 +104,7 @@ void Actor::issueNextOrder() {
 				m_next_order = makeDoNothingOrder();
 		}
 
-		m_current_order = m_next_order;
+		m_order = m_next_order;
 	}
 
 	m_issue_next_order = false;
@@ -121,10 +117,17 @@ void Actor::issueMoveOrder() {
 	DAssert(order_id == oMove);
 
 	new_pos = Max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
-	new_pos.y = 0; //TODO: y
 
-	int x_diff = new_pos.x - (int)m_pos.x;
-	int z_diff = new_pos.z - (int)m_pos.z;
+	int3 cur_pos = (int3)m_pos;
+	if(cur_pos == new_pos) {
+		m_order = makeDoNothingOrder();
+		return;
+	}
+
+	m_last_pos = cur_pos;
+
+	int x_diff = new_pos.x - cur_pos.x;
+	int z_diff = new_pos.z - cur_pos.z;
 	int3 dir(x_diff < 0? -1 : 1, 0, z_diff < 0? -1 : 1);
 	x_diff = abs(x_diff);
 	z_diff = abs(z_diff);
@@ -137,12 +140,7 @@ void Actor::issueMoveOrder() {
 	m_path_pos = 0;
 	fixPos();
 
-	int3 cur_pos = (int3)m_pos;
-	if(cur_pos == new_pos) {
-		m_current_order = makeDoNothingOrder();
-		return;
-	}
-	m_current_order = m_next_order;
+	m_order = m_next_order;
 
 	DAssert(diag_diff || x_diff || z_diff);
 
@@ -164,14 +162,9 @@ void Actor::issueMoveOrder() {
 	}
 
 	if(m_path.size() <= 1 || m_stance != sStanding)
-		m_current_order.m_flags = 0;
+		m_order.m_flags = 0;
 
 	DAssert(!m_path.empty());
-}
-
-
-void Actor::fixPos() {
-	m_pos = (int3)(m_pos + float3(0.5f, 0, 0.5f));
 }
 
 // W konstruktorze wyszukac wszystkie animacje i trzymac id-ki zamiast nazw
@@ -234,6 +227,6 @@ void Actor::animate(double current_time) {
 }
 
 void Actor::onAnimFinished() {
-	if(m_current_order.m_id == oChangeStance)
+	if(m_order.m_id == oChangeStance)
 		m_issue_next_order = true;
 }

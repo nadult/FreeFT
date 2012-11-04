@@ -6,6 +6,8 @@
 #include "gfx/font.h"
 #include "gfx/sprite.h"
 #include "gfx/tile.h"
+#include "gfx/scene_renderer.h"
+
 #include "tile_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
@@ -28,7 +30,7 @@ int safe_main(int argc, char **argv)
 
 	SetBlendingMode(bmNormal);
 
-	Actor actor("characters/LeatherFemale", int3(0, 0, 0));
+	Actor actor("characters/LeatherFemale", int3(100, 1, 70));
 
 	vector<string> file_names;
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
@@ -78,22 +80,25 @@ int safe_main(int argc, char **argv)
 			view_pos -= GetMouseMove();
 
 		if(IsMouseKeyPressed(0) && !IsKeyPressed(Key_lctrl)) {
-			int3 wpos = AsXZ(ScreenToWorld(GetMousePos() + view_pos));
-			actor.addOrder(Actor::makeMoveOrder(wpos, IsKeyPressed(Key_lshift)));
+			int3 wpos = AsXZY(ScreenToWorld(GetMousePos() + view_pos), 1);
+			actor.setNextOrder(Actor::makeMoveOrder(wpos, IsKeyPressed(Key_lshift)));
 		}
 		if(IsKeyDown(Key_kp_add))
-			actor.addOrder(Actor::makeChangeStanceOrder(1));
+			actor.setNextOrder(Actor::makeChangeStanceOrder(1));
 		if(IsKeyDown(Key_kp_subtract))
-			actor.addOrder(Actor::makeChangeStanceOrder(-1));
+			actor.setNextOrder(Actor::makeChangeStanceOrder(-1));
 
 		double time = GetTime();
 		actor.think(time, time - last_time); //TODO: problem with delta in the first frame
 		last_time = time;
 
 		Clear({128, 64, 0});
-		LookAt(view_pos);
-		tile_map.render(IRect(int2(0, 0), res));
-		actor.draw();
+		SceneRenderer renderer(IRect(0, 0, res.x, res.y), view_pos);
+
+		tile_map.addToRender(renderer);
+		actor.addToRender(renderer);
+
+		renderer.render();
 
 		/*{
 			LookAt({0, 0});

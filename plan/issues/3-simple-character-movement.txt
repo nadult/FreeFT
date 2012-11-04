@@ -5,14 +5,15 @@ Prosty system poruszania się postacią:
   - prosty algorytm wyszukiwania ścieżki 2h
 2. Proste animacje: stanie, bieganie 3h  DONE
 3. Postać może trzymać różne przedmioty w rękach, a także może stać/kucać/leżeć 2h  DONE
-  - przedmioty sobie na razie darujmy, zrobimy je w issue#4: improve animations
+  - przedmioty sobie na razie darujmy, zrobimy je w issue#4: player actions & animations
 4. Animacje nie powinny być przerywane w trakcie odtwarzania (pewnie z pewnymi wyjątkami) 2h
 
 Nieprzewidzane, a konieczne(?) do zrobienia:
-- poprawny rendering (w kwestii kolejności) tile-ów wymieszanych ze sprite-ami (4h)
+5. poprawny rendering (w kwestii kolejności) tile-ów wymieszanych ze sprite-ami (4h)  DONE (good enough)
 
 +ESTIMATED_TIME: 15h
 +TIME_SPENT: 5h
 
 +WORK_LOG:
 03.11.12: 17:15 - 18:30, 19:00 - 22:45 (5h)
+04.11.12: 10:15 - 11:00, 12:00 - 14:45

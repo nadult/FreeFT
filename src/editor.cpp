@@ -4,7 +4,6 @@
 
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "gfx/sprite.h"
 #include "gfx/tile.h"
 #include "tile_map.h"
 #include "tile_group.h"
@@ -135,23 +134,6 @@ public:
 	ui::Button		*m_mode_button;
 	ui::Button		*m_save_button;
 };
-
-
-void DrawSprite(const gfx::Sprite &spr, int seqId, int frameId, int dirId, int3 position) {
-	Sprite::Rect rect;
-	Texture frame = spr.GetFrame(seqId, frameId % spr.NumFrames(seqId), dirId % spr.NumDirs(seqId), &rect);
-	
-	DTexture sprTex;
-	sprTex.SetSurface(frame);
-	sprTex.Bind();
-
-	int2 size(rect.right - rect.left, rect.bottom - rect.top);
-	int2 pos = int2(WorldToScreen(position));
-	DrawQuad(pos.x + rect.left - spr.offset.x, pos.y + rect.top - spr.offset.y, size.x, size.y);
-
-	DTexture::Bind0();
-	DrawBBox(IBox(position, position + spr.bbox));
-}
 
 int safe_main(int argc, char **argv)
 {

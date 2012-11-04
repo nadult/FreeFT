@@ -4,7 +4,7 @@
 #include "base.h"
 #include <map>
 
-namespace gfx { class Tile; };
+namespace gfx { class Tile; class SceneRenderer; };
 
 namespace SelectionMode {
 	enum Type {
@@ -91,6 +91,7 @@ public:
 	void resize(int2 size);
 	void clear();
 	void render(const IRect &view) const;
+	void addToRender(gfx::SceneRenderer&) const;
 
 	Node& operator()(int2 pos) { return m_nodes[pos.x + pos.y * m_size.x]; }
 	const Node& operator()(int2 pos) const { return m_nodes[pos.x + pos.y * m_size.x]; }

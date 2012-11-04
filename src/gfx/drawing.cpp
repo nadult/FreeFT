@@ -68,8 +68,8 @@ namespace gfx
 	void DrawLine(int3 wp1, int3 wp2, Color color) {
 		glBegin(GL_LINES);
 
-		float2 p1 = WorldToScreen(wp1);
-		float2 p2 = WorldToScreen(wp2);
+		float2 p1 = WorldToScreen(wp1).xy();
+		float2 p2 = WorldToScreen(wp2).xy();
 
 		glColor4ub(color.r, color.g, color.b, color.a);
 		glVertex2f(p1.x, p1.y);
@@ -92,10 +92,10 @@ namespace gfx
 	}
 
 	void DrawBBox(const IBox &box, Color col) {
-		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
-		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
-		float2 vz = WorldToScreen(int3(0, 0, box.Depth()));
-		float2 pos = WorldToScreen(box.min);
+		float2 vx = WorldToScreen(int3(box.Width(), 0, 0)).xy();
+		float2 vy = WorldToScreen(int3(0, box.Height(), 0)).xy();
+		float2 vz = WorldToScreen(int3(0, 0, box.Depth())).xy();
+		float2 pos = WorldToScreen(box.min).xy();
 
 		float2 pt[8] = {
 			pos + vx + vy,
@@ -112,7 +112,7 @@ namespace gfx
 		int front[] = {5, 4, 0, 1, 2, 6, 5, 1, 0, 3, 2};
 
 		glBegin(GL_LINE_STRIP);
-		glColor4ub(col.r >> 1, col.g >> 1, col.b >> 1, col.a);
+		glColor4ub(col.r >> 1, col.g >> 1, col.b >> 1, col.a / 2);
 		for(size_t n = 0; n < COUNTOF(back); n++)
 			glVertex2f(pt[back[n]].x, pt[back[n]].y);
 
