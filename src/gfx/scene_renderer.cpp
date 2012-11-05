@@ -1,6 +1,7 @@
 #include "gfx/scene_renderer.h"
 #include "gfx/device.h"
 #include <algorithm>
+#include "sys/profiler.h"
 
 using std::make_pair;
 using std::pair;
@@ -64,6 +65,8 @@ namespace gfx {
 	}
 
 	void SceneRenderer::render() {
+		PROFILE(tRendering)
+
 		SetScissorTest(true);
 		LookAt(m_view_pos - m_viewport.min);
 		IRect view(m_view_pos, m_view_pos + m_viewport.Size());
@@ -71,12 +74,13 @@ namespace gfx {
 		int xNodes = (m_viewport.Width() + node_size - 1) / node_size;
 		int yNodes = (m_viewport.Height() + node_size - 1) / node_size;
 
-		std::random_shuffle(m_elements.begin(), m_elements.end());
+//		std::random_shuffle(m_elements.begin(), m_elements.end());
 
 		// Screen is divided into a set of squares. Rendered elements are assigned to covered
 		// squares and sorting is done independently for each of the squares, so that, we can
 		// minize problems with rendering order
 		vector<std::pair<int, int> > grid;
+		grid.reserve(m_elements.size() * 4);
 
 		for(int n = 0; n < (int)m_elements.size(); n++) {
 			const Element &elem = m_elements[n];
@@ -152,6 +156,7 @@ namespace gfx {
 
 //		printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
+		SetScissorRect(m_viewport);
 		DTexture::Bind0();
 		for(int n = 0; n < (int)m_bboxes.size(); n++)
 			DrawBBox(m_bboxes[n]);

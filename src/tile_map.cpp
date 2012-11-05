@@ -25,7 +25,7 @@ IRect TileInstance::screenRect() const {
 }
 
 void TileInstance::setPos(int3 pos) {
-	DAssert(pos.x < TileMapNode::sizeX && pos.y < TileMapNode::sizeY && pos.z < TileMapNode::sizeZ);
+	DAssert(pos.x < TileMapNode::size_x && pos.y < TileMapNode::size_y && pos.z < TileMapNode::size_z);
 	DAssert(pos.x >= 0 && pos.y >= 0 && pos.z >= 0);
 	m_xz = u8(pos.x | (pos.z << 4));
 	m_y  = u8(pos.y);
@@ -35,7 +35,7 @@ void TileMap::resize(int2 newSize) {
 	clear();
 
 	//TODO: properly covert m_nodes to new coordinates
-	m_size = int2(newSize.x / Node::sizeX, newSize.y / Node::sizeZ);
+	m_size = int2(newSize.x / Node::size_x, newSize.y / Node::size_z);
 	m_nodes.resize(m_size.x * m_size.y);
 }
 
@@ -63,7 +63,7 @@ bool TileMapNode::isColliding(const IBox &box) const {
 }
 
 bool TileMapNode::isInside(const int3 &point) const {
-	return IBox(0, 0, 0, sizeX, sizeY, sizeZ).IsInside(point);
+	return IBox(0, 0, 0, size_x, size_y, size_z).IsInside(point);
 }
 	
 const TileInstance *TileMapNode::at(int3 pos) const {
@@ -182,8 +182,8 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 
 	XMLNode *mnode = doc.allocate_node(node_element, "map");
 	doc.append_node(mnode);
-	addAttribute(mnode, "size_x", m_size.x * Node::sizeX);
-	addAttribute(mnode, "size_y", m_size.y * Node::sizeZ);
+	addAttribute(mnode, "size_x", m_size.x * Node::size_x);
+	addAttribute(mnode, "size_y", m_size.y * Node::size_z);
 
 	for(int n = 0; n < (int)m_nodes.size(); n++) {
 		const TileMapNode &node = m_nodes[n];
@@ -220,11 +220,10 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 }
 
 IBox TileMap::boundingBox() const {
-	return IBox(0, 0, 0, m_size.x * Node::sizeX, 64, m_size.y * Node::sizeZ);
+	return IBox(0, 0, 0, m_size.x * Node::size_x, 64, m_size.y * Node::size_z);
 }
 
 void TileMap::addToRender(gfx::SceneRenderer &out) const {
-	PROFILE(tRendering)
 	int vNodes = 0, vTiles = 0;
 
 	IRect view = out.targetRect();
@@ -266,22 +265,22 @@ void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) 
 	if(!testPosition(pos, tile.bbox))
 		return;
 
-	int2 nodeCoord(pos.x / Node::sizeX, pos.z / Node::sizeZ);
-	int3 node_pos = pos - int3(nodeCoord.x * Node::sizeX, 0, nodeCoord.y * Node::sizeZ);
+	int2 nodeCoord(pos.x / Node::size_x, pos.z / Node::size_z);
+	int3 node_pos = pos - int3(nodeCoord.x * Node::size_x, 0, nodeCoord.y * Node::size_z);
 
 	(*this)(nodeCoord).addTile(tile, node_pos, test_for_collision);
 }
 
 bool TileMap::testPosition(int3 pos, int3 box) const {
-	IRect nodeRect(pos.x / Node::sizeX, pos.z / Node::sizeZ,
-					(pos.x + box.x - 1) / Node::sizeX, (pos.z + box.x - 1) / Node::sizeZ);
+	IRect nodeRect(pos.x / Node::size_x, pos.z / Node::size_z,
+					(pos.x + box.x - 1) / Node::size_x, (pos.z + box.x - 1) / Node::size_z);
 	IBox worldBox(pos, pos + box);
 
 	if(pos.x < 0 || pos.y < 0 || pos.z < 0)
 		return false;
 
-	if(worldBox.max.x > m_size.x * Node::sizeX ||
-		worldBox.max.y > Node::sizeY || worldBox.max.z > m_size.y * Node::sizeZ)
+	if(worldBox.max.x > m_size.x * Node::size_x ||
+		worldBox.max.y > Node::size_y || worldBox.max.z > m_size.y * Node::size_z)
 		return false;
 
 	for(uint n = 0; n < m_nodes.size(); n++) {
@@ -298,7 +297,7 @@ void TileMap::drawBoxHelpers(const IBox &box) const {
 	gfx::DTexture::Bind0();
 
 	int3 pos = box.min, bbox = box.max - box.min;
-	int3 tsize(m_size.x * Node::sizeX, Node::sizeY, m_size.y * Node::sizeZ);
+	int3 tsize(m_size.x * Node::size_x, Node::size_y, m_size.y * Node::size_z);
 
 	gfx::DrawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
 	gfx::DrawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
@@ -340,7 +339,7 @@ void TileMap::select(const IBox &box, SelectionMode::Type mode) {
 }
 
 const TileInstance *TileMap::at(int3 pos) const {
-	int id = pos.x / Node::sizeX + (pos.z / Node::sizeZ) * m_size.x;
+	int id = pos.x / Node::size_x + (pos.z / Node::size_z) * m_size.x;
 	DAssert(id >= 0 && id < (int)m_nodes.size());
 
 	return m_nodes[id].at(pos - nodePos(id));

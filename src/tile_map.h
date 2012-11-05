@@ -56,9 +56,9 @@ struct TileMapNode {
 		:m_bounding_box(0, 0, 0, 0, 0, 0), m_screen_rect(0, 0, 0, 0), m_any_selected(false) { }
 
 	enum {
-		sizeX = 16,
-		sizeY = 256,
-		sizeZ = 16,
+		size_x = 16,
+		size_y = 256,
+		size_z = 16,
 	};
 
 	void addTile(const gfx::Tile&, int3 pos, bool test_for_collision);
@@ -74,6 +74,8 @@ struct TileMapNode {
 
 	IRect screenRect() const { return m_screen_rect; }
 	IBox  boundingBox() const { return m_bounding_box; }
+
+	const TileInstance& operator()(int idx) const { return m_instances[idx]; }
 	int   instanceCount() const { return m_instances.size(); }
 
 protected:
@@ -88,16 +90,23 @@ class TileMap {
 public:
 	typedef TileMapNode Node;
 
-	int2 size() const { return m_size; }
+	int2 size() const { return int2(m_size.x * Node::size_x, m_size.y * Node::size_z); }
+
 	void resize(int2 size);
 	void clear();
 	void addToRender(gfx::SceneRenderer&) const;
 
+	// in TileMap coordinates, that is each unit is single TileMapNode
 	Node& operator()(int2 pos) { return m_nodes[pos.x + pos.y * m_size.x]; }
 	const Node& operator()(int2 pos) const { return m_nodes[pos.x + pos.y * m_size.x]; }
 
+	const Node& operator()(int idx) const { return m_nodes[idx]; }
+	int nodeCount() const { return (int)m_nodes.size(); }
+	int nodeCountX() const { return m_size.x; }
+	int nodeCountZ() const { return m_size.y; }
+
 	IBox boundingBox() const;
-	int3 nodePos(int id) const { return int3((id % m_size.x) * Node::sizeX, 0, (id / m_size.x) * Node::sizeZ); }
+	int3 nodePos(int id) const { return int3((id % m_size.x) * Node::size_x, 0, (id / m_size.x) * Node::size_z); }
 
 	// Tile has to exist as long as TileMap does
 	void addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision = true);

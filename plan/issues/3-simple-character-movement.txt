@@ -10,7 +10,7 @@ Prosty system poruszania się postacią:
 4. Animacje nie powinny być przerywane w trakcie odtwarzania (pewnie z pewnymi wyjątkami) 2h
 
 Nieprzewidzane, a konieczne(?) do zrobienia:
-5. poprawny rendering (w kwestii kolejności) tile-ów wymieszanych ze sprite-ami (4h)  DONE (good enough)
+5. poprawny rendering (w kwestii kolejności) tile-ów wymieszanych ze sprite-ami (4h)  DONE (kinda slow, but ok)
 
 +ESTIMATED_TIME: 15h
 +TIME_SPENT: 5h
@@ -18,4 +18,4 @@ Nieprzewidzane, a konieczne(?) do zrobienia:
 +WORK_LOG:
 03.11.12: 17:15 - 18:30, 19:00 - 22:45 (5h)
 04.11.12: 10:15 - 11:00, 12:00 - 14:45, 19:30 - 20:30, 21:45 - 22:45 (6h)
-05.11.12: 15:15 - 
+05.11.12: 15:15 - 17:45, 18:15 - 

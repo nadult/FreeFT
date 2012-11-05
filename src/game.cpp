@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <cstdio>
 #include <algorithm>
+#include <unistd.h>
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -77,8 +78,11 @@ int safe_main(int argc, char **argv)
 		tile_map.loadFromXML(doc);
 	}
 	
-	HeightMap height_map(tile_map.size());
+	HeightMap height_map(tile_map.size() / 2);
 	height_map.update(tile_map);
+	height_map.printInfo();
+
+	PTexture tex = height_map.getTexture();
 
 	double last_time = GetTime();
 
@@ -109,8 +113,12 @@ int safe_main(int argc, char **argv)
 		actor.addToRender(renderer);
 
 		renderer.render();
+		tex->Bind();
 
-		/*{
+		LookAt(int2(0, 0));
+		DrawQuad(0, 0, 256, 256);
+
+		{
 			LookAt({0, 0});
 			char text[256];
 			fontTex->Bind();
@@ -121,7 +129,8 @@ int safe_main(int argc, char **argv)
 			
 			string profData = Profiler::GetStats();
 			Profiler::NextFrame();
-		}*/
+//			printf("%s\n", profData.c_str());
+		}
 
 		SwapBuffers();
 	}

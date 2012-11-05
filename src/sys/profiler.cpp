@@ -18,6 +18,8 @@ namespace
 
 	int counters[numCounters] = {0, };
 	double timers[numTimers] = {0.0, };
+	double avg_timers[numTimers] = {0.0, };
+	int prof_count = 0;
 }
 
 
@@ -32,6 +34,10 @@ namespace Profiler {
 	}
 
 	void NextFrame() {
+		for(int n = 0; n < numTimers; n++)
+			avg_timers[n] += timers[n];
+		prof_count++;
+
 		memset(counters, 0, sizeof(counters));
 		memset(timers, 0, sizeof(timers));
 	}
