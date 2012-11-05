@@ -6,6 +6,8 @@ using namespace gfx;
 
 Actor::Actor(const char *spr_name, int3 pos) :Entity(int3(1, 1, 1), pos) {
 	m_sprite = Sprite::mgr[spr_name];
+//	m_sprite->printInfo();
+
 	m_bbox = m_sprite->m_bbox;
 	m_issue_next_order = false;
 	m_stance = sStanding;
@@ -13,8 +15,6 @@ Actor::Actor(const char *spr_name, int3 pos) :Entity(int3(1, 1, 1), pos) {
 	setSequence(aStanding);
 	lookAt(int3(0, 0, 0));
 	m_order = m_next_order = makeDoNothingOrder();
-
-//	m_sprite->printInfo();
 }
 
 void Actor::setNextOrder(Order order) {
@@ -85,7 +85,7 @@ void Actor::addToRender(gfx::SceneRenderer &out) const {
 	spr_tex->SetSurface(m_sprite->getFrame(m_seq_id, m_frame_id, m_dir, &rect));
 
 	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
-	out.addBBox(boundingBox());
+//	out.addBBox(boundingBox());
 }
 
 void Actor::issueNextOrder() {

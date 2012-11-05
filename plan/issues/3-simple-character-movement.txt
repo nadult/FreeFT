@@ -1,6 +1,7 @@
 Prosty system poruszania się postacią:
 1. Klikamy gdzieś i postać ma tam dojść / dobiec
   - struktura danych do wyznaczania kolizji (prosta, tzn. grid / mapa wysokości min/max) 3h
+    wielopoziomowa, wielo-rozdzielczościowa (max kilka rozdzielczości, a może nawet tylko dwie) height-mapa
   - kolizje z otoczeniem 2h
   - prosty algorytm wyszukiwania ścieżki 2h
 2. Proste animacje: stanie, bieganie 3h  DONE
@@ -16,4 +17,5 @@ Nieprzewidzane, a konieczne(?) do zrobienia:
 
 +WORK_LOG:
 03.11.12: 17:15 - 18:30, 19:00 - 22:45 (5h)
-04.11.12: 10:15 - 11:00, 12:00 - 14:45
+04.11.12: 10:15 - 11:00, 12:00 - 14:45, 19:30 - 20:30, 21:45 - 22:45 (6h)
+05.11.12: 15:15 - 

@@ -13,17 +13,19 @@ namespace gfx {
 		void addBBox(IBox box); //TODO: colors
 		void render();
 
-		IRect targetRect() const { return m_viewport + m_view_pos; }
+		IRect targetRect() const { return IRect(m_view_pos, m_view_pos + m_viewport.Size()); }
+
+		enum { node_size = 128 };
 
 	protected:
 		struct Element {
-			bool operator<(const Element &rhs) const;
+			int Compare(const Element &rhs) const;
 
 			//TODO: weak ptr to texture, make sure that textures exist
 			PTexture m_texture;
 			IRect m_rect;
-			float3 m_pos;
-			int3 m_bbox;
+			IBox m_bbox;
+			Color m_color;
 		};
 
 		vector<Element> m_elements;

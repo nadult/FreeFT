@@ -9,6 +9,7 @@
 #include "gfx/scene_renderer.h"
 
 #include "tile_map.h"
+#include "height_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
 #include "actor.h"
@@ -17,7 +18,11 @@ using namespace gfx;
 
 int safe_main(int argc, char **argv)
 {
+#if defined(RES_X) && defined(RES_Y)
+	int2 res(RES_X, RES_Y);
+#else
 	int2 res(1400, 768);
+#endif
 
 	CreateWindow(res, false);
 	SetWindowTitle("FTremake ver 0.02");
@@ -30,13 +35,14 @@ int safe_main(int argc, char **argv)
 
 	SetBlendingMode(bmNormal);
 
-	Actor actor("characters/LeatherFemale", int3(100, 1, 70));
+	Actor actor("characters/Power", int3(100, 1, 70));
 
 	vector<string> file_names;
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
+	FindFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
 //	FindFiles(file_names, "../refs/tiles/", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
@@ -60,6 +66,7 @@ int safe_main(int argc, char **argv)
 	PTexture fontTex = Font::tex_mgr["font1"];
 
 	TileMap tile_map;
+
 	if(access("../data/tile_map.xml", R_OK) == 0) {
 		string text;
 		Loader ldr("../data/tile_map.xml");
@@ -69,6 +76,9 @@ int safe_main(int argc, char **argv)
 		doc.parse<0>(&text[0]); 
 		tile_map.loadFromXML(doc);
 	}
+	
+	HeightMap height_map(tile_map.size());
+	height_map.update(tile_map);
 
 	double last_time = GetTime();
 

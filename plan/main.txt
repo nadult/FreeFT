@@ -1,4 +1,3 @@
-
 0. Szczegółowy opis co trzeba zrobić w każdym z punktów, zastanowienie się ile czasu co zajmie,
    plik issue dla każdego podpunktu
 
@@ -10,18 +9,23 @@
  - proste ui:
    issues/2-simple_ui.txt DONE
 
- - drobne rzeczy do zrobienia:
-	- wagi dla tile-ów w tile-grupach
-	- lepsza wizualizacja tile-ów, ich bboxów, etc. w edytorze
-	- lepsze sortowanie przed wyświetlaniem tile-ów
-	- dokończenie refactoringu nazewnictwa
-
  - rozstawianie encji i edycja ich parametrów
 
 2. Prosta gra:
  - poruszanie się postacią
    issues/3-simple-character-movement.txt
 
- - strzelanie i niszczenie obiektów
  - interakcja z otoczeniem, kolizje
+ - strzelanie i niszczenie obiektów
+
+3. Drobne rzeczy do zrobienia:
+	- edytor: wagi dla tile-ów w tile-grupach
+	- edytor: lepsza wizualizacja tile-ów, ich bboxów, etc. w edytorze
+	- lepsze sortowanie przed wyświetlaniem tile-ów
+	- dokończenie refactoringu nazewnictwa
+    - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
+    - plan na dłuższy okres (rozłożony na kilka problemów, które można rozwiązywać 
+	  niezależnie od siebie)
+	- przyspieszyc rendering sceny
+
 

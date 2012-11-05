@@ -1,6 +1,5 @@
 #include "tile_map.h"
 #include "gfx/tile.h"
-#include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 #include "sys/profiler.h"
 #include <algorithm>
@@ -224,53 +223,10 @@ IBox TileMap::boundingBox() const {
 	return IBox(0, 0, 0, m_size.x * Node::sizeX, 64, m_size.y * Node::sizeZ);
 }
 
-void TileMap::render(const IRect &view) const {
-	PROFILE(tRendering)
-
-	gfx::DTexture::Bind0();
-	gfx::DrawBBox(boundingBox());
-
-	int vNodes = 0, vTiles = 0;
-	{
-		PROFILE(tRenderingPreparation)
-	}
-	//TODO: selecting visible nodes
-	//TODO: sorting tiles
-	
-	for(uint n = 0; n < m_nodes.size(); n++) {
-		const Node &node = m_nodes[n];
-		if(!node.instanceCount())
-			continue;
-
-		int3 node_pos = nodePos(n);
-		IRect screenRect = node.screenRect() + WorldToScreen(node_pos).xy();
-		// possible error from rounding node & tile positions
-		screenRect.min -= int2(2, 2);
-		screenRect.max += int2(2, 2);
-//		if(!Overlaps(screenRect, view))
-//			continue;
-		vNodes++;
-
-		for(uint i = 0; i < node.m_instances.size(); i++) {
-			const TileInstance &instance = node.m_instances[i];
-			const gfx::Tile *tile = instance.m_tile;
-			int3 pos = instance.pos() + node_pos;
-			int2 screenPos = WorldToScreen(pos).xy();
-
-			vTiles++;
-			tile->Draw(screenPos);
-			if(instance.isSelected()) {
-				gfx::DTexture::Bind0();
-				gfx::DrawBBox(IBox(pos, pos + tile->bbox));
-			}
-		}
-	}
-
-	Profiler::UpdateCounter(Profiler::cRenderedNodes, vNodes);
-	Profiler::UpdateCounter(Profiler::cRenderedTiles, vTiles);
-}
-
 void TileMap::addToRender(gfx::SceneRenderer &out) const {
+	PROFILE(tRendering)
+	int vNodes = 0, vTiles = 0;
+
 	IRect view = out.targetRect();
 
 	for(uint n = 0; n < m_nodes.size(); n++) {
@@ -284,8 +240,10 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 		// possible error from rounding node & tile positions
 		screen_rect.min -= int2(2, 2);
 		screen_rect.max += int2(2, 2);
+
 		if(!Overlaps(screen_rect, view))
 			continue;
+		vNodes++;
 
 		for(uint i = 0; i < node.m_instances.size(); i++) {
 			const TileInstance &instance = node.m_instances[i];
@@ -294,9 +252,14 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			
 			gfx::PTexture tex = tile->dTexture;
 			out.add(tex, IRect(0, 0, tex->Size().x, tex->Size().y) - tile->offset, pos, tile->bbox);
-//			out.addBBox(IBox(pos, pos + tile->bbox));
+			if(instance.isSelected())
+				out.addBBox(IBox(pos, pos + tile->bbox));
+			vTiles++;
 		}
 	}
+	
+	Profiler::UpdateCounter(Profiler::cRenderedNodes, vNodes);
+	Profiler::UpdateCounter(Profiler::cRenderedTiles, vTiles);
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {

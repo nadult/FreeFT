@@ -88,9 +88,9 @@ class TileMap {
 public:
 	typedef TileMapNode Node;
 
+	int2 size() const { return m_size; }
 	void resize(int2 size);
 	void clear();
-	void render(const IRect &view) const;
 	void addToRender(gfx::SceneRenderer&) const;
 
 	Node& operator()(int2 pos) { return m_nodes[pos.x + pos.y * m_size.x]; }

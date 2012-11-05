@@ -2,6 +2,7 @@
 #include "tile_group.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
+#include "gfx/scene_renderer.h"
 
 using namespace gfx;
 
@@ -270,11 +271,16 @@ bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final
 void TileMapEditor::drawContents() const {
 	Assert(m_tile_map);
 
+
+	gfx::SceneRenderer renderer(clippedRect(), m_view_pos);
+	m_tile_map->addToRender(renderer);
+	renderer.render();
+
+	SetScissorRect(clippedRect());
+	SetScissorTest(true);
 	IRect view_rect = clippedRect() - m_view_pos;
 	LookAt(-view_rect.min);
 	int2 wsize = view_rect.Size();
-
-	m_tile_map->render(IRect(m_view_pos, m_view_pos + wsize));
 
 	if(m_show_grid) {
 		int2 p[4] = {
@@ -291,7 +297,7 @@ void TileMapEditor::drawContents() const {
 
 		drawGrid(box, m_grid_size, m_cursor_height);
 	}
-
+	
 	if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom) && m_new_tile) {
 		int3 pos = m_selection.min;
 		int3 bbox = m_new_tile->bbox;

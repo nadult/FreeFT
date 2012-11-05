@@ -137,7 +137,11 @@ public:
 
 int safe_main(int argc, char **argv)
 {
-	int2 res(1920, 900);
+#if defined(RES_X) && defined(RES_Y)
+	int2 res(RES_X, RES_Y);
+#else
+	int2 res(1800, 768);
+#endif
 
 	CreateWindow(res, false);
 	SetWindowTitle("FTremake::editor ver 0.02");
@@ -155,6 +159,9 @@ int safe_main(int argc, char **argv)
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
 	FindFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
+	FindFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
+//	FindFiles(file_names, "../refs/tiles/VILLAGE/", ".til", 1);
+//	FindFiles(file_names, "../refs/tiles/Robotic/", ".til", 1);
 //	FindFiles(file_names, "../refs/tiles/", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
 	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
