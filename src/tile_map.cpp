@@ -252,7 +252,7 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			gfx::PTexture tex = tile->dTexture;
 			out.add(tex, IRect(0, 0, tex->Size().x, tex->Size().y) - tile->offset, pos, tile->bbox);
 			if(instance.isSelected())
-				out.addBBox(IBox(pos, pos + tile->bbox));
+				out.addBox(IBox(pos, pos + tile->bbox));
 			vTiles++;
 		}
 	}
@@ -262,7 +262,7 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
-	if(!testPosition(pos, tile.bbox))
+	if(isOverlapping(IBox(pos, pos + tile.bbox)))
 		return;
 
 	int2 nodeCoord(pos.x / Node::size_x, pos.z / Node::size_z);
@@ -271,26 +271,19 @@ void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) 
 	(*this)(nodeCoord).addTile(tile, node_pos, test_for_collision);
 }
 
-bool TileMap::testPosition(int3 pos, int3 box) const {
-	IRect nodeRect(pos.x / Node::size_x, pos.z / Node::size_z,
-					(pos.x + box.x - 1) / Node::size_x, (pos.z + box.x - 1) / Node::size_z);
-	IBox worldBox(pos, pos + box);
-
-	if(pos.x < 0 || pos.y < 0 || pos.z < 0)
-		return false;
-
-	if(worldBox.max.x > m_size.x * Node::size_x ||
-		worldBox.max.y > Node::size_y || worldBox.max.z > m_size.y * Node::size_z)
-		return false;
-
-	for(uint n = 0; n < m_nodes.size(); n++) {
-		IBox bbox(pos, pos + box);
-		bbox -= nodePos(n);
-		if(m_nodes[n].isColliding(bbox))
+bool TileMap::isOverlapping(const IBox &box) const {
+	if(!Overlaps(box, boundingBox()))
 			return false;
-	}
 
-	return true;
+//	IRect nodeRect(pos.x / Node::size_x, pos.z / Node::size_z,
+//					(pos.x + box.x) / Node::size_x, (pos.z + box.x) / Node::size_z);
+
+	//TODO: speed up
+	for(uint n = 0; n < m_nodes.size(); n++)
+		if(m_nodes[n].isColliding(box - nodePos(n)))
+			return true;
+
+	return false;
 }
 
 void TileMap::drawBoxHelpers(const IBox &box) const {

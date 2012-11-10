@@ -119,8 +119,8 @@ public:
 	void deleteSelected();
 	void moveSelected(int3 offset);
 
-	// returns true if box doesn't collide with any of the tiles
-	bool testPosition(int3 pos, int3 box) const;
+	// returns true if box collides with any of the tiles
+	bool isOverlapping(const IBox &box) const;
 
 	void loadFromXML(const XMLDocument&);
 	void saveToXML(XMLDocument&) const;

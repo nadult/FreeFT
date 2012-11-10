@@ -306,7 +306,7 @@ void TileMapEditor::drawContents() const {
 			for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
 				int3 pos(x, m_selection.min.y, z);
 
-				bool collides = !m_tile_map->testPosition(pos, bbox);
+				bool collides = m_tile_map->isOverlapping(IBox(pos, pos + bbox));
 				Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
 				m_new_tile->Draw(int2(WorldToScreen(pos).xy()), color);

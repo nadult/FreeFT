@@ -4,50 +4,46 @@
 
 namespace gfx
 {
-	namespace
-	{
-		void TestGlError(const char *msg) {
-			int err = glGetError();
-			if(err == GL_NO_ERROR)
-				return;
+	void TestGlError(const char *msg) {
+		int err = glGetError();
+		if(err == GL_NO_ERROR)
+			return;
 
-			switch(err) {
-		#define CASE(e) case e: ThrowException(msg, ": " #e );
-				CASE(GL_INVALID_ENUM)
-				CASE(GL_INVALID_VALUE)
-				CASE(GL_INVALID_OPERATION)
-				CASE(GL_STACK_OVERFLOW)
-				CASE(GL_STACK_UNDERFLOW)
-				CASE(GL_OUT_OF_MEMORY)
-				default: ThrowException(msg);
-		#undef CASE
-			}
+		switch(err) {
+	#define CASE(e) case e: ThrowException(msg, (const char*)": " #e );
+			CASE(GL_INVALID_ENUM)
+			CASE(GL_INVALID_VALUE)
+			CASE(GL_INVALID_OPERATION)
+			CASE(GL_STACK_OVERFLOW)
+			CASE(GL_STACK_UNDERFLOW)
+			CASE(GL_OUT_OF_MEMORY)
+			default: ThrowException(msg);
+	#undef CASE
 		}
+	}
 
-		void SetTextureData(int level, TextureFormat fmt, int width, int height, const void *pixels) {
-			DAssert(width <= 4096 && height <= 4096);
+	void SetTextureData(int level, TextureFormat fmt, int width, int height, const void *pixels) {
+		DAssert(width <= 4096 && height <= 4096);
 
-			if(fmt.IsCompressed()) {
-				ThrowException("Texture compression is not supported");
-			}
-			else {
-				glTexImage2D(GL_TEXTURE_2D, level, fmt.GlInternal(), width, height, 0,
-								fmt.GlFormat(), fmt.GlType(), pixels);
-
-				TestGlError("Error while loading texture surface to the device");
-			}
+		if(fmt.IsCompressed()) {
+			ThrowException("Texture compression is not supported");
 		}
+		else {
+			glTexImage2D(GL_TEXTURE_2D, level, fmt.GlInternal(), width, height, 0,
+							fmt.GlFormat(), fmt.GlType(), pixels);
 
-		void GetTextureData(int level, TextureFormat fmt, void *pixels) {
-			if(fmt.IsCompressed()) {
-				ThrowException("Texture compression is not supported");
-			}
-			else {
-				glGetTexImage(GL_TEXTURE_2D, level, fmt.GlFormat(), fmt.GlType(), pixels);
-				TestGlError("Error while loading texture surface from the device");
-			}
+			TestGlError("Error while loading texture surface to the device");
 		}
+	}
 
+	void GetTextureData(int level, TextureFormat fmt, void *pixels) {
+		if(fmt.IsCompressed()) {
+			ThrowException("Texture compression is not supported");
+		}
+		else {
+			glGetTexImage(GL_TEXTURE_2D, level, fmt.GlFormat(), fmt.GlType(), pixels);
+			TestGlError("Error while loading texture surface from the device");
+		}
 	}
 
 	DTexture::DTexture() :id(0), mips(0) { }

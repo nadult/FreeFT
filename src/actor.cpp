@@ -1,6 +1,7 @@
 #include "actor.h"
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
+#include "tile_map.h"
 
 using namespace gfx;
 
@@ -81,16 +82,25 @@ void Actor::think(double current_time, double time_delta) {
 void Actor::addToRender(gfx::SceneRenderer &out) const {
 	Sprite::Rect rect;
 
+	//TODO: do not allocate texture every frame
 	PTexture spr_tex = new DTexture;
-	spr_tex->SetSurface(m_sprite->getFrame(m_seq_id, m_frame_id, m_dir, &rect));
+	gfx::Texture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir, &rect);
+	spr_tex->SetSurface(tex);
 
 	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
-//	out.addBBox(boundingBox());
+	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
+				Color(255, 0, 0) : Color(255, 255, 255));
 }
 
 void Actor::issueNextOrder() {
 	if(m_order.m_id == oChangeStance) {
 		m_stance = (StanceId)(m_stance - m_order.m_flags);
+		//TODO: different bboxes for stances
+//		m_bbox = m_sprite->m_bbox;
+//		if(m_stance == sCrouching && m_bbox.y == 9)
+//			m_bbox.y = 5;
+//		if(m_stance == sProne && m_bbox.y == 9)
+//			m_bbox.y = 2;
 		DAssert(m_stance >= 0 && m_stance < stanceCount);
 	}
 

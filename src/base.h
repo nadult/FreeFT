@@ -160,6 +160,7 @@ struct Rect
 	Type Height() const { return max.y - min.y; }
 	Type2 Size() const { return max - min; }
 	Type2 Center() const { return (max + min) / Type(2); }
+	Type SurfaceArea() const { return (max.x - min.x) * (max.y - min.y); }
 
 	Rect operator+(const Type2 &offset) const { return Rect(min + offset, max + offset); }
 	Rect operator-(const Type2 &offset) const { return Rect(min - offset, max - offset); }

@@ -8,6 +8,7 @@ using std::pair;
 
 namespace gfx {
 
+
 	int SceneRenderer::Element::Compare(const SceneRenderer::Element &rhs) const {
 		//DAssert(!Overlaps(box, box));
 
@@ -26,7 +27,9 @@ namespace gfx {
 	SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos) :m_viewport(viewport), m_view_pos(view_pos) {
 	}
 
-	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, int3 bbox) {
+	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, int3 bbox, Color color) {
+		DAssert(texture);
+
 		rect += (int2)WorldToScreen(pos).xy();
 		if(!Overlaps(rect, IRect(m_view_pos, m_view_pos + m_viewport.Size())))
 			return;
@@ -39,14 +42,29 @@ namespace gfx {
 		new_elem.m_texture = texture;
 		new_elem.m_bbox = IBox(ipos, ipos + bbox + frac);
 		new_elem.m_rect = rect;
-		new_elem.m_color = Color(255, 255, 255);
+		new_elem.m_color = color;
 
 		m_elements.push_back(new_elem);
 	}
 
-	void SceneRenderer::addBBox(IBox bbox) {
-		//TODO: rozbic bboxy na poszczegolne linie i dodac jako normalne elementy
-		m_bboxes.push_back(bbox);
+	void SceneRenderer::addBox(IBox bbox, Color color, bool is_filled) {
+		if(!is_filled) {
+			m_wire_boxes.push_back(BoxElement{bbox, color});
+			return;
+		}
+
+		int2 corners[4] = {
+			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)).xy(),
+			WorldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)).xy(),
+			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)).xy(),
+			WorldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)).xy() };
+
+		Element new_elem;
+		new_elem.m_texture = nullptr;
+		new_elem.m_bbox = bbox;
+		new_elem.m_rect = IRect(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
+		new_elem.m_color = color;
+		m_elements.push_back(new_elem);
 	}
 
 
@@ -89,8 +107,10 @@ namespace gfx {
 			for(int y = rect.min.y - rect.min.y % node_size; y < rect.max.y; y += node_size)
 				for(int x = rect.min.x - rect.min.x % node_size; x < rect.max.x; x += node_size) {
 					int grid_x = x / node_size, grid_y = y / node_size;
-					int node_id = grid_x + grid_y * xNodes;
-					grid.push_back(std::make_pair(node_id, n));
+					if(grid_x >= 0 && grid_y >= 0 && grid_x < xNodes && grid_y < yNodes) {
+						int node_id = grid_x + grid_y * xNodes;
+						grid.push_back(std::make_pair(node_id, n));
+					}
 				}
 		}
 
@@ -143,12 +163,19 @@ namespace gfx {
 
 			int2 grid_tl = m_viewport.min + int2(grid_x * node_size, grid_y * node_size);
 			IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
+			grid_rect.max = Min(grid_rect.max, m_viewport.max);
 			SetScissorRect(grid_rect);
 
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
-				elem.m_texture->Bind();
-				DrawQuad(elem.m_rect.min, elem.m_rect.Size()); //Color(node_id & 1? 255 : 128, 255, 255));
+				if(elem.m_texture) {
+					elem.m_texture->Bind();
+					DrawQuad(elem.m_rect.min, elem.m_rect.Size(), elem.m_color);
+				}
+				else {
+					DTexture::Bind0();
+					DrawBBoxFilled(elem.m_bbox, elem.m_color);
+				}
 			}
 
 			g += count;
@@ -158,8 +185,10 @@ namespace gfx {
 
 		SetScissorRect(m_viewport);
 		DTexture::Bind0();
-		for(int n = 0; n < (int)m_bboxes.size(); n++)
-			DrawBBox(m_bboxes[n]);
+		for(int n = 0; n < (int)m_wire_boxes.size(); n++) {
+			const BoxElement &elem = m_wire_boxes[n];
+			DrawBBox(elem.m_bbox, elem.m_color);
+		}
 
 		SetScissorTest(false);
 	}

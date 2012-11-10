@@ -10,7 +10,7 @@
 #include "gfx/scene_renderer.h"
 
 #include "tile_map.h"
-#include "height_map.h"
+#include "collision_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
 #include "actor.h"
@@ -37,6 +37,10 @@ int safe_main(int argc, char **argv)
 	SetBlendingMode(bmNormal);
 
 	Actor actor("characters/Power", int3(100, 1, 70));
+	printf("Actor size: %d %d %d\n",
+			actor.boundingBox().Width(),
+			actor.boundingBox().Height(),
+			actor.boundingBox().Depth());
 
 	vector<string> file_names;
 	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
@@ -78,11 +82,13 @@ int safe_main(int argc, char **argv)
 		tile_map.loadFromXML(doc);
 	}
 	
-	HeightMap height_map(tile_map.size() / 2);
-	height_map.update(tile_map);
-	height_map.printInfo();
+	CollisionMap collision_map(tile_map.size() / 2);
+	collision_map.update(tile_map);
+	collision_map.printInfo();
+	actor.m_tile_map = &tile_map;
+	PTexture tex = collision_map.getTexture();
 
-	PTexture tex = height_map.getTexture();
+	vector<IRect> rects = collision_map.extractQuads();
 
 	double last_time = GetTime();
 
@@ -112,9 +118,15 @@ int safe_main(int argc, char **argv)
 		tile_map.addToRender(renderer);
 		actor.addToRender(renderer);
 
-		renderer.render();
-		tex->Bind();
+		for(int n = 0; n < (int)rects.size(); n+=10) {
+			IRect rect = rects[n];
+			renderer.addBox(IBox(AsXZY(rect.min, 1), AsXZY(rect.max, 1)), Color(70, 220, 200, 128), true);
+			renderer.addBox(IBox(AsXZY(rect.min, 1), AsXZY(rect.max, 1)));
+		}
 
+		renderer.render();
+
+		tex->Bind();
 		LookAt(int2(0, 0));
 		DrawQuad(0, 0, 256, 256);
 

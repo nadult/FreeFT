@@ -27,5 +27,6 @@
     - plan na dłuższy okres (rozłożony na kilka problemów, które można rozwiązywać 
 	  niezależnie od siebie)
 	- przyspieszyc rendering sceny
+	- FrameStackAllocator
 
 

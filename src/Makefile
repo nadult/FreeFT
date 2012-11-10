@@ -12,7 +12,7 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler \
-	editor game base tile_map actor entity height_map \
+	editor game base tile_map actor entity collision_map \
 	tile_map_editor tile_group tile_selector tile_group_editor \
 	ui/window ui/button ui/tile_list
 #	sys/error_logger script/parser script/script script/sparser
@@ -27,7 +27,7 @@ MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
 INCLUDES=-I./ -Irapidxml-1.13/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder
-FLAGS=-rdynamic -std=gnu++0x -O1 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
+FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
 
 -include Makefile.local
 
