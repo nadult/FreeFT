@@ -25,32 +25,32 @@ int safe_main(int argc, char **argv)
 	int2 res(1400, 768);
 #endif
 
-	CreateWindow(res, false);
-	SetWindowTitle("FTremake ver 0.02");
-	GrabMouse(false);
+	createWindow(res, false);
+	setWindowTitle("FTremake ver 0.02");
+	grabMouse(false);
 
 //	DTexture tex;
 //	Loader("../data/epic_boobs.png") & tex;
 
 	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
 
-	SetBlendingMode(bmNormal);
+	setBlendingMode(bmNormal);
 
 	Actor actor("characters/Power", int3(100, 1, 70));
 	printf("Actor size: %d %d %d\n",
-			actor.boundingBox().Width(),
-			actor.boundingBox().Height(),
-			actor.boundingBox().Depth());
+			actor.boundingBox().width(),
+			actor.boundingBox().height(),
+			actor.boundingBox().depth());
 
 	vector<string> file_names;
-	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
-//	FindFiles(file_names, "../refs/tiles/", ".til", 1);
-	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
-	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
+//	findFiles(file_names, "../refs/tiles/", ".til", 1);
+	//vector<string> file_names = findFiles("../refs/tiles/RAIDERS", ".til", 1);
+	//vector<string> file_names = findFiles("../refs/tiles/VAULT/", ".til", 1);
 
 	printf("Loading... ");
 	for(uint n = 0; n < file_names.size(); n++) {
@@ -93,19 +93,19 @@ int safe_main(int argc, char **argv)
 	vector<int2> path;
 	int3 last_pos(0, 0, 0);
 
-	while(PollEvents()) {
-		if(IsKeyDown(Key_esc))
+	while(pollEvents()) {
+		if(isKeyDown(Key_esc))
 			break;
 
-		if((IsKeyPressed(Key_lctrl) && IsMouseKeyPressed(0)) || IsMouseKeyPressed(2))
-			view_pos -= GetMouseMove();
+		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
+			view_pos -= getMouseMove();
 
-		if(IsMouseKeyPressed(0) && !IsKeyPressed(Key_lctrl)) {
-			int3 wpos = AsXZY(ScreenToWorld(GetMousePos() + view_pos), 1);
-			actor.setNextOrder(Actor::makeMoveOrder(wpos, IsKeyPressed(Key_lshift)));
+		if(isMouseKeyPressed(0) && !isKeyPressed(Key_lctrl)) {
+			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
+			actor.setNextOrder(Actor::makeMoveOrder(wpos, isKeyPressed(Key_lshift)));
 		}
-		if(IsMouseKeyUp(1)) {
-			int3 wpos = AsXZY(ScreenToWorld(GetMousePos() + view_pos), 1);
+		if(isMouseKeyUp(1)) {
+			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 			path = navigation_map.findPath(last_pos.xz(), wpos.xz());
 			last_pos = wpos;
 //			printf("Quad: %d\n", navigation_map.findQuad(wpos.xz()));
@@ -118,16 +118,16 @@ int safe_main(int argc, char **argv)
 //				printf("(%d %d) ", path[n].x, path[n].y);
 //			printf("\n");
 		}
-		if(IsKeyDown(Key_kp_add))
+		if(isKeyDown(Key_kp_add))
 			actor.setNextOrder(Actor::makeChangeStanceOrder(1));
-		if(IsKeyDown(Key_kp_subtract))
+		if(isKeyDown(Key_kp_subtract))
 			actor.setNextOrder(Actor::makeChangeStanceOrder(-1));
 
 		double time = getTime();
 		actor.think(time, time - last_time); //TODO: problem with delta in the first frame
 		last_time = time;
 
-		Clear({128, 64, 0});
+		clear({128, 64, 0});
 		SceneRenderer renderer(IRect(0, 0, res.x, res.y), view_pos);
 
 		tile_map.addToRender(renderer);
@@ -153,28 +153,28 @@ int safe_main(int argc, char **argv)
 		}
 		renderer.render();
 
-//		tex->Bind();
-//		LookAt(int2(0, 0));
-//		DrawQuad(0, 0, 256, 256);
+//		tex->bind();
+//		lookAt(int2(0, 0));
+//		drawQuad(0, 0, 256, 256);
 
 		{
-			LookAt({0, 0});
+			lookAt({0, 0});
 			char text[256];
-			fontTex->Bind();
+			fontTex->bind();
 
 			//double time = GetTime();
 			//double frameTime = time - lastFrameTime;
 			//lastFrameTime = time;
 			
-			string profData = Profiler::GetStats();
-			Profiler::NextFrame();
+			string profData = Profiler::getStats();
+			Profiler::nextFrame();
 //			printf("%s\n", profData.c_str());
 		}
 
-		SwapBuffers();
+		swapBuffers();
 	}
 
-	DestroyWindow();
+	destroyWindow();
 
 	return 0;
 }
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		DestroyWindow();
+		destroyWindow();
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}

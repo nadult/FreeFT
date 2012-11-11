@@ -28,12 +28,12 @@ namespace gfx
 		glGetFloatv(GL_MODELVIEW_MATRIX, s_default_matrix);
 	}
 
-	void LookAt(int2 pos) {
+	void lookAt(int2 pos) {
 		glLoadMatrixf(s_default_matrix);
 		glTranslatef(-pos.x, -pos.y, 0.0f);
 	}
 
-	void DrawQuad(int2 pos, int2 size, Color color) {
+	void drawQuad(int2 pos, int2 size, Color color) {
 		glBegin(GL_QUADS);
 
 		glColor4ub(color.r, color.g, color.b, color.a);
@@ -45,7 +45,7 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color) {
+	void drawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color) {
 		glBegin(GL_QUADS);
 
 		glColor4ub(color.r, color.g, color.b, color.a);
@@ -57,7 +57,7 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawLine(int2 p1, int2 p2, Color color) {
+	void drawLine(int2 p1, int2 p2, Color color) {
 		glBegin(GL_LINES);
 
 		glColor4ub(color.r, color.g, color.b, color.a);
@@ -67,11 +67,11 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawLine(int3 wp1, int3 wp2, Color color) {
+	void drawLine(int3 wp1, int3 wp2, Color color) {
 		glBegin(GL_LINES);
 
-		float2 p1 = WorldToScreen(wp1);
-		float2 p2 = WorldToScreen(wp2);
+		float2 p1 = worldToScreen(wp1);
+		float2 p2 = worldToScreen(wp2);
 
 		glColor4ub(color.r, color.g, color.b, color.a);
 		glVertex2f(p1.x, p1.y);
@@ -80,7 +80,7 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawRect(const IRect &rect, Color col) {
+	void drawRect(const IRect &rect, Color col) {
 		glBegin(GL_LINE_STRIP);
 		glColor4ub(col.r, col.g, col.b, col.a);
 
@@ -93,11 +93,11 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawBBox(const IBox &box, Color col) {
-		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
-		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
-		float2 vz = WorldToScreen(int3(0, 0, box.Depth()));
-		float2 pos = WorldToScreen(box.min);
+	void drawBBox(const IBox &box, Color col) {
+		float2 vx = worldToScreen(int3(box.width(), 0, 0));
+		float2 vy = worldToScreen(int3(0, box.height(), 0));
+		float2 vz = worldToScreen(int3(0, 0, box.depth()));
+		float2 pos = worldToScreen(box.min);
 
 		float2 pt[8] = {
 			pos + vx + vy,
@@ -131,11 +131,11 @@ namespace gfx
 		glEnd();
 	}
 
-	void DrawBBoxFilled(const IBox &box, Color col) {
-		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
-		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
-		float2 vz = WorldToScreen(int3(0, 0, box.Depth()));
-		float2 pos = WorldToScreen(box.min);
+	void drawBBoxFilled(const IBox &box, Color col) {
+		float2 vx = worldToScreen(int3(box.width(), 0, 0));
+		float2 vy = worldToScreen(int3(0, box.height(), 0));
+		float2 vz = worldToScreen(int3(0, 0, box.depth()));
+		float2 pos = worldToScreen(box.min);
 
 		//TODO: finish
 		float2 pt[8] = {
@@ -154,19 +154,19 @@ namespace gfx
 
 		glBegin(GL_TRIANGLES);
 		glColor4ub(col.r, col.g, col.b, col.a);
-		for(size_t n = 0; n < count; n++)
+		for(int n = 0; n < count; n++)
 			glVertex2f(pt[front[n]].x, pt[front[n]].y);
 		glEnd();
 	}
 
 
-	void Clear(Color color) {
+	void clear(Color color) {
 		float4 col = color;
 		glClearColor(col.x, col.y, col.z, col.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
-	void SetBlendingMode(BlendingMode mode) {
+	void setBlendingMode(BlendingMode mode) {
 		if(mode == bmDisabled)
 			glDisable(GL_BLEND);
 		else
@@ -176,12 +176,12 @@ namespace gfx
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	void SetScissorRect(const IRect &rect) {
-		glScissor(rect.min.x, s_viewport_size.y - rect.max.y, rect.Width(), rect.Height());
+	void setScissorRect(const IRect &rect) {
+		glScissor(rect.min.x, s_viewport_size.y - rect.max.y, rect.width(), rect.height());
 		TestGlError("glScissor");
 	}
 
-	void SetScissorTest(bool is_enabled) {
+	void setScissorTest(bool is_enabled) {
 		if(is_enabled)
 			glEnable(GL_SCISSOR_TEST);
 		else

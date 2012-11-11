@@ -143,28 +143,28 @@ int safe_main(int argc, char **argv)
 	int2 res(1800, 768);
 #endif
 
-	CreateWindow(res, false);
-	SetWindowTitle("FTremake::editor ver 0.02");
-	GrabMouse(false);
+	createWindow(res, false);
+	setWindowTitle("FTremake::editor ver 0.02");
+	grabMouse(false);
 
 //	DTexture tex;
 //	Loader("../data/epic_boobs.png") & tex;
 
 	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
 
-	SetBlendingMode(bmNormal);
+	setBlendingMode(bmNormal);
 
 	vector<string> file_names;
-	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
-	FindFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
-//	FindFiles(file_names, "../refs/tiles/VILLAGE/", ".til", 1);
-//	FindFiles(file_names, "../refs/tiles/Robotic/", ".til", 1);
-//	FindFiles(file_names, "../refs/tiles/", ".til", 1);
-	//vector<string> file_names = FindFiles("../refs/tiles/RAIDERS", ".til", 1);
-	//vector<string> file_names = FindFiles("../refs/tiles/VAULT/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
+	findFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
+//	findFiles(file_names, "../refs/tiles/VILLAGE/", ".til", 1);
+//	findFiles(file_names, "../refs/tiles/Robotic/", ".til", 1);
+//	findFiles(file_names, "../refs/tiles/", ".til", 1);
+	//vector<string> file_names = findFiles("../refs/tiles/RAIDERS", ".til", 1);
+	//vector<string> file_names = findFiles("../refs/tiles/VAULT/", ".til", 1);
 
 	printf("Loading... ");
 	for(uint n = 0; n < file_names.size(); n++) {
@@ -180,23 +180,23 @@ int safe_main(int argc, char **argv)
 	printf("\n");
 
 	//double lastFrameTime = getTime();
-	double lastSFrameTime = getTime();
-	double sframeTime = 1.0 / 16.0;
+//	double lastSFrameTime = getTime();
+//	double sframeTime = 1.0 / 16.0;
 
 	PFont font = Font::mgr["font1"];
 	PTexture fontTex = Font::tex_mgr["font1"];
 
 	MainWindow main_window(res);
 
-	while(PollEvents()) {
-		Clear({128, 64, 0});
+	while(pollEvents()) {
+		clear({128, 64, 0});
 		
-/*		if(IsKeyDown(Key_f5)) {
+/*		if(isKeyDown(Key_f5)) {
 			string fileName = mapName;
 			if(fileName.size())
 				Saver(fileName) & tile_map;
 		}
-		if(IsKeyDown(Key_f8)) {
+		if(isKeyDown(Key_f8)) {
 			string fileName = mapName;
 			if(fileName.size()) {
 				std::map<string, const gfx::Tile*> dict;
@@ -208,7 +208,7 @@ int safe_main(int argc, char **argv)
 					try { tile_map.Serialize(ldr, &dict); }
 					catch(...) {
 						tile_map.Clear();
-						tile_map.Resize({256, 256});
+						tile_map.resize({256, 256});
 						throw;
 					}
 				}
@@ -218,22 +218,22 @@ int safe_main(int argc, char **argv)
 			}
 		} */
 
-	//	if(IsKeyPressed('T')) g_FloatParam[0] += 0.00001f;
-	//	if(IsKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
-	//	if(IsKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
-	//	if(IsKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
+	//	if(isKeyPressed('T')) g_FloatParam[0] += 0.00001f;
+	//	if(isKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
+	//	if(isKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
+	//	if(isKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
 		main_window.handleInput();
 		main_window.draw();
-		LookAt({0, 0});
-	//	int2 mpos = GetMousePos();
-	//	DrawLine(mpos - int2{10, 0}, mpos + int2{10, 0}, Color(255, 255, 255));
-	//	DrawLine(mpos - int2{0, 10}, mpos + int2{0, 10}, Color(255, 255, 255));
+		lookAt({0, 0});
+	//	int2 mpos = getMousePos();
+	//	drawLine(mpos - int2{10, 0}, mpos + int2{10, 0}, Color(255, 255, 255));
+	//	drawLine(mpos - int2{0, 10}, mpos + int2{0, 10}, Color(255, 255, 255));
 		
-		SwapBuffers();
+		swapBuffers();
 	}
 
-	DestroyWindow();
+	destroyWindow();
 
 	return 0;
 }
@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		DestroyWindow();
+		destroyWindow();
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}

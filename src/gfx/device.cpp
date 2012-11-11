@@ -66,7 +66,7 @@ namespace gfx
 	}
 
 
-	void CreateWindow(int2 size, bool full) {
+	void createWindow(int2 size, bool full) {
 		if(isCreated)
 			THROW("Trying to create more than one glfw window");
 		if(!glfwInit())
@@ -149,7 +149,7 @@ namespace gfx
 		isCreated = 1;
 	}
 
-	void DestroyWindow() {
+	void destroyWindow() {
 		if(isCreated) {
 			glfwCloseWindow();
 			glfwTerminate();
@@ -157,8 +157,8 @@ namespace gfx
 		}
 	}
 
-	void SwapBuffers() { glfwSwapBuffers(); }
-	bool PollEvents() {
+	void swapBuffers() { glfwSwapBuffers(); }
+	bool pollEvents() {
 		for(;;) {
 			glfwPollEvents();
 
@@ -176,24 +176,24 @@ namespace gfx
 
 		mouseDX = activeInput.MousePosX - lastInput.MousePosX;
 		mouseDY = activeInput.MousePosY - lastInput.MousePosY;
-		activeInput.MousePosX = Clamp(activeInput.MousePosX, 0, width - 1);
-		activeInput.MousePosY = Clamp(activeInput.MousePosY, 0, height - 1);
+		activeInput.MousePosX = clamp(activeInput.MousePosX, 0, width - 1);
+		activeInput.MousePosY = clamp(activeInput.MousePosY, 0, height - 1);
 		glfwSetMousePos(activeInput.MousePosX, activeInput.MousePosY);
 
 		return !wantClose;
 	}
 
 
-	void SetWindowSize(int2 size) { glfwSetWindowSize(size.x, size.y); }
-	int2 GetWindowSize() {
+	void setWindowSize(int2 size) { glfwSetWindowSize(size.x, size.y); }
+	int2 getWindowSize() {
 		int x, y;
 		glfwGetWindowSize(&x, &y);
 		return int2(x, y);
 	}
 
-	void SetWindowTitle(const char *title) { glfwSetWindowTitle(title); }
+	void setWindowTitle(const char *title) { glfwSetWindowTitle(title); }
 
-	void GrabMouse(bool grab)
+	void grabMouse(bool grab)
 	{
 		if(grab)
 			glfwDisable(GLFW_MOUSE_CURSOR);
@@ -201,7 +201,7 @@ namespace gfx
 			glfwEnable(GLFW_MOUSE_CURSOR);
 	}
 
-	void ShowCursor(bool flag)
+	void showCursor(bool flag)
 	{
 		if(flag)
 			glfwEnable(GLFW_MOUSE_CURSOR);
@@ -209,12 +209,12 @@ namespace gfx
 			glfwDisable(GLFW_MOUSE_CURSOR);
 	}
 
-	char GetCharDown() {
+	char getCharDown() {
 		for(int k = 0; k < 255; k++) {
-			if(!IsKeyDown(k))
+			if(!isKeyDown(k))
 				continue;
 
-			bool shift = IsKeyPressed(Key_lshift) || IsKeyPressed(Key_rshift);
+			bool shift = isKeyPressed(Key_lshift) || isKeyPressed(Key_rshift);
 
 			if(k >= 65 && k <= 90)
 				return shift ? k : k - 'A' + 'a';
@@ -241,18 +241,18 @@ namespace gfx
 		return 0;
 	}
 
-	bool IsKeyPressed(int k) { return activeInput.Key[key2Glfw[k]]; }
-	bool IsKeyDown(int k) { return activeInput.Key[key2Glfw[k]] && (!lastInput.Key[key2Glfw[k]]); }
-	bool IsKeyUp(int k) { return (!activeInput.Key[key2Glfw[k]]) && lastInput.Key[key2Glfw[k]]; }
+	bool isKeyPressed(int k) { return activeInput.Key[key2Glfw[k]]; }
+	bool isKeyDown(int k) { return activeInput.Key[key2Glfw[k]] && (!lastInput.Key[key2Glfw[k]]); }
+	bool isKeyUp(int k) { return (!activeInput.Key[key2Glfw[k]]) && lastInput.Key[key2Glfw[k]]; }
 
-	bool IsMouseKeyPressed(int k) { return activeInput.MouseButton[k]; }
-	bool IsMouseKeyDown(int k) { return activeInput.MouseButton[k] && (!lastInput.MouseButton[k]); }
-	bool IsMouseKeyUp(int k) { return (!activeInput.MouseButton[k]) && lastInput.MouseButton[k]; }
+	bool isMouseKeyPressed(int k) { return activeInput.MouseButton[k]; }
+	bool isMouseKeyDown(int k) { return activeInput.MouseButton[k] && (!lastInput.MouseButton[k]); }
+	bool isMouseKeyUp(int k) { return (!activeInput.MouseButton[k]) && lastInput.MouseButton[k]; }
 
-	int2 GetMousePos() { return int2(activeInput.MousePosX, activeInput.MousePosY); }
-	int2 GetMouseMove() { return int2(mouseDX, mouseDY); }
+	int2 getMousePos() { return int2(activeInput.MousePosX, activeInput.MousePosY); }
+	int2 getMouseMove() { return int2(mouseDX, mouseDY); }
 
-	int GetMouseWheelPos() { return activeInput.WheelPos; }
-	int GetMouseWheelMove() { return activeInput.WheelPos - lastInput.WheelPos; }
+	int getMouseWheelPos() { return activeInput.WheelPos; }
+	int getMouseWheelMove() { return activeInput.WheelPos - lastInput.WheelPos; }
 
 }

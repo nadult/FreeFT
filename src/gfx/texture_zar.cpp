@@ -4,7 +4,7 @@
 namespace gfx
 {
 
-	void Texture::LoadZAR(Serializer &sr) {
+	void Texture::loadZAR(Serializer &sr) {
 		sr.signature("<zar>", 6);
 
 		char zar_type, dummy1, has_palette;
@@ -19,7 +19,7 @@ namespace gfx
 		if(has_palette) {
 			sr & palette;
 			for(uint n = 0; n < palette.size(); n++)
-				palette[n] = SwapBR(palette[n]);
+				palette[n] = swapBR(palette[n]);
 		}
 
 		Color defaultCol(0, 0, 0);
@@ -29,9 +29,9 @@ namespace gfx
 				defaultCol = palette[def];
 		}
 
-		Resize(img_width, img_height);
+		resize(img_width, img_height);
 
-		Color* dst = Line(0);
+		Color* dst = this->line(0);
 		Color* end = dst + img_width * img_height;
 
 		while(dst < end) {
@@ -73,7 +73,7 @@ namespace gfx
 			}
 		}
 
-		/* //Draw palette
+		/* //draw palette
 		dst = (Color*)DataPointer();
 		for(int n = 0; n < palette.size(); n++) {
 			int x = n & 15, y = n / 16;

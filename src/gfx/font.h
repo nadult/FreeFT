@@ -21,25 +21,25 @@ public:
 		// Returns number of quads generated
 		// For every quad it generates: 4 * 2 floats in each buffer
 		// bufSize is number of float pairs that fits in the buffer
-		size_t GenQuads(const char *str, float2 *posBuf, float2 *uvBuf, size_t bufSize) const;
-		void Draw(const char *str) const;
+		size_t genQuads(const char *str, float2 *posBuf, float2 *uvBuf, size_t bufSize) const;
+		void draw(const char *str) const;
 
 	//TODO: jakis dziwny bug wstringize jak sie to zapoda
 	//	template <typename... Args>
-	//	void Draw(const Args ...args) const { Draw((string)Stringize(args...)); }
+	//	void draw(const Args ...args) const { Draw((string)Stringize(args...)); }
 
 	//	template <typename... Args>
-	//	void DrawAt(int2 pos, const Args& ...args) const { SetPos(pos); Draw((string)Stringize(args...)); }
+	//	void drawAt(int2 pos, const Args& ...args) const { setPos(pos); Draw((string)Stringize(args...)); }
 
-		void SetPos(int2 v) const { pos = v; }
-		void AddPos(int2 v) const { pos += float2(v); }
-		void SetSize(int2 v) const { size = v; }
+		void setPos(int2 v) const { m_pos = v; }
+		void addPos(int2 v) const { m_pos += float2(v); }
+		void setSize(int2 v) const { m_size = v; }
 
 		static ResourceMgr<Font> mgr;
 		static ResourceMgr<DTexture> tex_mgr;
 
 private:
-		mutable float2 pos, size;
+		mutable float2 m_pos, m_size;
 
 		float2 chars[256 * 2];
 		float2 offset[256];

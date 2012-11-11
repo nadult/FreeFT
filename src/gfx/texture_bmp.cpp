@@ -3,10 +3,10 @@
 namespace gfx
 {
 
-	void Texture::LoadBMP(Serializer &sr)
+	void Texture::loadBMP(Serializer &sr)
 	{
 		enum {
-			maxWidth = 2048
+			maxwidth = 2048
 		};
 
 		{
@@ -54,14 +54,14 @@ namespace gfx
 
 			if(bpp != 24 && bpp != 32 && bpp != 8)
 				THROW("%d-bit bitmaps are not supported (only 8, 24 and 32)", bpp);
-			if(width > maxWidth)
-				THROW("Bitmap is too wide (%d pixels): max width is %d",width, (int)maxWidth);
+			if(width > maxwidth)
+				THROW("Bitmap is too wide (%d pixels): max width is %d",width, (int)maxwidth);
 		}
 
 		int bytesPerPixel = bpp / 8;
 		int lineAlignment = 4 * ((bpp * width + 31) / 32) - bytesPerPixel * width;
 
-		Resize(width, height);
+		resize(width, height);
 
 		if(bytesPerPixel == 1) {
 			Color palette[256];
@@ -72,8 +72,8 @@ namespace gfx
 				palette[n].a = 255;
 
 			for(int y = height - 1; y >= 0; y--) {
-				Color *dst = Line(y);
-				u8 line[maxWidth];
+				Color *dst = this->line(y);
+				u8 line[maxwidth];
 				sr.data(line, width);
 				sr.seek(sr.pos() + lineAlignment);
 
@@ -84,10 +84,10 @@ namespace gfx
 		else if(bytesPerPixel == 3) {
 			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
-				u8 line[maxWidth * 3];
+				u8 line[maxwidth * 3];
 				sr.data(line, width * 3);
 
-				Color *dst = Line(y);
+				Color *dst = this->line(y);
 				for(int x = 0; x < width; x++)
 					dst[x] = Color(line[x * 3 + 0], line[x * 3 + 1], line[x * 3 + 2]); //TODO: check me
 				sr.seek(sr.pos() + lineAlignment);
@@ -96,7 +96,7 @@ namespace gfx
 		else if(bytesPerPixel == 4) {
 			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
-				sr.data(Line(y), width * 4);
+				sr.data(this->line(y), width * 4);
 				sr.seek(sr.pos() + lineAlignment);
 			}
 		}

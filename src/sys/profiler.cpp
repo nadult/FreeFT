@@ -25,15 +25,15 @@ namespace
 
 namespace Profiler {
 
-	void UpdateTimer(TimerId id, double time) {
+	void updateTimer(TimerId id, double time) {
 		timers[id] += time;
 	}
 
-	void UpdateCounter(CounterId id, int value) {
+	void updateCounter(CounterId id, int value) {
 		counters[id] += value;
 	}
 
-	void NextFrame() {
+	void nextFrame() {
 		for(int n = 0; n < numTimers; n++)
 			avg_timers[n] += timers[n];
 		prof_count++;
@@ -42,7 +42,7 @@ namespace Profiler {
 		memset(timers, 0, sizeof(timers));
 	}
 
-	string GetStats() {
+	string getStats() {
 		char buffer[1024], *ptr = buffer, *end = buffer + sizeof(buffer);
 
 		ptr += snprintf(ptr, end - ptr, "Timers:\n");

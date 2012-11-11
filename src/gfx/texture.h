@@ -74,19 +74,19 @@ namespace gfx
 		TextureFormat(TextureIdent fmt);
 		TextureFormat();
 
-		TextureIdent GetIdent() const;
-		int GlInternal() const;
-		int GlFormat() const;
-		int GlType() const;
-		bool IsCompressed() const;
+		TextureIdent ident() const;
+		int glInternal() const;
+		int glFormat() const;
+		int glType() const;
+		bool isCompressed() const;
 
-		int BytesPerPixel() const;
+		int bytesPerPixel() const;
 
-		int EvalImageSize(int width, int height) const;
-		int EvalLineSize(int width) const;
+		int evalImageSize(int width, int height) const;
+		int evalLineSize(int width) const;
 
 		bool operator==(const TextureFormat&) const;
-		bool IsSupported() const;
+		bool isSupported() const;
 
 	private:
 		unsigned id;
@@ -101,34 +101,34 @@ namespace gfx
 		Texture();
 
 		// poprzednie dane zostaja utracone
-		void Resize(int width, int height);
-		void Free();
+		void resize(int width, int height);
+		void free();
 
-		int Width() const { return width; }
-		int Height() const { return height; }
-		int2 Size() const { return int2(width, height); }
-		bool IsEmpty() const { return data.empty(); }
+		int width() const { return m_width; }
+		int height() const { return m_height; }
+		int2 size() const { return int2(m_width, m_height); }
+		bool isEmpty() const { return data.empty(); }
 
-		TextureFormat GetFormat() const { return TextureFormat(TI_A8B8G8R8); }
+		TextureFormat format() const { return TextureFormat(TI_A8B8G8R8); }
 
 		// Loading from TGA, BMP, PNG, DDS
 		void serialize(Serializer&);
-		void Swap(Texture&);
+		void swap(Texture&);
 
-		Color* Line(int y) { DASSERT(y < height); return &data[y * width]; }
-		const Color* Line(int y) const { DASSERT(y < height); return &data[y * width]; }
+		Color* line(int y) { DASSERT(y < m_height); return &data[y * m_width]; }
+		const Color* line(int y) const { DASSERT(y < m_height); return &data[y * m_width]; }
 
-		Color& operator()(int x, int y) { return data[x + y * width]; }
-		const Color& operator()(int x, int y) const { return data[x + y * width]; }
+		Color& operator()(int x, int y) { return data[x + y * m_width]; }
+		const Color& operator()(int x, int y) const { return data[x + y * m_width]; }
 		
-		void LoadTGA(Serializer&);
-		void LoadBMP(Serializer&);
-		void LoadPNG(Serializer&);
-		void LoadZAR(Serializer&);
+		void loadTGA(Serializer&);
+		void loadBMP(Serializer&);
+		void loadPNG(Serializer&);
+		void loadZAR(Serializer&);
 
 private:
 		vector<Color> data;
-		int width, height;
+		int m_width, m_height;
 	};
 }
 #endif

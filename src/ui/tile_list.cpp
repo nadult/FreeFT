@@ -25,7 +25,7 @@ namespace ui
 		for(int n = 0; n < (int)m_entries.size(); n++) {
 			const Entry &entry = m_entries[n];
 
-			if(IRect(entry.m_pos, entry.m_pos + entry.m_size).IsInside(pos))
+			if(IRect(entry.m_pos, entry.m_pos + entry.m_size).isInside(pos))
 				return &m_entries[n];
 		}
 
@@ -45,7 +45,7 @@ namespace ui
 			entry.m_tile = m_model->get(n, entry.m_group_id);
 			entry.m_is_selected = false;
 			entry.m_model_id = n;
-			entry.m_size = entry.m_tile->GetBounds().Size();
+			entry.m_size = entry.m_tile->GetBounds().size();
 		}
 		std::stable_sort(m_entries.begin(), m_entries.end());
 
@@ -71,7 +71,7 @@ namespace ui
 			Entry &entry = m_entries[e];
 			entry.m_pos = cur_pos;
 			cur_pos.x += m_spacing + entry.m_size.x;
-			cur_height = Max(cur_height, entry.m_size.y);
+			cur_height = max(cur_height, entry.m_size.y);
 			int next_width = e + 1 < (int)m_entries.size()? m_entries[e + 1].m_size.x : 0;
 			int next_group = e + 1 < (int)m_entries.size()? m_entries[e + 1].m_group_id : entry.m_group_id;
 

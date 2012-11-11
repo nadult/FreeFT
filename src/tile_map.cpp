@@ -21,7 +21,7 @@ IBox TileInstance::boundingBox() const {
 }
 
 IRect TileInstance::screenRect() const {
-	return m_tile->GetBounds() + WorldToScreen(pos());
+	return m_tile->GetBounds() + worldToScreen(pos());
 }
 
 void TileInstance::setPos(int3 pos) {
@@ -45,7 +45,7 @@ void TileMap::clear() {
 }
 
 bool TileMapNode::isColliding(const IBox &box) const {
-	if(!m_instances.size() || !Overlaps(box, m_bounding_box))
+	if(!m_instances.size() || !areOverlapping(box, m_bounding_box))
 		return false;
 
 	for(uint i = 0; i < m_instances.size(); i++) {
@@ -55,7 +55,7 @@ bool TileMapNode::isColliding(const IBox &box) const {
 		int3 tilePos = instance.pos();
 		IBox tileBox(tilePos, tilePos + instance.m_tile->bbox);
 
-		if(Overlaps(tileBox, box))
+		if(areOverlapping(tileBox, box))
 			return true;
 	}
 
@@ -63,7 +63,7 @@ bool TileMapNode::isColliding(const IBox &box) const {
 }
 
 bool TileMapNode::isInside(const int3 &point) const {
-	return IBox(0, 0, 0, size_x, size_y, size_z).IsInside(point);
+	return IBox(0, 0, 0, size_x, size_y, size_z).isInside(point);
 }
 	
 const TileInstance *TileMapNode::at(int3 pos) const {
@@ -95,21 +95,21 @@ void TileMapNode::select(const IBox &box, SelectionMode::Type mode) {
 	if(mode == SelectionMode::normal) {
 		for(uint i = 0; i < m_instances.size(); i++) {
 			TileInstance &instance = m_instances[i];
-			instance.select(Overlaps(box, instance.boundingBox()));
+			instance.select(areOverlapping(box, instance.boundingBox()));
 		}
 	}
 	else if(mode == SelectionMode::add) {
 		for(uint i = 0; i < m_instances.size(); i++) {
 			TileInstance &instance = m_instances[i];
-			bool overlaps = Overlaps(box, instance.boundingBox());
-			instance.select(overlaps || instance.isSelected());
+			bool are_overlapping = areOverlapping(box, instance.boundingBox());
+			instance.select(are_overlapping || instance.isSelected());
 		}
 	}
 	else if(mode == SelectionMode::subtract && m_any_selected) {
 		for(uint i = 0; i < m_instances.size(); i++) {
 			TileInstance &instance = m_instances[i];
-			bool overlaps = Overlaps(box, instance.boundingBox());
-			instance.select(!overlaps && instance.isSelected());
+			bool are_overlapping = areOverlapping(box, instance.boundingBox());
+			instance.select(!are_overlapping && instance.isSelected());
 		}
 	}
 	
@@ -234,13 +234,13 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			continue;
 
 		int3 node_pos = nodePos(n);
-		IRect screen_rect = node.screenRect() + WorldToScreen(node_pos);
+		IRect screen_rect = node.screenRect() + worldToScreen(node_pos);
 
 		// possible error from rounding node & tile positions
 		screen_rect.min -= int2(2, 2);
 		screen_rect.max += int2(2, 2);
 
-		if(!Overlaps(screen_rect, view))
+		if(!areOverlapping(screen_rect, view))
 			continue;
 		vNodes++;
 
@@ -250,15 +250,15 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			int3 pos = instance.pos() + node_pos;
 			
 			gfx::PTexture tex = tile->dTexture;
-			out.add(tex, IRect(0, 0, tex->Size().x, tex->Size().y) - tile->offset, pos, tile->bbox);
+			out.add(tex, IRect(0, 0, tex->width(), tex->height()) - tile->offset, pos, tile->bbox);
 			if(instance.isSelected())
 				out.addBox(IBox(pos, pos + tile->bbox));
 			vTiles++;
 		}
 	}
 	
-	Profiler::UpdateCounter(Profiler::cRenderedNodes, vNodes);
-	Profiler::UpdateCounter(Profiler::cRenderedTiles, vTiles);
+	Profiler::updateCounter(Profiler::cRenderedNodes, vNodes);
+	Profiler::updateCounter(Profiler::cRenderedTiles, vTiles);
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
@@ -272,7 +272,7 @@ void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) 
 }
 
 bool TileMap::isOverlapping(const IBox &box) const {
-	if(!Overlaps(box, boundingBox()))
+	if(!areOverlapping(box, boundingBox()))
 			return false;
 
 //	IRect nodeRect(pos.x / Node::size_x, pos.z / Node::size_z,
@@ -287,25 +287,25 @@ bool TileMap::isOverlapping(const IBox &box) const {
 }
 
 void TileMap::drawBoxHelpers(const IBox &box) const {
-	gfx::DTexture::Bind0();
+	gfx::DTexture::bind0();
 
 	int3 pos = box.min, bbox = box.max - box.min;
 	int3 tsize(m_size.x * Node::size_x, Node::size_y, m_size.y * Node::size_z);
 
-	gfx::DrawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
-	gfx::DrawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
+	gfx::drawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
+	gfx::drawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
 	
-	gfx::DrawLine(int3(pos.x, pos.y, 0), int3(pos.x, pos.y, tsize.z), Color(0, 255, 0, 127));
-	gfx::DrawLine(int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, tsize.z), Color(0, 255, 0, 127));
+	gfx::drawLine(int3(pos.x, pos.y, 0), int3(pos.x, pos.y, tsize.z), Color(0, 255, 0, 127));
+	gfx::drawLine(int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, tsize.z), Color(0, 255, 0, 127));
 
 	int3 tpos(pos.x, 0, pos.z);
-	gfx::DrawBBox(IBox(tpos, tpos + int3(bbox.x, pos.y, bbox.z)), Color(0, 0, 255, 127));
+	gfx::drawBBox(IBox(tpos, tpos + int3(bbox.x, pos.y, bbox.z)), Color(0, 0, 255, 127));
 	
-	gfx::DrawLine(int3(0, 0, pos.z), int3(tsize.x, 0, pos.z), Color(0, 0, 255, 127));
-	gfx::DrawLine(int3(0, 0, pos.z + bbox.z), int3(tsize.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
+	gfx::drawLine(int3(0, 0, pos.z), int3(tsize.x, 0, pos.z), Color(0, 0, 255, 127));
+	gfx::drawLine(int3(0, 0, pos.z + bbox.z), int3(tsize.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
 	
-	gfx::DrawLine(int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
-	gfx::DrawLine(int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
+	gfx::drawLine(int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
+	gfx::drawLine(int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
 }
 
 void TileMap::fill(const gfx::Tile &tile, const IBox &box) {

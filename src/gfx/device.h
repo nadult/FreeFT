@@ -16,34 +16,34 @@ namespace gfx
 
 		void serialize(Serializer &sr);
 
-		void Bind() const;
-		static void Bind0();
-		void Create(int mips);
+		void bind() const;
+		static void bind0();
+		void create(int mips);
 		
-		void SetSurface(const Texture &in);
-		void GetSurface(Texture& out);
+		void setSurface(const Texture &in);
+		void getSurface(Texture& out);
 
-		void Free();
-		int2 Size() const { return size; }
-		int Width() const { return size.x; }
-		int Height() const { return size.y; }
-		TextureFormat GetFormat() const;
+		void free();
+		int2 size() const { return m_size; }
+		int width() const { return m_size.x; }
+		int height() const { return m_size.y; }
+		TextureFormat format() const;
 
-		int Id() const { return id; }
-		bool IsValid() const { return id > 0; }
+		int id() const { return m_id; }
+		bool isValid() const { return m_id > 0; }
 
 		static ResourceMgr<DTexture> mgr;
 
 	private:
-		void SetMip(int mip, TextureFormat fmt, void *pixels);
-		void CreateMip(int mip, int width, int height, TextureFormat fmt);
-		void UpdateMip(int mip, int x, int y, int w, int h, void *pixels, int pixelsInRow);
+		void setMip(int mip, TextureFormat fmt, void *pixels);
+		void createMip(int mip, int width, int height, TextureFormat fmt);
+		void updateMip(int mip, int x, int y, int w, int h, void *pixels, int pixelsInRow);
 
 		DTexture(const DTexture&) { }
 		void operator=(const DTexture&) { }
 
-		int id, mips;
-		int2 size;
+		int m_id, m_mips;
+		int2 m_size;
 	};
 
 	typedef Ptr<DTexture> PTexture;
@@ -107,61 +107,61 @@ namespace gfx
 		Key_last		= Key_kp_enter
 	};
 
-	void CreateWindow(int2 size, bool fullscreen);
-	void DestroyWindow();
+	void createWindow(int2 size, bool fullscreen);
+	void destroyWindow();
 
-	bool PollEvents();
-	void SwapBuffers();
+	bool pollEvents();
+	void swapBuffers();
 
-	void SetWindowSize(int2 size);
-	int2 GetWindowSize();
+	void setWindowSize(int2 size);
+	int2 getWindowSize();
 
-	void SetWindowTitle(const char *title);
+	void setWindowTitle(const char *title);
 
-	void GrabMouse(bool);
-	void ShowCursor(bool);
+	void grabMouse(bool);
+	void showCursor(bool);
 
-	char GetCharDown();
+	char getCharDown();
 
-	bool IsKeyPressed(int);
-	bool IsKeyDown(int);
-	bool IsKeyUp(int);
+	bool isKeyPressed(int);
+	bool isKeyDown(int);
+	bool isKeyUp(int);
 
-	bool IsMouseKeyPressed(int);
-	bool IsMouseKeyDown(int);
-	bool IsMouseKeyUp(int);
+	bool isMouseKeyPressed(int);
+	bool isMouseKeyDown(int);
+	bool isMouseKeyUp(int);
 
-	int2 GetMousePos();
-	int2 GetMouseMove();
+	int2 getMousePos();
+	int2 getMouseMove();
 
-	int GetMouseWheelPos();
-	int GetMouseWheelMove();
+	int getMouseWheelPos();
+	int getMouseWheelMove();
 
-	void LookAt(int2 pos);
+	void lookAt(int2 pos);
 
-	void DrawQuad(int2 pos, int2 size, Color color = Color(255, 255, 255));
-	inline void DrawQuad(int x, int y, int w, int h, Color col = Color(255, 255, 255))
-		{ DrawQuad(int2(x, y), int2(w, h), col); }
+	void drawQuad(int2 pos, int2 size, Color color = Color(255, 255, 255));
+	inline void drawQuad(int x, int y, int w, int h, Color col = Color(255, 255, 255))
+		{ drawQuad(int2(x, y), int2(w, h), col); }
 
-	void DrawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color(255, 255, 255));
+	void drawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color(255, 255, 255));
 
-	void DrawBBox(const IBox &box, Color col = Color(255, 255, 255));
-	void DrawBBoxFilled(const IBox &box, Color col = Color(255, 255, 255));
+	void drawBBox(const IBox &box, Color col = Color(255, 255, 255));
+	void drawBBoxFilled(const IBox &box, Color col = Color(255, 255, 255));
 
-	void DrawRect(const IRect &box, Color col = Color(255, 255, 255));
-	void DrawLine(int3 p1, int3 p2, Color color = Color(255, 255, 255));
-	void DrawLine(int2 p1, int2 p2, Color color = Color(255, 255, 255));
+	void drawRect(const IRect &box, Color col = Color(255, 255, 255));
+	void drawLine(int3 p1, int3 p2, Color color = Color(255, 255, 255));
+	void drawLine(int2 p1, int2 p2, Color color = Color(255, 255, 255));
 
-	void Clear(Color color);
+	void clear(Color color);
 
 	enum BlendingMode {
 		bmDisabled,
 		bmNormal,
 	};
 
-	void SetBlendingMode(BlendingMode mode);
-	void SetScissorRect(const IRect &rect);
-	void SetScissorTest(bool is_enabled);
+	void setBlendingMode(BlendingMode mode);
+	void setScissorRect(const IRect &rect);
+	void setScissorTest(bool is_enabled);
 
 }
 

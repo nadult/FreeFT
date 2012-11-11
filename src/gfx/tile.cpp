@@ -35,26 +35,26 @@ namespace gfx
 		i32 zarCount;
 		sr(dummy2, zarCount);
 
-		texture.LoadZAR(sr);
+		texture.loadZAR(sr);
 
-		offset -= WorldToScreen(int3(bbox.x, 0, bbox.z));
+		offset -= worldToScreen(int3(bbox.x, 0, bbox.z));
 	}
 
 	void Tile::LoadDTexture() {
 		dTexture = new DTexture;
-		dTexture->SetSurface(texture);
+		dTexture->setSurface(texture);
 	}
 
 	IRect Tile::GetBounds() const {
-		int2 size = texture.Size();
+		int2 size = texture.size();
 		return IRect(0, 0, size.x, size.y) - offset;
 	}
 
-	void Tile::Draw(int2 pos, Color col) const {
-		dTexture->Bind();
+	void Tile::draw(int2 pos, Color col) const {
+		dTexture->bind();
 
-		int2 size = texture.Size();
-		DrawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y, col);
+		int2 size = texture.size();
+		drawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y, col);
 	}
 
 	float Similarity(const Tile &a, const Tile &b, int3 offset) {

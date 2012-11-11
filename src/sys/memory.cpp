@@ -7,19 +7,20 @@ namespace sys {
 
 	static FrameAllocator frmAlloc(maxFrameReserve);
 
-	void NextFrame() {
-		frmAlloc.BeginFrame();
+	void nextFrame() {
+		frmAlloc.beginFrame();
 	}
 
-	void Free(void *p) {
-		free(p);
+	void free(void *p) {
+		::free(p);
 	}
 
-	void *Alloc(size_t size) {
+	void *alloc(size_t size) {
 		void *out = malloc(size);
 
 		if(!out) {
-			printf("Allocation error (requested bytes: %llu)!\nTODO: write proper out of memory handler.\n", size);
+			printf("Allocation error (requested bytes: %llu)!\nTODO: write proper out of memory handler.\n",
+					(unsigned long long)size);
 			exit(0);
 		}
 
@@ -28,8 +29,8 @@ namespace sys {
 
 }
 
-void *FrameAlloc(size_t bytes) {
-	return sys::frmAlloc.DoAlloc(bytes);
+void *frameAlloc(size_t bytes) {
+	return sys::frmAlloc.doAlloc(bytes);
 }
 
 

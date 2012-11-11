@@ -134,7 +134,7 @@ namespace gfx
 		i32 posX, posY; sr(posX, posY);
 		m_offset = int2(posX, posY);
 		
-		m_offset -= WorldToScreen(int3(m_bbox.x, 0, m_bbox.z));
+		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 
 		char header[3];
 		sr.data(header, sizeof(header));
@@ -228,7 +228,7 @@ namespace gfx
 				anim.palettes[l].resize(palSize);
 				imgSr.data(&anim.palettes[l][0], palSize * 4);
 				for(int i = 0; i < palSize; i++)
-					anim.palettes[l][i] = SwapBR(anim.palettes[l][i]);
+					anim.palettes[l][i] = swapBR(anim.palettes[l][i]);
 			}
 
 			int image_count = anim.m_frame_count * anim.m_dir_count * 4;
@@ -273,11 +273,12 @@ namespace gfx
 
 		for(int l = 0; l < 4; l++) {
 			int id = ids[l];
-			size.x = Max(size.x, points[id].x + images[id].size.x);
-			size.y = Max(size.y, points[id].y + images[id].size.y);
+			size.x = max(size.x, points[id].x + images[id].size.x);
+			size.y = max(size.y, points[id].y + images[id].size.y);
+
 		}
 
-		out.Resize(size.x, size.y);
+		out.resize(size.x, size.y);
 		memset(&out(0, 0), 0, size.x * size.y * 4);
 
 		for(int l = 0; l < 4; l++) {

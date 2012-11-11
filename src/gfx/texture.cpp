@@ -4,28 +4,28 @@
 namespace gfx
 {
 
-	Texture::Texture(int w, int h) :data(w * h), width(w), height(h) { }
+	Texture::Texture(int w, int h) :data(w * h), m_width(w), m_height(h) { }
 
-	Texture::Texture(Texture &&rhs) :width(rhs.width), height(rhs.height) {
+	Texture::Texture(Texture &&rhs) :m_width(rhs.m_width), m_height(rhs.m_height) {
 		data.swap(rhs.data);
 	}
 
-	Texture::Texture() : width(0), height(0) { }
+	Texture::Texture() : m_width(0), m_height(0) { }
 
-	void Texture::Resize(int w, int h) {
-		width  = w;
-		height = h;
-		data.resize(width * height);
+	void Texture::resize(int w, int h) {
+		m_width  = w;
+		m_height = h;
+		data.resize(m_width * m_height);
 	}
 		
-	void Texture::Swap(Texture &tex) {
-		std::swap(width, tex.width);
-		std::swap(height, tex.height);
+	void Texture::swap(Texture &tex) {
+		std::swap(m_width, tex.m_width);
+		std::swap(m_height, tex.m_height);
 		data.swap(tex.data);
 	}
 
-	void Texture::Free() {
-		width = height = 0;
+	void Texture::free() {
+		m_width = m_height = 0;
 		data.clear();
 	}
 
@@ -41,10 +41,10 @@ namespace gfx
 		}
 
 		if(sr.isLoading()) {
-			if(ext == ".png") LoadPNG(sr);
-			else if(ext == ".bmp") LoadBMP(sr);
-			else if(ext == ".tga") LoadTGA(sr);
-			else if(ext == ".zar") LoadZAR(sr);
+			if(ext == ".png") loadPNG(sr);
+			else if(ext == ".bmp") loadBMP(sr);
+			else if(ext == ".tga") loadTGA(sr);
+			else if(ext == ".zar") loadZAR(sr);
 			else THROW("%s format is not supported (Only BMP, TGA and PNG for now)", ext.c_str());
 		}
 	}

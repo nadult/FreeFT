@@ -1,5 +1,5 @@
-#ifndef NEWBORN_SYS_FRAME_ALLOCATOR_H
-#define NEWBORN_SYS_FRAME_ALLOCATOR_H
+#ifndef SYS_FRAME_ALLOCATOR_H
+#define SYS_FRAME_ALLOCATOR_H
 
 #include "base.h"
 #include <limits>
@@ -31,17 +31,17 @@ namespace sys {
 		void operator=(const FrameAllocator&);
 		~FrameAllocator();
 
-		void BeginFrame();
-		static void *Alloc(size_t bytes);
-		static void Free(void *ptr);
+		void beginFrame();
+		static void *alloc(size_t bytes);
+		static void free(void *ptr);
 
-		bool IsInPool(void *ptr);
-		void *DoAlloc(size_t bytes);
-		void DoFree(void *p);
+		bool isInPool(void *ptr);
+		void *doAlloc(size_t bytes);
+		void doFree(void *p);
 
 	private:
-		bool InPool(void *ptr) const;
-		bool IsLast(void *ptr,size_t bytes) const;
+		bool inPool(void *ptr) const;
+		bool isLast(void *ptr,size_t bytes) const;
 
 		Mutex mutex;
 		static size_t allocatedBlocks;
@@ -74,8 +74,8 @@ namespace sys {
 		inline const_pointer address(const_reference c)			{ return &c; }
 		inline size_type max_size() const						{ return std::numeric_limits<size_t>::max() / sizeof(T); }
 
-		inline pointer allocate(size_type n,const void *t=0)	{ return (pointer)FrameAllocator::Alloc(n*sizeof(T)); }
-		inline void deallocate(pointer p,size_type n) 			{ FrameAllocator::Free(p); }
+		inline pointer allocate(size_type n,const void *t=0)	{ return (pointer)FrameAllocator::alloc(n*sizeof(T)); }
+		inline void deallocate(pointer p,size_type n) 			{ FrameAllocator::free(p); }
 		inline void construct(pointer p,const_reference c)		{ new( reinterpret_cast<void*>(p) ) T(c); }
 		inline void destroy(pointer p)							{ (p)->~T(); }
 	};

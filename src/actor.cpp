@@ -46,9 +46,9 @@ void Actor::think(double current_time, double time_delta) {
 		while(dist > 0.0001f) {
 			int3 target = m_path[m_path_pos];
 			int3 diff = target - m_last_pos;
-			float3 diff_vec(diff); diff_vec = diff_vec / Length(diff_vec);
+			float3 diff_vec(diff); diff_vec = diff_vec / length(diff_vec);
 			float3 cur_pos = float3(m_last_pos) + float3(diff) * m_path_t;
-			float tdist = Distance(float3(target), cur_pos);
+			float tdist = distance(float3(target), cur_pos);
 
 			if(tdist < dist) {
 				dist -= tdist;
@@ -86,7 +86,7 @@ void Actor::addToRender(gfx::SceneRenderer &out) const {
 	//TODO: do not allocate texture every frame
 	PTexture spr_tex = new DTexture;
 	gfx::Texture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir, &rect);
-	spr_tex->SetSurface(tex);
+	spr_tex->setSurface(tex);
 
 	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
 //	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
@@ -127,7 +127,7 @@ void Actor::issueMoveOrder() {
 	int3 new_pos = m_next_order.m_pos;
 	DASSERT(order_id == oMove && m_navigation_map);
 
-	new_pos = Max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
+	new_pos = max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
 	int3 cur_pos = (int3)m_pos;
 	vector<int2> tmp_path = m_navigation_map->findPath(cur_pos.xz(), new_pos.xz());
@@ -147,32 +147,32 @@ void Actor::issueMoveOrder() {
 	m_order = m_next_order;
 
 	for(int n = 1; n < (int)tmp_path.size(); n++) {
-		cur_pos = AsXZY(tmp_path[n - 1], 1);
-		new_pos = AsXZY(tmp_path[n], 1);
+		cur_pos = asXZY(tmp_path[n - 1], 1);
+		new_pos = asXZY(tmp_path[n], 1);
 
 		int x_diff = new_pos.x - cur_pos.x;
 		int z_diff = new_pos.z - cur_pos.z;
 		int3 dir(x_diff < 0? -1 : 1, 0, z_diff < 0? -1 : 1);
 		x_diff = abs(x_diff);
 		z_diff = abs(z_diff);
-		int diag_diff = Min(x_diff, z_diff);
+		int diag_diff = min(x_diff, z_diff);
 		x_diff -= diag_diff;
 		z_diff -= diag_diff;
 
 		DASSERT(diag_diff || x_diff || z_diff);
 
 		while(x_diff) {
-			int step = Min(x_diff, 3);
+			int step = min(x_diff, 3);
 			m_path.push_back(cur_pos += int3(dir.x * step, 0, 0));
 			x_diff -= step;
 		}
 		while(z_diff) {
-			int step = Min(z_diff, 3);
+			int step = min(z_diff, 3);
 			m_path.push_back(cur_pos += int3(0, 0, dir.z * step));
 			z_diff -= step;
 		}
 		while(diag_diff) {
-			int dstep = Min(diag_diff, 3);
+			int dstep = min(diag_diff, 3);
 			m_path.push_back(cur_pos += dir * dstep);
 			diag_diff -= dstep;
 		}

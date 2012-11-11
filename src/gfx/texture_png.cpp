@@ -70,29 +70,29 @@ namespace
 		png_read_info(png.ptr, png.info);
 	}
 
-	void ReadHeader(PngInfo &png, int *oWidth, int *oHeight, TextureIdent *oFormat)
+	void ReadHeader(PngInfo &png, int *owidth, int *oheight, TextureIdent *oFormat)
 	{
-		int bitDepth;
+		int bitdepth;
 		png_uint_32 width, height;
 
 		png_get_IHDR(png.ptr, png.info, (png_uint_32 *)&width, (png_uint_32 *)&height,
-					 &bitDepth, &png.colorType, 0, 0, 0);
+					 &bitdepth, &png.colorType, 0, 0, 0);
 
-		if(png.colorType == PNG_COLOR_TYPE_GRAY && bitDepth < 8)
+		if(png.colorType == PNG_COLOR_TYPE_GRAY && bitdepth < 8)
 			png_set_expand_gray_1_2_4_to_8(png.ptr);
 		if(png_get_valid(png.ptr, png.info, PNG_INFO_tRNS) && !(png_get_valid(png.ptr, png.info, PNG_INFO_PLTE)))
 			png_set_tRNS_to_alpha(png.ptr);
 
 		png_get_IHDR(png.ptr, png.info, (png_uint_32 *)&width, (png_uint_32 *)&height,
-					 &bitDepth, &png.colorType, 0, 0, 0);
+					 &bitdepth, &png.colorType, 0, 0, 0);
 
-		if(bitDepth < 8) {
-			bitDepth = 8;
+		if(bitdepth < 8) {
+			bitdepth = 8;
 			png_set_packing(png.ptr);
 		}
 
 #ifdef __LITTLE_ENDIAN__
-		if(bitDepth == 16)
+		if(bitdepth == 16)
 			png_set_swap(png.ptr);
 #endif
 
@@ -125,8 +125,8 @@ namespace
 		default:
 			THROW("PNG color type not supported");
 		}
-		*oWidth  = png.width = width;
-		*oHeight = png.height = height;
+		*owidth  = png.width = width;
+		*oheight = png.height = height;
 	}
 
 	void ReadData(PngInfo &png, Color *out)
@@ -193,7 +193,7 @@ namespace
 namespace gfx
 {
 
-	void Texture::LoadPNG(Serializer &sr) {
+	void Texture::loadPNG(Serializer &sr) {
 		Image image;
 
 		try {
@@ -208,8 +208,8 @@ namespace gfx
 			TextureIdent id;
 			ReadHeader(png, &width, &height, &id);
 
-			Resize(width, height);
-			ReadData(png, Line(0));
+			resize(width, height);
+			ReadData(png, line(0));
 
 			fileData.clear();
 		} catch(...) {

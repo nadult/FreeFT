@@ -9,9 +9,7 @@ namespace gfx
 		struct FormatConv
 		{
 			FormatConv(int tBpp, TextureIdent a, int b, int c, int d, bool compr=0)
-				:        bpp(tBpp), format(a), internal(b), gFormat(c), type(d), compressed(compr)
-			{
-			}
+				:        bpp(tBpp), format(a), internal(b), gFormat(c), type(d), compressed(compr) { }
 
 			int     	 bpp;                                                                                                                 //bytes
 			TextureIdent format;
@@ -19,8 +17,7 @@ namespace gfx
 			bool         compressed;
 		};
 
-		FormatConv fmtTab[] =
-		{
+		FormatConv fmtTab[] = {
 			FormatConv(3, TI_R8G8B8,		GL_RGB8, GL_BGR, GL_UNSIGNED_BYTE),
 			FormatConv(4, TI_A8R8G8B8,		GL_RGBA8, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV),
 			FormatConv(4, TI_X8R8G8B8,		GL_RGBA8, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV),
@@ -75,48 +72,42 @@ namespace gfx
 		};
 	}
 
-	TextureFormat::TextureFormat(int internal)
-	{
+	TextureFormat::TextureFormat(int internal) {
 		for(id = 0; fmtTab[id].format != TI_Unknown; id++)
 			if(fmtTab[id].internal == internal)
 				break;
 	}
 
-	TextureFormat::TextureFormat(int internal, int format, int type, bool compressed)
-	{
+	TextureFormat::TextureFormat(int internal, int format, int type, bool compressed) {
 		for(id = 0; fmtTab[id].format != TI_Unknown; id++)
 			if(fmtTab[id].internal == internal && fmtTab[id].gFormat == format &&
 			   fmtTab[id].type == type && fmtTab[id].compressed == compressed)
 				break;
 	}
 
-	TextureFormat::TextureFormat()
-	{
+	TextureFormat::TextureFormat() {
 		for(id = 0; fmtTab[id].format != TI_Unknown; id++)
 			;
 	}
 
-	TextureFormat::TextureFormat(TextureIdent fmt)
-	{
+	TextureFormat::TextureFormat(TextureIdent fmt) {
 		for(id = 0; fmtTab[id].format != TI_Unknown; id++)
 			if(fmtTab[id].format == fmt)
 				break;
 	}
 
-	TextureIdent TextureFormat::GetIdent() const { return fmtTab[id].format; }
-	int TextureFormat::GlInternal() const { return fmtTab[id].internal; }
-	int TextureFormat::GlFormat() const { return fmtTab[id].gFormat; }
-	int TextureFormat::GlType() const { return fmtTab[id].type; }
-	bool TextureFormat::IsCompressed() const { return fmtTab[id].compressed; }
-	int TextureFormat::BytesPerPixel() const { return fmtTab[id].bpp; }
+	TextureIdent TextureFormat::ident() const { return fmtTab[id].format; }
+	int TextureFormat::glInternal() const { return fmtTab[id].internal; }
+	int TextureFormat::glFormat() const { return fmtTab[id].gFormat; }
+	int TextureFormat::glType() const { return fmtTab[id].type; }
+	bool TextureFormat::isCompressed() const { return fmtTab[id].compressed; }
+	int TextureFormat::bytesPerPixel() const { return fmtTab[id].bpp; }
 
-	bool TextureFormat::operator==(const TextureFormat&t) const
-	{
+	bool TextureFormat::operator==(const TextureFormat&t) const {
 		return id == t.id;
 	}
 
-	bool TextureFormat::IsSupported() const
-	{
+	bool TextureFormat::isSupported() const {
 		if(fmtTab[id].format == TI_Unknown)
 			return 0;
 
@@ -137,8 +128,7 @@ namespace gfx
 		return 1;
 	}
 
-	int TextureFormat::EvalImageSize(int width, int height) const
-	{
+	int TextureFormat::evalImageSize(int width, int height) const {
 		switch(fmtTab[id].format) {
 		case TI_DXT1:
 			return ((width + 3) / 4) * ((height + 3) / 4) * 8;
@@ -154,8 +144,7 @@ namespace gfx
 		}
 	}
 
-	int TextureFormat::EvalLineSize(int width) const
-	{
+	int TextureFormat::evalLineSize(int width) const {
 		switch(fmtTab[id].format) {
 		case TI_DXT1:
 			return ((width + 3) / 4) * 8;

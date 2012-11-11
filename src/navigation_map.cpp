@@ -16,7 +16,7 @@ void NavigationMap::resize(int2 size) {
 	m_size = size;
 }
 
-static void extractHeightMap(const TileMap &tile_map, u8 *out, int2 size, int extend) {
+static void extractheightMap(const TileMap &tile_map, u8 *out, int2 size, int extend) {
 	DASSERT(out);
 	memset(out, 0, size.x * size.y);
 	IBox dbox(int3(0, 0, 0), int3(size.x, 255, size.y));
@@ -29,14 +29,14 @@ static void extractHeightMap(const TileMap &tile_map, u8 *out, int2 size, int ex
 			const TileInstance &inst = node(i);
 			IBox bbox = inst.boundingBox() + tnode_pos;
 			
-			if(Overlaps(dbox, bbox)) {
-				bbox.min = Max(bbox.min - int3(extend, 0, extend), int3(0, 0, 0));
-				bbox.max = Min(bbox.max, dbox.max);
+			if(areOverlapping(dbox, bbox)) {
+				bbox.min = max(bbox.min - int3(extend, 0, extend), int3(0, 0, 0));
+				bbox.max = min(bbox.max, dbox.max);
 
 				u8 *ptr = out + bbox.min.x + bbox.min.z * size.x;
-				for(int z = 0; z < bbox.Depth(); z++) {
-					for(int x = 0; x < bbox.Width(); x++)
-						ptr[x] = Max(ptr[x], (u8)bbox.max.y);
+				for(int z = 0; z < bbox.depth(); z++) {
+					for(int x = 0; x < bbox.width(); x++)
+						ptr[x] = max(ptr[x], (u8)bbox.max.y);
 					ptr += size.x;
 				}
 			}
@@ -46,7 +46,7 @@ static void extractHeightMap(const TileMap &tile_map, u8 *out, int2 size, int ex
 
 void NavigationMap::update(const TileMap &tile_map) {
 	vector<u8> height_map(m_size.x * m_size.y);
-	extractHeightMap(tile_map, &height_map[0], m_size, 2);
+	extractheightMap(tile_map, &height_map[0], m_size, 2);
 
 	for(int z = 0; z < m_size.y; z++) {
 		const u8 *src = &height_map[z * m_size.x];
@@ -99,13 +99,13 @@ void NavigationMap::extractQuads() {
 			for(int sx2 = sx; sx2 < max_x; sx2++) {
 				int min = line[sx2], waste = 0;
 				for(int x = sx2; x < max_x; x++) {
-					min = Min(min, line[x]);
-					waste += Max(line[x] - min, min - line[x]);
+					min = ::min(min, line[x]);
+					waste += ::max(line[x] - min, min - line[x]);
 
 					IRect rect(sx2, sz, x + 1, sz + min);
-					int score = Min(x - sx2 + 1, min); score = score * score;// - waste;
+					int score = ::min(x - sx2 + 1, min); score = score * score;// - waste;
 
-					if(score > best_score || (score == best_score && rect.SurfaceArea() > best.SurfaceArea())) {
+					if(score > best_score || (score == best_score && rect.surfaceArea() > best.surfaceArea())) {
 						best_score = score;
 						best = rect;
 					}
@@ -115,7 +115,7 @@ void NavigationMap::extractQuads() {
 			for(int z = best.min.y; z < best.max.y; z++)
 				for(int x = best.min.x; x < best.max.x; x++)
 					m_bitmap[(x >> 3) + z * m_line_size] &= ~(1 << (x & 7));
-		//	printf("%d %d %d %d\n", best.min.x, best.min.y, best.Width(), best.Height());
+		//	printf("%d %d %d %d\n", best.min.x, best.min.y, best.width(), best.height());
 
 			Quad new_quad;
 			new_quad.rect = best;
@@ -138,14 +138,14 @@ void NavigationMap::extractQuads() {
 
 int NavigationMap::findQuad(int2 pos) const {
 	for(int n = 0; n < (int)m_quads.size(); n++)
-		if(m_quads[n].rect.IsInside(pos))
+		if(m_quads[n].rect.isInside(pos))
 			return n;
 	return -1;
 }
 
 static int distance(const int2 &a, const int2 &b) {
 	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
-	int dist_min = Min(dist_x, dist_y);
+	int dist_min = min(dist_x, dist_y);
 	return (dist_min * 181) / 128 + (dist_x + dist_y - dist_min * 2);
 }
 
@@ -184,8 +184,8 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 			int next_id = quad.neighbours[n];
 			const Quad &next = m_quads[next_id];
 
-			int2 closest_pos = Clamp(quad.entry_pos, next.rect.min, next.rect.max - int2(1, 1));
-			closest_pos = Clamp(closest_pos, quad.rect.min - int2(1, 1), quad.rect.max);
+			int2 closest_pos = clamp(quad.entry_pos, next.rect.min, next.rect.max - int2(1, 1));
+			closest_pos = clamp(closest_pos, quad.rect.min - int2(1, 1), quad.rect.max);
 			int dist = distance(closest_pos, quad.entry_pos) + quad.dist;
 
 			if(next_id == end_id)
@@ -223,9 +223,9 @@ void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const 
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		const IRect &rect = m_quads[n].rect;
 
-		renderer.addBox(IBox(AsXZY(rect.min, 1), AsXZY(rect.max, 1)), Color(70, 220, 200, 128), true);
+		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(70, 220, 200, 128), true);
 		if(borders)
-			renderer.addBox(IBox(AsXZY(rect.min, 1), AsXZY(rect.max, 1)));
+			renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)));
 	}
 }
 
@@ -237,7 +237,7 @@ gfx::PTexture NavigationMap::getTexture() const {
 			tex(x, y) = (*this)(x, y)? Color(255, 255, 255) : Color(0, 0, 0);
 	
 	gfx::PTexture out = new gfx::DTexture;
-	out->SetSurface(tex);
+	out->setSurface(tex);
 	return out;
 }
 
@@ -250,10 +250,10 @@ void NavigationMap::printInfo() const {
 		bytes += m_quads[n].neighbours.size() * sizeof(int);
 	printf("  quads(%d): %.0f KB\n", (int)m_quads.size(), double(bytes) / 1024.0);
 
-	if(0) for(int n = 0; n < m_quads.size(); n++) {
+	if(0) for(int n = 0; n < (int)m_quads.size(); n++) {
 		const Quad &quad = m_quads[n];
 		printf("%d: (%d %d %d %d): ", n, quad.rect.min.x, quad.rect.min.y, quad.rect.max.x, quad.rect.max.y);
-		for(int i = 0; i < quad.neighbours.size(); i++)
+		for(int i = 0; i < (int)quad.neighbours.size(); i++)
 			printf("%d ", quad.neighbours[i]);
 		printf("\n");
 	}

@@ -18,26 +18,26 @@ float g_FloatParam[16];
  *
  */
 
-float2 WorldToScreen(float3 pos) {
+float2 worldToScreen(float3 pos) {
 	return float2(	6.0f * (pos.x - pos.z),
 					3.0f * (pos.x + pos.z) - 7.0f * pos.y);
 				//	7.0f * (pos.x + pos.z) + 6.0f * pos.y);
 }
 
-int2 WorldToScreen(int3 pos) {
+int2 worldToScreen(int3 pos) {
 	return int2(	6 * (pos.x - pos.z),
 					3 * (pos.x + pos.z) - 7 * pos.y);
 				//	7 * (pos.x + pos.z) - 6 * pos.y);
 }
 
-float2 ScreenToWorld(float2 pos) {
+float2 screenToWorld(float2 pos) {
 	float x = pos.x * (1.0f / 12.0f);
 	float y = pos.y * (1.0f / 6.0f);
 
 	return float2(y + x, y - x);
 }
 
-int2 ScreenToWorld(int2 pos) {
+int2 screenToWorld(int2 pos) {
 	int x = pos.x / 12;
 	int y = pos.y / 6;
 
@@ -45,18 +45,18 @@ int2 ScreenToWorld(int2 pos) {
 }
 
 
-float Dot(const float2 &a, const float2 &b) { return a.x * b.x + a.y * b.y; }
-float Dot(const float3 &a, const float3 &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-float Dot(const float4 &a, const float4 &b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+float dot(const float2 &a, const float2 &b) { return a.x * b.x + a.y * b.y; }
+float dot(const float3 &a, const float3 &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+float dot(const float4 &a, const float4 &b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
-float LengthSq(const float3 &v) { return Dot(v, v); }
-float DistanceSq(const float3 &a, const float3 &b) { return LengthSq(a - b); }
+float lengthSq(const float3 &v) { return dot(v, v); }
+float distanceSq(const float3 &a, const float3 &b) { return lengthSq(a - b); }
 
-float Length(const float3 &v) { return sqrt(LengthSq(v)); }
-float Distance(const float3 &a, const float3 &b) { return sqrt(DistanceSq(a, b)); }
+float length(const float3 &v) { return sqrt(lengthSq(v)); }
+float distance(const float3 &a, const float3 &b) { return sqrt(distanceSq(a, b)); }
 
 
-static void FindFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
+static void findFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);
 	if(!dp)
 		THROW("Error while opening directory %s: %s", dirName, strerror(errno));
@@ -75,7 +75,7 @@ static void FindFiles_(vector<string> &out, const char *dirName, const char *ext
 
 			if(S_ISDIR(fileInfo.st_mode) && recursive) {
 				if(strcmp(dirp->d_name, ".") && strcmp(dirp->d_name, ".."))
-					FindFiles_(out, fullName, ext, recursive);
+					findFiles_(out, fullName, ext, recursive);
 			}
 			else {
 				size_t len = strlen(dirp->d_name);
@@ -91,11 +91,11 @@ static void FindFiles_(vector<string> &out, const char *dirName, const char *ext
 	closedir(dp);
 }
 
-void FindFiles(vector<string> &out, const char *tDirName, const char *ext, bool recursive) {
+void findFiles(vector<string> &out, const char *tDirName, const char *ext, bool recursive) {
 	string dirName = tDirName;
 	if(!dirName.empty() && dirName[dirName.size() - 1] == '/')
 		dirName.resize(dirName.size() - 1);
-	FindFiles_(out, dirName.c_str(), ext, recursive);
+	findFiles_(out, dirName.c_str(), ext, recursive);
 }
 
 using namespace rapidxml;

@@ -15,17 +15,17 @@ namespace ui
 		}
 
 	void Window::handleInput() {
-		int2 mouse_pos = GetMousePos() - m_clipped_rect.min;
+		int2 mouse_pos = getMousePos() - m_clipped_rect.min;
 		bool finished_dragging = false;
-		bool escape = IsKeyDown(Key_esc);
+		bool escape = isKeyDown(Key_esc);
 
 		if(m_dragging_mode) {
-			if(!IsMouseKeyPressed(m_dragging_mode - 1) || escape)
+			if(!isMouseKeyPressed(m_dragging_mode - 1) || escape)
 				finished_dragging = true;
 		}
 		else {
 			for(int k = 0; k < 3; k++) {
-				if(IsMouseKeyDown(k)) {
+				if(isMouseKeyDown(k)) {
 					m_dragging_mode = k + 1;
 					m_drag_start = mouse_pos;
 					break;
@@ -41,7 +41,7 @@ namespace ui
 			if(!child->isVisible())
 				continue;
 
-			if(child->rect().IsInside(focus_point)) {
+			if(child->rect().isInside(focus_point)) {
 				child->handleInput();
 				is_handled = true;
 			}
@@ -72,13 +72,13 @@ namespace ui
 
 	void Window::draw() const {
 		if(!m_parent)
-			SetScissorTest(true);
+			setScissorTest(true);
 
-		LookAt(-m_clipped_rect.min);
-		SetScissorRect(m_clipped_rect);
+		lookAt(-m_clipped_rect.min);
+		setScissorRect(m_clipped_rect);
 
 		if(m_background_color.a > 0)
-			Clear(m_background_color);
+			clear(m_background_color);
 
 		drawContents();
 
@@ -87,7 +87,7 @@ namespace ui
 				m_children[n]->draw();
 		
 		if(!m_parent)
-			SetScissorTest(false);	
+			setScissorTest(false);	
 	}
 
 	void Window::addChild(PWindow &&child) {
@@ -113,7 +113,7 @@ namespace ui
 		if(m_parent) {
 			IRect parent_rect = m_parent->m_clipped_rect;
 			m_clipped_rect += parent_rect.min;
-			m_clipped_rect.max = Min(m_clipped_rect.max, parent_rect.max);
+			m_clipped_rect.max = min(m_clipped_rect.max, parent_rect.max);
 		}
 
 		for(int n = 0; n < (int)m_children.size(); n++)

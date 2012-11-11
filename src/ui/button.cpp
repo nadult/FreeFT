@@ -17,15 +17,15 @@ namespace ui
 	}
 
 	void Button::drawContents() const {
-		m_font_texture->Bind();
-		m_font->SetPos({0, (rect().Height() - 20) / 2});
-		m_font->SetSize({28, 20});
-		m_font->Draw(m_text.c_str());
+		m_font_texture->bind();
+		m_font->setPos({0, (rect().height() - 20) / 2});
+		m_font->setSize({28, 20});
+		m_font->draw(m_text.c_str());
 	}
 
 	void Button::onInput(int2 mouse_pos) {
-		setBackgroundColor(IsMouseKeyPressed(0)? s_colors[2] : s_colors[1]);
-		if(IsMouseKeyUp(0) && parent() && IRect(int2(0, 0), clippedRect().Size()).IsInside(mouse_pos))
+		setBackgroundColor(isMouseKeyPressed(0)? s_colors[2] : s_colors[1]);
+		if(isMouseKeyUp(0) && parent() && IRect(int2(0, 0), clippedRect().size()).isInside(mouse_pos))
 			parent()->onButtonPressed(this);
 	}
 

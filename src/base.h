@@ -5,12 +5,17 @@
 #include "rapidxml.hpp"
 
 using namespace baselib;
+using std::swap;
 
 typedef unsigned int uint;
 
 #include "sys/memory.h"
 
 extern float g_FloatParam[16];
+
+template <class T> inline T max(T a, T b) { return a > b? a : b; }
+template <class T> inline T min(T a, T b) { return a < b? a : b; }
+
 
 struct int2
 {
@@ -29,6 +34,9 @@ struct int2
 
 	int x, y;
 };
+
+inline const int2 min(const int2 &lhs, const int2 &rhs) { return int2(min(lhs.x, rhs.x), min(lhs.y, rhs.y)); }
+inline const int2 max(const int2 &lhs, const int2 &rhs) { return int2(max(lhs.x, rhs.x), max(lhs.y, rhs.y)); }
 
 struct int3
 {
@@ -51,6 +59,9 @@ struct int3
 
 	int x, y, z;
 };
+
+inline const int3 min(const int3 &lhs, const int3 &rhs) { return int3(min(lhs.x, rhs.x), min(lhs.y, rhs.y), min(lhs.z, rhs.z)); }
+inline const int3 max(const int3 &lhs, const int3 &rhs) { return int3(max(lhs.x, rhs.x), max(lhs.y, rhs.y), max(lhs.z, rhs.z)); }
 
 struct int4
 {
@@ -137,19 +148,19 @@ struct Rect
 	Rect(Type minX, Type minY, Type maxX, Type maxY) :min(minX, minY), max(maxX, maxY) { }
 	Rect() { }
 
-	Type Width() const { return max.x - min.x; }
-	Type Height() const { return max.y - min.y; }
-	Type2 Size() const { return max - min; }
-	Type2 Center() const { return (max + min) / Type(2); }
-	Type SurfaceArea() const { return (max.x - min.x) * (max.y - min.y); }
+	Type width() const { return max.x - min.x; }
+	Type height() const { return max.y - min.y; }
+	Type2 size() const { return max - min; }
+	Type2 center() const { return (max + min) / Type(2); }
+	Type surfaceArea() const { return (max.x - min.x) * (max.y - min.y); }
 
 	Rect operator+(const Type2 &offset) const { return Rect(min + offset, max + offset); }
 	Rect operator-(const Type2 &offset) const { return Rect(min - offset, max - offset); }
 
-	Rect operator+(const Rect &rhs) { return Rect(Min(min, rhs.min), Max(max, rhs.max)); }
+	Rect operator+(const Rect &rhs) { return Rect(::min(min, rhs.min), ::max(max, rhs.max)); }
 
-	bool IsEmpty() const { return max.x <= min.x || max.y <= min.y; }
-	bool IsInside(const int2 &point) const {
+	bool isEmpty() const { return max.x <= min.x || max.y <= min.y; }
+	bool isInside(const int2 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y;
 	}
@@ -167,18 +178,18 @@ struct Box
 		:min(minX, minY, minZ), max(maxX, maxY, maxZ) { }
 	Box() { }
 
-	Type Width() const { return max.x - min.x; }
-	Type Height() const { return max.y - min.y; }
-	Type Depth() const { return max.z - min.z; }
-	Type3 Size() const { return max - min; }
+	Type width() const { return max.x - min.x; }
+	Type height() const { return max.y - min.y; }
+	Type depth() const { return max.z - min.z; }
+	Type3 size() const { return max - min; }
 
 	Box operator+(const Type3 &offset) const { return Box(min + offset, max + offset); }
 	Box operator-(const Type3 &offset) const { return Box(min - offset, max - offset); }
 
-	Box operator+(const Box &rhs) { return Box(Min(min, rhs.min), Max(max, rhs.max)); }
+	Box operator+(const Box &rhs) { return Box(::min(min, rhs.min), ::max(max, rhs.max)); }
 
-	bool IsEmpty() const { return max.x <= min.x || max.y <= min.y || max.z <= min.z; }
-	bool IsInside(const int3 &point) const {
+	bool isEmpty() const { return max.x <= min.x || max.y <= min.y || max.z <= min.z; }
+	bool isInside(const int3 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y &&
 				point.z >= min.z && point.z < max.z;
@@ -188,13 +199,13 @@ struct Box
 };
 
 template <class T>
-bool Overlaps(const Rect<T> &a, const Rect<T> &b) {
+bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {
 	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
 			(b.min.y < a.max.y && a.min.y < b.max.y);
 }
 
 template <class T>
-bool Overlaps(const Box<T> &a, const Box<T> &b) {
+bool areOverlapping(const Box<T> &a, const Box<T> &b) {
 	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
 			(b.min.y < a.max.y && a.min.y < b.max.y) &&
 			(b.min.z < a.max.z && a.min.z < b.max.z);
@@ -205,44 +216,33 @@ typedef Rect<float2> FRect;
 typedef Box<int3> IBox;
 typedef Box<float3> FBox;
 
-template <class T> inline T Max(T a, T b) { return a > b? a : b; }
-template <class T> inline T Min(T a, T b) { return a < b? a : b; }
-
-inline const int2 Min(const int2 &lhs, const int2 &rhs) { return int2(Min(lhs.x, rhs.x), Min(lhs.y, rhs.y)); }
-inline const int2 Max(const int2 &lhs, const int2 &rhs) { return int2(Max(lhs.x, rhs.x), Max(lhs.y, rhs.y)); }
-
-inline const int3 Min(const int3 &lhs, const int3 &rhs) { return int3(Min(lhs.x, rhs.x), Min(lhs.y, rhs.y), Min(lhs.z, rhs.z)); }
-inline const int3 Max(const int3 &lhs, const int3 &rhs) { return int3(Max(lhs.x, rhs.x), Max(lhs.y, rhs.y), Max(lhs.z, rhs.z)); }
-
-template <class T> inline const T Clamp(T obj, T min, T max) { return Min(Max(obj, min), max); }
+template <class T> inline const T clamp(T obj, T min, T max) { return ::min(::max(obj, min), max); }
 
 template <class T, class T1> inline const T& operator+=(T &a, const T1 &b) { a = a + b; return a; }
 template <class T, class T1> inline const T& operator-=(T &a, const T1 &b) { a = a - b; return a; }
 
-template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
+inline int3 asXZ(const int2 &pos) { return int3(pos.x, 0, pos.y); }
+inline int3 asXY(const int2 &pos) { return int3(pos.x, pos.y, 0); }
+inline int3 asXZY(const int2 &pos, int y) { return int3(pos.x, y, pos.y); }
 
-inline int3 AsXZ(const int2 &pos) { return int3(pos.x, 0, pos.y); }
-inline int3 AsXY(const int2 &pos) { return int3(pos.x, pos.y, 0); }
-inline int3 AsXZY(const int2 &pos, int y) { return int3(pos.x, y, pos.y); }
-
-float Dot(const float2 &a, const float2 &b);
-float Dot(const float3 &a, const float3 &b);
-float Dot(const float4 &a, const float4 &b);
+float dot(const float2 &a, const float2 &b);
+float dot(const float3 &a, const float3 &b);
+float dot(const float4 &a, const float4 &b);
 
 
-float LengthSq(const float3&);
-float DistanceSq(const float3&, const float3&);
+float lengthSq(const float3&);
+float distanceSq(const float3&, const float3&);
 
-float Length(const float3&);
-float Distance(const float3&, const float3&);
+float length(const float3&);
+float distance(const float3&, const float3&);
 
-float2 WorldToScreen(float3 pos);
-int2 WorldToScreen(int3 pos);
+float2 worldToScreen(float3 pos);
+int2 worldToScreen(int3 pos);
 
-float2 ScreenToWorld(float2 pos);
-int2 ScreenToWorld(int2 pos);
+float2 screenToWorld(float2 pos);
+int2 screenToWorld(int2 pos);
 
-inline float2 WorldToScreen(const float2 &pos) { return WorldToScreen(float3(pos.x, 0.0f, pos.y)); }
+inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
 
 struct Color
@@ -250,10 +250,10 @@ struct Color
 	Color(u8 r, u8 g, u8 b, u8 a = 255)
 		:r(r), g(g), b(b), a(a) { }
 	Color(int r, int g, int b, int a = 255)
-		:r(Clamp(r, 0, 255)), g(Clamp(g, 0, 255)), b(Clamp(b, 0, 255)), a(Clamp(a, 0, 255)) { }
+		:r(clamp(r, 0, 255)), g(clamp(g, 0, 255)), b(clamp(b, 0, 255)), a(clamp(a, 0, 255)) { }
 	Color(float r, float g, float b, float a = 1.0f)
-		:r(Clamp(r * 255.0f, 0.0f, 255.0f)), g(Clamp(g * 255.0f, 0.0f, 255.0f)), b(Clamp(b * 255.0f, 0.0f, 255.0f)), 
-		 a(Clamp(a * 255.0f, 0.0f, 255.0f)) { }
+		:r(clamp(r * 255.0f, 0.0f, 255.0f)), g(clamp(g * 255.0f, 0.0f, 255.0f)), b(clamp(b * 255.0f, 0.0f, 255.0f)), 
+		 a(clamp(a * 255.0f, 0.0f, 255.0f)) { }
 	Color(u32 rgba) :rgba(rgba) { }
 	Color() { }
 
@@ -266,7 +266,7 @@ struct Color
 	};
 };
 
-inline Color SwapBR(Color col) {
+inline Color swapBR(Color col) {
 	return ((col.rgba & 0xff) << 16) | ((col.rgba & 0xff0000) >> 16) | (col.rgba & 0xff00ff00);
 }
 
@@ -285,8 +285,7 @@ SERIALIZE_AS_POD(Color)
 
 #define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
 
-void FindFiles(vector<string> &out, const char *dirName, const char *ext, bool recursive = false);
-//string OpenFileDialog(bool save);
+void findFiles(vector<string> &out, const char *dirName, const char *ext, bool recursive = false);
 
 typedef rapidxml::xml_node<> XMLNode;
 typedef rapidxml::xml_attribute<> XMLAttribute;

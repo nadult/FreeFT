@@ -14,7 +14,7 @@ namespace sys {
 			EXCEPT("FrameAllocator", "Only one FrameAllocator class can be instantiated.");
 		instance = this;
 
-		pool = (char*)sys::Alloc(reserve);
+		pool = (char*)sys::alloc(reserve);
 		endPool = pool + reserve;
 		allocatedBlocks = 0;
 	}
@@ -31,10 +31,10 @@ namespace sys {
 		//	printf("OH SHIT! we will have a problem when someone will try to free these blocks!\n");
 		}
 		instance = 0;
-		sys::Free(pool);
+		sys::free(pool);
 	}
 
-	void FrameAllocator::BeginFrame() {
+	void FrameAllocator::beginFrame() {
 		MutexLocker locker(mutex);
 
 		if(allocatedBlocks)
@@ -42,16 +42,16 @@ namespace sys {
 					int(allocatedBlocks), " blocks)");
 		allocatedBlocks = 0;
 
-		size_t newReserve = Min(Max(reserve, maxAllocated), maxReserve);
+		size_t newReserve = min(max(reserve, maxAllocated), maxReserve);
 		if(newReserve != reserve) {
-			if(pool) sys::Free(pool);
-			pool = (char*)sys::Alloc(reserve=newReserve);
+			if(pool) sys::free(pool);
+			pool = (char*)sys::alloc(reserve=newReserve);
 			endPool = pool + reserve;
 		}
 		maxAllocated = 0; allocated = 0; allocatedAway = 0;
 	}
 
-	void *FrameAllocator::DoAlloc(size_t bytes) {
+	void *FrameAllocator::doAlloc(size_t bytes) {
 		MutexLocker locker(mutex);
 
 		if(allocated + bytes + sizeof(size_t) <= reserve) {
@@ -65,14 +65,14 @@ namespace sys {
 		}
 		
 		allocatedAway += bytes;
-		return sys::Alloc(bytes);
+		return sys::alloc(bytes);
 	}
 
-	void FrameAllocator::DoFree(void *ptr) {
+	void FrameAllocator::doFree(void *ptr) {
 		MutexLocker locker(mutex);
-		maxAllocated = Max(maxAllocated, allocated + allocatedAway);
+		maxAllocated = max(maxAllocated, allocated + allocatedAway);
 
-		if(InPool(ptr)) {
+		if(inPool(ptr)) {
 			if(allocatedBlocks == 0)
 				EXCEPT("FreeFromPool","Trying to free data from empty pool.");
 
@@ -84,40 +84,40 @@ namespace sys {
 
 			size_t bytes = ((size_t*)ptr)[-1];
 
-			if(IsLast(ptr, bytes)) allocated -= bytes + sizeof(size_t);
+			if(isLast(ptr, bytes)) allocated -= bytes + sizeof(size_t);
 			else {
 				// Wasted memory...
 			}
 		}
-		else sys::Free(ptr);
+		else sys::free(ptr);
 	}
 
-	bool FrameAllocator::IsInPool(void *ptr) {
+	bool FrameAllocator::isInPool(void *ptr) {
 		MutexLocker locker(mutex);
-		return InPool(ptr);
+		return inPool(ptr);
 	}
 	
-	bool FrameAllocator::InPool(void *ptr) const {
+	bool FrameAllocator::inPool(void *ptr) const {
 		return ((char*)ptr) >= pool && ((char*)ptr) < endPool;
 	}
-	bool FrameAllocator::IsLast(void *ptr,size_t bytes) const {
+	bool FrameAllocator::isLast(void *ptr,size_t bytes) const {
 		return ((char*)ptr) + bytes >= pool + allocated;
 	}
 
 
-	void *FrameAllocator::Alloc(size_t bytes) {
-		if(instance) return instance->DoAlloc(bytes);
-		return sys::Alloc(bytes);
+	void *FrameAllocator::alloc(size_t bytes) {
+		if(instance) return instance->doAlloc(bytes);
+		return sys::alloc(bytes);
 	}
-	void FrameAllocator::Free(void *ptr) {
+	void FrameAllocator::free(void *ptr) {
 		if(instance) {
-			instance->DoFree(ptr);
+			instance->doFree(ptr);
 			return;
 		}
 		if(allocatedBlocks)
 			EXCEPT("Free", "We have a problem! You are probably trying to free data allocated in frame allocator, "
 					"but the\n frame allocator was destroyed!");
-		sys::Free(ptr);
+		sys::free(ptr);
 	}
 
 #undef EXCEPT

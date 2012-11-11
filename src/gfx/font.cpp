@@ -126,26 +126,26 @@ namespace gfx
 
 		xadvance[' '] = (advMid / float(num)) / scaleW;
 
-		pos  = float2(0, 0);
-		size = float2(24, 24);
+		m_pos  = float2(0, 0);
+		m_size = float2(24, 24);
 	}
 
-	size_t Font::GenQuads(const char *str, float2 *oPos, float2 *oUV, size_t bufSize) const
+	size_t Font::genQuads(const char *str, float2 *oPos, float2 *oUV, size_t bufSize) const
 	{
 		size_t len   = std::min(strlen(str), bufSize / 4);
 		float  scale = 4.0f;
-		float2 startPos = pos;
+		float2 startPos = m_pos;
 
 		for(size_t n = 0; n < len; n++) {
 			u8 c = ((u8 *)str)[n];
 			if(c == '\n') {
-				pos = startPos + float2(0, size.y * 1.1f);
-				startPos = pos;
+				m_pos = startPos + float2(0, m_size.y * 1.1f);
+				startPos = m_pos;
 			}
 
 			const float2 &p1   = chars[c * 2 + 0], &p2 = chars[c * 2 + 1];
-			float2       sp    = float2(pos) + float2(offset[c].x * size.x, offset[c].y * size.y) * scale;
-			float2       tsize = float2((p2.x - p1.x) * size.x, (p2.y - p1.y) * size.y) * scale;
+			float2       sp    = float2(m_pos) + float2(offset[c].x * m_size.x, offset[c].y * m_size.y) * scale;
+			float2       tsize = float2((p2.x - p1.x) * m_size.x, (p2.y - p1.y) * m_size.y) * scale;
 
 			float2 *p  = oPos + n * 4;
 			float2 *uv = oUV + n * 4;
@@ -159,15 +159,15 @@ namespace gfx
 			p[3]  = sp + float2(0, tsize.y);
 			uv[3] = float2(p1.x, p2.y);
 
-			pos += float2(xadvance[c] * size.x * scale, 0);
+			m_pos += float2(xadvance[c] * m_size.x * scale, 0);
 		}
 
 		return len;
 	}
 
-	void Font::Draw(const char *str) const {
+	void Font::draw(const char *str) const {
 		float2 tpos[1024], tuv[1024];
-		int num = GenQuads(str, tpos, tuv, 1024);
+		int num = genQuads(str, tpos, tuv, 1024);
 
 		glBegin(GL_QUADS);
 		glColor3f(1.0f, 1.0f, 1.0f);

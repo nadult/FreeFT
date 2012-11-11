@@ -19,15 +19,15 @@ namespace Profiler {
 		numTimers,
 	};
 
-	void UpdateTimer(TimerId id, double time);
-	void UpdateCounter(CounterId id, int value);
-	void NextFrame();
+	void updateTimer(TimerId id, double time);
+	void updateCounter(CounterId id, int value);
+	void nextFrame();
 
-	string GetStats();
+	string getStats();
 
 	struct BlockTimer {
 		BlockTimer(TimerId id) :time(getTime()), id(id) { }
-		~BlockTimer() { UpdateTimer(id, getTime() - time); }
+		~BlockTimer() { updateTimer(id, getTime() - time); }
 
 		double time;
 		TimerId id;

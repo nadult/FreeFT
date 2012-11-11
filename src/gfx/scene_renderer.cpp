@@ -10,7 +10,7 @@ namespace gfx {
 
 
 	int SceneRenderer::Element::Compare(const SceneRenderer::Element &rhs) const {
-		//DASSERT(!Overlaps(box, box));
+		//DASSERT(!areOverlapping(box, box));
 
 		int y_ret = m_bbox.max.y <= rhs.m_bbox.min.y? -1 : rhs.m_bbox.max.y <= m_bbox.min.y? 1 : 0;
 		if(y_ret)
@@ -30,8 +30,8 @@ namespace gfx {
 	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, int3 bbox, Color color) {
 		DASSERT(texture);
 
-		rect += (int2)WorldToScreen(pos);
-		if(!Overlaps(rect, IRect(m_view_pos, m_view_pos + m_viewport.Size())))
+		rect += (int2)worldToScreen(pos);
+		if(!areOverlapping(rect, IRect(m_view_pos, m_view_pos + m_viewport.size())))
 			return;
 
 		int3 ipos(pos);
@@ -54,10 +54,10 @@ namespace gfx {
 		}
 
 		int2 corners[4] = {
-			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)),
-			WorldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)),
-			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)),
-			WorldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)) };
+			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)),
+			worldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)),
+			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)),
+			worldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)) };
 
 		Element new_elem;
 		new_elem.m_texture = nullptr;
@@ -85,12 +85,12 @@ namespace gfx {
 	void SceneRenderer::render() {
 		PROFILE(tRendering)
 
-		SetScissorTest(true);
-		LookAt(m_view_pos - m_viewport.min);
-		IRect view(m_view_pos, m_view_pos + m_viewport.Size());
+		setScissorTest(true);
+		lookAt(m_view_pos - m_viewport.min);
+		IRect view(m_view_pos, m_view_pos + m_viewport.size());
 
-		int xNodes = (m_viewport.Width() + node_size - 1) / node_size;
-		int yNodes = (m_viewport.Height() + node_size - 1) / node_size;
+		int xNodes = (m_viewport.width() + node_size - 1) / node_size;
+		int yNodes = (m_viewport.height() + node_size - 1) / node_size;
 
 //		std::random_shuffle(m_elements.begin(), m_elements.end());
 
@@ -140,7 +140,7 @@ namespace gfx {
 
 				for(int j = i + 1; j < count; j++) {
 					const Element &elem2 = m_elements[grid[g + j].second];
-					int result = Overlaps(elem1.m_rect, elem2.m_rect)? elem1.Compare(elem2): 0;
+					int result = areOverlapping(elem1.m_rect, elem2.m_rect)? elem1.Compare(elem2): 0;
 					graph[i + j * count] = result;
 					graph[j + i * count] = -result;
 				}
@@ -163,18 +163,18 @@ namespace gfx {
 
 			int2 grid_tl = m_viewport.min + int2(grid_x * node_size, grid_y * node_size);
 			IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
-			grid_rect.max = Min(grid_rect.max, m_viewport.max);
-			SetScissorRect(grid_rect);
+			grid_rect.max = min(grid_rect.max, m_viewport.max);
+			setScissorRect(grid_rect);
 
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
 				if(elem.m_texture) {
-					elem.m_texture->Bind();
-					DrawQuad(elem.m_rect.min, elem.m_rect.Size(), elem.m_color);
+					elem.m_texture->bind();
+					drawQuad(elem.m_rect.min, elem.m_rect.size(), elem.m_color);
 				}
 				else {
-					DTexture::Bind0();
-					DrawBBoxFilled(elem.m_bbox, elem.m_color);
+					DTexture::bind0();
+					drawBBoxFilled(elem.m_bbox, elem.m_color);
 				}
 			}
 
@@ -183,14 +183,14 @@ namespace gfx {
 
 //		printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
-		SetScissorRect(m_viewport);
-		DTexture::Bind0();
+		setScissorRect(m_viewport);
+		DTexture::bind0();
 		for(int n = 0; n < (int)m_wire_boxes.size(); n++) {
 			const BoxElement &elem = m_wire_boxes[n];
-			DrawBBox(elem.m_bbox, elem.m_color);
+			drawBBox(elem.m_bbox, elem.m_color);
 		}
 
-		SetScissorTest(false);
+		setScissorTest(false);
 	}
 
 }

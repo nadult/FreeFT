@@ -39,13 +39,9 @@
    issues/11-console.txt
  
  - dokończenie refactoringu nazewnictwa
-   issues/12-code_cleanup.txt
+   issues/12-code_cleanup.txt DONE (3 / 7)
 
- - lepsze sortowanie przed wyświetlaniem tile-ów
  - ulepszanie wydajności tylko w razie potrzeby
- - FrameStackAllocator
-
-
 
 
 

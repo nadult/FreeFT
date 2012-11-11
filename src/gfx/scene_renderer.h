@@ -13,7 +13,7 @@ namespace gfx {
 		void addBox(IBox box, Color col = Color(255, 255, 255), bool is_filled = false);
 		void render();
 
-		IRect targetRect() const { return IRect(m_view_pos, m_view_pos + m_viewport.Size()); }
+		IRect targetRect() const { return IRect(m_view_pos, m_view_pos + m_viewport.size()); }
 
 		enum { node_size = 128 };
 

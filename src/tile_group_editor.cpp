@@ -24,7 +24,7 @@ namespace {
 }
 
 TileGroupEditor::TileGroupEditor(IRect rect)
-	:ui::Window(rect, Color(0, 0, 0)), m_tile_list(rect.Width(), 2) {
+	:ui::Window(rect, Color(0, 0, 0)), m_tile_list(rect.width(), 2) {
 	m_view = clippedRect();
 
 	m_tile_group = nullptr;
@@ -51,22 +51,22 @@ void TileGroupEditor::updateSelector() {
 void TileGroupEditor::onInput(int2 mouse_pos) {
 	ASSERT(m_tile_group);
 
-	if(IsKeyDown(Key_space)) {
+	if(isKeyDown(Key_space)) {
 		m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);
 		updateSelector();
 		return;
 	}
 	
-	int wheel = GetMouseWheelMove();
+	int wheel = getMouseWheelMove();
 	if(wheel) {
-		m_offset[m_mode].y -= wheel * rect().Height() / 16;
-		m_offset[m_mode].y = Clamp(m_offset[m_mode].y, 0, m_tile_list.m_height);
+		m_offset[m_mode].y -= wheel * rect().height() / 16;
+		m_offset[m_mode].y = clamp(m_offset[m_mode].y, 0, m_tile_list.m_height);
 	}
 
 	if(m_mode == mModify) {
 		const ui::TileList::Entry *entry = m_tile_list.find(mouse_pos + m_offset[m_mode]);
 
-		if(IsKeyDown('G') && entry && m_selected_group_id != -1) {
+		if(isKeyDown('G') && entry && m_selected_group_id != -1) {
 			m_tile_group->setEntryGroup(m_tile_group->findEntry(entry->m_tile),
 				entry->m_group_id == m_selected_group_id? m_tile_group->groupCount() : m_selected_group_id);
 			m_tile_list.update();
@@ -84,22 +84,22 @@ void TileGroupEditor::onInput(int2 mouse_pos) {
 
 		if(m_selected_group_id != -1) {
 			for(int a = 0; a < COUNTOF(actions); a++)
-				if(IsKeyDown(actions[a].key) || IsKeyDown(Key_kp_5))
+				if(isKeyDown(actions[a].key) || isKeyDown(Key_kp_5))
 					m_tile_group->setGroupSurface(m_selected_group_id, actions[a].side, m_selected_surface_id);
 		}
 
 		for(int n = 0; n <= 9; n++)
-			if(IsKeyDown('0' + n))
+			if(isKeyDown('0' + n))
 				m_selected_surface_id = n;
-		if(IsKeyDown('-'))
+		if(isKeyDown('-'))
 			m_selected_surface_id = -1;
 	}
 }
 	
 bool TileGroupEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
-	if(key == 2 || (IsKeyPressed(Key_lctrl) && key == 0)) {
-		m_offset[m_mode].y -= GetMouseMove().y;
-		m_offset[m_mode].y = Clamp(m_offset[m_mode].y, 0, m_tile_list.m_height);
+	if(key == 2 || (isKeyPressed(Key_lctrl) && key == 0)) {
+		m_offset[m_mode].y -= getMouseMove().y;
+		m_offset[m_mode].y = clamp(m_offset[m_mode].y, 0, m_tile_list.m_height);
 		return true;
 	}
 	else if(key == 0) {
@@ -140,47 +140,47 @@ void TileGroupEditor::drawContents() const {
 		entry.m_is_selected = m_mode == mAddRemove?
 			m_tile_group->isValidEntryId(entry.m_tile->m_temp, entry.m_tile) :
 			entry.m_group_id == m_selected_group_id;
-		entry.m_tile->Draw(entry.m_pos - entry.m_tile->GetBounds().min - m_offset[m_mode]);
+		entry.m_tile->draw(entry.m_pos - entry.m_tile->GetBounds().min - m_offset[m_mode]);
 	}
 	
-	DTexture::Bind0();
+	DTexture::bind0();
 	for(int n = 0; n < (int)m_tile_list.size(); n++) {
 		const ui::TileList::Entry &entry = m_tile_list[n];
 		if(!entry.m_is_selected)
 			continue;
 		
 		int2 pos = entry.m_pos - m_offset[m_mode];
-		//LookAt(-clippedRect().min - pos - entry.m_tile->offset);
+		//lookAt(-clippedRect().min - pos - entry.m_tile->offset);
 		//IBox box(int3(0, 0, 0), entry.m_tile->bbox);
-		//DrawBBox(box, Color(255, 255, 255));
-		DrawRect(IRect(pos, pos + entry.m_size));
+		//drawBBox(box, Color(255, 255, 255));
+		drawRect(IRect(pos, pos + entry.m_size));
 	}
 
 	if(m_mode == mModify && m_selected_group_id != -1) {	
 		IRect edit_rect(clippedRect().max - int2(280, 250), clippedRect().max);
-		int2 center = edit_rect.Center();
+		int2 center = edit_rect.center();
 
-		LookAt(-center);
-		DrawQuad(-edit_rect.Size() / 2, edit_rect.Size(), Color(80, 80, 80));
-		DrawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
+		lookAt(-center);
+		drawQuad(-edit_rect.size() / 2, edit_rect.size(), Color(80, 80, 80));
+		drawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
-		m_font_texture->Bind();
-		m_font->SetSize(int2(35, 25));
-		m_font->SetPos(int2(0, 0));
+		m_font_texture->bind();
+		m_font->setSize(int2(35, 25));
+		m_font->setPos(int2(0, 0));
 
 		char text[32];
 
 		for(int n = 0; n < TileGroup::Group::sideCount; n++) {
-			LookAt(-center - WorldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
+			lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
 			snprintf(text, sizeof(text), "%d", m_tile_group->groupSurface(m_selected_group_id, n));
-			m_font->SetPos(int2(0, 0));
-			m_font->Draw(text);
+			m_font->setPos(int2(0, 0));
+			m_font->draw(text);
 		}
 			
-		LookAt(-center +edit_rect.Size() / 2);
-		m_font->SetPos(int2(0, 0));
+		lookAt(-center +edit_rect.size() / 2);
+		m_font->setPos(int2(0, 0));
 		snprintf(text, sizeof(text), "next_surf:%d", m_selected_surface_id);
-		m_font->Draw(text);
+		m_font->draw(text);
 
 		/*
 		const char *names[] = {
@@ -195,13 +195,13 @@ void TileGroupEditor::drawContents() const {
 			"green goo",
 		};
 
-		m_font->SetPos(int2(0, 10));
-		m_font->SetSize(int2(28, 18));
-		LookAt(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
+		m_font->setPos(int2(0, 10));
+		m_font->setSize(int2(28, 18));
+		lookAt(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
 
 		for(int n = 0; n < COUNTOF(names); n++) {
 			snprintf(text, sizeof(text), m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]);
-			m_font->Draw(text);
+			m_font->draw(text);
 		}*/
 	}
 

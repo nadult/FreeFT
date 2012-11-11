@@ -76,7 +76,7 @@ namespace sys {
 				("game",	outs[5]);
 		
 		for(int n=0;n<etCount;n++)
-			filters[n]=Clamp(filters[n],0,4);
+			filters[n]=clamp(filters[n],0,4);
 
 		for(int t=0;t<etCount;t++)
 			for(int l=0;l<elCount;l++)
