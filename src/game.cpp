@@ -59,7 +59,7 @@ int safe_main(int argc, char **argv)
 			fflush(stdout);
 		}
 
-		Ptr<Tile> tile = Tile::mgr.Load(file_names[n]);
+		Ptr<Tile> tile = Tile::mgr.load(file_names[n]);
 		tile->name = file_names[n];
 		tile->LoadDTexture();
 	}
@@ -75,8 +75,8 @@ int safe_main(int argc, char **argv)
 	if(access("../data/tile_map.xml", R_OK) == 0) {
 		string text;
 		Loader ldr("../data/tile_map.xml");
-		text.resize(ldr.Size());
-		ldr.Data(&text[0], ldr.Size());
+		text.resize(ldr.size());
+		ldr.data(&text[0], ldr.size());
 		XMLDocument doc;
 		doc.parse<0>(&text[0]); 
 		tile_map.loadFromXML(doc);
@@ -89,7 +89,7 @@ int safe_main(int argc, char **argv)
 	actor.m_navigation_map = &navigation_map;
 	PTexture tex = navigation_map.getTexture();
 
-	double last_time = GetTime();
+	double last_time = getTime();
 	vector<int2> path;
 	int3 last_pos(0, 0, 0);
 
@@ -123,7 +123,7 @@ int safe_main(int argc, char **argv)
 		if(IsKeyDown(Key_kp_subtract))
 			actor.setNextOrder(Actor::makeChangeStanceOrder(-1));
 
-		double time = GetTime();
+		double time = getTime();
 		actor.think(time, time - last_time); //TODO: problem with delta in the first frame
 		last_time = time;
 
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 	}
 	catch(const Exception &ex) {
 		DestroyWindow();
-		printf("%s\n\nBacktrace:\n%s\n", ex.What(), CppFilterBacktrace(ex.Backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}
 }

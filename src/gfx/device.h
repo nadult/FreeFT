@@ -14,7 +14,7 @@ namespace gfx
 		DTexture();
 		~DTexture();
 
-		void Serialize(Serializer &sr);
+		void serialize(Serializer &sr);
 
 		void Bind() const;
 		static void Bind0();

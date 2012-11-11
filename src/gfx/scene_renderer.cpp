@@ -10,7 +10,7 @@ namespace gfx {
 
 
 	int SceneRenderer::Element::Compare(const SceneRenderer::Element &rhs) const {
-		//DAssert(!Overlaps(box, box));
+		//DASSERT(!Overlaps(box, box));
 
 		int y_ret = m_bbox.max.y <= rhs.m_bbox.min.y? -1 : rhs.m_bbox.max.y <= m_bbox.min.y? 1 : 0;
 		if(y_ret)
@@ -28,7 +28,7 @@ namespace gfx {
 	}
 
 	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, int3 bbox, Color color) {
-		DAssert(texture);
+		DASSERT(texture);
 
 		rect += (int2)WorldToScreen(pos);
 		if(!Overlaps(rect, IRect(m_view_pos, m_view_pos + m_viewport.Size())))

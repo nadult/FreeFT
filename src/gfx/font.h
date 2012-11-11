@@ -16,7 +16,7 @@ namespace gfx
 public:
 		Font() { }
 
-		void Serialize(Serializer&);
+		void serialize(Serializer&);
 
 		// Returns number of quads generated
 		// For every quad it generates: 4 * 2 floats in each buffer

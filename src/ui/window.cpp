@@ -91,14 +91,14 @@ namespace ui
 	}
 
 	void Window::addChild(PWindow &&child) {
-		DAssert(child);
+		DASSERT(child);
 		child->m_parent = this;
 		child->updateRects();
 		m_children.push_back(std::move(child));
 	}
 		
 	void Window::setRect(IRect rect) {
-		DAssert(!m_dragging_mode);
+		DASSERT(!m_dragging_mode);
 		m_rect = rect;
 		updateRects();
 	}

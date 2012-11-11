@@ -34,14 +34,14 @@ namespace
 
 namespace gfx
 {
-	void Font::Serialize(Serializer &sr) {
+	void Font::serialize(Serializer &sr) {
 		//TODO: loading from binary format
 		//TODO: loading kerning data
 		//TODO: unicode support
 
 		string buffer;
-		buffer.resize(sr.Size(), '\0');
-		sr.Data(&buffer[0], sr.Size());
+		buffer.resize(sr.size(), '\0');
+		sr.data(&buffer[0], sr.size());
 
 		std::stringstream ss(buffer);
 
@@ -51,12 +51,12 @@ namespace gfx
 
 		while(true) {
 			if(!ss.good())
-				ThrowException("Error while parsing font data");
+				THROW("Error while parsing font data");
 
 			Scan(ss, buf, 1024);
 			if(strncmp(buf, "charset=", 8) == 0) {
 				if(strcmp(buf + 8, "\"ANSI\"") != 0 && strcmp(buf + 8, "\"ASCII\""))
-					ThrowException("Only ansi/ascii charsets are supported.");
+					THROW("Only ansi/ascii charsets are supported.");
 			}
 			else if(strncmp(buf, "scaleW=", 7) == 0)
 				scaleW = atof(buf + 7);
@@ -64,7 +64,7 @@ namespace gfx
 				scaleH = atof(buf + 7);
 			else if(strncmp(buf, "pages=", 6) == 0) {
 				if(atoi(buf + 6) != 1)
-					ThrowException("Multi-page fonts not supported.");
+					THROW("Multi-page fonts not supported.");
 			}
 			else if(strcmp(buf, "chars") == 0)   {
 				Scan(ss, buf, 1024);
@@ -75,7 +75,7 @@ namespace gfx
 			}
 		}
 
-		Assert(scaleW != 0.0f && scaleH != 0.0f);
+		ASSERT(scaleW != 0.0f && scaleH != 0.0f);
 
 		for(int n = 0; n < 256; n++) {
 			chars[n * 2 + 0] = float2(0, 0);
@@ -89,7 +89,7 @@ namespace gfx
 			while(true) {
 				Scan(ss, buf, 1024);
 				if(!ss.good())
-					ThrowException("Error while parsing font file.");
+					THROW("Error while parsing font file.");
 
 				if(strcmp(buf, "char") == 0)
 					break;
@@ -97,7 +97,7 @@ namespace gfx
 
 			Scan(ss, buf, 1024);
 			int id = atoi(buf + 3);
-			Assert(id >= 0 && id <= 255);
+			ASSERT(id >= 0 && id <= 255);
 
 			Scan(ss, buf, 1024);
 			int x = atoi(buf + 2);

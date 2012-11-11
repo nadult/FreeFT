@@ -11,9 +11,9 @@ namespace gfx
 
 		{
 			char sig[2];
-			sr.Data(sig, 2);
+			sr.data(sig, 2);
 			if(sig[0] != 'B' || sig[1] != 'M')
-				ThrowException("Wrong BMP file signature");
+				THROW("Wrong BMP file signature");
 		}
 
 		int offset;
@@ -41,21 +41,21 @@ namespace gfx
 
 				sr&hwidth&hheight&planes&hbpp;
 				sr&compr;
-				sr.Data(temp, 4 * 5);
+				sr.data(temp, 4 * 5);
 				width  = hwidth;
 				height = hheight;
 				bpp    = hbpp;
 				if(hSize > 40)
-					sr.Seek(sr.Pos() + hSize - 40);
+					sr.seek(sr.pos() + hSize - 40);
 
 				if(compr != 0)
-					ThrowException("Compressed bitmaps not supported");
+					THROW("Compressed bitmaps not supported");
 			}
 
 			if(bpp != 24 && bpp != 32 && bpp != 8)
-				ThrowException(bpp, "-bit bitmaps are not supported (only 8, 24 and 32)");
+				THROW("%d-bit bitmaps are not supported (only 8, 24 and 32)", bpp);
 			if(width > maxWidth)
-				ThrowException("Bitmap is too wide (", width, " pixels): max width is ", maxWidth);
+				THROW("Bitmap is too wide (%d pixels): max width is %d",width, (int)maxWidth);
 		}
 
 		int bytesPerPixel = bpp / 8;
@@ -65,8 +65,8 @@ namespace gfx
 
 		if(bytesPerPixel == 1) {
 			Color palette[256];
-			sr.Data(palette, sizeof(palette)); //TODO: check if palette is ok
-			sr.Seek(offset);
+			sr.data(palette, sizeof(palette)); //TODO: check if palette is ok
+			sr.seek(offset);
 
 			for(uint n = 0; n < COUNTOF(palette); n++)
 				palette[n].a = 255;
@@ -74,30 +74,30 @@ namespace gfx
 			for(int y = height - 1; y >= 0; y--) {
 				Color *dst = Line(y);
 				u8 line[maxWidth];
-				sr.Data(line, width);
-				sr.Seek(sr.Pos() + lineAlignment);
+				sr.data(line, width);
+				sr.seek(sr.pos() + lineAlignment);
 
 				for(int x = 0; x < width; x++)
 					dst[x] = palette[line[x]];
 			}
 		}
 		else if(bytesPerPixel == 3) {
-			sr.Seek(offset);
+			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
 				u8 line[maxWidth * 3];
-				sr.Data(line, width * 3);
+				sr.data(line, width * 3);
 
 				Color *dst = Line(y);
 				for(int x = 0; x < width; x++)
 					dst[x] = Color(line[x * 3 + 0], line[x * 3 + 1], line[x * 3 + 2]); //TODO: check me
-				sr.Seek(sr.Pos() + lineAlignment);
+				sr.seek(sr.pos() + lineAlignment);
 			}
 		}
 		else if(bytesPerPixel == 4) {
-			sr.Seek(offset);
+			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
-				sr.Data(Line(y), width * 4);
-				sr.Seek(sr.Pos() + lineAlignment);
+				sr.data(Line(y), width * 4);
+				sr.seek(sr.pos() + lineAlignment);
 			}
 		}
 	}

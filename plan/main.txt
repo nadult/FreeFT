@@ -13,10 +13,10 @@
    issues/4-entity_editor.txt
 
  - ulepszenia w edytorze
-   issues/8-improve_editor.txt
+   issues/10-improve_editor.txt
 
  - ulepszony UI:
-   issues/10-ui_improvements.txt
+   issues/8-ui_improvements.txt
 
 2. Prosta gra:
  - poruszanie się postacią
@@ -37,12 +37,27 @@
 3. Drobne rzeczy do zrobienia:
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt
+ 
+ - dokończenie refactoringu nazewnictwa
+   issues/12-code_cleanup.txt
 
  - lepsze sortowanie przed wyświetlaniem tile-ów
- - dokończenie refactoringu nazewnictwa
- - plan na dłuższy okres (rozłożony na kilka problemów, które można rozwiązywać 
-  niezależnie od siebie)
- - przyspieszyc rendering sceny
+ - ulepszanie wydajności tylko w razie potrzeby
  - FrameStackAllocator
 
 
+
+
+
+
+Ostateczny cel: Prosta gra RPG zawierająca:
+- system levelowania postaci, kilka skillów, na razie oparte o HPki 8h - 16h
+- NPC z prostym AI, systemem dialogów, możliwością handlowania, walki; prosty system widoczności 24h - 32h
+- interakcja z otoczeniem: otwieranie drzwi, używanie kontenerów, terminali, włączanie świateł,
+  włamywanie się do systemów zabezpieczeń, etc.   8h - 24h
+- oświetlenie  8h - 16h
+- prosta mapka z kilkoma questami jako proof of concept  8h
+56h - 96h
+
+
+Termin: koniec roku: 29 dni: 216 godzin

@@ -24,12 +24,12 @@ namespace
 		strm.avail_in = 0;
 		strm.next_in = Z_NULL;
 		if(inflateInit(&strm) != Z_OK)
-			ThrowException("Error while decompressing image data");
+			THROW("Error while decompressing image data");
 
 		/* decompress until deflate stream ends or end of file */
 		do {
 			strm.avail_in = inSize < CHUNK? inSize : CHUNK;
-			sr.Data(in, strm.avail_in);
+			sr.data(in, strm.avail_in);
 			strm.next_in = in;
 			inSize -= strm.avail_in;
 
@@ -38,7 +38,7 @@ namespace
 				strm.avail_out = CHUNK;
 				strm.next_out = out;
 				ret = inflate(&strm, Z_NO_FLUSH);
-				DAssert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+				DASSERT(ret != Z_STREAM_ERROR);  /* state not clobbered */
 
 				switch (ret) {
 				case Z_NEED_DICT:
@@ -46,7 +46,7 @@ namespace
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 					inflateEnd(&strm);
-					ThrowException("Z_MEM_ERROR while decompressing image data");
+					THROW("Z_MEM_ERROR while decompressing image data");
 				}
 				have = CHUNK - strm.avail_out;
 				dest.resize(dest.size() + have);
@@ -59,7 +59,7 @@ namespace
 		inflateEnd(&strm);
 
 		if(ret != Z_STREAM_END)
-			ThrowException("Error while decompressing image data");
+			THROW("Error while decompressing image data");
 	}
 
 }
@@ -68,8 +68,8 @@ namespace
 namespace gfx
 {
 
-	void Sprite::Image::Serialize(Serializer &sr) {
-		sr.Signature("<zar>", 6);
+	void Sprite::Image::serialize(Serializer &sr) {
+		sr.signature("<zar>", 6);
 
 		char zar_type, dummy1, has_palette;
 		u32 img_width, img_height;
@@ -77,13 +77,13 @@ namespace gfx
 		sr(zar_type, dummy1, img_width, img_height, has_palette);
 
 		if(zar_type != 0x33 && zar_type != 0x34)
-			ThrowException("Wrong zar type: ", (int)zar_type);
+			THROW("Wrong zar type: %d", (int)zar_type);
 
-		DAssert(!has_palette);
+		DASSERT(!has_palette);
 
 		u8 defaultCol = 0;
 		u32 rleSize; sr & rleSize;
-		uint endPos = sr.Pos() + rleSize;
+		uint endPos = sr.pos() + rleSize;
 
 		color.resize(img_width * img_height);
 		alpha.resize(img_width * img_height, 255);
@@ -100,18 +100,18 @@ namespace gfx
 			if(command == 0)
 				memset(alpha_dst, 0, n_pixels);
 			else if(command == 1)
-				sr.Data(color_dst, n_pixels);
+				sr.data(color_dst, n_pixels);
 			else if(command == 2) {
 				u8 buf[128];
 
-				sr.Data(buf, n_pixels * 2);
+				sr.data(buf, n_pixels * 2);
 				for(int n = 0; n < n_pixels; n++) {
 					color_dst[n] = buf[n * 2 + 0];
 					alpha_dst[n] = buf[n * 2 + 1];
 				}
 			}
 			else {
-				sr.Data(alpha_dst, n_pixels);
+				sr.data(alpha_dst, n_pixels);
 				memset(color_dst, defaultCol, n_pixels);
 			}
 				
@@ -119,11 +119,11 @@ namespace gfx
 			alpha_dst += n_pixels;
 		}
 
-		sr.Seek(endPos);
+		sr.seek(endPos);
 	}
 
 	void Sprite::LoadFromSpr(Serializer &sr) {
-		sr.Signature("<sprite>", 9);
+		sr.signature("<sprite>", 9);
 
 		i16 type; sr & type;
 		u8 sizeX, sizeY, sizeZ; sr(sizeZ, sizeY, sizeX);
@@ -137,7 +137,7 @@ namespace gfx
 		m_offset -= WorldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 
 		char header[3];
-		sr.Data(header, sizeof(header));
+		sr.data(header, sizeof(header));
 
 		i32 seq_count; sr & seq_count;
 		m_sequences.resize(seq_count);
@@ -153,12 +153,12 @@ namespace gfx
 			}
 
 			// Skip zeros
-			sr.Seek(sr.Pos() + int(frame_count) * 4);
+			sr.seek(sr.pos() + int(frame_count) * 4);
 
 			i32 nameLen; sr & nameLen;
-			DAssert(nameLen >= 0 && nameLen <= 256);
+			DASSERT(nameLen >= 0 && nameLen <= 256);
 			sequence.m_name.resize(nameLen);
-			sr.Data(&sequence.m_name[0], nameLen);
+			sr.data(&sequence.m_name[0], nameLen);
 			i16 anim_id; sr & anim_id;
 			sequence.m_anim_id = anim_id;
 		}
@@ -169,14 +169,14 @@ namespace gfx
 		for(int n = 0; n < anim_count; n++) {
 			Animation &anim = m_anims[n];
 
-			sr.Signature("<spranim>\0001", 12);
+			sr.signature("<spranim>\0001", 12);
 			i32 offset; sr & offset;
 			anim.m_offset = offset;
 
 			i32 nameLen; sr & nameLen;
-			DAssert(nameLen >= 0 && nameLen <= 256);
+			DASSERT(nameLen >= 0 && nameLen <= 256);
 			anim.m_name.resize(nameLen);
-			sr.Data(&anim.m_name[0], nameLen);
+			sr.data(&anim.m_name[0], nameLen);
 			
 			i32 frame_count, dir_count;
 			sr(frame_count, dir_count);
@@ -196,28 +196,28 @@ namespace gfx
 		for(int n = 0; n < anim_count; n++) {
 			Animation &anim = m_anims[n];
 
-			sr.Seek(anim.m_offset);
+			sr.seek(anim.m_offset);
 
-			sr.Signature("<spranim_img>", 14);
+			sr.signature("<spranim_img>", 14);
 			i16 type; sr & type;
 
 			if(type != '1' && type != '2')
-				ThrowException("Unknown spranim_img type: ", type);
+				THROW("Unknown spranim_img type: %d", (int)type);
 			anim.type = type;
 
 			bool plainType = type == '1';
 			vector<char> data;
-			int size = (n == anim_count - 1? sr.Size() : m_anims[n + 1].m_offset) - anim.m_offset - 16;
+			int size = (n == anim_count - 1? sr.size() : m_anims[n + 1].m_offset) - anim.m_offset - 16;
 
 			if(plainType) {
 				data.resize(size);
-				sr.Data(&data[0], size);
+				sr.data(&data[0], size);
 			}
 			else {
 				i32 plainSize = 0;
 				sr & plainSize;
 				Inflate(sr, data, size - 4);
-				DAssert((int)data.size() == plainSize);
+				DASSERT((int)data.size() == plainSize);
 			}
 
 			PStream imgStream(new DataStream(data));
@@ -226,7 +226,7 @@ namespace gfx
 			for(int l = 0; l < 4; l++) {
 				i32 palSize; imgSr & palSize;
 				anim.palettes[l].resize(palSize);
-				imgSr.Data(&anim.palettes[l][0], palSize * 4);
+				imgSr.data(&anim.palettes[l][0], palSize * 4);
 				for(int i = 0; i < palSize; i++)
 					anim.palettes[l][i] = SwapBR(anim.palettes[l][i]);
 			}
@@ -236,7 +236,7 @@ namespace gfx
 			anim.points.resize(image_count, int2(0, 0));
 
 			for(int n = 0; n < image_count; n++) {
-				DAssert(imgSr.Pos() < imgSr.Size());
+				DASSERT(imgSr.pos() < imgSr.size());
 				char type; imgSr & type;
 
 				if(type == 1) {
@@ -252,11 +252,11 @@ namespace gfx
 		}
 	}
 
-	void Sprite::Serialize(Serializer &sr) {
-		if(sr.IsLoading())
+	void Sprite::serialize(Serializer &sr) {
+		if(sr.isLoading())
 			LoadFromSpr(sr);
 		else
-			ThrowException("Saving not supported");
+			THROW("Saving not supported");
 	}
 
 	Texture Sprite::Animation::getFrame(int frame_id, int dir_id) const {
@@ -327,8 +327,8 @@ namespace gfx
 	}
 
 	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, Rect *rect) const {
-		DAssert(seq_id >= 0 && seq_id < (int)m_sequences.size());
-		DAssert(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].m_frames.size());
+		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
+		DASSERT(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].m_frames.size());
 
 		const Sequence &seq = m_sequences[seq_id];
 
@@ -341,7 +341,7 @@ namespace gfx
 				frame_id--;
 			}
 		const Animation &anim = m_anims[seq.m_anim_id];
-		DAssert(dir_id < anim.m_dir_count);
+		DASSERT(dir_id < anim.m_dir_count);
 
 		if(rect)
 			*rect = anim.rects[frame_id * anim.m_dir_count + dir_id];

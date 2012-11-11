@@ -44,7 +44,7 @@ namespace
 
 	void png_error_func(png_structp png_ptr, png_const_charp message)
 	{
-		ThrowException("LibPNG Error: ", message);
+		THROW("LibPNG Error: %s", message);
 	}
 
 	void png_warn_func(png_structp png_ptr, png_const_charp message)
@@ -55,15 +55,15 @@ namespace
 	void InitPngInfo(PngInfo &png)
 	{
 		if(png_sig_cmp((png_byte *)&fileData[0], 0, 8))
-			ThrowException("Wrong PNG file signature");
+			THROW("Wrong PNG file signature");
 
 		png.ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, png_error_func, png_warn_func);
 		if(!png.ptr)
-			ThrowException("Out of memory");
+			THROW("Out of memory");
 
 		png.info = png_create_info_struct(png.ptr);
 		if(!png.info)
-			ThrowException("Out of memory");
+			THROW("Out of memory");
 
 		png_set_read_fn(png.ptr, 0, png_read);
 		png_set_error_fn(png.ptr, 0, png_error_func, png_warn_func);
@@ -123,7 +123,7 @@ namespace
 			break;
 
 		default:
-			ThrowException("PNG color type not supported");
+			THROW("PNG color type not supported");
 		}
 		*oWidth  = png.width = width;
 		*oHeight = png.height = height;
@@ -148,11 +148,11 @@ namespace
 
 		if(png.colorType == PNG_COLOR_TYPE_PALETTE) {
 			if(png.channels != 1)
-				ThrowException("Only 8-bit palettes are supported");
+				THROW("Only 8-bit palettes are supported");
 
 
 			if(!png_get_PLTE(png.ptr, png.info, &palette, &numPalette))
-				ThrowException("Error while retrieving PNG palette");
+				THROW("Error while retrieving PNG palette");
 
 			if(png_get_valid(png.ptr, png.info, PNG_INFO_tRNS))
 				png_get_tRNS(png.ptr, png.info, &trans, &numTrans, 0);
@@ -199,8 +199,8 @@ namespace gfx
 		try {
 			PngInfo png;
 
-			fileData.resize(sr.Size());
-			sr.Data(&fileData[0], fileData.size());
+			fileData.resize(sr.size());
+			sr.data(&fileData[0], fileData.size());
 			filePos = 0;
 
 			InitPngInfo(png);

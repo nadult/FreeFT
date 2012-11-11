@@ -1,6 +1,8 @@
 Rozstawianie encji i edycja ich parametrów:
 - 
 
++REQUIREMENTS:
+issues/10-ui_improvements
 
 +ESTIMATED_TIME:
 +TIME_SPENT: 0h

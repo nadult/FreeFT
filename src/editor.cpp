@@ -87,8 +87,8 @@ public:
 		if(access("../data/tile_group.xml", R_OK) == 0) {
 			string text;
 			Loader ldr("../data/tile_group.xml");
-			text.resize(ldr.Size());
-			ldr.Data(&text[0], ldr.Size());
+			text.resize(ldr.size());
+			ldr.data(&text[0], ldr.size());
 			XMLDocument doc;
 			doc.parse<0>(&text[0]); 
 			m_group.loadFromXML(doc);
@@ -96,8 +96,8 @@ public:
 		if(access("../data/tile_map.xml", R_OK) == 0) {
 			string text;
 			Loader ldr("../data/tile_map.xml");
-			text.resize(ldr.Size());
-			ldr.Data(&text[0], ldr.Size());
+			text.resize(ldr.size());
+			ldr.data(&text[0], ldr.size());
 			XMLDocument doc;
 			doc.parse<0>(&text[0]); 
 			m_map.loadFromXML(doc);
@@ -173,14 +173,14 @@ int safe_main(int argc, char **argv)
 			fflush(stdout);
 		}
 
-		Ptr<Tile> tile = Tile::mgr.Load(file_names[n]);
+		Ptr<Tile> tile = Tile::mgr.load(file_names[n]);
 		tile->name = file_names[n];
 		tile->LoadDTexture();
 	}
 	printf("\n");
 
-	//double lastFrameTime = GetTime();
-	double lastSFrameTime = GetTime();
+	//double lastFrameTime = getTime();
+	double lastSFrameTime = getTime();
 	double sframeTime = 1.0 / 16.0;
 
 	PFont font = Font::mgr["font1"];
@@ -244,7 +244,7 @@ int main(int argc, char **argv) {
 	}
 	catch(const Exception &ex) {
 		DestroyWindow();
-		printf("%s\n\nBacktrace:\n%s\n", ex.What(), CppFilterBacktrace(ex.Backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}
 }

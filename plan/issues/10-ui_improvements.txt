@@ -1,4 +1,6 @@
 Dodanie nowych kontrolek i ulepszenie aktualnych
+- poprawione wyświetlanie buttonów
+- 
 - ProgressBar
 - MessageBox-y
 - Lista do wyboru plików

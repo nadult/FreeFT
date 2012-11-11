@@ -5,8 +5,8 @@
 namespace gfx
 {
 
-	void Tile::Serialize(Serializer &sr) {
-		sr.Signature("<tile>", 7);
+	void Tile::serialize(Serializer &sr) {
+		sr.signature("<tile>", 7);
 		i16 type; sr & type;
 
 		if(type == 0x3031) {
@@ -28,9 +28,9 @@ namespace gfx
 
 		char unknown[5];
 		int unk_size = type == '9'? 3 : type == 0x3031? 4 : 5;
-		sr.Data(unknown, unk_size);
+		sr.data(unknown, unk_size);
 
-		sr.Signature("<tiledata>\0001", 12);
+		sr.signature("<tiledata>\0001", 12);
 		u8 dummy2;
 		i32 zarCount;
 		sr(dummy2, zarCount);

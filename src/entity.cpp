@@ -9,7 +9,7 @@ void Entity::fixPos() {
 }
 
 void Entity::setPos(float3 new_pos) {
-	DAssert(new_pos.x >= 0.0f && new_pos.y >= 0.0f && new_pos.z >= 0.0f);
+	DASSERT(new_pos.x >= 0.0f && new_pos.y >= 0.0f && new_pos.z >= 0.0f);
 	m_pos = new_pos;
 }
 

@@ -8,7 +8,7 @@ namespace gfx
 {
 
 	struct Tile: public Resource {
-		void Serialize(Serializer &sr);
+		void serialize(Serializer &sr);
 		void LoadDTexture();
 		void Draw(int2 pos, Color color = Color(255, 255, 255)) const;
 

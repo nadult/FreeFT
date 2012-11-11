@@ -59,8 +59,7 @@ float Distance(const float3 &a, const float3 &b) { return sqrt(DistanceSq(a, b))
 static void FindFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);
 	if(!dp)
-		ThrowException("Error while opening directory ", dirName, ": ", strerror(errno));
-
+		THROW("Error while opening directory %s: %s", dirName, strerror(errno));
 
 	try {
 		size_t extLen = strlen(ext);

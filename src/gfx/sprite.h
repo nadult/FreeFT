@@ -8,11 +8,11 @@ namespace gfx {
 	class Sprite: public RefCounter {
 	public:
 		void LoadFromSpr(Serializer &sr);
-		void Serialize(Serializer &sr);
+		void serialize(Serializer &sr);
 
 		struct Image {
 			Image() :size(0, 0) { }
-			void Serialize(Serializer &sr);
+			void serialize(Serializer &sr);
 
 			vector<u8> color;
 			vector<u8> alpha;

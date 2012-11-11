@@ -112,11 +112,11 @@ namespace gfx
 		TextureFormat GetFormat() const { return TextureFormat(TI_A8B8G8R8); }
 
 		// Loading from TGA, BMP, PNG, DDS
-		void Serialize(Serializer&);
+		void serialize(Serializer&);
 		void Swap(Texture&);
 
-		Color* Line(int y) { DAssert(y < height); return &data[y * width]; }
-		const Color* Line(int y) const { DAssert(y < height); return &data[y * width]; }
+		Color* Line(int y) { DASSERT(y < height); return &data[y * width]; }
+		const Color* Line(int y) const { DASSERT(y < height); return &data[y * width]; }
 
 		Color& operator()(int x, int y) { return data[x + y * width]; }
 		const Color& operator()(int x, int y) const { return data[x + y * width]; }

@@ -23,16 +23,16 @@ namespace gfx
 		Header hdr;
 		enum { maxWidth = 2048 };
 
-		sr.Data(&hdr, sizeof(hdr));
+		sr.data(&hdr, sizeof(hdr));
 
 		if(hdr.datatypecode != 2)
-			ThrowException("Only uncompressed RGB data type is supported (id:", hdr.datatypecode, ")");
+			THROW("Only uncompressed RGB data type is supported (id:%d)", (int)hdr.datatypecode);
 		if(hdr.bitsperpixel != 24 && hdr.bitsperpixel != 32)
-			ThrowException("Only 24 and 32-bit tga files are supported (bpp:", hdr.bitsperpixel, ")");
+			THROW("Only 24 and 32-bit tga files are supported (bpp:%d)", (int)hdr.bitsperpixel);
 		if(hdr.width > maxWidth)
-				ThrowException("Bitmap is too wide (", hdr.width, " pixels): max width is ", maxWidth);
+				THROW("Bitmap is too wide (%d pixels): max width is %d", (int)hdr.width, (int)maxWidth);
 
-		sr.Seek(sr.Pos() + hdr.idLength);
+		sr.seek(sr.pos() + hdr.idLength);
 
 		unsigned bpp = hdr.bitsperpixel / 8;
 		Resize(hdr.width, hdr.height);
@@ -40,7 +40,7 @@ namespace gfx
 		if(bpp == 3) {
 			for(int y = height - 1; y >= 0; y--) {
 				char line[maxWidth * 3];
-				sr.Data(line, width * 3);
+				sr.data(line, width * 3);
 				Color *dst = Line(y);
 				for(int x = 0; x < width; x++)
 					dst[x] = Color(line[x * 3 + 0], line[x * 3 + 1], line[x * 3 + 2]);
@@ -48,7 +48,7 @@ namespace gfx
 		}
 		else if(bpp == 4) {
 			for(int y = height - 1; y >= 0; y--)
-				sr.Data(Line(y), width * 4);
+				sr.data(Line(y), width * 4);
 		}
 	}
 

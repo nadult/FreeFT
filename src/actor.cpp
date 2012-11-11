@@ -34,7 +34,7 @@ void Actor::think(double current_time, double time_delta) {
 		m_issue_next_order = true;
 	}
 	else if(order_id == oMove) {
-		DAssert(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
+		DASSERT(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
 		
 		setSequence(m_order.m_flags? aRunning : aWalking);
 		float speed = m_order.m_flags? 20.0f:
@@ -89,8 +89,8 @@ void Actor::addToRender(gfx::SceneRenderer &out) const {
 	spr_tex->SetSurface(tex);
 
 	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
-	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
-				Color(255, 0, 0) : Color(255, 255, 255));
+//	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
+//				Color(255, 0, 0) : Color(255, 255, 255));
 }
 
 void Actor::issueNextOrder() {
@@ -102,7 +102,7 @@ void Actor::issueNextOrder() {
 //			m_bbox.y = 5;
 //		if(m_stance == sProne && m_bbox.y == 9)
 //			m_bbox.y = 2;
-		DAssert(m_stance >= 0 && m_stance < stanceCount);
+		DASSERT(m_stance >= 0 && m_stance < stanceCount);
 	}
 
 	if(m_next_order.m_id == oMove)
@@ -125,7 +125,7 @@ void Actor::issueNextOrder() {
 void Actor::issueMoveOrder() {
 	OrderId order_id = m_next_order.m_id;
 	int3 new_pos = m_next_order.m_pos;
-	DAssert(order_id == oMove && m_navigation_map);
+	DASSERT(order_id == oMove && m_navigation_map);
 
 	new_pos = Max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
@@ -159,7 +159,7 @@ void Actor::issueMoveOrder() {
 		x_diff -= diag_diff;
 		z_diff -= diag_diff;
 
-		DAssert(diag_diff || x_diff || z_diff);
+		DASSERT(diag_diff || x_diff || z_diff);
 
 		while(x_diff) {
 			int step = Min(x_diff, 3);
@@ -176,12 +176,12 @@ void Actor::issueMoveOrder() {
 			m_path.push_back(cur_pos += dir * dstep);
 			diag_diff -= dstep;
 		}
-
-		if(m_path.size() <= 1 || m_stance != sStanding)
-			m_order.m_flags = 0;
 	}
+		
+	if(m_path.size() <= 1 || m_stance != sStanding)
+		m_order.m_flags = 0;
 
-	DAssert(!m_path.empty());
+	DASSERT(!m_path.empty());
 }
 
 // W konstruktorze wyszukac wszystkie animacje i trzymac id-ki zamiast nazw
@@ -197,15 +197,15 @@ static const char *s_seq_names[Actor::actionCount][Actor::stanceCount] = {
 
 // sets seq_id, frame_id and seq_name
 void Actor::setSequence(ActionId action) {
-	DAssert(action < actionCount && m_stance < stanceCount);
+	DASSERT(action < actionCount && m_stance < stanceCount);
 	const char *name = s_seq_names[action][m_stance];
-	DAssert(name);
+	DASSERT(name);
 
 	if(m_seq_name == name)
 		return;
 
 	int seq_id = m_sprite->findSequence(name);
-	Assert(seq_id != -1);
+	ASSERT(seq_id != -1);
 
 	m_seq_id = seq_id;
 	m_frame_id = 0;

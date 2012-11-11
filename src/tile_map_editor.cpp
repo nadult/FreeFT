@@ -33,7 +33,7 @@ void TileMapEditor::setTileMap(TileMap *new_tile_map) {
 }
 
 void TileMapEditor::onInput(int2 mouse_pos) {
-	Assert(m_tile_map);
+	ASSERT(m_tile_map);
 
 	m_selection = computeCursor(mouse_pos, mouse_pos);
 	if(IsKeyDown(Key_kp_add))
@@ -269,7 +269,7 @@ bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final
 }
 	
 void TileMapEditor::drawContents() const {
-	Assert(m_tile_map);
+	ASSERT(m_tile_map);
 
 
 	gfx::SceneRenderer renderer(clippedRect(), m_view_pos);
@@ -321,7 +321,7 @@ void TileMapEditor::drawContents() const {
 	DrawBBox(m_selection);
 	
 	LookAt(-clippedRect().min);
-	gfx::PFont font        = Font::mgr["font1"];
+	gfx::PFont font = Font::mgr["font1"];
 	gfx::PTexture font_tex = Font::tex_mgr["font1"];
 
 	const char *mode_names[mCount] = {

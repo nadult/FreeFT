@@ -26,8 +26,8 @@ namespace Profiler {
 	string GetStats();
 
 	struct BlockTimer {
-		BlockTimer(TimerId id) :time(GetTime()), id(id) { }
-		~BlockTimer() { UpdateTimer(id, GetTime() - time); }
+		BlockTimer(TimerId id) :time(getTime()), id(id) { }
+		~BlockTimer() { UpdateTimer(id, getTime() - time); }
 
 		double time;
 		TimerId id;

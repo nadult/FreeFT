@@ -6,7 +6,7 @@
 
 TileInstance::TileInstance(const gfx::Tile *tile, const int3 &pos)
 	:m_flags(0), m_tile(tile) {
-	DAssert(m_tile);
+	DASSERT(m_tile);
 	setPos(pos);
 }
 
@@ -25,8 +25,8 @@ IRect TileInstance::screenRect() const {
 }
 
 void TileInstance::setPos(int3 pos) {
-	DAssert(pos.x < TileMapNode::size_x && pos.y < TileMapNode::size_y && pos.z < TileMapNode::size_z);
-	DAssert(pos.x >= 0 && pos.y >= 0 && pos.z >= 0);
+	DASSERT(pos.x < TileMapNode::size_x && pos.y < TileMapNode::size_y && pos.z < TileMapNode::size_z);
+	DASSERT(pos.x >= 0 && pos.y >= 0 && pos.z >= 0);
 	m_xz = u8(pos.x | (pos.z << 4));
 	m_y  = u8(pos.y);
 }
@@ -50,7 +50,7 @@ bool TileMapNode::isColliding(const IBox &box) const {
 
 	for(uint i = 0; i < m_instances.size(); i++) {
 		const TileInstance &instance = m_instances[i];
-		DAssert(instance.m_tile);
+		DASSERT(instance.m_tile);
 
 		int3 tilePos = instance.pos();
 		IBox tileBox(tilePos, tilePos + instance.m_tile->bbox);
@@ -77,7 +77,7 @@ void TileMapNode::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collisi
 	if(test_for_collision && isColliding(IBox(pos, pos + tile.bbox)))
 		return;
 	
-	DAssert(isInside(pos));
+	DASSERT(isInside(pos));
 
 	TileInstance inst(&tile, pos);
 	m_instances.push_back(inst);
@@ -151,9 +151,9 @@ using namespace rapidxml;
 
 void TileMap::loadFromXML(const XMLDocument &doc) {
 	XMLNode *mnode = doc.first_node("map");
-	Assert(mnode);
+	ASSERT(mnode);
 	int2 size(getIntAttribute(mnode, "size_x"), getIntAttribute(mnode, "size_y"));
-	Assert(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
+	ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 	resize(size);
 
 	std::map<int, const gfx::Tile*> tile_indices; //TODO: convert to vector
@@ -169,7 +169,7 @@ void TileMap::loadFromXML(const XMLDocument &doc) {
 		int id = getIntAttribute(inode, "id");
 		int3 pos(getIntAttribute(inode, "pos_x"), getIntAttribute(inode, "pos_y"), getIntAttribute(inode, "pos_z"));
 		auto it = tile_indices.find(id);
-		Assert(it != tile_indices.end());
+		ASSERT(it != tile_indices.end());
 
 		addTile(*it->second, pos, false);
 
@@ -333,7 +333,7 @@ void TileMap::select(const IBox &box, SelectionMode::Type mode) {
 
 const TileInstance *TileMap::at(int3 pos) const {
 	int id = pos.x / Node::size_x + (pos.z / Node::size_z) * m_size.x;
-	DAssert(id >= 0 && id < (int)m_nodes.size());
+	DASSERT(id >= 0 && id < (int)m_nodes.size());
 
 	return m_nodes[id].at(pos - nodePos(id));
 }

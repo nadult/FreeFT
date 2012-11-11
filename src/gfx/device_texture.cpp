@@ -10,23 +10,23 @@ namespace gfx
 			return;
 
 		switch(err) {
-	#define CASE(e) case e: ThrowException(msg, (const char*)": " #e );
+	#define CASE(e) case e: THROW("%s: " #e, msg);
 			CASE(GL_INVALID_ENUM)
 			CASE(GL_INVALID_VALUE)
 			CASE(GL_INVALID_OPERATION)
 			CASE(GL_STACK_OVERFLOW)
 			CASE(GL_STACK_UNDERFLOW)
 			CASE(GL_OUT_OF_MEMORY)
-			default: ThrowException(msg);
+			default: THROW(msg);
 	#undef CASE
 		}
 	}
 
 	void SetTextureData(int level, TextureFormat fmt, int width, int height, const void *pixels) {
-		DAssert(width <= 4096 && height <= 4096);
+		DASSERT(width <= 4096 && height <= 4096);
 
 		if(fmt.IsCompressed()) {
-			ThrowException("Texture compression is not supported");
+			THROW("Texture compression is not supported");
 		}
 		else {
 			glTexImage2D(GL_TEXTURE_2D, level, fmt.GlInternal(), width, height, 0,
@@ -38,7 +38,7 @@ namespace gfx
 
 	void GetTextureData(int level, TextureFormat fmt, void *pixels) {
 		if(fmt.IsCompressed()) {
-			ThrowException("Texture compression is not supported");
+			THROW("Texture compression is not supported");
 		}
 		else {
 			glGetTexImage(GL_TEXTURE_2D, level, fmt.GlFormat(), fmt.GlType(), pixels);
@@ -90,19 +90,19 @@ namespace gfx
 		GetTextureData(0, fmt, &out(0, 0));
 	}
 
-	void DTexture::Serialize(Serializer &sr) {
+	void DTexture::serialize(Serializer &sr) {
 		Texture surface;
-		if(sr.IsSaving())
+		if(sr.isSaving())
 			GetSurface(surface);
 
 		sr & surface;
 
-		if(sr.IsLoading())
+		if(sr.isLoading())
 			SetSurface(surface);
 	}
 
 	void DTexture::Bind() const {
-		DAssert(IsValid());
+		DASSERT(IsValid());
 		::glBindTexture(GL_TEXTURE_2D, id);
 	}
 
@@ -111,7 +111,7 @@ namespace gfx
 	}
 	
 	void DTexture::CreateMip(int level, int w, int h, TextureFormat fmt) {
-		DAssert(IsValid());
+		DASSERT(IsValid());
 
 		GLint gl_id;
 		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
@@ -123,7 +123,7 @@ namespace gfx
 	}
 	
 	void DTexture::UpdateMip(int mip, int x, int y, int w, int h, void *pix, int pixelsInRow) {
-		DAssert(IsValid());
+		DASSERT(IsValid());
 
 		GLint gl_id;
 		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
@@ -137,7 +137,7 @@ namespace gfx
 	}
 
 	TextureFormat DTexture::GetFormat() const {
-		DAssert(IsValid());
+		DASSERT(IsValid());
 
 		GLint internal = 0, gl_id;
 		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);

@@ -29,23 +29,23 @@ namespace gfx
 		data.clear();
 	}
 
-	void Texture::Serialize(Serializer &sr) {
-		if(sr.IsSaving())
-			ThrowException("Saving textures not supported (yet)");
+	void Texture::serialize(Serializer &sr) {
+		if(sr.isSaving())
+			THROW("Saving textures not supported (yet)");
 
-		string fileName = sr.Name(), ext;
+		string fileName = sr.name(), ext;
 		{
 			ext = fileName.substr(std::max(size_t(0), fileName.length() - 4));
 			for(int n = 0, end = ext.length(); n < end; n++)
 				ext[n] = tolower(ext[n]);
 		}
 
-		if(sr.IsLoading()) {
+		if(sr.isLoading()) {
 			if(ext == ".png") LoadPNG(sr);
 			else if(ext == ".bmp") LoadBMP(sr);
 			else if(ext == ".tga") LoadTGA(sr);
 			else if(ext == ".zar") LoadZAR(sr);
-			else ThrowException(ext, " format is not supported (Only BMP, TGA and PNG for now)");
+			else THROW("%s format is not supported (Only BMP, TGA and PNG for now)", ext.c_str());
 		}
 	}
 

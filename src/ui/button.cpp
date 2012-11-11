@@ -13,7 +13,7 @@ namespace ui
 	Button::Button(IRect rect, const char *text) :Window(rect, s_colors[0]), m_text(text) {
 		m_font = Font::mgr["font1"];
 		m_font_texture = Font::tex_mgr["font1"];
-		Assert(m_font && m_font_texture);
+		ASSERT(m_font && m_font_texture);
 	}
 
 	void Button::drawContents() const {

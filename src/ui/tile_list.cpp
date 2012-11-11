@@ -5,7 +5,7 @@ namespace ui
 {
 
 	AllTilesModel::AllTilesModel() {
-		gfx::Tile::mgr.IterateOver( [&](const string&, const gfx::Tile &tile) { m_tiles.push_back(&tile); } );
+		gfx::Tile::mgr.iterateOver( [&](const string&, const gfx::Tile &tile) { m_tiles.push_back(&tile); } );
 	}
 
 

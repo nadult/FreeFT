@@ -49,7 +49,7 @@ void TileGroupEditor::updateSelector() {
 }
 
 void TileGroupEditor::onInput(int2 mouse_pos) {
-	Assert(m_tile_group);
+	ASSERT(m_tile_group);
 
 	if(IsKeyDown(Key_space)) {
 		m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);

@@ -10,14 +10,14 @@ NavigationMap::NavigationMap(int2 size) :m_size(0, 0) {
 }
 
 void NavigationMap::resize(int2 size) {
-	DAssert((size.x & (size.x - 1)) == 0 && size.x >= 8);
+	DASSERT((size.x & (size.x - 1)) == 0 && size.x >= 8);
 	m_line_size = (size.x + 7) / 8;
 	m_bitmap.resize(m_line_size * size.y, 0);
 	m_size = size;
 }
 
 static void extractHeightMap(const TileMap &tile_map, u8 *out, int2 size, int extend) {
-	DAssert(out);
+	DASSERT(out);
 	memset(out, 0, size.x * size.y);
 	IBox dbox(int3(0, 0, 0), int3(size.x, 255, size.y));
 	

@@ -5,7 +5,7 @@ namespace gfx
 {
 
 	void Texture::LoadZAR(Serializer &sr) {
-		sr.Signature("<zar>", 6);
+		sr.signature("<zar>", 6);
 
 		char zar_type, dummy1, has_palette;
 		u32 img_width, img_height;
@@ -13,7 +13,7 @@ namespace gfx
 		sr(zar_type, dummy1, img_width, img_height, has_palette);
 
 		if(zar_type != 0x33 && zar_type != 0x34)
-			ThrowException("Wrong zar type: ", (int)zar_type);
+			THROW("Wrong zar type: %d", (int)zar_type);
 
 		vector<Color> palette;
 		if(has_palette) {
@@ -47,7 +47,7 @@ namespace gfx
 				for(int n = 0; n < n_pixels; n++)
 					*dst++ = Color(0x00000000);
 			else if(command == 1) {
-				sr.Data(buf, n_pixels);
+				sr.data(buf, n_pixels);
 				
 				for(int n = 0; n < n_pixels; n++) {
 					Color col = buf[n] < palette.size()? palette[buf[n]] : defaultCol;
@@ -56,7 +56,7 @@ namespace gfx
 				}
 			}
 			else if(command == 2) {
-				sr.Data(buf, n_pixels * 2);
+				sr.data(buf, n_pixels * 2);
 				for(int n = 0; n < n_pixels; n++) {
 					Color col = buf[n * 2] < palette.size()? palette[buf[n * 2]] : defaultCol;
 					col.a = buf[n * 2 + 1];
@@ -64,7 +64,7 @@ namespace gfx
 				}
 			}
 			else { // command == 3
-				sr.Data(buf, n_pixels);
+				sr.data(buf, n_pixels);
 				for(int n = 0; n < n_pixels; n++) {
 					Color col = defaultCol;
 					col.a = buf[n];

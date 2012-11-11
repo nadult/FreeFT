@@ -68,14 +68,14 @@ namespace gfx
 
 	void CreateWindow(int2 size, bool full) {
 		if(isCreated)
-			ThrowException("Trying to create more than one glfw window");
+			THROW("Trying to create more than one glfw window");
 		if(!glfwInit())
-			ThrowException("Error while initializing GLFW");
+			THROW("Error while initializing GLFW");
 
 		glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 
 		if(!glfwOpenWindow(size.x, size.y, 8, 8, 8, 8, 24, 8, full ? GLFW_FULLSCREEN : GLFW_WINDOW))
-			ThrowException("Error while initializing window with glfwOpenGLWindow");
+			THROW("Error while initializing window with glfwOpenGLWindow");
 
 		glfwDisable(GLFW_AUTO_POLL_EVENTS);
 		glfwSwapInterval(1);
@@ -163,7 +163,7 @@ namespace gfx
 			glfwPollEvents();
 
 			if(glfwGetWindowParam(GLFW_ICONIFIED)) {
-				Sleep(0.05);
+				sleep(0.05);
 				continue;
 			}
 			break;

@@ -1,0 +1,11 @@
+Porządki i refaktoring kodu:
+- poprawienie nazwenictwa (małe / wielkie litery) funkcji, metod, atrybutów, enumów
+- baselib   2h  DONE
+- base		4h
+- zamiana ThrowException na formę taką jak w printf   1h  DONE
+
++ESTIMATED_TIME: 12h
++TIME_SPENT: 0h
+
++WORK_LOG:
+11.11.12: 20:45 - 

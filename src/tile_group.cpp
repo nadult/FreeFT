@@ -19,7 +19,7 @@ TileGroup::Group::Group() :m_entry_count(0) {
 }
 
 void TileGroup::addEntry(const gfx::Tile *tile) {
-	DAssert(tile);
+	DASSERT(tile);
 
 	Entry new_entry;
 	new_entry.m_tile = tile;
@@ -38,7 +38,7 @@ int TileGroup::findEntry(const gfx::Tile *tile) const {
 }
 
 void TileGroup::decGroupEntryCount(int group_id) {
-	DAssert(group_id >= 0 && group_id < groupCount());
+	DASSERT(group_id >= 0 && group_id < groupCount());
 
 	if(!--m_groups[group_id].m_entry_count) {
 		m_groups[group_id] = m_groups.back();
@@ -51,7 +51,7 @@ void TileGroup::decGroupEntryCount(int group_id) {
 }
 
 void TileGroup::setEntryGroup(int entry_id, int group_id) {
-	DAssert(entry_id >= 0 && entry_id < entryCount() && group_id >= 0 && group_id <= groupCount());
+	DASSERT(entry_id >= 0 && entry_id < entryCount() && group_id >= 0 && group_id <= groupCount());
 
 	int last_group = m_entries[entry_id].m_group_id;
 	if(group_id == last_group)
@@ -65,7 +65,7 @@ void TileGroup::setEntryGroup(int entry_id, int group_id) {
 }
 
 void TileGroup::removeEntry(int entry_id) {
-	DAssert(entry_id >= 0 && entry_id < entryCount());
+	DASSERT(entry_id >= 0 && entry_id < entryCount());
 
 	int group_id = m_entries[entry_id].m_group_id;
 	m_entries[entry_id] = m_entries.back();
@@ -137,7 +137,7 @@ void TileGroup::loadFromXML(const XMLDocument &doc) {
 	}
 
 	for(int n = 0; n < entryCount(); n++) {
-		Assert(m_entries[n].m_group_id >= 0 && m_entries[n].m_group_id < groupCount());
+		ASSERT(m_entries[n].m_group_id >= 0 && m_entries[n].m_group_id < groupCount());
 		m_groups[m_entries[n].m_group_id].m_entry_count++;
 	}
 }

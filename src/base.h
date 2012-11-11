@@ -10,15 +10,12 @@ typedef unsigned int uint;
 
 #include "sys/memory.h"
 
-struct uint2;
-
 extern float g_FloatParam[16];
 
 struct int2
 {
 	int2(int x, int y) : x(x), y(y) { }
 	int2() { }
-	explicit operator uint2() const;
 
 	int2 operator+(const int2 rhs) const { return int2(x + rhs.x, y + rhs.y); }
 	int2 operator-(const int2 rhs) const { return int2(x - rhs.x, y - rhs.y); }
@@ -71,22 +68,6 @@ struct int4
 	int x, y, z, w;
 };
 
-struct uint2
-{
-	uint2(uint x, uint y) :x(x), y(y) { }
-	uint2() { }
-	explicit operator int2() const { return int2((int)x, (int)y); }
-
-	uint2 operator+(const uint2 rhs) const { return uint2(x + rhs.x, y + rhs.y); }
-	uint2 operator-(const uint2 rhs) const { return uint2(x - rhs.x, y - rhs.y); }
-	
-	bool operator==(const uint2 &rhs) const { return x == rhs.x && y == rhs.y; }
-	bool operator!=(const uint2 &rhs) const { return x != rhs.x || y != rhs.y; }
-
-	uint x, y;
-};
-
-inline int2::operator uint2() const { return uint2((uint)x, (uint)y); }
 
 struct float2
 {
