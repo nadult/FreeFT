@@ -1,0 +1,8 @@
+Konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
+- wypisywanie różnego rodzaju komunikatów które znikają po pewnym czasie
+
+
++ESTIMATED_TIME:
++TIME_SPENT: 0h
+
++WORK_LOG:

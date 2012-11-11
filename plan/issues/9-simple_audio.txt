@@ -1,0 +1,11 @@
+Prosty system dźwiękowy, tak żeby można było usłyszeć strzały:
+- oparty o SDL_audio
+- dźwięki do strzałów
+- dźwięki kroków?
+- dźwięki od zniszczeń
+
+
++ESTIMATED_TIME:
++TIME_SPENT: 0h
+
++WORK_LOG:

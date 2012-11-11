@@ -1,0 +1,8 @@
+Poprawić nawigację gracza:
+- zapewnienie, że gracz nie będzie wchodził na obstacle  2h
+- prostowanie ścieżek  4h
+
++ESTIMATED_TIME:
++TIME_SPENT: 0h
+
++WORK_LOG:

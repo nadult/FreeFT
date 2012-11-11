@@ -1,0 +1,10 @@
+Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych postaw
+- dodanie obsługi animacji trzymania broni podczas stania / leżenia / chodzenia / etc.  2h
+- strzelanie do konkretnego celu (jakiejś encji, którą można zniszczyć): dorobienie encji typu Target  2h
+- różne tryby strzelania; zorientowanie się czy da się strzelać trybem ciągłym, a nie tylko krótkimi seriami   2h
+
+
++ESTIMATED_TIME:
++TIME_SPENT: 0h
+
++WORK_LOG:

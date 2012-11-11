@@ -2,31 +2,47 @@
    plik issue dla każdego podpunktu
 
 
-1. Prosty edytor map
+1. Edytor map
  - prosty edytor tile-ów:
-   issues/1-tile_editor.txt DONE
+   issues/1-tile_editor.txt DONE (27 / 18)
 
  - proste ui:
-   issues/2-simple_ui.txt DONE
+   issues/2-simple_ui.txt DONE	 (16 / 12)
 
  - rozstawianie encji i edycja ich parametrów
+   issues/4-entity_editor.txt
+
+ - ulepszenia w edytorze
+   issues/8-improve_editor.txt
+
+ - ulepszony UI:
+   issues/10-ui_improvements.txt
 
 2. Prosta gra:
  - poruszanie się postacią
-   issues/3-simple-character-movement.txt
+   issues/3-simple_character_movement.txt DONE  (26 / 15)
 
  - interakcja z otoczeniem, kolizje
+   issues/5-environment_interaction.txt
+
  - strzelanie i niszczenie obiektów
+   issues/6-basic_shooting.txt
+
+ - poprawiona nawigacja
+   issues/7-improve_navigation.txt
+
+ - proste udźwiękowienie
+   issues/9-simple-audio.txt
 
 3. Drobne rzeczy do zrobienia:
-	- edytor: wagi dla tile-ów w tile-grupach
-	- edytor: lepsza wizualizacja tile-ów, ich bboxów, etc. w edytorze
-	- lepsze sortowanie przed wyświetlaniem tile-ów
-	- dokończenie refactoringu nazewnictwa
-    - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
-    - plan na dłuższy okres (rozłożony na kilka problemów, które można rozwiązywać 
-	  niezależnie od siebie)
-	- przyspieszyc rendering sceny
-	- FrameStackAllocator
+ - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
+   issues/11-console.txt
+
+ - lepsze sortowanie przed wyświetlaniem tile-ów
+ - dokończenie refactoringu nazewnictwa
+ - plan na dłuższy okres (rozłożony na kilka problemów, które można rozwiązywać 
+  niezależnie od siebie)
+ - przyspieszyc rendering sceny
+ - FrameStackAllocator
 
 

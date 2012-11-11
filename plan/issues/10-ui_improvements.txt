@@ -1,0 +1,14 @@
+Dodanie nowych kontrolek i ulepszenie aktualnych
+- ProgressBar
+- MessageBox-y
+- Lista do wyboru plików
+- lepszy wygląd od strony graficznej
+- poprawione fonty (inny issue)
+- Okna z progress barem, które można przewijać (tile listy przerobić tak, aby korzystały z tej funkcjonalności)
+- prosta przeglądarka zasobów jako proof-of-concept że UI się do czegoś nadaje
+
+
++ESTIMATED_TIME:
++TIME_SPENT: 0h
+
++WORK_LOG:

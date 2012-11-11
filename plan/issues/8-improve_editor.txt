@@ -1,0 +1,11 @@
+Różne ulepszenia w edytorze mające na celu uproszczenie i przyspieszenie edycji
+- tile w grupie mogą mieć flagę dirty, podczas losowania tile-ów będzie można wybrać procent tile-ów z tą flagą
+  wymagane: ProgressBar
+- edytor: lepsza wizualizacja tile-ów, ich bboxów, etc. w edytorze
+- ulepszone automatyczne wypełnianie dziur
+
+
++ESTIMATED_TIME:
++TIME_SPENT: 0h
+
++WORK_LOG:
