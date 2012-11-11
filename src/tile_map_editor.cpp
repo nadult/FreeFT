@@ -81,7 +81,7 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 		
 		for(int n = 0; n < COUNTOF(actions); n++)
 			if(IsKeyDown(actions[n]))
-				m_view_pos += WorldToScreen(TileGroup::Group::s_side_offsets[n] * m_grid_size.x).xy();
+				m_view_pos += WorldToScreen(TileGroup::Group::s_side_offsets[n] * m_grid_size.x);
 	}
 
 
@@ -90,7 +90,7 @@ void TileMapEditor::onInput(int2 mouse_pos) {
 }
 
 IBox TileMapEditor::computeCursor(int2 start, int2 end) const {
-	float2 height_off = WorldToScreen(int3(0, m_cursor_height, 0)).xy();
+	float2 height_off = WorldToScreen(int3(0, m_cursor_height, 0));
 	int3 gbox = AsXZY(m_grid_size, 1);
 
 	bool select_mode = m_mode == mSelecting || m_mode == mAutoFilling;
@@ -309,7 +309,7 @@ void TileMapEditor::drawContents() const {
 				bool collides = m_tile_map->isOverlapping(IBox(pos, pos + bbox));
 				Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
-				m_new_tile->Draw(int2(WorldToScreen(pos).xy()), color);
+				m_new_tile->Draw(int2(WorldToScreen(pos)), color);
 				gfx::DTexture::Bind0();
 				gfx::DrawBBox(IBox(pos, pos + bbox));
 			}

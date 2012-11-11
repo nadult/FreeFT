@@ -240,9 +240,9 @@ template <class T, class T1> inline const T& operator-=(T &a, const T1 &b) { a =
 
 template <class T> inline void Swap(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 
-inline int3 AsXZ(int2 pos) { return int3(pos.x, 0, pos.y); }
-inline int3 AsXY(int2 pos) { return int3(pos.x, pos.y, 0); }
-inline int3 AsXZY(int2 pos, int y) { return int3(pos.x, y, pos.y); }
+inline int3 AsXZ(const int2 &pos) { return int3(pos.x, 0, pos.y); }
+inline int3 AsXY(const int2 &pos) { return int3(pos.x, pos.y, 0); }
+inline int3 AsXZY(const int2 &pos, int y) { return int3(pos.x, y, pos.y); }
 
 float Dot(const float2 &a, const float2 &b);
 float Dot(const float3 &a, const float3 &b);
@@ -255,13 +255,13 @@ float DistanceSq(const float3&, const float3&);
 float Length(const float3&);
 float Distance(const float3&, const float3&);
 
-float3 WorldToScreen(float3 pos);
-int3 WorldToScreen(int3 pos);
+float2 WorldToScreen(float3 pos);
+int2 WorldToScreen(int3 pos);
 
 float2 ScreenToWorld(float2 pos);
 int2 ScreenToWorld(int2 pos);
 
-inline float3 WorldToScreen(float2 pos) { return WorldToScreen(float3(pos.x, 0.0f, pos.y)); }
+inline float2 WorldToScreen(const float2 &pos) { return WorldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
 
 struct Color

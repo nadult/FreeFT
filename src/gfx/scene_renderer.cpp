@@ -30,7 +30,7 @@ namespace gfx {
 	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, int3 bbox, Color color) {
 		DAssert(texture);
 
-		rect += (int2)WorldToScreen(pos).xy();
+		rect += (int2)WorldToScreen(pos);
 		if(!Overlaps(rect, IRect(m_view_pos, m_view_pos + m_viewport.Size())))
 			return;
 
@@ -54,10 +54,10 @@ namespace gfx {
 		}
 
 		int2 corners[4] = {
-			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)).xy(),
-			WorldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)).xy(),
-			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)).xy(),
-			WorldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)).xy() };
+			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)),
+			WorldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)),
+			WorldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)),
+			WorldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)) };
 
 		Element new_elem;
 		new_elem.m_texture = nullptr;

@@ -21,7 +21,7 @@ IBox TileInstance::boundingBox() const {
 }
 
 IRect TileInstance::screenRect() const {
-	return m_tile->GetBounds() + WorldToScreen(pos()).xy();
+	return m_tile->GetBounds() + WorldToScreen(pos());
 }
 
 void TileInstance::setPos(int3 pos) {
@@ -234,7 +234,7 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			continue;
 
 		int3 node_pos = nodePos(n);
-		IRect screen_rect = node.screenRect() + WorldToScreen(node_pos).xy();
+		IRect screen_rect = node.screenRect() + WorldToScreen(node_pos);
 
 		// possible error from rounding node & tile positions
 		screen_rect.min -= int2(2, 2);

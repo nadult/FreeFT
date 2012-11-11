@@ -1,6 +1,6 @@
 #include "entity.h"
 
-Entity::Entity(int3 bbox, int3 pos) :m_tile_map(nullptr), m_bbox(bbox), m_pos(0, 0, 0) {
+Entity::Entity(int3 bbox, int3 pos) :m_tile_map(nullptr), m_navigation_map(nullptr), m_bbox(bbox), m_pos(0, 0, 0) {
 	setPos(pos);
 }
 

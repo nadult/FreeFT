@@ -70,8 +70,8 @@ namespace gfx
 	void DrawLine(int3 wp1, int3 wp2, Color color) {
 		glBegin(GL_LINES);
 
-		float2 p1 = WorldToScreen(wp1).xy();
-		float2 p2 = WorldToScreen(wp2).xy();
+		float2 p1 = WorldToScreen(wp1);
+		float2 p2 = WorldToScreen(wp2);
 
 		glColor4ub(color.r, color.g, color.b, color.a);
 		glVertex2f(p1.x, p1.y);
@@ -94,10 +94,10 @@ namespace gfx
 	}
 
 	void DrawBBox(const IBox &box, Color col) {
-		float2 vx = WorldToScreen(int3(box.Width(), 0, 0)).xy();
-		float2 vy = WorldToScreen(int3(0, box.Height(), 0)).xy();
-		float2 vz = WorldToScreen(int3(0, 0, box.Depth())).xy();
-		float2 pos = WorldToScreen(box.min).xy();
+		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
+		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
+		float2 vz = WorldToScreen(int3(0, 0, box.Depth()));
+		float2 pos = WorldToScreen(box.min);
 
 		float2 pt[8] = {
 			pos + vx + vy,
@@ -132,10 +132,10 @@ namespace gfx
 	}
 
 	void DrawBBoxFilled(const IBox &box, Color col) {
-		float2 vx = WorldToScreen(int3(box.Width(), 0, 0)).xy();
-		float2 vy = WorldToScreen(int3(0, box.Height(), 0)).xy();
-		float2 vz = WorldToScreen(int3(0, 0, box.Depth())).xy();
-		float2 pos = WorldToScreen(box.min).xy();
+		float2 vx = WorldToScreen(int3(box.Width(), 0, 0));
+		float2 vy = WorldToScreen(int3(0, box.Height(), 0));
+		float2 vz = WorldToScreen(int3(0, 0, box.Depth()));
+		float2 pos = WorldToScreen(box.min);
 
 		//TODO: finish
 		float2 pt[8] = {

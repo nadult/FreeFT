@@ -37,7 +37,7 @@ namespace gfx
 
 		texture.LoadZAR(sr);
 
-		offset -= WorldToScreen(int3(bbox.x, 0, bbox.z)).xy();
+		offset -= WorldToScreen(int3(bbox.x, 0, bbox.z));
 	}
 
 	void Tile::LoadDTexture() {

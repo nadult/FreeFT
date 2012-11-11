@@ -10,7 +10,7 @@
 #include "gfx/scene_renderer.h"
 
 #include "tile_map.h"
-#include "collision_map.h"
+#include "navigation_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
 #include "actor.h"
@@ -82,15 +82,16 @@ int safe_main(int argc, char **argv)
 		tile_map.loadFromXML(doc);
 	}
 	
-	CollisionMap collision_map(tile_map.size() / 2);
-	collision_map.update(tile_map);
-	collision_map.printInfo();
+	NavigationMap navigation_map(tile_map.size() / 2);
+	navigation_map.update(tile_map);
+	navigation_map.printInfo();
 	actor.m_tile_map = &tile_map;
-	PTexture tex = collision_map.getTexture();
-
-	vector<IRect> rects = collision_map.extractQuads();
+	actor.m_navigation_map = &navigation_map;
+	PTexture tex = navigation_map.getTexture();
 
 	double last_time = GetTime();
+	vector<int2> path;
+	int3 last_pos(0, 0, 0);
 
 	while(PollEvents()) {
 		if(IsKeyDown(Key_esc))
@@ -102,6 +103,20 @@ int safe_main(int argc, char **argv)
 		if(IsMouseKeyPressed(0) && !IsKeyPressed(Key_lctrl)) {
 			int3 wpos = AsXZY(ScreenToWorld(GetMousePos() + view_pos), 1);
 			actor.setNextOrder(Actor::makeMoveOrder(wpos, IsKeyPressed(Key_lshift)));
+		}
+		if(IsMouseKeyUp(1)) {
+			int3 wpos = AsXZY(ScreenToWorld(GetMousePos() + view_pos), 1);
+			path = navigation_map.findPath(last_pos.xz(), wpos.xz());
+			last_pos = wpos;
+//			printf("Quad: %d\n", navigation_map.findQuad(wpos.xz()));
+
+//			int length = 0;
+//			for(int n = 1; n < (int)path.size(); n++)
+//				length += abs(path[n].x - path[n - 1].x) + abs(path[n].y - path[n - 1].y);
+//			printf("Path length: %d\n", length);
+//			for(int n = 0; n < (int)path.size(); n++)
+//				printf("(%d %d) ", path[n].x, path[n].y);
+//			printf("\n");
 		}
 		if(IsKeyDown(Key_kp_add))
 			actor.setNextOrder(Actor::makeChangeStanceOrder(1));
@@ -117,18 +132,30 @@ int safe_main(int argc, char **argv)
 
 		tile_map.addToRender(renderer);
 		actor.addToRender(renderer);
+		navigation_map.visualize(renderer, true);
+		for(int n = 1; n < (int)path.size(); n++) {
+			int2 begin = path[n - 1], end = path[n];
 
-		for(int n = 0; n < (int)rects.size(); n+=10) {
-			IRect rect = rects[n];
-			renderer.addBox(IBox(AsXZY(rect.min, 1), AsXZY(rect.max, 1)), Color(70, 220, 200, 128), true);
-			renderer.addBox(IBox(AsXZY(rect.min, 1), AsXZY(rect.max, 1)));
+			int2 pos = begin;
+			while(pos.x != end.x && pos.y != end.y) {
+				renderer.addBox(IBox(pos.x, 1, pos.y, pos.x + 3, 1, pos.y + 3));
+				pos.x += end.x > pos.x? 1 : -1;
+				pos.y += end.y > pos.y? 1 : -1;
+			}
+			while(pos.x != end.x) {
+				renderer.addBox(IBox(pos.x, 1, pos.y, pos.x + 3, 1, pos.y + 3));
+				pos.x += end.x > pos.x? 1 : -1;
+			}
+			while(pos.y != end.y) {
+				renderer.addBox(IBox(pos.x, 1, pos.y, pos.x + 3, 1, pos.y + 3));
+				pos.y += end.y > pos.y? 1 : -1;
+			}
 		}
-
 		renderer.render();
 
-		tex->Bind();
-		LookAt(int2(0, 0));
-		DrawQuad(0, 0, 256, 256);
+//		tex->Bind();
+//		LookAt(int2(0, 0));
+//		DrawQuad(0, 0, 256, 256);
 
 		{
 			LookAt({0, 0});

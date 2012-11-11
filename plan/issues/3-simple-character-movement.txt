@@ -2,8 +2,8 @@ Prosty system poruszania się postacią:
 1. Klikamy gdzieś i postać ma tam dojść / dobiec
   - struktura danych do wyznaczania kolizji (prosta, tzn. grid / mapa wysokości min/max) 3h  DONE
     wielopoziomowa, wielo-rozdzielczościowa (max kilka rozdzielczości, a może nawet tylko dwie) height-mapa
-  - kolizje z otoczeniem 2h
-  - prosty algorytm wyszukiwania ścieżki 2h
+  - kolizje z otoczeniem 2h  DONE
+  - prosty algorytm wyszukiwania ścieżki 2h   DONE
 2. Proste animacje: stanie, bieganie 3h  DONE
 3. Postać może trzymać różne przedmioty w rękach, a także może stać/kucać/leżeć 2h  DONE
   - przedmioty sobie na razie darujmy, zrobimy je w issue#4: player actions & animations
@@ -13,11 +13,12 @@ Nieprzewidzane, a konieczne(?) do zrobienia:
 5. poprawny rendering (w kwestii kolejności) tile-ów wymieszanych ze sprite-ami (4h)  DONE (kinda slow, but ok)
 
 +ESTIMATED_TIME: 15h
-+TIME_SPENT: 16.5h
++TIME_SPENT: 25.75h
++FINISHED
 
 +WORK_LOG:
 03.11.12: 17:15 - 18:30, 19:00 - 22:45 									(5.00 h)
 04.11.12: 10:15 - 11:00, 12:00 - 14:45, 19:30 - 20:30, 21:45 - 22:45	(6.00 h)
 05.11.12: 15:15 - 17:45, 18:15 - 21:15 									(5.50 h)
-06.11.12: 11:00 - 11:30, 12:00 - 15:15  (3.75 h)
-10.11.12: 19:45 - 
+06.11.12: 11:00 - 11:30, 12:00 - 15:15  								(3.75 h)
+10.11.12: 19:45 - 01:15													(5.50 h)

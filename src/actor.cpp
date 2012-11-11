@@ -2,6 +2,7 @@
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 #include "tile_map.h"
+#include "navigation_map.h"
 
 using namespace gfx;
 
@@ -124,26 +125,19 @@ void Actor::issueNextOrder() {
 void Actor::issueMoveOrder() {
 	OrderId order_id = m_next_order.m_id;
 	int3 new_pos = m_next_order.m_pos;
-	DAssert(order_id == oMove);
+	DAssert(order_id == oMove && m_navigation_map);
 
 	new_pos = Max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
 	int3 cur_pos = (int3)m_pos;
-	if(cur_pos == new_pos) {
+	vector<int2> tmp_path = m_navigation_map->findPath(cur_pos.xz(), new_pos.xz());
+
+	if(cur_pos == new_pos || tmp_path.empty()) {
 		m_order = makeDoNothingOrder();
 		return;
 	}
 
 	m_last_pos = cur_pos;
-
-	int x_diff = new_pos.x - cur_pos.x;
-	int z_diff = new_pos.z - cur_pos.z;
-	int3 dir(x_diff < 0? -1 : 1, 0, z_diff < 0? -1 : 1);
-	x_diff = abs(x_diff);
-	z_diff = abs(z_diff);
-	int diag_diff = Min(x_diff, z_diff);
-	x_diff -= diag_diff;
-	z_diff -= diag_diff;
 
 	m_path.clear();
 	m_path_t = 0;
@@ -152,27 +146,40 @@ void Actor::issueMoveOrder() {
 
 	m_order = m_next_order;
 
-	DAssert(diag_diff || x_diff || z_diff);
+	for(int n = 1; n < (int)tmp_path.size(); n++) {
+		cur_pos = AsXZY(tmp_path[n - 1], 1);
+		new_pos = AsXZY(tmp_path[n], 1);
 
-	while(diag_diff) {
-		int dstep = Min(diag_diff, 3);
-		m_path.push_back(cur_pos += dir * dstep);
-		diag_diff -= dstep;
-	}
+		int x_diff = new_pos.x - cur_pos.x;
+		int z_diff = new_pos.z - cur_pos.z;
+		int3 dir(x_diff < 0? -1 : 1, 0, z_diff < 0? -1 : 1);
+		x_diff = abs(x_diff);
+		z_diff = abs(z_diff);
+		int diag_diff = Min(x_diff, z_diff);
+		x_diff -= diag_diff;
+		z_diff -= diag_diff;
 
-	while(x_diff) {
-		int step = Min(x_diff, 3);
-		m_path.push_back(cur_pos += int3(dir.x * step, 0, 0));
-		x_diff -= step;
-	}
-	while(z_diff) {
-		int step = Min(z_diff, 3);
-		m_path.push_back(cur_pos += int3(0, 0, dir.z * step));
-		z_diff -= step;
-	}
+		DAssert(diag_diff || x_diff || z_diff);
 
-	if(m_path.size() <= 1 || m_stance != sStanding)
-		m_order.m_flags = 0;
+		while(x_diff) {
+			int step = Min(x_diff, 3);
+			m_path.push_back(cur_pos += int3(dir.x * step, 0, 0));
+			x_diff -= step;
+		}
+		while(z_diff) {
+			int step = Min(z_diff, 3);
+			m_path.push_back(cur_pos += int3(0, 0, dir.z * step));
+			z_diff -= step;
+		}
+		while(diag_diff) {
+			int dstep = Min(diag_diff, 3);
+			m_path.push_back(cur_pos += dir * dstep);
+			diag_diff -= dstep;
+		}
+
+		if(m_path.size() <= 1 || m_stance != sStanding)
+			m_order.m_flags = 0;
+	}
 
 	DAssert(!m_path.empty());
 }

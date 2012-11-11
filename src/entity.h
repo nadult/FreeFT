@@ -6,6 +6,7 @@
 namespace gfx { class SceneRenderer; }
 
 class TileMap;
+class NavigationMap;
 
 class Entity {
 public:
@@ -21,6 +22,7 @@ public:
 
 	//TODO: pointer to Scene albo World context or something
 	TileMap *m_tile_map;
+	NavigationMap *m_navigation_map;
 
 protected:
 	float3 m_pos;
