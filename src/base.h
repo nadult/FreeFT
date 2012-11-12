@@ -6,6 +6,8 @@
 
 using namespace baselib;
 using std::swap;
+using std::pair;
+using std::make_pair;
 
 typedef unsigned int uint;
 
@@ -259,6 +261,11 @@ struct Color
 
 	Color operator|(Color rhs) const { return rgba | rhs.rgba; }
 	operator float4() const { return float4(r, g, b, a) / 255.0f; }
+
+	enum {
+		white = 0xffffffffu,
+		black = 0xff000000u,
+	};
 
 	union {
 		struct { u8 r, g, b, a; };

@@ -1,16 +1,19 @@
 Dodanie nowych kontrolek i ulepszenie aktualnych
-- poprawione wyświetlanie buttonów
-- 
-- ProgressBar
-- MessageBox-y
-- Lista do wyboru plików
-- lepszy wygląd od strony graficznej
-- poprawione fonty (inny issue)
-- Okna z progress barem, które można przewijać (tile listy przerobić tak, aby korzystały z tej funkcjonalności)
-- prosta przeglądarka zasobów jako proof-of-concept że UI się do czegoś nadaje
+- poprawione wyświetlanie buttonów (centrowanie fonta, zaznaczone brzegi)		(2h)
+- ProgressBar poziomy i pionowy													(2h)
+- MessageBox-y z title barem, które można przesuwać
+- Lista do wyboru plików														(4h)
+- lepszy wygląd od strony graficznej											(2h)
+- poprawione fonty: rendering w różnych kolorach, klasa Font bezstanowa, wyliczanie ile miejsca zajmie dany
+  tekst; wygenerowac kilka fontow o sensownych rozmiarach; opcja renderingu z cieniem; kerning; ładowanie z pliku
+  xml, podkreślenie?															(6h) DONE
+- Okna z progress barem, które można przewijać (tile listy przerobić tak, aby korzystały z tej
+  funkcjonalności) 																(3h)
+- prosta przeglądarka zasobów jako proof-of-concept że UI się do czegoś nadaje	(3h)
+- status bar																	(1h)
 
-
-+ESTIMATED_TIME:
++ESTIMATED_TIME: 23h
 +TIME_SPENT: 0h
 
 +WORK_LOG:
+12.11.12: 15:30 - 19:15

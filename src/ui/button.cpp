@@ -10,26 +10,34 @@ namespace ui
 		Color(180, 180, 180) };
 
 
-	Button::Button(IRect rect, const char *text) :Window(rect, s_colors[0]), m_text(text) {
-		m_font = Font::mgr["font1"];
-		m_font_texture = Font::tex_mgr["font1"];
-		ASSERT(m_font && m_font_texture);
+	Button::Button(IRect rect, const char *text) :Window(rect, s_colors[0]), m_is_being_pressed(0) {
+		m_font = Font::mgr["times_24"];
+		ASSERT(m_font);
+		setText(text);
+	}
+
+	void Button::setText(const char *text) {
+		m_text = text;
+		m_text_extents = m_font->evalExtents(text);
 	}
 
 	void Button::drawContents() const {
-		m_font_texture->bind();
-		m_font->setPos({0, (rect().height() - 20) / 2});
-		m_font->setSize({28, 20});
-		m_font->draw(m_text.c_str());
+		int2 rect_center = rect().size() / 2;
+		int2 pos = rect_center - m_text_extents.size() / 2 - m_text_extents.min - int2(1, 1);
+		if(m_is_being_pressed)
+			pos += int2(2, 2);
+		m_font->drawShadowed(pos, Color::white, Color::black, m_text.c_str());
 	}
 
 	void Button::onInput(int2 mouse_pos) {
-		setBackgroundColor(isMouseKeyPressed(0)? s_colors[2] : s_colors[1]);
+		m_is_being_pressed = isMouseKeyPressed(0);
+		setBackgroundColor(m_is_being_pressed? s_colors[2] : s_colors[1]);
 		if(isMouseKeyUp(0) && parent() && IRect(int2(0, 0), clippedRect().size()).isInside(mouse_pos))
 			parent()->onButtonPressed(this);
 	}
 
 	void Button::onIdle() {
+		m_is_being_pressed = false;
 		setBackgroundColor(s_colors[0]);
 	}
 

@@ -321,8 +321,7 @@ void TileMapEditor::drawContents() const {
 	drawBBox(m_selection);
 	
 	lookAt(-clippedRect().min);
-	gfx::PFont font = Font::mgr["font1"];
-	gfx::PTexture font_tex = Font::tex_mgr["font1"];
+	gfx::PFont font = Font::mgr["times_24"];
 
 	const char *mode_names[mCount] = {
 		"selecting tiles",
@@ -331,12 +330,8 @@ void TileMapEditor::drawContents() const {
 		"filling holes",
 	};
 
-	font_tex->bind();
-	font->setSize(int2(35, 25));
-	font->setPos(int2(0, clippedRect().height() - 25));
-
 	char text[64];
 	snprintf(text, sizeof(text), "Cursor: (%d, %d, %d)  Mode: %s\n",
 			m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode]);
-	font->draw(text);
+//	font->draw(int2(0, clippedRect().height() - 25), Color(255, 255, 255), text);
 }

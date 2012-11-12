@@ -183,8 +183,7 @@ int safe_main(int argc, char **argv)
 //	double lastSFrameTime = getTime();
 //	double sframeTime = 1.0 / 16.0;
 
-	PFont font = Font::mgr["font1"];
-	PTexture fontTex = Font::tex_mgr["font1"];
+//	PFont font = Font::mgr["font1"];
 
 	MainWindow main_window(res);
 

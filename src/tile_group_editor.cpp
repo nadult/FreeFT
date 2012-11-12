@@ -29,8 +29,7 @@ TileGroupEditor::TileGroupEditor(IRect rect)
 
 	m_tile_group = nullptr;
 
-	m_font = Font::mgr["font1"];
-	m_font_texture = Font::tex_mgr["font1"];
+	m_font = Font::mgr["times_16"];
 	m_mode = mAddRemove;
 	memset(m_offset, 0, sizeof(m_offset));
 	m_selected_group_id = 0;
@@ -164,23 +163,13 @@ void TileGroupEditor::drawContents() const {
 		drawQuad(-edit_rect.size() / 2, edit_rect.size(), Color(80, 80, 80));
 		drawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
-		m_font_texture->bind();
-		m_font->setSize(int2(35, 25));
-		m_font->setPos(int2(0, 0));
-
-		char text[32];
-
 		for(int n = 0; n < TileGroup::Group::sideCount; n++) {
 			lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
-			snprintf(text, sizeof(text), "%d", m_tile_group->groupSurface(m_selected_group_id, n));
-			m_font->setPos(int2(0, 0));
-			m_font->draw(text);
+			m_font->draw(int2(0, 0), Color::white, "%d", m_tile_group->groupSurface(m_selected_group_id, n));
 		}
 			
 		lookAt(-center +edit_rect.size() / 2);
-		m_font->setPos(int2(0, 0));
-		snprintf(text, sizeof(text), "next_surf:%d", m_selected_surface_id);
-		m_font->draw(text);
+		m_font->draw(int2(0, 0), Color::white, "setting surface: %d", m_selected_surface_id);
 
 		/*
 		const char *names[] = {
@@ -195,14 +184,10 @@ void TileGroupEditor::drawContents() const {
 			"green goo",
 		};
 
-		m_font->setPos(int2(0, 10));
-		m_font->setSize(int2(28, 18));
 		lookAt(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
-
-		for(int n = 0; n < COUNTOF(names); n++) {
-			snprintf(text, sizeof(text), m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]);
-			m_font->draw(text);
-		}*/
+		for(int n = 0; n < COUNTOF(names); n++)
+			m_font->draw(int2(0, 10), Color::white,
+					m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
 	}
 
 }

@@ -1,23 +1,21 @@
-all: editor game
+all: editor game res_viewer
 
 BUILD_DIR=/tmp/build
 
 _dummy := $(shell [ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR))
 _dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
 _dummy := $(shell [ -d $(BUILD_DIR)/ui ] || mkdir -p $(BUILD_DIR)/ui)
-_dummy := $(shell [ -d $(BUILD_DIR)/io ] || mkdir -p $(BUILD_DIR)/io)
-_dummy := $(shell [ -d $(BUILD_DIR)/script ] || mkdir -p $(BUILD_DIR)/script)
 _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler \
-	editor game base tile_map actor entity navigation_map \
+	editor game res_viewer base tile_map actor entity navigation_map \
 	tile_map_editor tile_group tile_selector tile_group_editor \
 	ui/window ui/button ui/tile_list
 #	sys/error_logger script/parser script/script script/sparser
 
-MAIN_FILES=editor game
+MAIN_FILES=editor game res_viewer
 SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
 
 LIBS=-L/usr/lib -L/usr/local/lib64 -lglfw -lbaselib -lpng -lz
@@ -59,8 +57,11 @@ editor: $(SHARED_OBJECTS) $(BUILD_DIR)/editor.o
 game: $(SHARED_OBJECTS) $(BUILD_DIR)/game.o
 	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
 
+res_viewer: $(SHARED_OBJECTS) $(BUILD_DIR)/res_viewer.o
+	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
+
 clean:
-	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor game
+	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor game res_viewer
 	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/script $(BUILD_DIR)/io $(BUILD_DIR)/sys $(BUILD_DIR)/ui
 	-rmdir $(BUILD_DIR)
 

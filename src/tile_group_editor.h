@@ -27,7 +27,6 @@ protected:
 	TileGroup *m_tile_group;
 
 	gfx::PFont m_font;
-	gfx::PTexture m_font_texture;
 	IRect m_view;
 
 	int2 m_offset[3];

@@ -67,8 +67,7 @@ int safe_main(int argc, char **argv)
 
 	int2 view_pos(0, 0);
 
-	PFont font = Font::mgr["font1"];
-	PTexture fontTex = Font::tex_mgr["font1"];
+	PFont font = Font::mgr["arial_32"];
 
 	TileMap tile_map;
 
@@ -89,6 +88,7 @@ int safe_main(int argc, char **argv)
 	actor.m_navigation_map = &navigation_map;
 	PTexture tex = navigation_map.getTexture();
 
+	
 	double last_time = getTime();
 	vector<int2> path;
 	int3 last_pos(0, 0, 0);
@@ -153,23 +153,18 @@ int safe_main(int argc, char **argv)
 		}
 		renderer.render();
 
-//		tex->bind();
-//		lookAt(int2(0, 0));
-//		drawQuad(0, 0, 256, 256);
-
-		{
+/*		{
 			lookAt({0, 0});
 			char text[256];
-			fontTex->bind();
 
-			//double time = GetTime();
-			//double frameTime = time - lastFrameTime;
-			//lastFrameTime = time;
+			double time = GetTime();
+			double frameTime = time - lastFrameTime;
+			lastFrameTime = time;
 			
 			string profData = Profiler::getStats();
 			Profiler::nextFrame();
-//			printf("%s\n", profData.c_str());
-		}
+			printf("%s\n", profData.c_str());
+		}*/
 
 		swapBuffers();
 	}
