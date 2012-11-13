@@ -10,6 +10,7 @@ namespace ui
 {
 
 	class Button;
+	class ListView;
 	class Window;
 
 	typedef Ptr<Window> PWindow;
@@ -39,6 +40,8 @@ namespace ui
 		bool isMouseOver() const;
 		
 		virtual void onButtonPressed(Button *button);
+		virtual void onListElementClicked(ListView *list_view, int id);
+		virtual void onEvent(Window *source, int event, int value);
 
 		static void drawWindow(IRect rect, Color color, int outline);
 	

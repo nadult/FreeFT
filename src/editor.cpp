@@ -170,7 +170,7 @@ int safe_main(int argc, char **argv)
 
 		Ptr<Tile> tile = Tile::mgr.load(file_names[n]);
 		tile->name = file_names[n];
-		tile->LoadDTexture();
+		tile->loadDTexture();
 	}
 	printf("\n");
 

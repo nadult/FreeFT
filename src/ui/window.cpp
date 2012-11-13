@@ -135,6 +135,9 @@ namespace ui
 
 		if(m_background_color.a > 0)
 			clear(m_background_color);
+		
+		drawContents();
+		lookAt(-m_clipped_rect.min);
 
 		if(m_has_inner_rect) {
 			int2 rsize = m_rect.size();
@@ -164,8 +167,6 @@ namespace ui
 			}
 		}
 
-		drawContents();
-
 		for(int n = 0; n < (int)m_children.size(); n++)
 			if(m_children[n]->isVisible())
 				m_children[n]->draw();
@@ -190,7 +191,7 @@ namespace ui
 
 	void Window::setInnerRect(const IRect &rect) {
 		int2 isize = rect.size();
-		m_inner_rect.min = max(min(rect.min, {0, 0}), -isize + m_rect.size());
+		m_inner_rect.min = max(min(rect.min, {0, 0}), min(-isize + m_rect.size(), {0, 0}));
 		m_inner_rect.max = m_inner_rect.min + isize;
 		m_has_inner_rect = isize.x > m_rect.width() || isize.y > m_rect.height();
 	}
@@ -202,6 +203,16 @@ namespace ui
 	void Window::onButtonPressed(Button *button) {
 		if(parent())
 			parent()->onButtonPressed(button);
+	}
+		
+	void Window::onListElementClicked(ListView *list_view, int id) {
+		if(parent())
+			parent()->onListElementClicked(list_view, id);
+	}
+		
+	void Window::onEvent(Window *source, int event, int value) {
+		if(parent())
+			parent()->onEvent(source, event, value);
 	}
 	
 	bool Window::isMouseOver() const {

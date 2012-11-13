@@ -17,7 +17,7 @@ int3 TileInstance::pos() const {
 
 IBox TileInstance::boundingBox() const {
 	int3 pos = this->pos();
-	return IBox(pos, pos + m_tile->bbox);
+	return IBox(pos, pos + m_tile->m_bbox);
 }
 
 IRect TileInstance::screenRect() const {
@@ -53,7 +53,7 @@ bool TileMapNode::isColliding(const IBox &box) const {
 		DASSERT(instance.m_tile);
 
 		int3 tilePos = instance.pos();
-		IBox tileBox(tilePos, tilePos + instance.m_tile->bbox);
+		IBox tileBox(tilePos, tilePos + instance.m_tile->m_bbox);
 
 		if(areOverlapping(tileBox, box))
 			return true;
@@ -74,7 +74,7 @@ const TileInstance *TileMapNode::at(int3 pos) const {
 }
 
 void TileMapNode::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
-	if(test_for_collision && isColliding(IBox(pos, pos + tile.bbox)))
+	if(test_for_collision && isColliding(IBox(pos, pos + tile.m_bbox)))
 		return;
 	
 	DASSERT(isInside(pos));
@@ -250,9 +250,9 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			int3 pos = instance.pos() + node_pos;
 			
 			gfx::PTexture tex = tile->dTexture;
-			out.add(tex, IRect(0, 0, tex->width(), tex->height()) - tile->offset, pos, tile->bbox);
+			out.add(tex, IRect(0, 0, tex->width(), tex->height()) - tile->m_offset, pos, tile->m_bbox);
 			if(instance.isSelected())
-				out.addBox(IBox(pos, pos + tile->bbox));
+				out.addBox(IBox(pos, pos + tile->m_bbox));
 			vTiles++;
 		}
 	}
@@ -262,7 +262,7 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
-	if(isOverlapping(IBox(pos, pos + tile.bbox)))
+	if(isOverlapping(IBox(pos, pos + tile.m_bbox)))
 		return;
 
 	int2 nodeCoord(pos.x / Node::size_x, pos.z / Node::size_z);
@@ -309,7 +309,7 @@ void TileMap::drawBoxHelpers(const IBox &box) const {
 }
 
 void TileMap::fill(const gfx::Tile &tile, const IBox &box) {
-	int3 bbox = tile.bbox;
+	int3 bbox = tile.m_bbox;
 
 	for(int x = box.min.x; x < box.max.x; x += bbox.x)
 		for(int y = box.min.y; y < box.max.y; y += bbox.y)

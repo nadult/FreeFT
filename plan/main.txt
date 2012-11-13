@@ -44,8 +44,8 @@
  - ulepszanie wydajności tylko w razie potrzeby
 
  - UI jest opóźniony o klatkę w stosunku do ruchu myszy
-
  - pozmieniać konstruktory IRect i IBox, tak żeby jako drugi argument dawało się wielkość a nie koniec obiektu
+ - dodać powtarzalnie emitowane eventy keypressed jeśli przytrzyma się dany klawisz
 
 
 

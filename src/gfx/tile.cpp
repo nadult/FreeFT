@@ -16,12 +16,12 @@ namespace gfx
 
 		u8 size_x, size_y, size_z;
 		sr(size_z, size_y, size_x);
-		bbox.x = size_x;
-		bbox.y = size_y;
-		bbox.z = size_z;
+		m_bbox.x = size_x;
+		m_bbox.y = size_y;
+		m_bbox.z = size_z;
 		
 		i32 posX, posY; sr(posX, posY);
-		offset = int2(posX, posY);
+		m_offset = int2(posX, posY);
 
 		i32 width, height;
 		sr(width, height);
@@ -37,17 +37,17 @@ namespace gfx
 
 		texture.loadZAR(sr);
 
-		offset -= worldToScreen(int3(bbox.x, 0, bbox.z));
+		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 	}
 
-	void Tile::LoadDTexture() {
+	void Tile::loadDTexture() {
 		dTexture = new DTexture;
 		dTexture->setSurface(texture);
 	}
 
 	IRect Tile::GetBounds() const {
 		int2 size = texture.size();
-		return IRect(0, 0, size.x, size.y) - offset;
+		return IRect(0, 0, size.x, size.y) - m_offset;
 	}
 
 	void Tile::draw(int2 pos, Color col) const {
@@ -55,11 +55,7 @@ namespace gfx
 		dTexture->bind();
 
 		int2 size = texture.size();
-		drawQuad(pos.x - offset.x, pos.y - offset.y, size.x, size.y, col);
-	}
-
-	float Similarity(const Tile &a, const Tile &b, int3 offset) {
-		return 0.0f;	
+		drawQuad(pos.x - m_offset.x, pos.y - m_offset.y, size.x, size.y, col);
 	}
 
 	ResourceMgr<Tile> Tile::mgr("", "");

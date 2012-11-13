@@ -28,10 +28,10 @@ namespace ui
 	{
 	public:
 		struct Entry {
-			const gfx::Tile *m_tile;
-			int2 m_pos, m_size;
-			int m_group_id, m_model_id, m_group_size;
-			mutable bool m_is_selected;
+			const gfx::Tile *tile;
+			int2 pos, size;
+			int group_id, model_id, group_size;
+			mutable bool is_selected;
 			
 			bool operator<(const Entry&) const;
 		};

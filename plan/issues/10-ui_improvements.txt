@@ -2,19 +2,19 @@ Dodanie nowych kontrolek i ulepszenie aktualnych
 - poprawione wyświetlanie buttonów (centrowanie fonta, zaznaczone brzegi)		(2h) DONE
 - ProgressBar poziomy i pionowy													(2h) DONE
 - MessageBox-y z title barem, które można przesuwać								(2h)
-- Lista do wyboru plików														(4h)
-- lepszy wygląd od strony graficznej											(2h)
+- Lista do wyboru plików														(4h) DONE
+- lepszy wygląd od strony graficznej											(2h) DONE
 - poprawione fonty: rendering w różnych kolorach, klasa Font bezstanowa, wyliczanie ile miejsca zajmie dany
   tekst; wygenerowac kilka fontow o sensownych rozmiarach; opcja renderingu z cieniem; kerning; ładowanie z pliku
   xml, podkreślenie?															(6h) DONE
 - Okna z progress barem, które można przewijać (tile listy przerobić tak, aby korzystały z tej
   funkcjonalności) 																(3h) DONE
-- prosta przeglądarka zasobów jako proof-of-concept że UI się do czegoś nadaje	(3h)
+- prosta przeglądarka zasobów jako proof-of-concept że UI się do czegoś nadaje	(3h) DONE
 - status bar																	(1h)
 
 +ESTIMATED_TIME: 25h
-+TIME_SPENT: 9.50h
++TIME_SPENT: 14h
 
 +WORK_LOG:
 12.11.12: 15:30 - 19:15, 20:15 - 22:30	(6.00h)
-13.11.12: 12:30 - 16:00   (3.50h)
+13.11.12: 12:30 - 16:00, 17:30 - 22:00  (8.00h)

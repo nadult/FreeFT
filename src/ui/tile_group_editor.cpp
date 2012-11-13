@@ -63,8 +63,8 @@ namespace {
 			const ui::TileList::Entry *entry = m_tile_list.find(mouse_pos + innerOffset());
 
 			if(isKeyDown('G') && entry && m_selected_group_id != -1) {
-				m_tile_group->setEntryGroup(m_tile_group->findEntry(entry->m_tile),
-					entry->m_group_id == m_selected_group_id? m_tile_group->groupCount() : m_selected_group_id);
+				m_tile_group->setEntryGroup(m_tile_group->findEntry(entry->tile),
+					entry->group_id == m_selected_group_id? m_tile_group->groupCount() : m_selected_group_id);
 				m_tile_list.update();
 			}
 
@@ -97,21 +97,21 @@ namespace {
 			const ui::TileList::Entry *entry = m_tile_list.find(current + innerOffset());
 
 			if(m_mode == mAddRemove && entry) {
-				int selection_mode = m_tile_group->findEntry(entry->m_tile) == -1? 1 : -1;
+				int selection_mode = m_tile_group->findEntry(entry->tile) == -1? 1 : -1;
 				if(!m_selection_mode)
 					m_selection_mode = selection_mode;
 				if(m_selection_mode == selection_mode) {
 					if(selection_mode == -1)
-						m_tile_group->removeEntry(m_tile_group->findEntry(entry->m_tile));
+						m_tile_group->removeEntry(m_tile_group->findEntry(entry->tile));
 					else
-						m_tile_group->addEntry(entry->m_tile);
+						m_tile_group->addEntry(entry->tile);
 					entry = nullptr;
 					m_tile_list.update();
 				}
 			
 			}
 			if(m_mode == mModify) {
-				m_selected_group_id = entry? entry->m_group_id : -1;
+				m_selected_group_id = entry? entry->group_id : -1;
 			}
 
 			if(is_final)
@@ -130,23 +130,23 @@ namespace {
 
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const ui::TileList::Entry &entry = m_tile_list[n];
-			entry.m_is_selected = m_mode == mAddRemove?
-				m_tile_group->isValidEntryId(entry.m_tile->m_temp, entry.m_tile) :
-				entry.m_group_id == m_selected_group_id;
-			entry.m_tile->draw(entry.m_pos - entry.m_tile->GetBounds().min - offset);
+			entry.is_selected = m_mode == mAddRemove?
+				m_tile_group->isValidEntryId(entry.tile->m_temp, entry.tile) :
+				entry.group_id == m_selected_group_id;
+			entry.tile->draw(entry.pos - entry.tile->GetBounds().min - offset);
 		}
 		
 		DTexture::bind0();
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const ui::TileList::Entry &entry = m_tile_list[n];
-			if(!entry.m_is_selected)
+			if(!entry.is_selected)
 				continue;
 			
-			int2 pos = entry.m_pos - offset;
-			//lookAt(-clippedRect().min - pos - entry.m_tile->offset);
-			//IBox box(int3(0, 0, 0), entry.m_tile->bbox);
+			int2 pos = entry.pos - offset;
+			//lookAt(-clippedRect().min - pos - entry.tile->offset);
+			//IBox box(int3(0, 0, 0), entry.tile->bbox);
 			//drawBBox(box, Color(255, 255, 255));
-			drawRect(IRect(pos, pos + entry.m_size));
+			drawRect(IRect(pos, pos + entry.size));
 		}
 
 		if(m_mode == mModify && m_selected_group_id != -1) {	

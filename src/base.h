@@ -271,6 +271,8 @@ struct Color
 
 	enum {
 		white 		= 0xffffffffu,
+		yellow		= 0xff00ffffu,
+		red			= 0xff0000ffu,
 		black 		= 0xff000000u,
 		gui_dark	= 0xffe86f25u,
 		gui_medium	= 0xffe77738u,
@@ -283,6 +285,9 @@ struct Color
 		u32 rgba;
 	};
 };
+
+inline bool operator==(const Color &lhs, const Color &rhs) { return lhs.rgba == rhs.rgba; }
+inline bool operator!=(const Color &lhs, const Color &rhs) { return lhs.rgba != rhs.rgba; }
 
 inline Color swapBR(Color col) {
 	return ((col.rgba & 0xff) << 16) | ((col.rgba & 0xff0000) >> 16) | (col.rgba & 0xff00ff00);

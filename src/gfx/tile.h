@@ -9,7 +9,7 @@ namespace gfx
 
 	struct Tile: public Resource {
 		void serialize(Serializer &sr);
-		void LoadDTexture();
+		void loadDTexture();
 		void draw(int2 pos, Color color = Color(255, 255, 255)) const;
 
 		string name;
@@ -18,15 +18,15 @@ namespace gfx
 
 		IRect GetBounds() const;
 
-		int2 offset;
-		int3 bbox;
+		int2 m_offset;
+		int3 m_bbox;
 
 		static ResourceMgr<Tile> mgr;
 
 		mutable uint m_temp;
 	};
 
-	float Similarity(const Tile &a, const Tile &b, int3 offsetBToA);
+	typedef Ptr<Tile> PTile;
 
 }
 

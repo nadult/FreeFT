@@ -20,7 +20,7 @@ namespace ui {
 		void setModel(PTileListModel);
 		void update(); // call every time model changes
 
-		const gfx::Tile *selection() const { return m_selection? m_selection->m_tile : nullptr; }
+		const gfx::Tile *selection() const { return m_selection? m_selection->tile : nullptr; }
 		void setSelection(const gfx::Tile*);
 
 	protected:

@@ -26,7 +26,7 @@ namespace ui {
 		m_selection = nullptr;
 
 		for(int n = 0; n < m_tile_list.size(); n++)
-			if(m_tile_list[n].m_tile == tile) {
+			if(m_tile_list[n].tile == tile) {
 				m_selection = &m_tile_list[n];
 				return;
 			}
@@ -36,19 +36,19 @@ namespace ui {
 		int2 offset = innerOffset();
 
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
-			const Tile *tile = m_tile_list[n].m_tile;
-			tile->draw(m_tile_list[n].m_pos - tile->GetBounds().min - offset);
+			const Tile *tile = m_tile_list[n].tile;
+			tile->draw(m_tile_list[n].pos - tile->GetBounds().min - offset);
 		}
 		
 		DTexture::bind0();
 
 		if(m_selection) {
-			int2 pos = m_selection->m_pos - offset;
+			int2 pos = m_selection->pos - offset;
 
-			lookAt(-clippedRect().min - pos - m_selection->m_tile->offset);
-			IBox box(int3(0, 0, 0), m_selection->m_tile->bbox);
+			lookAt(-clippedRect().min - pos - m_selection->tile->m_offset);
+			IBox box(int3(0, 0, 0), m_selection->tile->m_bbox);
 			drawBBox(box, Color(255, 255, 255));
-		//	drawRect(IRect(pos, pos + m_selection->m_size));
+		//	drawRect(IRect(pos, pos + m_selection->size));
 		}
 	}
 		

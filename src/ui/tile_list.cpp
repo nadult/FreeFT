@@ -10,7 +10,7 @@ namespace ui
 
 
 	bool TileList::Entry::operator<(const TileList::Entry &rhs) const {
-		return m_group_id == rhs.m_group_id? m_tile->name < rhs.m_tile->name : m_group_id < rhs.m_group_id;
+		return group_id == rhs.group_id? tile->name < rhs.tile->name : group_id < rhs.group_id;
 	}
 
 	TileList::TileList(int max_width, int spacing)
@@ -25,7 +25,7 @@ namespace ui
 		for(int n = 0; n < (int)m_entries.size(); n++) {
 			const Entry &entry = m_entries[n];
 
-			if(IRect(entry.m_pos, entry.m_pos + entry.m_size).isInside(pos))
+			if(IRect(entry.pos, entry.pos + entry.size).isInside(pos))
 				return &m_entries[n];
 		}
 
@@ -41,41 +41,41 @@ namespace ui
 		m_entries.resize(m_model->size());
 		for(int n = 0, count = m_model->size(); n < count; n++) {
 			Entry &entry = m_entries[n];
-			entry.m_group_id = -1;
-			entry.m_tile = m_model->get(n, entry.m_group_id);
-			entry.m_is_selected = false;
-			entry.m_model_id = n;
-			entry.m_size = entry.m_tile->GetBounds().size();
+			entry.group_id = -1;
+			entry.tile = m_model->get(n, entry.group_id);
+			entry.is_selected = false;
+			entry.model_id = n;
+			entry.size = entry.tile->GetBounds().size();
 		}
 		std::stable_sort(m_entries.begin(), m_entries.end());
 
-		m_entries[0].m_group_size = 1;
+		m_entries[0].group_size = 1;
 		for(int n = 1; n < (int)m_entries.size(); n++) {
 			Entry &cur = m_entries[n], &prev = m_entries[n - 1];
-			cur.m_group_size = cur.m_group_id == prev.m_group_id? prev.m_group_size + 1 : 1;
+			cur.group_size = cur.group_id == prev.group_id? prev.group_size + 1 : 1;
 		}
 		for(int n = (int)m_entries.size() - 2; n >= 0; n--) {
 			Entry &cur = m_entries[n], &prev = m_entries[n + 1];
-			if(cur.m_group_id == prev.m_group_id)
-				cur.m_group_size = prev.m_group_size;
+			if(cur.group_id == prev.group_id)
+				cur.group_size = prev.group_size;
 		}
 
 		// TODO: jesus, this one call makes the obj file 37KB bigger :(
 		std::stable_sort(m_entries.begin(), m_entries.end(),
-				[](const Entry &a, const Entry &b) { return a.m_group_size > b.m_group_size; } );
+				[](const Entry &a, const Entry &b) { return a.group_size > b.group_size; } );
 
 		int2 cur_pos(0, 0);
 		int cur_height = 0;
 
 		for(int e = 0; e < (int)m_entries.size(); e++) {
 			Entry &entry = m_entries[e];
-			entry.m_pos = cur_pos;
-			cur_pos.x += m_spacing + entry.m_size.x;
-			cur_height = max(cur_height, entry.m_size.y);
-			int next_width = e + 1 < (int)m_entries.size()? m_entries[e + 1].m_size.x : 0;
-			int next_group = e + 1 < (int)m_entries.size()? m_entries[e + 1].m_group_id : entry.m_group_id;
+			entry.pos = cur_pos;
+			cur_pos.x += m_spacing + entry.size.x;
+			cur_height = max(cur_height, entry.size.y);
+			int next_width = e + 1 < (int)m_entries.size()? m_entries[e + 1].size.x : 0;
+			int next_group = e + 1 < (int)m_entries.size()? m_entries[e + 1].group_id : entry.group_id;
 
-			if(next_width + cur_pos.x > m_max_width || (next_group != entry.m_group_id && entry.m_group_size > 1)) {
+			if(next_width + cur_pos.x > m_max_width || (next_group != entry.group_id && entry.group_size > 1)) {
 				cur_pos.x = 0;
 				cur_pos.y += m_spacing + cur_height;
 				cur_height = 0;

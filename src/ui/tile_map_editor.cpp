@@ -96,7 +96,7 @@ namespace ui {
 		int3 gbox = asXZY(m_grid_size, 1);
 
 		bool select_mode = m_mode == mSelecting || m_mode == mAutoFilling;
-		int3 bbox = m_new_tile && !select_mode? m_new_tile->bbox : gbox;
+		int3 bbox = m_new_tile && !select_mode? m_new_tile->m_bbox : gbox;
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
@@ -178,7 +178,7 @@ namespace ui {
 							if(m_tile_group->entryGroup(n) == group_id)
 								entries.push_back(n);
 
-						int3 bbox = m_new_tile->bbox;
+						int3 bbox = m_new_tile->m_bbox;
 
 						for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
 							for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
@@ -191,7 +191,7 @@ namespace ui {
 					}
 				}
 				else if(m_mode == mAutoFilling && m_tile_group && m_new_tile) {
-					int3 bbox = m_new_tile->bbox;
+					int3 bbox = m_new_tile->m_bbox;
 
 					for(int n = 0; n < m_tile_group->entryCount(); n++)
 						m_tile_group->entryTile(n)->m_temp = n;
@@ -303,7 +303,7 @@ namespace ui {
 		}
 		
 		if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom) && m_new_tile) {
-			int3 bbox = m_new_tile->bbox;
+			int3 bbox = m_new_tile->m_bbox;
 		
 			for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
 				for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
@@ -333,10 +333,9 @@ namespace ui {
 			"filling holes",
 		};
 
-		char text[64];
-		snprintf(text, sizeof(text), "Cursor: (%d, %d, %d)  Mode: %s\n",
+		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
+				"Cursor: (%d, %d, %d)  Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode]);
-	//	font->draw(int2(0, clippedRect().height() - 25), Color(255, 255, 255), text);
 	}
 
 	void TileMapEditor::clampViewPos() {
