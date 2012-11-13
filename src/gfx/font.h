@@ -29,6 +29,9 @@ public:
 		void draw(int2 pos, Color col, const char *format, ...) const;
 		void drawShadowed(int2 pos, Color col, Color shadow, const char *format, ...) const;
 
+		int lineHeight() const { return m_line_height; }
+		int textBase() const { return m_text_base; }
+
 		static ResourceMgr<Font> mgr;
 
 private:
@@ -49,7 +52,7 @@ private:
 		string m_face_name;
 		int2 m_tex_size;
 		int m_line_height;
-		int m_text_base; //TODO: make use of that attribute
+		int m_text_base;
 	};
 
 	typedef Ptr<Font> PFont;

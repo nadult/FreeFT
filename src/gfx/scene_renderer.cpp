@@ -53,16 +53,10 @@ namespace gfx {
 			return;
 		}
 
-		int2 corners[4] = {
-			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)),
-			worldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)),
-			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)),
-			worldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)) };
-
 		Element new_elem;
 		new_elem.m_texture = nullptr;
 		new_elem.m_bbox = bbox;
-		new_elem.m_rect = IRect(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
+		new_elem.m_rect = worldToScreen(bbox);
 		new_elem.m_color = color;
 		m_elements.push_back(new_elem);
 	}

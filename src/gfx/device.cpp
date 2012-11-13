@@ -38,11 +38,10 @@ namespace
 	int  mouseDX, mouseDY;
 	u32  key2Glfw[gfx::Key_last + 1];
 
-	bool wantClose = 0, isCreated = 0;
+	bool s_want_close = 0, s_is_created = 0;
 
-	int GLFWCALL CloseWindowHandle()
-	{
-		wantClose = 1;
+	int GLFWCALL CloseWindowHandle() {
+		s_want_close = 1;
 		return GL_FALSE;
 	}
 
@@ -51,9 +50,9 @@ namespace
 namespace gfx
 {
 
-	void InitViewport(int2 size);
+	void initViewport(int2 size);
 
-	static void InitDevice() {
+	static void initDevice() {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
@@ -67,7 +66,7 @@ namespace gfx
 
 
 	void createWindow(int2 size, bool full) {
-		if(isCreated)
+		if(s_is_created)
 			THROW("Trying to create more than one glfw window");
 		if(!glfwInit())
 			THROW("Error while initializing GLFW");
@@ -81,7 +80,7 @@ namespace gfx
 		glfwSwapInterval(1);
 		glfwSetWindowPos(0, 24);
 
-		wantClose = 0;
+		s_want_close = 0;
 		glfwSetWindowCloseCallback(CloseWindowHandle);
 
 		memset(&lastInput, 0, sizeof(lastInput));
@@ -143,17 +142,18 @@ namespace gfx
 		key2Glfw[Key_kp_equal]    = GLFW_KEY_KP_EQUAL;
 		key2Glfw[Key_kp_enter]    = GLFW_KEY_KP_ENTER;
 
-		InitDevice();
-		InitViewport(size);
+		initDevice();
+		initViewport(size);
+		//TODO: initial mouse pos (until user moves it) is always 0,0
 
-		isCreated = 1;
+		s_is_created = 1;
 	}
 
 	void destroyWindow() {
-		if(isCreated) {
+		if(s_is_created) {
 			glfwCloseWindow();
 			glfwTerminate();
-			isCreated = 0;
+			s_is_created = 0;
 		}
 	}
 
@@ -178,9 +178,9 @@ namespace gfx
 		mouseDY = activeInput.MousePosY - lastInput.MousePosY;
 		activeInput.MousePosX = clamp(activeInput.MousePosX, 0, width - 1);
 		activeInput.MousePosY = clamp(activeInput.MousePosY, 0, height - 1);
-		glfwSetMousePos(activeInput.MousePosX, activeInput.MousePosY);
+		//glfwSetMousePos(activeInput.MousePosX, activeInput.MousePosY);
 
-		return !wantClose;
+		return !s_want_close;
 	}
 
 

@@ -94,9 +94,6 @@ namespace gfx
 			}
 			ASSERT(kernings_count == 0);
 		}
-
-		gfx::TextureFormat fmt = m_texture->format();
-		printf("ident: %d\n", (int)fmt.ident());
 	}
 
 	static int convertToWChar(const char *str, wchar_t *wstr, int buffer_size) {
@@ -116,6 +113,7 @@ namespace gfx
 
 		for(int n = 0; n < len; n++) {
 			if(wstr[n] == '\n') {
+				pos.x = 0;
 				pos.y += m_line_height;
 				continue;
 			}
@@ -154,6 +152,7 @@ namespace gfx
 		int gen_count = 0;
 		for(int n = 0; n < count; n++) {
 			if(wstr[n] == '\n') {
+				pos.x = 0;
 				pos.y += m_line_height;
 				continue;
 			}

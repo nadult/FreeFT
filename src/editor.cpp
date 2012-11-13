@@ -8,14 +8,15 @@
 #include "tile_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
-#include "tile_map_editor.h"
-#include "tile_selector.h"
-#include "tile_group_editor.h"
 #include "rapidxml_print.hpp"
 #include <fstream>
 #include <unistd.h>
 #include "ui/window.h"
 #include "ui/button.h"
+#include "ui/progress_bar.h"
+#include "ui/tile_selector.h"
+#include "ui/tile_map_editor.h"
+#include "ui/tile_group_editor.h"
 
 using namespace gfx;
 
@@ -34,7 +35,7 @@ static const char *s_mode_names[] = {
 class MainWindow: public ui::Window
 {
 public:
-	MainWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color(0, 0, 0, 0)) {
+	MainWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color::transparent) {
 		int left_width = 320;
 
 		m_mode = emMapEdition;
@@ -42,13 +43,12 @@ public:
 
 		load();	
 
-		//TODO: except. safety
-		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
-		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
-		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
+		m_mapper = new ui::TileMapEditor(IRect(left_width, 0, res.x, res.y));
+		m_grouper = new ui::TileGroupEditor(IRect(left_width, 0, res.x, res.y));
+		m_selector = new ui::TileSelector(IRect(0, 30, left_width, res.y));
 
 		m_mode_button = new ui::Button(IRect(0, 0, left_width * 2 / 3, 30), s_mode_names[m_mode]);
-		m_save_button = new ui::Button(IRect(left_width * 2 / 3 + 2, 0, left_width, 30), "Save");
+		m_save_button = new ui::Button(IRect(left_width * 2 / 3, 0, left_width, 30), "Save");
 
 		m_selector->setModel(new ui::AllTilesModel);
 
@@ -56,14 +56,14 @@ public:
 		m_mapper->setTileGroup(&m_group);
 		m_grouper->setTarget(&m_group);
 
-		ui::Window *left  = new ui::Window(IRect(0, 0, left_width, res.y), Color(255, 0, 0));
-		left->addChild((ui::PWindow)m_mode_button);
-		left->addChild((ui::PWindow)m_save_button);
-		left->addChild((ui::PWindow)m_selector);
+		ui::PWindow left = new ui::Window(IRect(0, 0, left_width, res.y));
+		left->addChild(m_mode_button.get());
+		left->addChild(m_save_button.get());
+		left->addChild(m_selector.get());
 
-		addChild((ui::PWindow)left);
-		addChild((ui::PWindow)m_mapper);
-		addChild((ui::PWindow)m_grouper);
+		addChild(std::move(left));
+		addChild(m_mapper.get());
+		addChild(m_grouper.get());
 		m_grouper->setVisible(false);
 	}
 
@@ -122,17 +122,17 @@ public:
 		}
 	}
 
-	EditorMode		m_mode;
+	EditorMode	m_mode;
 
-	TileMap			m_map;
-	TileGroup		m_group;
+	TileMap		m_map;
+	TileGroup	m_group;
+	
+	ui::PButton	m_mode_button;
+	ui::PButton	m_save_button;
 
-	TileMapEditor	*m_mapper;
-	TileGroupEditor *m_grouper;
-	TileSelector	*m_selector;
-
-	ui::Button		*m_mode_button;
-	ui::Button		*m_save_button;
+	ui::PTileMapEditor		m_mapper;
+	ui::PTileGroupEditor	m_grouper;
+	ui::PTileSelector		m_selector;
 };
 
 int safe_main(int argc, char **argv)
@@ -146,12 +146,7 @@ int safe_main(int argc, char **argv)
 	createWindow(res, false);
 	setWindowTitle("FTremake::editor ver 0.02");
 	grabMouse(false);
-
-//	DTexture tex;
-//	Loader("../data/epic_boobs.png") & tex;
-
-	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
-
+		
 	setBlendingMode(bmNormal);
 
 	vector<string> file_names;
@@ -186,37 +181,10 @@ int safe_main(int argc, char **argv)
 //	PFont font = Font::mgr["font1"];
 
 	MainWindow main_window(res);
+	clear({0, 0, 0});
 
 	while(pollEvents()) {
-		clear({128, 64, 0});
 		
-/*		if(isKeyDown(Key_f5)) {
-			string fileName = mapName;
-			if(fileName.size())
-				Saver(fileName) & tile_map;
-		}
-		if(isKeyDown(Key_f8)) {
-			string fileName = mapName;
-			if(fileName.size()) {
-				std::map<string, const gfx::Tile*> dict;
-				for(uint n = 0; n < tiles.size(); n++)
-					dict[tiles[n].name] = &tiles[n];
-				
-				try {
-					Loader ldr(fileName);
-					try { tile_map.Serialize(ldr, &dict); }
-					catch(...) {
-						tile_map.Clear();
-						tile_map.resize({256, 256});
-						throw;
-					}
-				}
-				catch(const Exception &ex) {
-					printf("Exception caught: %s\n", ex.What());
-				}
-			}
-		} */
-
 	//	if(isKeyPressed('T')) g_FloatParam[0] += 0.00001f;
 	//	if(isKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
 	//	if(isKeyPressed('Y')) g_FloatParam[1] += 0.00001f;

@@ -14,15 +14,16 @@ namespace ui
 
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
-		virtual void onIdle();
 		virtual void setText(const char *text);
 
 	protected:
-		bool m_is_being_pressed;
+		bool m_mouse_press;
 		IRect m_text_extents;
 		string m_text;
 		gfx::PFont m_font;
 	};
+
+	typedef Ptr<Button> PButton;
 
 
 }

@@ -44,6 +44,16 @@ int2 screenToWorld(int2 pos) {
 	return int2(y + x, y - x);
 }
 
+const IRect worldToScreen(const IBox &bbox) {
+	int2 corners[4] = {
+			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)),
+			worldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)),
+			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)),
+			worldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)) };
+
+	return IRect(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
+}
+
 
 float dot(const float2 &a, const float2 &b) { return a.x * b.x + a.y * b.y; }
 float dot(const float3 &a, const float3 &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }

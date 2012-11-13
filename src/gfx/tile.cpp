@@ -51,6 +51,7 @@ namespace gfx
 	}
 
 	void Tile::draw(int2 pos, Color col) const {
+		DASSERT(dTexture);
 		dTexture->bind();
 
 		int2 size = texture.size();

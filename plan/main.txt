@@ -34,7 +34,7 @@
  - proste udźwiękowienie
    issues/9-simple-audio.txt
 
-3. Drobne rzeczy do zrobienia:
+3. Różne rzeczy do zrobienia:
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt
  
@@ -42,6 +42,10 @@
    issues/12-code_cleanup.txt DONE (3 / 7)
 
  - ulepszanie wydajności tylko w razie potrzeby
+
+ - UI jest opóźniony o klatkę w stosunku do ruchu myszy
+
+ - pozmieniać konstruktory IRect i IBox, tak żeby jako drugi argument dawało się wielkość a nie koniec obiektu
 
 
 

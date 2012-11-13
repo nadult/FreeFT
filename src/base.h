@@ -244,6 +244,7 @@ int2 worldToScreen(int3 pos);
 float2 screenToWorld(float2 pos);
 int2 screenToWorld(int2 pos);
 
+const IRect worldToScreen(const IBox &box);
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
 
@@ -256,15 +257,25 @@ struct Color
 	Color(float r, float g, float b, float a = 1.0f)
 		:r(clamp(r * 255.0f, 0.0f, 255.0f)), g(clamp(g * 255.0f, 0.0f, 255.0f)), b(clamp(b * 255.0f, 0.0f, 255.0f)), 
 		 a(clamp(a * 255.0f, 0.0f, 255.0f)) { }
+	Color(const float3 &c, float a = 1.0f)
+		:r(clamp(c.x * 255.0f, 0.0f, 255.0f)), g(clamp(c.y * 255.0f, 0.0f, 255.0f)), b(clamp(c.z * 255.0f, 0.0f, 255.0f)), 
+		 a(clamp(a * 255.0f, 0.0f, 255.0f)) { }
 	Color(u32 rgba) :rgba(rgba) { }
 	Color() { }
 
 	Color operator|(Color rhs) const { return rgba | rhs.rgba; }
-	operator float4() const { return float4(r, g, b, a) / 255.0f; }
+	operator float4() const { return float4(r, g, b, a) * (1.0f / 255.0f); }
+	operator float3() const { return float3(r, g, b) * (1.0f / 255.0f); }
+
+   	//TODO: endianess...
 
 	enum {
-		white = 0xffffffffu,
-		black = 0xff000000u,
+		white 		= 0xffffffffu,
+		black 		= 0xff000000u,
+		gui_dark	= 0xffe86f25u,
+		gui_medium	= 0xffe77738u,
+		gui_light	= 0xffe7864cu,
+		transparent = 0x00000000u,
 	};
 
 	union {

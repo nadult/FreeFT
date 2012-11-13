@@ -10,9 +10,8 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler \
-	editor game res_viewer base tile_map actor entity navigation_map \
-	tile_map_editor tile_group tile_selector tile_group_editor \
-	ui/window ui/button ui/tile_list
+	editor game res_viewer base tile_map tile_group actor entity navigation_map \
+	ui/window ui/button ui/tile_list ui/progress_bar ui/tile_selector ui/tile_map_editor ui/tile_group_editor \
 #	sys/error_logger script/parser script/script script/sparser
 
 MAIN_FILES=editor game res_viewer

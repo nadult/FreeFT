@@ -9,7 +9,7 @@ namespace gfx
 	static float s_default_matrix[16];
 	static int2 s_viewport_size;
 
-	void InitViewport(int2 size) {
+	void initViewport(int2 size) {
 		s_viewport_size = size;
 		glViewport(0, 0, size.x, size.y);
 		glLoadIdentity();
