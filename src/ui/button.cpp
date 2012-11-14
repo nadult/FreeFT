@@ -5,8 +5,8 @@ using namespace gfx;
 namespace ui
 {
 
-	Button::Button(IRect rect, const char *text)
-		:Window(rect, Color::transparent), m_mouse_press(false) {
+	Button::Button(IRect rect, const char *text, int id)
+		:Window(rect, Color::transparent), m_mouse_press(false), m_id(id) {
 		m_font = Font::mgr["times_16"];
 		ASSERT(m_font);
 		setText(text);

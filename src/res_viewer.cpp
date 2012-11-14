@@ -9,6 +9,7 @@
 #include "gfx/tile.h"
 
 #include "ui/list_view.h"
+#include "ui/button.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -101,9 +102,60 @@ private:
 	int m_id;
 };
 
+
+class TextBox: public ui::Window
+{
+public:
+	TextBox(const IRect &rect, const char *text, bool is_centered = true, Color col = Color::transparent)
+		:ui::Window(rect, col), m_is_centered(is_centered) {
+		m_font = gfx::Font::mgr["times_24"];
+		setText(text);
+	}
+
+	void setText(const char *text) {
+		m_text = text;
+		IRect extents = m_font->evalExtents(text);
+		m_text_size = extents.size();
+	}
+
+	void drawContents() const {
+		int2 rsize = rect().size();
+		int2 pos(m_is_centered? rsize.x / 2 - m_text_size.x / 2 : 5, rsize.y / 2 - m_text_size.y);
+		m_font->drawShadowed(pos, Color::white, Color::black, m_text.c_str());
+	}
+
+private:
+	gfx::PFont m_font;
+	string m_text;
+	int2 m_text_size;
+	bool m_is_centered;
+};
+
+
+class MessageBox: public ui::Window
+{
+public:
+	MessageBox(const IRect &rect, const char *message) :ui::Window(rect) {
+		int2 bottom(rect.width() / 2, rect.height());
+
+		addChild(new TextBox(IRect(0, 0, rect.width(), bottom.y - 5), message));
+		addChild(new ui::Button(IRect(-100, -30, -5, -10) + bottom, "yes", 1));
+		addChild(new ui::Button(IRect(5, -30, 100, -10) + bottom, "no", 0));
+	}
+
+	void onButtonPressed(ui::Button *button) {
+		onClosePopup(this, button->id());
+	}
+
+	void drawContents() const {
+		drawWindow(IRect({0, 0}, rect().size()), Color::gui_dark, 4);
+	}
+};
+
 class ResourceView: public ui::Window
 {
 public:
+	virtual const char *className() const { return "ResourceView"; }
 	ResourceView(IRect rect) :ui::Window(rect), m_selected_id(-1) { }
 
 	void clear() {
@@ -184,10 +236,10 @@ public:
 	vector< ::Resource> m_resources;
 };
 
-class MainWindow: public ui::Window
+class ResViewerWindow: public ui::MainWindow
 {
 public:
-	MainWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color::gui_light) {
+	ResViewerWindow(int2 res) :ui::MainWindow(IRect(0, 0, res.x, res.y), Color::gui_light) {
 		int left_width = 300;
 
 		m_dir_view = new ui::ListView(IRect(0, 0, left_width, res.y));
@@ -253,6 +305,12 @@ public:
 		m_dir_view->select(value);
 		
 	}
+	
+	virtual void onClosePopup(Window *popup, int value) {
+		MainWindow::onClosePopup(popup, value);
+		if(value == 1)
+			exit(0);
+	}
 
 	virtual void onListElementClicked(ui::ListView *list, int id) {
 		if(list != m_dir_view)
@@ -272,10 +330,6 @@ public:
 			else
 				m_res_view->m_selected_id = list->selectedId();
 		}
-	}
-
-	virtual void handleInput() {
-		ui::Window::handleInput();
 	}
 
 	struct Entry {
@@ -309,12 +363,12 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	MainWindow main_window(res);
+	ResViewerWindow main_window(res);
 	clear({0, 0, 0});
 
 	while(pollEvents()) {
-		if(isKeyDown(Key_esc))
-			break;
+		if(isKeyDown(Key_esc) && !main_window.anyPopups())
+			main_window.addPopup(new MessageBox(IRect(0, 0, 300, 80) + res / 2 - int2(150, 40), "do you want to quit?"));
 
 		main_window.handleInput();
 		main_window.draw();

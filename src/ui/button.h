@@ -10,13 +10,16 @@ namespace ui
 	class Button: public Window
 	{
 	public:
-		Button(IRect rect, const char *text);
+		Button(IRect rect, const char *text, int id = 0);
 
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual void setText(const char *text);
 
+		int id() const { return m_id; }
+
 	protected:
+		int m_id;
 		bool m_mouse_press;
 		IRect m_text_extents;
 		string m_text;

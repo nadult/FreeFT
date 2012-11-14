@@ -12,6 +12,7 @@ namespace ui
 	class Button;
 	class ListView;
 	class Window;
+	class MainWindow;
 
 	typedef Ptr<Window> PWindow;
 
@@ -33,6 +34,7 @@ namespace ui
 
 		void setBackgroundColor(Color col);
 		Window* parent() const { return m_parent; }
+		MainWindow *mainWindow() { return m_parent? m_parent->mainWindow() : nullptr; }
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
 		bool isVisible() const { return m_is_visible; }
@@ -42,6 +44,10 @@ namespace ui
 		virtual void onButtonPressed(Button *button);
 		virtual void onListElementClicked(ListView *list_view, int id);
 		virtual void onEvent(Window *source, int event, int value);
+		
+		// popups are handled in MainWindow
+		virtual void addPopup(PWindow&&);
+		virtual void onClosePopup(Window *popup, int ret);
 
 		static void drawWindow(IRect rect, Color color, int outline);
 	
@@ -66,6 +72,7 @@ namespace ui
 		void setInnerOffset(const int2&);
 
 	private:
+		friend class MainWindow;
 		void updateRects();
 
 		Window *m_parent;
@@ -82,6 +89,24 @@ namespace ui
 		bool m_is_visible;
 		bool m_is_mouse_over;
 		bool m_has_inner_rect;
+	};
+
+	class MainWindow: public Window
+	{
+	public:
+		MainWindow(const IRect &rect, Color color) :Window(rect, color) { }
+		MainWindow *mainWindow() { return this; }
+
+		virtual void handleInput();
+		virtual void draw() const;
+
+		virtual void addPopup(PWindow&&);
+		virtual void onClosePopup(Window *popup, int ret);
+
+		bool anyPopups() const { return !m_popups.empty(); }
+
+	private:
+		vector<PWindow> m_popups;
 	};
 
 }

@@ -32,13 +32,13 @@ namespace ui
 
 	Window::Window(IRect rect, Color background_color)
 		:m_parent(nullptr), m_is_visible(true), m_is_mouse_over(false) {
-			m_drag_start = int2(0, 0);
-			m_dragging_mode = 0;
+		m_drag_start = int2(0, 0);
+		m_dragging_mode = 0;
 
-			setBackgroundColor(background_color);
-			setRect(rect);
-		}
-		
+		setBackgroundColor(background_color);
+		setRect(rect);
+	}
+
 	void Window::setBackgroundColor(Color col) {
 		m_background_color = col;
 	}
@@ -181,6 +181,11 @@ namespace ui
 		child->updateRects();
 		m_children.push_back(std::move(child));
 	}
+
+	void Window::addPopup(PWindow &&popup) {
+		if(m_parent)
+			m_parent->addPopup(std::move(popup));
+	}
 		
 	void Window::setRect(const IRect &rect) {
 		DASSERT(!m_dragging_mode);
@@ -201,18 +206,23 @@ namespace ui
 	}
 
 	void Window::onButtonPressed(Button *button) {
-		if(parent())
-			parent()->onButtonPressed(button);
+		if(m_parent)
+			m_parent->onButtonPressed(button);
 	}
 		
 	void Window::onListElementClicked(ListView *list_view, int id) {
-		if(parent())
-			parent()->onListElementClicked(list_view, id);
+		if(m_parent)
+			m_parent->onListElementClicked(list_view, id);
+	}
+	
+	void Window::onClosePopup(Window *popup, int ret) {
+		if(m_parent)
+			m_parent->onClosePopup(popup, ret);
 	}
 		
 	void Window::onEvent(Window *source, int event, int value) {
-		if(parent())
-			parent()->onEvent(source, event, value);
+		if(m_parent)
+			m_parent->onEvent(source, event, value);
 	}
 	
 	bool Window::isMouseOver() const {
@@ -230,6 +240,34 @@ namespace ui
 
 		for(int n = 0; n < (int)m_children.size(); n++)
 			m_children[n]->updateRects();
+	}
+	
+	void MainWindow::handleInput() {
+		if(m_popups.empty())
+			Window::handleInput();
+		else
+			m_popups.back()->handleInput();
+	}
+
+	void MainWindow::draw() const {
+		Window::draw();
+		for(int n = 0; n < (int)m_popups.size(); n++)
+			m_popups[n]->draw();
+	}
+
+	void MainWindow::addPopup(PWindow &&popup) {
+		DASSERT(popup);
+		popup->m_parent = this;
+		popup->updateRects();
+		m_popups.push_back(std::move(popup));
+	}
+
+	void MainWindow::onClosePopup(Window *popup, int ret) {
+		for(int n = 0; n < m_popups.size(); n++)
+			if(m_popups[n] == popup) {
+				m_popups.erase(m_popups.begin() + n);
+				break;
+			}
 	}
 
 }
