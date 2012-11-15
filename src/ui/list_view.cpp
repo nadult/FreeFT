@@ -70,9 +70,10 @@ namespace ui {
 			m_over_id = entryId(end);
 			m_dragging_id = entryId(start);
 
-			if(is_final && parent() && m_over_id == m_dragging_id) {
+			if(is_final && m_over_id == m_dragging_id) {
 				select(m_over_id);
-				parent()->onListElementClicked(this, m_over_id);
+				sendEvent(this, Event::element_clicked, m_over_id);
+				sendEvent(this, Event::element_selected, m_over_id);
 			}
 			if(is_final)
 				m_dragging_id = -1;

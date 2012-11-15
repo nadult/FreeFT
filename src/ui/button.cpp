@@ -32,8 +32,8 @@ namespace ui
 
 	void Button::onInput(int2 mouse_pos) {
 		m_mouse_press = isMouseKeyPressed(0);
-		if(isMouseKeyUp(0) && parent() && isMouseOver())
-			parent()->onButtonPressed(this);
+		if(isMouseKeyUp(0) && isMouseOver())
+			sendEvent(this, Event::button_clicked, m_id);
 	}
 
 }

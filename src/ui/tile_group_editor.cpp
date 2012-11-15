@@ -46,7 +46,11 @@ namespace {
 			m_tile_list.setModel(new ui::AllTilesModel);
 		else
 			m_tile_list.setModel(m_tile_group? new TileGroupModel(*m_tile_group) : nullptr);
-		setInnerRect(IRect(0, -m_offset[m_mode].y, rect().width(), m_tile_list.m_height));
+
+		int2 pos(0, -m_offset[m_mode].y);
+		int2 size(rect().width(), m_tile_list.m_height + (m_mode == mAddRemove? 0 : rect().height() / 2));
+
+		setInnerRect(IRect(pos, pos + size));
 	}
 
 	void TileGroupEditor::onInput(int2 mouse_pos) {

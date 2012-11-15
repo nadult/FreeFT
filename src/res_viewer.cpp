@@ -10,6 +10,7 @@
 
 #include "ui/list_view.h"
 #include "ui/button.h"
+#include "ui/message_box.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -102,61 +103,11 @@ private:
 	int m_id;
 };
 
-
-class TextBox: public ui::Window
-{
-public:
-	TextBox(const IRect &rect, const char *text, bool is_centered = true, Color col = Color::transparent)
-		:ui::Window(rect, col), m_is_centered(is_centered) {
-		m_font = gfx::Font::mgr["times_24"];
-		setText(text);
-	}
-
-	void setText(const char *text) {
-		m_text = text;
-		IRect extents = m_font->evalExtents(text);
-		m_text_size = extents.size();
-	}
-
-	void drawContents() const {
-		int2 rsize = rect().size();
-		int2 pos(m_is_centered? rsize.x / 2 - m_text_size.x / 2 : 5, rsize.y / 2 - m_text_size.y);
-		m_font->drawShadowed(pos, Color::white, Color::black, m_text.c_str());
-	}
-
-private:
-	gfx::PFont m_font;
-	string m_text;
-	int2 m_text_size;
-	bool m_is_centered;
-};
-
-
-class MessageBox: public ui::Window
-{
-public:
-	MessageBox(const IRect &rect, const char *message) :ui::Window(rect) {
-		int2 bottom(rect.width() / 2, rect.height());
-
-		addChild(new TextBox(IRect(0, 0, rect.width(), bottom.y - 5), message));
-		addChild(new ui::Button(IRect(-100, -30, -5, -10) + bottom, "yes", 1));
-		addChild(new ui::Button(IRect(5, -30, 100, -10) + bottom, "no", 0));
-	}
-
-	void onButtonPressed(ui::Button *button) {
-		onClosePopup(this, button->id());
-	}
-
-	void drawContents() const {
-		drawWindow(IRect({0, 0}, rect().size()), Color::gui_dark, 4);
-	}
-};
-
 class ResourceView: public ui::Window
 {
 public:
 	virtual const char *className() const { return "ResourceView"; }
-	ResourceView(IRect rect) :ui::Window(rect), m_selected_id(-1) { }
+	ResourceView(IRect rect) :ui::Window(rect), m_selected_id(-1), m_show_selected(false) { }
 
 	void clear() {
 		m_resources.clear();
@@ -169,7 +120,8 @@ public:
 		int2 pos(spacing, spacing), offset = innerOffset() - clippedRect().min;
 		int width = clippedRect().width(), cur_height = 0;
 		int2 mouse_pos = getMousePos();
-		bool clicked = isMouseKeyPressed(0);
+		bool clicked = isMouseKeyPressed(0) && clippedRect().isInside(mouse_pos);
+		int2 selected_pos(0, 0);
 		
 		//TODO: fix it
 		ResourceView *mthis = (ResourceView*)this;
@@ -181,7 +133,10 @@ public:
 			if(clicked && IRect(pos - offset, pos - offset + res.rectSize()).isInside(mouse_pos))
 				mthis->m_selected_id = res.id();
 
-			res.draw(pos - offset, m_selected_id == res.id());
+			bool is_selected = m_selected_id == res.id();
+			if(is_selected)
+				selected_pos = pos;
+			res.draw(pos - offset, is_selected);
 			if(n + 1 == (int)m_resources.size())
 				break;
 
@@ -195,9 +150,13 @@ public:
 			}
 		}
 		
+		if(m_show_selected) {
+			offset = int2(0, selected_pos.y);
+			m_show_selected = false;
+		}
 		if(clicked)		
-			mthis->onEvent(mthis, 0, m_selected_id);
-		mthis->setInnerRect(IRect(-offset, int2(width, pos.y) - offset));
+			mthis->sendEvent(mthis, ui::Event::element_selected, m_selected_id);
+		mthis->setInnerRect(IRect(-offset, int2(width, pos.y + cur_height) - offset));
 	}
 
 	void tryAddResource(const char *file_name, int id) {
@@ -232,21 +191,22 @@ public:
 		catch(const Exception &ex) { printf("%s\n", ex.what()); }
 	}
 
+	mutable bool m_show_selected;
 	int m_selected_id;
 	vector< ::Resource> m_resources;
 };
 
-class ResViewerWindow: public ui::MainWindow
+class ResViewerWindow: public ui::Window
 {
 public:
-	ResViewerWindow(int2 res) :ui::MainWindow(IRect(0, 0, res.x, res.y), Color::gui_light) {
+	ResViewerWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color::gui_light) {
 		int left_width = 300;
 
 		m_dir_view = new ui::ListView(IRect(0, 0, left_width, res.y));
 		m_res_view = new ResourceView(IRect(left_width + 2, 0, res.x, res.y));
 
-		addChild(m_dir_view.get());
-		addChild(m_res_view.get());
+		attach(m_dir_view.get());
+		attach(m_res_view.get());
 
 		m_current_dir.push_back("../refs/");
 
@@ -299,39 +259,6 @@ public:
 				m_res_view->tryAddResource((current_dir + m_entries[n].name).c_str(), n);
 	}
 
-	virtual void onEvent(Window *source, int event, int value) {
-		if(source != m_res_view.get())
-			return;
-		m_dir_view->select(value);
-		
-	}
-	
-	virtual void onClosePopup(Window *popup, int value) {
-		MainWindow::onClosePopup(popup, value);
-		if(value == 1)
-			exit(0);
-	}
-
-	virtual void onListElementClicked(ui::ListView *list, int id) {
-		if(list != m_dir_view)
-			return;
-		if(id >= 0 && id < (int)m_entries.size()) {
-			const Entry &entry = m_entries[id];
-
-			if(entry.is_dir) {
-				if(entry.name == "..") {
-					if(m_current_dir.size() > 1)
-						m_current_dir.pop_back();
-				}
-				else
-					m_current_dir.push_back(entry.name + "/");
-				update();
-			}
-			else
-				m_res_view->m_selected_id = list->selectedId();
-		}
-	}
-
 	struct Entry {
 		string name;
 		bool is_dir;
@@ -341,11 +268,53 @@ public:
 		}
 	};
 
+	virtual bool onEvent(const ui::Event &evt) {
+		if(evt.type == ui::Event::window_closed && evt.source == popup) {
+			popup = nullptr;
+			if(evt.value == 1)
+				exit(0);
+		}
+		else if(evt.type == ui::Event::element_selected) {
+			if(m_dir_view == evt.source && evt.value >= 0 && evt.value < (int)m_entries.size()) {
+				const Entry &entry = m_entries[evt.value];
+
+				if(entry.is_dir) {
+					if(entry.name == "..") {
+						if(m_current_dir.size() > 1)
+							m_current_dir.pop_back();
+					}
+					else
+						m_current_dir.push_back(entry.name + "/");
+					update();
+				}
+				else {
+					m_res_view->m_selected_id = evt.value;
+					m_res_view->m_show_selected = true;
+				}
+			}
+			else if(m_res_view == evt.source) {
+				m_dir_view->select(evt.value);
+			}
+		}
+		else return false;
+
+		return true;
+	}
+
+	void exitMessageBox() {
+		if(popup)
+			return;
+		popup = new ui::MessageBox(IRect(0, 0, 300, 80) + rect().size() / 2 - int2(150, 40), "do you want to quit?");
+		attach(popup, true);
+	}
+
 	vector<Entry> m_entries;
 	vector<string> m_current_dir;
 
 	ui::PListView		m_dir_view;
 	Ptr<ResourceView>	m_res_view;
+
+	ui::PWindow popup;
 };
 
 
@@ -367,10 +336,10 @@ int safe_main(int argc, char **argv)
 	clear({0, 0, 0});
 
 	while(pollEvents()) {
-		if(isKeyDown(Key_esc) && !main_window.anyPopups())
-			main_window.addPopup(new MessageBox(IRect(0, 0, 300, 80) + res / 2 - int2(150, 40), "do you want to quit?"));
+		if(isKeyDown(Key_esc))
+			main_window.exitMessageBox();
 
-		main_window.handleInput();
+		main_window.process();
 		main_window.draw();
 
 		swapBuffers();

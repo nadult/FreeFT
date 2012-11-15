@@ -57,30 +57,33 @@ public:
 		m_grouper->setTarget(&m_group);
 
 		ui::PWindow left = new ui::Window(IRect(0, 0, left_width, res.y));
-		left->addChild(m_mode_button.get());
-		left->addChild(m_save_button.get());
-		left->addChild(m_selector.get());
+		left->attach(m_mode_button.get());
+		left->attach(m_save_button.get());
+		left->attach(m_selector.get());
 
-		addChild(std::move(left));
-		addChild(m_mapper.get());
-		addChild(m_grouper.get());
+		attach(std::move(left));
+		attach(m_mapper.get());
+		attach(m_grouper.get());
 		m_grouper->setVisible(false);
 	}
 
-	virtual void onButtonPressed(ui::Button *button) {
-		if(button == m_mode_button) {
+	virtual bool onEvent(const ui::Event &ev) {
+		if(ev.type == ui::Event::button_clicked && m_mode_button == ev.source) {
 			m_mode = (EditorMode)((m_mode + 1) % emCount);
 			m_mapper->setVisible(m_mode == emMapEdition);
 			m_grouper->setVisible(m_mode == emTileGroupEdition);
-			button->setText(s_mode_names[m_mode]);
+			m_mode_button->setText(s_mode_names[m_mode]);
 		}
-		else if(button == m_save_button)
+		else if(ev.type == ui::Event::button_clicked && m_save_button == ev.source) {
 			save();
-	}
+		}
+		else if(ev.type == ui::Event::element_selected && m_selector == ev.source) {
+			printf("new tile: %s\n", m_selector->selection()->name.c_str());
+			m_mapper->setNewTile(m_selector->selection());
+		}
+		else return false;
 
-	virtual void handleInput() {
-		ui::Window::handleInput();
-		m_mapper->setNewTile(m_selector->selection());
+		return true;
 	}
 
 	void load() {
@@ -190,7 +193,7 @@ int safe_main(int argc, char **argv)
 	//	if(isKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
 	//	if(isKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
 		
-		main_window.handleInput();
+		main_window.process();
 		main_window.draw();
 		lookAt({0, 0});
 	//	int2 mpos = getMousePos();

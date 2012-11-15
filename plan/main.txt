@@ -13,10 +13,10 @@
    issues/4-entity_editor.txt
 
  - ulepszenia w edytorze
-   issues/10-improve_editor.txt
+   issues/8-improve_editor.txt
 
  - ulepszony UI:
-   issues/8-ui_improvements.txt
+   issues/10-ui_improvements.txt
 
 2. Prosta gra:
  - poruszanie się postacią

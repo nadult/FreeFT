@@ -9,12 +9,26 @@ namespace gfx { class Tile; }
 namespace ui
 {
 
-	class Button;
-	class ListView;
 	class Window;
 	class MainWindow;
 
 	typedef Ptr<Window> PWindow;
+
+	struct Event {
+		enum Type {
+			window_closed,		// value: return value		sending down
+			button_clicked,		// value: button id			sending up
+			element_clicked,	// value: element id		sending up
+			element_selected,	// value: element id		sending up
+			popup_close_signal,	// 							sending directly to popup from parent
+		};
+
+		Event(Window *source, Type type, int value = 0) :source(source), type(type), value(value) { }
+
+		Window *source;
+		Type type;
+		int value;
+	};
 
 	class Window: public RefCounter
 	{
@@ -22,10 +36,12 @@ namespace ui
 		Window(IRect rect, Color background = Color::transparent);
 		virtual ~Window() { }
 		
-		virtual void handleInput();
+		virtual void process();
 		virtual void draw() const;
 
-		void addChild(PWindow&&);
+		void close(int return_value);
+
+		void attach(PWindow, bool as_popup = false);
 
 		// it will also reset inner rect
 		void setRect(const IRect &rect);
@@ -34,21 +50,24 @@ namespace ui
 
 		void setBackgroundColor(Color col);
 		Window* parent() const { return m_parent; }
-		MainWindow *mainWindow() { return m_parent? m_parent->mainWindow() : nullptr; }
+		Window *mainWindow() { return m_parent? m_parent->mainWindow() : nullptr; }
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
 		bool isVisible() const { return m_is_visible; }
+		bool isMouseOver() const { return m_is_mouse_over; } //TODO: kolejnosc wyswietlania
 
-		bool isMouseOver() const;
-		
-		virtual void onButtonPressed(Button *button);
-		virtual void onListElementClicked(ListView *list_view, int id);
-		virtual void onEvent(Window *source, int event, int value);
-		
-		// popups are handled in MainWindow
-		virtual void addPopup(PWindow&&);
-		virtual void onClosePopup(Window *popup, int ret);
+		//TODO: should events be sent to unfocused objects?
 
+		// Sends event up (towards main window) or down the hierarchy
+		// returns true if event was received
+		bool sendEvent(const Event &event);
+		bool sendEvent(Window *source, Event::Type type, int value = 0) {
+			return sendEvent(Event(source, type, value));
+		}
+
+		// Override this method to receive events
+		virtual bool onEvent(const Event &event) { return false; }
+		
 		static void drawWindow(IRect rect, Color color, int outline);
 	
 	protected:
@@ -72,7 +91,6 @@ namespace ui
 		void setInnerOffset(const int2&);
 
 	private:
-		friend class MainWindow;
 		void updateRects();
 
 		Window *m_parent;
@@ -85,28 +103,13 @@ namespace ui
 
 		int2 m_drag_start;
 		int m_dragging_mode;
+		int m_closing_value;
 		bool m_is_dragging;
 		bool m_is_visible;
 		bool m_is_mouse_over;
 		bool m_has_inner_rect;
-	};
-
-	class MainWindow: public Window
-	{
-	public:
-		MainWindow(const IRect &rect, Color color) :Window(rect, color) { }
-		MainWindow *mainWindow() { return this; }
-
-		virtual void handleInput();
-		virtual void draw() const;
-
-		virtual void addPopup(PWindow&&);
-		virtual void onClosePopup(Window *popup, int ret);
-
-		bool anyPopups() const { return !m_popups.empty(); }
-
-	private:
-		vector<PWindow> m_popups;
+		bool m_is_popup;
+		bool m_is_closing;
 	};
 
 }

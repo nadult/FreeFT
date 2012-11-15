@@ -55,6 +55,7 @@ namespace ui {
 	bool TileSelector::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
 		if(key == 0) {
 			m_selection = m_tile_list.find(current + innerOffset());
+			sendEvent(this, Event::element_selected);
 			return true;
 		}
 

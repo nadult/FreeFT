@@ -31,7 +31,7 @@ namespace ui
 	}
 
 	Window::Window(IRect rect, Color background_color)
-		:m_parent(nullptr), m_is_visible(true), m_is_mouse_over(false) {
+		:m_parent(nullptr), m_is_visible(true), m_is_mouse_over(false), m_is_popup(false), m_is_closing(false) {
 		m_drag_start = int2(0, 0);
 		m_dragging_mode = 0;
 
@@ -43,7 +43,30 @@ namespace ui
 		m_background_color = col;
 	}
 
-	void Window::handleInput() {
+	void Window::close(int return_value) {
+		m_is_closing = true;
+		m_closing_value = return_value;
+	}
+
+	void Window::process() {
+		Window *popup = nullptr;
+
+		for(int n = 0; n < (int)m_children.size(); n++) {
+			if(m_children[n]->m_is_closing) {
+				PWindow window = m_children[n];
+				m_children.erase(m_children.begin() + n);
+				sendEvent(window.get(), Event::window_closed, m_children[n]->m_closing_value); 
+				n--;
+			}
+			else if(m_children[n]->m_is_popup)
+				popup = m_children[n].get();
+		}
+
+		if(popup) {
+			popup->process();
+			return;
+		}
+
 		int2 mouse_pos = getMousePos();
 		int2 local_mouse_pos = mouse_pos - m_rect.min;
 		bool finished_dragging = false;
@@ -72,7 +95,7 @@ namespace ui
 				continue;
 
 			if(child->rect().isInside(focus_point)) {
-				child->handleInput();
+				child->process();
 				is_handled = true;
 			}
 			else
@@ -175,18 +198,14 @@ namespace ui
 			setScissorTest(false);	
 	}
 
-	void Window::addChild(PWindow &&child) {
+	void Window::attach(PWindow child, bool as_popup) {
 		DASSERT(child);
 		child->m_parent = this;
+		child->m_is_popup = as_popup;
 		child->updateRects();
 		m_children.push_back(std::move(child));
 	}
 
-	void Window::addPopup(PWindow &&popup) {
-		if(m_parent)
-			m_parent->addPopup(std::move(popup));
-	}
-		
 	void Window::setRect(const IRect &rect) {
 		DASSERT(!m_dragging_mode);
 		m_rect = rect;
@@ -204,29 +223,24 @@ namespace ui
 	void Window::setInnerOffset(const int2 &offset) {
 		setInnerRect(IRect(-offset, -offset + m_inner_rect.size()));
 	}
+		
+	bool Window::sendEvent(const Event &event) {
+		if(onEvent(event))
+			return true;
 
-	void Window::onButtonPressed(Button *button) {
-		if(m_parent)
-			m_parent->onButtonPressed(button);
-	}
-		
-	void Window::onListElementClicked(ListView *list_view, int id) {
-		if(m_parent)
-			m_parent->onListElementClicked(list_view, id);
-	}
-	
-	void Window::onClosePopup(Window *popup, int ret) {
-		if(m_parent)
-			m_parent->onClosePopup(popup, ret);
-	}
-		
-	void Window::onEvent(Window *source, int event, int value) {
-		if(m_parent)
-			m_parent->onEvent(source, event, value);
-	}
-	
-	bool Window::isMouseOver() const {
-		return m_is_mouse_over;
+		bool send_up = event.type != Event::window_closed;
+
+		if(send_up) {
+			if(m_parent)
+				return m_parent? m_parent->sendEvent(event) : false;
+		}
+		else {
+			for(int n = 0; n < (int)m_children.size(); n++)
+				if(m_children[n]->sendEvent(event))
+					return true;
+		}
+
+		return false;
 	}
 
 	void Window::updateRects() {
@@ -240,34 +254,6 @@ namespace ui
 
 		for(int n = 0; n < (int)m_children.size(); n++)
 			m_children[n]->updateRects();
-	}
-	
-	void MainWindow::handleInput() {
-		if(m_popups.empty())
-			Window::handleInput();
-		else
-			m_popups.back()->handleInput();
-	}
-
-	void MainWindow::draw() const {
-		Window::draw();
-		for(int n = 0; n < (int)m_popups.size(); n++)
-			m_popups[n]->draw();
-	}
-
-	void MainWindow::addPopup(PWindow &&popup) {
-		DASSERT(popup);
-		popup->m_parent = this;
-		popup->updateRects();
-		m_popups.push_back(std::move(popup));
-	}
-
-	void MainWindow::onClosePopup(Window *popup, int ret) {
-		for(int n = 0; n < m_popups.size(); n++)
-			if(m_popups[n] == popup) {
-				m_popups.erase(m_popups.begin() + n);
-				break;
-			}
 	}
 
 }
