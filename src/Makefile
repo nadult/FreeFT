@@ -11,7 +11,7 @@ FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler \
 	editor game res_viewer base tile_map tile_group actor entity navigation_map \
-	ui/window ui/button ui/tile_list ui/progress_bar ui/list_view ui/text_box ui/message_box \
+	ui/window ui/button ui/tile_list ui/progress_bar ui/list_view ui/text_box ui/message_box ui/edit_box \
 	ui/tile_selector ui/tile_map_editor ui/tile_group_editor
 
 MAIN_FILES=editor game res_viewer

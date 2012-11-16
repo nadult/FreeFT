@@ -10,6 +10,7 @@ namespace ui {
 	class ProgressBar: public Window {
 	public:
 		ProgressBar(const IRect &rect, bool is_horizontal);
+		virtual const char *typeName() const { return "ProgressBar"; }
 
 		// range: <0; 1>
 		void setBarSize(float size);

@@ -11,6 +11,8 @@ namespace ui {
 	{
 	public:
 		TextBox(const IRect &rect, const char *text, bool is_centered = true, Color col = Color::transparent);
+		virtual const char *typeName() const { return "TextBox"; }
+
 		void setText(const char *text);
 		void drawContents() const;
 

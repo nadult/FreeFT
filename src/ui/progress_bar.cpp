@@ -18,13 +18,13 @@ namespace ui {
 	}
 
 	float ProgressBar::evalBarSize() const {
-		float rsize = m_is_horizontal? rect().width() : rect().height();
+		float rsize = m_is_horizontal? width() : height();
 		float bar_size = max(min(16.0f, rsize), m_bar_size * rsize);
 		return bar_size / rsize;
 	}
 
 	IRect ProgressBar::evalBarPos() const {
-		int2 rect_size = rect().size();
+		int2 rect_size = size();
 		float bar_size = evalBarSize();
 		float pos = m_pos * (1.0f - bar_size);
 
@@ -34,8 +34,8 @@ namespace ui {
 	}
 
 	void ProgressBar::drawContents() const {
-		drawWindow(IRect(int2(0, 0), rect().size()), Color::gui_medium, 1);
-		drawWindow(evalBarPos(), isMouseOver()? Color::gui_light : Color::gui_dark, m_mouse_press? -2 : 2);
+		drawWindow(IRect(int2(0, 0), size()), Color::gui_medium, 1);
+		drawWindow(evalBarPos(), isFocused()? Color::gui_light : Color::gui_dark, m_mouse_press? -2 : 2);
 	}
 
 	bool ProgressBar::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
@@ -43,7 +43,7 @@ namespace ui {
 			return false;
 
 		float bar_size = evalBarSize();
-		float divisor = 1.0f / float(m_is_horizontal? rect().width() : rect().height());
+		float divisor = 1.0f / float(m_is_horizontal? width() : height());
 
 		if(start == current) {
 			IRect bar_rect = evalBarPos();

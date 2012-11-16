@@ -121,7 +121,7 @@ namespace gfx
 	void grabMouse(bool);
 	void showCursor(bool);
 
-	char getCharDown();
+	char getCharPressed();
 
 	bool isKeyPressed(int);
 	bool isKeyDown(int);

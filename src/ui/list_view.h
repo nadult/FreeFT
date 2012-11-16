@@ -10,6 +10,7 @@ namespace ui {
 	{
 	public:
 		ListView(const IRect &rect);
+		virtual const char *typeName() const { return "ListView"; }
 
 		struct Entry {
 			Color color;
@@ -20,7 +21,6 @@ namespace ui {
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 end, int key, bool is_final);
-		virtual void onIdle();
 
 		void addEntry(const char *text, Color col);
 		void clear();

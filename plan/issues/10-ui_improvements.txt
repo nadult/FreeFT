@@ -11,18 +11,19 @@ Dodanie nowych kontrolek i ulepszenie aktualnych
   funkcjonalności) 																(3h) DONE
 - prosta przeglądarka zasobów jako proof-of-concept że UI się do czegoś nadaje	(3h) DONE
 - text box																		(1h) DONE
-- text edit box																	(4h)
+- text edit box																	(4h) DONE
 
 - refaktoring jak już wszystkie pozostałe elementy będą ukończone
-  - ujednolicony system do przekazywania komunikatów							(2h)
-  - wygładzenie interfejsu														(2h)
+  - ujednolicony system do przekazywania komunikatów							(2h) DONE
 
 
-+ESTIMATED_TIME: 33h
-+TIME_SPENT: 17.50h
++ESTIMATED_TIME: 31h
++TIME_SPENT: 20h
++FINISHED
 
 +WORK_LOG:
 12.11.12: 15:30 - 19:15, 20:15 - 22:30	(6.00h)
 13.11.12: 12:30 - 16:00, 17:30 - 22:00  (8.00h)
 14.11.12: 20:30 - 21:45	(1.25h)
 15.11.12: 20:30 - 22:45 (2.25h)
+16.11.12: 21:00 - 23:30 (2.50h)

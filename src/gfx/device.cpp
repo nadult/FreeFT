@@ -209,33 +209,38 @@ namespace gfx
 			glfwDisable(GLFW_MOUSE_CURSOR);
 	}
 
-	char getCharDown() {
-		for(int k = 0; k < 255; k++) {
-			if(!isKeyDown(k))
+	char getCharPressed() {
+		if(isKeyPressed(Key_space))
+			return ' ';
+
+		char numerics_s[11] = ")!@#$%^&*(";
+		char map[][2] = {
+			{ '-', '_' },
+			{ '`', '~' },
+			{ '=', '+' },
+			{ '[', '{' },
+			{ ']', '}' },
+			{ ';', ':' },
+			{ '\'', '"' },
+			{ ',', '<' },
+			{ '.', '>' },
+			{ '/', '?' },
+			{ '\\', '|' },
+		};
+
+		bool shift = isKeyPressed(Key_lshift) || isKeyPressed(Key_rshift); //TODO: capslock
+
+		for(int i = 0; i < sizeof(map) / 2; i++)
+			if(isKeyPressed(map[i][0]))
+				return map[i][shift? 1 : 0];
+
+		for(int k = 32; k < 128; k++) {
+			if(!isKeyPressed(k))
 				continue;
-
-			bool shift = isKeyPressed(Key_lshift) || isKeyPressed(Key_rshift);
-
-			if(k >= 65 && k <= 90)
+			if(k >= 'A' && k <= 'Z')
 				return shift ? k : k - 'A' + 'a';
-
-			if(k >= 48 && k <= 57 && !shift)
-				return k;
-
-			if(k == '0')
-				return shift ? ')' : '0';
-
-			if(k == '-')
-				return shift ? '_' : '-';
-
-			if(k == '.')
-				return shift ? '>' : '.';
-
-			if(k == ',')
-				return shift ? '<' : ',';
-
-			if(k == '/')
-				return shift ? '?' : '/';
+			if(k >= '0' && k <= '9')
+				return shift? numerics_s[k - '0'] : k;
 		}
 
 		return 0;

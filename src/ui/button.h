@@ -11,6 +11,7 @@ namespace ui
 	{
 	public:
 		Button(IRect rect, const char *text, int id = 0);
+		virtual const char *typeName() const { return "Button"; }
 
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);

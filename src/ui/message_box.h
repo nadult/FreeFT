@@ -10,6 +10,8 @@ namespace ui {
 	{
 	public:
 		MessageBox(const IRect &rect, const char *message);
+		virtual const char *typeName() const { return "MessageBox"; }
+
 		bool onEvent(const Event &event);
 		void drawContents() const;
 	};

@@ -16,7 +16,7 @@
    issues/8-improve_editor.txt
 
  - ulepszony UI:
-   issues/10-ui_improvements.txt
+   issues/10-ui_improvements.txt DONE  (20 / 31)
 
 2. Prosta gra:
  - poruszanie się postacią

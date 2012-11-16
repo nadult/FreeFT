@@ -61,10 +61,6 @@ namespace ui {
 		m_over_id = entryId(mouse_pos);
 	}
 
-	void ListView::onIdle() {
-		m_over_id = -1;
-	}
-
 	bool ListView::onMouseDrag(int2 start, int2 end, int key, bool is_final) {
 		if(key == 0) {
 			m_over_id = entryId(end);

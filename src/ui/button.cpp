@@ -20,10 +20,10 @@ namespace ui
 	}
 
 	void Button::drawContents() const {
-		drawWindow(IRect(int2(0, 0), rect().size()), isMouseOver()? Color::gui_light : Color::gui_dark,
+		drawWindow(IRect(int2(0, 0), size()), isFocused()? Color::gui_light : Color::gui_dark,
 					m_mouse_press? -2 : 2);
 
-		int2 rect_center = rect().size() / 2;
+		int2 rect_center = size() / 2;
 		int2 pos = rect_center - m_text_extents.size() / 2 - m_text_extents.min - int2(1, 1);
 		if(m_mouse_press)
 			pos += int2(2, 2);
@@ -32,7 +32,7 @@ namespace ui
 
 	void Button::onInput(int2 mouse_pos) {
 		m_mouse_press = isMouseKeyPressed(0);
-		if(isMouseKeyUp(0) && isMouseOver())
+		if(isMouseKeyUp(0) && isFocused())
 			sendEvent(this, Event::button_clicked, m_id);
 	}
 

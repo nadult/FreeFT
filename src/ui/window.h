@@ -35,18 +35,26 @@ namespace ui
 	public:
 		Window(IRect rect, Color background = Color::transparent);
 		virtual ~Window() { }
+		virtual const char *typeName() const { return "Window"; }
 		
 		virtual void process();
 		virtual void draw() const;
 
 		void close(int return_value);
 
+		// normally window is focused when the mouse is over, but it can
+		// be overriden by calling this function
+		// Popups have higher priority though
+		void setFocus(bool set);
 		void attach(PWindow, bool as_popup = false);
 
 		// it will also reset inner rect
 		void setRect(const IRect &rect);
 		IRect rect() const { return m_rect; }
 		IRect clippedRect() const { return m_clipped_rect; }
+		int width() const { return m_rect.width(); }
+		int height() const { return m_rect.height(); }
+		int2 size() const { return m_rect.size(); }
 
 		void setBackgroundColor(Color col);
 		Window* parent() const { return m_parent; }
@@ -54,7 +62,7 @@ namespace ui
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
 		bool isVisible() const { return m_is_visible; }
-		bool isMouseOver() const { return m_is_mouse_over; } //TODO: kolejnosc wyswietlania
+		bool isFocused() const { return m_is_focused; }
 
 		//TODO: should events be sent to unfocused objects?
 
@@ -73,7 +81,6 @@ namespace ui
 	protected:
 		virtual void drawContents() const { }
 		virtual void onInput(int2 mouse_pos) { }
-		virtual void onIdle();
 
 		// each on*** function should return true if the event was handled
 		// TODO: pass key_modifier along with key (so when user presses LMB with CTRL, it will
@@ -102,14 +109,15 @@ namespace ui
 		Color m_background_color;
 
 		int2 m_drag_start;
-		int m_dragging_mode;
 		int m_closing_value;
-		bool m_is_dragging;
-		bool m_is_visible;
-		bool m_is_mouse_over;
-		bool m_has_inner_rect;
-		bool m_is_popup;
-		bool m_is_closing;
+		int m_dragging_mode : 4;
+		bool m_is_dragging : 1;
+		bool m_is_visible : 1;
+		bool m_has_inner_rect : 1;
+		bool m_is_popup : 1;
+		bool m_is_closing : 1;
+		bool m_is_focused : 1;
+		bool m_has_hard_focus : 1;
 	};
 
 }

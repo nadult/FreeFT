@@ -11,6 +11,7 @@
 #include "ui/list_view.h"
 #include "ui/button.h"
 #include "ui/message_box.h"
+#include "ui/edit_box.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -202,9 +203,13 @@ public:
 	ResViewerWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color::gui_light) {
 		int left_width = 300;
 
-		m_dir_view = new ui::ListView(IRect(0, 0, left_width, res.y));
+		m_edit_box = new ui::EditBox(IRect(0, 0, left_width, 30), 30);
+		m_edit_box->setText("this is edit box, click me!");
+
+		m_dir_view = new ui::ListView(IRect(0, 30, left_width, res.y));
 		m_res_view = new ResourceView(IRect(left_width + 2, 0, res.x, res.y));
 
+		attach(m_edit_box.get());
 		attach(m_dir_view.get());
 		attach(m_res_view.get());
 
@@ -313,6 +318,7 @@ public:
 
 	ui::PListView		m_dir_view;
 	Ptr<ResourceView>	m_res_view;
+	ui::PEditBox		m_edit_box;
 
 	ui::PWindow popup;
 };

@@ -31,7 +31,8 @@ namespace ui
 	}
 
 	Window::Window(IRect rect, Color background_color)
-		:m_parent(nullptr), m_is_visible(true), m_is_mouse_over(false), m_is_popup(false), m_is_closing(false) {
+		:m_parent(nullptr), m_is_visible(true), m_is_popup(false), m_is_closing(false),
+			m_is_focused(false), m_has_hard_focus(false) {
 		m_drag_start = int2(0, 0);
 		m_dragging_mode = 0;
 
@@ -48,10 +49,22 @@ namespace ui
 		m_closing_value = return_value;
 	}
 
+	void Window::setFocus(bool set) {
+		if(set == m_has_hard_focus)
+			return;
+
+		m_has_hard_focus = set;
+		if(!m_is_popup && parent())
+			parent()->setFocus(set);
+	}
+
 	void Window::process() {
 		Window *popup = nullptr;
+		m_is_focused = true;
 
 		for(int n = 0; n < (int)m_children.size(); n++) {
+			m_children[n]->m_is_focused = false;
+
 			if(m_children[n]->m_is_closing) {
 				PWindow window = m_children[n];
 				m_children.erase(m_children.begin() + n);
@@ -89,26 +102,20 @@ namespace ui
 		int2 focus_point = m_dragging_mode? m_drag_start : local_mouse_pos;
 		bool is_handled = false;
 
-		for(int n = 0; n < (int)m_children.size(); n++) {
+		for(int n = (int)m_children.size() - 1; n >= 0; n--) {
 			Window *child = m_children[n].get();
-			if(!child->isVisible())
-				continue;
-
-			if(child->rect().isInside(focus_point)) {
-				child->process();
-				is_handled = true;
+			if(child->isVisible() && m_has_hard_focus == child->m_has_hard_focus) {
+				if(m_has_hard_focus || child->rect().isInside(focus_point)) {
+					child->process();
+					is_handled = true;
+					break;
+				}
 			}
-			else
-				child->onIdle();
 		}
 
-		m_is_mouse_over = false;
 		if(!is_handled) {
-			m_is_mouse_over = m_clipped_rect.isInside(mouse_pos);
-
 			if(escape)
 				is_handled = onEscape();
-
 
 			if(m_dragging_mode && !is_handled) {
 				if(m_has_inner_rect && m_dragging_mode - 1 == 2) {
@@ -141,12 +148,6 @@ namespace ui
 
 		if(finished_dragging)
 			m_dragging_mode = 0;
-	}
-
-	void Window::onIdle() {
-		for(int n = 0; n < (int)m_children.size(); n++)
-			m_children[n]->onIdle();
-		m_is_mouse_over = false;
 	}
 
 	void Window::draw() const {
