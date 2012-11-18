@@ -16,6 +16,7 @@ namespace ui {
 		m_mode = mSelecting;
 
 		m_cursor_height = 0;
+		m_grid_height = 0;
 	}
 
 	void TileMapEditor::drawGrid(const IBox &box, int2 node_size, int y) {
@@ -59,14 +60,23 @@ namespace ui {
 			}
 		}
 
-		if(isKeyDown('S'))
+		//TODO: make proper accelerators
+		if(isKeyDown('S')) {
 			m_mode = mSelecting;
-		if(isKeyDown('P'))
+			sendEvent(this, Event::button_clicked, m_mode);
+		}
+		if(isKeyDown('P')) {
 			m_mode = mPlacing;
-		if(isKeyDown('R'))
+			sendEvent(this, Event::button_clicked, m_mode);
+		}
+		if(isKeyDown('R')) {
 			m_mode = mPlacingRandom;
-		if(isKeyDown('F'))
+			sendEvent(this, Event::button_clicked, m_mode);
+		}
+		if(isKeyDown('F')) {
 			m_mode = mAutoFilling;
+			sendEvent(this, Event::button_clicked, m_mode);
+		}
 
 		{
 			KeyId actions[TileGroup::Group::sideCount] = {
@@ -92,7 +102,7 @@ namespace ui {
 	}
 
 	IBox TileMapEditor::computeCursor(int2 start, int2 end) const {
-		float2 height_off = worldToScreen(int3(0, m_cursor_height, 0));
+		float2 height_off = worldToScreen(int3(0, m_grid_height, 0));
 		int3 gbox = asXZY(m_grid_size, 1);
 
 		bool select_mode = m_mode == mSelecting || m_mode == mAutoFilling;
@@ -178,7 +188,7 @@ namespace ui {
 						for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
 							for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
 								int random_id = rand() % entries.size();
-								const gfx::Tile *tile = m_tile_group->entryTile(entries[random_id]);
+								const Tile *tile = m_tile_group->entryTile(entries[random_id]);
 
 								try { m_tile_map->addTile(*tile, int3(x, m_selection.min.y, z)); }
 								catch(...) { }
@@ -251,7 +261,7 @@ namespace ui {
 
 								if(!entries.empty()) {
 									int random_id = rand() % entries.size();
-									const gfx::Tile *tile = m_tile_group->entryTile(entries[random_id]);
+									const Tile *tile = m_tile_group->entryTile(entries[random_id]);
 									try { m_tile_map->addTile(*tile, int3(x, m_selection.min.y, z)); }
 									catch(...) { }
 								}
@@ -265,13 +275,68 @@ namespace ui {
 
 		return false;
 	}
+
+	void TileMapEditor::drawBoxHelpers(const IBox &box) const {
+		DTexture::bind0();
+
+		int3 pos = box.min, bbox = box.max - box.min;
+		int3 tsize = asXZY(m_tile_map->size(), TileMapNode::size_y);
+
+		drawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
+		drawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
 		
+		drawLine(int3(pos.x, pos.y, 0), int3(pos.x, pos.y, tsize.z), Color(0, 255, 0, 127));
+		drawLine(int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, tsize.z), Color(0, 255, 0, 127));
+
+		int3 tpos(pos.x, 0, pos.z);
+		drawBBox(IBox(tpos, tpos + int3(bbox.x, pos.y, bbox.z)), Color(0, 0, 255, 127));
+		
+		drawLine(int3(0, 0, pos.z), int3(tsize.x, 0, pos.z), Color(0, 0, 255, 127));
+		drawLine(int3(0, 0, pos.z + bbox.z), int3(tsize.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
+		
+		drawLine(int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
+		drawLine(int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
+	}
+	
 	void TileMapEditor::drawContents() const {
 		ASSERT(m_tile_map);
 
+		SceneRenderer renderer(clippedRect(), m_view_pos);
 
-		gfx::SceneRenderer renderer(clippedRect(), m_view_pos);
-		m_tile_map->addToRender(renderer);
+		{
+			IRect view = renderer.targetRect();
+			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
+
+			for(int n = 0; n < m_tile_map->nodeCount(); n++) {
+				const TileMapNode &node = (*m_tile_map)(n);
+				if(!node.instanceCount())
+					continue;
+
+				int3 node_pos = m_tile_map->nodePos(n);
+				IRect screen_rect = node.screenRect() + worldToScreen(node_pos);
+
+				if(!areOverlapping(screen_rect, view))
+					continue;
+
+				for(uint i = 0; i < node.m_instances.size(); i++) {
+					const TileInstance &instance = node.m_instances[i];
+					const gfx::Tile *tile = instance.m_tile;
+					int3 pos = instance.pos() + node_pos;
+					
+					gfx::PTexture tex = tile->dTexture;
+					IBox box = IBox({0,0,0}, tile->m_bbox) + pos;
+					Color col =	box.max.y < m_selection.min.y? Color::gray :
+								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
+					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
+						col.r = col.g = 255;
+
+					renderer.add(tex, IRect({0, 0}, tex->size()) - tile->m_offset, pos, tile->m_bbox, col);
+					if(instance.isSelected())
+						renderer.addBox(IBox(pos, pos + tile->m_bbox));
+				}
+			}
+					
+		}
 		renderer.render();
 
 		setScissorRect(clippedRect());
@@ -294,7 +359,7 @@ namespace ui {
 			IBox bbox = m_tile_map->boundingBox();
 			box = IBox(max(box.min, bbox.min), min(box.max, bbox.max));
 
-			drawGrid(box, m_grid_size, m_cursor_height);
+			drawGrid(box, m_grid_size, m_grid_height);
 		}
 		
 		if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom) && m_new_tile) {
@@ -308,18 +373,27 @@ namespace ui {
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
 					m_new_tile->draw(int2(worldToScreen(pos)), color);
-					gfx::DTexture::bind0();
-					gfx::drawBBox(IBox(pos, pos + bbox));
+					DTexture::bind0();
+					drawBBox(IBox(pos, pos + bbox));
 				}
 	//		m_tile_map->drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
 		}
 
 	//	m_tile_map->drawBoxHelpers(m_selection);
 		DTexture::bind0();
-		drawBBox(m_selection);
+
+		{
+			IBox under = m_selection;
+			under.max.y = under.min.y;
+			under.min.y = 0;
+
+			drawBBox(under, Color(127, 127, 127, 255));
+			drawBBox(m_selection);
+		}
+
 		
 		lookAt(-clippedRect().min);
-		gfx::PFont font = Font::mgr["times_24"];
+		PFont font = Font::mgr[s_font_names[1]];
 
 		const char *mode_names[mCount] = {
 			"selecting tiles",

@@ -115,7 +115,6 @@ public:
 	
 	const TileInstance *at(int3 pos) const;
 
-	void drawBoxHelpers(const IBox &box) const;
 	void deleteSelected();
 	void moveSelected(int3 offset);
 

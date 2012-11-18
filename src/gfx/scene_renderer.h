@@ -9,8 +9,8 @@ namespace gfx {
 	{
 	public:
 		SceneRenderer(IRect viewport, int2 view_pos);
-		void add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color(255, 255, 255));
-		void addBox(IBox box, Color col = Color(255, 255, 255), bool is_filled = false);
+		void add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white);
+		void addBox(IBox box, Color col = Color::white, bool is_filled = false);
 		void render();
 
 		IRect targetRect() const { return IRect(m_view_pos, m_view_pos + m_viewport.size()); }

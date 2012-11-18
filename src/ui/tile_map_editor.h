@@ -24,14 +24,7 @@ namespace ui {
 
 		static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
-	private:
-		TileMap *m_tile_map;
-		const TileGroup *m_tile_group;
-		const gfx::Tile *m_new_tile;
-
-		IBox computeCursor(int2 start, int2 end) const;
-		void clampViewPos();
-		
+		//TODO: naming
 		enum Mode {
 			mSelecting,
 			mPlacing,
@@ -41,7 +34,16 @@ namespace ui {
 			mCount,
 		} m_mode;
 
-		int m_cursor_height;
+	private:
+		TileMap *m_tile_map;
+		const TileGroup *m_tile_group;
+		const gfx::Tile *m_new_tile;
+
+		void drawBoxHelpers(const IBox &box) const;
+		IBox computeCursor(int2 start, int2 end) const;
+		void clampViewPos();
+		
+		int m_cursor_height, m_grid_height;
 		IBox m_selection;
 		int2 m_view_pos;
 

@@ -7,7 +7,7 @@ namespace ui
 
 	Button::Button(IRect rect, const char *text, int id)
 		:Window(rect, Color::transparent), m_mouse_press(false), m_id(id), m_is_enabled(true) {
-		m_font = Font::mgr["times_16"];
+		m_font = Font::mgr[s_font_names[0]];
 		ASSERT(m_font);
 		setText(text);
 	}

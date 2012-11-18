@@ -236,10 +236,6 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 		int3 node_pos = nodePos(n);
 		IRect screen_rect = node.screenRect() + worldToScreen(node_pos);
 
-		// possible error from rounding node & tile positions
-		screen_rect.min -= int2(2, 2);
-		screen_rect.max += int2(2, 2);
-
 		if(!areOverlapping(screen_rect, view))
 			continue;
 		vNodes++;
@@ -284,28 +280,6 @@ bool TileMap::isOverlapping(const IBox &box) const {
 			return true;
 
 	return false;
-}
-
-void TileMap::drawBoxHelpers(const IBox &box) const {
-	gfx::DTexture::bind0();
-
-	int3 pos = box.min, bbox = box.max - box.min;
-	int3 tsize(m_size.x * Node::size_x, Node::size_y, m_size.y * Node::size_z);
-
-	gfx::drawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
-	gfx::drawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
-	
-	gfx::drawLine(int3(pos.x, pos.y, 0), int3(pos.x, pos.y, tsize.z), Color(0, 255, 0, 127));
-	gfx::drawLine(int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, tsize.z), Color(0, 255, 0, 127));
-
-	int3 tpos(pos.x, 0, pos.z);
-	gfx::drawBBox(IBox(tpos, tpos + int3(bbox.x, pos.y, bbox.z)), Color(0, 0, 255, 127));
-	
-	gfx::drawLine(int3(0, 0, pos.z), int3(tsize.x, 0, pos.z), Color(0, 0, 255, 127));
-	gfx::drawLine(int3(0, 0, pos.z + bbox.z), int3(tsize.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
-	
-	gfx::drawLine(int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
-	gfx::drawLine(int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
 }
 
 void TileMap::fill(const gfx::Tile &tile, const IBox &box) {

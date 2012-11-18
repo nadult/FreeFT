@@ -29,8 +29,9 @@ namespace {
 		m_view = clippedRect();
 
 		m_tile_group = nullptr;
+		m_current_entry = nullptr;
 
-		m_font = Font::mgr["times_16"];
+		m_font = Font::mgr[s_font_names[1]];
 		m_mode = mAddRemove;
 		memset(m_offset, 0, sizeof(m_offset));
 		m_selected_group_id = 0;
@@ -62,13 +63,41 @@ namespace {
 			updateSelector();
 			return;
 		}
+			
+		const ui::TileList::Entry *entry = m_tile_list.find(mouse_pos + innerOffset());
+		m_current_entry = entry;
 		
 		if(m_mode == mModify) {
-			const ui::TileList::Entry *entry = m_tile_list.find(mouse_pos + innerOffset());
-
 			if(isKeyDown('G') && entry && m_selected_group_id != -1) {
 				m_tile_group->setEntryGroup(m_tile_group->findEntry(entry->tile),
 					entry->group_id == m_selected_group_id? m_tile_group->groupCount() : m_selected_group_id);
+				m_tile_list.update();
+			}
+			if(isKeyDown('A') && entry && m_selected_group_id == entry->group_id) {
+				enum { subgroup_count = 3 };
+				const char *infixes[subgroup_count] = {
+					"CONCAVE_",
+					"CONVEX_",
+					"SIDE_",
+				};
+
+				vector<int> subgroups[subgroup_count];
+				int subgroup_id[subgroup_count] = {-1, -1, -1};
+
+				for(int n = 0; n < m_tile_group->entryCount(); n++) {
+					if(m_tile_group->entryGroup(n) == m_selected_group_id) {
+						const char *name = m_tile_group->entryTile(n)->name.c_str();
+						int len = strlen(name);
+
+						for(int s = 0; s < subgroup_count; s++)
+							if(strcasestr(name, infixes[s])) {
+								if(subgroup_id[s] == -1)
+									subgroup_id[s] = m_tile_group->groupCount();
+								m_tile_group->setEntryGroup(n, subgroup_id[s]);
+								break;
+							}
+					}
+				}
 				m_tile_list.update();
 			}
 
@@ -99,6 +128,7 @@ namespace {
 	bool TileGroupEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if(key == 0) {
 			const ui::TileList::Entry *entry = m_tile_list.find(current + innerOffset());
+			m_current_entry = entry;
 
 			if(m_mode == mAddRemove && entry) {
 				int selection_mode = m_tile_group->findEntry(entry->tile) == -1? 1 : -1;
@@ -161,13 +191,15 @@ namespace {
 			drawQuad(-edit_rect.size() / 2, edit_rect.size(), Color(80, 80, 80));
 			drawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
+			PFont font = gfx::Font::mgr[s_font_names[0]];
+
 			for(int n = 0; n < TileGroup::Group::sideCount; n++) {
 				lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
-				m_font->draw(int2(0, 0), Color::white, "%d", m_tile_group->groupSurface(m_selected_group_id, n));
+				font->draw(int2(0, 0), Color::white, "%d", m_tile_group->groupSurface(m_selected_group_id, n));
 			}
 				
 			lookAt(-center +edit_rect.size() / 2);
-			m_font->draw(int2(0, 0), Color::white, "setting surface: %d", m_selected_surface_id);
+			font->draw(int2(0, 0), Color::white, "setting surface: %d", m_selected_surface_id);
 
 			/*
 			const char *names[] = {
@@ -184,10 +216,14 @@ namespace {
 
 			lookAt(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
 			for(int n = 0; n < COUNTOF(names); n++)
-				m_font->draw(int2(0, 10), Color::white,
+				font->draw(int2(0, 10), Color::white,
 						m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
+			lookAt(-clippedRect().min);
 		}
 
+		if(m_current_entry)
+			m_font->drawShadowed(int2(5, height() - 20), Color::white, Color::black, "%s",
+					m_current_entry->tile->name.c_str());
 	}
 
 	void TileGroupEditor::setTarget(TileGroup* tile_group) {

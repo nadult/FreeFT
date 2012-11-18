@@ -43,10 +43,29 @@ static const char *s_load_dialog_names[] = {
 	"Loading tile group",
 };
 
-class MainWindow: public Window
+struct GroupedTilesModel: public TileListModel {
+	GroupedTilesModel(const TileGroup &tile_group) {
+		tiles.resize(tile_group.groupCount());
+		for(int n = 0; n < tile_group.entryCount(); n++) {
+			int group_id = tile_group.entryGroup(n);
+			if(!tiles[group_id])
+				tiles[group_id] = tile_group.entryTile(n);
+		}
+	}
+
+	int size() const { return (int)tiles.size(); }
+	const gfx::Tile* get(int idx, int&) const { return tiles[idx]; }
+
+	vector<const gfx::Tile*> tiles;
+};
+
+typedef Ptr<TileListModel> PTileListModel;
+
+
+class EditorWindow: public Window
 {
 public:
-	MainWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent) {
+	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent) {
 		int left_width = 320;
 
 		m_mode = emMapEdition;
@@ -64,6 +83,7 @@ public:
 		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 30), "Load");
 
 		m_selector->setModel(new AllTilesModel);
+		m_selecting_all_tiles = true;
 
 		m_mapper->setTileMap(&m_map);
 		m_mapper->setTileGroup(&m_group);
@@ -99,6 +119,14 @@ public:
 			m_file_dialog = new FileDialog(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
 			m_file_dialog->setPath("../data/");
 			attach(m_file_dialog.get(), true);
+		}
+		else if(ev.type == Event::button_clicked && m_mapper == ev.source) {
+			bool all_tiles =	!(m_mapper->m_mode == TileMapEditor::mPlacingRandom) &&
+								!(m_mapper->m_mode == TileMapEditor::mAutoFilling);
+			if(all_tiles != m_selecting_all_tiles) {
+				m_selecting_all_tiles = all_tiles;
+				m_selector->setModel(all_tiles? new AllTilesModel : (TileListModel*)new GroupedTilesModel(m_group));
+			}
 		}
 		else if(ev.type == Event::element_selected && m_selector == ev.source) {
 			//TODO: print tile name in selector
@@ -183,6 +211,8 @@ public:
 	PTileMapEditor		m_mapper;
 	PTileGroupEditor	m_grouper;
 	PTileSelector		m_selector;
+
+	bool m_selecting_all_tiles;
 };
 
 int safe_main(int argc, char **argv)
@@ -230,7 +260,7 @@ int safe_main(int argc, char **argv)
 
 //	PFont font = Font::mgr["font1"];
 
-	MainWindow main_window(res);
+	EditorWindow main_window(res);
 	clear({0, 0, 0});
 
 	while(pollEvents()) {

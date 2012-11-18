@@ -353,6 +353,102 @@
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_10_SE.til" group_id="29" weight="0.000000"/>
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_Floor_Water_Water2Straight_F_11_SE.til" group_id="35" weight="0.000000"/>
 <entry tile="../refs/tiles/Generic tiles/Generic floors/Goop/Generic_loor_Water_GoopBubCONVEXsw_F_2_SE.til" group_id="27" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_1_NE.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_1_NW.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_1_SE.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_1_SW.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_2_NE.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_2_NW.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_2_SE.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_2_SW.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_7_SE.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_7_NW.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_7_NE.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_6_SW.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_6_SE.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_6_NW.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_6_NE.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_5_SW.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_5_SE.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_5_NW.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_5_NE.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_4_SW.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_4_SE.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_4_NW.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_4_NE.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_3_SW.til" group_id="41" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_3_SE.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_3_NW.til" group_id="45" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_3_NE.til" group_id="46" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTGrassCONVEX_F_7_SW.til" group_id="44" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_1_NE.til" group_id="47" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_1_NW.til" group_id="48" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_1_SE.til" group_id="49" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_1_SW.til" group_id="42" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_2_NE.til" group_id="42" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_2_NW.til" group_id="49" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_2_SE.til" group_id="48" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_2_SW.til" group_id="47" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_3_NE.til" group_id="47" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_3_NW.til" group_id="48" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_3_SE.til" group_id="49" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_3_SW.til" group_id="42" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_4_NE.til" group_id="48" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_4_NW.til" group_id="42" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_4_SE.til" group_id="47" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_4_SW.til" group_id="49" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_5_NE.til" group_id="49" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_5_NW.til" group_id="47" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_3_NE.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_2_SW.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_2_SE.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_2_NW.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_2_NE.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_1_SW.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_1_SE.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_1_NW.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_1_NE.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_11_SW.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_11_SE.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_11_NW.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_11_NE.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_10_SW.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_10_SE.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_10_NW.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_10_NE.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_5_SW.til" group_id="48" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassCONCAVE_F_5_SE.til" group_id="42" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_3_NW.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_3_SE.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_3_SW.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_4_NE.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_4_NW.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_4_SE.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_4_SW.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_5_NE.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_5_NW.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_5_SE.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_5_SW.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_6_NE.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_6_NW.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_6_SE.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_6_SW.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_7_NE.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_7_NW.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_7_SE.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_7_SW.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrass_F_1_SE.til" group_id="40" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrass_F_1_SW.til" group_id="40" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrass_F_1_NW.til" group_id="40" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrass_F_1_NE.til" group_id="40" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_9_SW.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_9_SE.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_9_NW.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_9_NE.til" group_id="51" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_8_SW.til" group_id="52" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_8_SE.til" group_id="50" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_8_NW.til" group_id="43" weight="0.000000"/>
+<entry tile="../refs/tiles/Generic tiles/Generic floors/Grass/Village_Floor_Gravel_DIRTgrassSIDE_F_8_NE.til" group_id="51" weight="0.000000"/>
 <group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="9" side_surf_1="2" side_surf_2="2" side_surf_3="2" side_surf_4="2" side_surf_5="2" side_surf_6="9" side_surf_7="1"/>
 <group side_surf_0="1" side_surf_1="1" side_surf_2="9" side_surf_3="2" side_surf_4="9" side_surf_5="1" side_surf_6="1" side_surf_7="1"/>
@@ -393,4 +489,17 @@
 <group side_surf_0="8" side_surf_1="8" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="8"/>
 <group side_surf_0="9" side_surf_1="8" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
 <group side_surf_0="9" side_surf_1="3" side_surf_2="9" side_surf_3="8" side_surf_4="8" side_surf_5="8" side_surf_6="8" side_surf_7="8"/>
+<group side_surf_0="4" side_surf_1="4" side_surf_2="4" side_surf_3="4" side_surf_4="4" side_surf_5="4" side_surf_6="4" side_surf_7="4"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="4"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="9" side_surf_3="4" side_surf_4="4" side_surf_5="4" side_surf_6="4" side_surf_7="4"/>
+<group side_surf_0="4" side_surf_1="4" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="9" side_surf_7="4"/>
+<group side_surf_0="9" side_surf_1="4" side_surf_2="9" side_surf_3="3" side_surf_4="3" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="9" side_surf_5="4" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="9" side_surf_3="4" side_surf_4="9" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
+<group side_surf_0="4" side_surf_1="4" side_surf_2="4" side_surf_3="4" side_surf_4="9" side_surf_5="3" side_surf_6="9" side_surf_7="4"/>
+<group side_surf_0="9" side_surf_1="4" side_surf_2="4" side_surf_3="4" side_surf_4="4" side_surf_5="4" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="4" side_surf_1="4" side_surf_2="9" side_surf_3="3" side_surf_4="9" side_surf_5="4" side_surf_6="4" side_surf_7="4"/>
+<group side_surf_0="3" side_surf_1="3" side_surf_2="9" side_surf_3="4" side_surf_4="4" side_surf_5="4" side_surf_6="9" side_surf_7="3"/>
+<group side_surf_0="9" side_surf_1="3" side_surf_2="3" side_surf_3="3" side_surf_4="9" side_surf_5="4" side_surf_6="4" side_surf_7="4"/>
+<group side_surf_0="9" side_surf_1="4" side_surf_2="4" side_surf_3="4" side_surf_4="9" side_surf_5="3" side_surf_6="3" side_surf_7="3"/>
 

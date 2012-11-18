@@ -32,6 +32,7 @@ namespace ui {
 		IRect m_view;
 
 		int2 m_offset[3];
+		const ui::TileList::Entry *m_current_entry;
 		int m_selected_group_id;
 		int m_selected_surface_id;
 		int m_select_mode;

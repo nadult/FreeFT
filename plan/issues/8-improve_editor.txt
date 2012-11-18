@@ -14,7 +14,7 @@ Różne ulepszenia w edytorze mające na celu uproszczenie i przyspieszenie edyc
 issues/10-ui_improvements
 
 +ESTIMATED_TIME: 12h
-+TIME_SPENT: 0h
++TIME_SPENT: 7.50h
 
 +WORK_LOG:
-18.11.12: 14:30 - 15:00, 16:00 - 20:00, 20:45 - 
+18.11.12: 14:30 - 15:00, 16:00 - 20:00, 20:45 - 23:45 (7.50h)
