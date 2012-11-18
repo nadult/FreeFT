@@ -34,6 +34,15 @@ static const char *s_mode_names[] = {
 	"Mode: tile group edition",
 };
 
+static const char *s_save_dialog_names[] = {
+	"Saving tile map",
+	"Saving tile group",
+};
+static const char *s_load_dialog_names[] = {
+	"Loading tile map",
+	"Loading tile group",
+};
+
 class MainWindow: public Window
 {
 public:
@@ -81,13 +90,13 @@ public:
 		}
 		else if(ev.type == Event::button_clicked && m_load_button == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			m_file_dialog = new FileDialog(dialog_rect, ".xml", FileDialogMode::opening_file);
+			m_file_dialog = new FileDialog(dialog_rect, s_load_dialog_names[m_mode], FileDialogMode::opening_file);
 			m_file_dialog->setPath("../data/");
 			attach(m_file_dialog.get(), true);
 		}
 		else if(ev.type == Event::button_clicked && m_save_button == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			m_file_dialog = new FileDialog(dialog_rect, ".xml", FileDialogMode::saving_file);
+			m_file_dialog = new FileDialog(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
 			m_file_dialog->setPath("../data/");
 			attach(m_file_dialog.get(), true);
 		}
@@ -119,19 +128,21 @@ public:
 	}
 
 	void loadTileMap(const char *file_name) {
+		printf("Loading TileMap: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
 			string text;
 			Loader ldr(file_name);
 			text.resize(ldr.size());
 			ldr.data(&text[0], ldr.size());
 			XMLDocument doc;
-			doc.parse<0>(&text[0]); 
+			doc.parse<0>(&text[0]);
 			m_map.loadFromXML(doc);
 		}
 	}
 
 
 	void loadTileGroup(const char *file_name) {
+		printf("Loading TileGroup: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
 			string text;
 			Loader ldr(file_name);

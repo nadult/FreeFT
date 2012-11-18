@@ -6,8 +6,7 @@ namespace ui {
 
 
 	ListBox::ListBox(const IRect &rect) :Window(rect, Color::gui_dark), m_over_id(-1), m_dragging_id(-1) {
-		m_font = Font::mgr["arial_16"];
-		ASSERT(m_font);
+		m_font = Font::mgr[s_font_names[0]];
 		m_line_height = m_font->lineHeight();
 	}
 		
@@ -61,12 +60,12 @@ namespace ui {
 		m_over_id = entryId(mouse_pos);
 	}
 
-	bool ListBox::onMouseDrag(int2 start, int2 end, int key, bool is_final) {
+	bool ListBox::onMouseDrag(int2 start, int2 end, int key, int is_final) {
 		if(key == 0) {
 			m_over_id = entryId(end);
 			m_dragging_id = entryId(start);
 
-			if(is_final && m_over_id == m_dragging_id) {
+			if(is_final == 1 && m_over_id == m_dragging_id) {
 				selectEntry(m_over_id);
 				sendEvent(this, Event::element_clicked, m_over_id);
 			}

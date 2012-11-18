@@ -4,19 +4,24 @@ namespace ui {
 
 	TextBox::TextBox(const IRect &rect, const char *text, bool is_centered, Color col)
 		:Window(rect, col), m_is_centered(is_centered) {
-		m_font = gfx::Font::mgr["times_24"];
+		m_font = gfx::Font::mgr[s_font_names[0]];
 		setText(text);
+	}
+
+	void TextBox::setFont(const char *font_name) {
+		m_font = gfx::Font::mgr[font_name];
+		m_text_extents = m_font->evalExtents(m_text.c_str());
 	}
 
 	void TextBox::setText(const char *text) {
 		m_text = text;
-		IRect extents = m_font->evalExtents(text);
-		m_text_size = extents.size();
+		m_text_extents = m_font->evalExtents(text);
 	}
 
 	void TextBox::drawContents() const {
-		int2 rsize = rect().size();
-		int2 pos(m_is_centered? rsize.x / 2 - m_text_size.x / 2 : 5, rsize.y / 2 - m_text_size.y);
+		int2 pos = (size() - m_text_extents.size()) / 2 - m_text_extents.min;
+		if(!m_is_centered)
+			pos.x = 5;
 		m_font->drawShadowed(pos, Color::white, Color::black, m_text.c_str());
 	}
 

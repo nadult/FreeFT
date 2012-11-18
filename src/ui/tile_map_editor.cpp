@@ -145,16 +145,7 @@ namespace ui {
 
 	}
 
-	bool TileMapEditor::onEvent(const Event &event) {
-		if(event.type == Event::escape) {
-			m_is_selecting = false;
-			return true;
-		}
-
-		return false;
-	}
-
-	bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
+	bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if((isKeyPressed(Key_lctrl) && key == 0) || key == 2) {
 			m_view_pos -= getMouseMove();
 			clampViewPos();
@@ -163,7 +154,7 @@ namespace ui {
 		else if(key == 0) {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
-			if(is_final) {
+			if(is_final && is_final != -1) {
 				if(m_mode == mSelecting) {
 					m_tile_map->select(IBox(m_selection.min, m_selection.max + int3(0, 1, 0)),
 							isKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);

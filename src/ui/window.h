@@ -20,7 +20,7 @@ namespace ui
 			element_clicked,	// value: element id		sending up
 			element_selected,	// value: element id		sending up
 			popup_close_signal,	// 							sending directly to popup from parent
-			escape,				//							sending down
+			escape,				//							sending down only to focused windows
 			text_modified,		//							sending up
 		};
 
@@ -60,13 +60,16 @@ namespace ui
 		int2 size() const { return m_rect.size(); }
 		int2 center() const { return m_rect.center(); }
 
+		Color backgroundColor() const { return m_background_color; }
 		void setBackgroundColor(Color col);
+
 		Window* parent() const { return m_parent; }
 		Window *mainWindow() { return m_parent? m_parent->mainWindow() : nullptr; }
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
 		bool isVisible() const { return m_is_visible; }
 		bool isFocused() const;
+		bool isMouseOver() const;
 
 		//TODO: should events be sent to unfocused objects?
 
@@ -81,6 +84,9 @@ namespace ui
 		virtual bool onEvent(const Event &event) { return false; }
 		
 		static void drawWindow(IRect rect, Color color, int outline);
+
+		// Default font names: small, normal, big
+		static const char *s_font_names[3];
 	
 	protected:
 		virtual void drawContents() const { }
@@ -90,7 +96,9 @@ namespace ui
 		// TODO: pass key_modifier along with key (so when user presses LMB with CTRL, it will
 		// be passed until LMB is released)
 		virtual bool onMouseClick(int2 pos, int key, bool up) { return false; }
-		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final) { return false; }
+
+		// is_final == -1: dragging has been cancelled (with esc-key)
+		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final) { return false; }
 
 		// relative to normal rect
 		// IRect(0, 0, rect.width(), rect.height()) is default
@@ -121,6 +129,7 @@ namespace ui
 		bool m_is_closing : 1;
 		bool m_is_focused : 1;
 		bool m_has_hard_focus : 1;
+		bool m_is_mouse_over: 1;
 	};
 
 }

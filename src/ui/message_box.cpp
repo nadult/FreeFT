@@ -5,21 +5,34 @@
 
 namespace ui {
 
-	MessageBox::MessageBox(const IRect &rect, const char *message) :Window(rect) {
-		int2 bottom(rect.width() / 2, rect.height());
+	MessageBox::MessageBox(const IRect &rect, const char *message, MessageBoxMode::Type mode)
+		:Window(rect), m_mode(mode) {
+		int w = width(), h = height();
 
-		attach(new TextBox(IRect(0, 0, rect.width(), bottom.y - 5), message));
-		attach(new Button(IRect(-100, -30, -5, -10) + bottom, "yes", 1));
-		attach(new Button(IRect(5, -30, 100, -10) + bottom, "no", 0));
+		PTextBox text_box = new TextBox(IRect(5, 5, w - 5, h - 30), message);
+		text_box->setFont(s_font_names[1]);
+		attach(text_box.get());
+
+		if(mode == MessageBoxMode::ok) {
+			attach(new Button(IRect(w/2 - 40, h - 25, w/2 + 40, h - 5), "ok", 0));
+		}
+		else {
+			attach(new Button(IRect(w/2 - 50, h - 25, w/2 - 2, h - 5),
+					mode == MessageBoxMode::yes_no? "yes" : "ok", 1));
+			attach(new Button(IRect(w/2 + 2, h - 25, w/2 + 50, h - 5),
+					mode == MessageBoxMode::yes_no? "no" : "cancel", 0));
+		}
 	}
 
 	bool MessageBox::onEvent(const Event &event) {
-		if(event.type == Event::button_clicked) {
+		if(event.type == Event::button_clicked)
 			close(event.value);
-			return true;
-		}
+		else if(event.type == Event::escape)
+			close(0);
+		else
+			return false;
 
-		return false;
+		return true;
 	}
 
 	void MessageBox::drawContents() const {

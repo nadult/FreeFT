@@ -96,7 +96,7 @@ namespace {
 		}
 	}
 		
-	bool TileGroupEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
+	bool TileGroupEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if(key == 0) {
 			const ui::TileList::Entry *entry = m_tile_list.find(current + innerOffset());
 

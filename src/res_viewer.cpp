@@ -11,13 +11,13 @@
 #include "ui/list_box.h"
 #include "ui/button.h"
 #include "ui/message_box.h"
-#include "ui/edit_box.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
 
 using namespace gfx;
+using namespace ui;
 
 namespace ResType {
 	enum Type {
@@ -104,15 +104,20 @@ private:
 	int m_id;
 };
 
-class ResourceView: public ui::Window
+class ResourceView: public Window
 {
 public:
 	virtual const char *className() const { return "ResourceView"; }
-	ResourceView(IRect rect) :ui::Window(rect), m_selected_id(-1), m_show_selected(false) { }
+	ResourceView(IRect rect) :Window(rect), m_selected_id(-1), m_show_selected(false) { }
 
 	void clear() {
 		m_resources.clear();
 		m_selected_id = -1;
+	}
+
+	void select(int new_id) {
+		m_show_selected = new_id != m_selected_id;
+		m_selected_id = new_id;
 	}
 
 	void drawContents() const {
@@ -156,7 +161,7 @@ public:
 			m_show_selected = false;
 		}
 		if(clicked)		
-			mthis->sendEvent(mthis, ui::Event::element_selected, m_selected_id);
+			mthis->sendEvent(mthis, Event::element_selected, m_selected_id);
 		mthis->setInnerRect(IRect(-offset, int2(width, pos.y + cur_height) - offset));
 	}
 
@@ -192,24 +197,21 @@ public:
 		catch(const Exception &ex) { printf("%s\n", ex.what()); }
 	}
 
+private:
 	mutable bool m_show_selected;
 	int m_selected_id;
 	vector< ::Resource> m_resources;
 };
 
-class ResViewerWindow: public ui::Window
+class ResViewerWindow: public Window
 {
 public:
-	ResViewerWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color::gui_light) {
+	ResViewerWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::gui_light) {
 		int left_width = 300;
 
-		m_edit_box = new ui::EditBox(IRect(0, 0, left_width, 30), 30);
-		m_edit_box->setText("this is edit box, click me!");
-
-		m_dir_view = new ui::ListBox(IRect(0, 30, left_width, res.y));
+		m_dir_view = new ListBox(IRect(0, 0, left_width, res.y));
 		m_res_view = new ResourceView(IRect(left_width + 2, 0, res.x, res.y));
 
-		attach(m_edit_box.get());
 		attach(m_dir_view.get());
 		attach(m_res_view.get());
 
@@ -273,15 +275,15 @@ public:
 		}
 	};
 
-	virtual bool onEvent(const ui::Event &evt) {
-		if(evt.type == ui::Event::window_closed && evt.source == popup) {
+	virtual bool onEvent(const Event &ev) {
+		if(ev.type == Event::window_closed && ev.source == popup) {
 			popup = nullptr;
-			if(evt.value == 1)
+			if(ev.value == 1)
 				exit(0);
 		}
-		else if(evt.type == ui::Event::element_selected) {
-			if(m_dir_view == evt.source && evt.value >= 0 && evt.value < (int)m_entries.size()) {
-				const Entry &entry = m_entries[evt.value];
+		else if(ev.type == Event::element_selected) {
+			if(m_dir_view == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
+				const Entry &entry = m_entries[ev.value];
 
 				if(entry.is_dir) {
 					if(entry.name == "..") {
@@ -293,12 +295,18 @@ public:
 					update();
 				}
 				else {
-					m_res_view->m_selected_id = evt.value;
-					m_res_view->m_show_selected = true;
+					m_res_view->select(ev.value);
 				}
 			}
-			else if(m_res_view == evt.source) {
-				m_dir_view->selectEntry(evt.value);
+			else if(m_res_view == ev.source) {
+				m_dir_view->selectEntry(ev.value);
+			}
+		}
+		else if(ev.type == Event::escape) {
+			if(!popup) {
+				IRect popup_rect = IRect(-150, -40, 150, 40) + center();
+				popup = new MessageBox(popup_rect, "Do you want to quit?", MessageBoxMode::yes_no);
+				attach(popup, true);
 			}
 		}
 		else return false;
@@ -306,21 +314,13 @@ public:
 		return true;
 	}
 
-	void exitMessageBox() {
-		if(popup)
-			return;
-		popup = new ui::MessageBox(IRect(0, 0, 300, 80) + rect().size() / 2 - int2(150, 40), "do you want to quit?");
-		attach(popup, true);
-	}
-
 	vector<Entry> m_entries;
 	vector<string> m_current_dir;
 
-	ui::PListBox		m_dir_view;
+	PListBox			m_dir_view;
 	Ptr<ResourceView>	m_res_view;
-	ui::PEditBox		m_edit_box;
 
-	ui::PWindow popup;
+	PWindow popup;
 };
 
 
@@ -342,9 +342,6 @@ int safe_main(int argc, char **argv)
 	clear({0, 0, 0});
 
 	while(pollEvents()) {
-		if(isKeyDown(Key_esc))
-			main_window.exitMessageBox();
-
 		main_window.process();
 		main_window.draw();
 

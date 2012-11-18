@@ -32,7 +32,7 @@ namespace ui
 
 	Window::Window(IRect rect, Color background_color)
 		:m_parent(nullptr), m_is_visible(true), m_is_popup(false), m_is_closing(false),
-			m_is_focused(false), m_has_hard_focus(false) {
+			m_is_focused(false), m_has_hard_focus(false), m_is_mouse_over(false) {
 		m_drag_start = int2(0, 0);
 		m_dragging_mode = 0;
 
@@ -46,6 +46,10 @@ namespace ui
 
 	bool Window::isFocused() const {
 		return m_is_focused && (!parent() || parent()->isFocused());
+	}
+
+	bool Window::isMouseOver() const {
+		return isFocused() && m_is_mouse_over;
 	}
 
 	void Window::close(int return_value) {
@@ -68,6 +72,7 @@ namespace ui
 
 		for(int n = 0; n < (int)m_children.size(); n++) {
 			m_children[n]->m_is_focused = false;
+			m_children[n]->m_is_mouse_over = false;
 
 			if(m_children[n]->m_is_closing) {
 				PWindow window = m_children[n];
@@ -86,12 +91,12 @@ namespace ui
 
 		int2 mouse_pos = getMousePos();
 		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min;
-		bool finished_dragging = false;
+		int finished_dragging = 0;
 		bool escape = isKeyDown(Key_esc);
 
 		if(m_dragging_mode) {
 			if(!isMouseKeyPressed(m_dragging_mode - 1) || escape)
-				finished_dragging = true;
+				finished_dragging = escape? -1 : 1;
 		}
 		else {
 			for(int k = 0; k < 3; k++) {
@@ -103,6 +108,7 @@ namespace ui
 			}
 		}
 
+
 		int2 focus_point = m_dragging_mode? m_drag_start : local_mouse_pos;
 		bool is_handled = false;
 
@@ -110,6 +116,7 @@ namespace ui
 			Window *child = m_children[n].get();
 			if(child->isVisible() && m_has_hard_focus == child->m_has_hard_focus) {
 				if(m_has_hard_focus || child->rect().isInside(focus_point)) {
+					child->m_is_mouse_over = child->clippedRect().isInside(mouse_pos);
 					child->process();
 					is_handled = true;
 					break;
@@ -118,9 +125,6 @@ namespace ui
 		}
 
 		if(!is_handled) {
-			if(escape)
-				is_handled = sendEvent(nullptr, Event::escape);
-
 			if(m_dragging_mode && !is_handled) {
 				if(m_has_inner_rect && m_dragging_mode - 1 == 2) {
 					setInnerRect(m_inner_rect + getMouseMove());
@@ -149,6 +153,9 @@ namespace ui
 				onInput(local_mouse_pos);
 			}
 		}
+		
+		if(escape && (!m_parent || m_is_popup) && !m_dragging_mode) // sending Event::escape only from main window
+			sendEvent(this, Event::escape); //TODO: send only to focused windows
 
 		if(finished_dragging)
 			m_dragging_mode = 0;
@@ -213,6 +220,8 @@ namespace ui
 
 	void Window::setRect(const IRect &rect) {
 		DASSERT(!m_dragging_mode);
+		DASSERT(!rect.isEmpty());
+
 		m_rect = rect;
 		setInnerRect(IRect({0, 0}, m_rect.size()));
 		updateRects();
@@ -230,19 +239,24 @@ namespace ui
 	}
 		
 	bool Window::sendEvent(const Event &event) {
-		if(onEvent(event))
-			return true;
-
 		bool send_up = event.type != Event::window_closed && event.type != Event::escape;
+		if(event.type == Event::escape && !m_is_focused)
+			return false;
 
 		if(send_up) {
+			if(onEvent(event))
+				return true;
+
 			if(m_parent)
 				return m_parent? m_parent->sendEvent(event) : false;
 		}
 		else {
-			for(int n = 0; n < (int)m_children.size(); n++)
+			for(int n = (int)m_children.size() - 1; n >= 0; n--)
 				if(m_children[n]->sendEvent(event))
 					return true;
+
+			if(onEvent(event))
+				return true;
 		}
 
 		return false;
@@ -261,5 +275,11 @@ namespace ui
 		for(int n = 0; n < (int)m_children.size(); n++)
 			m_children[n]->updateRects();
 	}
+
+	const char *Window::s_font_names[3] = {
+		"arial_16",
+		"times_24",
+		"times_36",
+	};
 
 }

@@ -14,9 +14,6 @@ namespace ui {
 		enum Type {
 			opening_file,
 			saving_file,
-			opening_directory,
-
-			count,
 		};
 	};
 
@@ -25,7 +22,7 @@ namespace ui {
 	public:
 		typedef FileDialogMode::Type Mode;
 
-		FileDialog(const IRect &rect, const char *ext, Mode mode);
+		FileDialog(const IRect &rect, const char *title, Mode mode);
 		virtual void drawContents() const;
 		virtual bool onEvent(const Event &event);
 
@@ -36,11 +33,12 @@ namespace ui {
 
 	private:
 		void updateList();
+		void updateButtons();
 
+		PButton m_ok_button;
 		PListBox m_list_box;
 		PEditBox m_edit_box;
 
-		string m_ext;
 		Mode m_mode;
 
 		boost::filesystem::path m_dir_path;

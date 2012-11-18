@@ -35,10 +35,10 @@ namespace ui {
 
 	void ProgressBar::drawContents() const {
 		drawWindow(IRect(int2(0, 0), size()), Color::gui_medium, 1);
-		drawWindow(evalBarPos(), isFocused()? Color::gui_light : Color::gui_dark, m_mouse_press? -2 : 2);
+		drawWindow(evalBarPos(), isMouseOver()? Color::gui_light : Color::gui_dark, m_mouse_press? -2 : 2);
 	}
 
-	bool ProgressBar::onMouseDrag(int2 start, int2 current, int key, bool is_final) {
+	bool ProgressBar::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if(key != 0)
 			return false;
 
@@ -59,7 +59,7 @@ namespace ui {
 		m_pos = clamp(m_start_pos + vec, 0.0f, 1.0f);
 		m_mouse_press = !is_final;
 
-		return !is_final;
+		return true;
 	}
 
 }

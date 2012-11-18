@@ -15,7 +15,7 @@ namespace ui {
 		TileSelector(IRect rect);
 
 		virtual void drawContents() const;
-		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
+		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
 
 		void setModel(PTileListModel);
 		void update(); // call every time model changes

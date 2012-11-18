@@ -20,7 +20,7 @@ namespace ui {
 		
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 end, int key, bool is_final);
+		virtual bool onMouseDrag(int2 start, int2 end, int key, int is_final);
 
 		void addEntry(const char *text, Color col);
 		int findEntry(const char*) const;

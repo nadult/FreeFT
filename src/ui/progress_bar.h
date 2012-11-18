@@ -21,7 +21,7 @@ namespace ui {
 		float barSize() const { return m_bar_size; }
 
 		virtual void drawContents() const;
-		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
+		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
 
 	protected:
 		float evalBarSize() const;

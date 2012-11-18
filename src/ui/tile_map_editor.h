@@ -20,8 +20,7 @@ namespace ui {
 			
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
-		virtual bool onEvent(const Event&);
+		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
 
 		static void drawGrid(const IBox &box, int2 nodeSize, int y);
 

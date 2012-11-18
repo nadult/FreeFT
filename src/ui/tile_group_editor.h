@@ -17,7 +17,7 @@ namespace ui {
 		TileGroupEditor(IRect rect);
 
 		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final);
+		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
 		virtual void drawContents() const;
 
 		void setTarget(TileGroup* tile_group);

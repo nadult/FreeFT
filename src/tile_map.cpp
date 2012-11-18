@@ -262,7 +262,7 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
-	if(isOverlapping(IBox(pos, pos + tile.m_bbox)))
+	if(test_for_collision && isOverlapping(IBox(pos, pos + tile.m_bbox)))
 		return;
 
 	int2 nodeCoord(pos.x / Node::size_x, pos.z / Node::size_z);

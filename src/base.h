@@ -271,6 +271,7 @@ struct Color
 
 	enum {
 		white 		= 0xffffffffu,
+		gray		= 0xff7f7f7fu,
 		yellow		= 0xff00ffffu,
 		red			= 0xff0000ffu,
 		black 		= 0xff000000u,

@@ -13,15 +13,18 @@ namespace ui {
 		TextBox(const IRect &rect, const char *text, bool is_centered = true, Color col = Color::transparent);
 		virtual const char *typeName() const { return "TextBox"; }
 
+		void setFont(const char *font_name);
 		void setText(const char *text);
 		void drawContents() const;
 
 	private:
 		gfx::PFont m_font;
 		string m_text;
-		int2 m_text_size;
+		IRect m_text_extents;
 		bool m_is_centered;
 	};
+
+	typedef Ptr<TextBox> PTextBox;
 
 }
 

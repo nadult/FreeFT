@@ -17,10 +17,12 @@ namespace ui
 		virtual void onInput(int2 mouse_pos);
 		virtual void setText(const char *text);
 
+		void enable(bool);
 		int id() const { return m_id; }
 
 	protected:
 		int m_id;
+		bool m_is_enabled;
 		bool m_mouse_press;
 		IRect m_text_extents;
 		string m_text;

@@ -46,8 +46,9 @@
  - UI jest opóźniony o klatkę w stosunku do ruchu myszy
  - pozmieniać konstruktory IRect i IBox, tak żeby jako drugi argument dawało się wielkość a nie koniec obiektu
  - dodać powtarzalnie emitowane eventy keypressed jeśli przytrzyma się dany klawisz
-
-
+ - obsluga ESC podczas draggingu we wszystkich kontrolkach
+ - uproszczenie przeplywu w ui::Window: rozbicie process() na kilka funkcji, np. updateFocus(), preProcess(), etc.
+ - nie dodawac nowych ficzerów do ui::Window bez porządnego refaktoringu 
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

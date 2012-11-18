@@ -6,7 +6,7 @@ namespace ui
 {
 
 	Button::Button(IRect rect, const char *text, int id)
-		:Window(rect, Color::transparent), m_mouse_press(false), m_id(id) {
+		:Window(rect, Color::transparent), m_mouse_press(false), m_id(id), m_is_enabled(true) {
 		m_font = Font::mgr["times_16"];
 		ASSERT(m_font);
 		setText(text);
@@ -20,20 +20,29 @@ namespace ui
 	}
 
 	void Button::drawContents() const {
-		drawWindow(IRect(int2(0, 0), size()), isFocused()? Color::gui_light : Color::gui_dark,
+		drawWindow(IRect(int2(0, 0), size()), isMouseOver() && m_is_enabled? Color::gui_light : Color::gui_dark,
 					m_mouse_press? -2 : 2);
 
 		int2 rect_center = size() / 2;
 		int2 pos = rect_center - m_text_extents.size() / 2 - m_text_extents.min - int2(1, 1);
 		if(m_mouse_press)
 			pos += int2(2, 2);
-		m_font->drawShadowed(pos, Color::white, Color::black, m_text.c_str());
+		m_font->drawShadowed(pos, m_is_enabled? Color::white : Color::gray, Color::black, m_text.c_str());
 	}
 
 	void Button::onInput(int2 mouse_pos) {
+		if(!m_is_enabled)
+			return;
+
 		m_mouse_press = isMouseKeyPressed(0);
-		if(isMouseKeyUp(0) && isFocused())
+		if(isMouseKeyUp(0) && isMouseOver())
 			sendEvent(this, Event::button_clicked, m_id);
+	}
+
+	void Button::enable(bool do_enable) {
+		if(m_is_enabled && !do_enable)
+			m_mouse_press = false;
+		m_is_enabled = do_enable;
 	}
 
 }
