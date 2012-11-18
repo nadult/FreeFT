@@ -18,6 +18,7 @@ namespace ui {
 
 		void drawContents() const;
 		void onInput(int2);
+		bool onEvent(const Event&);
 
 	private:
 		void onKey(int key);
@@ -29,7 +30,7 @@ namespace ui {
 		double m_on_key_time;
 
 		gfx::PFont m_font;
-		string m_text;
+		string m_text, m_old_text;
 		int m_cursor_pos;
 		bool m_is_editing;
 	};

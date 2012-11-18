@@ -11,20 +11,20 @@ FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler \
 	editor game res_viewer base tile_map tile_group actor entity navigation_map \
-	ui/window ui/button ui/tile_list ui/progress_bar ui/list_view ui/text_box ui/message_box ui/edit_box \
+	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog ui/edit_box \
 	ui/tile_selector ui/tile_map_editor ui/tile_group_editor
 
 MAIN_FILES=editor game res_viewer
 SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
 
-LIBS=-L/usr/lib -L/usr/local/lib64 -lglfw -lbaselib -lpng -lz
+LIBS=-L/usr/lib -L/usr/local/lib64 -lglfw -lbaselib -lpng -lz -lboost_filesystem -lboost_system
 
 LINUX_LIBS=$(LIBS) -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
 INCLUDES=-I./ -Irapidxml-1.13/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder
-FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall -DOPENGL_VERSION=0x20 $(NICE_FLAGS)
+FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall $(NICE_FLAGS)
 
 -include Makefile.local
 

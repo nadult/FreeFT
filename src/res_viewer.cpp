@@ -8,7 +8,7 @@
 #include "gfx/sprite.h"
 #include "gfx/tile.h"
 
-#include "ui/list_view.h"
+#include "ui/list_box.h"
 #include "ui/button.h"
 #include "ui/message_box.h"
 #include "ui/edit_box.h"
@@ -206,7 +206,7 @@ public:
 		m_edit_box = new ui::EditBox(IRect(0, 0, left_width, 30), 30);
 		m_edit_box->setText("this is edit box, click me!");
 
-		m_dir_view = new ui::ListView(IRect(0, 30, left_width, res.y));
+		m_dir_view = new ui::ListBox(IRect(0, 30, left_width, res.y));
 		m_res_view = new ResourceView(IRect(left_width + 2, 0, res.x, res.y));
 
 		attach(m_edit_box.get());
@@ -298,7 +298,7 @@ public:
 				}
 			}
 			else if(m_res_view == evt.source) {
-				m_dir_view->select(evt.value);
+				m_dir_view->selectEntry(evt.value);
 			}
 		}
 		else return false;
@@ -316,7 +316,7 @@ public:
 	vector<Entry> m_entries;
 	vector<string> m_current_dir;
 
-	ui::PListView		m_dir_view;
+	ui::PListBox		m_dir_view;
 	Ptr<ResourceView>	m_res_view;
 	ui::PEditBox		m_edit_box;
 

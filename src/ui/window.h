@@ -10,7 +10,6 @@ namespace ui
 {
 
 	class Window;
-	class MainWindow;
 
 	typedef Ptr<Window> PWindow;
 
@@ -21,6 +20,8 @@ namespace ui
 			element_clicked,	// value: element id		sending up
 			element_selected,	// value: element id		sending up
 			popup_close_signal,	// 							sending directly to popup from parent
+			escape,				//							sending down
+			text_modified,		//							sending up
 		};
 
 		Event(Window *source, Type type, int value = 0) :source(source), type(type), value(value) { }
@@ -36,6 +37,8 @@ namespace ui
 		Window(IRect rect, Color background = Color::transparent);
 		virtual ~Window() { }
 		virtual const char *typeName() const { return "Window"; }
+		Window(const Window&) = delete;
+		void operator=(const Window&) = delete;
 		
 		virtual void process();
 		virtual void draw() const;
@@ -55,6 +58,7 @@ namespace ui
 		int width() const { return m_rect.width(); }
 		int height() const { return m_rect.height(); }
 		int2 size() const { return m_rect.size(); }
+		int2 center() const { return m_rect.center(); }
 
 		void setBackgroundColor(Color col);
 		Window* parent() const { return m_parent; }
@@ -62,7 +66,7 @@ namespace ui
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
 		bool isVisible() const { return m_is_visible; }
-		bool isFocused() const { return m_is_focused; }
+		bool isFocused() const;
 
 		//TODO: should events be sent to unfocused objects?
 
@@ -87,7 +91,6 @@ namespace ui
 		// be passed until LMB is released)
 		virtual bool onMouseClick(int2 pos, int key, bool up) { return false; }
 		virtual bool onMouseDrag(int2 start, int2 current, int key, bool is_final) { return false; }
-		virtual bool onEscape() { return false; }
 
 		// relative to normal rect
 		// IRect(0, 0, rect.width(), rect.height()) is default
@@ -105,7 +108,7 @@ namespace ui
 
 		IRect  m_inner_rect;	// if its bigger than m_rect then progress bars will be added
 		IRect m_rect;			// coordinates relative to parent window
-		IRect m_clipped_rect;	// global coordinates, clipped to parent window
+		IRect m_clipped_rect;	// absolute coordinates, clipped to parent window
 		Color m_background_color;
 
 		int2 m_drag_start;

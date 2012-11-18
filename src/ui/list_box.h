@@ -1,16 +1,16 @@
-#ifndef UI_LIST_VIEW_H
-#define UI_LIST_VIEW_H
+#ifndef UI_LIST_BOX_H
+#define UI_LIST_BOX_H
 
 #include "ui/window.h"
 #include "gfx/font.h"
 
 namespace ui {
 
-	class ListView: public ui::Window
+	class ListBox: public ui::Window
 	{
 	public:
-		ListView(const IRect &rect);
-		virtual const char *typeName() const { return "ListView"; }
+		ListBox(const IRect &rect);
+		virtual const char *typeName() const { return "ListBox"; }
 
 		struct Entry {
 			Color color;
@@ -23,9 +23,10 @@ namespace ui {
 		virtual bool onMouseDrag(int2 start, int2 end, int key, bool is_final);
 
 		void addEntry(const char *text, Color col);
-		void clear();
+		int findEntry(const char*) const;
 		int selectedId() const;
-		void select(int id);
+		void selectEntry(int id);
+		void clear();
 
 		int m_max_width, m_spacing;
 		int m_height;
@@ -46,7 +47,7 @@ namespace ui {
 		int m_over_id, m_dragging_id;
 	};
 
-	typedef Ptr<ListView> PListView;
+	typedef Ptr<ListBox> PListBox;
 
 
 }

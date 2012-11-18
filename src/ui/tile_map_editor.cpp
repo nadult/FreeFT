@@ -145,9 +145,13 @@ namespace ui {
 
 	}
 
-	bool TileMapEditor::onEscape() {
-		m_is_selecting = false;
-		return true;
+	bool TileMapEditor::onEvent(const Event &event) {
+		if(event.type == Event::escape) {
+			m_is_selecting = false;
+			return true;
+		}
+
+		return false;
 	}
 
 	bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, bool is_final) {

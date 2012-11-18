@@ -12,7 +12,7 @@ namespace ui {
 
 	void EditBox::setText(const char *text) {
 		m_text = text;
-		if(m_text.size() > m_max_size)
+		if((int)m_text.size() > m_max_size)
 			m_text.resize(m_max_size);
 	}
 
@@ -35,7 +35,7 @@ namespace ui {
 		m_cursor_pos = (int)m_text.size();
 
 		//TODO: speed up
-		for(int n = 0; n < m_text.size(); n++) {
+		for(int n = 0; n < (int)m_text.size(); n++) {
 			string text = m_text.substr(0, n);
 			IRect ext = m_font->evalExtents(text.c_str());
 			if(ext.max.x + 8 > rect_pos.x) {
@@ -49,8 +49,8 @@ namespace ui {
 		if(!m_is_editing) {
 			if(isMouseKeyDown(0)) {
 				setCursorPos(mouse_pos);
-				setFocus(true);
-				m_is_editing = true;
+				setFocus( (m_is_editing = true) );
+				m_old_text = m_text;
 			}
 		}
 		else {
@@ -77,19 +77,30 @@ namespace ui {
 					m_last_key = 0;
 				}
 				else {
-					setFocus(false);
-					m_is_editing = false;
+					setFocus( (m_is_editing = false) );
+					if(m_old_text != m_text)
+						sendEvent(this, Event::text_modified);
 				}
 			}
 		}
 	}
 
+	bool EditBox::onEvent(const Event &event) {
+		if(event.type == Event::escape && m_is_editing) {
+			setFocus( (m_is_editing = false) );
+			m_text = m_old_text;
+			return true;
+		}
+
+		return false;
+	}
+
 	void EditBox::onKey(int key) {
-		if(key == Key_right && m_cursor_pos < m_text.size())
+		if(key == Key_right && m_cursor_pos < (int)m_text.size())
 			m_cursor_pos++;
 		else if(key == Key_left && m_cursor_pos > 0)
 			m_cursor_pos--;
-		else if(key == Key_del && m_text.size() > m_cursor_pos)
+		else if(key == Key_del && (int)m_text.size() > m_cursor_pos)
 			m_text.erase(m_cursor_pos, 1);
 		else if(key == Key_backspace && m_cursor_pos > 0 && !m_text.empty())
 			m_text.erase(--m_cursor_pos, 1);

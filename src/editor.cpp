@@ -17,8 +17,10 @@
 #include "ui/tile_selector.h"
 #include "ui/tile_map_editor.h"
 #include "ui/tile_group_editor.h"
+#include "ui/file_dialog.h"
 
 using namespace gfx;
+using namespace ui;
 
 enum EditorMode {
 	emMapEdition,
@@ -32,33 +34,36 @@ static const char *s_mode_names[] = {
 	"Mode: tile group edition",
 };
 
-class MainWindow: public ui::Window
+class MainWindow: public Window
 {
 public:
-	MainWindow(int2 res) :ui::Window(IRect(0, 0, res.x, res.y), Color::transparent) {
+	MainWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent) {
 		int left_width = 320;
 
 		m_mode = emMapEdition;
 		m_map.resize({16 * 64, 16 * 64});
 
-		load();	
+		loadTileGroup("../data/tile_group.xml");
+		loadTileMap("../data/tile_map.xml");
 
-		m_mapper = new ui::TileMapEditor(IRect(left_width, 0, res.x, res.y));
-		m_grouper = new ui::TileGroupEditor(IRect(left_width, 0, res.x, res.y));
-		m_selector = new ui::TileSelector(IRect(0, 30, left_width, res.y));
+		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
+		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
+		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
 
-		m_mode_button = new ui::Button(IRect(0, 0, left_width * 2 / 3, 30), s_mode_names[m_mode]);
-		m_save_button = new ui::Button(IRect(left_width * 2 / 3, 0, left_width, 30), "Save");
+		m_mode_button = new Button(IRect(0, 0, left_width * 1 / 2, 30), s_mode_names[m_mode]);
+		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 30), "Save");
+		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 30), "Load");
 
-		m_selector->setModel(new ui::AllTilesModel);
+		m_selector->setModel(new AllTilesModel);
 
 		m_mapper->setTileMap(&m_map);
 		m_mapper->setTileGroup(&m_group);
 		m_grouper->setTarget(&m_group);
 
-		ui::PWindow left = new ui::Window(IRect(0, 0, left_width, res.y));
+		PWindow left = new Window(IRect(0, 0, left_width, res.y));
 		left->attach(m_mode_button.get());
 		left->attach(m_save_button.get());
+		left->attach(m_load_button.get());
 		left->attach(m_selector.get());
 
 		attach(std::move(left));
@@ -67,62 +72,91 @@ public:
 		m_grouper->setVisible(false);
 	}
 
-	virtual bool onEvent(const ui::Event &ev) {
-		if(ev.type == ui::Event::button_clicked && m_mode_button == ev.source) {
+	virtual bool onEvent(const Event &ev) {
+		if(ev.type == Event::button_clicked && m_mode_button == ev.source) {
 			m_mode = (EditorMode)((m_mode + 1) % emCount);
 			m_mapper->setVisible(m_mode == emMapEdition);
 			m_grouper->setVisible(m_mode == emTileGroupEdition);
 			m_mode_button->setText(s_mode_names[m_mode]);
 		}
-		else if(ev.type == ui::Event::button_clicked && m_save_button == ev.source) {
-			save();
+		else if(ev.type == Event::button_clicked && m_load_button == ev.source) {
+			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
+			m_file_dialog = new FileDialog(dialog_rect, ".xml", FileDialogMode::opening_file);
+			m_file_dialog->setPath("../data/");
+			attach(m_file_dialog.get(), true);
 		}
-		else if(ev.type == ui::Event::element_selected && m_selector == ev.source) {
-			printf("new tile: %s\n", m_selector->selection()->name.c_str());
+		else if(ev.type == Event::button_clicked && m_save_button == ev.source) {
+			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
+			m_file_dialog = new FileDialog(dialog_rect, ".xml", FileDialogMode::saving_file);
+			m_file_dialog->setPath("../data/");
+			attach(m_file_dialog.get(), true);
+		}
+		else if(ev.type == Event::element_selected && m_selector == ev.source) {
+			//TODO: print tile name in selector
+			//printf("new tile: %s\n", m_selector->selection()? m_selector->selection()->name.c_str() : "none");
 			m_mapper->setNewTile(m_selector->selection());
+		}
+		else if(ev.type == Event::window_closed && m_file_dialog == ev.source) {
+			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
+				if(m_mode == emMapEdition)
+					saveTileMap(m_file_dialog->path().c_str());
+				else
+					saveTileGroup(m_file_dialog->path().c_str());
+			}
+			else if(ev.value && m_file_dialog->mode() == FileDialogMode::opening_file) {
+				if(m_mode == emMapEdition)
+					loadTileMap(m_file_dialog->path().c_str());
+				else
+					loadTileGroup(m_file_dialog->path().c_str());
+
+			}
+
+			m_file_dialog = nullptr;
 		}
 		else return false;
 
 		return true;
 	}
 
-	void load() {
-		if(access("../data/tile_group.xml", R_OK) == 0) {
+	void loadTileMap(const char *file_name) {
+		if(access(file_name, R_OK) == 0) {
 			string text;
-			Loader ldr("../data/tile_group.xml");
-			text.resize(ldr.size());
-			ldr.data(&text[0], ldr.size());
-			XMLDocument doc;
-			doc.parse<0>(&text[0]); 
-			m_group.loadFromXML(doc);
-		}
-		if(access("../data/tile_map.xml", R_OK) == 0) {
-			string text;
-			Loader ldr("../data/tile_map.xml");
+			Loader ldr(file_name);
 			text.resize(ldr.size());
 			ldr.data(&text[0], ldr.size());
 			XMLDocument doc;
 			doc.parse<0>(&text[0]); 
 			m_map.loadFromXML(doc);
 		}
-
 	}
 
-	void save() {
-		XMLDocument doc;
 
-		if(m_mode == emMapEdition) {
-			m_map.saveToXML(doc);
-			std::fstream file("../data/tile_map.xml", std::fstream::out);
-			printf("Saving tile map\n");
-			file << doc;
+	void loadTileGroup(const char *file_name) {
+		if(access(file_name, R_OK) == 0) {
+			string text;
+			Loader ldr(file_name);
+			text.resize(ldr.size());
+			ldr.data(&text[0], ldr.size());
+			XMLDocument doc;
+			doc.parse<0>(&text[0]); 
+			m_group.loadFromXML(doc);
 		}
-		else if(m_mode == emTileGroupEdition) {
-			m_group.saveToXML(doc);
-			std::fstream file("../data/tile_group.xml", std::fstream::out);
-			printf("Saving tile group\n");
-			file << doc;
-		}
+	}
+
+	void saveTileMap(const char *file_name) const {
+		printf("Saving TileMap: %s\n", file_name);
+		XMLDocument doc;
+		m_map.saveToXML(doc);
+		std::fstream file(file_name, std::fstream::out);
+		file << doc;
+	}
+
+	void saveTileGroup(const char *file_name) const {
+		printf("Saving TileGroup: %s\n", file_name);
+		XMLDocument doc;
+		m_group.saveToXML(doc);
+		std::fstream file(file_name, std::fstream::out);
+		file << doc;
 	}
 
 	EditorMode	m_mode;
@@ -130,12 +164,14 @@ public:
 	TileMap		m_map;
 	TileGroup	m_group;
 	
-	ui::PButton	m_mode_button;
-	ui::PButton	m_save_button;
+	PButton		m_mode_button;
+	PButton		m_save_button;
+	PButton		m_load_button;
+	PFileDialog m_file_dialog;
 
-	ui::PTileMapEditor		m_mapper;
-	ui::PTileGroupEditor	m_grouper;
-	ui::PTileSelector		m_selector;
+	PTileMapEditor		m_mapper;
+	PTileGroupEditor	m_grouper;
+	PTileSelector		m_selector;
 };
 
 int safe_main(int argc, char **argv)

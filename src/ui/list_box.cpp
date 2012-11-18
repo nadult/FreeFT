@@ -1,17 +1,17 @@
-#include "ui/list_view.h"
+#include "ui/list_box.h"
 
 using namespace gfx;
 
 namespace ui {
 
 
-	ListView::ListView(const IRect &rect) :Window(rect, Color::gui_dark), m_over_id(-1), m_dragging_id(-1) {
+	ListBox::ListBox(const IRect &rect) :Window(rect, Color::gui_dark), m_over_id(-1), m_dragging_id(-1) {
 		m_font = Font::mgr["arial_16"];
 		ASSERT(m_font);
 		m_line_height = m_font->lineHeight();
 	}
 		
-	void ListView::drawContents() const {
+	void ListBox::drawContents() const {
 		int2 offset = innerOffset();
 		int2 vis_entries = visibleEntriesIds();
 
@@ -39,7 +39,7 @@ namespace ui {
 		}
 	}
 
-	int2 ListView::visibleEntriesIds() const {
+	int2 ListBox::visibleEntriesIds() const {
 		int2 offset = innerOffset();
 		int begin = max(0, offset.y / m_line_height);
 		int end   = min((offset.y + rect().height() + m_line_height) / m_line_height, (int)m_entries.size());
@@ -47,7 +47,7 @@ namespace ui {
 		return int2(begin, end);
 	}
 
-	int ListView::entryId(int2 pos) const {
+	int ListBox::entryId(int2 pos) const {
 		int2 vis_entries = visibleEntriesIds();
 		pos += innerOffset();
 
@@ -57,19 +57,18 @@ namespace ui {
 		return -1;
 	}
 
-	void ListView::onInput(int2 mouse_pos) {
+	void ListBox::onInput(int2 mouse_pos) {
 		m_over_id = entryId(mouse_pos);
 	}
 
-	bool ListView::onMouseDrag(int2 start, int2 end, int key, bool is_final) {
+	bool ListBox::onMouseDrag(int2 start, int2 end, int key, bool is_final) {
 		if(key == 0) {
 			m_over_id = entryId(end);
 			m_dragging_id = entryId(start);
 
 			if(is_final && m_over_id == m_dragging_id) {
-				select(m_over_id);
+				selectEntry(m_over_id);
 				sendEvent(this, Event::element_clicked, m_over_id);
-				sendEvent(this, Event::element_selected, m_over_id);
 			}
 			if(is_final)
 				m_dragging_id = -1;
@@ -80,35 +79,43 @@ namespace ui {
 		return false;
 	}
 
-	IRect ListView::entryRect(int entry_id) const {
+	IRect ListBox::entryRect(int entry_id) const {
 		int pos = entry_id * m_line_height;
 		return IRect(0, pos, rect().width(), pos + m_line_height);
 	}
 
-	void ListView::addEntry(const char *text, Color col) {
+	void ListBox::addEntry(const char *text, Color col) {
 		m_entries.push_back(Entry{col, text, false});
 		update();
 	}
 
-	void ListView::clear() {
+	int ListBox::findEntry(const char *text) const {
+		for(int n = 0; n < (int)m_entries.size(); n++)
+			if(m_entries[n].text == text)
+				return n;
+		return -1;
+	}
+
+	void ListBox::clear() {
 		m_entries.clear();
 		update();
 	}
 
-	void ListView::update() {
+	void ListBox::update() {
 		setInnerRect(IRect(0, 0, rect().width(), m_font->lineHeight() * (int)m_entries.size()));
 	}
 
-	int ListView::selectedId() const {
+	int ListBox::selectedId() const {
 		for(int n = 0; n < (int)m_entries.size(); n++)
 			if(m_entries[n].is_selected)
 				return n;
 		return -1;
 	}
 
-	void ListView::select(int id) {
+	void ListBox::selectEntry(int id) {
 		for(int n = 0; n < (int)m_entries.size(); n++)
 			m_entries[n].is_selected = n == id;
+		sendEvent(this, Event::element_selected, id < 0 || id >= (int)m_entries.size()? -1 : id);
 	}
 
 }

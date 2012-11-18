@@ -44,6 +44,10 @@ namespace ui
 		m_background_color = col;
 	}
 
+	bool Window::isFocused() const {
+		return m_is_focused && (!parent() || parent()->isFocused());
+	}
+
 	void Window::close(int return_value) {
 		m_is_closing = true;
 		m_closing_value = return_value;
@@ -81,7 +85,7 @@ namespace ui
 		}
 
 		int2 mouse_pos = getMousePos();
-		int2 local_mouse_pos = mouse_pos - m_rect.min;
+		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min;
 		bool finished_dragging = false;
 		bool escape = isKeyDown(Key_esc);
 
@@ -115,7 +119,7 @@ namespace ui
 
 		if(!is_handled) {
 			if(escape)
-				is_handled = onEscape();
+				is_handled = sendEvent(nullptr, Event::escape);
 
 			if(m_dragging_mode && !is_handled) {
 				if(m_has_inner_rect && m_dragging_mode - 1 == 2) {
@@ -229,7 +233,7 @@ namespace ui
 		if(onEvent(event))
 			return true;
 
-		bool send_up = event.type != Event::window_closed;
+		bool send_up = event.type != Event::window_closed && event.type != Event::escape;
 
 		if(send_up) {
 			if(m_parent)
@@ -245,6 +249,7 @@ namespace ui
 	}
 
 	void Window::updateRects() {
+		DASSERT(m_rect.min.x >= 0 && m_rect.min.y >= 0);
 		m_clipped_rect = m_rect;
 
 		if(m_parent) {
