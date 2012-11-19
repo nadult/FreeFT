@@ -17,6 +17,7 @@ namespace ui {
 
 		m_cursor_height = 0;
 		m_grid_height = 0;
+		m_dirty_percent = 0.0f;
 	}
 
 	void TileMapEditor::drawGrid(const IBox &box, int2 node_size, int y) {
@@ -79,7 +80,7 @@ namespace ui {
 		}
 
 		{
-			KeyId actions[TileGroup::Group::sideCount] = {
+			KeyId actions[TileGroup::Group::side_count] = {
 				Key_kp_1, 
 				Key_kp_2,
 				Key_kp_3,
@@ -155,6 +156,134 @@ namespace ui {
 
 	}
 
+	void TileMapEditor::fillRandomized(int group_id, const IBox &fill_box) {
+		DASSERT(m_tile_group);
+		DASSERT(group_id >= 0 && group_id < m_tile_group->groupCount());
+
+		vector<int> entries, dirty_entries;
+		entries.reserve(m_tile_group->groupEntryCount(group_id));
+		for(int n = 0; n < m_tile_group->entryCount(); n++)
+			if(m_tile_group->entryGroup(n) == group_id)
+				(m_tile_group->isEntryDirty(n)? dirty_entries : entries).push_back(n);
+
+		if(dirty_entries.empty())
+			dirty_entries = entries;
+		if(entries.empty())
+			entries = dirty_entries;
+		DASSERT(!entries.empty() && !dirty_entries.empty());
+
+		int3 bbox = m_new_tile->m_bbox;
+
+		for(int x = fill_box.min.x; x < fill_box.max.x; x += bbox.x)
+			for(int z = fill_box.min.z; z < fill_box.max.z; z += bbox.z) {
+				const vector<int> &source = rand() % 1000 < 1000 * m_dirty_percent? dirty_entries : entries;
+				int random_id = rand() % source.size();
+				const Tile *tile = m_tile_group->entryTile(source[random_id]);
+				try { m_tile_map->addTile(*tile, int3(x, fill_box.min.y, z)); }
+				catch(...) { }
+			}
+	}
+
+	void TileMapEditor::fillHoles(int main_group_id, const IBox &fill_box) {
+		DASSERT(m_tile_group);
+		DASSERT(main_group_id >= 0 && main_group_id < m_tile_group->groupCount());
+
+		int3 bbox = m_new_tile->m_bbox;
+		int main_surf = m_tile_group->groupSurface(main_group_id, 0);
+		for(int n = 1; n < TileGroup::Group::side_count; n++)
+			if(m_tile_group->groupSurface(main_group_id, n) != main_surf)
+				return;
+
+		for(int n = 0; n < m_tile_group->entryCount(); n++)
+			m_tile_group->entryTile(n)->m_temp = n;
+
+		for(int x = fill_box.min.x; x < fill_box.max.x; x += bbox.x)
+			for(int z = fill_box.min.z; z < fill_box.max.z; z += bbox.z) {
+				int3 pos(x, fill_box.min.y, z);
+				const TileInstance *neighbours[8] = {
+					m_tile_map->at(pos + int3(0, 0, bbox.z)),
+					m_tile_map->at(pos + int3(bbox.x, 0, 0)),
+					m_tile_map->at(pos - int3(0, 0, bbox.z)),
+					m_tile_map->at(pos - int3(bbox.x, 0, 0)),
+
+					m_tile_map->at(pos + int3( bbox.x, 0,  bbox.z)),
+					m_tile_map->at(pos + int3( bbox.x, 0, -bbox.z)),
+					m_tile_map->at(pos + int3(-bbox.x, 0, -bbox.z)),
+					m_tile_map->at(pos + int3(-bbox.x, 0,  bbox.z)),
+			   	};
+
+				int sides[8] = {-1, -1, -1, -1, -1, -1, -1, -1}; // -1: any, -2: error
+				int ngroups[8];
+
+				int soffset[8] = { 5, 7, 1, 3,   5, 7, 1, 3 };
+				int doffset[8] = { 7, 1, 3, 5,   1, 3, 5, 7 };
+				bool error = false;
+
+				for(int n = 0; n < 8; n++) {
+					int entry_id = neighbours[n]? m_tile_group->findEntry(neighbours[n]->m_tile) : -1;
+					ngroups[n] = entry_id == -1? -1 : m_tile_group->entryGroup(entry_id);
+					if(ngroups[n] == -1)
+						continue;
+
+					if(n < 4) {
+						for(int s = 0; s < 3; s++) {
+							int src_surf = m_tile_group->groupSurface(ngroups[n], (soffset[n] - s + 8) % 8);
+							int dst_idx = (doffset[n] + s) % 8;
+							if(sides[dst_idx] != -1 && sides[dst_idx] != src_surf)
+								error = true;
+							sides[dst_idx] = src_surf;
+						}
+					}
+					else {
+						int src_surf = m_tile_group->groupSurface(ngroups[n], soffset[n]);
+						int dst_idx = doffset[n];
+						if(sides[dst_idx] != -1 && sides[dst_idx] != src_surf)
+							error = true;
+						sides[dst_idx] = src_surf;
+					}
+				}
+				for(int n = 0; n < COUNTOF(sides); n++) {
+					int prev = sides[(n + 7) % 8];
+					int next = sides[(n + 1) % 8];
+					if(sides[n] == -1 && (next == -1 || next == main_surf) && (prev == -1 || prev == main_surf))
+						sides[n] = main_surf;
+				}
+
+				bool all_sides_main = true;
+				for(int n = 0; n < COUNTOF(sides); n++)
+					if(sides[n] != main_surf)
+						all_sides_main = false;
+
+				if(all_sides_main || error)
+					continue;
+
+				//TODO: speed up
+				vector<int> entries;
+				for(int n = 0; n < m_tile_group->entryCount(); n++) {
+					int group_id = m_tile_group->entryGroup(n);
+					const int *group_surf = m_tile_group->groupSurface(group_id);
+					bool error = false;
+
+					for(int s = 0; s < 8; s++)
+						if(sides[s] != group_surf[s] && sides[s] != -1) {
+							error = true;
+							break;
+						}
+					if(!error)
+						entries.push_back(n);
+				}
+
+				if(!entries.empty()) {
+					int random_id = rand() % entries.size();
+					const Tile *tile = m_tile_group->entryTile(entries[random_id]);
+					try { m_tile_map->addTile(*tile, int3(x, fill_box.min.y, z)); }
+					catch(...) { }
+				}
+			}
+	
+		fillRandomized(main_group_id, fill_box);
+	}
+
 	bool TileMapEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if((isKeyPressed(Key_lctrl) && key == 0) || key == 2) {
 			m_view_pos -= getMouseMove();
@@ -175,99 +304,17 @@ namespace ui {
 				else if(m_mode == mPlacingRandom && m_new_tile && m_tile_group) {
 					int entry_id = m_tile_group->findEntry(m_new_tile);
 					int group_id = entry_id != -1? m_tile_group->entryGroup(entry_id) : -1;
-
-					if(group_id != -1) {
-						vector<int> entries;
-						entries.reserve(m_tile_group->groupEntryCount(group_id));
-						for(int n = 0; n < m_tile_group->entryCount(); n++)
-							if(m_tile_group->entryGroup(n) == group_id)
-								entries.push_back(n);
-
-						int3 bbox = m_new_tile->m_bbox;
-
-						for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
-							for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
-								int random_id = rand() % entries.size();
-								const Tile *tile = m_tile_group->entryTile(entries[random_id]);
-
-								try { m_tile_map->addTile(*tile, int3(x, m_selection.min.y, z)); }
-								catch(...) { }
-							}
-					}
+					if(group_id != -1)
+						fillRandomized(group_id, m_selection);
 				}
 				else if(m_mode == mAutoFilling && m_tile_group && m_new_tile) {
-					int3 bbox = m_new_tile->m_bbox;
-
-					for(int n = 0; n < m_tile_group->entryCount(); n++)
-						m_tile_group->entryTile(n)->m_temp = n;
-
-					for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
-						for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
-							int3 pos(x, m_selection.min.y, z);
-							const TileInstance *neighbours[4] = {
-								m_tile_map->at(pos + int3(0, 0, bbox.z)),
-								m_tile_map->at(pos + int3(bbox.x, 0, 0)),
-								m_tile_map->at(pos - int3(0, 0, bbox.z)),
-								m_tile_map->at(pos - int3(bbox.x, 0, 0)) };
-
-							int sides[8] = {-1, -1, -1, -1, -1, -1, -1, -1}; // -1: any, -2: error
-							int ngroups[4];
-
-							int soffset[4] = { 5, 7, 1, 3 };
-							int doffset[4] = { 7, 1, 3, 5 };
-							bool error = false;
-
-							for(int n = 0; n < 4; n++) {
-								int entry_id = neighbours[n]? m_tile_group->findEntry(neighbours[n]->m_tile) : -1;
-								ngroups[n] = entry_id == -1? -1 : m_tile_group->entryGroup(entry_id);
-
-								if(ngroups[n] != -1) {
-									for(int s = 0; s < 3; s++) {
-										int src_surf = m_tile_group->groupSurface(ngroups[n], (soffset[n] - s + 8) % 8);
-										int dst_idx = (doffset[n] + s) % 8;
-
-										if(sides[dst_idx] != -1 && sides[dst_idx] != src_surf)
-											error = true;
-										sides[dst_idx] = src_surf;
-									}
-								}
-							}
-
-							int any_count = 0;
-							for(int n = 0; n < 8; n++) {
-						//		printf("%d ", sides[n]);
-								any_count += sides[n] == -1;
-							}
-							if(any_count > 4)
-								error = true;
-						//	printf(" err: %d\n", error?1 : 0);
-
-							if(!error) {
-								//TODO: speed up
-								vector<int> entries;
-								for(int n = 0; n < m_tile_group->entryCount(); n++) {
-									int group_id = m_tile_group->entryGroup(n);
-									const int *group_surf = m_tile_group->groupSurface(group_id);
-									bool error = false;
-
-									for(int s = 0; s < 8; s++)
-										if(sides[s] != group_surf[s] && sides[s] != -1) {
-											error = true;
-											break;
-										}
-									if(!error)
-										entries.push_back(n);
-								}
-
-								if(!entries.empty()) {
-									int random_id = rand() % entries.size();
-									const Tile *tile = m_tile_group->entryTile(entries[random_id]);
-									try { m_tile_map->addTile(*tile, int3(x, m_selection.min.y, z)); }
-									catch(...) { }
-								}
-							}
-						}
+					int entry_id = m_tile_group->findEntry(m_new_tile);
+					int group_id = entry_id != -1? m_tile_group->entryGroup(entry_id) : -1;
+					if(group_id != -1)
+						fillHoles(group_id, m_selection);
 				}
+			
+				m_selection = computeCursor(current, current);
 			}
 
 			return true;

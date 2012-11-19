@@ -30,13 +30,15 @@ namespace ui
 		m_font->drawShadowed(pos, m_is_enabled? Color::white : Color::gray, Color::black, m_text.c_str());
 	}
 
-	void Button::onInput(int2 mouse_pos) {
-		if(!m_is_enabled)
-			return;
+	bool Button::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+		m_mouse_press = key == 0 && !is_final && m_is_enabled;
+		if(key == 0 && m_is_enabled) {
+			if(is_final == 1)
+				sendEvent(this, Event::button_clicked, m_id);
+			return true;
+		}
 
-		m_mouse_press = isMouseKeyPressed(0);
-		if(isMouseKeyUp(0) && isMouseOver())
-			sendEvent(this, Event::button_clicked, m_id);
+		return false;
 	}
 
 	void Button::enable(bool do_enable) {

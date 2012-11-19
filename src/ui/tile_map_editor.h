@@ -33,11 +33,16 @@ namespace ui {
 
 			mCount,
 		} m_mode;
+		
+		float m_dirty_percent;
 
 	private:
 		TileMap *m_tile_map;
 		const TileGroup *m_tile_group;
 		const gfx::Tile *m_new_tile;
+		
+		void fillRandomized(int group_id, const IBox &fill_box);
+		void fillHoles(int main_group_id, const IBox &fill_box);
 
 		void drawBoxHelpers(const IBox &box) const;
 		IBox computeCursor(int2 start, int2 end) const;

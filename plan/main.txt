@@ -13,7 +13,7 @@
    issues/4-entity_editor.txt
 
  - ulepszenia w edytorze
-   issues/8-improve_editor.txt
+   issues/8-improve_editor.txt DONE  (9.5 / 12)
 
  - ulepszony UI:
    issues/10-ui_improvements.txt DONE  (20 / 31)

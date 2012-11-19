@@ -17,6 +17,12 @@ namespace ui {
 		m_pos = pos;
 	}
 
+	void ProgressBar::setText(const char *text) {
+		m_text = text;
+		if(!m_font)
+			m_font = gfx::Font::mgr[s_font_names[0]];
+	}
+
 	float ProgressBar::evalBarSize() const {
 		float rsize = m_is_horizontal? width() : height();
 		float bar_size = max(min(16.0f, rsize), m_bar_size * rsize);
@@ -36,6 +42,12 @@ namespace ui {
 	void ProgressBar::drawContents() const {
 		drawWindow(IRect(int2(0, 0), size()), Color::gui_medium, 1);
 		drawWindow(evalBarPos(), isMouseOver()? Color::gui_light : Color::gui_dark, m_mouse_press? -2 : 2);
+
+		if(!m_text.empty()) {
+			IRect extents = m_font->evalExtents(m_text.c_str());
+			int2 pos = (size() - extents.size()) / 2 - extents.min;
+			m_font->drawShadowed(pos, Color::white, Color::black, "%s", m_text.c_str());
+		}
 	}
 
 	bool ProgressBar::onMouseDrag(int2 start, int2 current, int key, int is_final) {
@@ -56,7 +68,10 @@ namespace ui {
 		}
 
 		float vec = (m_is_horizontal? current.x - start.x : current.y - start.y) / (1.0f - bar_size) * divisor;
+		float old_pos = m_pos;
 		m_pos = clamp(m_start_pos + vec, 0.0f, 1.0f);
+		if(m_pos != old_pos)
+			sendEvent(this, Event::progress_bar_moved);
 		m_mouse_press = !is_final;
 
 		return true;

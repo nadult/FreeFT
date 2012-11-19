@@ -2,7 +2,7 @@
 #define UI_PROGRESS_BAR
 
 #include "ui/window.h"
-
+#include "gfx/font.h"
 
 namespace ui {
 
@@ -11,6 +11,8 @@ namespace ui {
 	public:
 		ProgressBar(const IRect &rect, bool is_horizontal);
 		virtual const char *typeName() const { return "ProgressBar"; }
+
+		void setText(const char*);
 
 		// range: <0; 1>
 		void setBarSize(float size);
@@ -27,6 +29,8 @@ namespace ui {
 		float evalBarSize() const;
 		IRect evalBarPos() const;
 
+		string m_text;
+		gfx::PFont m_font;
 		float m_bar_size, m_pos, m_start_pos;
 		bool m_mouse_press, m_mouse_over;
 		bool m_is_horizontal;

@@ -14,6 +14,7 @@
 #include "ui/window.h"
 #include "ui/button.h"
 #include "ui/progress_bar.h"
+#include "ui/text_box.h"
 #include "ui/tile_selector.h"
 #include "ui/tile_map_editor.h"
 #include "ui/tile_group_editor.h"
@@ -66,7 +67,7 @@ class EditorWindow: public Window
 {
 public:
 	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent) {
-		int left_width = 320;
+		int left_width = width() / 5;
 
 		m_mode = emMapEdition;
 		m_map.resize({16 * 64, 16 * 64});
@@ -76,11 +77,14 @@ public:
 
 		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
 		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
-		m_selector = new TileSelector(IRect(0, 30, left_width, res.y));
+		m_selector = new TileSelector(IRect(0, 44, left_width, res.y));
 
-		m_mode_button = new Button(IRect(0, 0, left_width * 1 / 2, 30), s_mode_names[m_mode]);
-		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 30), "Save");
-		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 30), "Load");
+		m_mode_button = new Button(IRect(0, 0, left_width * 1 / 2, 22), s_mode_names[m_mode]);
+		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 22), "Save");
+		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 22), "Load");
+
+		m_dirty_bar = new ProgressBar(IRect(0, 22, left_width, 44), true);
+		updateDirtyBar();
 
 		m_selector->setModel(new AllTilesModel);
 		m_selecting_all_tiles = true;
@@ -94,11 +98,19 @@ public:
 		left->attach(m_save_button.get());
 		left->attach(m_load_button.get());
 		left->attach(m_selector.get());
+		left->attach(m_dirty_bar.get());
 
 		attach(std::move(left));
 		attach(m_mapper.get());
 		attach(m_grouper.get());
 		m_grouper->setVisible(false);
+	}
+
+	void updateDirtyBar() {
+		char text[64];
+		snprintf(text, sizeof(text), "Dirty tiles percentage: %d%%", (int)(m_dirty_bar->pos() * 100));
+		m_dirty_bar->setText(text);
+		m_mapper->m_dirty_percent = m_dirty_bar->pos();
 	}
 
 	virtual bool onEvent(const Event &ev) {
@@ -150,7 +162,10 @@ public:
 
 			m_file_dialog = nullptr;
 		}
-		else return false;
+		else if(ev.type == Event::progress_bar_moved && m_dirty_bar == ev.source)
+			updateDirtyBar();
+		else
+			return false;
 
 		return true;
 	}
@@ -212,6 +227,9 @@ public:
 	PTileGroupEditor	m_grouper;
 	PTileSelector		m_selector;
 
+	PProgressBar		m_dirty_bar;
+	PTextBox			m_dirty_label;
+
 	bool m_selecting_all_tiles;
 };
 
@@ -220,7 +238,7 @@ int safe_main(int argc, char **argv)
 #if defined(RES_X) && defined(RES_Y)
 	int2 res(RES_X, RES_Y);
 #else
-	int2 res(1800, 768);
+	int2 res(1900, 768);
 #endif
 
 	createWindow(res, false);

@@ -7,18 +7,18 @@
 class TileGroup {
 public:	
 	struct Entry {
-		const gfx::Tile *m_tile;
-		int m_group_id;
-		float m_weight;
+		const gfx::Tile *tile;
+		int group_id;
+		bool is_dirty; // like a floor tile with rubble; dirty tiles shouldnt be too dense on the map
 	};
 
 	struct Group {
 		Group();
 
-		enum { sideCount = 8 };
+		enum { side_count = 8 };
 		int m_entry_count;
-		int m_side_surf[sideCount]; // order: CCW starting from '1' on keypad
-		static int3 s_side_offsets[sideCount];
+		int m_side_surf[side_count]; // order: CCW starting from '1' on keypad
+		static int3 s_side_offsets[side_count];
 	};
 
 	void addEntry(const gfx::Tile*);
@@ -31,8 +31,11 @@ public:
 	void removeEntry(int entry_id);
 
 	// an entry always has some group assigned
-	int entryGroup(int entry_id) const { return m_entries[entry_id].m_group_id; }
-	const gfx::Tile *entryTile(int entry_id) const { return m_entries[entry_id].m_tile; }
+	int entryGroup(int entry_id) const { return m_entries[entry_id].group_id; }
+	const gfx::Tile *entryTile(int entry_id) const { return m_entries[entry_id].tile; }
+
+	bool isEntryDirty(int entry_id) const { return m_entries[entry_id].is_dirty; }
+	void setEntryDirty(int entry_id, bool is_dirty) { m_entries[entry_id].is_dirty = is_dirty; }
 
 	void clear();
 

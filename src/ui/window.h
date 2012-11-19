@@ -22,6 +22,7 @@ namespace ui
 			popup_close_signal,	// 							sending directly to popup from parent
 			escape,				//							sending down only to focused windows
 			text_modified,		//							sending up
+			progress_bar_moved,	//							sending up
 		};
 
 		Event(Window *source, Type type, int value = 0) :source(source), type(type), value(value) { }

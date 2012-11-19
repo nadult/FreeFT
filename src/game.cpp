@@ -81,7 +81,7 @@ int safe_main(int argc, char **argv)
 		tile_map.loadFromXML(doc);
 	}
 	
-	NavigationMap navigation_map(tile_map.size() / 2);
+	NavigationMap navigation_map(tile_map.size());
 	navigation_map.update(tile_map);
 	navigation_map.printInfo();
 	actor.m_tile_map = &tile_map;

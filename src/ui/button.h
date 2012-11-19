@@ -14,7 +14,7 @@ namespace ui
 		virtual const char *typeName() const { return "Button"; }
 
 		virtual void drawContents() const;
-		virtual void onInput(int2 mouse_pos);
+		virtual bool onMouseDrag(int2, int2, int key, int is_final);
 		virtual void setText(const char *text);
 
 		void enable(bool);

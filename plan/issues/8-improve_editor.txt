@@ -1,20 +1,23 @@
 Różne ulepszenia w edytorze mające na celu uproszczenie i przyspieszenie edycji
 - tile w grupie mogą mieć flagę dirty, podczas losowania tile-ów będzie można wybrać procent tile-ów z tą flagą
-  za pomocą progress bara 2h
+  za pomocą progress bara 2h  DONE
 - edytor: lepsza wizualizacja tile-ów, ich bboxów, etc. w edytorze;
   - w trybie rozmieszczania tile-i dobrze jest wiedzieć jakie tile-e są bezpośrednio pod nami, można
-    narysować płaski bbox na ich powierzchni 2h
-- ulepszone automatyczne wypełnianie dziur 2h
+    narysować płaski bbox na ich powierzchni 2h  DONE
+- ulepszone automatyczne wypełnianie dziur 2h  DONE
 - Message Box do otwierania / zapisywania plików 4h  DONE
 - w trybie rozmieszczania możemy chcieć żeby grid był cały czas na stałej wysokości niezależnie od tego
   na jakiej wysokości chcemy umieszczać tile-e. Np. grid mógłby się dostosowywać do wysokości tile-a na
-  jaki pokazujemy  2h
+  jaki pokazujemy (na razie grid jest na stałej wysokości, jak zrobimy support dla map wielopoziomowych
+  to wtedy będzie sens to poprawiać)  2h DONE
 
 +REQUIREMENTS:
 issues/10-ui_improvements
 
 +ESTIMATED_TIME: 12h
-+TIME_SPENT: 7.50h
++TIME_SPENT: 9.50h
++FINISHED
 
 +WORK_LOG:
 18.11.12: 14:30 - 15:00, 16:00 - 20:00, 20:45 - 23:45 (7.50h)
+19.11.12: 15:00 - 16:00, 16:30 - 17:30 (2.00h)

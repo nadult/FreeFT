@@ -68,6 +68,10 @@ namespace {
 		m_current_entry = entry;
 		
 		if(m_mode == mModify) {
+			if(isKeyDown('D') && entry) {
+				int entry_id = m_tile_group->findEntry(entry->tile);
+				m_tile_group->setEntryDirty(entry_id, !m_tile_group->isEntryDirty(entry_id));
+			}
 			if(isKeyDown('G') && entry && m_selected_group_id != -1) {
 				m_tile_group->setEntryGroup(m_tile_group->findEntry(entry->tile),
 					entry->group_id == m_selected_group_id? m_tile_group->groupCount() : m_selected_group_id);
@@ -81,13 +85,11 @@ namespace {
 					"SIDE_",
 				};
 
-				vector<int> subgroups[subgroup_count];
 				int subgroup_id[subgroup_count] = {-1, -1, -1};
 
 				for(int n = 0; n < m_tile_group->entryCount(); n++) {
 					if(m_tile_group->entryGroup(n) == m_selected_group_id) {
 						const char *name = m_tile_group->entryTile(n)->name.c_str();
-						int len = strlen(name);
 
 						for(int s = 0; s < subgroup_count; s++)
 							if(strcasestr(name, infixes[s])) {
@@ -175,12 +177,10 @@ namespace {
 			const ui::TileList::Entry &entry = m_tile_list[n];
 			if(!entry.is_selected)
 				continue;
-			
+		
+			Color col = m_tile_group->isEntryDirty(entry.tile->m_temp)? Color::red : Color::white;	
 			int2 pos = entry.pos - offset;
-			//lookAt(-clippedRect().min - pos - entry.tile->offset);
-			//IBox box(int3(0, 0, 0), entry.tile->bbox);
-			//drawBBox(box, Color(255, 255, 255));
-			drawRect(IRect(pos, pos + entry.size));
+			drawRect(IRect(pos, pos + entry.size), col);
 		}
 
 		if(m_mode == mModify && m_selected_group_id != -1) {	
@@ -193,7 +193,7 @@ namespace {
 
 			PFont font = gfx::Font::mgr[s_font_names[0]];
 
-			for(int n = 0; n < TileGroup::Group::sideCount; n++) {
+			for(int n = 0; n < TileGroup::Group::side_count; n++) {
 				lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
 				font->draw(int2(0, 0), Color::white, "%d", m_tile_group->groupSurface(m_selected_group_id, n));
 			}

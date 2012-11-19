@@ -1,8 +1,9 @@
 Poprawić nawigację gracza:
 - zapewnienie, że gracz nie będzie wchodził na obstacle  2h
 - prostowanie ścieżek  4h
+- poprawić buga: czasami ścieżka jest zwracana chociaz nie da się dojśc do celu  2h
 
-+ESTIMATED_TIME:
++ESTIMATED_TIME:  8h
 +TIME_SPENT: 0h
 
 +WORK_LOG:
