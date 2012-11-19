@@ -1,9 +1,11 @@
 Poprawić nawigację gracza:
 - zapewnienie, że gracz nie będzie wchodził na obstacle  2h
 - prostowanie ścieżek  4h
+- lepszy podział na quady 4h
 - poprawić buga: czasami ścieżka jest zwracana chociaz nie da się dojśc do celu  2h
 
-+ESTIMATED_TIME:  8h
-+TIME_SPENT: 0h
++ESTIMATED_TIME:  12h
++TIME_SPENT: 4h
 
 +WORK_LOG:
+19.11.12: 19:30 - 23:45 (4h)

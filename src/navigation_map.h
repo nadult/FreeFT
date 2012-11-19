@@ -29,13 +29,21 @@ public:
 	struct Quad {
 		IRect rect;
 		vector<int> neighbours;
-		mutable int src_quad, dist;
+		vector<IRect> edges;
+
+		mutable int src_quad;
+		mutable int dist;
 		mutable int2 entry_pos;
 		mutable bool is_finished;
+
+		mutable Color color;
 	};
 
 	int findQuad(int2 pos) const;
 	vector<int2> findPath(int2 start, int2 end) const;
+
+	int quadCount() const { return (int)m_quads.size(); }
+	const Quad &operator[](int idx) const { return m_quads[idx]; }
 
 protected:
 

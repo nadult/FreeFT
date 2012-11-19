@@ -132,6 +132,17 @@ int safe_main(int argc, char **argv)
 
 		tile_map.addToRender(renderer);
 		actor.addToRender(renderer);
+
+		for(int n = 0; n < navigation_map.quadCount(); n++)
+			navigation_map[n].color = Color(70, 220, 200, 80);
+		int quad_id = navigation_map.findQuad(screenToWorld(getMousePos() + view_pos));
+		if(quad_id != -1) {
+			const NavigationMap::Quad &quad = navigation_map[quad_id];
+			quad.color = Color(100, 240, 220, 128);
+			for(int n = 0; n < (int)quad.neighbours.size(); n++)
+				navigation_map[quad.neighbours[n]].color = Color(70, 220, 200, 128);
+		}
+
 		navigation_map.visualize(renderer, true);
 		for(int n = 1; n < (int)path.size(); n++) {
 			int2 begin = path[n - 1], end = path[n];
@@ -152,6 +163,18 @@ int safe_main(int argc, char **argv)
 			}
 		}
 		renderer.render();
+		lookAt(view_pos);
+
+		if(quad_id != -1) {
+			const NavigationMap::Quad &quad = navigation_map[quad_id];
+			quad.color = Color(100, 240, 220, 128);
+			for(int n = 0; n < (int)quad.edges.size(); n++) {
+				int mod = n % 3;
+				drawLine(asXZY(quad.edges[n].min, 1), asXZY(quad.edges[n].max, 1),
+						Color(255 * (mod == 0), 255 * (mod == 1), 255 * (mod == 2)));
+			}
+
+		}
 
 /*		{
 			lookAt({0, 0});

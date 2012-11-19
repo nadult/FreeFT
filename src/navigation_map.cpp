@@ -76,61 +76,76 @@ void NavigationMap::extractQuads() {
 	vector<int> line(m_size.x), line_min(m_size.x);
 	vector<u8> bitmap_copy = m_bitmap;
 
-	for(int sz = 0; sz < m_size.y; sz++)
-		for(int sx = 0; sx < m_size.x; sx++) {
-			if(!(*this)(sx, sz))
-				continue;
+	printf("Creating navigation map: "); fflush(stdout);
+	int pixels = 0;
+	for(int y = 0; y < m_size.y; y++)
+		for(int x = 0; x < m_size.x; x++)
+			if((*this)(x, y))
+				pixels++;
 
-			int max_x = m_size.x;
-			for(int x = sx; x < m_size.x; x++) {
-				int z = sz;
-				while(z < m_size.y && (*this)(x, z))
-					z++;
-				line[x] = z - sz;
-				if(!line[x]) {
-					max_x = x;
-					break;
-				}
+	while(pixels) {
+		vector<int> counts(m_size.x * m_size.y);
+		for(int x = 0; x < m_size.x; x++)
+			counts[x] = (*this)(x, 0)? 1 : 0;
+
+		for(int y = 1; y < m_size.y; y++)
+			for(int x = 0; x < m_size.x; x++) {
+				int offset = x + y * m_size.x;
+				counts[offset] = (*this)(x, y)? counts[offset - m_size.x] + 1 : 0;
 			}
+		
+		IRect best;
+		float best_score = -1;
 
-			IRect best;
-			int best_score = -1;
+		for(int sy = 0; sy < m_size.y; sy++) {
+			for(int sx = 0; sx < m_size.x; sx++) {
+				int height = counts[sx + sy * m_size.x];
+				for(int x = sx; x < m_size.x; x++) {
+					height = min(height, counts[x + sy * m_size.x]);
+					if(height == 0)
+						break;
 
-			for(int sx2 = sx; sx2 < max_x; sx2++) {
-				int min = line[sx2], waste = 0;
-				for(int x = sx2; x < max_x; x++) {
-					min = ::min(min, line[x]);
-					waste += ::max(line[x] - min, min - line[x]);
+					int width = x - sx + 1;
+					float score = height * width;
+					float diff = min(width, height) / float(max(width, height));
+					score = score * (0.5f + diff);
 
-					IRect rect(sx2, sz, x + 1, sz + min);
-					int score = ::min(x - sx2 + 1, min); score = score * score;// - waste;
-
-					if(score > best_score || (score == best_score && rect.surfaceArea() > best.surfaceArea())) {
+					if(score > best_score) {
+						best = IRect(sx, sy - height + 1, x + 1, sy + 1);
 						best_score = score;
-						best = rect;
 					}
 				}
 			}
-
-			for(int z = best.min.y; z < best.max.y; z++)
-				for(int x = best.min.x; x < best.max.x; x++)
-					m_bitmap[(x >> 3) + z * m_line_size] &= ~(1 << (x & 7));
-		//	printf("%d %d %d %d\n", best.min.x, best.min.y, best.width(), best.height());
-
-			Quad new_quad;
-			new_quad.rect = best;
-			m_quads.push_back(new_quad);
-			sx = -1;
 		}
+
+		for(int y = best.min.y; y < best.max.y; y++)
+			for(int x = best.min.x; x < best.max.x; x++)
+				m_bitmap[(x >> 3) + y * m_line_size] &= ~(1 << (x & 7));
+				
+		Quad new_quad;
+		new_quad.rect = best;
+		m_quads.push_back(new_quad);
+
+		pixels -= best.width() * best.height();
+		printf("."); fflush(stdout);
+	//	printf("%d %d %d %d (%d)\n", best.min.x, best.min.y, best.width(), best.height(), pixels);
+	}
 	bitmap_copy.swap(m_bitmap);
+	printf("\n");
 
 	for(int i = 0; i < (int)m_quads.size(); i++) {
 		Quad &quad1 = m_quads[i];
 		for(int j = i + 1; j < (int)m_quads.size(); j++) {
 			Quad &quad2 = m_quads[j];
 			if(areAdjacent(quad1.rect, quad2.rect)) {
+				IRect edge;
+				edge.min = max(quad1.rect.min, quad2.rect.min);
+				edge.max = min(quad1.rect.max, quad2.rect.max);
+
 				quad1.neighbours.push_back(j);
 				quad2.neighbours.push_back(i);
+				quad1.edges.push_back(edge);
+				quad2.edges.push_back(edge);
 			}
 		}
 	}
@@ -149,6 +164,13 @@ static int distance(const int2 &a, const int2 &b) {
 	return (dist_min * 181) / 128 + (dist_x + dist_y - dist_min * 2);
 }
 
+// Liczymy odległości pomiędzy krawędziami, 
+// zapisujemy najbliższy punkt leżący na krawędzi i odległość do niego
+//
+// dla każdej krawędzi trzymamy listę potencjalnych punktów
+// przy dodawaniu nowego punktu P sprawdzamy czy odległość punktu Q z krawędzi + dist(Q, P) jest <=
+// odległości punktu P; jeśli tak to P odrzucamy
+
 vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 	vector<int2> out;
 	int start_id = findQuad(start), end_id = findQuad(end);
@@ -161,12 +183,28 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 		m_quads[n].is_finished = false;
 	}
 
+/*	vector<pair<int, int> > edge_ids;
+	for(int n = 0; n < (int)m_quads.size(); n++)
+		for(int i = 0; i < (int)m_quads[n].edges.size(); i++)
+			edge_ids.push_back(make_pair(n, i));
+	printf("edge count: %d\n", (int)edge_ids.size());
+
+	struct Point {
+		int2 pos;
+		int dist;
+	};
+
+	vector<vector<Point>> edges_points(edge_ids.size());
+	int epoints = 0;
+	for(int n = 0; n < edge_ids.size(); n++) {
+		IRect box = m_quads[edge_ids[n].first].edges[edge_ids[n].second];
+		epoints += box.max.y + box.max.x - box.min.x - box.min.y;
+	}
+	printf("ep: %d\n", epoints); */
+
 	m_quads[start_id].dist = 0;
 	m_quads[start_id].entry_pos = start;
 	m_quads[start_id].src_quad = -1;
-
-	using std::pair;
-	using std::make_pair;
 
 	std::set<pair<int, int> > queue;
 	queue.insert(make_pair(0, start_id));
@@ -223,9 +261,9 @@ void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const 
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		const IRect &rect = m_quads[n].rect;
 
-		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(70, 220, 200, 128), true);
+		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), m_quads[n].color, true);
 		if(borders)
-			renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)));
+			renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(255, 255, 255, 100));
 	}
 }
 
@@ -246,8 +284,10 @@ void NavigationMap::printInfo() const {
 	printf("  bitmap: %.0f KB\n", double(m_bitmap.size()) / 1024.0);
 
 	int bytes = sizeof(Quad) * m_quads.size();
-	for(int n = 0; n < (int)m_quads.size(); n++)
+	for(int n = 0; n < (int)m_quads.size(); n++) {
 		bytes += m_quads[n].neighbours.size() * sizeof(int);
+		bytes += m_quads[n].edges.size() * sizeof(IRect);
+	}
 	printf("  quads(%d): %.0f KB\n", (int)m_quads.size(), double(bytes) / 1024.0);
 
 	if(0) for(int n = 0; n < (int)m_quads.size(); n++) {
