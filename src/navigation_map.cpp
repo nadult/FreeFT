@@ -135,17 +135,28 @@ void NavigationMap::extractQuads() {
 
 	for(int i = 0; i < (int)m_quads.size(); i++) {
 		Quad &quad1 = m_quads[i];
-		for(int j = i + 1; j < (int)m_quads.size(); j++) {
-			Quad &quad2 = m_quads[j];
+		for(int j = 0; j < (int)m_quads.size(); j++) {
+			if(j == i)
+				continue;
+
+			const Quad &quad2 = m_quads[j];
 			if(areAdjacent(quad1.rect, quad2.rect)) {
-				IRect edge;
-				edge.min = max(quad1.rect.min, quad2.rect.min);
-				edge.max = min(quad1.rect.max, quad2.rect.max);
+				bool is_horizontal = quad1.rect.max.x > quad2.rect.min.x && quad1.rect.min.x < quad2.rect.max.x;
+				IRect edge(max(quad1.rect.min, quad2.rect.min), min(quad1.rect.max, quad2.rect.max));
+
+				if(is_horizontal)
+					edge.max.x--;
+				else
+					edge.max.y--;
+				
+				if( is_horizontal && quad1.rect.min.y > quad2.rect.min.y)
+					edge -= int2(0, 1);
+				if(!is_horizontal && quad1.rect.min.x > quad2.rect.min.x)
+					edge -= int2(1, 0);
+				ASSERT(edge.max.x >= edge.min.x || edge.max.y >= edge.min.y);
 
 				quad1.neighbours.push_back(j);
-				quad2.neighbours.push_back(i);
 				quad1.edges.push_back(edge);
-				quad2.edges.push_back(edge);
 			}
 		}
 	}
@@ -158,56 +169,31 @@ int NavigationMap::findQuad(int2 pos) const {
 	return -1;
 }
 
-static int distance(const int2 &a, const int2 &b) {
+static float distance(const int2 &a, const int2 &b) {
 	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
-	int dist_min = min(dist_x, dist_y);
-	return (dist_min * 181) / 128 + (dist_x + dist_y - dist_min * 2);
+	int dist_diag = min(dist_x, dist_y);
+	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
 }
 
-// Liczymy odległości pomiędzy krawędziami, 
-// zapisujemy najbliższy punkt leżący na krawędzi i odległość do niego
-//
-// dla każdej krawędzi trzymamy listę potencjalnych punktów
-// przy dodawaniu nowego punktu P sprawdzamy czy odległość punktu Q z krawędzi + dist(Q, P) jest <=
-// odległości punktu P; jeśli tak to P odrzucamy
-
-vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
-	vector<int2> out;
+vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bool do_refining) const {
+	vector<PathNode> out;
 	int start_id = findQuad(start), end_id = findQuad(end);
 
 	if(start_id == -1 || end_id == -1) //TODO: info that path not found
 		return out;
 
 	for(int n = 0; n < (int)m_quads.size(); n++) {
-		m_quads[n].dist = -1;
+		m_quads[n].dist = 1.0f / 0.0f;
 		m_quads[n].is_finished = false;
 	}
 
-/*	vector<pair<int, int> > edge_ids;
-	for(int n = 0; n < (int)m_quads.size(); n++)
-		for(int i = 0; i < (int)m_quads[n].edges.size(); i++)
-			edge_ids.push_back(make_pair(n, i));
-	printf("edge count: %d\n", (int)edge_ids.size());
-
-	struct Point {
-		int2 pos;
-		int dist;
-	};
-
-	vector<vector<Point>> edges_points(edge_ids.size());
-	int epoints = 0;
-	for(int n = 0; n < edge_ids.size(); n++) {
-		IRect box = m_quads[edge_ids[n].first].edges[edge_ids[n].second];
-		epoints += box.max.y + box.max.x - box.min.x - box.min.y;
-	}
-	printf("ep: %d\n", epoints); */
-
-	m_quads[start_id].dist = 0;
+	m_quads[start_id].dist = 0.0f;
+	m_quads[start_id].edist = distance(start, end);
 	m_quads[start_id].entry_pos = start;
 	m_quads[start_id].src_quad = -1;
 
 	std::set<pair<int, int> > queue;
-	queue.insert(make_pair(0, start_id));
+	queue.insert(make_pair(m_quads[start_id].edist, start_id));
 
 	while(!queue.empty()) {
 		int quad_id = queue.begin()->second;
@@ -221,49 +207,172 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 		for(int n = 0; n < (int)quad.neighbours.size(); n++) {
 			int next_id = quad.neighbours[n];
 			const Quad &next = m_quads[next_id];
+			const IRect &edge = quad.edges[n];
 
-			int2 closest_pos = clamp(quad.entry_pos, next.rect.min, next.rect.max - int2(1, 1));
+			if(next.is_finished)
+				continue;
+
+			int2 edge_end_pos = clamp(end, edge.min, edge.max);
+			MoveVector vec(quad.entry_pos, edge_end_pos);
+
+			int2 closest_pos = clamp(quad.entry_pos + vec.vec * vec.ddiag, next.rect.min, next.rect.max - int2(1, 1));
+
 			closest_pos = clamp(closest_pos, quad.rect.min - int2(1, 1), quad.rect.max);
-			int dist = distance(closest_pos, quad.entry_pos) + quad.dist;
+			float dist = distance(closest_pos, quad.entry_pos) + quad.dist;
+			float edist = distance(closest_pos, end);
 
 			if(next_id == end_id)
 				dist += distance(closest_pos, end);
 
-			if(next.is_finished || (next.dist != -1 && next.dist <= dist))
+			if(do_refining? next.dist <= dist : next.dist + next.edist <= dist + edist)
 				continue;
 
 			if(next.dist != -1)
-				queue.erase(make_pair(next.dist, next_id));
+				queue.erase(make_pair(next.dist + next.edist, next_id));
 
 			next.dist = dist;
+			next.edist = edist;
 			next.entry_pos = closest_pos;
 			next.src_quad = quad_id;
-			queue.insert(make_pair(dist, next_id));
+			queue.insert(make_pair(dist + next.edist, next_id));
 		}
 	}
 
-	out.push_back(end);
-	int quad_id = end_id, prev_id = -1;
-	bool prev_diag = false;
-
-	while(quad_id != -1) {
+	out.push_back(PathNode{end, end_id});
+	for(int quad_id = end_id; quad_id != -1; quad_id = m_quads[quad_id].src_quad) {
 		const Quad &quad = m_quads[quad_id];
-		if(out.back() != quad.entry_pos)
-			out.push_back(quad.entry_pos);
-		quad_id = quad.src_quad;
+		if(out.back().point != quad.entry_pos)
+			out.push_back({quad.entry_pos, quad_id});
 	}
 	std::reverse(out.begin(), out.end());
 
+	if(do_refining) {
+		for(int n = 0; n < (int)out.size() - 3; n++) {
+			float dist =	distance(out[n + 0].point, out[n + 1].point) +
+							distance(out[n + 1].point, out[n + 2].point) +
+							distance(out[n + 2].point, out[n + 3].point);
+			float sdist = distance(out[n].point, out[n + 3].point);
+			if(sdist * 1.001f >= dist)
+				continue;
+
+			vector<PathNode> other = findPath(out[n].point, out[n + 3].point, false);
+
+			if(!other.empty()) {
+				ASSERT(other.front().point == out[n].point && other.back().point == out[n + 3].point);
+
+				float odist = 0;
+				for(int i = 0; i < (int)other.size() - 1; i++)
+					odist += distance(other[i].point, other[i + 1].point);
+				if(odist + 0.01 < dist) {
+					//printf("refining... %f -> %f\n", dist, odist);
+
+					out.erase(out.begin() + n + 1);
+					out.erase(out.begin() + n + 1);
+					out.insert(out.begin() + n + 1, other.begin() + 1, other.begin() + other.size() - 1);
+					n--;
+				}
+			}
+		}
+	}
+
 	return out;
+}
+
+vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
+	vector<PathNode> input = findPath(start, end, true);
+	vector<int2> path;
+
+	if(input.empty())
+		return path;
+
+	bool prev_diag = false;
+
+	MoveVector prev_vec;
+	for(int n = 0; n < (int)input.size() - 1; n++) {
+		const IRect &src_quad = m_quads[input[n].quad_id].rect;
+
+		int2 src = input[n + 0].point;
+		int2 dst = input[n + 1].point;
+
+		int2 pdst = dst;
+		if(src.x < pdst.x) pdst.x--; else if(src.x > pdst.x) pdst.x++;
+		if(src.y < pdst.y) pdst.y--; else if(src.y > pdst.y) pdst.y++;
+		pdst = clamp(pdst, src_quad.min, src_quad.max - int2(1,1));
+
+		MoveVector vec(src, pdst);
+
+		int2 mid = src;
+
+		if(prev_diag && vec.ddiag) {
+			mid += vec.vec * vec.ddiag;
+			prev_diag = vec.dx == 0 && vec.dy == 0;
+		}
+		else {
+			mid += vec.dx? int2(vec.vec.x * vec.dx, 0) : int2(0, vec.vec.y * vec.dy);
+			vec.dx = vec.dy = 0;
+			prev_diag = vec.ddiag != 0;
+		}
+
+		path.push_back(src);
+		path.push_back(mid);
+		path.push_back(pdst);
+	}
+	path.push_back(input.back().point);
+//	if(path.size() <= 2)
+		return std::move(path);
+
+	vector<int2> simplified;
+	simplified.push_back(path[0]);
+	int2 prev(0, 0);
+
+	for(int n = 1; n < (int)path.size(); n++) {
+		int2 vec = MoveVector(simplified.back(), path[n]).vec;
+		if(vec == int2(0, 0))
+			continue;
+
+		if(vec == prev)
+			simplified.back() = path[n];
+		else {
+			prev = vec;
+			simplified.push_back(path[n]);
+		}
+	}
+
+	return std::move(simplified);
 }
 
 void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		const IRect &rect = m_quads[n].rect;
 
-		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), m_quads[n].color, true);
+		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(70, 220, 200, 80), true);
 		if(borders)
 			renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(255, 255, 255, 100));
+	}
+}
+
+void NavigationMap::visualizePath(const vector<int2> &path, int elem_size, gfx::SceneRenderer &renderer) const {
+	if(path.empty())
+		return;
+
+	IBox box(0, 1, 0, elem_size, 1, elem_size);
+	renderer.addBox(box + asXZ(path.front()), Color::red);
+
+	for(int n = 1; n < (int)path.size(); n++) {
+		int2 begin = path[n - 1], end = path[n];
+		bool first = true;
+
+		IBox start_box = box + asXZ(begin), end_box = box + asXZ(end);
+		renderer.addBox(end_box, Color::red);
+		MoveVector vec(begin, end);
+
+		if(vec.vec == int2(1, 1) || vec.vec == int2(-1, -1)) {
+			swap(start_box.min.x, start_box.max.x);
+			swap(  end_box.min.x,   end_box.max.x);
+		}
+
+		renderer.addLine(start_box.min, end_box.min);
+		renderer.addLine(start_box.max, end_box.max);
 	}
 }
 

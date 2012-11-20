@@ -89,8 +89,8 @@ void Actor::addToRender(gfx::SceneRenderer &out) const {
 	spr_tex->setSurface(tex);
 
 	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
-//	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
-//				Color(255, 0, 0) : Color(255, 255, 255));
+	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
+				Color(255, 0, 0) : Color(255, 255, 255));
 }
 
 void Actor::issueNextOrder() {
@@ -149,32 +149,25 @@ void Actor::issueMoveOrder() {
 	for(int n = 1; n < (int)tmp_path.size(); n++) {
 		cur_pos = asXZY(tmp_path[n - 1], 1);
 		new_pos = asXZY(tmp_path[n], 1);
+		if(new_pos == cur_pos)
+			continue;
 
-		int x_diff = new_pos.x - cur_pos.x;
-		int z_diff = new_pos.z - cur_pos.z;
-		int3 dir(x_diff < 0? -1 : 1, 0, z_diff < 0? -1 : 1);
-		x_diff = abs(x_diff);
-		z_diff = abs(z_diff);
-		int diag_diff = min(x_diff, z_diff);
-		x_diff -= diag_diff;
-		z_diff -= diag_diff;
+		MoveVector mvec(tmp_path[n - 1], tmp_path[n]);
 
-		DASSERT(diag_diff || x_diff || z_diff);
-
-		while(x_diff) {
-			int step = min(x_diff, 3);
-			m_path.push_back(cur_pos += int3(dir.x * step, 0, 0));
-			x_diff -= step;
+		while(mvec.dx) {
+			int step = min(mvec.dx, 3);
+			m_path.push_back(cur_pos += int3(mvec.vec.x * step, 0, 0));
+			mvec.dx -= step;
 		}
-		while(z_diff) {
-			int step = min(z_diff, 3);
-			m_path.push_back(cur_pos += int3(0, 0, dir.z * step));
-			z_diff -= step;
+		while(mvec.dy) {
+			int step = min(mvec.dy, 3);
+			m_path.push_back(cur_pos += int3(0, 0, mvec.vec.y * step));
+			mvec.dy -= step;
 		}
-		while(diag_diff) {
-			int dstep = min(diag_diff, 3);
-			m_path.push_back(cur_pos += dir * dstep);
-			diag_diff -= dstep;
+		while(mvec.ddiag) {
+			int dstep = min(mvec.ddiag, 3);
+			m_path.push_back(cur_pos += asXZ(mvec.vec) * dstep);
+			mvec.ddiag -= dstep;
 		}
 	}
 		

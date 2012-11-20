@@ -16,7 +16,6 @@
 #include "actor.h"
 
 using namespace gfx;
-
 int safe_main(int argc, char **argv)
 {
 #if defined(RES_X) && defined(RES_Y)
@@ -104,7 +103,7 @@ int safe_main(int argc, char **argv)
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 			actor.setNextOrder(Actor::makeMoveOrder(wpos, isKeyPressed(Key_lshift)));
 		}
-		if(isMouseKeyUp(1)) {
+		if(isMouseKeyDown(1)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 			path = navigation_map.findPath(last_pos.xz(), wpos.xz());
 			last_pos = wpos;
@@ -133,48 +132,11 @@ int safe_main(int argc, char **argv)
 		tile_map.addToRender(renderer);
 		actor.addToRender(renderer);
 
-		for(int n = 0; n < navigation_map.quadCount(); n++)
-			navigation_map[n].color = Color(70, 220, 200, 80);
-		int quad_id = navigation_map.findQuad(screenToWorld(getMousePos() + view_pos));
-		if(quad_id != -1) {
-			const NavigationMap::Quad &quad = navigation_map[quad_id];
-			quad.color = Color(100, 240, 220, 128);
-			for(int n = 0; n < (int)quad.neighbours.size(); n++)
-				navigation_map[quad.neighbours[n]].color = Color(70, 220, 200, 128);
-		}
-
 		navigation_map.visualize(renderer, true);
-		for(int n = 1; n < (int)path.size(); n++) {
-			int2 begin = path[n - 1], end = path[n];
+		navigation_map.visualizePath(path, 3, renderer);
 
-			int2 pos = begin;
-			while(pos.x != end.x && pos.y != end.y) {
-				renderer.addBox(IBox(pos.x, 1, pos.y, pos.x + 3, 1, pos.y + 3));
-				pos.x += end.x > pos.x? 1 : -1;
-				pos.y += end.y > pos.y? 1 : -1;
-			}
-			while(pos.x != end.x) {
-				renderer.addBox(IBox(pos.x, 1, pos.y, pos.x + 3, 1, pos.y + 3));
-				pos.x += end.x > pos.x? 1 : -1;
-			}
-			while(pos.y != end.y) {
-				renderer.addBox(IBox(pos.x, 1, pos.y, pos.x + 3, 1, pos.y + 3));
-				pos.y += end.y > pos.y? 1 : -1;
-			}
-		}
 		renderer.render();
 		lookAt(view_pos);
-
-		if(quad_id != -1) {
-			const NavigationMap::Quad &quad = navigation_map[quad_id];
-			quad.color = Color(100, 240, 220, 128);
-			for(int n = 0; n < (int)quad.edges.size(); n++) {
-				int mod = n % 3;
-				drawLine(asXZY(quad.edges[n].min, 1), asXZY(quad.edges[n].max, 1),
-						Color(255 * (mod == 0), 255 * (mod == 1), 255 * (mod == 2)));
-			}
-
-		}
 
 /*		{
 			lookAt({0, 0});

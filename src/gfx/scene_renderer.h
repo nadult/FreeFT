@@ -11,6 +11,7 @@ namespace gfx {
 		SceneRenderer(IRect viewport, int2 view_pos);
 		void add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white);
 		void addBox(IBox box, Color col = Color::white, bool is_filled = false);
+		void addLine(int3, int3, Color = Color::white);
 		void render();
 
 		IRect targetRect() const { return IRect(m_view_pos, m_view_pos + m_viewport.size()); }
@@ -22,19 +23,25 @@ namespace gfx {
 			int Compare(const Element &rhs) const;
 
 			//TODO: change to weak ptr to texture, make sure that textures exist
-			PTexture m_texture;
-			IRect m_rect;
-			IBox m_bbox;
-			Color m_color;
+			PTexture texture;
+			IRect rect;
+			IBox bbox;
+			Color color;
 		};
 
 		struct BoxElement {
-			IBox m_bbox;
-			Color m_color;
+			IBox bbox;
+			Color color;
 		};
 
-		vector<Element> m_elements; // filled boxes go here (with m_texture == nullptr)
+		struct LineElement {
+			int3 begin, end;
+			Color color;
+		};
+
+		vector<Element> m_elements; // filled boxes go here (with texture == nullptr)
 		vector<BoxElement> m_wire_boxes;
+		vector<LineElement> m_lines;
 
 		IRect m_viewport;
 		int2 m_view_pos;

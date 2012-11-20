@@ -20,7 +20,9 @@ public:
 	int2 size() const { return m_size; }
 
 	gfx::PTexture getTexture() const;
+
 	void visualize(gfx::SceneRenderer&, bool borders) const;
+	void visualizePath(const vector<int2>&, int elem_size, gfx::SceneRenderer&) const;
 	void printInfo() const;
 
 	inline bool operator()(int x, int y) const
@@ -32,14 +34,18 @@ public:
 		vector<IRect> edges;
 
 		mutable int src_quad;
-		mutable int dist;
+		mutable float dist, edist;
 		mutable int2 entry_pos;
 		mutable bool is_finished;
+	};
 
-		mutable Color color;
+	struct PathNode {
+		int2 point;
+		int quad_id;
 	};
 
 	int findQuad(int2 pos) const;
+	vector<PathNode> findPath(int2 start, int2 end, bool do_refining) const;
 	vector<int2> findPath(int2 start, int2 end) const;
 
 	int quadCount() const { return (int)m_quads.size(); }

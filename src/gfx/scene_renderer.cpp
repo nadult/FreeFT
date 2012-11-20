@@ -12,15 +12,15 @@ namespace gfx {
 	int SceneRenderer::Element::Compare(const SceneRenderer::Element &rhs) const {
 		//DASSERT(!areOverlapping(box, box));
 
-		int y_ret = m_bbox.max.y <= rhs.m_bbox.min.y? -1 : rhs.m_bbox.max.y <= m_bbox.min.y? 1 : 0;
+		int y_ret = bbox.max.y <= rhs.bbox.min.y? -1 : rhs.bbox.max.y <= bbox.min.y? 1 : 0;
 		if(y_ret)
 			return y_ret;
 
-		int x_ret = m_bbox.max.x <= rhs.m_bbox.min.x? -1 : rhs.m_bbox.max.x <= m_bbox.min.x? 1 : 0;
+		int x_ret = bbox.max.x <= rhs.bbox.min.x? -1 : rhs.bbox.max.x <= bbox.min.x? 1 : 0;
 		if(x_ret)
 			return x_ret;
 
-		int z_ret = m_bbox.max.z <= rhs.m_bbox.min.z? -1 : rhs.m_bbox.max.z <= m_bbox.min.z? 1 : 0;
+		int z_ret = bbox.max.z <= rhs.bbox.min.z? -1 : rhs.bbox.max.z <= bbox.min.z? 1 : 0;
 		return z_ret;
 	}
 
@@ -39,10 +39,10 @@ namespace gfx {
 		int3 frac(pos.x - ipos.x > eps?1 : 0, pos.y - ipos.y > eps? 1 : 0, pos.z - ipos.z > eps? 1 : 0);
 
 		Element new_elem;
-		new_elem.m_texture = texture;
-		new_elem.m_bbox = IBox(ipos, ipos + bbox + frac);
-		new_elem.m_rect = rect;
-		new_elem.m_color = color;
+		new_elem.texture = texture;
+		new_elem.bbox = IBox(ipos, ipos + bbox + frac);
+		new_elem.rect = rect;
+		new_elem.color = color;
 
 		m_elements.push_back(new_elem);
 	}
@@ -54,11 +54,19 @@ namespace gfx {
 		}
 
 		Element new_elem;
-		new_elem.m_texture = nullptr;
-		new_elem.m_bbox = bbox;
-		new_elem.m_rect = worldToScreen(bbox);
-		new_elem.m_color = color;
+		new_elem.texture = nullptr;
+		new_elem.bbox = bbox;
+		new_elem.rect = worldToScreen(bbox);
+		new_elem.color = color;
 		m_elements.push_back(new_elem);
+	}
+
+	void SceneRenderer::addLine(int3 begin, int3 end, Color color) {
+		LineElement line;
+		line.begin = begin;
+		line.end = end;
+		line.color = color;
+		m_lines.push_back(line);
 	}
 
 
@@ -96,7 +104,7 @@ namespace gfx {
 
 		for(int n = 0; n < (int)m_elements.size(); n++) {
 			const Element &elem = m_elements[n];
-			IRect rect = elem.m_rect - m_view_pos;
+			IRect rect = elem.rect - m_view_pos;
 
 			for(int y = rect.min.y - rect.min.y % node_size; y < rect.max.y; y += node_size)
 				for(int x = rect.min.x - rect.min.x % node_size; x < rect.max.x; x += node_size) {
@@ -134,7 +142,7 @@ namespace gfx {
 
 				for(int j = i + 1; j < count; j++) {
 					const Element &elem2 = m_elements[grid[g + j].second];
-					int result = areOverlapping(elem1.m_rect, elem2.m_rect)? elem1.Compare(elem2): 0;
+					int result = areOverlapping(elem1.rect, elem2.rect)? elem1.Compare(elem2): 0;
 					graph[i + j * count] = result;
 					graph[j + i * count] = -result;
 				}
@@ -162,13 +170,13 @@ namespace gfx {
 
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
-				if(elem.m_texture) {
-					elem.m_texture->bind();
-					drawQuad(elem.m_rect.min, elem.m_rect.size(), elem.m_color);
+				if(elem.texture) {
+					elem.texture->bind();
+					drawQuad(elem.rect.min, elem.rect.size(), elem.color);
 				}
 				else {
 					DTexture::bind0();
-					drawBBoxFilled(elem.m_bbox, elem.m_color);
+					drawBBoxFilled(elem.bbox, elem.color);
 				}
 			}
 
@@ -179,9 +187,13 @@ namespace gfx {
 
 		setScissorRect(m_viewport);
 		DTexture::bind0();
+		for(int n = 0; n < (int)m_lines.size(); n++) {
+			const LineElement &line = m_lines[n];
+			drawLine(line.begin, line.end, line.color);
+		}
 		for(int n = 0; n < (int)m_wire_boxes.size(); n++) {
 			const BoxElement &elem = m_wire_boxes[n];
-			drawBBox(elem.m_bbox, elem.m_color);
+			drawBBox(elem.bbox, elem.color);
 		}
 
 		setScissorTest(false);

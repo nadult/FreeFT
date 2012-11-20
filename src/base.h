@@ -247,6 +247,15 @@ int2 screenToWorld(int2 pos);
 const IRect worldToScreen(const IBox &box);
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
+struct MoveVector {
+	MoveVector(const int2 &start, const int2 &end);
+	MoveVector();
+
+	int2 vec;
+	int dx, dy, ddiag;
+};
+
+
 
 struct Color
 {

@@ -65,6 +65,18 @@ float distanceSq(const float3 &a, const float3 &b) { return lengthSq(a - b); }
 float length(const float3 &v) { return sqrt(lengthSq(v)); }
 float distance(const float3 &a, const float3 &b) { return sqrt(distanceSq(a, b)); }
 
+MoveVector::MoveVector(const int2 &start, const int2 &end) {
+	int2 diff = end - start;
+	vec.x = diff.x < 0? -1 : diff.x > 0? 1 : 0;
+	vec.y = diff.y < 0? -1 : diff.y > 0? 1 : 0;
+	dx = abs(diff.x);
+	dy = abs(diff.y);
+	ddiag = min(dx, dy);
+	dx -= ddiag;
+	dy -= ddiag;
+}
+MoveVector::MoveVector() :vec(0, 0), dx(0), dy(0), ddiag(0) { }
+
 
 static void findFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
 	DIR *dp = opendir(dirName);
