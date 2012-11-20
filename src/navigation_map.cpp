@@ -218,6 +218,21 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 			int2 closest_pos = clamp(quad.entry_pos + vec.vec * vec.ddiag, next.rect.min, next.rect.max - int2(1, 1));
 
 			closest_pos = clamp(closest_pos, quad.rect.min - int2(1, 1), quad.rect.max);
+	
+			// fixing problem with diagonal moves through obstacle corners
+			if(quad.rect.max.x > next.rect.min.x && quad.rect.min.x < next.rect.max.x) {
+				if(quad.entry_pos.x < closest_pos.x && closest_pos.x == next.rect.min.x && closest_pos.x < next.rect.max.x - 1)
+					closest_pos.x++;
+				if(quad.entry_pos.x > closest_pos.x && closest_pos.x == next.rect.max.x - 1 && closest_pos.x > next.rect.min.x)
+					closest_pos.x--;
+			}
+			else {
+				if(quad.entry_pos.y < closest_pos.y && closest_pos.y == next.rect.min.y && closest_pos.y < next.rect.max.y - 1)
+					closest_pos.y++;
+				if(quad.entry_pos.y > closest_pos.y && closest_pos.y == next.rect.max.y - 1 && closest_pos.y > next.rect.min.y)
+					closest_pos.y--;
+			}
+
 			float dist = distance(closest_pos, quad.entry_pos) + quad.dist;
 			float edist = distance(closest_pos, end);
 
@@ -285,25 +300,36 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 	if(input.empty())
 		return path;
 
-	bool prev_diag = false;
-
-	MoveVector prev_vec;
 	for(int n = 0; n < (int)input.size() - 1; n++) {
-		const IRect &src_quad = m_quads[input[n].quad_id].rect;
+		const IRect &src_quad = m_quads[input[n + 0].quad_id].rect;
+		const IRect &dst_quad = m_quads[input[n + 1].quad_id].rect;
 
 		int2 src = input[n + 0].point;
 		int2 dst = input[n + 1].point;
+		MoveVector vec(src, dst);
+		MoveVector prev_vec = path.empty()? MoveVector() : MoveVector(path.back(), src);
+		
+		bool is_horizontal = src_quad.max.x > dst_quad.min.x && src_quad.min.x < dst_quad.max.x;
+
+		bool prev_diag = prev_vec.ddiag != 0;
+		bool prev_dx = prev_vec.dx != 0;
 
 		int2 pdst = dst;
-		if(src.x < pdst.x) pdst.x--; else if(src.x > pdst.x) pdst.x++;
-		if(src.y < pdst.y) pdst.y--; else if(src.y > pdst.y) pdst.y++;
+		if(input[n].quad_id != input[n + 1].quad_id && vec.ddiag && (!(prev_diag || prev_dx != !!vec.dx) || (vec.dx == 0 && vec.dy == 0))) {
+			if(src.x < pdst.x) pdst.x--; else if(src.x > pdst.x) pdst.x++;
+			if(src.y < pdst.y) pdst.y--; else if(src.y > pdst.y) pdst.y++;
+		}
 		pdst = clamp(pdst, src_quad.min, src_quad.max - int2(1,1));
 
-		MoveVector vec(src, pdst);
+		if(is_horizontal)
+				pdst.x = clamp(pdst.x, dst_quad.min.x, dst_quad.max.x - 1);
+		else
+				pdst.y = clamp(pdst.y, dst_quad.min.y, dst_quad.max.y - 1);
 
+		vec = MoveVector(src, pdst);
 		int2 mid = src;
 
-		if(prev_diag && vec.ddiag) {
+		if((prev_diag || prev_dx != !!vec.dx) && vec.ddiag) {
 			mid += vec.vec * vec.ddiag;
 			prev_diag = vec.dx == 0 && vec.dy == 0;
 		}
@@ -318,7 +344,7 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 		path.push_back(pdst);
 	}
 	path.push_back(input.back().point);
-//	if(path.size() <= 2)
+	if(path.size() <= 2)
 		return std::move(path);
 
 	vector<int2> simplified;

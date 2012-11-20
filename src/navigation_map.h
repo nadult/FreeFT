@@ -28,6 +28,9 @@ public:
 	inline bool operator()(int x, int y) const
 		{ return m_bitmap[(x >> 3) + y * m_line_size] & (1 << (x & 7)); }
 
+	inline bool operator()(const int2 &pos) const
+	{ return pos.x < 0 || pos.y < 0 || pos.x >= m_size.x || pos.y >= m_size.y? false : operator()(pos.x, pos.y); }
+
 	struct Quad {
 		IRect rect;
 		vector<int> neighbours;

@@ -133,7 +133,7 @@ int safe_main(int argc, char **argv)
 		actor.addToRender(renderer);
 
 		navigation_map.visualize(renderer, true);
-		navigation_map.visualizePath(path, 3, renderer);
+		navigation_map.visualizePath(path, 1, renderer);
 
 		renderer.render();
 		lookAt(view_pos);
