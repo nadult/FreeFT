@@ -23,7 +23,7 @@ LINUX_LIBS=$(LIBS) -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
 INCLUDES=-I./ -Irapidxml-1.13/
 
-NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder
+NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized
 FLAGS=-rdynamic -std=gnu++0x -O2 -ggdb -ffast-math -msse2 -Wall $(NICE_FLAGS)
 
 -include Makefile.local

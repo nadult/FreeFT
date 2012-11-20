@@ -89,8 +89,9 @@ void Actor::addToRender(gfx::SceneRenderer &out) const {
 	spr_tex->setSurface(tex);
 
 	out.add(spr_tex, IRect(rect.left, rect.top, rect.right, rect.bottom) - m_sprite->m_offset, m_pos, m_bbox);
-	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
-				Color(255, 0, 0) : Color(255, 255, 255));
+	ASSERT(!m_tile_map->isOverlapping(boundingBox()));
+//	out.addBox(boundingBox(), m_tile_map && m_tile_map->isOverlapping(boundingBox())?
+//				Color(255, 0, 0) : Color(255, 255, 255));
 }
 
 void Actor::issueNextOrder() {

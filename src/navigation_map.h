@@ -55,7 +55,7 @@ public:
 	const Quad &operator[](int idx) const { return m_quads[idx]; }
 
 protected:
-
+	void extractQuads(int sx, int sy);
 	void extractQuads();
 
 	vector<Quad> m_quads;

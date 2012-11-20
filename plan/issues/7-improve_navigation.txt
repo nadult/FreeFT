@@ -2,12 +2,15 @@ Poprawić nawigację gracza:
 - zapewnienie, że gracz nie będzie wchodził na obstacle  2h DONE
 - prostowanie ścieżek  4h   DONE
 - lepszy podział na quady 4h   DONE
-- przyspieszyć podział na quady 2h
+- przyspieszyć podział na quady 2h  DONE
 - poprawić buga: czasami ścieżka jest zwracana chociaz nie da się dojśc do celu  2h  DONE
+- poprawić buga: jak się spróbuje wyszukać ścieżkę miedzy nie-połączonymi quadami to
+  się może zwiesić lub wywalić  1h  DONE
 
-+ESTIMATED_TIME:  14h
-+TIME_SPENT: 10.50h
++ESTIMATED_TIME:  15h
++TIME_SPENT: 13h
++FINISHED
 
 +WORK_LOG:
 19.11.12: 19:30 - 23:45 (4h)
-20.11.12: 11:00 - 12:45, 13:15 - 16:15, 17:10 - 19:15
+20.11.12: 11:00 - 12:45, 13:15 - 16:15, 17:10 - 21:40 (9h)

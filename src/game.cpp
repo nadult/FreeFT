@@ -87,6 +87,7 @@ int safe_main(int argc, char **argv)
 	actor.m_navigation_map = &navigation_map;
 	PTexture tex = navigation_map.getTexture();
 
+	bool navi_debug = false;
 	
 	double last_time = getTime();
 	vector<int2> path;
@@ -103,19 +104,10 @@ int safe_main(int argc, char **argv)
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 			actor.setNextOrder(Actor::makeMoveOrder(wpos, isKeyPressed(Key_lshift)));
 		}
-		if(isMouseKeyDown(1)) {
+		if(navi_debug && isMouseKeyDown(1)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 			path = navigation_map.findPath(last_pos.xz(), wpos.xz());
 			last_pos = wpos;
-//			printf("Quad: %d\n", navigation_map.findQuad(wpos.xz()));
-
-//			int length = 0;
-//			for(int n = 1; n < (int)path.size(); n++)
-//				length += abs(path[n].x - path[n - 1].x) + abs(path[n].y - path[n - 1].y);
-//			printf("Path length: %d\n", length);
-//			for(int n = 0; n < (int)path.size(); n++)
-//				printf("(%d %d) ", path[n].x, path[n].y);
-//			printf("\n");
 		}
 		if(isKeyDown(Key_kp_add))
 			actor.setNextOrder(Actor::makeChangeStanceOrder(1));
@@ -132,8 +124,10 @@ int safe_main(int argc, char **argv)
 		tile_map.addToRender(renderer);
 		actor.addToRender(renderer);
 
-		navigation_map.visualize(renderer, true);
-		navigation_map.visualizePath(path, 1, renderer);
+		if(navi_debug) {
+			navigation_map.visualize(renderer, true);
+			navigation_map.visualizePath(path, 1, renderer);
+		}
 
 		renderer.render();
 		lookAt(view_pos);

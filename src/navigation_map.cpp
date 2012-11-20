@@ -76,7 +76,7 @@ static bool areAdjacent(const IRect &a, const IRect &b) {
 	score = score * (0.5f + diff); \
 	if(score > best_score) { best = rect; best_score = score; } }
 	
-static IRect findBestRectBrute(int *counts, int stride, int2 size) {
+static IRect findBestRectBrute(short *counts, int stride, int2 size) {
 	IRect best;
 	float best_score = -1;
 
@@ -85,7 +85,7 @@ static IRect findBestRectBrute(int *counts, int stride, int2 size) {
 				int height = counts[sx + sy * stride];
 
 				for(int x = sx; x < size.x; x++) {
-					height = min(height, counts[x + sy * stride]);
+					height = min(height, (int)counts[x + sy * stride]);
 					if(height == 0)
 						break;
 
@@ -98,13 +98,14 @@ static IRect findBestRectBrute(int *counts, int stride, int2 size) {
 	return best;
 }
 
-static IRect findBestRect(int *counts, int stride, int2 size) {
+static IRect findBestRect(short *counts, int stride, int2 size) {
 	IRect best;
 	float best_score = -1;
+	DASSERT((size.x & (size.x - 1)) == 0);
 
 	for(int y = 0; y < size.y; y++) {
 		for(int psize = 1; psize <= size.x; psize *= 2) {
-			int *tcounts = &counts[y * stride];
+			short *tcounts = &counts[y * stride];
 			IRect rect;
 
 			for(int x = 0; x < size.x; x += psize) {
@@ -138,13 +139,13 @@ static IRect findBestRect(int *counts, int stride, int2 size) {
 						TRY_RECT(rect);
 					}
 					while(a > x && height) {
-						height = min(height, tcounts[a - 1]);
+						height = min(height, (int)tcounts[a - 1]);
 						a--;
 						rect = IRect(a, y - height + 1, b + 1, y + 1);
 						TRY_RECT(rect);
 					}
 					while(b < end && height) {
-						height = min(height, tcounts[b + 1]);
+						height = min(height, (int)tcounts[b + 1]);
 						b++;
 						rect = IRect(a, y - height + 1, b + 1, y + 1);
 						TRY_RECT(rect);
@@ -158,52 +159,57 @@ static IRect findBestRect(int *counts, int stride, int2 size) {
 }
 
 #undef TRY_RECT
+	
+enum { sector_size = 256 };
 
-void NavigationMap::extractQuads() {
-	m_quads.clear();
-	vector<int> line(m_size.x), line_min(m_size.x);
-	vector<u8> bitmap_copy = m_bitmap;
+void NavigationMap::extractQuads(int sx, int sy) {
+	int2 size(min((int)sector_size, m_size.x - sx), min((int)sector_size, m_size.y - sy));
 
-	printf("Creating navigation map: "); fflush(stdout);
 	int pixels = 0;
-	for(int y = 0; y < m_size.y; y++)
-		for(int x = 0; x < m_size.x; x++)
-			if((*this)(x, y))
+	vector<u8> tbitmap(sector_size * sector_size, 0);
+	vector<short> counts(sector_size * sector_size, 0);
+
+	for(int y = 0; y < size.y; y++)
+		for(int x = 0; x < size.x; x++)
+			if( (tbitmap[x + y * sector_size] = (*this)(sx + x, sy + y)) )
 				pixels++;
 
-	double time = getTime();
-	int initial_pixels = pixels;
-
 	while(pixels > 0) {
-		vector<int> counts(m_size.x * m_size.y);
-		for(int x = 0; x < m_size.x; x++)
-			counts[x] = (*this)(x, 0)? 1 : 0;
+		for(int x = 0; x < size.x; x++)
+			counts[x] = tbitmap[x]? 1 : 0;
 
-		for(int y = 1; y < m_size.y; y++)
-			for(int x = 0; x < m_size.x; x++) {
-				int offset = x + y * m_size.x;
-				counts[offset] = (*this)(x, y)? counts[offset - m_size.x] + 1 : 0;
+		for(int y = 1; y < size.y; y++)
+			for(int x = 0; x < size.x; x++) {
+				int offset = x + y * sector_size;
+				counts[offset] = tbitmap[offset]? counts[offset - sector_size] + 1 : 0;
 			}
 		
-
-		IRect best = pixels < initial_pixels / 2?
-			findBestRectBrute(&counts[0], m_size.x, m_size) :
-			findBestRect(&counts[0], m_size.x, m_size);
-
-//		printf("%d %d %d %d (%d)\n", best.min.x, best.min.y, best.width(), best.height(), pixels);
+		IRect best = (pixels < 5000? findBestRectBrute : findBestRect)
+						(&counts[0], sector_size, int2(sector_size, sector_size));
+	//	printf("%d %d %d %d +(%d %d)\n", best.min.x, best.min.y, best.width(), best.height(), sx, sy);
 
 		for(int y = best.min.y; y < best.max.y; y++)
 			for(int x = best.min.x; x < best.max.x; x++)
-				m_bitmap[(x >> 3) + y * m_line_size] &= ~(1 << (x & 7));
+				tbitmap[x + y * sector_size] = 0;
 				
 		Quad new_quad;
-		new_quad.rect = best;
+		new_quad.rect = best + int2(sx, sy);
 		m_quads.push_back(new_quad);
 
 		pixels -= best.width() * best.height();
 		printf("."); fflush(stdout);
 	}
-	bitmap_copy.swap(m_bitmap);
+}
+
+
+void NavigationMap::extractQuads() {
+	m_quads.clear();
+
+	printf("Creating navigation map: "); fflush(stdout);
+	double time = getTime();
+	for(int sy = 0; sy < m_size.y; sy += sector_size)
+		for(int sx = 0; sx < m_size.x; sx += sector_size)
+			extractQuads(sx, sy);
 	printf("(%.2f seconds)\n", getTime() - time);
 
 	for(int i = 0; i < (int)m_quads.size(); i++) {
@@ -236,6 +242,7 @@ void NavigationMap::extractQuads() {
 }
 
 int NavigationMap::findQuad(int2 pos) const {
+	//TODO: speed up?
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		if(m_quads[n].rect.isInside(pos))
 			return n;
@@ -267,6 +274,8 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 
 	std::set<pair<int, int> > queue;
 	queue.insert(make_pair(m_quads[start_id].edist, start_id));
+
+	bool end_reached = start_id == end_id;
 
 	while(!queue.empty()) {
 		int quad_id = queue.begin()->second;
@@ -309,8 +318,10 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 			float dist = distance(closest_pos, quad.entry_pos) + quad.dist;
 			float edist = distance(closest_pos, end);
 
-			if(next_id == end_id)
+			if(next_id == end_id) {
+				end_reached = true;
 				dist += distance(closest_pos, end);
+			}
 
 			if(do_refining? next.dist <= dist : next.dist + next.edist <= dist + edist)
 				continue;
@@ -326,6 +337,9 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 		}
 	}
 
+	if(!end_reached)
+		return out;
+
 	out.push_back(PathNode{end, end_id});
 	for(int quad_id = end_id; quad_id != -1; quad_id = m_quads[quad_id].src_quad) {
 		const Quad &quad = m_quads[quad_id];
@@ -333,7 +347,7 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 			out.push_back({quad.entry_pos, quad_id});
 	}
 	std::reverse(out.begin(), out.end());
-
+	
 	if(do_refining) {
 		for(int n = 0; n < (int)out.size() - 3; n++) {
 			float dist =	distance(out[n + 0].point, out[n + 1].point) +

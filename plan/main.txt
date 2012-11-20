@@ -29,7 +29,7 @@
    issues/6-basic_shooting.txt
 
  - poprawiona nawigacja
-   issues/7-improve_navigation.txt
+   issues/7-improve_navigation.txt DONE (13 / 15)
 
  - proste udźwiękowienie
    issues/9-simple-audio.txt
@@ -49,6 +49,8 @@
  - obsluga ESC podczas draggingu we wszystkich kontrolkach
  - uproszczenie przeplywu w ui::Window: rozbicie process() na kilka funkcji, np. updateFocus(), preProcess(), etc.
  - nie dodawac nowych ficzerów do ui::Window bez porządnego refaktoringu 
+ - uprościć wyszukiwanie ścieżek (NavigationMap::findPath) i przy okazji jeśli się da, pryspieszyć
+ - mapy nawigacyjne dla postaci o różnych wielkościach
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:
