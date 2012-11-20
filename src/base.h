@@ -170,6 +170,11 @@ struct Rect
 	Type2 min, max;
 };
 
+template <class Type2>
+bool operator==(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min == rhs.min && lhs.max == rhs.max; }
+template <class Type2>
+bool operator!=(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }
+
 template <class Type3>
 struct Box
 {

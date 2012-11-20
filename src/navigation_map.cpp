@@ -70,6 +70,94 @@ static bool areAdjacent(const IRect &a, const IRect &b) {
 		return a.max.x == b.min.x || a.min.x == b.max.x;
 	return false;
 }
+#define TRY_RECT(rect) { \
+	float w = rect.width(), h = rect.height(); \
+	float score = w * h, diff = min(w, h) / max(w, h); \
+	score = score * (0.5f + diff); \
+	if(score > best_score) { best = rect; best_score = score; } }
+	
+static IRect findBestRectBrute(int *counts, int stride, int2 size) {
+	IRect best;
+	float best_score = -1;
+
+	for(int sy = 0; sy < size.y; sy++) {
+			for(int sx = 0; sx < size.x; sx++) {
+				int height = counts[sx + sy * stride];
+
+				for(int x = sx; x < size.x; x++) {
+					height = min(height, counts[x + sy * stride]);
+					if(height == 0)
+						break;
+
+					IRect rect(sx, sy - height + 1, x + 1, sy + 1);
+					TRY_RECT(rect);
+				}
+			}
+		}
+
+	return best;
+}
+
+static IRect findBestRect(int *counts, int stride, int2 size) {
+	IRect best;
+	float best_score = -1;
+
+	for(int y = 0; y < size.y; y++) {
+		for(int psize = 1; psize <= size.x; psize *= 2) {
+			int *tcounts = &counts[y * stride];
+			IRect rect;
+
+			for(int x = 0; x < size.x; x += psize) {
+				if(psize == 1) {
+					if(tcounts[x]) {
+						rect = IRect(x, y - tcounts[x] + 1, x + 1, y + 1);
+						TRY_RECT(rect);
+					}
+				}
+				else {
+					int a = x + psize / 2;
+					int b = a - 1, end = x + psize - 1;
+					int height = min(tcounts[a], tcounts[b]);
+					rect = IRect(a, y - height + 1, b + 1, y + 1);
+					TRY_RECT(rect);
+					if(!height)
+						continue;
+
+					while(a > x && b < end && height) {
+						int lheight = tcounts[a - 1];
+						int rheight = tcounts[b + 1];
+						if(lheight > rheight) {
+							height = min(height, lheight);
+							a--;
+						}
+						else {
+							height = min(height, rheight);
+							b++;
+						}
+						rect = IRect(a, y - height + 1, b + 1, y + 1);
+						TRY_RECT(rect);
+					}
+					while(a > x && height) {
+						height = min(height, tcounts[a - 1]);
+						a--;
+						rect = IRect(a, y - height + 1, b + 1, y + 1);
+						TRY_RECT(rect);
+					}
+					while(b < end && height) {
+						height = min(height, tcounts[b + 1]);
+						b++;
+						rect = IRect(a, y - height + 1, b + 1, y + 1);
+						TRY_RECT(rect);
+					}
+				}
+			}
+		}
+	}
+
+	return best;
+}
+
+#undef TRY_RECT
 
 void NavigationMap::extractQuads() {
 	m_quads.clear();
@@ -83,7 +171,10 @@ void NavigationMap::extractQuads() {
 			if((*this)(x, y))
 				pixels++;
 
-	while(pixels) {
+	double time = getTime();
+	int initial_pixels = pixels;
+
+	while(pixels > 0) {
 		vector<int> counts(m_size.x * m_size.y);
 		for(int x = 0; x < m_size.x; x++)
 			counts[x] = (*this)(x, 0)? 1 : 0;
@@ -94,29 +185,12 @@ void NavigationMap::extractQuads() {
 				counts[offset] = (*this)(x, y)? counts[offset - m_size.x] + 1 : 0;
 			}
 		
-		IRect best;
-		float best_score = -1;
 
-		for(int sy = 0; sy < m_size.y; sy++) {
-			for(int sx = 0; sx < m_size.x; sx++) {
-				int height = counts[sx + sy * m_size.x];
-				for(int x = sx; x < m_size.x; x++) {
-					height = min(height, counts[x + sy * m_size.x]);
-					if(height == 0)
-						break;
+		IRect best = pixels < initial_pixels / 2?
+			findBestRectBrute(&counts[0], m_size.x, m_size) :
+			findBestRect(&counts[0], m_size.x, m_size);
 
-					int width = x - sx + 1;
-					float score = height * width;
-					float diff = min(width, height) / float(max(width, height));
-					score = score * (0.5f + diff);
-
-					if(score > best_score) {
-						best = IRect(sx, sy - height + 1, x + 1, sy + 1);
-						best_score = score;
-					}
-				}
-			}
-		}
+//		printf("%d %d %d %d (%d)\n", best.min.x, best.min.y, best.width(), best.height(), pixels);
 
 		for(int y = best.min.y; y < best.max.y; y++)
 			for(int x = best.min.x; x < best.max.x; x++)
@@ -128,10 +202,9 @@ void NavigationMap::extractQuads() {
 
 		pixels -= best.width() * best.height();
 		printf("."); fflush(stdout);
-	//	printf("%d %d %d %d (%d)\n", best.min.x, best.min.y, best.width(), best.height(), pixels);
 	}
 	bitmap_copy.swap(m_bitmap);
-	printf("\n");
+	printf("(%.2f seconds)\n", getTime() - time);
 
 	for(int i = 0; i < (int)m_quads.size(); i++) {
 		Quad &quad1 = m_quads[i];
