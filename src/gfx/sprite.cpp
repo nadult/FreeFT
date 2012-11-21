@@ -271,8 +271,12 @@ namespace gfx
 				(frame_id * m_dir_count + dir_id) * 4 + l :
 				dir_id * m_frame_count + l * image_count + frame_id;
 
+		//TODO: there are still some bugs here
 		for(int l = 0; l < 4; l++) {
 			int id = ids[l];
+//			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
+			if(id >= (int)images.size())
+				continue;
 			size.x = max(size.x, points[id].x + images[id].size.x);
 			size.y = max(size.y, points[id].y + images[id].size.y);
 
@@ -283,6 +287,9 @@ namespace gfx
 
 		for(int l = 0; l < 4; l++) {
 			int id = ids[l];
+//			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
+			if(id >= (int)images.size())
+				continue;
 			if(!images[id].size.x || !images[id].size.y)
 				continue;
 

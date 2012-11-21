@@ -46,14 +46,14 @@ public:
 	Resource(PSprite res, int id) :m_type(ResType::sprite), m_id(id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = worldToScreen(IBox({0, 0, 0}, res->m_bbox)).size();
-		for(int a = 0; a < (int)res->m_anims.size(); a++)
-			for(int i = 0; i < (int)res->m_anims[a].images.size(); i++)
-				m_rect_size = max(m_rect_size, res->m_anims[a].images[i].size);
+		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->m_bbox + int3{4,4,4})).size();
+
+		m_last_time = getTime();
+		m_frame_id = m_dir_id = m_seq_id = 0;
 	}
 
 	void draw(int2 pos, bool is_selected) const {
-		Color outline_col = is_selected? Color::red : Color::white;
+		Color outline_col = is_selected? Color::red : Color(255, 255, 255, 100);
 
 		if(m_type == ResType::tile) {
 			const Tile *tile = static_cast<const Tile*>(m_resource.get());
@@ -78,18 +78,40 @@ public:
 			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
 			Sprite::Rect srect;
 
-			Texture tex = sprite->getFrame(0, 0, 0, &srect);
+
+			Texture tex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, &srect);
 			DTexture dtex;
 			dtex.setSurface(tex);
 			dtex.bind();
 
+			IBox box({0,0,0}, sprite->m_bbox);
+			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));
 			IRect rect = IRect(srect.left, srect.top, srect.right, srect.bottom) - sprite->m_offset;
-			lookAt(-pos);
-			drawQuad({0, 0}, rect.size());
+			lookAt(brect.min - pos);
+			drawQuad(rect.min, rect.size());
 		
 			DTexture::bind0();	
-			lookAt(-pos + rect.min);
-			drawBBox(IBox({0,0,0}, sprite->m_bbox), outline_col);
+			drawBBox(box, outline_col);
+
+			double time = getTime();
+			if(time - m_last_time > 1 / 24.0) {
+				m_frame_id++;
+				m_last_time = time;
+			}
+			if(isKeyDown(Key_up))
+				m_seq_id++;
+			if(isKeyDown(Key_down))
+				m_seq_id--;
+			if(isKeyDown(Key_left))
+				m_dir_id--;
+			if(isKeyDown(Key_right))
+				m_dir_id++;
+
+			m_seq_id = (m_seq_id + (int)sprite->m_sequences.size()) % (int)sprite->m_sequences.size();
+			const Sprite::Sequence &seq = sprite->m_sequences[m_seq_id];
+			const Sprite::Animation &anim = sprite->m_anims[sprite->m_sequences[m_seq_id].m_anim_id];
+			m_dir_id = (m_dir_id + anim.m_dir_count) % anim.m_dir_count;
+			m_frame_id = (m_frame_id + (int)seq.m_frames.size())% (int)seq.m_frames.size();
 		}
 	}
 
@@ -102,6 +124,9 @@ private:
 	Ptr<RefCounter> m_resource;
 	ResType::Type m_type;
 	int m_id;
+	
+	mutable double m_last_time;
+	mutable int m_frame_id, m_seq_id, m_dir_id;
 };
 
 class ResourceView: public Window
