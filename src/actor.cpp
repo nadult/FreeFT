@@ -6,15 +6,121 @@
 
 using namespace gfx;
 
+namespace ActionId {
+	static const bool s_is_looped[count] = {
+		true,
+		true,
+		true,
+
+		false,
+		false,
+
+		false,
+		false,
+	};
+
+	bool isLooped(Type val) {
+		DASSERT(val >= 0 && val < count);
+		return s_is_looped[val];
+	}
+}
+
+static const char *s_wep_names[WeaponClassId::count] = {
+	"",
+	"Club",
+	"Heavy",
+	"Knife",
+	"Minigun",
+	"Pistol",
+	"Rifle",
+	"Rocket",
+	"SMG",
+	"Spear",
+};
+
+static const char *s_attack_names[WeaponClassId::count * 2] = {
+	"UnarmedOne",
+	"UnarmedTwo",
+	"ClubSwing",
+	nullptr,
+	"HeavyBurst",
+	"HeavySingle",
+	"KnifeSlash",
+	nullptr,
+	"MinigunBurst",
+	nullptr,
+	"PistolSingle",
+	nullptr,
+	"RifleBurst",
+	"RifleSingle", 
+	"RocketSingle",
+	nullptr,
+	"SMGBurst",
+	"SMGSingle",
+	"SpearThrow",
+	nullptr,
+};
+
+// W konstruktorze wyszukac wszystkie animacje i trzymac id-ki zamiast nazw
+static const char *s_seq_names[ActionId::count][StanceId::count] = {
+	// standing, 		crouching,			prone,
+	{ "Stand%s",		"Crouch%s",			"Prone%s" },			// standing
+	{ "StandWalk%s",	"CrouchWalk",		"ProneWalk" },		// walking
+	{ "StandRun",		nullptr,			nullptr },			// running
+
+	{ nullptr,			"CrouchStand", 		"ProneCrouch" },	// stance up
+	{ "StandCrouch",	"CrouchProne", 		nullptr },			// stance down
+
+	{ nullptr,			nullptr,			nullptr },			// attack handled elsewhere
+	{ nullptr,			nullptr,			nullptr },			// attack handled elsewhere
+};
+
+AnimationMap::AnimationMap(gfx::PSprite sprite) {
+	DASSERT(sprite);
+	m_seq_ids.resize(ActionId::count * WeaponClassId::count * StanceId::count, -1);
+
+	for(int a = 0; a < ActionId::count; a++)
+		for(int w = 0; w < WeaponClassId::count; w++)
+			for(int s = 0; s < StanceId::count; s++) {
+				const string &name = sequenceName((StanceId::Type)s, (ActionId::Type)a, (WeaponClassId::Type)w);
+				if(!name.empty())
+					m_seq_ids[s + (a * WeaponClassId::count + w) * StanceId::count] =
+						sprite->findSequence(name.c_str());
+			}
+}
+
+string AnimationMap::sequenceName(StanceId::Type stance, ActionId::Type action, WeaponClassId::Type weapon) const {
+	char seq_name[64] = "";
+
+	if(action == ActionId::attack1 || action == ActionId::attack2) {
+		int attack_id = weapon * 2 + (action == ActionId::attack1? 0 : 1);
+		if(s_attack_names[attack_id])
+			snprintf(seq_name, sizeof(seq_name), s_seq_names[ActionId::standing][stance],
+						s_attack_names[attack_id]);
+	}
+	else if(s_seq_names[action][stance])
+		snprintf(seq_name, sizeof(seq_name), s_seq_names[action][stance], s_wep_names[weapon]);
+
+	return seq_name;
+}
+
+int AnimationMap::sequenceId(StanceId::Type stance, ActionId::Type action, WeaponClassId::Type weapon) const {
+	if(m_seq_ids.empty())
+		return -1;
+	return m_seq_ids[stance + (action * WeaponClassId::count + weapon) * StanceId::count];
+}
+
 Actor::Actor(const char *spr_name, int3 pos) :Entity(int3(1, 1, 1), pos) {
 	m_sprite = Sprite::mgr[spr_name];
-//	m_sprite->printInfo();
+	m_sprite->printInfo();
+	m_anim_map = AnimationMap(m_sprite);
 
 	m_bbox = m_sprite->m_bbox;
 	m_issue_next_order = false;
-	m_stance = sStanding;
+	m_stance_id = StanceId::standing;
 
-	setSequence(aStanding);
+	m_weapon_id = WeaponClassId::unarmed;
+	setSequence(ActionId::standing);
 	lookAt(int3(0, 0, 0));
 	m_order = m_next_order = makeDoNothingOrder();
 }
@@ -27,18 +133,18 @@ void Actor::think(double current_time, double time_delta) {
 	if(m_issue_next_order)
 		issueNextOrder();
 
-	OrderId order_id = m_order.m_id;
-	if(order_id == oDoNothing) {
+	OrderId::Type order_id = m_order.m_id;
+	if(order_id == OrderId::do_nothing) {
 		fixPos();
-		setSequence(aStanding);
+		setSequence(ActionId::standing);
 		m_issue_next_order = true;
 	}
-	else if(order_id == oMove) {
+	else if(order_id == OrderId::move) {
 		DASSERT(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
 		
-		setSequence(m_order.m_flags? aRunning : aWalking);
+		setSequence(m_order.m_flags? ActionId::running : ActionId::walking);
 		float speed = m_order.m_flags? 20.0f:
-			m_stance == sStanding? 10.0f : m_stance == sCrouching? 6.0f : 3.5f;
+			m_stance_id == StanceId::standing? 10.0f : m_stance_id == StanceId::crouching? 6.0f : 3.5f;
 
 		float dist = speed * time_delta;
 		m_issue_next_order = false;
@@ -55,7 +161,7 @@ void Actor::think(double current_time, double time_delta) {
 				m_last_pos = target;
 				m_path_t = 0.0f;
 
-				if(++m_path_pos == (int)m_path.size() || m_next_order.m_id != oDoNothing) {
+				if(++m_path_pos == (int)m_path.size() || m_next_order.m_id != OrderId::do_nothing) {
 					lookAt(target);
 					setPos(target);
 					m_path.clear();
@@ -74,8 +180,8 @@ void Actor::think(double current_time, double time_delta) {
 			}
 		}
 	}
-	else if(order_id == oChangeStance)
-		setSequence(m_order.m_flags < 0? aStanceDown : aStanceUp);
+	else if(order_id == OrderId::change_stance)
+		setSequence(m_order.m_flags < 0? ActionId::stance_down : ActionId::stance_up);
 
 	animate(current_time);
 }
@@ -95,24 +201,24 @@ void Actor::addToRender(gfx::SceneRenderer &out) const {
 }
 
 void Actor::issueNextOrder() {
-	if(m_order.m_id == oChangeStance) {
-		m_stance = (StanceId)(m_stance - m_order.m_flags);
+	if(m_order.m_id == OrderId::change_stance) {
+		m_stance_id = (StanceId::Type)(m_stance_id - m_order.m_flags);
 		//TODO: different bboxes for stances
 //		m_bbox = m_sprite->m_bbox;
-//		if(m_stance == sCrouching && m_bbox.y == 9)
+//		if(m_stance_id == StanceId::crouching && m_bbox.y == 9)
 //			m_bbox.y = 5;
-//		if(m_stance == sProne && m_bbox.y == 9)
+//		if(m_stance_id == StanceId::prone && m_bbox.y == 9)
 //			m_bbox.y = 2;
-		DASSERT(m_stance >= 0 && m_stance < stanceCount);
+		DASSERT(m_stance_id >= 0 && m_stance_id < StanceId::count);
 	}
 
-	if(m_next_order.m_id == oMove)
+	if(m_next_order.m_id == OrderId::move)
 		issueMoveOrder();
 	else {
-		if(m_next_order.m_id == oChangeStance) {
+		if(m_next_order.m_id == OrderId::change_stance) {
 			if( m_next_order.m_flags == 0 ||
-						(m_next_order.m_flags < 0 && m_stance == sProne) ||
-						(m_next_order.m_flags > 0 && m_stance == sStanding) )
+						(m_next_order.m_flags < 0 && m_stance_id == StanceId::prone) ||
+						(m_next_order.m_flags > 0 && m_stance_id == StanceId::standing) )
 				m_next_order = makeDoNothingOrder();
 		}
 
@@ -124,9 +230,9 @@ void Actor::issueNextOrder() {
 }
 
 void Actor::issueMoveOrder() {
-	OrderId order_id = m_next_order.m_id;
+	OrderId::Type order_id = m_next_order.m_id;
 	int3 new_pos = m_next_order.m_pos;
-	DASSERT(order_id == oMove && m_navigation_map);
+	DASSERT(order_id == OrderId::move && m_navigation_map);
 
 	new_pos = max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
@@ -172,40 +278,35 @@ void Actor::issueMoveOrder() {
 		}
 	}
 		
-	if(m_path.size() <= 1 || m_stance != sStanding)
+	if(m_path.size() <= 1 || m_stance_id != StanceId::standing)
 		m_order.m_flags = 0;
 
 	DASSERT(!m_path.empty());
 }
 
-// W konstruktorze wyszukac wszystkie animacje i trzymac id-ki zamiast nazw
-static const char *s_seq_names[Actor::actionCount][Actor::stanceCount] = {
-	// standing, 		crouching,			prone,
-	{ "Stand", 			"Crouch",			"Prone" },			// standing
-	{ "StandWalk", 		"CrouchWalk",		"ProneWalk" },		// walking
-	{ "StandRun",		nullptr,			nullptr },			// running
-
-	{ nullptr,			"CrouchStand", 		"ProneCrouch" },	// stance up
-	{ "StandCrouch",	"CrouchProne", 		nullptr },			// stance down
-};
+void Actor::setWeapon(WeaponClassId::Type weapon) {
+	m_weapon_id = weapon;
+	setSequence(m_action_id);
+}
 
 // sets seq_id, frame_id and seq_name
-void Actor::setSequence(ActionId action) {
-	DASSERT(action < actionCount && m_stance < stanceCount);
-	const char *name = s_seq_names[action][m_stance];
-	DASSERT(name);
+void Actor::setSequence(ActionId::Type action_id) {
+	DASSERT(action_id < ActionId::count && m_stance_id < StanceId::count);
+	
+	int seq_id = m_anim_map.sequenceId(m_stance_id, action_id, m_weapon_id);
+	if(seq_id == -1) {
+		//printf("Sequence: %s not found!\n", m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_id).c_str());
+		seq_id = m_anim_map.sequenceId(m_stance_id, action_id, WeaponClassId::unarmed);
+		ASSERT(seq_id != -1);
+	}
 
-	if(m_seq_name == name)
-		return;
+	m_action_id = action_id;
 
-	int seq_id = m_sprite->findSequence(name);
-	ASSERT(seq_id != -1);
-
-	m_seq_id = seq_id;
-	m_frame_id = 0;
-	m_seq_name = name;
-
-	m_looped_anim = action != aStanceUp && action != aStanceDown;
+	if(seq_id != m_seq_id) {
+		m_seq_id = seq_id;
+		m_frame_id = 0;
+		m_looped_anim = ActionId::isLooped(action_id);
+	}
 }
 
 // sets direction
@@ -238,6 +339,6 @@ void Actor::animate(double current_time) {
 }
 
 void Actor::onAnimFinished() {
-	if(m_order.m_id == oChangeStance)
+	if(m_order.m_id == OrderId::change_stance)
 		m_issue_next_order = true;
 }

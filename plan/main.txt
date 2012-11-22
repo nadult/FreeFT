@@ -51,6 +51,8 @@
  - nie dodawac nowych ficzerów do ui::Window bez porządnego refaktoringu 
  - uprościć wyszukiwanie ścieżek (NavigationMap::findPath) i przy okazji jeśli się da, pryspieszyć
  - mapy nawigacyjne dla postaci o różnych wielkościach
+ - jakiś bug na mapie nawigacyjnej dla testowej mapki (prawy dolny róg górnego budynku, przy rogu stosu desek
+   jest mały kwadracik którego chyba nie powinno tam być)
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

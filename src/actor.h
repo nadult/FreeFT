@@ -4,57 +4,100 @@
 #include "entity.h"
 #include "gfx/sprite.h"
 
+namespace OrderId {
+	enum Type {
+		do_nothing,
+		change_stance,
+		move,
+
+		count,
+	};
+}
+
+namespace StanceId {
+	enum Type {
+		standing,
+		crouching,
+		prone,
+
+		count,
+	};
+}
+
+
+namespace ActionId {
+	enum Type {
+		standing,
+		walking,
+		running,
+
+		stance_up,
+		stance_down,
+
+		attack1,
+		attack2,
+
+		count,
+	};
+
+	bool isLooped(Type);
+}
+
+namespace WeaponClassId {
+	enum Type {
+		unarmed,
+		club,
+		heavy,
+		knife,
+		minigun,
+		pistol,
+		rifle,
+		rocket,
+		smg,
+		spear,
+		
+		count,
+	};
+};
+
+class AnimationMap {
+public:
+	AnimationMap(gfx::PSprite);
+	AnimationMap() = default;
+
+	int sequenceId(StanceId::Type, ActionId::Type, WeaponClassId::Type) const;
+	string sequenceName(StanceId::Type, ActionId::Type, WeaponClassId::Type) const;
+
+private:
+	vector<int> m_seq_ids;
+};
+
 class Actor: public Entity {
 public:
 	Actor(const char *spr_name, int3 pos);
 
-	enum OrderId {
-		oDoNothing,
-		oChangeStance,
-		oMove,
-
-		orderCount,
-	};
-
-	enum StanceId {
-		sStanding,
-		sCrouching,
-		sProne,
-
-		stanceCount,
-	};
-
-	enum ActionId {
-		aStanding,
-		aWalking,
-		aRunning,
-
-		aStanceUp,
-		aStanceDown,
-
-		actionCount,
-	};
-
 	struct Order {
-		OrderId m_id;
+		OrderId::Type m_id;
 		int3 m_pos;
 		int m_flags;
 	};
 
-	static Order makeMoveOrder(int3 target_pos, bool run)	{ return Order{oMove, target_pos, run?1 : 0}; }
-	static Order makeDoNothingOrder() { return Order{oDoNothing, int3(), 0}; }
-	static Order makeChangeStanceOrder(int target_stance) { return Order{oChangeStance, int3(), target_stance}; }
+	static Order makeMoveOrder(int3 target_pos, bool run)	{ return Order{OrderId::move, target_pos, run?1 : 0}; }
+	static Order makeDoNothingOrder() { return Order{OrderId::do_nothing, int3(), 0}; }
+	static Order makeChangeStanceOrder(int target_stance) { return Order{OrderId::change_stance, int3(), target_stance}; }
 
 	void setNextOrder(Order order);
 	void think(double current_time, double time_delta);
 
 	virtual void addToRender(gfx::SceneRenderer&) const;
+	WeaponClassId::Type weaponId() const { return m_weapon_id; }
+	void setWeapon(WeaponClassId::Type);
 
 protected:
 	void issueNextOrder();
 	void issueMoveOrder();
 
-	void setSequence(ActionId action);
+	void setSequence(ActionId::Type);
 	void lookAt(int3 pos);
 
 	void animate(double current_time);
@@ -67,7 +110,6 @@ protected:
 
 	// animation state
 	bool m_looped_anim;
-	const char *m_seq_name; // TODO: store some id instead of char*
 	int m_seq_id, m_frame_id;
 	int m_dir;
 	double m_last_time;
@@ -76,11 +118,14 @@ protected:
 	int3 m_last_pos;
 	float m_path_t;
 	int m_path_pos;
-	vector<int3> m_path;	
+	vector<int3> m_path;
 
-	StanceId m_stance;
+	ActionId::Type m_action_id;
+	StanceId::Type m_stance_id;
+	WeaponClassId::Type m_weapon_id;
 
 	gfx::PSprite m_sprite;
+	AnimationMap m_anim_map;
 };
 
 

@@ -1,10 +1,13 @@
 Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych postaw
-- dodanie obsługi animacji trzymania broni podczas stania / leżenia / chodzenia / etc.  2h
+- dodanie obsługi animacji trzymania broni podczas stania / leżenia / chodzenia / etc.  2h DONE
 - strzelanie do konkretnego celu (jakiejś encji, którą można zniszczyć): dorobienie encji typu Target  2h
 - różne tryby strzelania; zorientowanie się czy da się strzelać trybem ciągłym, a nie tylko krótkimi seriami   2h
+- strzelanie z plazmówek i laserówek, rendering pocisków, strzelanie z rakietnicy  4h
+- rozwalanie Dummy.spr		3h
 
 
-+ESTIMATED_TIME:
-+TIME_SPENT: 0h
++ESTIMATED_TIME: 13h
++TIME_SPENT: 1.50h
 
 +WORK_LOG:
+22.11.12: 20:30 - 22:00

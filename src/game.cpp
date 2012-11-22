@@ -35,7 +35,7 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	Actor actor("characters/Power", int3(100, 1, 70));
+	Actor actor("characters/ReaverMale", int3(100, 1, 70));
 	printf("Actor size: %d %d %d\n",
 			actor.boundingBox().width(),
 			actor.boundingBox().height(),
@@ -113,6 +113,8 @@ int safe_main(int argc, char **argv)
 			actor.setNextOrder(Actor::makeChangeStanceOrder(1));
 		if(isKeyDown(Key_kp_subtract))
 			actor.setNextOrder(Actor::makeChangeStanceOrder(-1));
+		if(isKeyDown('W'))
+			actor.setWeapon((WeaponClassId::Type)((actor.weaponId() + 1) % WeaponClassId::count));
 
 		double time = getTime();
 		actor.think(time, time - last_time); //TODO: problem with delta in the first frame

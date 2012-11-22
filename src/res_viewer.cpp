@@ -94,8 +94,8 @@ public:
 			drawBBox(box, outline_col);
 
 			double time = getTime();
-			if(time - m_last_time > 1 / 24.0) {
-				m_frame_id++;
+			if(time - m_last_time > 1 / 15.0) {
+				m_frame_id = m_frame_id + 1;
 				m_last_time = time;
 			}
 			if(isKeyDown(Key_up))
@@ -111,7 +111,8 @@ public:
 			const Sprite::Sequence &seq = sprite->m_sequences[m_seq_id];
 			const Sprite::Animation &anim = sprite->m_anims[sprite->m_sequences[m_seq_id].m_anim_id];
 			m_dir_id = (m_dir_id + anim.m_dir_count) % anim.m_dir_count;
-			m_frame_id = (m_frame_id + (int)seq.m_frames.size())% (int)seq.m_frames.size();
+
+			m_frame_id = m_frame_id % sprite->frameCount(m_seq_id);
 		}
 	}
 
