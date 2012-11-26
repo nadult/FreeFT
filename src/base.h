@@ -24,8 +24,8 @@ struct int2
 	int2(int x, int y) : x(x), y(y) { }
 	int2() { }
 
-	int2 operator+(const int2 rhs) const { return int2(x + rhs.x, y + rhs.y); }
-	int2 operator-(const int2 rhs) const { return int2(x - rhs.x, y - rhs.y); }
+	int2 operator+(const int2 &rhs) const { return int2(x + rhs.x, y + rhs.y); }
+	int2 operator-(const int2 &rhs) const { return int2(x - rhs.x, y - rhs.y); }
 	int2 operator*(int s) const { return int2(x * s, y * s); }
 	int2 operator/(int s) const { return int2(x / s, y / s); }
 	int2 operator%(int s) const { return int2(x % s, y % s); }
@@ -45,9 +45,9 @@ struct int3
 	int3(int x, int y, int z) : x(x), y(y), z(z) { }
 	int3() { }
 
-	int3 operator+(const int3 rhs) const { return int3(x + rhs.x, y + rhs.y, z + rhs.z); }
-	int3 operator-(const int3 rhs) const { return int3(x - rhs.x, y - rhs.y, z - rhs.z); }
-	int3 operator*(const int3 rhs) const { return int3(x * rhs.x, y * rhs.y, z * rhs.z); }
+	int3 operator+(const int3 &rhs) const { return int3(x + rhs.x, y + rhs.y, z + rhs.z); }
+	int3 operator-(const int3 &rhs) const { return int3(x - rhs.x, y - rhs.y, z - rhs.z); }
+	int3 operator*(const int3 &rhs) const { return int3(x * rhs.x, y * rhs.y, z * rhs.z); }
 	int3 operator*(int s) const { return int3(x * s, y * s, z * s); }
 	int3 operator/(int s) const { return int3(x / s, y / s, z / s); }
 	int3 operator%(int s) const { return int3(x % s, y % s, z % s); }
@@ -85,12 +85,12 @@ struct int4
 struct float2
 {
 	float2(float x, float y) : x(x), y(y) { }
-	float2(int2 xy) :x(xy.x), y(xy.y) { }
+	float2(const int2 &xy) :x(xy.x), y(xy.y) { }
 	float2() { }
 	explicit operator int2() const { return int2((int)x, (int)y); }
 
-	float2 operator+(const float2 rhs) const { return float2(x + rhs.x, y + rhs.y); }
-	float2 operator-(const float2 rhs) const { return float2(x - rhs.x, y - rhs.y); }
+	float2 operator+(const float2 &rhs) const { return float2(x + rhs.x, y + rhs.y); }
+	float2 operator-(const float2 &rhs) const { return float2(x - rhs.x, y - rhs.y); }
 	float2 operator*(float s) const { return float2(x * s, y * s); }
 	float2 operator/(float s) const { return *this * (1.0f / s); }
 	float2 operator-() const { return float2(-x, -y); }
@@ -104,12 +104,12 @@ struct float2
 struct float3
 {
 	float3(float x, float y, float z) : x(x), y(y), z(z) { }
-	float3(int3 xyz) :x(xyz.x), y(xyz.y), z(xyz.z) { }
+	float3(const int3 &xyz) :x(xyz.x), y(xyz.y), z(xyz.z) { }
 	float3() { }
 	explicit operator int3() const { return int3((int)x, (int)y, (int)z); }
 
-	float3 operator+(const float3 rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.z); }
-	float3 operator-(const float3 rhs) const { return float3(x - rhs.x, y - rhs.y, z - rhs.z); }
+	float3 operator+(const float3 &rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.z); }
+	float3 operator-(const float3 &rhs) const { return float3(x - rhs.x, y - rhs.y, z - rhs.z); }
 	float3 operator*(float s) const { return float3(x * s, y * s, z * s); }
 	float3 operator/(float s) const { return *this * (1.0f / s); }
 	float3 operator-() const { return float3(-x, -y, -z); }
@@ -140,6 +140,24 @@ struct float4
 
 	float x, y, z, w;
 };
+
+class Ray {
+public:
+	Ray(const float3 &origin, const float3 &dir) :m_origin(origin), m_dir(dir) {
+		m_inv_dir = float3(1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z);
+	}
+	Ray() { }
+
+	const float3 &dir() const { return m_dir; }
+	const float3 &invDir() const { return m_inv_dir; }
+	const float3 &origin() const { return m_origin; }
+	const float3 at(float t) const { return m_origin + m_dir * t; }
+
+	float3 m_origin;
+	float3 m_dir;
+	float3 m_inv_dir;
+};
+
 
 template <class Type2>
 struct Rect
@@ -175,11 +193,14 @@ bool operator==(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min
 template <class Type2>
 bool operator!=(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }
 
+
 template <class Type3>
 struct Box
 {
 	typedef decltype(Type3().x) Type;
 
+	template <class TType3>
+	Box(const Box<TType3> &other) :min(other.min), max(other.max) { }
 	Box(Type3 min, Type3 max) :min(min), max(max) { }
 	Box(Type minX, Type minY, Type minZ, Type maxX, Type maxY, Type maxZ)
 		:min(minX, minY, minZ), max(maxX, maxY, maxZ) { }
@@ -204,6 +225,9 @@ struct Box
 
 	Type3 min, max;
 };
+
+// returns infinity if doesn't intersect
+float intersection(const Ray &ray, const Box<float3> &box);
 
 template <class T>
 bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {
@@ -232,14 +256,20 @@ inline int3 asXZ(const int2 &pos) { return int3(pos.x, 0, pos.y); }
 inline int3 asXY(const int2 &pos) { return int3(pos.x, pos.y, 0); }
 inline int3 asXZY(const int2 &pos, int y) { return int3(pos.x, y, pos.y); }
 
+inline float3 asXZ(const float2 &pos) { return float3(pos.x, 0, pos.y); }
+inline float3 asXY(const float2 &pos) { return float3(pos.x, pos.y, 0); }
+inline float3 asXZY(const float2 &pos, float y) { return float3(pos.x, y, pos.y); }
+
 float dot(const float2 &a, const float2 &b);
 float dot(const float3 &a, const float3 &b);
 float dot(const float4 &a, const float4 &b);
 
 
+float lengthSq(const float2&);
 float lengthSq(const float3&);
 float distanceSq(const float3&, const float3&);
 
+float length(const float2&);
 float length(const float3&);
 float distance(const float3&, const float3&);
 
@@ -248,6 +278,8 @@ int2 worldToScreen(int3 pos);
 
 float2 screenToWorld(float2 pos);
 int2 screenToWorld(int2 pos);
+
+Ray screenRay(int2 screen_pos);
 
 const IRect worldToScreen(const IBox &box);
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }

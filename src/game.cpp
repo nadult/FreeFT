@@ -35,7 +35,7 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	Actor actor("characters/ReaverMale", int3(100, 1, 70));
+	Actor actor("characters/LeatherMale", int3(100, 1, 70));
 	printf("Actor size: %d %d %d\n",
 			actor.boundingBox().width(),
 			actor.boundingBox().height(),
@@ -91,7 +91,7 @@ int safe_main(int argc, char **argv)
 	
 	double last_time = getTime();
 	vector<int2> path;
-	int3 last_pos(0, 0, 0);
+	int3 last_pos(0, 0, 0), target_pos(0, 0, 0);
 
 	while(pollEvents()) {
 		if(isKeyDown(Key_esc))
@@ -102,7 +102,10 @@ int safe_main(int argc, char **argv)
 
 		if(isMouseKeyPressed(0) && !isKeyPressed(Key_lctrl)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
-			actor.setNextOrder(Actor::makeMoveOrder(wpos, isKeyPressed(Key_lshift)));
+			actor.setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
+		}
+		if(isMouseKeyDown(1)) {
+			actor.setNextOrder(attackOrder(0, target_pos));
 		}
 		if(navi_debug && isMouseKeyDown(1)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
@@ -110,11 +113,15 @@ int safe_main(int argc, char **argv)
 			last_pos = wpos;
 		}
 		if(isKeyDown(Key_kp_add))
-			actor.setNextOrder(Actor::makeChangeStanceOrder(1));
+			actor.setNextOrder(changeStanceOrder(1));
 		if(isKeyDown(Key_kp_subtract))
-			actor.setNextOrder(Actor::makeChangeStanceOrder(-1));
+			actor.setNextOrder(changeStanceOrder(-1));
 		if(isKeyDown('W'))
-			actor.setWeapon((WeaponClassId::Type)((actor.weaponId() + 1) % WeaponClassId::count));
+			actor.setNextOrder(
+				changeWeaponOrder((WeaponClassId::Type)((actor.weaponId() + 1) % WeaponClassId::count)));
+
+		Ray ray = screenRay(getMousePos() + view_pos);
+		auto isect = tile_map.intersect(ray, -1.0f/0.0f, 1.0f/0.0f);
 
 		double time = getTime();
 		actor.think(time, time - last_time); //TODO: problem with delta in the first frame
@@ -126,6 +133,26 @@ int safe_main(int argc, char **argv)
 		tile_map.addToRender(renderer);
 		actor.addToRender(renderer);
 
+		if(isect.node_id != -1) {
+			IBox box = tile_map(isect.node_id)(isect.instance_id).boundingBox();
+			box += tile_map.nodePos(isect.node_id);
+			renderer.addBox(box);
+
+			float3 target = ray.at(isect.t);
+			float3 origin = actor.pos() + ((float3)actor.bboxSize()) * 0.5f;
+			float3 dir = target - origin;
+
+			Ray shoot_ray(origin, dir / length(dir));
+			auto shoot_isect = tile_map.intersect(shoot_ray, -10.0f, 1.0f/0.0f);
+
+			if(shoot_isect.node_id != -1) {
+				IBox box = tile_map(shoot_isect.node_id)(shoot_isect.instance_id).boundingBox();
+				box += tile_map.nodePos(shoot_isect.node_id);
+				renderer.addBox(box, Color(255, 0, 0));
+				target_pos = (int3)(shoot_ray.at(shoot_isect.t));
+			}
+		}
+
 		if(navi_debug) {
 			navigation_map.visualize(renderer, true);
 			navigation_map.visualizePath(path, 1, renderer);
@@ -134,18 +161,28 @@ int safe_main(int argc, char **argv)
 		renderer.render();
 		lookAt(view_pos);
 
-/*		{
+		{
 			lookAt({0, 0});
 			char text[256];
-
-			double time = GetTime();
-			double frameTime = time - lastFrameTime;
-			lastFrameTime = time;
 			
-			string profData = Profiler::getStats();
-			Profiler::nextFrame();
-			printf("%s\n", profData.c_str());
-		}*/
+			drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
+			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
+
+			gfx::PFont font = gfx::Font::mgr["times_24"];
+
+			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%f %f %f) -> (%f %f %f)",
+					ray.origin().x, ray.origin().y, ray.origin().z, ray.dir().x, ray.dir().y, ray.dir().z);
+			font->drawShadowed(int2(0, 24), Color::white, Color::black, "%d %d %f",
+					isect.node_id, isect.instance_id, isect.t);
+
+//			double time = GetTime();
+//			double frameTime = time - lastFrameTime;
+//			lastFrameTime = time;
+			
+//			string profData = Profiler::getStats();
+//			Profiler::nextFrame();
+//			printf("%s\n", profData.c_str());
+		}
 
 		swapBuffers();
 	}

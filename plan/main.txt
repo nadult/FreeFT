@@ -49,10 +49,12 @@
  - obsluga ESC podczas draggingu we wszystkich kontrolkach
  - uproszczenie przeplywu w ui::Window: rozbicie process() na kilka funkcji, np. updateFocus(), preProcess(), etc.
  - nie dodawac nowych ficzerów do ui::Window bez porządnego refaktoringu 
- - uprościć wyszukiwanie ścieżek (NavigationMap::findPath) i przy okazji jeśli się da, pryspieszyć
+ - uprościć wyszukiwanie ścieżek (NavigationMap::findPath) i przy okazji jeśli się da, przyspieszyć
  - mapy nawigacyjne dla postaci o różnych wielkościach
  - jakiś bug na mapie nawigacyjnej dla testowej mapki (prawy dolny róg górnego budynku, przy rogu stosu desek
    jest mały kwadracik którego chyba nie powinno tam być)
+ - w edytorze zaznaczanie na szaro obiektów które się przecinają z kursorem
+ - znajdowanie największego kawałka przy generacji mapy nawigacyjnej robić w czasie liniowym
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

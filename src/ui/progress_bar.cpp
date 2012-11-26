@@ -62,7 +62,10 @@ namespace ui {
 			if(!bar_rect.isInside(start)) {
 				float tpos = float(m_is_horizontal? start.x : start.y) * divisor;
 				tpos -= (0.5f - tpos) * bar_size;
+				float old_pos = m_pos;
 				m_pos = clamp(tpos, 0.0f, 1.0f);
+				if(m_pos != old_pos)
+					sendEvent(this, Event::progress_bar_moved);
 			}
 			m_start_pos = m_pos;
 		}

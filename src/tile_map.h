@@ -77,6 +77,7 @@ struct TileMapNode {
 
 	const TileInstance& operator()(int idx) const { return m_instances[idx]; }
 	int   instanceCount() const { return m_instances.size(); }
+	pair<int, float> intersect(const Ray &ray, float tmin, float tmax) const;
 
 protected:
 	IBox m_bounding_box; // in local coordinates
@@ -123,6 +124,16 @@ public:
 
 	void loadFromXML(const XMLDocument&);
 	void saveToXML(XMLDocument&) const;
+
+	struct Intersection {
+		Intersection() :node_id(-1), instance_id(-1), t(1.0f / 0.0f) { }
+
+		int node_id;
+		int instance_id;
+		float t;
+	};
+
+	Intersection intersect(const Ray &ray, float tmin, float tmax) const;
 
 protected:
 	vector<Node> m_nodes;

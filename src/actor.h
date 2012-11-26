@@ -4,15 +4,6 @@
 #include "entity.h"
 #include "gfx/sprite.h"
 
-namespace OrderId {
-	enum Type {
-		do_nothing,
-		change_stance,
-		move,
-
-		count,
-	};
-}
 
 namespace StanceId {
 	enum Type {
@@ -60,6 +51,41 @@ namespace WeaponClassId {
 	};
 };
 
+namespace OrderId {
+	enum Type {
+		do_nothing,
+		move,
+		attack,
+		change_stance,
+		change_weapon,
+
+		count,
+	};
+}
+
+struct Order {
+	Order(OrderId::Type id = OrderId::do_nothing) :id(id) { }
+	
+	struct Move			{ int3 target_pos; bool run; };
+	struct ChangeStance	{ int next_stance; };
+	struct Attack		{ int3 target_pos; int mode; };
+	struct ChangeWeapon { WeaponClassId::Type target_weapon; };
+
+	OrderId::Type id;
+	union {
+		Move move;
+		Attack attack;
+		ChangeStance change_stance;
+		ChangeWeapon change_weapon;
+	};
+};
+	
+Order moveOrder(int3 target_pos, bool run);
+Order doNothingOrder();
+Order changeStanceOrder(int next_stance);
+Order attackOrder(int attack_mode, const int3 &target_pos);
+Order changeWeaponOrder(WeaponClassId::Type target_weapon);
+
 class AnimationMap {
 public:
 	AnimationMap(gfx::PSprite);
@@ -76,27 +102,20 @@ class Actor: public Entity {
 public:
 	Actor(const char *spr_name, int3 pos);
 
-	struct Order {
-		OrderId::Type m_id;
-		int3 m_pos;
-		int m_flags;
-	};
-
-	static Order makeMoveOrder(int3 target_pos, bool run)	{ return Order{OrderId::move, target_pos, run?1 : 0}; }
-	static Order makeDoNothingOrder() { return Order{OrderId::do_nothing, int3(), 0}; }
-	static Order makeChangeStanceOrder(int target_stance) { return Order{OrderId::change_stance, int3(), target_stance}; }
-
-	void setNextOrder(Order order);
+	void setNextOrder(const Order &order);
 	void think(double current_time, double time_delta);
 
 	virtual void addToRender(gfx::SceneRenderer&) const;
 	WeaponClassId::Type weaponId() const { return m_weapon_id; }
-	void setWeapon(WeaponClassId::Type);
+	
+	void printStatusInfo() const;
+
 
 protected:
 	void issueNextOrder();
 	void issueMoveOrder();
 
+	void setWeapon(WeaponClassId::Type);
 	void setSequence(ActionId::Type);
 	void lookAt(int3 pos);
 

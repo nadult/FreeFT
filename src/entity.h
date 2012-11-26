@@ -19,6 +19,7 @@ public:
 	void setPos(float3);
 	float3 pos() const { return m_pos; }
 	IBox boundingBox() const;
+	const int3 &bboxSize() const { return m_bbox; }
 
 	//TODO: pointer to Scene albo World context or something
 	TileMap *m_tile_map;

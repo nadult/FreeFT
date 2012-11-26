@@ -4,10 +4,13 @@ Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych
 - różne tryby strzelania; zorientowanie się czy da się strzelać trybem ciągłym, a nie tylko krótkimi seriami   2h
 - strzelanie z plazmówek i laserówek, rendering pocisków, strzelanie z rakietnicy  4h
 - rozwalanie Dummy.spr		3h
+- testowanie widoczności (bez dodatkowej struktury przyspieszającej)  4h DONE
+- rozwiązać problemy z przeskakującymi animacjami
 
 
-+ESTIMATED_TIME: 13h
-+TIME_SPENT: 1.50h
++ESTIMATED_TIME: 17h
++TIME_SPENT: 6.00h
 
 +WORK_LOG:
-22.11.12: 20:30 - 22:00
+22.11.12: 20:30 - 22:00  (1.50h)
+26.11.12: 15:15 - 19:45  (4.50h)

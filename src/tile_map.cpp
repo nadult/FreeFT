@@ -31,19 +31,6 @@ void TileInstance::setPos(int3 pos) {
 	m_y  = u8(pos.y);
 }
 
-void TileMap::resize(int2 newSize) {
-	clear();
-
-	//TODO: properly covert m_nodes to new coordinates
-	m_size = int2(newSize.x / Node::size_x, newSize.y / Node::size_z);
-	m_nodes.resize(m_size.x * m_size.y);
-}
-
-void TileMap::clear() {
-	m_size = int2(0, 0);
-	m_nodes.clear();
-}
-
 bool TileMapNode::isColliding(const IBox &box) const {
 	if(!m_instances.size() || !areOverlapping(box, m_bounding_box))
 		return false;
@@ -147,7 +134,41 @@ void TileMapNode::deleteSelected() {
 	m_any_selected = false;
 }
 
+pair<int, float> TileMapNode::intersect(const Ray &ray, float tmin, float tmax) const {
+	float dist = intersection(ray, (Box<float3>)m_bounding_box);
+	pair<int, float> out(-1, 1.0f / 0.0f);
+
+	if(dist < tmin || dist > tmax)
+		return out;
+
+	for(int i = 0; i < (int)m_instances.size(); i++) {
+		const TileInstance &inst = m_instances[i];
+		Box<float3> box = inst.boundingBox();
+		float dist = intersection(ray, box);
+		if(dist >= tmin && dist <= tmax && dist < out.second) {
+			out.first = i;
+			out.second = dist;
+		}
+	}
+
+	return out;
+}
+
+
 using namespace rapidxml;
+
+void TileMap::resize(int2 newSize) {
+	clear();
+
+	//TODO: properly covert m_nodes to new coordinates
+	m_size = int2(newSize.x / Node::size_x, newSize.y / Node::size_z);
+	m_nodes.resize(m_size.x * m_size.y);
+}
+
+void TileMap::clear() {
+	m_size = int2(0, 0);
+	m_nodes.clear();
+}
 
 void TileMap::loadFromXML(const XMLDocument &doc) {
 	XMLNode *mnode = doc.first_node("map");
@@ -308,6 +329,7 @@ void TileMap::select(const IBox &box, SelectionMode::Type mode) {
 const TileInstance *TileMap::at(int3 pos) const {
 	int id = pos.x / Node::size_x + (pos.z / Node::size_z) * m_size.x;
 	DASSERT(id >= 0 && id < (int)m_nodes.size());
+	//TODO: wywala sie tutaj, jak sie wypelnia na lewym dolnym krancu mapy
 
 	return m_nodes[id].at(pos - nodePos(id));
 }
@@ -319,4 +341,19 @@ void TileMap::deleteSelected() {
 
 void TileMap::moveSelected(int3 offset) {
 	//TODO: write me
+}
+	
+TileMap::Intersection TileMap::intersect(const Ray &ray, float tmin, float tmax) const {
+	Intersection out;
+
+	for(int n = 0; n < m_nodes.size(); n++) {
+		const pair<int, float> &isect = m_nodes[n].intersect(Ray(ray.origin() - nodePos(n), ray.dir()), tmin, tmax);
+		if(isect.first != -1 && isect.second < out.t) {
+			out.node_id = n;
+			out.instance_id = isect.first;
+			out.t = isect.second;
+		}
+	}
+
+	return out;
 }

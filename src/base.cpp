@@ -9,6 +9,43 @@
 
 float g_FloatParam[16];
 
+
+typedef float Matrix3[3][3];
+
+bool inverse(const Matrix3 &mat) {
+	float3 out[3];
+
+    out[0].x = mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1];
+    out[0].y = mat[0][2] * mat[2][1] - mat[0][1] * mat[2][2];
+    out[0].z = mat[0][1] * mat[1][2] - mat[0][2] * mat[1][1];
+    out[1].x = mat[1][2] * mat[2][0] - mat[1][0] * mat[2][2];
+    out[1].y = mat[0][0] * mat[2][2] - mat[0][2] * mat[2][0];
+    out[1].z = mat[0][2] * mat[1][0] - mat[0][0] * mat[1][2];
+    out[2].x = mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0];
+    out[2].y = mat[0][1] * mat[2][0] - mat[0][0] * mat[2][1];
+    out[2].z = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+
+	float det = mat[0][0] * out[0].x + mat[0][1] * out[1].x + mat[0][2] * out[2].x;
+	//TODO what if det close to 0?
+	float idet = 1.0f / det;
+
+	out[0] = out[0] * idet;
+	out[1] = out[1] * idet;
+	out[2] = out[2] * idet;
+
+	for(int i = 0; i < 3; i++) {
+		printf("%f %f %f\n", out[i].x, out[i].y, out[i].z);
+	}
+	exit(0);
+	return 1;
+}
+
+float mat[3][3] = {
+	{6, 3, 7},
+	{0, -7, 6},
+	{-6, 3, 7}
+};
+
 /* World To Screen Matrix:
  * 			    | 6  3  7|
  * 		*	    | 0 -7  6|
@@ -54,14 +91,44 @@ const IRect worldToScreen(const IBox &bbox) {
 	return IRect(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
 }
 
+float intersection(const Ray &ray, const Box<float3> &box) {
+	//TODO: check if works correctly for (+/-)INF
+	float3 inv_dir = ray.invDir();
+	float3 origin = ray.origin();
+
+	float l1   = inv_dir.x * (box.min.x - origin.x);
+	float l2   = inv_dir.x * (box.max.x - origin.x);
+	float lmin = min(l1, l2);
+	float lmax = max(l1, l2);
+
+	l1   = inv_dir.y * (box.min.y - origin.y);
+	l2   = inv_dir.y * (box.max.y - origin.y);
+	lmin = max(min(l1, l2), lmin);
+	lmax = min(max(l1, l2), lmax);
+
+	l1   = inv_dir.z * (box.min.z - origin.z);
+	l2   = inv_dir.z * (box.max.z - origin.z);
+	lmin = max(min(l1, l2), lmin);
+	lmax = min(max(l1, l2), lmax);
+
+	return lmin < lmax? lmin : 1.0f / 0.0f;
+}
+
+Ray screenRay(int2 screen_pos) {
+	float3 origin = asXZ(screenToWorld((float2)screen_pos));
+	float3 dir = float3(-1.0f / 6.0f, -1.0f / 7.0f, -1.0f / 6.0f);
+	return Ray(origin, dir / length(dir));
+}
 
 float dot(const float2 &a, const float2 &b) { return a.x * b.x + a.y * b.y; }
 float dot(const float3 &a, const float3 &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 float dot(const float4 &a, const float4 &b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
+float lengthSq(const float2 &v) { return dot(v, v); }
 float lengthSq(const float3 &v) { return dot(v, v); }
 float distanceSq(const float3 &a, const float3 &b) { return lengthSq(a - b); }
 
+float length(const float2 &v) { return sqrt(lengthSq(v)); }
 float length(const float3 &v) { return sqrt(lengthSq(v)); }
 float distance(const float3 &a, const float3 &b) { return sqrt(distanceSq(a, b)); }
 

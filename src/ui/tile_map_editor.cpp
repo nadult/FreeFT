@@ -106,7 +106,7 @@ namespace ui {
 		float2 height_off = worldToScreen(int3(0, m_grid_height, 0));
 		int3 gbox = asXZY(m_grid_size, 1);
 
-		bool select_mode = m_mode == mSelecting || m_mode == mAutoFilling;
+		bool select_mode = m_mode == mSelecting;
 		int3 bbox = m_new_tile && !select_mode? m_new_tile->m_bbox : gbox;
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
@@ -409,7 +409,7 @@ namespace ui {
 			drawGrid(box, m_grid_size, m_grid_height);
 		}
 		
-		if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom) && m_new_tile) {
+		if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom || m_mode == mAutoFilling) && m_new_tile) {
 			int3 bbox = m_new_tile->m_bbox;
 		
 			for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
