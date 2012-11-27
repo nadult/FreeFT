@@ -86,19 +86,19 @@ static IRect findBestRect(short *counts, int *line_counts, int stride, int2 size
 			int height = sx == size.x? 0 : counts[sx + sy * stride];
 			int min_k = sx;
 
-			for(int i = 0; i < sp; i++)
-				if(stack[i].second > height) {
-					int w = sx - stack[i].first, h = stack[i].second;
-					int tmin = min(w, h);
-					int score = w * h + tmin * tmin * 4;
+			while(sp && stack[sp - 1].second > height) {
+				sp--;
 
-					if(score > best_score) {
-						best = IRect(stack[i].first, sy - stack[i].second + 1, sx, sy + 1);
-						best_score = score;
-					}
-					min_k = min(min_k, stack[i].first);
-					stack[i--] = stack[--sp];
+				int w = sx - stack[sp].first, h = stack[sp].second;
+				int tmin = min(w, h);
+				int score = w * h + tmin * tmin * 4;
+
+				if(score > best_score) {
+					best = IRect(stack[sp].first, sy - stack[sp].second + 1, sx, sy + 1);
+					best_score = score;
 				}
+				min_k = min(min_k, stack[sp].first);
+			}
 
 			if(height)
 				stack[sp++] = make_pair(min_k, height);
