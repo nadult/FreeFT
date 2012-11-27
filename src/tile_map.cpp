@@ -349,7 +349,7 @@ void TileMap::moveSelected(int3 offset) {
 TileMap::Intersection TileMap::intersect(const Ray &ray, float tmin, float tmax) const {
 	Intersection out;
 
-	for(int n = 0; n < m_nodes.size(); n++) {
+	for(int n = 0; n < (int)m_nodes.size(); n++) {
 		const pair<int, float> &isect = m_nodes[n].intersect(Ray(ray.origin() - nodePos(n), ray.dir()), tmin, tmax);
 		if(isect.first != -1 && isect.second < out.t) {
 			out.node_id = n;

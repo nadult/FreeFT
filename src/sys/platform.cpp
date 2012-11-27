@@ -1,5 +1,6 @@
 #include "sys/platform.h"
 #include <cstring>
+#include <cstdio>
 
 bool Path::Element::isDot() const {
 	return size == 1 && ptr[0] == '.';
@@ -10,7 +11,7 @@ bool Path::Element::isDots() const {
 }
 
 bool Path::Element::isRoot() const {
-	return size && ptr[size - 1] == '/';
+	return size && (ptr[size - 1] == '/' || ptr[size - 1] == '\\');
 }
 
 bool Path::Element::operator==(const Element &rhs) const {
@@ -42,9 +43,10 @@ Path::Path() :m_path(".") { }
 void Path::divide(const char *ptr, vector<Element> &out) {
 	DASSERT(ptr);
 
-	if(ptr[0] == '/') { //TODO: windows
-		out.push_back(Element{ptr, 1});
-		ptr++;
+	Element root = extractRoot(ptr);
+	if(root.ptr) {
+		ptr += root.size;
+		out.push_back(root);
 	}
 
 	const char *prev = ptr;
@@ -90,16 +92,29 @@ void Path::construct(const vector<Element> &input) {
 	if(!elements.size() > 2 && elements.front().isRoot())
 		length--;
 
-	m_path.resize(length, 'x');
+	string new_path(length, ' ');
 	length = 0;
 	for(int n = 0; n < (int)elements.size(); n++) {
-		memcpy(&m_path[length], elements[n].ptr, elements[n].size);
-		length += elements[n].size;
+		const Element &elem = elements[n];
+		memcpy(&new_path[length], elem.ptr, elem.size);
+		if(elem.isRoot()) {
+			for(int i = 0; i < elem.size; i++) {
+				char c = new_path[length + i];
+				if(c >= 'a' && c <= 'z')
+					c = c + 'A' - 'a';
+				if(c == '\\')
+					c = '/';
+				new_path[length + i] = c;
+			}
+		}
+		length += elem.size;
 
-		if(n + 1 < (int)elements.size() && !elements[n].isRoot())
-			m_path[length++] = '/';
+		if(n + 1 < (int)elements.size() && !elem.isRoot())
+			new_path[length++] = '/';
 	}
-	m_path[length] = 0;
+
+	new_path[length] = 0;
+	m_path.swap(new_path);
 }
 
 const string Path::fileName() const {
@@ -110,11 +125,11 @@ const string Path::fileName() const {
 }
 
 bool Path::isRoot() const {
-	return isAbsolute()? m_path[m_path.size() - 1] == '/' : absolute().isRoot();
+	return m_path.back() == '/';
 }
 
 bool Path::isAbsolute() const {
-	return m_path[0] == '/';
+	return extractRoot(c_str()).size != 0;
 }
 
 const Path Path::relative(const Path &ref) const {
@@ -146,7 +161,6 @@ const Path Path::relative(const Path &ref) const {
 }
 
 const Path Path::absolute() const {
-	DASSERT(isValid());
 	return isAbsolute()? *this : current() / *this;
 }
 
@@ -161,7 +175,6 @@ const Path Path::operator/(const Path &other) const {
 }
 
 const Path &Path::operator/=(const Path &other) {
-	DASSERT(isValid() && other.isValid());
 	DASSERT(!other.isAbsolute());
 
 	vector<Element> elems;

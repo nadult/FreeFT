@@ -14,9 +14,8 @@ public:
 	Path();
 
 	void operator=(const Path &rhs) { m_path = rhs.m_path; }
-	void operator=(const Path &&rhs) { m_path = std::move(rhs.m_path); }
+	void operator=(Path &&rhs) { m_path = std::move(rhs.m_path); }
 
-	bool isValid() const { return !m_path.empty(); }
 	bool isRoot() const;
 	bool isAbsolute() const;
 
@@ -31,7 +30,7 @@ public:
 	const Path operator/(const Path &other) const;
 	const Path &operator/=(const Path &other);
 
-	static const Path &current();
+	static const Path current();
 
 	operator const string&() const { return m_path; }
 	const char *c_str() const { return m_path.c_str(); }
@@ -51,11 +50,12 @@ private:
 		int size;
 	};
 
+	static Element extractRoot(const char*);
 	static void divide(const char*, vector<Element>&);
 	static void simplify(const vector<Element> &src, vector<Element> &dst);
 	void construct(const vector<Element>&);
 
-	string m_path;
+	string m_path; // its always non-empty
 };
 
 struct FileEntry {

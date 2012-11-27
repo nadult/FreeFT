@@ -9,19 +9,16 @@
 #error dirent without d_type not supported
 #endif
 
+Path::Element Path::extractRoot(const char *str) {
+	if(str[0] == '/')
+		return Element{str, 1};
+	return Element{nullptr, 0};
+}
 
-const Path &Path::current() {
-	static Path path;
-	static bool is_initialized = false;
-
-	if(!is_initialized) {
-		char *pwd = getenv("PWD");
-		ASSERT(pwd && pwd[0] == '/');
-		path = pwd;
-		is_initialized = true;
-	}
-
-	return path;
+const Path Path::current() {
+	char *pwd = getenv("PWD");
+	ASSERT(pwd && pwd[0] == '/');
+	return Path(pwd);
 }
 
 bool Path::isRegularFile() const {
