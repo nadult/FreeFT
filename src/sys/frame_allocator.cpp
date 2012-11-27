@@ -35,7 +35,7 @@ namespace sys {
 	}
 
 	void FrameAllocator::beginFrame() {
-		MutexLocker locker(mutex);
+	//	MutexLocker locker(mutex);
 
 		if(allocatedBlocks)
 			EXCEPT("BeginFrame", "There is still some data allocated from last frame (",
@@ -52,7 +52,7 @@ namespace sys {
 	}
 
 	void *FrameAllocator::doAlloc(size_t bytes) {
-		MutexLocker locker(mutex);
+	//	MutexLocker locker(mutex);
 
 		if(allocated + bytes + sizeof(size_t) <= reserve) {
 			allocatedBlocks++;
@@ -69,7 +69,7 @@ namespace sys {
 	}
 
 	void FrameAllocator::doFree(void *ptr) {
-		MutexLocker locker(mutex);
+	//	MutexLocker locker(mutex);
 		maxAllocated = max(maxAllocated, allocated + allocatedAway);
 
 		if(inPool(ptr)) {
@@ -93,7 +93,7 @@ namespace sys {
 	}
 
 	bool FrameAllocator::isInPool(void *ptr) {
-		MutexLocker locker(mutex);
+		//MutexLocker locker(mutex);
 		return inPool(ptr);
 	}
 	

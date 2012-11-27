@@ -2,3 +2,7 @@
   26.11.12: 23:30 - 2:00
   27.11.12: 13:00 - 17:00
 
+- Przeportowanie na WIN32
+  - jest jakiś problem z pthreadsami (skompilowana binarka nie chce się odpalać)
+  - trzeba dopisać funkcje w platform_windows.cpp i sprawdzić czy res_viewer & editor działają jak trzeba
+  27.11.12: 17:00 - 18:00

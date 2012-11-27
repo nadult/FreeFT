@@ -1,5 +1,6 @@
 #include "tile_group.h"
 #include <cstring>
+#include <cstdio>
 
 using namespace rapidxml;
 

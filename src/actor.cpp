@@ -4,6 +4,7 @@
 #include "tile_map.h"
 #include "navigation_map.h"
 #include <cmath>
+#include <cstdio>
 
 using namespace gfx;
 

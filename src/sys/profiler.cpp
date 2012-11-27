@@ -1,5 +1,6 @@
 #include "sys/profiler.h"
 #include <cstring>
+#include <cstdio>
 
 using namespace Profiler;
 

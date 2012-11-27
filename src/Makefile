@@ -1,4 +1,4 @@
-all: editor game res_viewer
+all: editor game res_viewer game.exe
 
 BUILD_DIR=/tmp/build
 
@@ -9,22 +9,25 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 
 FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
-	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux \
+	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux sys/platform_windows \
 	editor game res_viewer base tile_map tile_group actor entity navigation_map \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog ui/edit_box \
 	ui/tile_selector ui/tile_map_editor ui/tile_group_editor
 
-MAIN_FILES=editor game res_viewer
-SHARED_FILES=$(filter-out $(MAIN_FILES), $(FILES))
+NOT_SHARED_FILES=editor game res_viewer sys/platform_linux sys/platform_windows
+SHARED_FILES=$(filter-out $(NOT_SHARED_FILES), $(FILES))
 
 LIBS=-lglfw -lbaselib -lpng -lz
 
 LINUX_LIBS=$(LIBS) -lGL -lGLU
-MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpthreadGC2
+MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
 INCLUDES=-I./ -Irapidxml-1.13/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized
-FLAGS=-rdynamic -std=gnu++0x -O0 -ggdb -ffast-math -msse2 -Wall $(NICE_FLAGS)
+
+LINUX_FLAGS=-rdynamic
+MINGW_FLAGS=
+FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS)
 
 -include Makefile.local
 
@@ -32,6 +35,7 @@ MGW_CXX=i686-mingw32-g++
 
 DEPS:=$(FILES:%=$(BUILD_DIR)/%.dep)
 SOURCES:=$(FILES:%=%.cpp)
+
 OBJECTS:=$(FILES:%=$(BUILD_DIR)/%.o)
 MGW_OBJECTS:=$(FILES:%=$(BUILD_DIR)/%_.o)
 
@@ -39,29 +43,31 @@ SHARED_OBJECTS:=$(SHARED_FILES:%=$(BUILD_DIR)/%.o)
 MGW_SHARED_OBJECTS:=$(SHARED_FILES:%=$(BUILD_DIR)/%_.o)
 
 $(DEPS): $(BUILD_DIR)/%.dep: %.cpp
-	$(CXX) $(FLAGS) $(INCLUDES) -MM $< -MT $(BUILD_DIR)/$*.o > $@
-
-#pch.h.gch: pch.h base.h base_math.h
-#	$(CXX) $(FLAGS) $(INCLUDES) pch.h -o $@
+	    $(CXX) $(FLAGS) $(INCLUDES) -MM $< -MT $(BUILD_DIR)/$*.o > $@
+	    $(CXX) $(FLAGS) $(INCLUDES) -MM $< -MT $(BUILD_DIR)/$*_.o >> $@
 
 $(OBJECTS): $(BUILD_DIR)/%.o: %.cpp
-	$(CXX) $(FLAGS) $(INCLUDES) -c $*.cpp -o $@
+	    $(CXX) $(FLAGS) $(LINUX_FLAGS) $(INCLUDES) -c $*.cpp -o $@
 
 $(MGW_OBJECTS): $(BUILD_DIR)/%_.o: %.cpp
-	$(MGW_CXX) $(FLAGS) $(INCLUDES) -c $*.cpp -o $@
+	$(MGW_CXX) $(FLAGS) $(MINGW_FLAGS) $(INCLUDES) -c $*.cpp -o $@
 
-editor: $(SHARED_OBJECTS) $(BUILD_DIR)/editor.o
-	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
+editor: $(SHARED_OBJECTS) $(BUILD_DIR)/editor.o $(BUILD_DIR)/sys/platform_linux.o
+	    $(CXX) -o $@ $^ $(LINUX_LIBS)
 
-game: $(SHARED_OBJECTS) $(BUILD_DIR)/game.o
-	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
+game: $(SHARED_OBJECTS) $(BUILD_DIR)/game.o $(BUILD_DIR)/sys/platform_linux.o
+	    $(CXX) -o $@ $^ $(LINUX_LIBS)
 
-res_viewer: $(SHARED_OBJECTS) $(BUILD_DIR)/res_viewer.o
-	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $^ $(LINUX_LIBS) -pthread
+res_viewer: $(SHARED_OBJECTS) $(BUILD_DIR)/res_viewer.o $(BUILD_DIR)/sys/platform_linux.o
+	    $(CXX) -o $@ $^ $(LINUX_LIBS)
+
+game.exe: $(MGW_SHARED_OBJECTS) $(BUILD_DIR)/game_.o $(BUILD_DIR)/sys/platform_windows_.o
+	$(MGW_CXX) -o $@ $^ $(MINGW_LIBS)
+
 
 clean:
 	-rm -f $(OBJECTS) $(MGW_OBJECTS) $(DEPS) $(BUILD_DIR)/.depend editor game res_viewer
-	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/script $(BUILD_DIR)/io $(BUILD_DIR)/sys $(BUILD_DIR)/ui
+	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui
 	-rmdir $(BUILD_DIR)
 
 $(BUILD_DIR)/.depend: $(DEPS)

@@ -113,37 +113,39 @@ namespace gfx
 	void DTexture::createMip(int level, int w, int h, TextureFormat fmt) {
 		DASSERT(isValid());
 
-		GLint gl_id;
-		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
+	//TODO: GL_TEXTURE_2D_BINDING_EXT not available on windows
+	//	GLint gl_id;
+	//	glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
 		::glBindTexture(GL_TEXTURE_2D, m_id);
 		
 		glTexImage2D(GL_TEXTURE_2D, level, fmt.glInternal(), w, h, 0, fmt.glFormat(), fmt.glType(), 0);
 					
-		::glBindTexture(GL_TEXTURE_2D, gl_id);
+	//	::glBindTexture(GL_TEXTURE_2D, gl_id);
 	}
 	
 	void DTexture::updateMip(int mip, int x, int y, int w, int h, void *pix, int pixelsInRow) {
 		DASSERT(isValid());
 
-		GLint gl_id;
-		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
+	//	GLint gl_id;
+	//	glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
 		::glBindTexture(GL_TEXTURE_2D, m_id);
 	
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, pixelsInRow);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, pix);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 					
-		::glBindTexture(GL_TEXTURE_2D, gl_id);
+	//	::glBindTexture(GL_TEXTURE_2D, gl_id);
 	}
 
 	TextureFormat DTexture::format() const {
 		DASSERT(isValid());
 
-		GLint internal = 0, gl_id;
-		glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
+		GLint internal = 0;
+	//	GLint gl_id;
+	//	glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
 		::glBindTexture(GL_TEXTURE_2D, m_id);
 		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal);
-		::glBindTexture(GL_TEXTURE_2D, gl_id);
+	//	::glBindTexture(GL_TEXTURE_2D, gl_id);
 
 		return TextureFormat(internal);
 	}

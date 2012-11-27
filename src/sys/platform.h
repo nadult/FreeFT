@@ -13,6 +13,9 @@ public:
 	Path(const Path&);
 	Path();
 
+	void operator=(const Path &rhs) { m_path = rhs.m_path; }
+	void operator=(const Path &&rhs) { m_path = std::move(rhs.m_path); }
+
 	bool isValid() const { return !m_path.empty(); }
 	bool isRoot() const;
 	bool isAbsolute() const;

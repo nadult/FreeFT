@@ -43,7 +43,7 @@ namespace sys {
 		bool inPool(void *ptr) const;
 		bool isLast(void *ptr,size_t bytes) const;
 
-		Mutex mutex;
+	//	Mutex mutex;
 		static size_t allocatedBlocks;
 
 		char *pool,*endPool;

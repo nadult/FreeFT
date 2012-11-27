@@ -1,6 +1,7 @@
 #include "gfx/sprite.h"
 #include <zlib.h>
 #include <cstring>
+#include <cstdio>
 
 namespace
 {

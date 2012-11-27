@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <cstring>
 #include <cmath>
+#include <cstdio>
 
 float g_FloatParam[16];
 

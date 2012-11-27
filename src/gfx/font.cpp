@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cwchar>
 #include <cstdarg>
+#include <ext/vstring.h>
 
 namespace gfx
 {

@@ -5,6 +5,11 @@
 #include <cstring>
 #include <tuple>
 
+//TODO: fixme
+#ifdef _WIN32
+const char* strcasestr(const char *a, const char *b) { return strstr(a, b); }
+#endif
+
 using namespace gfx;
 
 namespace ui {
