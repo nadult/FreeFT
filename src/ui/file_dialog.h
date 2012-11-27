@@ -6,7 +6,7 @@
 #include "ui/button.h"
 #include "ui/list_box.h"
 #include "ui/edit_box.h"
-#include <boost/filesystem.hpp>
+#include "sys/platform.h"
 
 namespace ui {
 
@@ -40,8 +40,7 @@ namespace ui {
 		PEditBox m_edit_box;
 
 		Mode m_mode;
-
-		boost::filesystem::path m_dir_path;
+		Path m_dir_path;
 	};
 
 	typedef Ptr<FileDialog> PFileDialog;

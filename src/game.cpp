@@ -13,6 +13,7 @@
 #include "navigation_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
+#include "sys/platform.h"
 #include "actor.h"
 
 using namespace gfx;
@@ -40,29 +41,6 @@ int safe_main(int argc, char **argv)
 			actor.boundingBox().width(),
 			actor.boundingBox().height(),
 			actor.boundingBox().depth());
-
-	vector<string> file_names;
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
-//	findFiles(file_names, "../refs/tiles/", ".til", 1);
-	//vector<string> file_names = findFiles("../refs/tiles/RAIDERS", ".til", 1);
-	//vector<string> file_names = findFiles("../refs/tiles/VAULT/", ".til", 1);
-
-	printf("Loading... ");
-	for(uint n = 0; n < file_names.size(); n++) {
-		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
-			printf(".");
-			fflush(stdout);
-		}
-
-		Ptr<Tile> tile = Tile::mgr.load(file_names[n]);
-		tile->name = file_names[n];
-		tile->loadDTexture();
-	}
-	printf("\n");
 
 	int2 view_pos(0, 0);
 

@@ -355,7 +355,6 @@ SERIALIZE_AS_POD(Color)
 
 #define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
 
-void findFiles(vector<string> &out, const char *dirName, const char *ext, bool recursive = false);
 
 typedef rapidxml::xml_node<> XMLNode;
 typedef rapidxml::xml_attribute<> XMLAttribute;

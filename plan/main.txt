@@ -1,6 +1,7 @@
 0. Szczegółowy opis co trzeba zrobić w każdym z punktów, zastanowienie się ile czasu co zajmie,
    plik issue dla każdego podpunktu
 
+  issues/0-not_planned.txt
 
 1. Edytor map
  - prosty edytor tile-ów:
@@ -55,6 +56,7 @@
    jest mały kwadracik którego chyba nie powinno tam być)
  - w edytorze zaznaczanie na szaro obiektów które się przecinają z kursorem
  - znajdowanie największego kawałka przy generacji mapy nawigacyjnej robić w czasie liniowym
+ - zrobic porządek z ładowaniem tile-i i spritów do tekstur na GPU
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

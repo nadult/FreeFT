@@ -1,0 +1,4 @@
+- Dodano funkcje do obsługi systemu plików (klasa Path, findFiles), na razie w wersji
+  na linuxa (2.50h)
+  26.11.12: 23:30 - 2:00
+

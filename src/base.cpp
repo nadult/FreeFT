@@ -1,8 +1,4 @@
 #include "base.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <libgen.h>
 #include <errno.h>
 #include <cstring>
 #include <cmath>
@@ -144,48 +140,6 @@ MoveVector::MoveVector(const int2 &start, const int2 &end) {
 }
 MoveVector::MoveVector() :vec(0, 0), dx(0), dy(0), ddiag(0) { }
 
-
-static void findFiles_(vector<string> &out, const char *dirName, const char *ext, bool recursive) {
-	DIR *dp = opendir(dirName);
-	if(!dp)
-		THROW("Error while opening directory %s: %s", dirName, strerror(errno));
-
-	try {
-		size_t extLen = strlen(ext);
-		struct dirent *dirp;
-
-		while ((dirp = readdir(dp))) {
-			char fullName[FILENAME_MAX];
-			struct stat fileInfo;
-
-			snprintf(fullName, sizeof(fullName), "%s/%s", dirName, dirp->d_name);
-			if(lstat(fullName, &fileInfo) < 0)
-				continue; //TODO: handle error
-
-			if(S_ISDIR(fileInfo.st_mode) && recursive) {
-				if(strcmp(dirp->d_name, ".") && strcmp(dirp->d_name, ".."))
-					findFiles_(out, fullName, ext, recursive);
-			}
-			else {
-				size_t len = strlen(dirp->d_name);
-				if(len >= extLen && strcmp(dirp->d_name + len - extLen, ext) == 0)
-					out.push_back(string(dirName) + '/' + dirp->d_name);
-			}
-		}
-	}
-	catch(...) {
-		closedir(dp);
-		throw;
-	}
-	closedir(dp);
-}
-
-void findFiles(vector<string> &out, const char *tDirName, const char *ext, bool recursive) {
-	string dirName = tDirName;
-	if(!dirName.empty() && dirName[dirName.size() - 1] == '/')
-		dirName.resize(dirName.size() - 1);
-	findFiles_(out, dirName.c_str(), ext, recursive);
-}
 
 using namespace rapidxml;
 

@@ -1,8 +1,6 @@
 #include "ui/file_dialog.h"
 #include "ui/text_box.h"
-
-using namespace boost::filesystem;
-typedef boost::filesystem::path Path;
+#include <algorithm>
 
 namespace ui {
 
@@ -28,27 +26,27 @@ namespace ui {
 		attach(cancel_button.get());
 		attach(m_list_box.get());
 		attach(m_edit_box.get());
-		
+	
 		m_dir_path = "./";
 		updateList();
 	}
 	
 	void FileDialog::setPath(const char *tpath) {
-		Path path = tpath;
-		if(is_directory(path)) {
+		Path path(tpath);
+		if(path.isDirectory()) {
 			m_dir_path = path;
 			m_edit_box->setText("");
 		}
 		else {
-			m_dir_path = path.parent_path();
-			m_edit_box->setText(path.filename().c_str());
+			m_dir_path = path.parent();
+			m_edit_box->setText(path.fileName().c_str());
 		}
 		updateList();
 		updateButtons();
 	}
 
 	string FileDialog::path() const {
-		return m_dir_path.string() + string(m_edit_box->text());
+		return (string)m_dir_path + string(m_edit_box->text());
 	}
 
 	void FileDialog::drawContents() const {
@@ -64,15 +62,14 @@ namespace ui {
 		}
 		else if(event.type == Event::element_selected) {
 			if(event.value >= 0 && event.value < m_list_box->size()) {
-				Path file_path = m_dir_path;
-				file_path /= Path((*m_list_box)[event.value].text.c_str());
+				Path file_path = m_dir_path / Path((*m_list_box)[event.value].text.c_str());
 
-				if(is_directory(file_path)) {
+				if(file_path.isDirectory()) {
 					m_dir_path = file_path;
 					updateList();
 				}
 				else {
-					m_edit_box->setText(file_path.filename().c_str());
+					m_edit_box->setText(file_path.fileName().c_str());
 				}
 			}
 			updateButtons();
@@ -91,37 +88,21 @@ namespace ui {
 	void FileDialog::updateList() {
 		m_list_box->clear();
 
-        vector<Path> files, dirs;
-        copy(directory_iterator(m_dir_path), directory_iterator(), back_inserter(files));
-        sort(files.begin(), files.end());
-		dirs.push_back("..");
+		vector<FileEntry> files;
+		findFiles(files, m_dir_path, nullptr, FindFiles::directory | FindFiles::regular_file);
 
-		for(int n = 0; n < (int)files.size(); n++) {
-			if(is_directory(files[n]))
-				dirs.push_back(files[n]);
-			if(!is_regular_file(files[n])) {
-				files[n] = files.back();
-				files.pop_back();
-				n--;
-			}
-		}
-
-		for(int n = 0; n < (int)dirs.size(); n++)
-			m_list_box->addEntry(dirs[n].filename().c_str(), Color::yellow);
+		std::sort(files.begin(), files.end());
 		for(int n = 0; n < (int)files.size(); n++)
-			m_list_box->addEntry(files[n].filename().c_str(), Color::white);
+			m_list_box->addEntry(files[n].path.fileName().c_str(), files[n].is_dir? Color::yellow : Color::white);
 	}
 
 	void FileDialog::updateButtons() {
-		Path file_path = m_dir_path;
-		file_path /= Path(m_edit_box->text());
+		Path file_path = m_dir_path / Path(m_edit_box->text());
 
-		if(m_mode == FileDialogMode::opening_file) {
-			m_ok_button->enable(is_regular_file(file_path));
-		}
-		else if(m_mode == FileDialogMode::saving_file) {
-			m_ok_button->enable(!is_directory(file_path) && !is_symlink(file_path) && !is_other(file_path));
-		}
+		if(m_mode == FileDialogMode::opening_file)
+			m_ok_button->enable(file_path.isRegularFile());
+		else if(m_mode == FileDialogMode::saving_file)
+			m_ok_button->enable(!file_path.isDirectory());
 	}
 
 }

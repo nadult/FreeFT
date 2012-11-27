@@ -19,6 +19,7 @@
 #include "ui/tile_map_editor.h"
 #include "ui/tile_group_editor.h"
 #include "ui/file_dialog.h"
+#include "sys/platform.h"
 
 using namespace gfx;
 using namespace ui;
@@ -233,6 +234,8 @@ public:
 	bool m_selecting_all_tiles;
 };
 
+
+
 int safe_main(int argc, char **argv)
 {
 #if defined(RES_X) && defined(RES_Y)
@@ -247,17 +250,12 @@ int safe_main(int argc, char **argv)
 		
 	setBlendingMode(bmNormal);
 
-	vector<string> file_names;
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/RAIDERS/", ".til", 1);
-	findFiles(file_names, "../refs/tiles/Wasteland/", ".til", 1);
-//	findFiles(file_names, "../refs/tiles/VILLAGE/", ".til", 1);
-//	findFiles(file_names, "../refs/tiles/Robotic/", ".til", 1);
-//	findFiles(file_names, "../refs/tiles/", ".til", 1);
-	//vector<string> file_names = findFiles("../refs/tiles/RAIDERS", ".til", 1);
-	//vector<string> file_names = findFiles("../refs/tiles/VAULT/", ".til", 1);
+	vector<FileEntry> file_names;
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", nullptr, FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", nullptr, FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", nullptr, FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/RAIDERS/", nullptr, FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Wasteland/", nullptr, FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading... ");
 	for(uint n = 0; n < file_names.size(); n++) {
@@ -266,9 +264,13 @@ int safe_main(int argc, char **argv)
 			fflush(stdout);
 		}
 
-		Ptr<Tile> tile = Tile::mgr.load(file_names[n]);
-		tile->name = file_names[n];
-		tile->loadDTexture();
+		try {
+			Ptr<Tile> tile = Tile::mgr.load(file_names[n].path);
+			tile->name = file_names[n].path;
+			tile->loadDTexture();
+		} catch(const Exception &ex) {
+			printf("Error: %s\n", ex.what());
+		}
 	}
 	printf("\n");
 
@@ -312,5 +314,6 @@ int main(int argc, char **argv) {
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}
+	catch(...) { return 1; }
 }
 
