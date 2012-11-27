@@ -5,7 +5,7 @@ Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych
 - strzelanie z plazmówek i laserówek, rendering pocisków, strzelanie z rakietnicy  4h
 - rozwalanie Dummy.spr		3h
 - testowanie widoczności (bez dodatkowej struktury przyspieszającej)  4h DONE
-- rozwiązać problemy z przeskakującymi animacjami
+- rozwiązać problemy z przeskakującymi animacjami  DONE
 
 
 +ESTIMATED_TIME: 17h
@@ -14,3 +14,4 @@ Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych
 +WORK_LOG:
 22.11.12: 20:30 - 22:00  (1.50h)
 26.11.12: 15:15 - 19:45  (4.50h)
+27.11.12: 22:00 - 23:00  (1.00h)

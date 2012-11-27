@@ -1,7 +1,7 @@
 0. Szczegółowy opis co trzeba zrobić w każdym z punktów, zastanowienie się ile czasu co zajmie,
    plik issue dla każdego podpunktu
 
-  issues/0-not_planned.txt (6.5)
+  issues/0-not_planned.txt (10.25)
 
 1. Edytor map
  - prosty edytor tile-ów:
@@ -55,8 +55,10 @@
  - jakiś bug na mapie nawigacyjnej dla testowej mapki (prawy dolny róg górnego budynku, przy rogu stosu desek
    jest mały kwadracik którego chyba nie powinno tam być)
  - w edytorze zaznaczanie na szaro obiektów które się przecinają z kursorem
- - znajdowanie największego kawałka przy generacji mapy nawigacyjnej robić w czasie liniowym
  - zrobic porządek z ładowaniem tile-i i spritów do tekstur na GPU
+ - obsługa specjalnych akcji w sprajtach (opis w SpriteCreatorze); 
+ - bajer: wygładzone obracanie się gracza; np. ścieżki można próbować generowac tak, aby gracz nie wykonywał
+   skrętów o więcej niż 45 stopni
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

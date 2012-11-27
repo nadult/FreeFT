@@ -40,7 +40,7 @@ NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reor
 
 FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LINUX_FLAGS=$(FLAGS) -rdynamic
-MINGW_FLAGS=$(FLAGS) -fpermissive
+MINGW_FLAGS=$(FLAGS) -fpermissive #TODO: remove permissive (needed for rapidxml compilation on gcc-4.7)
 
 CXX=g++
 MGW_CXX=i686-mingw32-g++
@@ -59,7 +59,7 @@ $(MINGW_OBJECTS): $(BUILD_DIR)/%_.o: %.cpp
 	$(MGW_CXX) $(MINGW_FLAGS) -c $*.cpp -o $@
 
 $(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD_DIR)/%.o  $(BUILD_DIR)/sys/platform_linux.o
-	    $(CXX) -o $@ $^ $(LINUX_LIBS)
+	    $(CXX) -o $@ $^ -rdynamic $(LINUX_LIBS)
 
 $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(BUILD_DIR)/sys/platform_windows_.o
 	$(MGW_CXX) -o $@ $^ $(MINGW_LIBS)

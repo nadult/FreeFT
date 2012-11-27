@@ -335,14 +335,21 @@ void Actor::setSequence(ActionId::Type action_id) {
 	
 	int seq_id = m_anim_map.sequenceId(m_stance_id, action_id, m_weapon_id);
 	if(seq_id == -1) {
-		printf("Sequence: %s not found!\n", m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_id).c_str());
 		seq_id = m_anim_map.sequenceId(m_stance_id, action_id, WeaponClassId::unarmed);
+		if(seq_id == -1)
+			printf("Sequence: %s not found!\n", m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_id).c_str());
 		ASSERT(seq_id != -1);
 	}
 
+	bool reset_anim = true;
+	if(action_id == ActionId::walking || action_id == ActionId::running)
+		if(m_action_id == action_id && m_seq_id == seq_id)
+			reset_anim = false;
+
 	m_action_id = action_id;
 	m_seq_id = seq_id;
-	m_frame_id = 0;
+	if(reset_anim)
+		m_frame_id = 0;
 	m_looped_anim = ActionId::isLooped(action_id);
 }
 

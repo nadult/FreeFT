@@ -6,7 +6,7 @@
 namespace
 {
 
-	void Inflate(Serializer &sr, vector<char> &dest, int inSize)
+	void inflate(Serializer &sr, vector<char> &dest, int inSize)
 	{
 		enum { CHUNK = 16 * 1024 };
 
@@ -66,6 +66,14 @@ namespace
 }
 
 
+namespace SpecialFrame
+{
+	enum Type {
+		sound	= -44,
+		fire 	= -43,
+	};
+};
+
 namespace gfx
 {
 
@@ -123,7 +131,7 @@ namespace gfx
 		sr.seek(endPos);
 	}
 
-	void Sprite::LoadFromSpr(Serializer &sr) {
+	void Sprite::loadFromSpr(Serializer &sr) {
 		sr.signature("<sprite>", 9);
 
 		i16 type; sr & type;
@@ -147,10 +155,10 @@ namespace gfx
 			Sequence &sequence = m_sequences[n];
 
 			i16 frame_count, dummy1; sr(frame_count, dummy1);
-			sequence.m_frames.resize(frame_count);
+			sequence.frames.resize(frame_count);
 			for(int f = 0; f < frame_count; f++) {
 				i16 frame_id; sr & frame_id;
-				sequence.m_frames[f] = frame_id;
+				sequence.frames[f] = frame_id;
 			}
 
 			// Skip zeros
@@ -158,10 +166,10 @@ namespace gfx
 
 			i32 nameLen; sr & nameLen;
 			DASSERT(nameLen >= 0 && nameLen <= 256);
-			sequence.m_name.resize(nameLen);
-			sr.data(&sequence.m_name[0], nameLen);
+			sequence.name.resize(nameLen);
+			sr.data(&sequence.name[0], nameLen);
 			i16 anim_id; sr & anim_id;
-			sequence.m_anim_id = anim_id;
+			sequence.anim_id = anim_id;
 		}
 
 		i32 anim_count; sr & anim_count;
@@ -176,8 +184,8 @@ namespace gfx
 
 			i32 nameLen; sr & nameLen;
 			DASSERT(nameLen >= 0 && nameLen <= 256);
-			anim.m_name.resize(nameLen);
-			sr.data(&anim.m_name[0], nameLen);
+			anim.name.resize(nameLen);
+			sr.data(&anim.name[0], nameLen);
 			
 			i32 frame_count, dir_count;
 			sr(frame_count, dir_count);
@@ -217,7 +225,7 @@ namespace gfx
 			else {
 				i32 plainSize = 0;
 				sr & plainSize;
-				Inflate(sr, data, size - 4);
+				inflate(sr, data, size - 4);
 				DASSERT((int)data.size() == plainSize);
 			}
 
@@ -255,7 +263,7 @@ namespace gfx
 
 	void Sprite::serialize(Serializer &sr) {
 		if(sr.isLoading())
-			LoadFromSpr(sr);
+			loadFromSpr(sr);
 		else
 			THROW("Saving not supported");
 	}
@@ -329,27 +337,33 @@ namespace gfx
 	int Sprite::frameCount(int seq_id) const {
 		int out = 0;
 		const Sequence &seq = m_sequences[seq_id];
-		for(int n = 0; n < (int)seq.m_frames.size(); n++)
-			if(seq.m_frames[n] >= 0)
+		for(int n = 0; n < (int)seq.frames.size(); n++) {
+			if(seq.frames[n] == SpecialFrame::fire)
+				n += 3;
+			else if(seq.frames[n] >= 0)
 				out++;
+		}
 		return out;
 	}
 
 	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, Rect *rect) const {
 		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
-		DASSERT(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].m_frames.size());
+		DASSERT(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].frames.size());
 
 		const Sequence &seq = m_sequences[seq_id];
 
-		for(int n = 0; n < (int)seq.m_frames.size(); n++)
-			if(seq.m_frames[n] >= 0) {
+		for(int n = 0; n < (int)seq.frames.size(); n++) {
+			if(seq.frames[n] == SpecialFrame::fire)
+				n += 3;
+			else if(seq.frames[n] >= 0) {
 				if(!frame_id) {
-					frame_id = seq.m_frames[n];
+					frame_id = seq.frames[n];
 					break;
 				}
 				frame_id--;
 			}
-		const Animation &anim = m_anims[seq.m_anim_id];
+		}
+		const Animation &anim = m_anims[seq.anim_id];
 		DASSERT(dir_id < anim.m_dir_count);
 
 		if(rect)
@@ -360,7 +374,7 @@ namespace gfx
 
 	int Sprite::findSequence(const char *name) const {
 		for(int n = 0; n < (int)m_sequences.size(); n++)
-			if(m_sequences[n].m_name == name)
+			if(m_sequences[n].name == name)
 				return n;
 		return -1;
 	}
@@ -384,14 +398,25 @@ namespace gfx
 	void Sprite::printInfo() const {
 		for(int a = 0; a < (int)m_anims.size(); a++) {
 			const Sprite::Animation &anim = m_anims[a];
-			printf("Anim %d: %s (%d*%d frames)\n", a, anim.m_name.c_str(),
+			printf("Anim %d: %s (%d*%d frames)\n", a, anim.name.c_str(),
 					(int)anim.images.size() / anim.m_dir_count, anim.m_dir_count);
 		}
 		for(int s = 0; s < (int)m_sequences.size(); s++) {
 			const Sprite::Sequence &seq = m_sequences[s];
-			printf("Seq %d: %s (%d frames) -> anim: %d\n", s, seq.m_name.c_str(),
-					(int)seq.m_frames.size(), seq.m_anim_id);
+			printf("Seq %d: %s (%d frames) -> anim: %d\n", s, seq.name.c_str(),
+					(int)seq.frames.size(), seq.anim_id);
 		}
+	}
+
+	void Sprite::printSequenceInfo(int seq_id) const {
+		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
+		const Sequence &seq = m_sequences[seq_id];
+		const Animation &anim = m_anims[seq.anim_id];
+
+		printf("Sequence %d (%s) -> %d (%s)\n", seq_id, seq.name.c_str(), seq.anim_id, anim.name.c_str());
+		for(int n = 0; n < (int)seq.frames.size(); n++)
+			printf("frame #%d: %d\n", n, seq.frames[n]);
+		printf("\n");
 	}
 
 	ResourceMgr<Sprite> Sprite::mgr("../refs/sprites/", ".spr");

@@ -146,11 +146,11 @@ int safe_main(int argc, char **argv)
 			drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
 			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
-			gfx::PFont font = gfx::Font::mgr["times_24"];
+			gfx::PFont font = gfx::Font::mgr["arial_24"];
 
 			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%f %f %f) -> (%f %f %f)",
 					ray.origin().x, ray.origin().y, ray.origin().z, ray.dir().x, ray.dir().y, ray.dir().z);
-			font->drawShadowed(int2(0, 24), Color::white, Color::black, "%d %d %f",
+			font->drawShadowed(int2(0, 20), Color::white, Color::black, "%d %d %f",
 					isect.node_id, isect.instance_id, isect.t);
 
 //			double time = GetTime();

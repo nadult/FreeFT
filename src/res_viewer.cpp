@@ -1,7 +1,6 @@
 #include <memory.h>
 #include <cstdio>
 #include <algorithm>
-#include <unistd.h>
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -105,7 +104,7 @@ public:
 				m_dir_id++;
 
 			m_seq_id = (m_seq_id + (int)sprite->m_sequences.size()) % (int)sprite->m_sequences.size();
-			const Sprite::Animation &anim = sprite->m_anims[sprite->m_sequences[m_seq_id].m_anim_id];
+			const Sprite::Animation &anim = sprite->m_anims[sprite->m_sequences[m_seq_id].anim_id];
 			m_dir_id = (m_dir_id + anim.m_dir_count) % anim.m_dir_count;
 
 			m_frame_id = m_frame_id % sprite->frameCount(m_seq_id);
@@ -250,7 +249,6 @@ public:
 	void update() {
 		m_dir_view->clear();
 		m_entries.clear();
-		//TODO: użyć jakiejś biblioteki do poruszania się po katalogach, np boost
 
 		m_entries.clear();
 		findFiles(m_entries, m_current_dir, FindFiles::regular_file | FindFiles::directory | FindFiles::relative);

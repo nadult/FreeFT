@@ -204,6 +204,7 @@ public:
 		m_map.saveToXML(doc);
 		std::fstream file(file_name, std::fstream::out);
 		file << doc;
+		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
 	void saveTileGroup(const char *file_name) const {
@@ -212,6 +213,7 @@ public:
 		m_group.saveToXML(doc);
 		std::fstream file(file_name, std::fstream::out);
 		file << doc;
+		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
 	EditorMode	m_mode;

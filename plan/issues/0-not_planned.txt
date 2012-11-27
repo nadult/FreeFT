@@ -6,3 +6,6 @@
   - jest jakiś problem z pthreadsami (skompilowana binarka nie chce się odpalać)
   - trzeba dopisać funkcje w platform_windows.cpp i sprawdzić czy res_viewer & editor działają jak trzeba DONE
   27.11.12: 17:00 - 18:00, 18:50 - 20:50 
+ 
+- Przyspieszenie generacji mapy nawigacyjnej: znajdowanie największego kawałka w czasie liniowym
+  27.11.12: 23:00 - 23:45

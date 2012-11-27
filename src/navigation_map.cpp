@@ -70,95 +70,44 @@ static bool areAdjacent(const IRect &a, const IRect &b) {
 		return a.max.x == b.min.x || a.min.x == b.max.x;
 	return false;
 }
-#define TRY_RECT(rect) { \
-	float w = rect.width(), h = rect.height(); \
-	float score = w * h, diff = min(w, h) / max(w, h); \
-	score = score * (0.5f + diff); \
-	if(score > best_score) { best = rect; best_score = score; } }
 	
-static IRect findBestRectBrute(short *counts, int stride, int2 size) {
+static IRect findBestRect(short *counts, int *line_counts, int stride, int2 size) {
 	IRect best;
-	float best_score = -1;
+	int best_score = -1;
 
 	for(int sy = 0; sy < size.y; sy++) {
-			for(int sx = 0; sx < size.x; sx++) {
-				int height = counts[sx + sy * stride];
+		pair<int, int> stack[size.x];
+		int sp = 0;
 
-				for(int x = sx; x < size.x; x++) {
-					height = min(height, (int)counts[x + sy * stride]);
-					if(height == 0)
-						break;
+		if(!line_counts[sy])
+			continue;
 
-					IRect rect(sx, sy - height + 1, x + 1, sy + 1);
-					TRY_RECT(rect);
+		for(int sx = 0; sx <= size.x; sx++) {
+			int height = sx == size.x? 0 : counts[sx + sy * stride];
+			int min_k = sx;
+
+			for(int i = 0; i < sp; i++)
+				if(stack[i].second > height) {
+					int w = sx - stack[i].first, h = stack[i].second;
+					int tmin = min(w, h);
+					int score = w * h + tmin * tmin * 4;
+
+					if(score > best_score) {
+						best = IRect(stack[i].first, sy - stack[i].second + 1, sx, sy + 1);
+						best_score = score;
+					}
+					min_k = min(min_k, stack[i].first);
+					stack[i--] = stack[--sp];
 				}
-			}
-		}
 
-	return best;
-}
-
-static IRect findBestRect(short *counts, int stride, int2 size) {
-	IRect best;
-	float best_score = -1;
-	DASSERT((size.x & (size.x - 1)) == 0);
-
-	for(int y = 0; y < size.y; y++) {
-		for(int psize = 1; psize <= size.x; psize *= 2) {
-			short *tcounts = &counts[y * stride];
-			IRect rect;
-
-			for(int x = 0; x < size.x; x += psize) {
-				if(psize == 1) {
-					if(tcounts[x]) {
-						rect = IRect(x, y - tcounts[x] + 1, x + 1, y + 1);
-						TRY_RECT(rect);
-					}
-				}
-				else {
-					int a = x + psize / 2;
-					int b = a - 1, end = x + psize - 1;
-					int height = min(tcounts[a], tcounts[b]);
-					rect = IRect(a, y - height + 1, b + 1, y + 1);
-					TRY_RECT(rect);
-					if(!height)
-						continue;
-
-					while(a > x && b < end && height) {
-						int lheight = tcounts[a - 1];
-						int rheight = tcounts[b + 1];
-						if(lheight > rheight) {
-							height = min(height, lheight);
-							a--;
-						}
-						else {
-							height = min(height, rheight);
-							b++;
-						}
-						rect = IRect(a, y - height + 1, b + 1, y + 1);
-						TRY_RECT(rect);
-					}
-					while(a > x && height) {
-						height = min(height, (int)tcounts[a - 1]);
-						a--;
-						rect = IRect(a, y - height + 1, b + 1, y + 1);
-						TRY_RECT(rect);
-					}
-					while(b < end && height) {
-						height = min(height, (int)tcounts[b + 1]);
-						b++;
-						rect = IRect(a, y - height + 1, b + 1, y + 1);
-						TRY_RECT(rect);
-					}
-				}
-			}
+			if(height)
+				stack[sp++] = make_pair(min_k, height);
 		}
 	}
 
 	return best;
 }
 
-#undef TRY_RECT
 	
 enum { sector_size = 256 };
 
@@ -168,36 +117,56 @@ void NavigationMap::extractQuads(int sx, int sy) {
 	int pixels = 0;
 	vector<u8> tbitmap(sector_size * sector_size, 0);
 	vector<short> counts(sector_size * sector_size, 0);
+	int line_counts[size.y];
 
-	for(int y = 0; y < size.y; y++)
+	for(int y = 0; y < size.y; y++) {
+		int line_count = 0;
 		for(int x = 0; x < size.x; x++)
 			if( (tbitmap[x + y * sector_size] = (*this)(sx + x, sy + y)) )
-				pixels++;
+				line_count++;
+		pixels += line_count;
+		line_counts[y] = line_count;
+	}
+
+	for(int x = 0; x < size.x; x++)
+		counts[x] = tbitmap[x]? 1 : 0;
+
+	for(int y = 1; y < size.y; y++)
+		for(int x = 0; x < size.x; x++) {
+			int offset = x + y * sector_size;
+			counts[offset] = tbitmap[offset]? counts[offset - sector_size] + 1 : 0;
+		}
+
 
 	while(pixels > 0) {
-		for(int x = 0; x < size.x; x++)
-			counts[x] = tbitmap[x]? 1 : 0;
-
-		for(int y = 1; y < size.y; y++)
-			for(int x = 0; x < size.x; x++) {
-				int offset = x + y * sector_size;
-				counts[offset] = tbitmap[offset]? counts[offset - sector_size] + 1 : 0;
-			}
-		
-		IRect best = (pixels < 5000? findBestRectBrute : findBestRect)
-						(&counts[0], sector_size, int2(sector_size, sector_size));
+		IRect best = findBestRect(&counts[0], line_counts, sector_size, int2(sector_size, sector_size));
 	//	printf("%d %d %d %d +(%d %d)\n", best.min.x, best.min.y, best.width(), best.height(), sx, sy);
 
-		for(int y = best.min.y; y < best.max.y; y++)
+		for(int y = best.min.y; y < best.max.y; y++) {
+			line_counts[y] -= best.max.x - best.min.x;
 			for(int x = best.min.x; x < best.max.x; x++)
 				tbitmap[x + y * sector_size] = 0;
+		}
+		
+		for(int x = best.min.x; x < best.max.x; x++) {
+			for(int y = best.min.y; y < best.max.y; y++) {
+				int offset = x + y * sector_size;
+				counts[offset] = 0;
+			}
+
+			for(int y = best.max.y; y < size.y; y++) {
+				int offset = x + y * sector_size;
+				counts[offset] = tbitmap[offset]? counts[offset - sector_size] + 1 : 0;
+				if(!counts[offset])
+					break;
+			}
+		}
 				
 		Quad new_quad;
 		new_quad.rect = best + int2(sx, sy);
 		m_quads.push_back(new_quad);
 
 		pixels -= best.width() * best.height();
-		printf("."); fflush(stdout);
 	}
 }
 
@@ -208,8 +177,10 @@ void NavigationMap::extractQuads() {
 	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 	for(int sy = 0; sy < m_size.y; sy += sector_size)
-		for(int sx = 0; sx < m_size.x; sx += sector_size)
+		for(int sx = 0; sx < m_size.x; sx += sector_size) {
 			extractQuads(sx, sy);
+			printf("."); fflush(stdout);
+		}
 	printf("(%.2f seconds)\n", getTime() - time);
 
 	for(int i = 0; i < (int)m_quads.size(); i++) {

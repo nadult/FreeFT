@@ -7,7 +7,7 @@ namespace gfx {
 
 	class Sprite: public RefCounter {
 	public:
-		void LoadFromSpr(Serializer &sr);
+		void loadFromSpr(Serializer &sr);
 		void serialize(Serializer &sr);
 
 		struct Image {
@@ -20,9 +20,9 @@ namespace gfx {
 		};
 
 		struct Sequence {
-			string m_name;
-			vector<int> m_frames;
-			int m_anim_id;
+			string name;
+			vector<int> frames;
+			int anim_id;
 
 		};
 
@@ -32,7 +32,7 @@ namespace gfx {
 		};
 
 		struct Animation {
-			string m_name;
+			string name;
 			vector<Rect> rects;
 			vector<Image> images;
 			vector<Color> palettes[4];
@@ -49,13 +49,14 @@ namespace gfx {
 			short width, height;
 		};
 	
-		int dirCount(int seq_id) const { return m_anims[m_sequences[seq_id].m_anim_id].m_dir_count; }
+		int dirCount(int seq_id) const { return m_anims[m_sequences[seq_id].anim_id].m_dir_count; }
 		int frameCount(int seq_id) const;
 
 		Texture getFrame(int seq_id, int frameId, int dirId, Rect *rect = nullptr) const;
 		int findSequence(const char *name) const;
 
 		void printInfo() const;
+		void printSequenceInfo(int seq_id) const;
 
 		static int findDir(int dx, int dz);
 
