@@ -267,7 +267,7 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			int3 pos = instance.pos() + node_pos;
 			
 			if(!tile->dTexture)
-				tile->loadDTexture();
+				((gfx::Tile*)tile)->loadDTexture();
 
 			gfx::PTexture tex = tile->dTexture;
 			out.add(tex, IRect(0, 0, tex->width(), tex->height()) - tile->m_offset, pos, tile->m_bbox);

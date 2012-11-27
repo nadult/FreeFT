@@ -251,11 +251,11 @@ int safe_main(int argc, char **argv)
 	setBlendingMode(bmNormal);
 
 	vector<FileEntry> file_names;
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", nullptr, FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", nullptr, FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", nullptr, FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/RAIDERS/", nullptr, FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/Wasteland/", nullptr, FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "../refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading... ");
 	for(uint n = 0; n < file_names.size(); n++) {

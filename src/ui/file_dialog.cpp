@@ -31,8 +31,7 @@ namespace ui {
 		updateList();
 	}
 	
-	void FileDialog::setPath(const char *tpath) {
-		Path path(tpath);
+	void FileDialog::setPath(const Path &path) {
 		if(path.isDirectory()) {
 			m_dir_path = path;
 			m_edit_box->setText("");
@@ -45,8 +44,8 @@ namespace ui {
 		updateButtons();
 	}
 
-	string FileDialog::path() const {
-		return (string)m_dir_path + string(m_edit_box->text());
+	const Path FileDialog::path() const {
+		return m_dir_path / m_edit_box->text();
 	}
 
 	void FileDialog::drawContents() const {
@@ -63,12 +62,13 @@ namespace ui {
 		else if(event.type == Event::element_selected) {
 			if(event.value >= 0 && event.value < m_list_box->size()) {
 				Path file_path = m_dir_path / Path((*m_list_box)[event.value].text.c_str());
+				file_path = file_path.absolute();
 
 				if(file_path.isDirectory()) {
 					m_dir_path = file_path;
 					updateList();
 				}
-				else {
+				else if(file_path.isRegularFile()) {
 					m_edit_box->setText(file_path.fileName().c_str());
 				}
 			}
@@ -89,11 +89,11 @@ namespace ui {
 		m_list_box->clear();
 
 		vector<FileEntry> files;
-		findFiles(files, m_dir_path, nullptr, FindFiles::directory | FindFiles::regular_file);
+		findFiles(files, m_dir_path, FindFiles::directory | FindFiles::regular_file | FindFiles::relative);
 
 		std::sort(files.begin(), files.end());
 		for(int n = 0; n < (int)files.size(); n++)
-			m_list_box->addEntry(files[n].path.fileName().c_str(), files[n].is_dir? Color::yellow : Color::white);
+			m_list_box->addEntry(files[n].path.c_str(), files[n].is_dir? Color::yellow : Color::white);
 	}
 
 	void FileDialog::updateButtons() {

@@ -52,7 +52,7 @@ namespace gfx
 
 	void Tile::draw(int2 pos, Color col) const {
 		if(!dTexture)
-			loadDTexture();
+			((Tile*)this)->loadDTexture();
 		dTexture->bind();
 
 		int2 size = texture.size();

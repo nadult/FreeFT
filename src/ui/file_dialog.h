@@ -28,8 +28,8 @@ namespace ui {
 
 		Mode mode() const { return m_mode; }
 
-		void setPath(const char*);
-		string path() const;
+		void setPath(const Path &path);
+		const Path path() const;
 
 	private:
 		void updateList();

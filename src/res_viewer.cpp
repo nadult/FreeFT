@@ -11,10 +11,7 @@
 #include "ui/list_box.h"
 #include "ui/button.h"
 #include "ui/message_box.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
+#include "sys/platform.h"
 
 using namespace gfx;
 using namespace ui;
@@ -108,7 +105,6 @@ public:
 				m_dir_id++;
 
 			m_seq_id = (m_seq_id + (int)sprite->m_sequences.size()) % (int)sprite->m_sequences.size();
-			const Sprite::Sequence &seq = sprite->m_sequences[m_seq_id];
 			const Sprite::Animation &anim = sprite->m_anims[sprite->m_sequences[m_seq_id].m_anim_id];
 			m_dir_id = (m_dir_id + anim.m_dir_count) % anim.m_dir_count;
 
@@ -168,12 +164,14 @@ public:
 			bool is_selected = m_selected_id == res.id();
 			if(is_selected)
 				selected_pos = pos;
+
 			res.draw(pos - offset, is_selected);
+			cur_height = max(cur_height, res.rectSize().y);
+
 			if(n + 1 == (int)m_resources.size())
 				break;
 
 			pos.x += res.rectSize().x + spacing;
-			cur_height = max(cur_height, res.rectSize().y);
 
 			if(m_resources[n + 1].rectSize().x + pos.x > width) {
 				pos.x = spacing;
@@ -181,7 +179,7 @@ public:
 				cur_height = 0;
 			}
 		}
-		
+
 		if(m_show_selected) {
 			offset = int2(0, selected_pos.y);
 			m_show_selected = false;
@@ -217,6 +215,8 @@ public:
 				Loader(file_name) & *sprite;
 				res = ::Resource(sprite, id);
 			}
+			else
+				return;
 
 			m_resources.push_back(res);
 		}
@@ -241,7 +241,8 @@ public:
 		attach(m_dir_view.get());
 		attach(m_res_view.get());
 
-		m_current_dir.push_back("../refs/");
+		m_current_dir = "../refs/";
+		m_current_dir = m_current_dir.absolute();
 
 		update();
 	}
@@ -251,55 +252,19 @@ public:
 		m_entries.clear();
 		//TODO: użyć jakiejś biblioteki do poruszania się po katalogach, np boost
 
-		string current_dir;
-		for(int n = 0; n < (int)m_current_dir.size(); n++)
-			current_dir = current_dir + m_current_dir[n];
-
-		DIR *dp = opendir(current_dir.c_str());
-		if(!dp)
-			THROW("Error while opening directory %s: %s", current_dir.c_str(), strerror(errno));
-
-		try {
-			struct dirent *dirp;
-
-			while ((dirp = readdir(dp))) {
-				char full_name[1024];
-				struct stat file_info;
-
-				if(strcmp(dirp->d_name, ".") == 0)
-					continue;
-				snprintf(full_name, sizeof(full_name), "%s/%s", current_dir.c_str(), dirp->d_name);
-				if(lstat(full_name, &file_info) < 0)
-					continue; //TODO: handle error
-
-				m_entries.push_back(Entry{dirp->d_name, S_ISDIR(file_info.st_mode)});
-			}
-		}
-		catch(...) {
-			closedir(dp);
-			throw;
-		}
-		closedir(dp);
+		m_entries.clear();
+		findFiles(m_entries, m_current_dir, FindFiles::regular_file | FindFiles::directory | FindFiles::relative);
 
 		sort(m_entries.begin(), m_entries.end());
 		for(int n = 0; n < (int)m_entries.size(); n++)
-			m_dir_view->addEntry(m_entries[n].name.c_str(), m_entries[n].is_dir? Color::yellow : Color::white);
+			m_dir_view->addEntry(m_entries[n].path.c_str(), m_entries[n].is_dir? Color::yellow : Color::white);
 		
 		m_res_view->clear();
 		
 		for(int n = 0; n < (int)m_entries.size(); n++)
 			if(!m_entries[n].is_dir)
-				m_res_view->tryAddResource((current_dir + m_entries[n].name).c_str(), n);
+				m_res_view->tryAddResource((m_current_dir / m_entries[n].path).c_str(), n);
 	}
-
-	struct Entry {
-		string name;
-		bool is_dir;
-
-		bool operator<(const Entry &rhs) const {
-			return is_dir == rhs.is_dir? name < rhs.name : is_dir > rhs.is_dir;
-		}
-	};
 
 	virtual bool onEvent(const Event &ev) {
 		if(ev.type == Event::window_closed && ev.source == popup) {
@@ -309,15 +274,10 @@ public:
 		}
 		else if(ev.type == Event::element_selected) {
 			if(m_dir_view == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
-				const Entry &entry = m_entries[ev.value];
+				const FileEntry &entry = m_entries[ev.value];
 
 				if(entry.is_dir) {
-					if(entry.name == "..") {
-						if(m_current_dir.size() > 1)
-							m_current_dir.pop_back();
-					}
-					else
-						m_current_dir.push_back(entry.name + "/");
+					m_current_dir /= entry.path;
 					update();
 				}
 				else {
@@ -340,8 +300,8 @@ public:
 		return true;
 	}
 
-	vector<Entry> m_entries;
-	vector<string> m_current_dir;
+	vector<FileEntry> m_entries;
+	Path m_current_dir;
 
 	PListBox			m_dir_view;
 	Ptr<ResourceView>	m_res_view;

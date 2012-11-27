@@ -1,7 +1,7 @@
 0. Szczegółowy opis co trzeba zrobić w każdym z punktów, zastanowienie się ile czasu co zajmie,
    plik issue dla każdego podpunktu
 
-  issues/0-not_planned.txt
+  issues/0-not_planned.txt (6.5)
 
 1. Edytor map
  - prosty edytor tile-ów:
