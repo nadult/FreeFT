@@ -139,7 +139,7 @@ int AnimationMap::sequenceId(StanceId::Type stance, ActionId::Type action, Weapo
 
 Actor::Actor(const char *spr_name, int3 pos) :Entity(int3(1, 1, 1), pos) {
 	m_sprite = Sprite::mgr[spr_name];
-	m_sprite->printInfo();
+//	m_sprite->printInfo();
 	m_anim_map = AnimationMap(m_sprite);
 
 	m_bbox = m_sprite->m_bbox;

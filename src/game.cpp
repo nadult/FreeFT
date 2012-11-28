@@ -36,12 +36,6 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	Actor actor("characters/LeatherMale", int3(100, 1, 70));
-	printf("Actor size: %d %d %d\n",
-			actor.boundingBox().width(),
-			actor.boundingBox().height(),
-			actor.boundingBox().depth());
-
 	int2 view_pos(0, 0);
 
 	PFont font = Font::mgr["arial_32"];
@@ -61,9 +55,15 @@ int safe_main(int argc, char **argv)
 	NavigationMap navigation_map(tile_map.size());
 	navigation_map.update(tile_map);
 	navigation_map.printInfo();
+
+	Actor actor("characters/LeatherMale", int3(100, 1, 70));
 	actor.m_tile_map = &tile_map;
 	actor.m_navigation_map = &navigation_map;
-	PTexture tex = navigation_map.getTexture();
+
+	printf("Actor size: %d %d %d\n",
+			actor.boundingBox().width(),
+			actor.boundingBox().height(),
+			actor.boundingBox().depth());
 
 	bool navi_debug = false;
 	
