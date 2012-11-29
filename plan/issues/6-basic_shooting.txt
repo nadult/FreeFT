@@ -7,6 +7,8 @@ Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych
 - testowanie widoczności (bez dodatkowej struktury przyspieszającej)  4h DONE
 - rozwiązać problemy z przeskakującymi animacjami  DONE
 
++REQUIREMENTS:
+issues/5-entities
 
 +ESTIMATED_TIME: 17h
 +TIME_SPENT: 6.00h

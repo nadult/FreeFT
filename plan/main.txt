@@ -23,8 +23,8 @@
  - poruszanie się postacią
    issues/3-simple_character_movement.txt DONE  (26 / 15)
 
- - interakcja z otoczeniem, kolizje
-   issues/5-environment_interaction.txt
+ - encje, interakcja z otoczeniem
+   issues/5-entities.txt
 
  - strzelanie i niszczenie obiektów
    issues/6-basic_shooting.txt
@@ -33,7 +33,7 @@
    issues/7-improve_navigation.txt DONE (13 / 15)
 
  - proste udźwiękowienie
-   issues/9-simple-audio.txt
+   issues/9-simple_audio.txt
 
 3. Różne rzeczy do zrobienia:
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów

@@ -1,7 +1,0 @@
-
-
-
-+ESTIMATED_TIME:
-+TIME_SPENT: 0h
-
-+WORK_LOG:

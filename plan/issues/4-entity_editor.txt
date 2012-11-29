@@ -2,6 +2,7 @@ Rozstawianie encji i edycja ich parametrów:
 - 
 
 +REQUIREMENTS:
+issues/5-entities
 issues/10-ui_improvements
 
 +ESTIMATED_TIME:
