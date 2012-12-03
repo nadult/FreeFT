@@ -1,7 +1,6 @@
 #include <memory.h>
 #include <cstdio>
 #include <algorithm>
-#include <unistd.h>
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -16,8 +15,11 @@
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "game/actor.h"
+#include "game/world.h"
 
 using namespace gfx;
+using namespace game;
+
 int safe_main(int argc, char **argv)
 {
 #if defined(RES_X) && defined(RES_Y)
@@ -36,36 +38,22 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["arial_32"];
 
-	TileMap tile_map;
+	World world("data/tile_map.xml");
 
-	if(access("data/tile_map.xml", R_OK) == 0) {
-		string text;
-		Loader ldr("data/tile_map.xml");
-		text.resize(ldr.size());
-		ldr.data(&text[0], ldr.size());
-		XMLDocument doc;
-		doc.parse<0>(&text[0]); 
-		tile_map.loadFromXML(doc);
-	}
-	
-	NavigationMap navigation_map;
-	navigation_map.update(NavigationBitmap(tile_map));
-	navigation_map.printInfo();
-
-	Actor actor("characters/LeatherMale", int3(100, 1, 70));
-	actor.m_tile_map = &tile_map;
-	actor.m_navigation_map = &navigation_map;
+	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", int3(100, 1, 70)));
 
 	printf("Actor size: %d %d %d\n",
-			actor.boundingBox().width(),
-			actor.boundingBox().height(),
-			actor.boundingBox().depth());
+			actor->boundingBox().width(),
+			actor->boundingBox().height(),
+			actor->boundingBox().depth());
 
 	bool navi_debug = false;
 	
 	double last_time = getTime();
 	vector<int2> path;
 	int3 last_pos(0, 0, 0), target_pos(0, 0, 0);
+
+	const TileMap &tile_map = world.tileMap();
 
 	while(pollEvents()) {
 		if(isKeyDown(Key_esc))
@@ -76,36 +64,35 @@ int safe_main(int argc, char **argv)
 
 		if(isMouseKeyPressed(0) && !isKeyPressed(Key_lctrl)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
-			actor.setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
+			actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 		}
 		if(isMouseKeyDown(1)) {
-			actor.setNextOrder(attackOrder(0, target_pos));
+			actor->setNextOrder(attackOrder(0, target_pos));
 		}
 		if(navi_debug && isMouseKeyDown(1)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
-			path = navigation_map.findPath(last_pos.xz(), wpos.xz());
+			path = world.findPath(last_pos.xz(), wpos.xz());
 			last_pos = wpos;
 		}
 		if(isKeyDown(Key_kp_add))
-			actor.setNextOrder(changeStanceOrder(1));
+			actor->setNextOrder(changeStanceOrder(1));
 		if(isKeyDown(Key_kp_subtract))
-			actor.setNextOrder(changeStanceOrder(-1));
+			actor->setNextOrder(changeStanceOrder(-1));
 		if(isKeyDown('W'))
-			actor.setNextOrder(
-				changeWeaponOrder((WeaponClassId::Type)((actor.weaponId() + 1) % WeaponClassId::count)));
+			actor->setNextOrder(
+				changeWeaponOrder((WeaponClassId::Type)((actor->weaponId() + 1) % WeaponClassId::count)));
 
 		Ray ray = screenRay(getMousePos() + view_pos);
 		auto isect = tile_map.intersect(ray, -1.0f/0.0f, 1.0f/0.0f);
 
 		double time = getTime();
-		actor.think(time, time - last_time); //TODO: problem with delta in the first frame
+		world.simulate(time - last_time);
 		last_time = time;
 
 		clear({128, 64, 0});
 		SceneRenderer renderer(IRect(0, 0, res.x, res.y), view_pos);
 
-		tile_map.addToRender(renderer);
-		actor.addToRender(renderer);
+		world.addToRender(renderer);
 
 		if(isect.node_id != -1) {
 			IBox box = tile_map(isect.node_id)(isect.instance_id).boundingBox();
@@ -113,7 +100,7 @@ int safe_main(int argc, char **argv)
 			renderer.addBox(box);
 
 			float3 target = ray.at(isect.t);
-			float3 origin = actor.pos() + ((float3)actor.bboxSize()) * 0.5f;
+			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
 
 			Ray shoot_ray(origin, dir / length(dir));
@@ -128,8 +115,8 @@ int safe_main(int argc, char **argv)
 		}
 
 		if(navi_debug) {
-			navigation_map.visualize(renderer, true);
-			navigation_map.visualizePath(path, 1, renderer);
+			world.naviMap().visualize(renderer, true);
+			world.naviMap().visualizePath(path, 1, renderer);
 		}
 
 		renderer.render();
@@ -137,7 +124,6 @@ int safe_main(int argc, char **argv)
 
 		{
 			lookAt({0, 0});
-			char text[256];
 			
 			drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
 			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));

@@ -69,8 +69,11 @@ namespace
 namespace SpecialFrame
 {
 	enum Type {
-		sound	= -44,
-		fire 	= -43,
+		repeat_all	= -4,
+		step_left	= -40, //TODO: check if right id
+		step_right	= -41,
+		sound		= -44,
+		fire 		= -43,
 	};
 };
 
@@ -344,6 +347,14 @@ namespace gfx
 				out++;
 		}
 		return out;
+	}
+
+	bool Sprite::isSequenceLooped(int seq_id) const {
+		const Sequence &seq = m_sequences[seq_id];
+		for(int n = 0; n < (int)seq.frames.size(); n++)
+			if(seq.frames[n] == SpecialFrame::repeat_all)
+				return true;
+		return false;
 	}
 
 	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, Rect *rect) const {

@@ -173,6 +173,7 @@ void TileMap::clear() {
 void TileMap::loadFromXML(const XMLDocument &doc) {
 	XMLNode *mnode = doc.first_node("map");
 	ASSERT(mnode);
+
 	int2 size(getIntAttribute(mnode, "size_x"), getIntAttribute(mnode, "size_y"));
 	ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 	resize(size);

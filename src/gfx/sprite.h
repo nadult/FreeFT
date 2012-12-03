@@ -23,7 +23,6 @@ namespace gfx {
 			string name;
 			vector<int> frames;
 			int anim_id;
-
 		};
 
 		struct Rect {
@@ -51,6 +50,7 @@ namespace gfx {
 	
 		int dirCount(int seq_id) const { return m_anims[m_sequences[seq_id].anim_id].m_dir_count; }
 		int frameCount(int seq_id) const;
+		bool isSequenceLooped(int seq_id) const;
 
 		Texture getFrame(int seq_id, int frameId, int dirId, Rect *rect = nullptr) const;
 		int findSequence(const char *name) const;

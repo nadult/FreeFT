@@ -2,32 +2,66 @@
 #define GAME_ENTITY_H
 
 #include "base.h"
+#include <memory>
 
-namespace gfx { class SceneRenderer; }
+namespace gfx
+{
+	class SceneRenderer;
+	class Sprite;
+	typedef Ptr<Sprite> PSprite;
+}
 
-class TileMap;
-class NavigationMap;
+namespace game {
 
-class Entity {
-public:
-	Entity(int3 bbox, int3 pos);
-	virtual ~Entity() { }
+	using gfx::Sprite;
+	class World;
 
-	virtual void addToRender(gfx::SceneRenderer&) const { }
+	//TODO: static polimorphism where its possible, or maybe even
+	// array for each type of Entity
+	class Entity {
+	public:
+		Entity(const char *sprite_name, const int3 &pos);
+		virtual ~Entity();
 
-	void fixPos();
-	void setPos(float3);
-	float3 pos() const { return m_pos; }
-	IBox boundingBox() const;
-	const int3 &bboxSize() const { return m_bbox; }
+		virtual void addToRender(gfx::SceneRenderer&) const;
 
-	//TODO: pointer to Scene albo World context or something
-	TileMap *m_tile_map;
-	NavigationMap *m_navigation_map;
+		void roundPos();
+		void setPos(float3);
+		float3 pos() const { return m_pos; }
+		IBox boundingBox() const;
+		const int3 &bboxSize() const { return m_bbox; }
 
-protected:
-	float3 m_pos;
-	int3 m_bbox;
-};
+		int dir() const { return m_dir; }
+
+	protected:
+		friend class World;
+		const World *m_world;
+
+	protected:
+		virtual void think() { DASSERT(m_world); }
+		virtual void animate(int frame_skip);
+
+		void playSequence(int seq_id);
+
+		void setDir(int new_dir);
+		
+		virtual void onAnimFinished() { }
+
+		gfx::PSprite m_sprite;
+
+	private:
+		float3 m_pos; //TODO: int3 pos + float3 offset
+		int3 m_bbox;
+
+		struct AnimState {
+			int seq_id, frame_id;
+			bool is_looped;
+		} m_anim_state;
+		int m_dir;
+	};
+
+	typedef std::unique_ptr<Entity> PEntity;
+
+}
 
 #endif

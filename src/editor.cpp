@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <cstdio>
 #include <algorithm>
+#include <unistd.h>
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -8,9 +9,6 @@
 #include "tile_map.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
-#include "rapidxml_print.hpp"
-#include <fstream>
-#include <unistd.h>
 #include "ui/window.h"
 #include "ui/button.h"
 #include "ui/progress_bar.h"
@@ -174,12 +172,8 @@ public:
 	void loadTileMap(const char *file_name) {
 		printf("Loading TileMap: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
-			string text;
-			Loader ldr(file_name);
-			text.resize(ldr.size());
-			ldr.data(&text[0], ldr.size());
 			XMLDocument doc;
-			doc.parse<0>(&text[0]);
+			loadXMLDocument(file_name, doc);
 			m_map.loadFromXML(doc);
 		}
 	}
@@ -188,12 +182,8 @@ public:
 	void loadTileGroup(const char *file_name) {
 		printf("Loading TileGroup: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
-			string text;
-			Loader ldr(file_name);
-			text.resize(ldr.size());
-			ldr.data(&text[0], ldr.size());
 			XMLDocument doc;
-			doc.parse<0>(&text[0]); 
+			loadXMLDocument(file_name, doc);
 			m_group.loadFromXML(doc);
 		}
 	}
@@ -202,8 +192,7 @@ public:
 		printf("Saving TileMap: %s\n", file_name);
 		XMLDocument doc;
 		m_map.saveToXML(doc);
-		std::fstream file(file_name, std::fstream::out);
-		file << doc;
+		saveXMLDocument(file_name, doc);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
@@ -211,8 +200,7 @@ public:
 		printf("Saving TileGroup: %s\n", file_name);
 		XMLDocument doc;
 		m_group.saveToXML(doc);
-		std::fstream file(file_name, std::fstream::out);
-		file << doc;
+		saveXMLDocument(file_name, doc);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 

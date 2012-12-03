@@ -141,6 +141,8 @@ MoveVector::MoveVector(const int2 &start, const int2 &end) {
 }
 MoveVector::MoveVector() :vec(0, 0), dx(0), dy(0), ddiag(0) { }
 
+#include <fstream>
+#include "rapidxml_print.hpp"
 
 using namespace rapidxml;
 
@@ -181,3 +183,17 @@ const char *getStringAttribute(XMLNode *node, const char *name) {
 	return attrib? attrib->value() : 0;
 }
 
+void loadXMLDocument(const char *file_name, XMLDocument &doc) {
+	DASSERT(file_name);
+	Loader ldr(file_name);
+	char *xml_string = doc.allocate_string(0, ldr.size());
+	ldr.data(xml_string, ldr.size());
+	doc.parse<0>(xml_string); 
+	
+}
+
+void saveXMLDocument(const char *file_name, const XMLDocument &doc) {
+	DASSERT(file_name);
+	std::fstream file(file_name, std::fstream::out);
+	file << doc;
+}

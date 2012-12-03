@@ -360,6 +360,9 @@ typedef rapidxml::xml_node<> XMLNode;
 typedef rapidxml::xml_attribute<> XMLAttribute;
 typedef rapidxml::xml_document<> XMLDocument;
 
+void loadXMLDocument(const char *file_name, XMLDocument&);
+void saveXMLDocument(const char *file_name, const XMLDocument&);
+
 void addAttribute(XMLNode *node, const char *name, float value);
 void addAttribute(XMLNode *node, const char *name, int value);
 void addAttribute(XMLNode *node, const char *name, const char *value);
