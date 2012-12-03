@@ -1,4 +1,4 @@
-#include "actor.h"
+#include "game/actor.h"
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 #include "tile_map.h"
@@ -149,6 +149,7 @@ Actor::Actor(const char *spr_name, int3 pos) :Entity(int3(1, 1, 1), pos) {
 	m_weapon_id = WeaponClassId::unarmed;
 	setSequence(ActionId::standing);
 	lookAt(int3(0, 0, 0));
+	m_dir = m_target_dir;
 	m_order = m_next_order = doNothingOrder();
 }
 
@@ -368,7 +369,7 @@ void Actor::lookAt(int3 pos) { //TODO: rounding
 	//TODO: sprites have varying number of directions
 	// maybe a vector (int2) should be passed to sprite, and it should
 	// figure out a best direction by itself
-	m_dir = Sprite::findDir(dx, dz);
+	m_target_dir = Sprite::findDir(dx, dz);
 }
 
 void Actor::animate(double current_time) {
@@ -380,6 +381,15 @@ void Actor::animate(double current_time) {
 		int frame_count = m_sprite->frameCount(m_seq_id);
 		int next_frame_id = (m_frame_id + 1) % frame_count;
 		m_last_time = current_time;
+
+		if(m_dir != m_target_dir) {
+			int target = m_target_dir < m_dir? m_target_dir + 8 : m_target_dir;
+			if(target - m_dir <= 3)
+				m_dir++;
+			else
+				m_dir--;
+			m_dir = (m_dir + 8) % 8;
+		}
 
 		bool finished = next_frame_id < m_frame_id;
 		if(finished)

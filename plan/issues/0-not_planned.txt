@@ -7,5 +7,11 @@
   - trzeba dopisać funkcje w platform_windows.cpp i sprawdzić czy res_viewer & editor działają jak trzeba DONE
   27.11.12: 17:00 - 18:00, 18:50 - 20:50 
  
-- Przyspieszenie generacji mapy nawigacyjnej: znajdowanie największego kawałka w czasie liniowym
+- Przyspieszenie generacji mapy nawigacyjnej: znajdowanie największego kawałka w czasie liniowym DONE
   27.11.12: 23:00 - 23:45
+ 
+- bajer: wygładzone obracanie się gracza; np. ścieżki można próbować generowac tak, aby gracz nie wykonywał
+   skrętów o więcej niż 45 stopni; albo podczas odpalania nowej animacji z nowym kierunkiem, przy każdej klatce
+   zmieniać kierunek o co najwyżej 45 stopni DONE
+	03.12.12: 14:30 - 14:45
+	

@@ -73,8 +73,8 @@ public:
 		m_mode = emMapEdition;
 		m_map.resize({16 * 64, 16 * 64});
 
-		loadTileGroup("../data/tile_group.xml");
-		loadTileMap("../data/tile_map.xml");
+		loadTileGroup("data/tile_group.xml");
+		loadTileMap("data/tile_map.xml");
 
 		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
 		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
@@ -124,7 +124,7 @@ public:
 		else if(ev.type == Event::button_clicked && m_load_button == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
 			m_file_dialog = new FileDialog(dialog_rect, s_load_dialog_names[m_mode], FileDialogMode::opening_file);
-			m_file_dialog->setPath("../data/");
+			m_file_dialog->setPath("data/");
 			attach(m_file_dialog.get(), true);
 		}
 		else if(ev.type == Event::button_clicked && m_save_button == ev.source) {
@@ -253,11 +253,11 @@ int safe_main(int argc, char **argv)
 	setBlendingMode(bmNormal);
 
 	vector<FileEntry> file_names;
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Snow/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/Mountains/Mountain FLOORS/Rock/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/Generic tiles/Generic floors/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "../refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Snow/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Rock/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "refs/tiles/Generic tiles/Generic floors/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading... ");
 	for(uint n = 0; n < file_names.size(); n++) {

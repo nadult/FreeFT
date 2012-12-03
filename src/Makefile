@@ -1,4 +1,4 @@
-all: editor game res_viewer game.exe editor.exe res_viewer.exe
+all: ../editor ../game ../res_viewer ../game.exe ../editor.exe ../res_viewer.exe
 
 BUILD_DIR=/tmp/build
 
@@ -6,11 +6,13 @@ _dummy := $(shell [ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR))
 _dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
 _dummy := $(shell [ -d $(BUILD_DIR)/ui ] || mkdir -p $(BUILD_DIR)/ui)
 _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
+_dummy := $(shell [ -d $(BUILD_DIR)/game ] || mkdir -p $(BUILD_DIR)/game)
 
 SRC_FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux sys/platform_windows \
-	editor game res_viewer base tile_map tile_group actor entity navigation_map \
+	editor game res_viewer base tile_map tile_group navigation_map navigation_bitmap \
+	game/actor game/entity \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \
 	ui/edit_box ui/tile_selector ui/tile_map_editor ui/tile_group_editor
 
@@ -27,8 +29,8 @@ MINGW_OBJECTS:=$(SRC_FILES:%=$(BUILD_DIR)/%_.o)
 LINUX_SHARED_OBJECTS:=$(SHARED_FILES:%=$(BUILD_DIR)/%.o)
 MINGW_SHARED_OBJECTS:=$(SHARED_FILES:%=$(BUILD_DIR)/%_.o)
 
-LINUX_PROGRAMS:=$(PROGRAM_SRC_FILES:%=%)
-MINGW_PROGRAMS:=$(PROGRAM_SRC_FILES:%=%.exe)
+LINUX_PROGRAMS:=$(PROGRAM_SRC_FILES:%=../%)
+MINGW_PROGRAMS:=$(PROGRAM_SRC_FILES:%=../%.exe)
 
 LIBS=-lglfw -lbaselib -lpng -lz
 LINUX_LIBS=$(LIBS) -lGL -lGLU
@@ -58,15 +60,15 @@ $(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  %.cpp
 $(MINGW_OBJECTS): $(BUILD_DIR)/%_.o: %.cpp
 	$(MGW_CXX) $(MINGW_FLAGS) -c $*.cpp -o $@
 
-$(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD_DIR)/%.o  $(BUILD_DIR)/sys/platform_linux.o
+$(LINUX_PROGRAMS): ../%:     $(LINUX_SHARED_OBJECTS) $(BUILD_DIR)/%.o  $(BUILD_DIR)/sys/platform_linux.o
 	    $(CXX) -o $@ $^ -rdynamic $(LINUX_LIBS)
 
-$(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(BUILD_DIR)/sys/platform_windows_.o
+$(MINGW_PROGRAMS): ../%.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(BUILD_DIR)/sys/platform_windows_.o
 	$(MGW_CXX) -o $@ $^ $(MINGW_LIBS)
 
 clean:
 	-rm -f $(LINUX_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) $(MINGW_PROGRAMS) $(DEPS) $(BUILD_DIR)/.depend
-	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui
+	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui $(BUILD_DIR)/game
 	-rmdir $(BUILD_DIR)
 
 $(BUILD_DIR)/.depend: $(DEPS)

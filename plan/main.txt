@@ -57,11 +57,10 @@
  - w edytorze zaznaczanie na szaro obiektów które się przecinają z kursorem
  - zrobic porządek z ładowaniem tile-i i spritów do tekstur na GPU
  - obsługa specjalnych akcji w sprajtach (opis w SpriteCreatorze); 
- - bajer: wygładzone obracanie się gracza; np. ścieżki można próbować generowac tak, aby gracz nie wykonywał
-   skrętów o więcej niż 45 stopni; albo podczas odpalania nowej animacji z nowym kierunkiem, przy każdej klatce
-   zmieniać kierunek o co najwyżej 45 stopni
  - zastanowić się jak można najlepiej skompresować teksturki i je później zdekompresować tak żeby
    było 60 FPS na netbooku
+ - focus na itemie w ListBoxie zostaje jak mysz wyjedzie poza listę
+ - dodać licencję
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

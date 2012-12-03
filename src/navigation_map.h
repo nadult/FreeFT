@@ -5,6 +5,8 @@
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 
+class NavigationBitmap;
+
 //TODO: support for multiple levels, stairs: it can be implemented by additional heightmaps
 // and transitions between them
 //
@@ -12,24 +14,14 @@
 // with varying ceiling height we can provide ceiling heightmaps
 class NavigationMap {
 public:
-	NavigationMap(int2 size);
+	NavigationMap();
 
-	void update(const TileMap&);
-
-	void resize(int2 size);
+	void update(const NavigationBitmap&);
 	int2 size() const { return m_size; }
-
-	gfx::PTexture getTexture() const;
 
 	void visualize(gfx::SceneRenderer&, bool borders) const;
 	void visualizePath(const vector<int2>&, int elem_size, gfx::SceneRenderer&) const;
 	void printInfo() const;
-
-	inline bool operator()(int x, int y) const
-		{ return m_bitmap[(x >> 3) + y * m_line_size] & (1 << (x & 7)); }
-
-	inline bool operator()(const int2 &pos) const
-	{ return pos.x < 0 || pos.y < 0 || pos.x >= m_size.x || pos.y >= m_size.y? false : operator()(pos.x, pos.y); }
 
 	struct Quad {
 		IRect rect;
@@ -55,13 +47,10 @@ public:
 	const Quad &operator[](int idx) const { return m_quads[idx]; }
 
 protected:
-	void extractQuads(int sx, int sy);
-	void extractQuads();
+	void extractQuads(const NavigationBitmap&, int sx, int sy);
 
 	vector<Quad> m_quads;
-	vector<u8> m_bitmap;
 	int2 m_size;
-	int m_line_size;
 };
 
 

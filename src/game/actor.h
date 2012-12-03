@@ -1,7 +1,7 @@
-#ifndef ACTOR_H
-#define ACTOR_H
+#ifndef GAME_ACTOR_H
+#define GAME_ACTOR_H
 
-#include "entity.h"
+#include "game/entity.h"
 #include "gfx/sprite.h"
 
 
@@ -130,7 +130,7 @@ protected:
 	// animation state
 	bool m_looped_anim;
 	int m_seq_id, m_frame_id;
-	int m_dir;
+	int m_dir, m_target_dir;
 	double m_last_time;
 
 	// movement state

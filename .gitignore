@@ -1,0 +1,7 @@
+*.swp
+*.vim
+src/tags
+/editor
+/game
+/res_viewer
+/*.exe

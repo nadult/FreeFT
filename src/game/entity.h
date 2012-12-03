@@ -1,5 +1,5 @@
-#ifndef ENTITY_H
-#define ENTITY_H
+#ifndef GAME_ENTITY_H
+#define GAME_ENTITY_H
 
 #include "base.h"
 

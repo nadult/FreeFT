@@ -11,10 +11,11 @@
 
 #include "tile_map.h"
 #include "navigation_map.h"
+#include "navigation_bitmap.h"
 #include "tile_group.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
-#include "actor.h"
+#include "game/actor.h"
 
 using namespace gfx;
 int safe_main(int argc, char **argv)
@@ -29,11 +30,6 @@ int safe_main(int argc, char **argv)
 	setWindowTitle("FTremake ver 0.02");
 	grabMouse(false);
 
-//	DTexture tex;
-//	Loader("../data/epic_boobs.png") & tex;
-
-	//const char *mapName = argc > 1? argv[1] : "../data/test.map";
-
 	setBlendingMode(bmNormal);
 
 	int2 view_pos(0, 0);
@@ -42,9 +38,9 @@ int safe_main(int argc, char **argv)
 
 	TileMap tile_map;
 
-	if(access("../data/tile_map.xml", R_OK) == 0) {
+	if(access("data/tile_map.xml", R_OK) == 0) {
 		string text;
-		Loader ldr("../data/tile_map.xml");
+		Loader ldr("data/tile_map.xml");
 		text.resize(ldr.size());
 		ldr.data(&text[0], ldr.size());
 		XMLDocument doc;
@@ -52,8 +48,8 @@ int safe_main(int argc, char **argv)
 		tile_map.loadFromXML(doc);
 	}
 	
-	NavigationMap navigation_map(tile_map.size());
-	navigation_map.update(tile_map);
+	NavigationMap navigation_map;
+	navigation_map.update(NavigationBitmap(tile_map));
 	navigation_map.printInfo();
 
 	Actor actor("characters/LeatherMale", int3(100, 1, 70));

@@ -251,6 +251,6 @@ namespace gfx
 		glEnd();
 	}
 
-	ResourceMgr<Font> Font::mgr("../data/fonts/", ".fnt"); 
-	ResourceMgr<DTexture> Font::tex_mgr("../data/fonts/", "");
+	ResourceMgr<Font> Font::mgr("data/fonts/", ".fnt"); 
+	ResourceMgr<DTexture> Font::tex_mgr("data/fonts/", "");
 }

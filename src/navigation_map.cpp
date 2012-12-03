@@ -1,66 +1,12 @@
 #include "navigation_map.h"
+#include "navigation_bitmap.h"
 #include "gfx/texture.h"
 #include <cstring>
 #include <cmath>
 #include <set>
 #include <algorithm>
 
-NavigationMap::NavigationMap(int2 size) :m_size(0, 0) {
-	resize(size);
-}
-
-void NavigationMap::resize(int2 size) {
-	DASSERT((size.x & (size.x - 1)) == 0 && size.x >= 8);
-	m_line_size = (size.x + 7) / 8;
-	m_bitmap.resize(m_line_size * size.y, 0);
-	m_size = size;
-}
-
-static void extractheightMap(const TileMap &tile_map, u8 *out, int2 size, int extend) {
-	DASSERT(out);
-	memset(out, 0, size.x * size.y);
-	IBox dbox(int3(0, 0, 0), int3(size.x, 255, size.y));
-	
-	for(int t = 0; t < tile_map.nodeCount(); t++) {
-		const TileMapNode &node = tile_map(t);
-		int3 tnode_pos = tile_map.nodePos(t);
-		
-		for(int i = 0; i < node.instanceCount(); i++) {
-			const TileInstance &inst = node(i);
-			IBox bbox = inst.boundingBox() + tnode_pos;
-			
-			if(areOverlapping(dbox, bbox)) {
-				bbox.min = max(bbox.min - int3(extend, 0, extend), int3(0, 0, 0));
-				bbox.max = min(bbox.max, dbox.max);
-
-				u8 *ptr = out + bbox.min.x + bbox.min.z * size.x;
-				for(int z = 0; z < bbox.depth(); z++) {
-					for(int x = 0; x < bbox.width(); x++)
-						ptr[x] = max(ptr[x], (u8)bbox.max.y);
-					ptr += size.x;
-				}
-			}
-		}
-	}
-}
-
-void NavigationMap::update(const TileMap &tile_map) {
-	vector<u8> height_map(m_size.x * m_size.y);
-	extractheightMap(tile_map, &height_map[0], m_size, 2);
-
-	for(int z = 0; z < m_size.y; z++) {
-		const u8 *src = &height_map[z * m_size.x];
-		u8 *dst = &m_bitmap[z * m_line_size];
-
-		for(int x = 0; x < m_size.x; x += 8) {
-			u8 octet = 0;
-			for(int i = 0; i < 8; i++)
-				octet |= src[x + i] == 1? (1 << i) : 0;
-			dst[x >> 3] = octet;
-		}
-	}
-
-	extractQuads();
+NavigationMap::NavigationMap() :m_size(0, 0) {
 }
 
 static bool areAdjacent(const IRect &a, const IRect &b) {
@@ -112,7 +58,7 @@ static IRect findBestRect(const short *counts, const short *skip_list, int2 size
 	return best;
 }
 
-void NavigationMap::extractQuads(int sx, int sy) {
+void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy) {
 	int2 size(min((int)sector_size, m_size.x - sx), min((int)sector_size, m_size.y - sy));
 
 	int pixels = 0;
@@ -122,7 +68,7 @@ void NavigationMap::extractQuads(int sx, int sy) {
 	for(int y = 0; y < size.y; y++) {
 		int yoff = y * sector_size;
 		for(int x = 0; x < size.x; x++) {
-			if((*this)(sx + x, sy + y)) {
+			if(bitmap(sx + x, sy + y)) {
 				counts[x + yoff] = 1 + (y > 0? counts[x + yoff - sector_size] : 0);
 				pixels++;
 			}
@@ -173,14 +119,15 @@ void NavigationMap::extractQuads(int sx, int sy) {
 }
 
 
-void NavigationMap::extractQuads() {
+void NavigationMap::update(const NavigationBitmap &bitmap) {
+	m_size = bitmap.size();
 	m_quads.clear();
 
 	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 	for(int sy = 0; sy < m_size.y; sy += sector_size)
 		for(int sx = 0; sx < m_size.x; sx += sector_size) {
-			extractQuads(sx, sy);
+			extractQuads(bitmap, sx, sy);
 			//printf("."); fflush(stdout);
 		}
 	printf("%.2f seconds\n", getTime() - time);
@@ -462,21 +409,8 @@ void NavigationMap::visualizePath(const vector<int2> &path, int elem_size, gfx::
 	}
 }
 
-gfx::PTexture NavigationMap::getTexture() const {
-	gfx::Texture tex(size().x, size().y);
-
-	for(int y = 0; y < m_size.y; y++)
-		for(int x = 0; x < m_size.x; x++)
-			tex(x, y) = (*this)(x, y)? Color(255, 255, 255) : Color(0, 0, 0);
-	
-	gfx::PTexture out = new gfx::DTexture;
-	out->setSurface(tex);
-	return out;
-}
-
 void NavigationMap::printInfo() const {
 	printf("NavigationMap(%d, %d):\n", m_size.x, m_size.y);
-	printf("  bitmap: %.0f KB\n", double(m_bitmap.size()) / 1024.0);
 
 	int bytes = sizeof(Quad) * m_quads.size();
 	for(int n = 0; n < (int)m_quads.size(); n++) {

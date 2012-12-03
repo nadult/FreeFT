@@ -419,6 +419,6 @@ namespace gfx
 		printf("\n");
 	}
 
-	ResourceMgr<Sprite> Sprite::mgr("../refs/sprites/", ".spr");
+	ResourceMgr<Sprite> Sprite::mgr("refs/sprites/", ".spr");
 
 }

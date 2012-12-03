@@ -1,18 +1,29 @@
 - Napisanie podstawowych klas encji: kontener, drzwi, item, pociski, encja oparta o tile (który np.
-  można zniszczyć)
-- Podstawowe komunikaty na które powinny odpowiadać encje: interact, use skill, apply damage
-- Rendering encji
+  można zniszczyć) (6h)
+  - kontener: otwieranie, zamykanie (jeśli są dostępne animacje), transfer itemów, używanie kluczy
+  - drzwi: otwórz, zamknij, używanie kluczy, zmienny bounding box, reakcja na ekspozję
+  - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja, okno dialogowe
+  - pociski: synchronizacja z animacją gracza, generują impacty
+  - eksplozje: generują damage, rendering jako overlay
+  - itemy: można je zostawiać / podnosić
+- Podstawowe komunikaty na które powinny odpowiadać encje: interact, use skill, apply damage (6h)
 - Uwzględnienie encji podczas generacji ścieżek
-  - opcja 1: modyfikacja mapy nawigacyjnej (rozbijanie quadów na których znajdują się encje)
-  - opcja 2: hmmm...
-- Uwzględnienie encji podczas wyliczania widoczności
+  - opcja 1: modyfikacja mapy nawigacyjnej (rozbijanie quadów na których znajdują się encje);
+    ale przecież w następnej klatce obiekty te mogą być zupełnie gdzie indziej, nie ma więc sensu
+    brać je pod uwagę przy dłuższych ścieżkach
+  - opcja 2 (X): w przypadku kolizji z encją która może zmieniać swoją pozycję, przełączamy się
+    na wyszukiwanie ścieżek oparte o bitmapę
+  - rozbić NavigationMap na NavigationMap i NavigationBitmap (0.5h)
+  
+- Uwzględnienie encji podczas wyliczania widoczności  (6h)
   - do obliczeń widoczności najlepiej chyba będzie zrobić drzewo BVH, znów dwie opcje:
     - modyfikacja drzewa gdy encje zmieniają pozycje
     - oddzielne drzewo BVH dla obiektów dynamicznych budowane w realtime, najpierw wyszukujemy w statycznym
       drzewie a potem w dynamicznym
 
 
-+ESTIMATED_TIME:
++ESTIMATED_TIME: 18.5h
 +TIME_SPENT: 0h
 
 +WORK_LOG:
+03.12.12: 14:15 - 15:15, 16:00 - 

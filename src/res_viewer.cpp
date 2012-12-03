@@ -240,7 +240,7 @@ public:
 		attach(m_dir_view.get());
 		attach(m_res_view.get());
 
-		m_current_dir = "../refs/";
+		m_current_dir = "refs/";
 		m_current_dir = m_current_dir.absolute();
 
 		update();
