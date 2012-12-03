@@ -14,7 +14,9 @@ namespace gfx
 namespace game {
 
 	using gfx::Sprite;
+	
 	class World;
+	class Actor;
 
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each type of Entity
@@ -23,15 +25,20 @@ namespace game {
 		Entity(const char *sprite_name, const int3 &pos);
 		virtual ~Entity();
 
+		// Doesn't change its bounding box
+		virtual bool isStatic() const { return true; }
+
 		virtual void addToRender(gfx::SceneRenderer&) const;
+		virtual void interact(const Entity *interactor) { }
 
 		void roundPos();
-		void setPos(float3);
-		float3 pos() const { return m_pos; }
+		void setPos(const float3&);
+		const float3 &pos() const { return m_pos; }
 		IBox boundingBox() const;
 		const int3 &bboxSize() const { return m_bbox; }
 
 		int dir() const { return m_dir; }
+		void setDir(int new_dir);
 
 	protected:
 		friend class World;
@@ -42,9 +49,8 @@ namespace game {
 		virtual void animate(int frame_skip);
 
 		void playSequence(int seq_id);
-
-		void setDir(int new_dir);
-		
+	
+		// you shouldn't call playAnimation from this method	
 		virtual void onAnimFinished() { }
 
 		gfx::PSprite m_sprite;

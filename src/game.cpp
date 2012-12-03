@@ -16,6 +16,7 @@
 #include "sys/platform.h"
 #include "game/actor.h"
 #include "game/world.h"
+#include "game/container.h"
 
 using namespace gfx;
 using namespace game;
@@ -41,6 +42,13 @@ int safe_main(int argc, char **argv)
 	World world("data/tile_map.xml");
 
 	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", int3(100, 1, 70)));
+	Container *chest = world.addEntity(new Container("containers/Chest Wooden", int3(134, 1, 37)));
+	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", int3(120, 1, 37)));
+	world.addEntity(new Container("containers/Fridge S", int3(134, 1, 25)));
+	world.addEntity(new Container("containers/Ice Chest N", int3(120, 1, 25)));
+
+	chest->setDir(1);
+	world.updateNavigationMap();
 
 	printf("Actor size: %d %d %d\n",
 			actor->boundingBox().width(),
@@ -48,6 +56,8 @@ int safe_main(int argc, char **argv)
 			actor->boundingBox().depth());
 
 	bool navi_debug = false;
+	bool shooting_debug = false;
+	bool entity_debug = true;
 	
 	double last_time = getTime();
 	vector<int2> path;
@@ -61,10 +71,20 @@ int safe_main(int argc, char **argv)
 
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
+		
+		Ray ray = screenRay(getMousePos() + view_pos);
+		auto isect = tile_map.intersect(ray, -1.0f/0.0f, 1.0f/0.0f);
+		auto ent_isect = world.intersectEntities(ray, -1.0f/0.0f, 1.0f/0.0f);
 
-		if(isMouseKeyPressed(0) && !isKeyPressed(Key_lctrl)) {
-			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
-			actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
+		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
+			if(ent_isect.entity && entity_debug) {
+				if(ent_isect.entity != actor)
+					actor->setNextOrder(interactOrder(ent_isect.entity));
+			}
+			else {
+				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
+				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
+			}
 		}
 		if(isMouseKeyDown(1)) {
 			actor->setNextOrder(attackOrder(0, target_pos));
@@ -82,9 +102,6 @@ int safe_main(int argc, char **argv)
 			actor->setNextOrder(
 				changeWeaponOrder((WeaponClassId::Type)((actor->weaponId() + 1) % WeaponClassId::count)));
 
-		Ray ray = screenRay(getMousePos() + view_pos);
-		auto isect = tile_map.intersect(ray, -1.0f/0.0f, 1.0f/0.0f);
-
 		double time = getTime();
 		world.simulate(time - last_time);
 		last_time = time;
@@ -94,7 +111,12 @@ int safe_main(int argc, char **argv)
 
 		world.addToRender(renderer);
 
-		if(isect.node_id != -1) {
+		if(entity_debug && ent_isect.entity) {
+			IBox box = ent_isect.entity->boundingBox();
+			renderer.addBox(box);
+		}	
+
+		if(isect.node_id != -1 && shooting_debug) {
 			IBox box = tile_map(isect.node_id)(isect.instance_id).boundingBox();
 			box += tile_map.nodePos(isect.node_id);
 			renderer.addBox(box);
@@ -130,8 +152,9 @@ int safe_main(int argc, char **argv)
 
 			gfx::PFont font = gfx::Font::mgr["arial_24"];
 
-			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%f %f %f) -> (%f %f %f)",
-					ray.origin().x, ray.origin().y, ray.origin().z, ray.dir().x, ray.dir().y, ray.dir().z);
+			int3 pos = (int3)ray.at(isect.t);
+
+			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%d %d %d)", pos.x, pos.y, pos.z);
 			font->drawShadowed(int2(0, 20), Color::white, Color::black, "%d %d %f",
 					isect.node_id, isect.instance_id, isect.t);
 

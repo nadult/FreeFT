@@ -33,14 +33,29 @@ static void extractheightMap(const TileMap &tile_map, u8 *out, int2 size, int ex
 	}
 }
 
-NavigationBitmap::NavigationBitmap(const TileMap &tile_map) :m_size(0, 0) {
+void NavigationBitmap::blit(const IRect &rect, bool value) {
+	IRect clipped(max(rect.min - int2(m_extend, m_extend), int2(0, 0)), min(rect.max, m_size));
+
+	for(int y = clipped.min.y; y < clipped.max.y; y++)
+		for(int x = clipped.min.x; x < clipped.max.x; x++) {
+			int offset = (x >> 3) + y * m_line_size;
+			int bit = 1 << (x & 7);
+
+			if(value)
+				m_bitmap[offset] |= bit;
+			else
+				m_bitmap[offset] &= ~bit;
+		}
+}
+
+NavigationBitmap::NavigationBitmap(const TileMap &tile_map, int extend) :m_size(0, 0), m_extend(extend) {
 	m_size = tile_map.size();
 	DASSERT((m_size.x & (m_size.x - 1)) == 0 && m_size.x >= 8);
 	m_line_size = (m_size.x + 7) / 8;
 	m_bitmap.resize(m_line_size * m_size.y, 0);
 
 	vector<u8> height_map(m_size.x * m_size.y);
-	extractheightMap(tile_map, &height_map[0], m_size, 2);
+	extractheightMap(tile_map, &height_map[0], m_size, m_extend);
 
 	for(int z = 0; z < m_size.y; z++) {
 		const u8 *src = &height_map[z * m_size.x];

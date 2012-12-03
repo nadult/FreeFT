@@ -30,6 +30,11 @@ namespace game {
 		new_order.change_weapon = Order::ChangeWeapon{target_weapon};
 		return new_order;
 	}
+	Order interactOrder(Entity *target) {
+		Order new_order(OrderId::interact);
+		new_order.interact = Order::Interact{target, false};
+		return new_order;
+	}
 
 	static const char *s_wep_names[WeaponClassId::count] = {
 		"",
@@ -79,6 +84,10 @@ namespace game {
 
 		{ "StandAttack%s",	"CrouchAttack%s",	"ProneAttack%s" },		// attack 1
 		{ "StandAttack%s",	"CrouchAttack%s",	"ProneAttack%s" },		// attack 2
+
+		{ "StandPickup", 	"CrouchPickup", 	"PronePickup" },		// pickup
+		{ "StandMagichigh", "CrouchMagic",	 	"ProneMagic" },			// magic 1
+		{ "StandMagiclow", 	"CrouchMagic", 		"ProneMagic" },			// magic 2
 	};
 
 	ActorAnimMap::ActorAnimMap(gfx::PSprite sprite) {
@@ -120,7 +129,7 @@ namespace game {
 	}
 
 	Actor::Actor(const char *sprite_name, const int3 &pos) :Entity(sprite_name, pos) {
-	//	m_sprite->printInfo();
+		m_sprite->printInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
 		m_issue_next_order = false;
@@ -156,6 +165,7 @@ namespace game {
 
 			float dist = speed * time_delta;
 			m_issue_next_order = false;
+			float3 new_pos;
 
 			while(dist > 0.0001f) {
 				int3 target = m_path[m_path_pos];
@@ -169,9 +179,12 @@ namespace game {
 					m_last_pos = target;
 					m_path_t = 0.0f;
 
-					if(++m_path_pos == (int)m_path.size() || m_next_order.id != OrderId::do_nothing) {
+					bool stop_moving = m_next_order.id != OrderId::do_nothing &&
+							!(m_next_order.id == OrderId::interact && m_next_order.interact.waiting_for_move);
+
+					if(++m_path_pos == (int)m_path.size() || stop_moving) {
 						lookAt(target);
-						setPos(target);
+						new_pos = target;
 						m_path.clear();
 						m_issue_next_order = true;
 						break;
@@ -181,12 +194,21 @@ namespace game {
 					float new_x = cur_pos.x + diff_vec.x * dist;
 					float new_z = cur_pos.z + diff_vec.z * dist;
 					m_path_t = diff.x? (new_x - m_last_pos.x) / float(diff.x) : (new_z - m_last_pos.z) / float(diff.z);
-					float3 new_pos = (float3)m_last_pos + float3(diff) * m_path_t;
+					new_pos = (float3)m_last_pos + float3(diff) * m_path_t;
 					lookAt(target);
-					setPos(new_pos);
 					break;
 				}
 			}
+
+			float3 old_pos = pos();
+			setPos(new_pos); /*
+			if(m_world->isColliding(boundingBox(), this)) {
+				//TODO: response to collision
+				m_issue_next_order = true;
+				m_path.clear();
+				setPos(old_pos);
+				roundPos();
+			}*/
 		}
 	}
 
@@ -202,10 +224,41 @@ namespace game {
 			DASSERT(m_stance_id >= 0 && m_stance_id < StanceId::count);
 		}
 
-		if(m_next_order.id == OrderId::move)
+		if(m_next_order.id == OrderId::move) {
 			issueMoveOrder();
+			m_next_order = doNothingOrder();
+		}
+		else if(m_next_order.id == OrderId::interact) {
+			IBox my_box = boundingBox(), other_box = m_next_order.interact.target->boundingBox();
+
+			//TODO: take y axis into consideration also
+			bool are_adjacent = areAdjacent(IRect(my_box.min.xz(), my_box.max.xz()),
+											IRect(other_box.min.xz(), other_box.max.xz()));
+
+			if(are_adjacent) {
+				m_order = m_next_order;
+				m_next_order = doNothingOrder();
+				setSequence(ActionId::magic1);
+				lookAt(other_box.center());
+			}
+			else {
+				if(m_next_order.interact.waiting_for_move) {
+					m_order = m_next_order = doNothingOrder();
+				}
+				else {
+					int2 target_pos = clamp(my_box.center().xz(), other_box.min.xz(), other_box.max.xz());
+					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos);
+					Order order = m_next_order;
+					order.interact.waiting_for_move = true;
+					m_next_order = moveOrder(asXZY(target_pos, 1), false);
+					issueMoveOrder();
+					if(m_order.id == OrderId::move)
+						m_next_order = order;
+				}
+			}
+		}
 		else if(m_next_order.id == OrderId::change_weapon) {
-			m_order = doNothingOrder();
+			m_order = m_next_order = doNothingOrder();
 			setWeapon(m_next_order.change_weapon.target_weapon);
 		}
 		else {
@@ -226,13 +279,13 @@ namespace game {
 			}
 
 			m_order = m_next_order;
+			m_next_order = doNothingOrder();
 		}
 		
 		if(m_order.id == OrderId::do_nothing)	
 			setSequence(ActionId::standing);
 
 		m_issue_next_order = false;
-		m_next_order = doNothingOrder();
 	}
 
 	void Actor::issueMoveOrder() {
@@ -345,6 +398,10 @@ namespace game {
 	void Actor::onAnimFinished() {
 		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack)
 			m_issue_next_order = true;
+		if(m_order.id == OrderId::interact) {
+			m_order.interact.target->interact(this);
+			m_issue_next_order = true;
+		}
 	}
 
 }

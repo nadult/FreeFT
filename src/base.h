@@ -210,6 +210,7 @@ struct Box
 	Type height() const { return max.y - min.y; }
 	Type depth() const { return max.z - min.z; }
 	Type3 size() const { return max - min; }
+	Type3 center() const { return (max + min) / Type(2); }
 
 	Box operator+(const Type3 &offset) const { return Box(min + offset, max + offset); }
 	Box operator-(const Type3 &offset) const { return Box(min - offset, max - offset); }
@@ -241,6 +242,8 @@ bool areOverlapping(const Box<T> &a, const Box<T> &b) {
 			(b.min.y < a.max.y && a.min.y < b.max.y) &&
 			(b.min.z < a.max.z && a.min.z < b.max.z);
 }
+
+bool areAdjacent(const Rect<int2> &a, const Rect<int2> &b);
 
 typedef Rect<int2> IRect;
 typedef Rect<float2> FRect;

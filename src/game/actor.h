@@ -15,7 +15,6 @@ namespace game {
 		};
 	}
 
-
 	namespace ActionId {
 		enum Type {
 			standing,
@@ -27,6 +26,10 @@ namespace game {
 
 			attack1,
 			attack2,
+
+			pickup,
+			magic1,
+			magic2,
 
 			count,
 		};
@@ -57,6 +60,7 @@ namespace game {
 			attack,
 			change_stance,
 			change_weapon,
+			interact,
 
 			count,
 		};
@@ -69,6 +73,10 @@ namespace game {
 		struct ChangeStance	{ int next_stance; };
 		struct Attack		{ int3 target_pos; int mode; };
 		struct ChangeWeapon { WeaponClassId::Type target_weapon; };
+		struct Interact {
+			Entity *target; //TODO: pointer may become invalid
+			bool waiting_for_move;
+		};
 
 		OrderId::Type id;
 		union {
@@ -76,6 +84,7 @@ namespace game {
 			Attack attack;
 			ChangeStance change_stance;
 			ChangeWeapon change_weapon;
+			Interact interact;
 		};
 	};
 		
@@ -84,6 +93,7 @@ namespace game {
 	Order changeStanceOrder(int next_stance);
 	Order attackOrder(int attack_mode, const int3 &target_pos);
 	Order changeWeaponOrder(WeaponClassId::Type target_weapon);
+	Order interactOrder(Entity *target);
 
 	class ActorAnimMap {
 	public:
@@ -104,6 +114,8 @@ namespace game {
 
 		void setNextOrder(const Order &order);
 		WeaponClassId::Type weaponId() const { return m_weapon_id; }
+		
+		virtual bool isStatic() const { return false; }
 
 	protected:
 		void think();
@@ -138,6 +150,5 @@ namespace game {
 	};
 
 }
-
 
 #endif

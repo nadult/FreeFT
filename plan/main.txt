@@ -61,6 +61,7 @@
    było 60 FPS na netbooku
  - focus na itemie w ListBoxie zostaje jak mysz wyjedzie poza listę
  - dodać licencję
+ - zaplanować kolejny refactoring, pozbierać wszystkie rzeczy do zrobienia (np. zajęcie się TODOsami)
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

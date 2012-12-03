@@ -13,8 +13,7 @@ namespace game {
 		m_sprite = Sprite::mgr[sprite_name];
 		m_bbox = m_sprite->m_bbox;
 		m_dir = 0;
-
-		setPos(pos);
+		m_pos = (float3)pos;
 		playSequence(0);
 	}
 	Entity::~Entity() { }
@@ -23,8 +22,9 @@ namespace game {
 		m_pos = (int3)(m_pos + float3(0.5f, 0, 0.5f));
 	}
 
-	void Entity::setPos(float3 new_pos) {
+	void Entity::setPos(const float3 &new_pos) {
 		DASSERT(new_pos.x >= 0.0f && new_pos.y >= 0.0f && new_pos.z >= 0.0f);
+		DASSERT(!isStatic());
 		m_pos = new_pos;
 	}
 
@@ -68,14 +68,14 @@ namespace game {
 		DASSERT(frame_skip);
 		
 		int frame_count = m_sprite->frameCount(m_anim_state.seq_id);
-		int next_frame_id = (m_anim_state.frame_id + frame_skip) % frame_count;
+		int next_frame_id = m_anim_state.frame_id + frame_skip;
 
-		bool finished = next_frame_id < m_anim_state.frame_id;
-		if(finished)
+		bool is_finished = next_frame_id >= frame_count;
+		if(is_finished)
 			onAnimFinished();
 
-		if(!finished || m_anim_state.is_looped)
-			m_anim_state.frame_id = next_frame_id;
+		if(!is_finished || m_anim_state.is_looped)
+			m_anim_state.frame_id = next_frame_id % frame_count;
 	}
 
 

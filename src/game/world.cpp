@@ -12,8 +12,18 @@ namespace game {
 		loadXMLDocument(file_name, doc);
 		m_tile_map.loadFromXML(doc);
 	
-		m_navi_map.update(NavigationBitmap(m_tile_map));
+		m_navi_map.update(NavigationBitmap(m_tile_map, 2));
 		m_navi_map.printInfo();
+	}
+
+	void World::updateNavigationMap() {
+		NavigationBitmap bitmap(m_tile_map, 2);
+		for(int n = 0; n < (int)m_entities.size(); n++)
+			if(m_entities[n]->isStatic()) {
+				IBox box = m_entities[n]->boundingBox();
+				bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
+			}
+		m_navi_map.update(bitmap);
 	}
 
 	void World::addEntity(PEntity &&entity) {
@@ -46,18 +56,40 @@ namespace game {
 		}
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
-			m_entities[n]->think();
+			Entity *entity = m_entities[n].get();
+			entity->think();
 			if(frame_skip)
-				m_entities[n]->animate(frame_skip);
-			DASSERT(!isColliding(m_entities[n]->boundingBox()));
+				entity->animate(frame_skip);
+			DASSERT(!isColliding(entity->boundingBox(), entity));
 		}
 
 		m_last_time = current_time;
 	}
+	
+	Intersection World::intersectEntities(const Ray &ray, float tmin, float tmax) const {
+		Intersection out;
 
-	bool World::isColliding(const IBox &box) const {
-		//TODO: collision with entities
-		return m_tile_map.isOverlapping(box);
+		for(int n = 0; n < (int)m_entities.size(); n++) {
+			IBox box = m_entities[n]->boundingBox();
+			float dist = intersection(ray, (Box<float3>)box);
+			if(dist < out.t && dist >= tmin && dist <= tmax)
+				out = Intersection(m_entities[n].get(), dist);
+		}
+
+		return out;
+	}
+
+	bool World::isColliding(const IBox &box, const Entity *ignore) const {
+		if(m_tile_map.isOverlapping(box))
+			return true;
+
+		for(int n = 0; n < (int)m_entities.size(); n++) {
+			const Entity *entity = m_entities[n].get();
+			if(entity != ignore && areOverlapping(entity->boundingBox(), box))
+				return true;
+		}
+
+		return false;
 	}
 		
 	vector<int2> World::findPath(int2 start, int2 end) const {

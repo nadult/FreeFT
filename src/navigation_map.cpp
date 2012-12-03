@@ -6,16 +6,7 @@
 #include <set>
 #include <algorithm>
 
-NavigationMap::NavigationMap() :m_size(0, 0) {
-}
-
-static bool areAdjacent(const IRect &a, const IRect &b) {
-	if(b.min.x < a.max.x && a.min.x < b.max.x)
-		return a.max.y == b.min.y || a.min.y == b.max.y;
-	if(b.min.y < a.max.y && a.min.y < b.max.y)
-		return a.max.x == b.min.x || a.min.x == b.max.x;
-	return false;
-}
+NavigationMap::NavigationMap() :m_size(0, 0) { }
 
 enum { sector_size = 1024 };
 
@@ -161,6 +152,28 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 	}
 }
 
+static float distance(const int2 &a, const int2 &b) {
+	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
+	int dist_diag = min(dist_x, dist_y);
+	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
+}
+
+int2 NavigationMap::findClosestCorrectPos(const int2 &pos) const {
+	int2 closest_pos = pos;
+	float min_distance = 1.0f / 0.0f;
+
+	for(int n = 0; n < (int)m_quads.size(); n++) {
+		int2 new_pos = clamp(pos, m_quads[n].rect.min, m_quads[n].rect.max - int2(1, 1));
+		float dist = distance(pos, new_pos);
+		if(dist < min_distance) {
+			closest_pos = new_pos;
+			min_distance = dist;
+		}
+	}
+
+	return closest_pos;
+}
+
 int NavigationMap::findQuad(int2 pos) const {
 	//TODO: speed up?
 	for(int n = 0; n < (int)m_quads.size(); n++)
@@ -169,11 +182,6 @@ int NavigationMap::findQuad(int2 pos) const {
 	return -1;
 }
 
-static float distance(const int2 &a, const int2 &b) {
-	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
-	int dist_diag = min(dist_x, dist_y);
-	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
-}
 
 vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bool do_refining) const {
 	vector<PathNode> out;
@@ -427,4 +435,3 @@ void NavigationMap::printInfo() const {
 		printf("\n");
 	}
 }
-

@@ -129,6 +129,14 @@ float length(const float2 &v) { return sqrt(lengthSq(v)); }
 float length(const float3 &v) { return sqrt(lengthSq(v)); }
 float distance(const float3 &a, const float3 &b) { return sqrt(distanceSq(a, b)); }
 
+bool areAdjacent(const IRect &a, const IRect &b) {
+	if(b.min.x < a.max.x && a.min.x < b.max.x)
+		return a.max.y == b.min.y || a.min.y == b.max.y;
+	if(b.min.y < a.max.y && a.min.y < b.max.y)
+		return a.max.x == b.min.x || a.min.x == b.max.x;
+	return false;
+}
+
 MoveVector::MoveVector(const int2 &start, const int2 &end) {
 	int2 diff = end - start;
 	vec.x = diff.x < 0? -1 : diff.x > 0? 1 : 0;

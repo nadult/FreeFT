@@ -1,5 +1,5 @@
 - Napisanie podstawowych klas encji: kontener, drzwi, item, pociski, encja oparta o tile (który np.
-  można zniszczyć) (6h)
+  można zniszczyć) (6h, uuuh, to będzie znacznie więcej niż 6h)
   - kontener: otwieranie, zamykanie (jeśli są dostępne animacje), transfer itemów, używanie kluczy
   - drzwi: otwórz, zamknij, używanie kluczy, zmienny bounding box, reakcja na ekspozję
   - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja, okno dialogowe
@@ -23,7 +23,7 @@
 
 
 +ESTIMATED_TIME: 18.5h
-+TIME_SPENT: 0h
++TIME_SPENT: 8.25h
 
 +WORK_LOG:
-03.12.12: 14:15 - 15:15, 16:00 - 
+03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8.25h)

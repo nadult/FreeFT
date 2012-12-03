@@ -8,6 +8,14 @@
 
 namespace game {
 
+	struct Intersection {
+		Intersection() :entity(nullptr), t(1.0f / 0.0f) { }
+		Intersection(Entity *entity, float t) :entity(entity), t(t) { }
+
+		Entity *entity;
+		float t;
+	};
+
 	class World {
 	public:
 		World();
@@ -22,6 +30,7 @@ namespace game {
 
 		void addEntity(PEntity&&);
 		void simulate(double time_diff);
+		void updateNavigationMap();
 
 		void addToRender(gfx::SceneRenderer&);
 
@@ -29,12 +38,14 @@ namespace game {
 		double currentTime() const { return m_current_time; }
 	
 		// returns true if box collides with any of the tiles
-		bool isColliding(const IBox &box) const;
+		bool isColliding(const IBox &box, const Entity *ignore = nullptr) const;
 	
 		vector<int2> findPath(int2 start, int2 end) const;
 
 		const TileMap &tileMap() const { return m_tile_map; }
 		const NavigationMap &naviMap() const { return m_navi_map; }
+	
+		Intersection intersectEntities(const Ray &ray, float tmin, float tmax) const;
 
 	private:
 		double m_time_delta;
