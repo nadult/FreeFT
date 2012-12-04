@@ -231,10 +231,8 @@ namespace game {
 		else if(m_next_order.id == OrderId::interact) {
 			IBox my_box = boundingBox(), other_box = m_next_order.interact.target->boundingBox();
 
-			//TODO: take y axis into consideration also
-			bool are_adjacent = areAdjacent(IRect(my_box.min.xz(), my_box.max.xz()),
-											IRect(other_box.min.xz(), other_box.max.xz()));
-
+			bool are_adjacent = distanceSq(	FRect(my_box.min.xz(), my_box.max.xz()),
+											FRect(other_box.min.xz(), other_box.max.xz())) <= 0.0f;
 			if(are_adjacent) {
 				m_order = m_next_order;
 				m_next_order = doNothingOrder();
@@ -246,11 +244,20 @@ namespace game {
 					m_order = m_next_order = doNothingOrder();
 				}
 				else {
-					int2 target_pos = clamp(my_box.center().xz(), other_box.min.xz(), other_box.max.xz());
+					int2 target_pos = my_box.min.xz();
+					if(my_box.max.x < other_box.min.x)
+						target_pos.x = other_box.min.x - my_box.width();
+					else if(my_box.min.x > other_box.max.x)
+						target_pos.x = other_box.max.x;
+					if(my_box.max.z < other_box.min.z)
+						target_pos.y = other_box.min.z - my_box.depth();
+					else if(my_box.min.z > other_box.max.z)
+						target_pos.y = other_box.max.z;
+					
 					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos);
 					Order order = m_next_order;
 					order.interact.waiting_for_move = true;
-					m_next_order = moveOrder(asXZY(target_pos, 1), false);
+					m_next_order = moveOrder(asXZY(target_pos, 1), true);
 					issueMoveOrder();
 					if(m_order.id == OrderId::move)
 						m_next_order = order;

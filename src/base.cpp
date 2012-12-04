@@ -4,6 +4,16 @@
 #include <cmath>
 #include <cstdio>
 
+const int2 min(const int2 &a, const int2 &b) { return int2(min(a.x, b.x), min(a.y, b.y)); }
+const int2 max(const int2 &a, const int2 &b) { return int2(max(a.x, b.x), max(a.y, b.y)); }
+const int3 min(const int3 &a, const int3 &b) { return int3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+const int3 max(const int3 &a, const int3 &b) { return int3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
+const float2 min(const float2 &a, const float2 &b) { return float2(min(a.x, b.x), min(a.y, b.y)); }
+const float2 max(const float2 &a, const float2 &b) { return float2(max(a.x, b.x), max(a.y, b.y)); }
+const float3 min(const float3 &a, const float3 &b) { return float3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+const float3 max(const float3 &a, const float3 &b) { return float3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
 float g_FloatParam[16];
 
 
@@ -124,10 +134,12 @@ float dot(const float4 &a, const float4 &b) { return a.x * b.x + a.y * b.y + a.z
 float lengthSq(const float2 &v) { return dot(v, v); }
 float lengthSq(const float3 &v) { return dot(v, v); }
 float distanceSq(const float3 &a, const float3 &b) { return lengthSq(a - b); }
+float distanceSq(const float2 &a, const float2 &b) { return lengthSq(a - b); }
 
 float length(const float2 &v) { return sqrt(lengthSq(v)); }
 float length(const float3 &v) { return sqrt(lengthSq(v)); }
 float distance(const float3 &a, const float3 &b) { return sqrt(distanceSq(a, b)); }
+float distance(const float2 &a, const float2 &b) { return sqrt(distanceSq(a, b)); }
 
 bool areAdjacent(const IRect &a, const IRect &b) {
 	if(b.min.x < a.max.x && a.min.x < b.max.x)
@@ -135,6 +147,12 @@ bool areAdjacent(const IRect &a, const IRect &b) {
 	if(b.min.y < a.max.y && a.min.y < b.max.y)
 		return a.max.x == b.min.x || a.min.x == b.max.x;
 	return false;
+}
+
+float distanceSq(const Rect<float2> &a, const Rect<float2> &b) {
+	float2 p1 = clamp(b.center(), a.min, a.max);
+	float2 p2 = clamp(p1, b.min, b.max);
+	return distanceSq(p1, p2);
 }
 
 MoveVector::MoveVector(const int2 &start, const int2 &end) {

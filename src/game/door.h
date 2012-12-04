@@ -1,5 +1,5 @@
-#ifndef GAME_CONTAINER_H
-#define GAME_CONTAINER_H
+#ifndef GAME_DOOR_H
+#define GAME_DOOR_H
 
 #include "game/entity.h"
 
@@ -7,10 +7,10 @@
 namespace game
 {
 
-	class Container: public Entity
+	class Door: public Entity
 	{
 	public:
-		Container(const char *sprite_name, const int3 &pos);
+		Door(const char *sprite_name, const int3 &pos);
 
 		void open();
 		void close();

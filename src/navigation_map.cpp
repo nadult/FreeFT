@@ -164,12 +164,13 @@ int2 NavigationMap::findClosestCorrectPos(const int2 &pos) const {
 
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		int2 new_pos = clamp(pos, m_quads[n].rect.min, m_quads[n].rect.max - int2(1, 1));
-		float dist = distance(pos, new_pos);
+		float dist = distanceSq(pos, new_pos);
 		if(dist < min_distance) {
 			closest_pos = new_pos;
 			min_distance = dist;
 		}
 	}
+	printf("closest for (%d %d): %d %d\n", pos.x, pos.y, closest_pos.x, closest_pos.y);
 
 	return closest_pos;
 }

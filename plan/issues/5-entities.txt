@@ -13,7 +13,7 @@
     brać je pod uwagę przy dłuższych ścieżkach
   - opcja 2 (X): w przypadku kolizji z encją która może zmieniać swoją pozycję, przełączamy się
     na wyszukiwanie ścieżek oparte o bitmapę
-  - rozbić NavigationMap na NavigationMap i NavigationBitmap (0.5h)
+  - rozbić NavigationMap na NavigationMap i NavigationBitmap (0.5h) DONE
   
 - Uwzględnienie encji podczas wyliczania widoczności  (6h)
   - do obliczeń widoczności najlepiej chyba będzie zrobić drzewo BVH, znów dwie opcje:
@@ -27,3 +27,4 @@
 
 +WORK_LOG:
 03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8.25h)
+04.12.12: 12:15 - 

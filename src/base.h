@@ -37,8 +37,8 @@ struct int2
 	int x, y;
 };
 
-inline const int2 min(const int2 &lhs, const int2 &rhs) { return int2(min(lhs.x, rhs.x), min(lhs.y, rhs.y)); }
-inline const int2 max(const int2 &lhs, const int2 &rhs) { return int2(max(lhs.x, rhs.x), max(lhs.y, rhs.y)); }
+const int2 min(const int2 &lhs, const int2 &rhs);
+const int2 max(const int2 &lhs, const int2 &rhs);
 
 struct int3
 {
@@ -62,8 +62,8 @@ struct int3
 	int x, y, z;
 };
 
-inline const int3 min(const int3 &lhs, const int3 &rhs) { return int3(min(lhs.x, rhs.x), min(lhs.y, rhs.y), min(lhs.z, rhs.z)); }
-inline const int3 max(const int3 &lhs, const int3 &rhs) { return int3(max(lhs.x, rhs.x), max(lhs.y, rhs.y), max(lhs.z, rhs.z)); }
+const int3 min(const int3 &lhs, const int3 &rhs);
+const int3 max(const int3 &lhs, const int3 &rhs);
 
 struct int4
 {
@@ -101,6 +101,9 @@ struct float2
 	float x, y;
 };
 
+const float2 min(const float2 &lhs, const float2 &rhs);
+const float2 max(const float2 &lhs, const float2 &rhs);
+
 struct float3
 {
 	float3(float x, float y, float z) : x(x), y(y), z(z) { }
@@ -123,6 +126,9 @@ struct float3
 
 	float x, y, z;
 };
+
+const float3 min(const float3 &lhs, const float3 &rhs);
+const float3 max(const float3 &lhs, const float3 &rhs);
 
 struct float4
 {
@@ -153,6 +159,7 @@ public:
 	const float3 &origin() const { return m_origin; }
 	const float3 at(float t) const { return m_origin + m_dir * t; }
 
+private:
 	float3 m_origin;
 	float3 m_dir;
 	float3 m_inv_dir;
@@ -243,7 +250,8 @@ bool areOverlapping(const Box<T> &a, const Box<T> &b) {
 			(b.min.z < a.max.z && a.min.z < b.max.z);
 }
 
-bool areAdjacent(const Rect<int2> &a, const Rect<int2> &b);
+bool areAdjacent(const Rect<int2>&, const Rect<int2>&);
+float distanceSq(const Rect<float2>&, const Rect<float2>&);
 
 typedef Rect<int2> IRect;
 typedef Rect<float2> FRect;
@@ -271,10 +279,12 @@ float dot(const float4 &a, const float4 &b);
 float lengthSq(const float2&);
 float lengthSq(const float3&);
 float distanceSq(const float3&, const float3&);
+float distanceSq(const float2&, const float2&);
 
 float length(const float2&);
 float length(const float3&);
 float distance(const float3&, const float3&);
+float distance(const float2&, const float2&);
 
 float2 worldToScreen(float3 pos);
 int2 worldToScreen(int3 pos);

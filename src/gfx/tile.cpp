@@ -59,6 +59,6 @@ namespace gfx
 		drawQuad(pos.x - m_offset.x, pos.y - m_offset.y, size.x, size.y, col);
 	}
 
-	ResourceMgr<Tile> Tile::mgr("", "");
+	ResourceMgr<Tile> Tile::mgr("refs/tiles/", ".til");
 
 }

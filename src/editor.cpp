@@ -128,7 +128,7 @@ public:
 		else if(ev.type == Event::button_clicked && m_save_button == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
 			m_file_dialog = new FileDialog(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
-			m_file_dialog->setPath("../data/");
+			m_file_dialog->setPath("data/");
 			attach(m_file_dialog.get(), true);
 		}
 		else if(ev.type == Event::button_clicked && m_mapper == ev.source) {
@@ -225,6 +225,14 @@ public:
 };
 
 
+static bool removeSuffix(string &str, const string &suffix) {
+	if(str.size() >= suffix.size() && suffix == str.c_str() + str.size() - suffix.size()) {
+		str = str.substr(0, str.size() - suffix.size());
+		return true;
+	}
+
+	return false;
+}
 
 int safe_main(int argc, char **argv)
 {
@@ -248,6 +256,7 @@ int safe_main(int argc, char **argv)
 	findFiles(file_names, "refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading... ");
+	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
 	for(uint n = 0; n < file_names.size(); n++) {
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
@@ -255,9 +264,13 @@ int safe_main(int argc, char **argv)
 		}
 
 		try {
-			Ptr<Tile> tile = Tile::mgr.load(file_names[n].path);
-			tile->name = file_names[n].path;
-			tile->loadDTexture();
+			Path tile_path = file_names[n].path.relative(tiles_path);
+			string tile_name = tile_path;
+			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
+				Ptr<Tile> tile = Tile::mgr.load(tile_name);
+				tile->name = file_names[n].path;
+				tile->loadDTexture();
+			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());
 		}

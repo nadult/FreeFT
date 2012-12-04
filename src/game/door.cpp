@@ -1,16 +1,16 @@
-#include "game/container.h"
+#include "game/door.h"
 #include "gfx/sprite.h"
 
 namespace game {
 
-	static const char *s_seq_names[Container::state_count] = {
+	static const char *s_seq_names[Door::state_count] = {
 		"Closed",
-		"Opened",
-		"Opening",
-		"Closing",
+		"OpenedIn",
+		"OpeningIn",
+		"ClosingIn",
 	};
 
-	Container::Container(const char *sprite_name, const int3 &pos)
+	Door::Door(const char *sprite_name, const int3 &pos)
 		:Entity(sprite_name, pos) {
 		m_sprite->printInfo();
 		m_update_anim = false;
@@ -26,7 +26,7 @@ namespace game {
 			playSequence(m_seq_ids[m_state]);
 	}
 
-	void Container::interact(const Entity *interactor) {
+	void Door::interact(const Entity *interactor) {
 		if(m_is_always_opened)
 			return;
 		
@@ -36,15 +36,15 @@ namespace game {
 			open();
 	}
 
-	void Container::open() {
+	void Door::open() {
 		m_target_state = state_opened;
 	}
 
-	void Container::close() {
+	void Door::close() {
 		m_target_state = state_closed;
 	}
 
-	void Container::think() {
+	void Door::think() {
 		if(m_is_always_opened)
 			return;
 
@@ -64,7 +64,7 @@ namespace game {
 		}
 	}
 
-	void Container::onAnimFinished() {
+	void Door::onAnimFinished() {
 		if(m_is_always_opened)
 			return;
 

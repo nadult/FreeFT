@@ -60,8 +60,13 @@
  - zastanowić się jak można najlepiej skompresować teksturki i je później zdekompresować tak żeby
    było 60 FPS na netbooku
  - focus na itemie w ListBoxie zostaje jak mysz wyjedzie poza listę
+ - button daje się wcisnąć jak przycisk myszy jest puszczony poza buttonem
  - dodać licencję
  - zaplanować kolejny refactoring, pozbierać wszystkie rzeczy do zrobienia (np. zajęcie się TODOsami)
+
+
+4. Bajery
+ - możliwość rozmawiania z wrogo nastawionymi NPC-ami (podczas walki)
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:
@@ -74,4 +79,4 @@ Ostateczny cel: Prosta gra RPG zawierająca:
 56h - 96h
 
 
-Termin: koniec roku: 29 dni od 12 listopada: 216 godzin
+Termin: koniec roku: 17 dni od 4 grudnia: 136 godzin

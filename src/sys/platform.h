@@ -34,6 +34,7 @@ public:
 
 	operator const string&() const { return m_path; }
 	const char *c_str() const { return m_path.c_str(); }
+	int size() const { return (int)m_path.size(); }
 
 	bool operator<(const Path &rhs) const {
 		return m_path < rhs.m_path;
