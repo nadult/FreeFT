@@ -47,7 +47,7 @@ int safe_main(int argc, char **argv)
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", int3(120, 1, 37)));
 	world.addEntity(new Container("containers/Fridge S", int3(134, 1, 25)));
 	world.addEntity(new Container("containers/Ice Chest N", int3(120, 1, 25)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(100, 1, 37)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 42)));
 
 	chest->setDir(1);
 	world.updateNavigationMap();
@@ -57,8 +57,8 @@ int safe_main(int argc, char **argv)
 			actor->boundingBox().height(),
 			actor->boundingBox().depth());
 
-	bool navi_debug = true;
-	bool shooting_debug = false;
+	bool navi_debug = 0;
+	bool shooting_debug = 1;
 	bool entity_debug = true;
 	
 	double last_time = getTime();

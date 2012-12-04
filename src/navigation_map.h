@@ -39,7 +39,7 @@ public:
 		int quad_id;
 	};
 
-	int2 findClosestCorrectPos(const int2 &pos) const;
+	int2 findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const;
 	int findQuad(int2 pos) const;
 
 	vector<PathNode> findPath(int2 start, int2 end, bool do_refining) const;

@@ -268,7 +268,7 @@ int safe_main(int argc, char **argv)
 			string tile_name = tile_path;
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
-				tile->name = file_names[n].path;
+				tile->name = tile_path;
 				tile->loadDTexture();
 			}
 		} catch(const Exception &ex) {

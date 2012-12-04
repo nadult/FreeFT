@@ -254,7 +254,8 @@ namespace game {
 					else if(my_box.min.z > other_box.max.z)
 						target_pos.y = other_box.max.z;
 					
-					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos);
+					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos,
+							IRect(other_box.min.xz(), other_box.max.xz()));
 					Order order = m_next_order;
 					order.interact.waiting_for_move = true;
 					m_next_order = moveOrder(asXZY(target_pos, 1), true);
@@ -265,8 +266,8 @@ namespace game {
 			}
 		}
 		else if(m_next_order.id == OrderId::change_weapon) {
-			m_order = m_next_order = doNothingOrder();
 			setWeapon(m_next_order.change_weapon.target_weapon);
+			m_order = m_next_order = doNothingOrder();
 		}
 		else {
 			if(m_next_order.id == OrderId::change_stance) {
@@ -352,6 +353,7 @@ namespace game {
 	}
 
 	void Actor::setWeapon(WeaponClassId::Type weapon) {
+		DASSERT(weapon >= 0 && weapon < WeaponClassId::count);
 		m_weapon_id = weapon;
 		setSequence(m_action_id);
 	}

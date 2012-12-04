@@ -202,6 +202,8 @@ void TileMap::loadFromXML(const XMLDocument &doc) {
 void TileMap::saveToXML(XMLDocument &doc) const {
 	std::map<const gfx::Tile*, int> tile_indices;
 
+	//TODO: dodac jakies sortowanie, tak zeby minimalne zmiany w TileMapie
+	// nie powodowały gigantycznych zmian w generowanym XMLu
 	XMLNode *mnode = doc.allocate_node(node_element, "map");
 	doc.append_node(mnode);
 	addAttribute(mnode, "size_x", m_size.x * Node::size_x);

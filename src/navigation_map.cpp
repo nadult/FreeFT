@@ -158,19 +158,24 @@ static float distance(const int2 &a, const int2 &b) {
 	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
 }
 
-int2 NavigationMap::findClosestCorrectPos(const int2 &pos) const {
+// Instead, maybe it would be better to search closest path with Rect as a target?
+// (we would use dist_to rect extended by (-extend,-extend) and (1,1)
+int2 NavigationMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const {
 	int2 closest_pos = pos;
-	float min_distance = 1.0f / 0.0f;
+	float min_distance = 1.0f / 0.0f, min_distance2 = 0.0f;
+	FRect fdist_to(dist_to.min, dist_to.max);
 
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		int2 new_pos = clamp(pos, m_quads[n].rect.min, m_quads[n].rect.max - int2(1, 1));
-		float dist = distanceSq(pos, new_pos);
-		if(dist < min_distance) {
+		float dist = distanceSq(fdist_to, FRect(new_pos, new_pos + int2(3, 3)));
+		float dist2 = distanceSq(new_pos, pos);
+
+		if(dist < min_distance || (dist == min_distance && dist2 < min_distance2)) {
 			closest_pos = new_pos;
 			min_distance = dist;
+			min_distance2 = dist2;
 		}
 	}
-	printf("closest for (%d %d): %d %d\n", pos.x, pos.y, closest_pos.x, closest_pos.y);
 
 	return closest_pos;
 }
