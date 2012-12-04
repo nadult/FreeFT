@@ -18,6 +18,11 @@ extern float g_FloatParam[16];
 template <class T> inline T max(T a, T b) { return a > b? a : b; }
 template <class T> inline T min(T a, T b) { return a < b? a : b; }
 
+namespace constant {
+	static const float pi		= 3.14159265358979f;
+	static const float e		= 2.71828182845905f;
+	static const float inf		= 1.0f / 0.0f;
+}
 
 struct int2
 {
@@ -104,6 +109,10 @@ struct float2
 const float2 min(const float2 &lhs, const float2 &rhs);
 const float2 max(const float2 &lhs, const float2 &rhs);
 
+float vectorToAngle(const float2 &normalized_vector);
+const float2 angleToVector(float radians);
+const float2 rotateVector(const float2 &vec, float radians);
+
 struct float3
 {
 	float3(float x, float y, float z) : x(x), y(y), z(z) { }
@@ -116,6 +125,8 @@ struct float3
 	float3 operator*(float s) const { return float3(x * s, y * s, z * s); }
 	float3 operator/(float s) const { return *this * (1.0f / s); }
 	float3 operator-() const { return float3(-x, -y, -z); }
+	
+	void operator*=(float s) { x *= s; y *= s; z *= s; }
 	
 	bool operator==(const float3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
 	bool operator!=(const float3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }

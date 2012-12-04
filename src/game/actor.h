@@ -125,18 +125,22 @@ namespace game {
 
 		void setWeapon(WeaponClassId::Type);
 		void setSequence(ActionId::Type);
-		void lookAt(int3 pos);
+		void lookAt(int3 pos, bool at_once = false);
 
-		void animate(int);
+		void nextFrame();
 		void onAnimFinished();
 
+		void onFireEvent(const int3&);
+		void onSoundEvent();
+
+	private:
 		// orders
 		bool m_issue_next_order;
 		Order m_order;
 		Order m_next_order;
 
 		// movement state
-		int m_target_dir;
+		float m_target_angle;
 		int3 m_last_pos;
 		float m_path_t;
 		int m_path_pos;

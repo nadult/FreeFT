@@ -2,9 +2,9 @@
 #define GAME_WORLD_H
 
 #include "game/entity.h"
+#include "game/projectile.h"
 #include "navigation_map.h"
 #include "tile_map.h"
-
 
 namespace game {
 
@@ -31,6 +31,9 @@ namespace game {
 		void addEntity(PEntity&&);
 		void simulate(double time_diff);
 		void updateNavigationMap();
+	
+		void spawnProjectile(int type, const int3 &pos, const int3 &target, Entity *spawner);
+		void spawnProjectileImpact(int type, const int3 &pos);
 
 		void addToRender(gfx::SceneRenderer&);
 
@@ -47,7 +50,12 @@ namespace game {
 	
 		Intersection intersectEntities(const Ray &ray, float tmin, float tmax) const;
 
+		bool isInside(const IBox&) const;
+
 	private:
+		template <class T>
+		void handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip);
+		
 		double m_time_delta;
 		double m_current_time;
 		double m_last_time;
@@ -55,7 +63,10 @@ namespace game {
 
 		TileMap m_tile_map;
 		NavigationMap m_navi_map;
+
 		vector<PEntity> m_entities;
+		vector<PProjectile> m_projectiles;
+		vector<PProjectileImpact> m_impacts;
 	};
 
 }

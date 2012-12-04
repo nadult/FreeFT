@@ -14,9 +14,26 @@ const float2 max(const float2 &a, const float2 &b) { return float2(max(a.x, b.x)
 const float3 min(const float3 &a, const float3 &b) { return float3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
 const float3 max(const float3 &a, const float3 &b) { return float3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
 
+float vectorToAngle(const float2 &normalized_vec) {
+	float ang = acos(normalized_vec.x);
+	return normalized_vec.y < 0? 2.0f * constant::pi -ang : ang;
+}
+
+const float2 angleToVector(float radians) {
+	float s, c;
+	sincosf(radians, &s, &c);
+	return float2(c, s);
+}
+
+const float2 rotateVector(const float2 &vec, float radians) {
+	float s, c;
+	sincosf(radians, &s, &c);
+	return float2(c * vec.x - s * vec.y, c * vec.y + s * vec.x);
+}
+
 float g_FloatParam[16];
 
-
+/*
 typedef float Matrix3[3][3];
 
 bool inverse(const Matrix3 &mat) {
@@ -51,7 +68,7 @@ float mat[3][3] = {
 	{6, 3, 7},
 	{0, -7, 6},
 	{-6, 3, 7}
-};
+};*/
 
 /* World To Screen Matrix:
  * 			    | 6  3  7|

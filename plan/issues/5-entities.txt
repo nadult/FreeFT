@@ -3,7 +3,7 @@
   - kontener: otwieranie, zamykanie (jeśli są dostępne animacje), transfer itemów, używanie kluczy
   - drzwi: otwórz, zamknij, używanie kluczy, zmienny bounding box, reakcja na ekspozję
   - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja, okno dialogowe
-  - pociski: synchronizacja z animacją gracza, generują impacty
+  - pociski: synchronizacja z animacją gracza, generują impacty  DONE
   - eksplozje: generują damage, rendering jako overlay
   - itemy: można je zostawiać / podnosić
 - Podstawowe komunikaty na które powinny odpowiadać encje: interact, use skill, apply damage (6h)
@@ -23,8 +23,8 @@
 
 
 +ESTIMATED_TIME: 18.5h
-+TIME_SPENT: 8.25h
++TIME_SPENT: 18.25h
 
 +WORK_LOG:
 03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8.25h)
-04.12.12: 12:15 - 
+04.12.12: 12:15 - 15:00, 16:00 - 23:15 (10.00h)

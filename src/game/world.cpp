@@ -1,4 +1,5 @@
 #include "game/world.h"
+#include "game/projectile.h"
 #include "navigation_bitmap.h"
 
 namespace game {
@@ -36,6 +37,27 @@ namespace game {
 		m_tile_map.addToRender(renderer);
 		for(int n = 0; n < (int)m_entities.size(); n++)
 			m_entities[n]->addToRender(renderer);
+		for(int n = 0; n < (int)m_projectiles.size(); n++)
+			m_projectiles[n]->addToRender(renderer);
+		for(int n = 0; n < (int)m_impacts.size(); n++)
+			m_impacts[n]->addToRender(renderer);
+	}
+
+	template <class T>
+	void World::handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip) {
+		for(int n = 0; n < (int)objects.size(); n++) {
+			T *object = objects[n].get();
+			object->think();
+			if(object->m_to_be_removed) {
+				objects[n--] = std::move(objects.back());
+				objects.pop_back();
+				continue;
+			}
+
+			for(int f = 0; f < frame_skip; f++)
+				object->nextFrame();
+			DASSERT(!isColliding(object->boundingBox(), object));
+		}
 	}
 
 	void World::simulate(double time_diff) {
@@ -55,13 +77,9 @@ namespace game {
 			m_last_frame_time += (double)frame_skip * frame_time;
 		}
 
-		for(int n = 0; n < (int)m_entities.size(); n++) {
-			Entity *entity = m_entities[n].get();
-			entity->think();
-			if(frame_skip)
-				entity->animate(frame_skip);
-			DASSERT(!isColliding(entity->boundingBox(), entity));
-		}
+		handleContainer(m_entities, frame_skip);
+		handleContainer(m_projectiles, frame_skip);
+		handleContainer(m_impacts, frame_skip);
 
 		m_last_time = current_time;
 	}
@@ -91,9 +109,27 @@ namespace game {
 
 		return false;
 	}
+
+	bool World::isInside(const IBox &box) const {
+		return box.min.x >= 0 && box.min.y >= 0 && box.min.z >= 0 &&
+				box.max.x < m_tile_map.size().x && box.max.z < m_tile_map.size().y &&
+				box.max.y < TileMapNode::size_y;
+	}
 		
 	vector<int2> World::findPath(int2 start, int2 end) const {
 		return m_navi_map.findPath(start, end);
+	}
+	
+	void World::spawnProjectile(int type, const int3 &pos, const int3 &target, Entity *spawner) {
+		std::unique_ptr<Projectile> projectile(new Projectile("impactfx/Projectile Plasma", pos, target, spawner));
+		projectile->m_world = this;
+		m_projectiles.push_back(std::move(projectile));
+	}
+	
+	void World::spawnProjectileImpact(int type, const int3 &pos) {
+		std::unique_ptr<ProjectileImpact> impact(new ProjectileImpact("impactfx/Impact Plasma", pos));
+		impact->m_world = this;
+		m_impacts.push_back(std::move(impact));
 	}
 
 }

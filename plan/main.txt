@@ -63,10 +63,14 @@
  - button daje się wcisnąć jak przycisk myszy jest puszczony poza buttonem
  - dodać licencję
  - zaplanować kolejny refactoring, pozbierać wszystkie rzeczy do zrobienia (np. zajęcie się TODOsami)
+ - dodać dokument z opisem naewnictwa
+ - kolizje dla projectili liczyć całkowicie na floatach !!!!(POMYŚLEC)!!!!
+ - wyeliminować zbędne konwersje float <-> int (wszystko liczyć na floatach?)
 
 
 4. Bajery
  - możliwość rozmawiania z wrogo nastawionymi NPC-ami (podczas walki)
+ - edytor sprite-ów
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

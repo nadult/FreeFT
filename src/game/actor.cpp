@@ -52,22 +52,31 @@ namespace game {
 	static const char *s_attack_names[WeaponClassId::count * 2] = {
 		"UnarmedOne",
 		"UnarmedTwo",
+
 		"ClubSwing",
 		nullptr,
-		"HeavyBurst",
+
 		"HeavySingle",
+		"HeavyBurst",
+
 		"KnifeSlash",
 		nullptr,
+
 		"MinigunBurst",
 		nullptr,
+
 		"PistolSingle",
 		nullptr,
-		"RifleBurst",
+
 		"RifleSingle", 
+		"RifleBurst",
+
 		"RocketSingle",
 		nullptr,
-		"SMGBurst",
+
 		"SMGSingle",
+		"SMGBurst",
+
 		"SpearThrow",
 		nullptr,
 	};
@@ -137,7 +146,7 @@ namespace game {
 
 		m_weapon_id = WeaponClassId::unarmed;
 		setSequence(ActionId::standing);
-		lookAt(int3(0, 0, 0));
+		lookAt(int3(0, 0, 0), true);
 		m_order = m_next_order = doNothingOrder();
 	}
 
@@ -213,6 +222,9 @@ namespace game {
 	}
 
 	void Actor::issueNextOrder() {
+		if(m_order.id == OrderId::do_nothing && m_next_order.id == OrderId::do_nothing)
+			return;
+
 		if(m_order.id == OrderId::change_stance) {
 			m_stance_id = (StanceId::Type)(m_stance_id - m_order.change_stance.next_stance);
 			//TODO: different bboxes for stances
@@ -375,32 +387,37 @@ namespace game {
 	}
 
 	// sets direction
-	void Actor::lookAt(int3 pos) { //TODO: rounding
+	void Actor::lookAt(int3 pos, bool at_once) { //TODO: rounding
 		float3 cur_pos = this->pos();
 		float2 dir(pos.x - cur_pos.x, pos.z - cur_pos.z);
 		dir = dir / length(dir);
-
-		int dx = 0, dz = 0;
-
-		if(fabs(dir.x) > 0.382683432f)
-			dx = dir.x < 0? -1 : 1;
-		if(fabs(dir.y) > 0.382683432f)
-			dz = dir.y < 0? -1 : 1;
-
-		//TODO: sprites have varying number of directions
-		// maybe a vector (int2) should be passed to sprite, and it should
-		// figure out a best direction by itself
-		m_target_dir = Sprite::findDir(dx, dz);
+		m_target_angle = vectorToAngle(dir);
+		if(at_once)
+			setDirAngle(m_target_angle);
 	}
 
-	void Actor::animate(int frame_skip) {
-		Entity::animate(frame_skip);
-		
-		if(dir() != m_target_dir) {
-			//TODO: too fast direction change when in crouching position
-			int target = m_target_dir < dir()? m_target_dir + 8 : m_target_dir;
-			int new_dir = dir() + (target - dir() <= 3? frame_skip: -frame_skip);
-			setDir((new_dir + 8) % 8);
+	static float angleDist(float a, float b) {
+		float diff = fabs(a - b);
+		return min(diff, constant::pi * 2.0f - diff);
+	}
+
+	void Actor::nextFrame() {
+		Entity::nextFrame();
+
+		float dir_angle = dirAngle();
+		if(dir_angle != m_target_angle) {
+			float step = constant::pi / 4.0f;
+			float new_ang1 = dir_angle + step, new_ang2 = dir_angle - step;
+			if(new_ang1 < 0.0f)
+				new_ang1 += constant::pi * 2.0f;
+			if(new_ang2 < 0.0f)
+				new_ang2 += constant::pi * 2.0f;
+			float new_angle = angleDist(new_ang1, m_target_angle) < angleDist(new_ang2, m_target_angle)?
+					new_ang1 : new_ang2;
+			if(angleDist(dir_angle, m_target_angle) < step)
+				new_angle = m_target_angle;
+
+			setDirAngle(new_angle);
 		}
 	}
 
@@ -411,6 +428,21 @@ namespace game {
 			m_order.interact.target->interact(this);
 			m_issue_next_order = true;
 		}
+	}
+		
+	void Actor::onFireEvent(const int3 &off) {
+		if(m_weapon_id == WeaponClassId::rifle && m_order.id == OrderId::attack) {
+		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
+			int3 pos = boundingBox().center();
+			pos.y = this->pos().y;
+			float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
+			m_world->spawnProjectile(0, pos + (int3)(offset), m_order.attack.target_pos, this);
+		}
+	}
+
+	void Actor::onSoundEvent() {
+	//	if(m_weapon_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
+	//		printf("Playing sound: plasma!\n");
 	}
 
 }

@@ -11,6 +11,7 @@ namespace game
 	{
 	public:
 		Door(const char *sprite_name, const int3 &pos);
+		virtual bool isStatic() const { return false; }
 
 		void open();
 		void close();

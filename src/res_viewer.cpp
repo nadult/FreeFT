@@ -42,7 +42,7 @@ public:
 	Resource(PSprite res, int id) :m_type(ResType::sprite), m_id(id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->m_bbox + int3{4,4,4})).size();
+		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->boundingBox() + int3{4,4,4})).size();
 
 		m_last_time = getTime();
 		m_frame_id = m_dir_id = m_seq_id = 0;
@@ -72,17 +72,23 @@ public:
 		}
 		else if(m_type == ResType::sprite) {
 			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
-			Sprite::Rect srect;
+			IRect srect;
 
+			const vector<Sprite::Frame> &frames = (*sprite)[m_seq_id].frames;
+			while(frames[m_frame_id].id < 0) {
+				m_frame_id++;
+				if(m_frame_id == (int)frames.size())
+					m_frame_id = 0;
+			}
 
 			Texture tex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, &srect);
 			DTexture dtex;
 			dtex.setSurface(tex);
 			dtex.bind();
 
-			IBox box({0,0,0}, sprite->m_bbox);
+			IBox box({0,0,0}, sprite->boundingBox());
 			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));
-			IRect rect = IRect(srect.left, srect.top, srect.right, srect.bottom) - sprite->m_offset;
+			IRect rect = srect - sprite->offset();
 			lookAt(brect.min - pos);
 			drawQuad(rect.min, rect.size());
 		
@@ -103,11 +109,11 @@ public:
 			if(isKeyDown(Key_right))
 				m_dir_id++;
 
-			m_seq_id = (m_seq_id + (int)sprite->m_sequences.size()) % (int)sprite->m_sequences.size();
-			const Sprite::Animation &anim = sprite->m_anims[sprite->m_sequences[m_seq_id].anim_id];
-			m_dir_id = (m_dir_id + anim.m_dir_count) % anim.m_dir_count;
+			m_seq_id = (m_seq_id + (int)sprite->size()) % (int)sprite->size();
+			int dir_count = sprite->dirCount(m_seq_id);
+			m_dir_id = (m_dir_id + dir_count) % dir_count;
 
-			m_frame_id = m_frame_id % sprite->frameCount(m_seq_id);
+			m_frame_id %= sprite->frameCount(m_seq_id);
 		}
 	}
 

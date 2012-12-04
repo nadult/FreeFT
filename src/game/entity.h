@@ -3,12 +3,11 @@
 
 #include "base.h"
 #include <memory>
+#include "gfx/sprite.h"
 
 namespace gfx
 {
 	class SceneRenderer;
-	class Sprite;
-	typedef Ptr<Sprite> PSprite;
 }
 
 namespace game {
@@ -37,16 +36,28 @@ namespace game {
 		IBox boundingBox() const;
 		const int3 &bboxSize() const { return m_bbox; }
 
-		int dir() const { return m_dir; }
-		void setDir(int new_dir);
+		float dirAngle() const { return m_dir_angle; }
+		const float2 dir() const;
+		void setDir(const float2 &vector);
+		void setDirAngle(float radians);
+
+		void remove();
 
 	protected:
 		friend class World;
-		const World *m_world;
+		World *m_world;
+		bool m_to_be_removed;
 
 	protected:
 		virtual void think() { DASSERT(m_world); }
-		virtual void animate(int frame_skip);
+		virtual void nextFrame();
+		virtual void handleFrameEvent(int sprite_event_id) { }
+
+		virtual void onFireEvent(const int3 &projectile_offset) { }
+		virtual void onHitEvent() { }
+		virtual void onSoundEvent() { }
+		virtual void onStepEvent(bool left_foot) { }
+		virtual void onPickupEvent() { }
 
 		void playSequence(int seq_id);
 	
@@ -59,11 +70,13 @@ namespace game {
 		float3 m_pos; //TODO: int3 pos + float3 offset
 		int3 m_bbox;
 
-		struct AnimState {
-			int seq_id, frame_id;
-			bool is_looped;
-		} m_anim_state;
-		int m_dir;
+		void handleEventFrame(const Sprite::Frame&);
+
+		// Animation state
+		int m_seq_id, m_frame_id;
+		bool m_is_looped, m_is_finished;
+		int m_dir_idx;
+		float m_dir_angle;
 	};
 
 	typedef std::unique_ptr<Entity> PEntity;

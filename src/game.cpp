@@ -22,6 +22,8 @@
 using namespace gfx;
 using namespace game;
 
+
+
 int safe_main(int argc, char **argv)
 {
 #if defined(RES_X) && defined(RES_Y)
@@ -43,13 +45,15 @@ int safe_main(int argc, char **argv)
 	World world("data/tile_map.xml");
 
 	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", int3(100, 1, 70)));
+	actor->setNextOrder(changeWeaponOrder(WeaponClassId::rifle));
+
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", int3(134, 1, 37)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", int3(120, 1, 37)));
 	world.addEntity(new Container("containers/Fridge S", int3(134, 1, 25)));
 	world.addEntity(new Container("containers/Ice Chest N", int3(120, 1, 25)));
 	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 42)));
+//	chest->setDir(1);
 
-	chest->setDir(1);
 	world.updateNavigationMap();
 
 	printf("Actor size: %d %d %d\n",
@@ -105,7 +109,7 @@ int safe_main(int argc, char **argv)
 				changeWeaponOrder((WeaponClassId::Type)((actor->weaponId() + 1) % WeaponClassId::count)));
 
 		double time = getTime();
-		world.simulate(time - last_time);
+		world.simulate((time - last_time));
 		last_time = time;
 
 		clear({128, 64, 0});

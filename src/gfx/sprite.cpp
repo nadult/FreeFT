@@ -65,20 +65,15 @@ namespace
 
 }
 
-
-namespace SpecialFrame
-{
-	enum Type {
-		repeat_all	= -4,
-		step_left	= -40, //TODO: check if right id
-		step_right	= -41,
-		sound		= -44,
-		fire 		= -43,
-	};
-};
-
 namespace gfx
 {
+	int Sprite::Frame::paramCount(char id) {
+		if(id == ev_stop_anim || id == ev_jump_to_frame || id == ev_time_of_display)
+			return 1;
+		if(id == ev_fire)
+			return 3;
+		return 0;
+	}
 
 	void Sprite::Image::serialize(Serializer &sr) {
 		sr.signature("<zar>", 6);
@@ -158,68 +153,86 @@ namespace gfx
 			Sequence &sequence = m_sequences[n];
 
 			i16 frame_count, dummy1; sr(frame_count, dummy1);
+			vector<i16> frame_data(frame_count);
+			sr.data(&frame_data[0], frame_count * sizeof(i16));
+			for(int f = 0; f < (int)frame_data.size(); f++) {
+				ASSERT(frame_data[f] >= -128 && frame_data[f] <= 127);
+				int param_count = Frame::paramCount((char)frame_data[f]);
+				if(param_count > 0) {
+					frame_count -= param_count;
+					f += param_count;
+				}
+			}
+
 			sequence.frames.resize(frame_count);
-			for(int f = 0; f < frame_count; f++) {
-				i16 frame_id; sr & frame_id;
-				sequence.frames[f] = frame_id;
+			for(int f = 0, frame_id = 0; f < (int)frame_data.size(); f++) {
+				int param_count = Frame::paramCount((char)frame_data[f]);
+				sequence.frames[frame_id].id = frame_data[f];
+				for(int p = 1; p <= param_count; p++) {
+					ASSERT(frame_data[f + p] >= -128 && frame_data[f + p] <= 127);
+					sequence.frames[frame_id].params[p - 1] = frame_data[f + p];
+				}
+				f += param_count;
+				frame_id++;
 			}
 
 			// Skip zeros
-			sr.seek(sr.pos() + int(frame_count) * 4);
+			sr.seek(sr.pos() + int(frame_data.size()) * 4);
 
 			i32 nameLen; sr & nameLen;
 			DASSERT(nameLen >= 0 && nameLen <= 256);
 			sequence.name.resize(nameLen);
 			sr.data(&sequence.name[0], nameLen);
-			i16 anim_id; sr & anim_id;
-			sequence.anim_id = anim_id;
+			i16 collection_id; sr & collection_id;
+			sequence.collection_id = collection_id;
 		}
 
-		i32 anim_count; sr & anim_count;
-		m_anims.resize(anim_count);
+		i32 collection_count; sr & collection_count;
+		m_collections.resize(collection_count);
 
-		for(int n = 0; n < anim_count; n++) {
-			Animation &anim = m_anims[n];
+		for(int n = 0; n < collection_count; n++) {
+			Collection &collection = m_collections[n];
 
 			sr.signature("<spranim>\0001", 12);
 			i32 offset; sr & offset;
-			anim.m_offset = offset;
+			collection.m_offset = offset;
 
 			i32 nameLen; sr & nameLen;
 			DASSERT(nameLen >= 0 && nameLen <= 256);
-			anim.name.resize(nameLen);
-			sr.data(&anim.name[0], nameLen);
+			collection.name.resize(nameLen);
+			sr.data(&collection.name[0], nameLen);
 			
 			i32 frame_count, dir_count;
 			sr(frame_count, dir_count);
 
 			int rect_count = frame_count * dir_count;
-			anim.m_frame_count = frame_count;
-			anim.m_dir_count = dir_count;
-			anim.rects.resize(rect_count);
+			collection.m_frame_count = frame_count;
+			collection.m_dir_count = dir_count;
+			collection.rects.resize(rect_count);
 
 			for(int i = 0; i < rect_count; i++) {
 				i32 l, t, r, b;
 				sr(l, t, r, b);
-				anim.rects[i] = Rect{l, t, r, b};
+				collection.rects[i] = IRect(l, t, r, b);
 			}
 		}
 
-		for(int n = 0; n < anim_count; n++) {
-			Animation &anim = m_anims[n];
+		for(int n = 0; n < collection_count; n++) {
+			Collection &collection = m_collections[n];
 
-			sr.seek(anim.m_offset);
+			sr.seek(collection.m_offset);
 
 			sr.signature("<spranim_img>", 14);
 			i16 type; sr & type;
 
 			if(type != '1' && type != '2')
 				THROW("Unknown spranim_img type: %d", (int)type);
-			anim.type = type;
+			collection.type = type;
 
 			bool plainType = type == '1';
 			vector<char> data;
-			int size = (n == anim_count - 1? sr.size() : m_anims[n + 1].m_offset) - anim.m_offset - 16;
+			int size = (n == collection_count - 1? sr.size() : m_collections[n + 1].m_offset) -
+						collection.m_offset - 16;
 
 			if(plainType) {
 				data.resize(size);
@@ -237,15 +250,15 @@ namespace gfx
 
 			for(int l = 0; l < 4; l++) {
 				i32 palSize; imgSr & palSize;
-				anim.palettes[l].resize(palSize);
-				imgSr.data(&anim.palettes[l][0], palSize * 4);
+				collection.palettes[l].resize(palSize);
+				imgSr.data(&collection.palettes[l][0], palSize * 4);
 				for(int i = 0; i < palSize; i++)
-					anim.palettes[l][i] = swapBR(anim.palettes[l][i]);
+					collection.palettes[l][i] = swapBR(collection.palettes[l][i]);
 			}
 
-			int image_count = anim.m_frame_count * anim.m_dir_count * 4;
-			anim.images.resize(image_count);
-			anim.points.resize(image_count, int2(0, 0));
+			int image_count = collection.m_frame_count * collection.m_dir_count * 4;
+			collection.images.resize(image_count);
+			collection.points.resize(image_count, int2(0, 0));
 
 			for(int n = 0; n < image_count; n++) {
 				DASSERT(imgSr.pos() < imgSr.size());
@@ -253,8 +266,8 @@ namespace gfx
 
 				if(type == 1) {
 					i32 x, y; imgSr(x, y);
-					anim.points[n] = int2(x, y);
-					imgSr & anim.images[n];
+					collection.points[n] = int2(x, y);
+					imgSr & collection.images[n];
 				}
 				else if(type == 0) { // empty image
 				}
@@ -271,7 +284,7 @@ namespace gfx
 			THROW("Saving not supported");
 	}
 
-	Texture Sprite::Animation::getFrame(int frame_id, int dir_id) const {
+	Texture Sprite::Collection::getFrame(int frame_id, int dir_id) const {
 		Texture out;
 		int image_count = m_frame_count * m_dir_count;
 		int2 size(0, 0);
@@ -338,49 +351,32 @@ namespace gfx
 	}
 
 	int Sprite::frameCount(int seq_id) const {
-		int out = 0;
-		const Sequence &seq = m_sequences[seq_id];
-		for(int n = 0; n < (int)seq.frames.size(); n++) {
-			if(seq.frames[n] == SpecialFrame::fire)
-				n += 3;
-			else if(seq.frames[n] >= 0)
-				out++;
-		}
-		return out;
+		return (int)m_sequences[seq_id].frames.size();
 	}
 
 	bool Sprite::isSequenceLooped(int seq_id) const {
 		const Sequence &seq = m_sequences[seq_id];
 		for(int n = 0; n < (int)seq.frames.size(); n++)
-			if(seq.frames[n] == SpecialFrame::repeat_all)
+			if(seq.frames[n].id == ev_repeat_all)
 				return true;
 		return false;
 	}
 
-	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, Rect *rect) const {
+	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, IRect *rect) const {
 		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
 		DASSERT(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].frames.size());
 
 		const Sequence &seq = m_sequences[seq_id];
-
-		for(int n = 0; n < (int)seq.frames.size(); n++) {
-			if(seq.frames[n] == SpecialFrame::fire)
-				n += 3;
-			else if(seq.frames[n] >= 0) {
-				if(!frame_id) {
-					frame_id = seq.frames[n];
-					break;
-				}
-				frame_id--;
-			}
-		}
-		const Animation &anim = m_anims[seq.anim_id];
-		DASSERT(dir_id < anim.m_dir_count);
+		frame_id = seq.frames[frame_id].id;
+		DASSERT(frame_id >= 0);
+		
+		const Collection &collection = m_collections[seq.collection_id];
+		DASSERT(dir_id < collection.m_dir_count);
 
 		if(rect)
-			*rect = anim.rects[frame_id * anim.m_dir_count + dir_id];
+			*rect = collection.rects[frame_id * collection.m_dir_count + dir_id];
 
-		return anim.getFrame(frame_id, dir_id);
+		return collection.getFrame(frame_id, dir_id);
 	}
 
 	int Sprite::findSequence(const char *name) const {
@@ -390,43 +386,39 @@ namespace gfx
 		return -1;
 	}
 		
-	//TODO: samochody chyba maja wiecej dostepnych kierunkow...
-	static int2 s_dirs[8] = {
-		{-1, 0}, {-1, -1}, {0, -1}, {1, -1},
-		{1, 0}, {1, 1}, {0, 1}, {-1, 1} };
+	int Sprite::findDir(int seq_id, float radians) const {
+//		DASSERT(radians >= 0.0f && radians < constant::pi * 2.0f);
 
-	int Sprite::findDir(int dx, int dz) {
-		dx = dx < 0? -1 : dx > 0? 1 : 0;
-		dz = dz < 0? -1 : dz > 0? 1 : 0;
-
-		for(int i = 0; i < COUNTOF(s_dirs); i++)
-			if(s_dirs[i].x == dx && s_dirs[i].y == dz)
-				return i;
-
-		return 0;
+		//TODO: wtf???
+		float2 vec = angleToVector(radians);
+		radians = vectorToAngle(-vec);
+		
+		int dir_count = dirCount(seq_id);
+		float dir = radians * float(dir_count) * (0.5f / constant::pi) + 0.5f;
+		return (int(dir) + dir_count) % dir_count;
 	}
 
 	void Sprite::printInfo() const {
-		for(int a = 0; a < (int)m_anims.size(); a++) {
-			const Sprite::Animation &anim = m_anims[a];
-			printf("Anim %d: %s (%d*%d frames)\n", a, anim.name.c_str(),
-					(int)anim.images.size() / anim.m_dir_count, anim.m_dir_count);
+		for(int a = 0; a < (int)m_collections.size(); a++) {
+			const Sprite::Collection &collection = m_collections[a];
+			printf("Collection %d: %s (%d*%d frames)\n", a, collection.name.c_str(),
+					(int)collection.images.size() / collection.m_dir_count, collection.m_dir_count);
 		}
 		for(int s = 0; s < (int)m_sequences.size(); s++) {
 			const Sprite::Sequence &seq = m_sequences[s];
-			printf("Seq %d: %s (%d frames) -> anim: %d\n", s, seq.name.c_str(),
-					(int)seq.frames.size(), seq.anim_id);
+			printf("Seq %d: %s (%d frames) -> collection #%d\n", s, seq.name.c_str(),
+					(int)seq.frames.size(), seq.collection_id);
 		}
 	}
 
 	void Sprite::printSequenceInfo(int seq_id) const {
 		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
 		const Sequence &seq = m_sequences[seq_id];
-		const Animation &anim = m_anims[seq.anim_id];
+		const Collection &collection = m_collections[seq.collection_id];
 
-		printf("Sequence %d (%s) -> %d (%s)\n", seq_id, seq.name.c_str(), seq.anim_id, anim.name.c_str());
+		printf("Sequence %d (%s) -> %d (%s)\n", seq_id, seq.name.c_str(), seq.collection_id, collection.name.c_str());
 		for(int n = 0; n < (int)seq.frames.size(); n++)
-			printf("frame #%d: %d\n", n, seq.frames[n]);
+			printf("frame #%d: %d\n", n, (int)seq.frames[n].id);
 		printf("\n");
 	}
 
