@@ -198,9 +198,13 @@ struct Rect
 	Rect operator+(const Rect &rhs) { return Rect(::min(min, rhs.min), ::max(max, rhs.max)); }
 
 	bool isEmpty() const { return max.x <= min.x || max.y <= min.y; }
-	bool isInside(const int2 &point) const {
+	bool isInside(const int2 &point) const { //TODO: maybe this is wrong?
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y;
+	}
+	bool isInside(const Rect<int2> &rhs) const {
+		return	rhs.min.x >= min.x && rhs.min.y >= min.y &&
+				rhs.max.x <= max.x && rhs.max.y <= max.y;
 	}
 
 	Type2 min, max;

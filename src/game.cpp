@@ -51,19 +51,22 @@ int safe_main(int argc, char **argv)
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", int3(120, 1, 37)));
 	world.addEntity(new Container("containers/Fridge S", int3(134, 1, 25)));
 	world.addEntity(new Container("containers/Ice Chest N", int3(120, 1, 25)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 42)));
-//	chest->setDir(1);
+	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 42)));
+//	door->setDir(float2(0, 1));
+	chest->setDir(float2(0, -1));
 
-	world.updateNavigationMap();
+	world.updateNavigationMap(true);
 
 	printf("Actor size: %d %d %d\n",
 			actor->boundingBox().width(),
 			actor->boundingBox().height(),
 			actor->boundingBox().depth());
 
+
+	bool navi_show = 0;
 	bool navi_debug = 0;
 	bool shooting_debug = 1;
-	bool entity_debug = true;
+	bool entity_debug = 1;
 	
 	double last_time = getTime();
 	vector<int2> path;
@@ -87,12 +90,20 @@ int safe_main(int argc, char **argv)
 				if(ent_isect.entity != actor)
 					actor->setNextOrder(interactOrder(ent_isect.entity));
 			}
+			else if(navi_debug) {
+				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
+//				int quad_id = world.naviMap().findQuad(wpos.xz());
+//				if(quad_id != -1)
+//					world.naviMap()[quad_id].is_disabled ^= 1;
+				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
+
+			}
 			else {
 				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 			}
 		}
-		if(isMouseKeyDown(1)) {
+		if(isMouseKeyDown(1) && shooting_debug) {
 			actor->setNextOrder(attackOrder(0, target_pos));
 		}
 		if(navi_debug && isMouseKeyDown(1)) {
@@ -104,11 +115,18 @@ int safe_main(int argc, char **argv)
 			actor->setNextOrder(changeStanceOrder(1));
 		if(isKeyDown(Key_kp_subtract))
 			actor->setNextOrder(changeStanceOrder(-1));
-		if(isKeyDown('W'))
+
+		if(isKeyDown('R') && navi_debug) {
+			world.naviMap().removeColliders();
+		}
+		if(isKeyDown('W') && shooting_debug)
 			actor->setNextOrder(
 				changeWeaponOrder((WeaponClassId::Type)((actor->weaponId() + 1) % WeaponClassId::count)));
 
 		double time = getTime();
+		if(!navi_debug)
+			world.updateNavigationMap(false);
+
 		world.simulate((time - last_time));
 		last_time = time;
 
@@ -142,7 +160,7 @@ int safe_main(int argc, char **argv)
 			}
 		}
 
-		if(navi_debug) {
+		if(navi_debug || navi_show) {
 			world.naviMap().visualize(renderer, true);
 			world.naviMap().visualizePath(path, 1, renderer);
 		}

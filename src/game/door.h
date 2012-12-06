@@ -11,15 +11,17 @@ namespace game
 	{
 	public:
 		Door(const char *sprite_name, const int3 &pos);
-		virtual bool isStatic() const { return false; }
-
-		void open();
-		void close();
+		virtual ColliderType colliderType() const { return collider_dynamic; }
 
 		virtual void interact(const Entity*);
 
 		bool isOpened() const { return m_state == state_opened; }
 		bool isAlwaysOpened() const { return m_is_always_opened; }
+
+		enum Type {
+			type_sliding,
+			type_rotating,
+		};
 
 		enum State {
 			state_closed,
@@ -33,6 +35,7 @@ namespace game
 	private:
 		virtual void think();
 		virtual void onAnimFinished();
+		int3 getBBoxSize(State) const;
 
 		State m_state, m_target_state;
 		bool m_is_always_opened;

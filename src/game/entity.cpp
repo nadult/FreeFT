@@ -29,7 +29,6 @@ namespace game {
 	}
 
 	void Entity::setPos(const float3 &new_pos) {
-		DASSERT(!isStatic());
 		m_pos = new_pos;
 		DASSERT(m_world->isInside(boundingBox())); //TODO: is this really necessary?
 	}
@@ -122,7 +121,18 @@ namespace game {
 		m_dir_idx = m_sprite->findDir(m_seq_id, angle);
 	}
 
-	const float2 Entity::dir() const { return angleToVector(dirAngle()); }
-	void Entity::setDir(const float2 &vec) { setDirAngle(vectorToAngle(vec)); }
+	const float2 Entity::dir() const {
+		return angleToVector(dirAngle());
+	}
+
+	const float2 Entity::actualDir() const {
+		int dir_count = m_sprite->dirCount(m_seq_id);
+		float angle = float(m_dir_idx) * (constant::pi * 2.0f) / float(dir_count);
+		return angleToVector(angle);
+	}
+
+	void Entity::setDir(const float2 &vec) {
+		setDirAngle(vectorToAngle(vec));
+	}
 
 }

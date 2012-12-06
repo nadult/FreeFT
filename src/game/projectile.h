@@ -10,7 +10,7 @@ namespace game {
 	class Projectile: public Entity {
 	public:
 		Projectile(const char *sprite_name, int3 pos, int3 target, Entity *spawner);
-		virtual bool isStatic() const { return false; }
+		virtual ColliderType colliderType() const { return collider_none; }
 
 	protected:
 		virtual void think();
@@ -25,6 +25,7 @@ namespace game {
 	class ProjectileImpact: public Entity {
 	public:
 		ProjectileImpact(const char *sprite_name, int3 pos);
+		virtual ColliderType colliderType() const { return collider_none; }
 	
 	protected:
 		virtual void onAnimFinished();

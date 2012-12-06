@@ -4,6 +4,14 @@
 #include <cmath>
 #include <cstdio>
 
+#ifdef WIN32
+void sincosf(float rad, float *s, float *c) {
+	DASSERT(s && c);
+	*s = sin(rad);
+	*c = cos(rad);
+}
+#endif
+
 const int2 min(const int2 &a, const int2 &b) { return int2(min(a.x, b.x), min(a.y, b.y)); }
 const int2 max(const int2 &a, const int2 &b) { return int2(max(a.x, b.x), max(a.y, b.y)); }
 const int3 min(const int3 &a, const int3 &b) { return int3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }

@@ -6,7 +6,7 @@
 #include <set>
 #include <algorithm>
 
-NavigationMap::NavigationMap() :m_size(0, 0) { }
+NavigationMap::NavigationMap(int extend) :m_size(0, 0), m_extend(extend) { }
 
 enum { sector_size = 1024 };
 
@@ -99,9 +99,7 @@ void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy)
 			}
 		}
 				
-		Quad new_quad;
-		new_quad.rect = best + int2(sx, sy);
-		m_quads.push_back(new_quad);
+		m_quads.push_back(Quad(best + int2(sx, sy)));
 
 		pixels -= best.width() * best.height();
 	}
@@ -109,10 +107,35 @@ void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy)
 	delete[] counts;
 }
 
+void NavigationMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
+	DASSERT(quad1_id != quad2_id);
+	Quad &quad1 = m_quads[quad1_id];
+	Quad &quad2 = m_quads[quad2_id];
+
+	if(areAdjacent(quad1.rect, quad2.rect)) {
+		bool is_horizontal = quad1.rect.max.x > quad2.rect.min.x && quad1.rect.min.x < quad2.rect.max.x;
+		IRect edge(max(quad1.rect.min, quad2.rect.min), min(quad1.rect.max, quad2.rect.max));
+
+		if(is_horizontal)
+			edge.max.x--;
+		else
+			edge.max.y--;
+				
+		if( is_horizontal && quad1.rect.min.y > quad2.rect.min.y)
+			edge -= int2(0, 1);
+		if(!is_horizontal && quad1.rect.min.x > quad2.rect.min.x)
+			edge -= int2(1, 0);
+		ASSERT(edge.max.x >= edge.min.x || edge.max.y >= edge.min.y);
+
+		quad1.neighbours.push_back(quad2_id);
+		quad1.edges.push_back(edge);
+	}
+}
 
 void NavigationMap::update(const NavigationBitmap &bitmap) {
 	m_size = bitmap.size();
 	m_quads.clear();
+	DASSERT(bitmap.extend() == m_extend);
 
 	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
@@ -122,33 +145,65 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 			//printf("."); fflush(stdout);
 		}
 	printf("%.2f seconds\n", getTime() - time);
+	m_static_count = (int)m_quads.size();
 
-	for(int i = 0; i < (int)m_quads.size(); i++) {
-		Quad &quad1 = m_quads[i];
-		for(int j = 0; j < (int)m_quads.size(); j++) {
-			if(j == i)
-				continue;
+	for(int i = 0; i < (int)m_quads.size(); i++)
+		for(int j = 0; j < (int)m_quads.size(); j++)
+			if(j != i)
+				addAdjacencyInfo(i, j);
+	for(int n = 0; n < (int)m_quads.size(); n++)
+		m_quads[n].static_ncount = (int)m_quads[n].neighbours.size();
+}
 
-			const Quad &quad2 = m_quads[j];
-			if(areAdjacent(quad1.rect, quad2.rect)) {
-				bool is_horizontal = quad1.rect.max.x > quad2.rect.min.x && quad1.rect.min.x < quad2.rect.max.x;
-				IRect edge(max(quad1.rect.min, quad2.rect.min), min(quad1.rect.max, quad2.rect.max));
+void NavigationMap::addCollider(int parent_id, const IRect &rect) {
+	Quad &parent = m_quads[parent_id];
+	IRect prect = parent.rect;
+	IRect crect(max(rect.min, prect.min), min(rect.max, prect.max));
+	if(crect.isEmpty())
+		return;
 
-				if(is_horizontal)
-					edge.max.x--;
-				else
-					edge.max.y--;
-				
-				if( is_horizontal && quad1.rect.min.y > quad2.rect.min.y)
-					edge -= int2(0, 1);
-				if(!is_horizontal && quad1.rect.min.x > quad2.rect.min.x)
-					edge -= int2(1, 0);
-				ASSERT(edge.max.x >= edge.min.x || edge.max.y >= edge.min.y);
+	IRect rects[4];
+	rects[0] = IRect(prect.min, int2(crect.max.x, crect.min.y));
+	rects[1] = IRect(int2(crect.max.x, prect.min.y), int2(prect.max.x, crect.max.y));
+	rects[2] = IRect(int2(prect.min.x, crect.min.y), int2(crect.min.x, prect.max.y));
+	rects[3] = IRect(int2(crect.min.x, crect.max.y), prect.max);
+	parent.is_disabled = true;
 
-				quad1.neighbours.push_back(j);
-				quad1.edges.push_back(edge);
-			}
+	int first_id = (int)m_quads.size();
+	for(int n = 0; n < COUNTOF(rects); n++)
+		if(!rects[n].isEmpty())
+			m_quads.push_back(Quad(rects[n]));
+
+	for(int n = first_id; n < (int)m_quads.size(); n++) {
+		for(int i = 0; i < (int)parent.neighbours.size(); i++) {
+			addAdjacencyInfo(n, i);
+			addAdjacencyInfo(i, n);
 		}
+		for(int i = 0; i < n; i++) {
+			addAdjacencyInfo(n, i);
+			addAdjacencyInfo(i, n);
+		}
+	}
+}
+
+void NavigationMap::addCollider(const IRect &rect) {
+	if(rect.isEmpty())
+		return;
+
+	IRect extended_rect(rect.min - int2(m_extend, m_extend), rect.max);
+
+	for(int n = 0, count = (int)m_quads.size(); n < count; n++)
+		if(!m_quads[n].is_disabled && areOverlapping(m_quads[n].rect, extended_rect))
+			addCollider(n, extended_rect);
+}
+
+void NavigationMap::removeColliders() {
+	m_quads.resize(m_static_count);
+	for(int n = 0; n < (int)m_quads.size(); n++) {
+		Quad &quad = m_quads[n];
+		quad.neighbours.resize(quad.static_ncount);
+		quad.edges.resize(quad.static_ncount);
+		quad.is_disabled = false;
 	}
 }
 
@@ -180,10 +235,10 @@ int2 NavigationMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to)
 	return closest_pos;
 }
 
-int NavigationMap::findQuad(int2 pos) const {
+int NavigationMap::findQuad(int2 pos, bool find_disabled) const {
 	//TODO: speed up?
 	for(int n = 0; n < (int)m_quads.size(); n++)
-		if(m_quads[n].rect.isInside(pos))
+		if(m_quads[n].is_disabled == find_disabled && m_quads[n].rect.isInside(pos))
 			return n;
 	return -1;
 }
@@ -225,7 +280,7 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 			const Quad &next = m_quads[next_id];
 			const IRect &edge = quad.edges[n];
 
-			if(next.is_finished)
+			if(next.is_finished || next.is_disabled)
 				continue;
 
 			int2 edge_end_pos = clamp(end, edge.min, edge.max);
@@ -336,7 +391,8 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 		bool prev_dx = prev_vec.dx != 0;
 
 		int2 pdst = dst;
-		if(input[n].quad_id != input[n + 1].quad_id && vec.ddiag && (!(prev_diag || prev_dx != !!vec.dx) || (vec.dx == 0 && vec.dy == 0))) {
+		if(input[n].quad_id != input[n + 1].quad_id && vec.ddiag &&
+				(!(prev_diag || prev_dx != !!vec.dx) || (vec.dx == 0 && vec.dy == 0))) {
 			if(src.x < pdst.x) pdst.x--; else if(src.x > pdst.x) pdst.x++;
 			if(src.y < pdst.y) pdst.y--; else if(src.y > pdst.y) pdst.y++;
 		}
@@ -390,6 +446,8 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 
 void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
+		if(m_quads[n].is_disabled)
+			continue;
 		const IRect &rect = m_quads[n].rect;
 
 		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(70, 220, 200, 80), true);

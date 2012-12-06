@@ -8,10 +8,11 @@
   - itemy: można je zostawiać / podnosić
 - Podstawowe komunikaty na które powinny odpowiadać encje: interact, use skill, apply damage (6h)
 - Uwzględnienie encji podczas generacji ścieżek
-  - opcja 1: modyfikacja mapy nawigacyjnej (rozbijanie quadów na których znajdują się encje);
+  - opcja 1 (X): modyfikacja mapy nawigacyjnej (rozbijanie quadów na których znajdują się encje);
     ale przecież w następnej klatce obiekty te mogą być zupełnie gdzie indziej, nie ma więc sensu
-    brać je pod uwagę przy dłuższych ścieżkach
-  - opcja 2 (X): w przypadku kolizji z encją która może zmieniać swoją pozycję, przełączamy się
+    brać je pod uwagę przy dłuższych ścieżkach; może to jednak być przydatne w przypadku obiektów
+    które rzadko zmieniają bboxa: drzwi, obiekty które można zniszczyć etc.  DONE
+  - opcja 2: w przypadku kolizji z encją która może zmieniać swoją pozycję, przełączamy się
     na wyszukiwanie ścieżek oparte o bitmapę
   - rozbić NavigationMap na NavigationMap i NavigationBitmap (0.5h) DONE
   
@@ -23,8 +24,9 @@
 
 
 +ESTIMATED_TIME: 18.5h
-+TIME_SPENT: 18.25h
++TIME_SPENT: 21.91h
 
 +WORK_LOG:
 03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8.25h)
 04.12.12: 12:15 - 15:00, 16:00 - 23:15 (10.00h)
+06.12.12: 18:40 - 22:20 (3.66h)

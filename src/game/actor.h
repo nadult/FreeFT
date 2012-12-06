@@ -111,11 +111,11 @@ namespace game {
 	class Actor: public Entity {
 	public:
 		Actor(const char *spr_name, const int3 &pos);
+		virtual ColliderType colliderType() const { return collider_none; }
 
 		void setNextOrder(const Order &order);
 		WeaponClassId::Type weaponId() const { return m_weapon_id; }
 		
-		virtual bool isStatic() const { return false; }
 
 	protected:
 		void think();

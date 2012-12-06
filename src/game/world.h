@@ -30,7 +30,8 @@ namespace game {
 
 		void addEntity(PEntity&&);
 		void simulate(double time_diff);
-		void updateNavigationMap();
+
+		void updateNavigationMap(bool full_recompute);
 	
 		void spawnProjectile(int type, const int3 &pos, const int3 &target, Entity *spawner);
 		void spawnProjectileImpact(int type, const int3 &pos);
@@ -47,6 +48,7 @@ namespace game {
 
 		const TileMap &tileMap() const { return m_tile_map; }
 		const NavigationMap &naviMap() const { return m_navi_map; }
+		NavigationMap &naviMap() { return m_navi_map; }
 	
 		Intersection intersectEntities(const Ray &ray, float tmin, float tmax) const;
 

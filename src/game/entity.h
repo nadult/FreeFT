@@ -17,6 +17,12 @@ namespace game {
 	class World;
 	class Actor;
 
+	enum ColliderType {
+		collider_none,		// does not update NavigationMap, use other means for testing collisions
+		collider_static,	// updates NavigationMap every frame
+		collider_dynamic,	// updates NavigationMap when its being fully recomputed
+	};
+
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each type of Entity
 	class Entity {
@@ -24,12 +30,14 @@ namespace game {
 		Entity(const char *sprite_name, const int3 &pos);
 		virtual ~Entity();
 
-		// Doesn't change its bounding box
-		virtual bool isStatic() const { return true; }
+		virtual ColliderType colliderType() const = 0;
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
 
+		//TODO: in some classes, some of these functions should be hidden
+		// (for example setDir in Doors; dir can be changed only initially
+		// after creation it makes no sense to change it
 		void roundPos();
 		void setPos(const float3&);
 		const float3 &pos() const { return m_pos; }
@@ -38,6 +46,8 @@ namespace game {
 
 		float dirAngle() const { return m_dir_angle; }
 		const float2 dir() const;
+		const float2 actualDir() const;
+
 		void setDir(const float2 &vector);
 		void setDirAngle(float radians);
 
@@ -63,6 +73,8 @@ namespace game {
 	
 		// you shouldn't call playAnimation from this method	
 		virtual void onAnimFinished() { }
+
+		void setBBoxSize(const int3 &size) { m_bbox = size; }
 
 		gfx::PSprite m_sprite;
 

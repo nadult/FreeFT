@@ -5,26 +5,35 @@
 namespace game {
 
 	World::World()
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0) { } 
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) { } 
 
 	World::World(const char *file_name)
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0) {
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) {
 		XMLDocument doc;
 		loadXMLDocument(file_name, doc);
 		m_tile_map.loadFromXML(doc);
 	
-		m_navi_map.update(NavigationBitmap(m_tile_map, 2));
-		m_navi_map.printInfo();
+		updateNavigationMap(true);
 	}
 
-	void World::updateNavigationMap() {
-		NavigationBitmap bitmap(m_tile_map, 2);
+	void World::updateNavigationMap(bool full_recompute) {
+		if(full_recompute) {
+			NavigationBitmap bitmap(m_tile_map, m_navi_map.extend());
+			for(int n = 0; n < (int)m_entities.size(); n++)
+				if(m_entities[n]->colliderType() == collider_static) {
+					IBox box = m_entities[n]->boundingBox();
+					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
+				}
+			m_navi_map.update(bitmap);
+			m_navi_map.printInfo();
+		}
+
+		m_navi_map.removeColliders();
 		for(int n = 0; n < (int)m_entities.size(); n++)
-			if(m_entities[n]->isStatic()) {
-				IBox box = m_entities[n]->boundingBox();
-				bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
+			if(m_entities[n]->colliderType() == collider_dynamic) {
+				const IBox &box = m_entities[n]->boundingBox();
+				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
 			}
-		m_navi_map.update(bitmap);
 	}
 
 	void World::addEntity(PEntity &&entity) {

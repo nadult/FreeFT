@@ -7,7 +7,7 @@ namespace game {
 		:Entity(sprite_name, pos), m_dir(float3(target - pos)), m_spawner(spawner) {
 			m_dir *= 1.0f / length(m_dir);
 			setDir(m_dir.xz());
-			m_speed = 20.0f;
+			m_speed = 200.0f;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 		}

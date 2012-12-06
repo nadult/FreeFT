@@ -15,6 +15,7 @@ public:
 	NavigationBitmap(const TileMap&, int extend);
 
 	int2 size() const { return m_size; }
+	int extend() const { return m_extend; }
 
 	gfx::PTexture getTexture() const;
 	void printInfo() const;
