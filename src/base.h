@@ -2,6 +2,7 @@
 #define BASE_H
 
 #include <baselib.h>
+#include <cmath>
 #include "rapidxml.hpp"
 
 using namespace baselib;
@@ -44,6 +45,9 @@ struct int2
 
 const int2 min(const int2 &lhs, const int2 &rhs);
 const int2 max(const int2 &lhs, const int2 &rhs);
+
+// angle_idx: 0: pi/2    1: pi    2: 3/2 pi    4: 2 pi
+const int2 rotateVector4Aes(const int2 &vec, int angle_idx);
 
 struct int3
 {
@@ -182,6 +186,8 @@ struct Rect
 {
 	typedef decltype(Type2().x) Type;
 
+	template <class TType2>
+	explicit Rect(const Rect<TType2> &other) :min(other.min), max(other.max) { }
 	Rect(Type2 min, Type2 max) :min(min), max(max) { }
 	Rect(Type minX, Type minY, Type maxX, Type maxY) :min(minX, minY), max(maxX, maxY) { }
 	Rect() { }
@@ -198,13 +204,9 @@ struct Rect
 	Rect operator+(const Rect &rhs) { return Rect(::min(min, rhs.min), ::max(max, rhs.max)); }
 
 	bool isEmpty() const { return max.x <= min.x || max.y <= min.y; }
-	bool isInside(const int2 &point) const { //TODO: maybe this is wrong?
+	bool isInside(const int2 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y;
-	}
-	bool isInside(const Rect<int2> &rhs) const {
-		return	rhs.min.x >= min.x && rhs.min.y >= min.y &&
-				rhs.max.x <= max.x && rhs.max.y <= max.y;
 	}
 
 	Type2 min, max;
@@ -246,8 +248,28 @@ struct Box
 				point.z >= min.z && point.z < max.z;
 	}
 
+	void getPoints(Type3 points[8]) const {
+		points[0] = Type3(min.x, min.y, min.z);
+		points[1] = Type3(min.x, min.y, max.z);
+		points[2] = Type3(min.x, max.y, min.z);
+		points[3] = Type3(min.x, max.y, max.z);
+		points[4] = Type3(max.x, min.y, min.z);
+		points[5] = Type3(max.x, min.y, max.z);
+		points[6] = Type3(max.x, max.y, min.z);
+		points[7] = Type3(max.x, max.y, max.z);
+	}
+
 	Type3 min, max;
 };
+
+template<> template<> inline Box<int3>::Box(const Box<float3> &other)
+	:min(floorf(other.min.x), floorf(other.min.y), floorf(other.min.z)),
+	 max( ceilf(other.max.x),  ceilf(other.max.y),  ceilf(other.max.z)) { }
+
+Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);
+
+// angle_idx: 0: pi/2    1: pi    2: 3/2 pi    4: 2 pi
+Box<int3> rotateY4Axes(const Box<int3> &box, const int3 &origin, int angle_idx);
 
 // returns infinity if doesn't intersect
 float intersection(const Ray &ray, const Box<float3> &box);

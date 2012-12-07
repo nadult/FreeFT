@@ -65,12 +65,19 @@
  - zaplanować kolejny refactoring, pozbierać wszystkie rzeczy do zrobienia (np. zajęcie się TODOsami)
  - dodać dokument z opisem naewnictwa
  - kolizje dla projectili liczyć całkowicie na floatach !!!!(POMYŚLEC)!!!!
- - wyeliminować zbędne konwersje float <-> int (wszystko liczyć na floatach?)
+ - wyeliminować zbędne konwersje float <-> int (wszystko w encjach liczyć na floatach?)
+ - zastanowić się czy może sensownie byłoby pozwolić na przechodzenie skosem przez rogi obiektów; uprościłoby
+   to wyszukiwanie ścieżek, a problem z kolejnością rysowania powinno się dać załatwić przez delikatne zmniejszenie
+   bboxów
 
 
 4. Bajery
  - możliwość rozmawiania z wrogo nastawionymi NPC-ami (podczas walki)
+ - otwieranie drzwi z kopa i przywalenie komuś drzwiami jeśli blisko stoi (tak
+   żeby fajnie odleciał)
+ - rakiety naprowadzane laserowo
  - edytor sprite-ów
+ - rozbić animację strzału na: rozpoczęcie celowania, celowanie, strzał / ogień ciągły, koniec celowania
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

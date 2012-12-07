@@ -65,7 +65,7 @@ namespace game {
 
 			for(int f = 0; f < frame_skip; f++)
 				object->nextFrame();
-			DASSERT(!isColliding(object->boundingBox(), object));
+			//DASSERT(!isColliding(object->boundingBox(), object));
 		}
 	}
 

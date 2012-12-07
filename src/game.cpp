@@ -51,8 +51,12 @@ int safe_main(int argc, char **argv)
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", int3(120, 1, 37)));
 	world.addEntity(new Container("containers/Fridge S", int3(134, 1, 25)));
 	world.addEntity(new Container("containers/Ice Chest N", int3(120, 1, 25)));
+
 	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 42)));
-//	door->setDir(float2(0, 1));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 82), float2(1, 0)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 92), float2(-1, 0)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(85, 1, 82), float2(0, 1)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(85, 1, 92), float2(0, -1)));
 	chest->setDir(float2(0, -1));
 
 	world.updateNavigationMap(true);
@@ -65,7 +69,7 @@ int safe_main(int argc, char **argv)
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
-	bool shooting_debug = 1;
+	bool shooting_debug = 0;
 	bool entity_debug = 1;
 	
 	double last_time = getTime();
@@ -88,7 +92,8 @@ int safe_main(int argc, char **argv)
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(ent_isect.entity && entity_debug) {
 				if(ent_isect.entity != actor)
-					actor->setNextOrder(interactOrder(ent_isect.entity));
+					ent_isect.entity->interact(nullptr);
+					//actor->setNextOrder(interactOrder(ent_isect.entity));
 			}
 			else if(navi_debug) {
 				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);

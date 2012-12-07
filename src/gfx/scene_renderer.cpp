@@ -27,7 +27,7 @@ namespace gfx {
 	SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos) :m_viewport(viewport), m_view_pos(view_pos) {
 	}
 
-	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, int3 bbox, Color color) {
+	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, IBox bbox, Color color) {
 		DASSERT(texture);
 
 		rect += (int2)worldToScreen(pos);
@@ -40,7 +40,7 @@ namespace gfx {
 
 		Element new_elem;
 		new_elem.texture = texture;
-		new_elem.bbox = IBox(ipos, ipos + bbox + frac);
+		new_elem.bbox = IBox(ipos + bbox.min, ipos + bbox.max + frac);
 		new_elem.rect = rect;
 		new_elem.color = color;
 

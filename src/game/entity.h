@@ -42,7 +42,7 @@ namespace game {
 		void setPos(const float3&);
 		const float3 &pos() const { return m_pos; }
 		IBox boundingBox() const;
-		const int3 &bboxSize() const { return m_bbox; }
+		const int3 bboxSize() const { return m_bbox.size(); }
 
 		float dirAngle() const { return m_dir_angle; }
 		const float2 dir() const;
@@ -74,13 +74,14 @@ namespace game {
 		// you shouldn't call playAnimation from this method	
 		virtual void onAnimFinished() { }
 
-		void setBBoxSize(const int3 &size) { m_bbox = size; }
+		void setBBox(const IBox &box) { m_bbox = box; }
+		int dirIdx() const { return m_dir_idx; }
 
 		gfx::PSprite m_sprite;
 
 	private:
 		float3 m_pos; //TODO: int3 pos + float3 offset
-		int3 m_bbox;
+		IBox m_bbox;
 
 		void handleEventFrame(const Sprite::Frame&);
 
