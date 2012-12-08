@@ -18,8 +18,8 @@ namespace game {
 		Entity *entity() const { return m_tile_node_id == -1? m_entity : nullptr; }
 
 		bool isEntity() const { return m_tile_node_id == -1 && m_entity != nullptr; }
-		bool isTile() const { return m_tile_instance_id != -1; }
-		bool isEmpty() const { return m_tile_instance_id == -1 && m_entity == nullptr; }
+		bool isTile() const { return m_tile_node_id != -1; }
+		bool isEmpty() const { return m_tile_node_id == -1 && m_entity == nullptr; }
 
 	private:
 		union {
@@ -30,12 +30,11 @@ namespace game {
 		int m_tile_instance_id;
 	};
 
-	struct Intersection {
-		Intersection() :entity(nullptr), t(1.0f / 0.0f) { }
-		Intersection(Entity *entity, float t) :entity(entity), t(t) { }
+	struct Intersection : public WorldElement {
+		Intersection() :distance(constant::inf) { }
+		Intersection(const WorldElement &element, float distance) :WorldElement(element), distance(distance) { }
 
-		Entity *entity;
-		float t;
+		float distance;
 	};
 
 //	inline const Intersection &min(const Intersection &a, const Intersection &b) { return a.t < b.t? a : b; }
@@ -74,7 +73,8 @@ namespace game {
 		const NavigationMap &naviMap() const { return m_navi_map; }
 		NavigationMap &naviMap() { return m_navi_map; }
 	
-		Intersection intersectEntities(const Ray &ray, float tmin, float tmax) const;
+		Intersection intersect(const Segment &segment, const Entity *ignore = nullptr,
+								ColliderFlags flags = collider_all) const;
 
 		bool isInside(const FBox&) const;
 

@@ -178,6 +178,13 @@ private:
 	float3 m_inv_dir;
 };
 
+struct Segment: public Ray {
+	Segment(const Ray &ray, float min = -constant::inf, float max = constant::inf)
+		:Ray(ray), min(min), max(max) { }
+
+	float min, max;
+};
+
 
 template <class Type2>
 struct Rect
@@ -270,6 +277,9 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 // returns infinity if doesn't intersect
 float intersection(const Ray &ray, const Box<float3> &box);
+
+// returns infinity if doesn't intersect
+float intersection(const Segment &segment, const Box<float3> &box);
 
 template <class T>
 bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {

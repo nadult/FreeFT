@@ -14,25 +14,15 @@ namespace game {
 
 	void Projectile::think() {
 		float time_delta = m_world->timeDelta();
-		float3 new_pos = pos() + m_dir * time_delta * m_speed;
-		FBox new_box(new_pos, new_pos + bboxSize());
+		Ray ray(pos(), m_dir);
+		float ray_pos = m_speed * time_delta;
 
-		//TODO: better collision detection
-		if(m_world->isInside(new_box) && !m_world->isColliding(new_box, m_spawner))
-			setPos(new_pos);
-		else {
-			float3 min_pos = pos(), max_pos = new_pos;
-			float3 proj_size(1, 1, 1);
+		Intersection isect = m_world->intersect(Segment(ray, 0.0f, ray_pos));
+		float3 new_pos = ray.at(min(isect.distance, ray_pos));
+		setPos(new_pos);
 
-			for(int n = 0; n < 10; n++) {
-				float3 mid_pos = (min_pos + max_pos) * 0.5f;
-				if(m_world->isColliding(FBox(mid_pos, mid_pos + proj_size), m_spawner))
-					max_pos = mid_pos;
-				else
-					min_pos = mid_pos;
-			}
-
-			m_world->spawnProjectileImpact(0, min_pos);
+		if(isect.distance < ray_pos) {
+			m_world->spawnProjectileImpact(0, new_pos);
 			remove();
 		}
 	}

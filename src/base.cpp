@@ -156,7 +156,32 @@ float intersection(const Ray &ray, const Box<float3> &box) {
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
-	return lmin < lmax? lmin : 1.0f / 0.0f;
+	return lmin < lmax? lmin : constant::inf;
+}
+
+float intersection(const Segment &segment, const Box<float3> &box) {
+	//TODO: check if works correctly for (+/-)INF
+	float3 inv_dir = segment.invDir();
+	float3 origin = segment.origin();
+
+	float l1   = inv_dir.x * (box.min.x - origin.x);
+	float l2   = inv_dir.x * (box.max.x - origin.x);
+	float lmin = min(l1, l2);
+	float lmax = max(l1, l2);
+
+	l1   = inv_dir.y * (box.min.y - origin.y);
+	l2   = inv_dir.y * (box.max.y - origin.y);
+	lmin = max(min(l1, l2), lmin);
+	lmax = min(max(l1, l2), lmax);
+
+	l1   = inv_dir.z * (box.min.z - origin.z);
+	l2   = inv_dir.z * (box.max.z - origin.z);
+	lmin = max(min(l1, l2), lmin);
+	lmax = min(max(l1, l2), lmax);
+	lmin = max(lmin, segment.min);
+	lmax = min(lmax, segment.max);
+
+	return lmin < lmax? lmin : constant::inf;
 }
 
 Ray screenRay(int2 screen_pos) {

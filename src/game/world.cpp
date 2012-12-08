@@ -1,6 +1,7 @@
 #include "game/world.h"
 #include "game/projectile.h"
 #include "navigation_bitmap.h"
+#include <cstdio>
 
 namespace game {
 
@@ -111,14 +112,25 @@ namespace game {
 		m_last_time = current_time;
 	}
 	
-	Intersection World::intersectEntities(const Ray &ray, float tmin, float tmax) const {
+	Intersection World::intersect(const Segment &segment, const Entity *ignore, ColliderFlags flags) const {
 		Intersection out;
 
-		for(int n = 0; n < (int)m_entities.size(); n++) {
-			float dist = intersection(ray, m_entities[n]->boundingBox());
-			if(dist < out.t && dist >= tmin && dist <= tmax)
-				out = Intersection(m_entities[n].get(), dist);
+		if(flags & collider_tiles) {
+			TileMap::Intersection isect = m_tile_map.intersect(segment);
+			if(isect.node_id != -1)
+				out = Intersection(WorldElement(&m_tile_map, isect.node_id, isect.instance_id), isect.distance);
 		}
+
+		if(flags & collider_entities)
+			for(int n = 0; n < (int)m_entities.size(); n++) {
+				Entity *entity = m_entities[n].get();
+				if(!(entity->colliderType() & flags) || entity == ignore)
+					continue;
+
+				float dist = intersection(segment, entity->boundingBox());
+				if(dist < out.distance && dist >= segment.min && dist <= segment.max)
+					out = Intersection(entity, dist);
+			}
 
 		return out;
 	}
@@ -132,7 +144,7 @@ namespace game {
 				const Entity *entity = m_entities[n].get();
 				if(	(entity->colliderType() & flags) && entity != ignore) {
 					FBox isect = intersection(entity->boundingBox(), box);
-					if(isect.width() > constant::epsilon && isect.depth() > constant::epsilon &&
+					if(isect.width() > constant::epsilon && isect.height() > constant::epsilon &&
 						isect.depth() > constant::epsilon) {
 						printf("collision: %f %f %f\n", isect.width(), isect.height(), isect.depth());
 						return true;

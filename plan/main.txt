@@ -67,6 +67,8 @@
  - zastanowić się czy może sensownie byłoby pozwolić na przechodzenie skosem przez rogi obiektów; uprościłoby
    to wyszukiwanie ścieżek, a problem z kolejnością rysowania powinno się dać załatwić przez delikatne zmniejszenie
    bboxów
+ - pomysł na poprawienie renderingu overlapujących się obiektów: od bboxów odjąć część wspólną i dopiero
+  wtedy je porównać
 
 
 4. Bajery

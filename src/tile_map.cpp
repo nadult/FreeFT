@@ -134,18 +134,18 @@ void TileMapNode::deleteSelected() {
 	m_any_selected = false;
 }
 
-pair<int, float> TileMapNode::intersect(const Ray &ray, float tmin, float tmax) const {
-	float dist = intersection(ray, (Box<float3>)m_bounding_box);
-	pair<int, float> out(-1, 1.0f / 0.0f);
+pair<int, float> TileMapNode::intersect(const Segment &segment) const {
+	float dist = intersection(segment, (Box<float3>)m_bounding_box);
+	pair<int, float> out(-1, constant::inf);
 
-	if(dist < tmin || dist > tmax)
+	if(dist == constant::inf)
 		return out;
 
 	for(int i = 0; i < (int)m_instances.size(); i++) {
 		const TileInstance &inst = m_instances[i];
 		FBox box = (FBox)inst.boundingBox();
-		float dist = intersection(ray, box);
-		if(dist >= tmin && dist <= tmax && dist < out.second) {
+		float dist = intersection(segment, box);
+		if(dist < out.second) {
 			out.first = i;
 			out.second = dist;
 		}
@@ -349,15 +349,17 @@ void TileMap::moveSelected(int3 offset) {
 	//TODO: write me
 }
 	
-TileMap::Intersection TileMap::intersect(const Ray &ray, float tmin, float tmax) const {
+TileMap::Intersection TileMap::intersect(const Segment &segment) const {
 	Intersection out;
 
 	for(int n = 0; n < (int)m_nodes.size(); n++) {
-		const pair<int, float> &isect = m_nodes[n].intersect(Ray(ray.origin() - nodePos(n), ray.dir()), tmin, tmax);
-		if(isect.first != -1 && isect.second < out.t) {
+		Segment local_segment(Ray(segment.origin() - nodePos(n), segment.dir()), segment.min, segment.max);
+		const pair<int, float> &isect = m_nodes[n].intersect(local_segment);
+
+		if(isect.first != -1 && isect.second < out.distance) {
 			out.node_id = n;
 			out.instance_id = isect.first;
-			out.t = isect.second;
+			out.distance = isect.second;
 		}
 	}
 

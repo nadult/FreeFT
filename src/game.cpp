@@ -88,14 +88,12 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		auto isect = tile_map.intersect(ray, -1.0f/0.0f, 1.0f/0.0f);
-		auto ent_isect = world.intersectEntities(ray, -1.0f/0.0f, 1.0f/0.0f);
+		Intersection isect = world.intersect(ray, actor);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
-			if(ent_isect.entity && entity_debug) {
-				if(ent_isect.entity != actor)
-					//ent_isect.entity->interact(nullptr);
-					actor->setNextOrder(interactOrder(ent_isect.entity));
+			if(isect.entity() && entity_debug) {
+				//isect.entity->interact(nullptr);
+				actor->setNextOrder(interactOrder(isect.entity()));
 			}
 			else if(navi_debug) {
 				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
@@ -139,26 +137,21 @@ int safe_main(int argc, char **argv)
 
 		world.addToRender(renderer);
 
-		if(entity_debug && ent_isect.entity)
-			renderer.addBox(ent_isect.entity->boundingBox());
+		if((entity_debug || shooting_debug) && !isect.isEmpty())
+			renderer.addBox(isect.boundingBox());
 
-		if(isect.node_id != -1 && shooting_debug) {
-			IBox box = tile_map(isect.node_id)(isect.instance_id).boundingBox();
-			box += tile_map.nodePos(isect.node_id);
-			renderer.addBox(box);
-
-			float3 target = ray.at(isect.t);
+		if(!isect.isEmpty() && shooting_debug) {
+			float3 target = ray.at(isect.distance);
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
 
 			Ray shoot_ray(origin, dir / length(dir));
-			auto shoot_isect = tile_map.intersect(shoot_ray, -10.0f, 1.0f/0.0f);
+			Intersection shoot_isect = world.intersect(Segment(shoot_ray, 0.0f), actor);
 
-			if(shoot_isect.node_id != -1) {
-				IBox box = tile_map(shoot_isect.node_id)(shoot_isect.instance_id).boundingBox();
-				box += tile_map.nodePos(shoot_isect.node_id);
+			if(!shoot_isect.isEmpty()) {
+				FBox box = shoot_isect.boundingBox();
 				renderer.addBox(box, Color::red);
-				target_pos = shoot_ray.at(shoot_isect.t);
+				target_pos = shoot_ray.at(shoot_isect.distance);
 			}
 		}
 
@@ -178,11 +171,8 @@ int safe_main(int argc, char **argv)
 
 			gfx::PFont font = gfx::Font::mgr["arial_24"];
 
-			float3 pos = ray.at(isect.t);
-
+			float3 pos = ray.at(isect.distance);
 			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", pos.x, pos.y, pos.z);
-			font->drawShadowed(int2(0, 20), Color::white, Color::black, "%d %d %f",
-					isect.node_id, isect.instance_id, isect.t);
 
 //			double time = GetTime();
 //			double frameTime = time - lastFrameTime;
