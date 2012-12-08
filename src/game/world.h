@@ -8,6 +8,28 @@
 
 namespace game {
 
+	class WorldElement {
+	public:
+		WorldElement();
+		WorldElement(Entity *entity);
+		WorldElement(const TileMap *tile_map, int tile_node_id, int tile_instance_id);
+
+		const FBox boundingBox() const;
+		Entity *entity() const { return m_tile_node_id == -1? m_entity : nullptr; }
+
+		bool isEntity() const { return m_tile_node_id == -1 && m_entity != nullptr; }
+		bool isTile() const { return m_tile_instance_id != -1; }
+		bool isEmpty() const { return m_tile_instance_id == -1 && m_entity == nullptr; }
+
+	private:
+		union {
+			Entity *m_entity;
+			const TileMap *m_tile_map;
+		};
+		int m_tile_node_id;
+		int m_tile_instance_id;
+	};
+
 	struct Intersection {
 		Intersection() :entity(nullptr), t(1.0f / 0.0f) { }
 		Intersection(Entity *entity, float t) :entity(entity), t(t) { }
@@ -15,6 +37,8 @@ namespace game {
 		Entity *entity;
 		float t;
 	};
+
+//	inline const Intersection &min(const Intersection &a, const Intersection &b) { return a.t < b.t? a : b; }
 
 	class World {
 	public:
@@ -33,8 +57,8 @@ namespace game {
 
 		void updateNavigationMap(bool full_recompute);
 	
-		void spawnProjectile(int type, const int3 &pos, const int3 &target, Entity *spawner);
-		void spawnProjectileImpact(int type, const int3 &pos);
+		void spawnProjectile(int type, const float3 &pos, const float3 &target, Entity *spawner);
+		void spawnProjectileImpact(int type, const float3 &pos);
 
 		void addToRender(gfx::SceneRenderer&);
 
@@ -42,7 +66,7 @@ namespace game {
 		double currentTime() const { return m_current_time; }
 	
 		// returns true if box collides with any of the tiles
-		bool isColliding(const IBox &box, const Entity *ignore = nullptr) const;
+		bool isColliding(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 	
 		vector<int2> findPath(int2 start, int2 end) const;
 
@@ -52,7 +76,7 @@ namespace game {
 	
 		Intersection intersectEntities(const Ray &ray, float tmin, float tmax) const;
 
-		bool isInside(const IBox&) const;
+		bool isInside(const FBox&) const;
 
 	private:
 		template <class T>

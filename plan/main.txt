@@ -63,9 +63,7 @@
  - button daje się wcisnąć jak przycisk myszy jest puszczony poza buttonem
  - dodać licencję
  - zaplanować kolejny refactoring, pozbierać wszystkie rzeczy do zrobienia (np. zajęcie się TODOsami)
- - dodać dokument z opisem naewnictwa
- - kolizje dla projectili liczyć całkowicie na floatach !!!!(POMYŚLEC)!!!!
- - wyeliminować zbędne konwersje float <-> int (wszystko w encjach liczyć na floatach?)
+ - dodać dokument z opisem nazewnictwa
  - zastanowić się czy może sensownie byłoby pozwolić na przechodzenie skosem przez rogi obiektów; uprościłoby
    to wyszukiwanie ścieżek, a problem z kolejnością rysowania powinno się dać załatwić przez delikatne zmniejszenie
    bboxów

@@ -139,18 +139,18 @@ namespace gfx
 
 	void lookAt(int2 pos);
 
-	void drawQuad(int2 pos, int2 size, Color color = Color(255, 255, 255));
-	inline void drawQuad(int x, int y, int w, int h, Color col = Color(255, 255, 255))
+	void drawQuad(int2 pos, int2 size, Color color = Color::white);
+	inline void drawQuad(int x, int y, int w, int h, Color col = Color::white)
 		{ drawQuad(int2(x, y), int2(w, h), col); }
 
-	void drawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color(255, 255, 255));
+	void drawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color::white);
 
-	void drawBBox(const IBox &wbox, Color col = Color(255, 255, 255));
-	void drawBBoxFilled(const IBox &wbox, Color col = Color(255, 255, 255));
+	void drawBBox(const FBox &wbox, Color col = Color::white, bool is_filled = false);
+	void drawBBox(const IBox &wbox, Color col = Color::white, bool is_filled = false);
 
-	void drawRect(const IRect &box, Color col = Color(255, 255, 255));
-	void drawLine(int3 wp1, int3 wp2, Color color = Color(255, 255, 255));
-	void drawLine(int2 p1, int2 p2, Color color = Color(255, 255, 255));
+	void drawRect(const IRect &box, Color col = Color::white);
+	void drawLine(int3 wp1, int3 wp2, Color color = Color::white);
+	void drawLine(int2 p1, int2 p2, Color color = Color::white);
 
 	void clear(Color color);
 

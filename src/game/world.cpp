@@ -4,6 +4,24 @@
 
 namespace game {
 
+	WorldElement::WorldElement() :m_entity(nullptr), m_tile_node_id(-1) { }
+	WorldElement::WorldElement(Entity *entity) :m_entity(entity), m_tile_node_id(-1) { }
+	WorldElement::WorldElement(const TileMap *tile_map, int tile_node_id, int tile_instance_id)
+		:m_tile_node_id(tile_node_id), m_tile_instance_id(tile_instance_id), m_tile_map(tile_map) {
+			DASSERT(tile_map && tile_node_id != -1 && tile_instance_id != -1);
+		}
+
+	const FBox WorldElement::boundingBox() const {
+		if(isEntity())
+			return m_entity->boundingBox();
+		if(isTile()) {
+			const TileInstance &inst = (*m_tile_map)(m_tile_node_id)(m_tile_instance_id);
+			return (FBox)(inst.boundingBox() + m_tile_map->nodePos(m_tile_node_id));
+		}
+
+		return FBox(0, 0, 0, 0, 0, 0);
+	}
+
 	World::World()
 		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) { } 
 
@@ -21,7 +39,7 @@ namespace game {
 			NavigationBitmap bitmap(m_tile_map, m_navi_map.extend());
 			for(int n = 0; n < (int)m_entities.size(); n++)
 				if(m_entities[n]->colliderType() == collider_static) {
-					IBox box = m_entities[n]->boundingBox();
+					IBox box = enclosingIBox(m_entities[n]->boundingBox());
 					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
 				}
 			m_navi_map.update(bitmap);
@@ -30,8 +48,8 @@ namespace game {
 
 		m_navi_map.removeColliders();
 		for(int n = 0; n < (int)m_entities.size(); n++)
-			if(m_entities[n]->colliderType() == collider_dynamic) {
-				const IBox &box = m_entities[n]->boundingBox();
+			if(m_entities[n]->colliderType() == collider_dynamic_nv) {
+				const IBox &box = enclosingIBox(m_entities[n]->boundingBox());
 				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
 			}
 	}
@@ -97,8 +115,7 @@ namespace game {
 		Intersection out;
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
-			IBox box = m_entities[n]->boundingBox();
-			float dist = intersection(ray, (Box<float3>)box);
+			float dist = intersection(ray, m_entities[n]->boundingBox());
 			if(dist < out.t && dist >= tmin && dist <= tmax)
 				out = Intersection(m_entities[n].get(), dist);
 		}
@@ -106,36 +123,43 @@ namespace game {
 		return out;
 	}
 
-	bool World::isColliding(const IBox &box, const Entity *ignore) const {
-		if(m_tile_map.isOverlapping(box))
+	bool World::isColliding(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
+		if((flags & collider_tiles) && m_tile_map.isOverlapping(enclosingIBox(box)))
 			return true;
 
-		for(int n = 0; n < (int)m_entities.size(); n++) {
-			const Entity *entity = m_entities[n].get();
-			if(entity != ignore && areOverlapping(entity->boundingBox(), box))
-				return true;
-		}
+		if(flags & collider_entities)
+			for(int n = 0; n < (int)m_entities.size(); n++) {
+				const Entity *entity = m_entities[n].get();
+				if(	(entity->colliderType() & flags) && entity != ignore) {
+					FBox isect = intersection(entity->boundingBox(), box);
+					if(isect.width() > constant::epsilon && isect.depth() > constant::epsilon &&
+						isect.depth() > constant::epsilon) {
+						printf("collision: %f %f %f\n", isect.width(), isect.height(), isect.depth());
+						return true;
+					}
+				}
+			}
 
 		return false;
 	}
 
-	bool World::isInside(const IBox &box) const {
-		return box.min.x >= 0 && box.min.y >= 0 && box.min.z >= 0 &&
-				box.max.x < m_tile_map.size().x && box.max.z < m_tile_map.size().y &&
-				box.max.y < TileMapNode::size_y;
+	bool World::isInside(const FBox &box) const {
+		return box.min.x >= 0.0f && box.min.y >= 0.0f && box.min.z >= 0.0f &&
+				box.max.x <= (float)m_tile_map.size().x && box.max.z <= (float)m_tile_map.size().y &&
+				box.max.y <= (float)TileMapNode::size_y;
 	}
 		
 	vector<int2> World::findPath(int2 start, int2 end) const {
 		return m_navi_map.findPath(start, end);
 	}
 	
-	void World::spawnProjectile(int type, const int3 &pos, const int3 &target, Entity *spawner) {
+	void World::spawnProjectile(int type, const float3 &pos, const float3 &target, Entity *spawner) {
 		std::unique_ptr<Projectile> projectile(new Projectile("impactfx/Projectile Plasma", pos, target, spawner));
 		projectile->m_world = this;
 		m_projectiles.push_back(std::move(projectile));
 	}
 	
-	void World::spawnProjectileImpact(int type, const int3 &pos) {
+	void World::spawnProjectileImpact(int type, const float3 &pos) {
 		std::unique_ptr<ProjectileImpact> impact(new ProjectileImpact("impactfx/Impact Plasma", pos));
 		impact->m_world = this;
 		m_impacts.push_back(std::move(impact));

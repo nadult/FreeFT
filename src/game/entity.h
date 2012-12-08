@@ -17,20 +17,29 @@ namespace game {
 	class World;
 	class Actor;
 
-	enum ColliderType {
-		collider_none,		// does not update NavigationMap, use other means for testing collisions
-		collider_static,	// updates NavigationMap every frame
-		collider_dynamic,	// updates NavigationMap when its being fully recomputed
+	enum ColliderFlags {
+		collider_none		= 0,
+		collider_tiles		= 1,
+
+		collider_static		= 2, // updates NavigationMap when its being fully recomputed
+		collider_dynamic_nv	= 4, // updates NavigationMap every frame
+		collider_dynamic	= 8, // does not update NavigationMap
+
+		collider_entities = collider_static | collider_dynamic | collider_dynamic_nv,
+
+		collider_all		= 0xffffffff,
 	};
+
+	inline ColliderFlags operator|(ColliderFlags a, ColliderFlags b) { return (ColliderFlags)((int)a | (int)b); }
 
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each type of Entity
 	class Entity {
 	public:
-		Entity(const char *sprite_name, const int3 &pos);
+		Entity(const char *sprite_name, const float3 &pos);
 		virtual ~Entity();
 
-		virtual ColliderType colliderType() const = 0;
+		virtual ColliderFlags colliderType() const = 0;
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
@@ -41,8 +50,8 @@ namespace game {
 		void roundPos();
 		void setPos(const float3&);
 		const float3 &pos() const { return m_pos; }
-		IBox boundingBox() const;
-		const int3 bboxSize() const { return m_bbox.size(); }
+		FBox boundingBox() const;
+		const float3 bboxSize() const { return m_bbox.size(); }
 
 		float dirAngle() const { return m_dir_angle; }
 		const float2 dir() const;
@@ -74,14 +83,14 @@ namespace game {
 		// you shouldn't call playAnimation from this method	
 		virtual void onAnimFinished() { }
 
-		void setBBox(const IBox &box) { m_bbox = box; }
+		void setBBox(const FBox &box) { m_bbox = box; }
 		int dirIdx() const { return m_dir_idx; }
 
 		gfx::PSprite m_sprite;
 
 	private:
-		float3 m_pos; //TODO: int3 pos + float3 offset
-		IBox m_bbox;
+		float3 m_pos;
+		FBox m_bbox;
 
 		void handleEventFrame(const Sprite::Frame&);
 

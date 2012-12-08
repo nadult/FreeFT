@@ -6,21 +6,46 @@ namespace game {
 
 	static const char *s_seq_names[Door::state_count] = {
 		"Closed",
+		"OpenedIn",
+		"OpeningIn",
+		"ClosingIn",
 		"OpenedOut",
 		"OpeningOut",
 		"ClosingOut",
 	};
 
-	Door::Door(const char *sprite_name, const int3 &pos, const float2 &dir)
-		:Entity(sprite_name, pos) {
+	struct Transition { Door::State current, target, result; };
+	static Transition s_transitions[] = {
+		{ Door::state_closed, Door::state_opened_in,  Door::state_opening_in },
+		{ Door::state_closed, Door::state_opened_out, Door::state_opening_out },
+		{ Door::state_opened_in,  Door::state_closed, Door::state_closing_in },
+		{ Door::state_opened_out, Door::state_closed, Door::state_closing_out },
+	};
+
+	Door::Door(const char *sprite_name, const float3 &pos, Door::Type type, const float2 &dir)
+		:Entity(sprite_name, pos), m_type(type) {
 		m_sprite->printInfo();
 		m_update_anim = false;
-
-		for(int n = 0; n < state_count; n++) {
+		
+		for(int n = 0; n < state_count; n++)
 			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
-			ASSERT(m_seq_ids[n] != -1);
-		}
-		m_state = m_target_state = state_closed;
+		ASSERT(m_seq_ids[state_closed] != -1);
+
+		bool can_open_in =
+			m_seq_ids[state_opened_in] != -1 &&
+			m_seq_ids[state_opening_in] != -1 &&
+			m_seq_ids[state_closing_in] != -1;
+		bool can_open_out =
+			m_seq_ids[state_opened_out] != -1 &&
+			m_seq_ids[state_opening_out] != -1 &&
+			m_seq_ids[state_closing_out] != -1;
+
+		if(type == type_sliding || type == type_rotating || type == type_rotating_in)
+			ASSERT(can_open_in);
+		if(type == type_rotating || type == type_rotating_out)
+			ASSERT(can_open_out);
+
+		m_state = state_closed;
 		playSequence(m_seq_ids[m_state]);
 		setDir(dir);
 
@@ -28,57 +53,72 @@ namespace game {
 	}
 
 	void Door::interact(const Entity *interactor) {
-		//TODO: no atomicity, something still might fuck up, when something changes position
-		// in the same frame after door
-		IBox coll_box = (IBox)computeBBox(state_opening) + (int3)pos();
-		if(!m_world->isColliding(coll_box, this))
-			m_target_state = isOpened()? state_closed : state_opened;
+		State target, result = m_state;
+		if(isOpened())
+			target = state_closed;
+		else
+			target = m_type == type_rotating_out? state_opened_out : state_opened_in;
+
+		for(int n = 0; n < COUNTOF(s_transitions); n++)
+			if(s_transitions[n].current == m_state && s_transitions[n].target == target) {
+				result = s_transitions[n].result;
+				break;
+			}
+		if(result == m_state)
+			return;
+		
+		FBox bbox = computeBBox(result);
+		bool is_colliding = m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+
+		if(is_colliding && m_type == type_rotating && m_state == state_closed && target == state_opened_in) {
+			target = state_opened_out;
+			result = state_opening_out;
+			bbox = computeBBox(result);
+			is_colliding = m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+		}
+		if(!is_colliding) {
+			setBBox(bbox);
+			m_state = result;
+			m_update_anim = true;
+		}
 	}
 	
-	IBox Door::computeBBox(State state) const {	
+	FBox Door::computeBBox(State state) const {	
 		float3 size = m_sprite->boundingBox();
 		float maxs = max(size.x, size.z);
 		
 		FBox box;
-		if(state == state_closing || state == state_opening)
+		if(m_type == type_sliding || state == state_closed)
+			box = FBox(float3(0, 0, 0), state == state_opened_in? float3(0, 0, 0) : size);
+		else if(state == state_closing_in || state == state_opening_in)
+			box = FBox(-maxs + 1, 0, 0, 1, size.y, maxs);
+		else if(state == state_closing_out || state == state_opening_out)
 			box = FBox(0, 0, 0, maxs, size.y, maxs);
-		else if(state == state_opened)
+		else if(state == state_opened_out)
 			box = FBox(0, 0, 0, size.z, size.y, size.x);
-		else if(state == state_closed)
-			box = FBox(0, 0, 0, size.x, size.y, size.z);
+		else if(state == state_opened_in)
+			box = FBox(-size.z + 1, 0, 0, 1, size.y, size.x);
 		
-		return rotateY(FBox(box), size * 0.5f, dirAngle());
+		return rotateY(box, size * 0.5f, dirAngle());
 	}
 
 	void Door::think() {
 		const float2 dir = actualDir();
 		
-		if(m_target_state != m_state) {
-			if(m_state == state_closed && m_target_state == state_opened) {
-				m_state = state_opening;
-				m_update_anim = true;
-			}
-			if(m_state == state_opened && m_target_state == state_closed) {
-				m_state = state_closing;
-				m_update_anim = true;
-			}
-		}
 		if(m_update_anim) {
-			setBBox(computeBBox(m_state));
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}
 	}
 
 	void Door::onAnimFinished() {
-		if(m_state == state_opening) {
-			m_state = state_opened;
-			m_update_anim = true;
-		}
-		else if(m_state == state_closing) {
-			m_state = state_closed;
-			m_update_anim = true;
-		}
+		for(int n = 0; n < COUNTOF(s_transitions); n++)
+			if(m_state == s_transitions[n].result) {
+				m_state = s_transitions[n].target;
+				setBBox(computeBBox(m_state));
+				m_update_anim = true;
+				break;
+			}
 	}
 
 }

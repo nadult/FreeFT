@@ -110,8 +110,8 @@ namespace game {
 
 	class Actor: public Entity {
 	public:
-		Actor(const char *spr_name, const int3 &pos);
-		virtual ColliderType colliderType() const { return collider_none; }
+		Actor(const char *spr_name, const float3 &pos);
+		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 
 		void setNextOrder(const Order &order);
 		WeaponClassId::Type weaponId() const { return m_weapon_id; }
@@ -125,7 +125,7 @@ namespace game {
 
 		void setWeapon(WeaponClassId::Type);
 		void setSequence(ActionId::Type);
-		void lookAt(int3 pos, bool at_once = false);
+		void lookAt(const float3 &pos, bool at_once = false);
 
 		void nextFrame();
 		void onAnimFinished();

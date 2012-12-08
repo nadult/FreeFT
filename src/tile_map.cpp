@@ -143,7 +143,7 @@ pair<int, float> TileMapNode::intersect(const Ray &ray, float tmin, float tmax) 
 
 	for(int i = 0; i < (int)m_instances.size(); i++) {
 		const TileInstance &inst = m_instances[i];
-		Box<float3> box = inst.boundingBox();
+		FBox box = (FBox)inst.boundingBox();
 		float dist = intersection(ray, box);
 		if(dist >= tmin && dist <= tmax && dist < out.second) {
 			out.first = i;

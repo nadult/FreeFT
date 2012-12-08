@@ -137,7 +137,7 @@ namespace game {
 		return m_seq_ids[stance + (action * WeaponClassId::count + weapon) * StanceId::count];
 	}
 
-	Actor::Actor(const char *sprite_name, const int3 &pos) :Entity(sprite_name, pos) {
+	Actor::Actor(const char *sprite_name, const float3 &pos) :Entity(sprite_name, pos) {
 		m_sprite->printInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
@@ -146,7 +146,7 @@ namespace game {
 
 		m_weapon_id = WeaponClassId::unarmed;
 		setSequence(ActionId::standing);
-		lookAt(int3(0, 0, 0), true);
+		lookAt(float3(0, 0, 0), true);
 		m_order = m_next_order = doNothingOrder();
 	}
 
@@ -209,15 +209,13 @@ namespace game {
 				}
 			}
 
-			float3 old_pos = pos();
-			setPos(new_pos); /*
-			if(m_world->isColliding(boundingBox(), this)) {
+			if(m_world->isColliding(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				//TODO: response to collision
 				m_issue_next_order = true;
 				m_path.clear();
-				setPos(old_pos);
-				roundPos();
-			}*/
+			}
+			else
+				setPos(new_pos);
 		}
 	}
 
@@ -241,7 +239,8 @@ namespace game {
 			m_next_order = doNothingOrder();
 		}
 		else if(m_next_order.id == OrderId::interact) {
-			IBox my_box = boundingBox(), other_box = m_next_order.interact.target->boundingBox();
+			IBox my_box(boundingBox());
+			IBox other_box = enclosingIBox(m_next_order.interact.target->boundingBox());
 
 			bool are_adjacent = distanceSq(	FRect(my_box.min.xz(), my_box.max.xz()),
 											FRect(other_box.min.xz(), other_box.max.xz())) <= 0.0f;
@@ -387,7 +386,7 @@ namespace game {
 	}
 
 	// sets direction
-	void Actor::lookAt(int3 pos, bool at_once) { //TODO: rounding
+	void Actor::lookAt(const float3 &pos, bool at_once) { //TODO: rounding
 		float3 cur_pos = this->pos();
 		float2 dir(pos.x - cur_pos.x, pos.z - cur_pos.z);
 		dir = dir / length(dir);
@@ -433,10 +432,10 @@ namespace game {
 	void Actor::onFireEvent(const int3 &off) {
 		if(m_weapon_id == WeaponClassId::rifle && m_order.id == OrderId::attack) {
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
-			int3 pos = boundingBox().center();
+			float3 pos = boundingBox().center();
 			pos.y = this->pos().y;
 			float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
-			m_world->spawnProjectile(0, pos + (int3)(offset), m_order.attack.target_pos, this);
+			m_world->spawnProjectile(0, pos + offset, m_order.attack.target_pos, this);
 		}
 	}
 

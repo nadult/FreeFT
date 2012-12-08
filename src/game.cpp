@@ -44,24 +44,25 @@ int safe_main(int argc, char **argv)
 
 	World world("data/tile_map.xml");
 
-	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", int3(100, 1, 70)));
+	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", float3(100, 1, 70)));
 	actor->setNextOrder(changeWeaponOrder(WeaponClassId::rifle));
 
-	Container *chest = world.addEntity(new Container("containers/Chest Wooden", int3(134, 1, 37)));
-	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", int3(120, 1, 37)));
-	world.addEntity(new Container("containers/Fridge S", int3(134, 1, 25)));
-	world.addEntity(new Container("containers/Ice Chest N", int3(120, 1, 25)));
+	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
+	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
+	world.addEntity(new Container("containers/Fridge S", float3(134, 1, 25)));
+	world.addEntity(new Container("containers/Ice Chest N", float3(120, 1, 25)));
 
-	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 42)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 82), float2(1, 0)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(95, 1, 92), float2(-1, 0)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(85, 1, 82), float2(0, 1)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", int3(85, 1, 92), float2(0, -1)));
+	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 42), Door::type_rotating));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 82), Door::type_rotating, float2(1, 0)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 92), Door::type_rotating, float2(-1, 0)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, 1, 82), Door::type_rotating, float2(0, 1)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, 1, 92), Door::type_rotating, float2(0, -1)));
+	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, 1, 92), Door::type_sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
 
 	world.updateNavigationMap(true);
 
-	printf("Actor size: %d %d %d\n",
+	printf("Actor size: %.0f %.0f %.0f\n",
 			actor->boundingBox().width(),
 			actor->boundingBox().height(),
 			actor->boundingBox().depth());
@@ -69,12 +70,13 @@ int safe_main(int argc, char **argv)
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
-	bool shooting_debug = 0;
+	bool shooting_debug = 1;
 	bool entity_debug = 1;
 	
 	double last_time = getTime();
 	vector<int2> path;
-	int3 last_pos(0, 0, 0), target_pos(0, 0, 0);
+	int3 last_pos(0, 0, 0);
+	float3 target_pos(0, 0, 0);
 
 	const TileMap &tile_map = world.tileMap();
 
@@ -92,14 +94,11 @@ int safe_main(int argc, char **argv)
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(ent_isect.entity && entity_debug) {
 				if(ent_isect.entity != actor)
-					ent_isect.entity->interact(nullptr);
-					//actor->setNextOrder(interactOrder(ent_isect.entity));
+					//ent_isect.entity->interact(nullptr);
+					actor->setNextOrder(interactOrder(ent_isect.entity));
 			}
 			else if(navi_debug) {
 				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
-//				int quad_id = world.naviMap().findQuad(wpos.xz());
-//				if(quad_id != -1)
-//					world.naviMap()[quad_id].is_disabled ^= 1;
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
@@ -109,7 +108,7 @@ int safe_main(int argc, char **argv)
 			}
 		}
 		if(isMouseKeyDown(1) && shooting_debug) {
-			actor->setNextOrder(attackOrder(0, target_pos));
+			actor->setNextOrder(attackOrder(0, (int3)target_pos));
 		}
 		if(navi_debug && isMouseKeyDown(1)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
@@ -140,10 +139,8 @@ int safe_main(int argc, char **argv)
 
 		world.addToRender(renderer);
 
-		if(entity_debug && ent_isect.entity) {
-			IBox box = ent_isect.entity->boundingBox();
-			renderer.addBox(box);
-		}	
+		if(entity_debug && ent_isect.entity)
+			renderer.addBox(ent_isect.entity->boundingBox());
 
 		if(isect.node_id != -1 && shooting_debug) {
 			IBox box = tile_map(isect.node_id)(isect.instance_id).boundingBox();
@@ -160,8 +157,8 @@ int safe_main(int argc, char **argv)
 			if(shoot_isect.node_id != -1) {
 				IBox box = tile_map(shoot_isect.node_id)(shoot_isect.instance_id).boundingBox();
 				box += tile_map.nodePos(shoot_isect.node_id);
-				renderer.addBox(box, Color(255, 0, 0));
-				target_pos = (int3)(shoot_ray.at(shoot_isect.t));
+				renderer.addBox(box, Color::red);
+				target_pos = shoot_ray.at(shoot_isect.t);
 			}
 		}
 
@@ -181,9 +178,9 @@ int safe_main(int argc, char **argv)
 
 			gfx::PFont font = gfx::Font::mgr["arial_24"];
 
-			int3 pos = (int3)ray.at(isect.t);
+			float3 pos = ray.at(isect.t);
 
-			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%d %d %d)", pos.x, pos.y, pos.z);
+			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", pos.x, pos.y, pos.z);
 			font->drawShadowed(int2(0, 20), Color::white, Color::black, "%d %d %f",
 					isect.node_id, isect.instance_id, isect.t);
 

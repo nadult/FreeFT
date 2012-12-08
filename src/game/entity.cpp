@@ -9,10 +9,10 @@ using namespace gfx;
 
 namespace game {
 
-	Entity::Entity(const char *sprite_name, const int3 &pos)
+	Entity::Entity(const char *sprite_name, const float3 &pos)
 		:m_world(nullptr), m_to_be_removed(false) {
 		m_sprite = Sprite::mgr[sprite_name];
-		m_bbox = IBox(int3(0, 0, 0), m_sprite->boundingBox());
+		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
 		m_dir_idx = 0;
 		m_dir_angle = 0.0f;
 		m_pos = (float3)pos;
@@ -30,14 +30,10 @@ namespace game {
 
 	void Entity::setPos(const float3 &new_pos) {
 		m_pos = new_pos;
-		DASSERT(m_world->isInside(boundingBox())); //TODO: is this really necessary?
 	}
 
-	IBox Entity::boundingBox() const {
-		int3 ipos(m_pos);
-		float eps = 0.0001f;
-		int3 frac(m_pos.x - ipos.x > eps?1 : 0, m_pos.y - ipos.y > eps? 1 : 0, m_pos.z - ipos.z > eps? 1 : 0);
-		return IBox(m_bbox.min + ipos, ipos + m_bbox.max + frac);
+	FBox Entity::boundingBox() const {
+		return m_bbox + pos();
 	}
 
 	void Entity::addToRender(gfx::SceneRenderer &out) const {

@@ -10,33 +10,42 @@ namespace game
 	class Door: public Entity
 	{
 	public:
-		Door(const char *sprite_name, const int3 &pos, const float2 &dir = float2(1, 0));
-		virtual ColliderType colliderType() const { return collider_dynamic; }
-
-		virtual void interact(const Entity*);
-
-		bool isOpened() const { return m_state == state_opened; }
-		
 		enum Type {
 			type_sliding,
 			type_rotating,
+			type_rotating_in,
+			type_rotating_out,
 		};
 
 		enum State {
 			state_closed,
-			state_opened,
-			state_opening,
-			state_closing,
+
+			state_opened_in,
+			state_opening_in,
+			state_closing_in,
+
+			state_opened_out,
+			state_opening_out,
+			state_closing_out,
 
 			state_count
 		};
 
+		Door(const char *sprite_name, const float3 &pos, Type type, const float2 &dir = float2(1, 0));
+		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
+
+		virtual void interact(const Entity*);
+
+		bool isOpened() const { return m_state == state_opened_in || m_state == state_opened_out; }
+		Type type() const { return m_type; }
+		
 	private:
 		virtual void think();
 		virtual void onAnimFinished();
-		IBox computeBBox(State) const;
+		FBox computeBBox(State) const;
 
-		State m_state, m_target_state;
+		State m_state;
+		const Type m_type;
 		bool m_update_anim;
 
 		int m_seq_ids[state_count];

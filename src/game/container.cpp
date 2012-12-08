@@ -10,7 +10,7 @@ namespace game {
 		"Closing",
 	};
 
-	Container::Container(const char *sprite_name, const int3 &pos)
+	Container::Container(const char *sprite_name, const float3 &pos)
 		:Entity(sprite_name, pos) {
 		m_sprite->printInfo();
 		m_update_anim = false;

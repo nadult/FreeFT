@@ -27,27 +27,23 @@ namespace gfx {
 	SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos) :m_viewport(viewport), m_view_pos(view_pos) {
 	}
 
-	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, IBox bbox, Color color) {
+	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color) {
 		DASSERT(texture);
 
 		rect += (int2)worldToScreen(pos);
 		if(!areOverlapping(rect, IRect(m_view_pos, m_view_pos + m_viewport.size())))
 			return;
 
-		int3 ipos(pos);
-		float eps = 0.0001f;
-		int3 frac(pos.x - ipos.x > eps?1 : 0, pos.y - ipos.y > eps? 1 : 0, pos.z - ipos.z > eps? 1 : 0);
-
 		Element new_elem;
 		new_elem.texture = texture;
-		new_elem.bbox = IBox(ipos + bbox.min, ipos + bbox.max + frac);
+		new_elem.bbox = bbox + pos;
 		new_elem.rect = rect;
 		new_elem.color = color;
 
 		m_elements.push_back(new_elem);
 	}
 
-	void SceneRenderer::addBox(IBox bbox, Color color, bool is_filled) {
+	void SceneRenderer::addBox(FBox bbox, Color color, bool is_filled) {
 		if(!is_filled) {
 			m_wire_boxes.push_back(BoxElement{bbox, color});
 			return;
@@ -56,7 +52,7 @@ namespace gfx {
 		Element new_elem;
 		new_elem.texture = nullptr;
 		new_elem.bbox = bbox;
-		new_elem.rect = worldToScreen(bbox);
+		new_elem.rect = (IRect)worldToScreen(bbox);
 		new_elem.color = color;
 		m_elements.push_back(new_elem);
 	}
@@ -176,7 +172,7 @@ namespace gfx {
 				}
 				else {
 					DTexture::bind0();
-					drawBBoxFilled(elem.bbox, elem.color);
+					drawBBox(elem.bbox, elem.color, true);
 				}
 			}
 

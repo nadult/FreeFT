@@ -39,16 +39,12 @@ const float2 rotateVector(const float2 &vec, float radians) {
 	return float2(c * vec.x - s * vec.y, c * vec.y + s * vec.x);
 }
 
-const int2 rotateVector4Axes(const int2 &vec, int angle_idx) {
-	DASSERT(angle_idx >= 0 && angle_idx < 4);
-	
-	return
-		angle_idx == 1? int2( vec.y, -vec.x) :
-		angle_idx == 0? int2(-vec.x, -vec.y) :
-		angle_idx == 3? int2(-vec.y,  vec.x) : int2(vec.x, vec.y);
-}
+const Box<int3> enclosingIBox(const Box<float3> &fbox) {
+	return Box<int3>(floorf(fbox.min.x), floorf(fbox.min.y), floorf(fbox.min.z),
+					  ceilf(fbox.max.x),  ceilf(fbox.max.y),  ceilf(fbox.max.z));
+};
 
-Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle) {
+const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle) {
 	float3 points[8];
 	box.getPoints(points);
 	float2 xz_origin = origin.xz();
@@ -64,24 +60,6 @@ Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle) {
 
 	return out;
 }
-
-Box<int3> rotateY4Axes(const Box<int3> &box, const int3 &origin, int angle_idx) {
-	int3 points[8];
-	box.getPoints(points);
-	int2 xz_origin = origin.xz();
-
-	for(int n = 0; n < COUNTOF(points); n++)
-		points[n] = asXZY(rotateVector4Axes(points[n].xz() - xz_origin, angle_idx) + xz_origin, points[n].y);
-	
-	Box<int3> out(points[0], points[0]);
-	for(int n = 0; n < COUNTOF(points); n++) {
-		out.min = min(out.min, points[n]);
-		out.max = max(out.max, points[n]);
-	}
-
-	return out;
-}
-
 
 float g_FloatParam[16];
 
@@ -157,15 +135,6 @@ int2 screenToWorld(int2 pos) {
 	return int2(y + x, y - x);
 }
 
-const IRect worldToScreen(const IBox &bbox) {
-	int2 corners[4] = {
-			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.min.z)),
-			worldToScreen(int3(bbox.min.x, bbox.min.y, bbox.max.z)),
-			worldToScreen(int3(bbox.max.x, bbox.min.y, bbox.max.z)),
-			worldToScreen(int3(bbox.min.x, bbox.max.y, bbox.min.z)) };
-
-	return IRect(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
-}
 
 float intersection(const Ray &ray, const Box<float3> &box) {
 	//TODO: check if works correctly for (+/-)INF

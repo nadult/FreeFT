@@ -230,7 +230,7 @@ namespace gfx
 
 		bool shift = isKeyPressed(Key_lshift) || isKeyPressed(Key_rshift); //TODO: capslock
 
-		for(int i = 0; i < sizeof(map) / 2; i++)
+		for(int i = 0; i < (int)sizeof(map) / 2; i++)
 			if(isKeyPressed(map[i][0]))
 				return map[i][shift? 1 : 0];
 

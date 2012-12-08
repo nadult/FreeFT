@@ -10,8 +10,8 @@ namespace game
 	class Container: public Entity
 	{
 	public:
-		Container(const char *sprite_name, const int3 &pos);
-		virtual ColliderType colliderType() const { return collider_static; }
+		Container(const char *sprite_name, const float3 &pos);
+		virtual ColliderFlags colliderType() const { return collider_static; }
 
 		void open();
 		void close();

@@ -23,6 +23,7 @@ namespace constant {
 	static const float pi		= 3.14159265358979f;
 	static const float e		= 2.71828182845905f;
 	static const float inf		= 1.0f / 0.0f;
+	static const float epsilon	= 0.0001f;
 }
 
 struct int2
@@ -45,9 +46,6 @@ struct int2
 
 const int2 min(const int2 &lhs, const int2 &rhs);
 const int2 max(const int2 &lhs, const int2 &rhs);
-
-// angle_idx: 0: pi/2    1: pi    2: 3/2 pi    4: 2 pi
-const int2 rotateVector4Aes(const int2 &vec, int angle_idx);
 
 struct int3
 {
@@ -224,7 +222,7 @@ struct Box
 	typedef decltype(Type3().x) Type;
 
 	template <class TType3>
-	Box(const Box<TType3> &other) :min(other.min), max(other.max) { }
+	explicit Box(const Box<TType3> &other) :min(other.min), max(other.max) { }
 	Box(Type3 min, Type3 max) :min(min), max(max) { }
 	Box(Type minX, Type minY, Type minZ, Type maxX, Type maxY, Type maxZ)
 		:min(minX, minY, minZ), max(maxX, maxY, maxZ) { }
@@ -262,14 +260,13 @@ struct Box
 	Type3 min, max;
 };
 
-template<> template<> inline Box<int3>::Box(const Box<float3> &other)
-	:min(floorf(other.min.x), floorf(other.min.y), floorf(other.min.z)),
-	 max( ceilf(other.max.x),  ceilf(other.max.y),  ceilf(other.max.z)) { }
+template <class Type3>
+const Box<Type3> intersection(const Box<Type3> &a, const Box<Type3> &b) {
+	return Box<Type3>(max(a.min, b.min), min(a.max, b.max));
+}
 
-Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);
-
-// angle_idx: 0: pi/2    1: pi    2: 3/2 pi    4: 2 pi
-Box<int3> rotateY4Axes(const Box<int3> &box, const int3 &origin, int angle_idx);
+const Box<int3> enclosingIBox(const Box<float3>&);
+const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);
 
 // returns infinity if doesn't intersect
 float intersection(const Ray &ray, const Box<float3> &box);
@@ -331,7 +328,18 @@ int2 screenToWorld(int2 pos);
 
 Ray screenRay(int2 screen_pos);
 
-const IRect worldToScreen(const IBox &box);
+template <class Type3>
+const Rect<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
+	typedef decltype(Type3().xy()) Type2;
+	Type2 corners[4] = {
+			worldToScreen(Type3(bbox.max.x, bbox.min.y, bbox.min.z)),
+			worldToScreen(Type3(bbox.min.x, bbox.min.y, bbox.max.z)),
+			worldToScreen(Type3(bbox.max.x, bbox.min.y, bbox.max.z)),
+			worldToScreen(Type3(bbox.min.x, bbox.max.y, bbox.min.z)) };
+
+	return Rect<Type2>(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
+}
+
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
 struct MoveVector {

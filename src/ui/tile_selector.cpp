@@ -47,7 +47,7 @@ namespace ui {
 
 			lookAt(-clippedRect().min - pos - m_selection->tile->m_offset);
 			IBox box(int3(0, 0, 0), m_selection->tile->m_bbox);
-			drawBBox(box, Color(255, 255, 255));
+			drawBBox(box);
 		//	drawRect(IRect(pos, pos + m_selection->size));
 		}
 	}
