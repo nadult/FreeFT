@@ -366,18 +366,6 @@ namespace gfx
 		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
 		DASSERT(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].frames.size());
 
-		/* TODO: powtarzalny bug na netbooku podczas strzelania z plazmowki
-		 gfx/sprite.cpp:367: Assertion failed: frame_id >= 0 && frame_id < (int)m_sequences[seq_id].frames.size()
-
-		Backtrace:
-		./game(game::Entity::addToRender(gfx::SceneRenderer&) const+0x63) [0x808e753]
-		./game(game::World::addToRender(gfx::SceneRenderer&)+0xa2) [0x808aec2]
-		./game(safe_main(int, char**)+0xd20) [0x80a7b80]
-		./game(main+0x25) [0x8061975]
-		/lib/libc.so.6(__libc_start_main+0xfe) [0xb750ac2e]
-		./game() [0x8061a55]  */
-
-
 		const Sequence &seq = m_sequences[seq_id];
 		frame_id = seq.frames[frame_id].id;
 		DASSERT(frame_id >= 0);

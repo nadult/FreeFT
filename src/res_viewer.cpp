@@ -278,7 +278,7 @@ public:
 				exit(0);
 		}
 		else if(ev.type == Event::element_selected) {
-			if(m_dir_view == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
+			if(m_dir_view.get() == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
 				const FileEntry &entry = m_entries[ev.value];
 
 				if(entry.is_dir) {
@@ -289,7 +289,7 @@ public:
 					m_res_view->select(ev.value);
 				}
 			}
-			else if(m_res_view == ev.source) {
+			else if(m_res_view.get() == ev.source) {
 				m_dir_view->selectEntry(ev.value);
 			}
 		}

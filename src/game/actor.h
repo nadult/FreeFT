@@ -2,6 +2,7 @@
 #define GAME_ACTOR_H
 
 #include "game/entity.h"
+#include "game/inventory.h"
 
 namespace game {
 
@@ -35,23 +36,6 @@ namespace game {
 		};
 
 	}
-
-	namespace WeaponClassId {
-		enum Type {
-			unarmed,
-			club,
-			heavy,
-			knife,
-			minigun,
-			pistol,
-			rifle,
-			rocket,
-			smg,
-			spear,
-			
-			count,
-		};
-	};
 
 	namespace OrderId {
 		enum Type {
@@ -94,6 +78,15 @@ namespace game {
 	Order attackOrder(int attack_mode, const int3 &target_pos);
 	Order changeWeaponOrder(WeaponClassId::Type target_weapon);
 	Order interactOrder(Entity *target);
+
+	class ActorInventory: public Inventory {
+	public:
+		ActorInventory() :m_armour(nullptr), m_weapon(nullptr), m_ammo(nullptr) { }
+
+		const ItemDesc *m_armour;
+		const ItemDesc *m_weapon;
+		const ItemDesc *m_ammo;
+	};
 
 	class ActorAnimMap {
 	public:
@@ -150,6 +143,8 @@ namespace game {
 		ActionId::Type m_action_id;
 		StanceId::Type m_stance_id;
 		WeaponClassId::Type m_weapon_id;
+
+		ActorInventory m_inventory;
 
 		ActorAnimMap m_anim_map;
 	};

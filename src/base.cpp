@@ -42,17 +42,17 @@ const Box<int3> enclosingIBox(const Box<float3> &fbox) {
 };
 
 const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle) {
-	float3 points[8];
-	box.getPoints(points);
+	float3 corners[8];
+	box.getCorners(corners);
 	float2 xz_origin = origin.xz();
 
-	for(int n = 0; n < COUNTOF(points); n++)
-		points[n] = asXZY(rotateVector(points[n].xz() - xz_origin, angle) + xz_origin, points[n].y);
+	for(int n = 0; n < COUNTOF(corners); n++)
+		corners[n] = asXZY(rotateVector(corners[n].xz() - xz_origin, angle) + xz_origin, corners[n].y);
 	
-	Box<float3> out(points[0], points[0]);
-	for(int n = 0; n < COUNTOF(points); n++) {
-		out.min = min(out.min, points[n]);
-		out.max = max(out.max, points[n]);
+	Box<float3> out(corners[0], corners[0]);
+	for(int n = 0; n < COUNTOF(corners); n++) {
+		out.min = min(out.min, corners[n]);
+		out.max = max(out.max, corners[n]);
 	}
 
 	return out;

@@ -1,8 +1,8 @@
 - Napisanie podstawowych klas encji: kontener, drzwi, item, pociski, encja oparta o tile (który np.
   można zniszczyć) (6h, uuuh, to będzie znacznie więcej niż 6h)
   - kontener: otwieranie, zamykanie (jeśli są dostępne animacje), transfer itemów, używanie kluczy
-  - drzwi: otwórz, zamknij, używanie kluczy, zmienny bounding box, reakcja na ekspozję
-  - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja, okno dialogowe
+  - drzwi: otwórz, zamknij, używanie kluczy, zmienny bounding box
+  - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja
   - pociski: synchronizacja z animacją gracza, generują impacty  DONE
   - eksplozje: generują damage, rendering jako overlay
   - itemy: można je zostawiać / podnosić
@@ -32,4 +32,4 @@
 06.12.12: 18:40 - 22:20 (3.66h)
 07.12.12: 18:30 - 20:30, 21:00 - 21:30 (2.50h)
 08.12.12: 11:30 - 12:45, 13:30 - 14:30 (2.25h)
-09.12.12: 12:10 - 13:00, 15:00 - 17:30 
+09.12.12: 12:10 - 13:00, 15:00 - 17:30, 23:00 - 00:30 (7.00h)

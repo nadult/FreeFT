@@ -2,28 +2,13 @@
 #define GAME_ITEM_H
 
 #include "game/entity.h"
-#include "game/projectile.h"
 #include "gfx/device.h"
 
 namespace game {
 
-	namespace ItemType {
-		enum Type {
-			weapon,
-			ammo,
-			armour,
-			other,
-
-			count,
-		};
-
-		const char *toString(Type);
-		Type fromString(const char*);
-	};
-
 	struct ItemDesc {
 		virtual ~ItemDesc() { }
-		ItemType::Type type() const { return ItemType::other; }
+		ItemTypeId::Type type() const { return ItemTypeId::other; }
 
 		static void loadItems();
 		static const ItemDesc *find(const char *name);
@@ -37,44 +22,24 @@ namespace game {
 	typedef std::unique_ptr<ItemDesc> PItemDesc;
 
 	struct WeaponDesc: public ItemDesc {
-		ItemType::Type type() const { return ItemType::weapon; }
+		ItemTypeId::Type type() const { return ItemTypeId::weapon; }
 
-		ProjectileType::Type projectile_type;
+		ProjectileTypeId::Type projectile_type;
 		float projectile_speed;
 		float damage;
 	};
 
 	struct AmmoDesc: public ItemDesc {
-		ItemType::Type type() const { return ItemType::ammo; }
+		ItemTypeId::Type type() const { return ItemTypeId::ammo; }
 
 		float damage_modifier;
 	};
 
 	struct ArmourDesc: public ItemDesc {
-		ItemType::Type type() const { return ItemType::armour; }
+		ItemTypeId::Type type() const { return ItemTypeId::armour; }
 
 		float damage_resistance;
 	};
-
-	class Inventory {
-	public:
-		struct Entry {
-			const ItemDesc *item;
-			int count;
-		};
-
-		int addItem(const ItemDesc *item, int count);
-		int findItem(const ItemDesc *item);
-		void remove(int entry_id, int count);
-		float weight() const;
-
-		int size() const { return (int)m_entries.size(); }
-		const Entry &operator[](int idx) const { return m_entries[idx]; }
-
-	protected:
-		vector<Entry> m_entries;
-	};
-
 
 	class Item: public Entity {
 	public:

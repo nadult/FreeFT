@@ -19,6 +19,8 @@ typedef unsigned int uint;
 
 #include "sys/memory.h"
 
+#define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
+
 extern float g_FloatParam[16];
 
 template <class T> inline T max(T a, T b) { return a > b? a : b; }
@@ -258,15 +260,12 @@ struct Box
 				point.z >= min.z && point.z < max.z;
 	}
 
-	void getPoints(Type3 points[8]) const {
-		points[0] = Type3(min.x, min.y, min.z);
-		points[1] = Type3(min.x, min.y, max.z);
-		points[2] = Type3(min.x, max.y, min.z);
-		points[3] = Type3(min.x, max.y, max.z);
-		points[4] = Type3(max.x, min.y, min.z);
-		points[5] = Type3(max.x, min.y, max.z);
-		points[6] = Type3(max.x, max.y, min.z);
-		points[7] = Type3(max.x, max.y, max.z);
+	void getCorners(Type3 corners[8]) const {
+		for(int n = 0; n < COUNTOF(corners); n++) {
+			corners[n].x = (n & 4? min : max).x;
+			corners[n].y = (n & 2? min : max).y;
+			corners[n].z = (n & 1? min : max).z;
+		}
 	}
 
 	Type3 min, max;
@@ -425,21 +424,5 @@ SERIALIZE_AS_POD(IBox)
 SERIALIZE_AS_POD(FBox)
 SERIALIZE_AS_POD(Color)
 
-
-#define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
-template <class EnumType, int count>
-EnumType genericFromString(const char *str, const char *strings[count]) {
-	for(int n = 0; n < count; n++)
-		if(strcmp(str, strings[n]) == 0)
-			return (EnumType)n;
-	ASSERT(0);
-	return (EnumType)0;
-}
-
-template <class EnumType, int count>
-const char *genericToString(EnumType value, const char *strings[count]) {
-	DASSERT(value >= 0 && value < count);
-	return strings[value];
-}
 
 #endif

@@ -16,6 +16,7 @@ namespace game {
 		m_dir_idx = 0;
 		m_dir_angle = 0.0f;
 		m_pos = (float3)pos;
+		m_seq_id = -1;
 		playSequence(0);
 	}
 	Entity::~Entity() { }
@@ -96,7 +97,7 @@ namespace game {
 			const Sprite::Frame &frame = frames[m_frame_id];
 			if(frame.id == Sprite::ev_repeat_all)
 				m_frame_id = 0;
-			else if(frame.id == Sprite::ev_jump_to_frame)
+			else if(frame.id == Sprite::ev_jump_to_frame) 
 				m_frame_id = frame.params[0];
 			else {
 				if(frame.id <= Sprite::ev_first_specific)

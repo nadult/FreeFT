@@ -187,6 +187,8 @@ int safe_main(int argc, char **argv)
 			float3 pos = ray.at(isect.distance);
 			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", pos.x, pos.y, pos.z);
 
+			
+
 //			double time = GetTime();
 //			double frameTime = time - lastFrameTime;
 //			lastFrameTime = time;

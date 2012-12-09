@@ -435,7 +435,7 @@ namespace game {
 			float3 pos = boundingBox().center();
 			pos.y = this->pos().y;
 			float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
-			PProjectile projectile(new Projectile(ProjectileType::plasma, pos + offset, m_order.attack.target_pos, this));
+			PProjectile projectile(new Projectile(ProjectileTypeId::plasma, pos + offset, m_order.attack.target_pos, this));
 			m_world->spawnProjectile(std::move(projectile));
 		}
 	}

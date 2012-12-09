@@ -3,33 +3,21 @@
 
 namespace game {
 
-	namespace ProjectileType {
-		static const char *s_strings[count] = {
-			"bullet",
-			"plasma",
-			"laser",
-			"rocket",
-		};
-
-		const char *toString(Type value) { return genericToString<Type, count>(value, s_strings); }
-		Type fromString(const char *str) { return genericFromString<Type, count>(str, s_strings); }
-	};
-
-	static const char *s_projectile_names[ProjectileType::count] = {
+	static const char *s_projectile_names[ProjectileTypeId::count] = {
 		"impactfx/Projectile Invisi",
 		"impactfx/Projectile Plasma",
 		"impactfx/Projectile Laser",
 		"impactfx/Projectile Rocket",
 	};
 
-	static const char *s_impact_names[ProjectileType::count] = {
+	static const char *s_impact_names[ProjectileTypeId::count] = {
 		nullptr,
 		"impactfx/Impact Plasma",
 		"impactfx/Impact Laser",
 		nullptr,				// rocket impact is handled differently
 	};
 
-	Projectile::Projectile(ProjectileType::Type type, const float3 &pos, const float3 &target, Entity *spawner)
+	Projectile::Projectile(ProjectileTypeId::Type type, const float3 &pos, const float3 &target, Entity *spawner)
 		:Entity(s_projectile_names[type], pos), m_dir(target - pos), m_spawner(spawner), m_type(type) {
 			m_dir *= 1.0f / length(m_dir);
 			setDir(m_dir.xz());

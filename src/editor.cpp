@@ -274,12 +274,6 @@ int safe_main(int argc, char **argv)
 	}
 	printf("\n");
 
-	//double lastFrameTime = getTime();
-//	double lastSFrameTime = getTime();
-//	double sframeTime = 1.0 / 16.0;
-
-//	PFont font = Font::mgr["font1"];
-
 	EditorWindow main_window(config.resolution);
 	clear({0, 0, 0});
 
@@ -287,17 +281,9 @@ int safe_main(int argc, char **argv)
 		if(isKeyPressed(Key_lalt) && isKeyDown(Key_f4))
 			break;
 		
-	//	if(isKeyPressed('T')) g_FloatParam[0] += 0.00001f;
-	//	if(isKeyPressed('G')) g_FloatParam[0] -= 0.00001f;
-	//	if(isKeyPressed('Y')) g_FloatParam[1] += 0.00001f;
-	//	if(isKeyPressed('H')) g_FloatParam[1] -= 0.00001f;
-		
 		main_window.process();
 		main_window.draw();
 		lookAt({0, 0});
-	//	int2 mpos = getMousePos();
-	//	drawLine(mpos - int2{10, 0}, mpos + int2{10, 0}, Color(255, 255, 255));
-	//	drawLine(mpos - int2{0, 10}, mpos + int2{0, 10}, Color(255, 255, 255));
 		
 		swapBuffers();
 	}
