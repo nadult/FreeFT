@@ -104,6 +104,7 @@ void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy)
 		pixels -= best.width() * best.height();
 	}
 
+	//TODO: m_quads.push_back can throw
 	delete[] counts;
 }
 
@@ -137,14 +138,14 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 	m_quads.clear();
 	DASSERT(bitmap.extend() == m_extend);
 
-	printf("Creating navigation map: "); fflush(stdout);
+//	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 	for(int sy = 0; sy < m_size.y; sy += sector_size)
 		for(int sx = 0; sx < m_size.x; sx += sector_size) {
 			extractQuads(bitmap, sx, sy);
 			//printf("."); fflush(stdout);
 		}
-	printf("%.2f seconds\n", getTime() - time);
+//	printf("%.2f seconds\n", getTime() - time);
 	m_static_count = (int)m_quads.size();
 
 	for(int i = 0; i < (int)m_quads.size(); i++)
@@ -243,6 +244,7 @@ int NavigationMap::findQuad(int2 pos, bool find_disabled) const {
 	return -1;
 }
 
+#define WALK_DIAGONAL_THROUGH_CORNERS
 
 vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bool do_refining) const {
 	vector<PathNode> out;
@@ -289,7 +291,8 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 			int2 closest_pos = clamp(quad.entry_pos + vec.vec * vec.ddiag, next.rect.min, next.rect.max - int2(1, 1));
 
 			closest_pos = clamp(closest_pos, quad.rect.min - int2(1, 1), quad.rect.max);
-	
+
+#ifndef WALK_DIAGONAL_THROUGH_CORNERS
 			// fixing problem with diagonal moves through obstacle corners
 			if(quad.rect.max.x > next.rect.min.x && quad.rect.min.x < next.rect.max.x) {
 				if(quad.entry_pos.x < closest_pos.x && closest_pos.x == next.rect.min.x && closest_pos.x < next.rect.max.x - 1)
@@ -303,6 +306,7 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 				if(quad.entry_pos.y > closest_pos.y && closest_pos.y == next.rect.max.y - 1 && closest_pos.y > next.rect.min.y)
 					closest_pos.y--;
 			}
+#endif
 
 			float dist = distance(closest_pos, quad.entry_pos) + quad.dist;
 			float edist = distance(closest_pos, end);
@@ -398,10 +402,12 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 		}
 		pdst = clamp(pdst, src_quad.min, src_quad.max - int2(1,1));
 
+#ifndef WALK_DIAGONAL_THROUGH_CORNERS
 		if(is_horizontal)
 				pdst.x = clamp(pdst.x, dst_quad.min.x, dst_quad.max.x - 1);
 		else
 				pdst.y = clamp(pdst.y, dst_quad.min.y, dst_quad.max.y - 1);
+#endif
 
 		vec = MoveVector(src, pdst);
 		int2 mid = src;

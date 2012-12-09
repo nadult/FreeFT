@@ -44,7 +44,7 @@ namespace game {
 					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
 				}
 			m_navi_map.update(bitmap);
-			m_navi_map.printInfo();
+		//	m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();
@@ -165,14 +165,12 @@ namespace game {
 		return m_navi_map.findPath(start, end);
 	}
 	
-	void World::spawnProjectile(int type, const float3 &pos, const float3 &target, Entity *spawner) {
-		std::unique_ptr<Projectile> projectile(new Projectile("impactfx/Projectile Plasma", pos, target, spawner));
+	void World::spawnProjectile(PProjectile projectile) {
 		projectile->m_world = this;
 		m_projectiles.push_back(std::move(projectile));
 	}
 	
-	void World::spawnProjectileImpact(int type, const float3 &pos) {
-		std::unique_ptr<ProjectileImpact> impact(new ProjectileImpact("impactfx/Impact Plasma", pos));
+	void World::spawnProjectileImpact(PProjectileImpact impact) {
 		impact->m_world = this;
 		m_impacts.push_back(std::move(impact));
 	}

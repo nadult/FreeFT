@@ -24,7 +24,6 @@ namespace game {
 
 	Door::Door(const char *sprite_name, const float3 &pos, Door::Type type, const float2 &dir)
 		:Entity(sprite_name, pos), m_type(type) {
-		m_sprite->printInfo();
 		m_update_anim = false;
 		
 		for(int n = 0; n < state_count; n++)

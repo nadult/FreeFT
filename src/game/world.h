@@ -56,8 +56,8 @@ namespace game {
 
 		void updateNavigationMap(bool full_recompute);
 	
-		void spawnProjectile(int type, const float3 &pos, const float3 &target, Entity *spawner);
-		void spawnProjectileImpact(int type, const float3 &pos);
+		void spawnProjectile(PProjectile);
+		void spawnProjectileImpact(PProjectileImpact);
 
 		void addToRender(gfx::SceneRenderer&);
 

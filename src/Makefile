@@ -7,12 +7,13 @@ _dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
 _dummy := $(shell [ -d $(BUILD_DIR)/ui ] || mkdir -p $(BUILD_DIR)/ui)
 _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 _dummy := $(shell [ -d $(BUILD_DIR)/game ] || mkdir -p $(BUILD_DIR)/game)
+_dummy := $(shell [ -d $(BUILD_DIR)/gameui ] || mkdir -p $(BUILD_DIR)/gameui)
 
 SRC_FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux sys/platform_windows \
 	editor game res_viewer base tile_map tile_group navigation_map navigation_bitmap \
-	game/world game/actor game/entity game/container game/door game/projectile \
+	game/world game/actor game/entity game/container game/door game/projectile game/item \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \
 	ui/edit_box ui/tile_selector ui/tile_map_editor ui/tile_group_editor
 
@@ -69,7 +70,7 @@ $(MINGW_PROGRAMS): ../%.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(BUILD_D
 
 clean:
 	-rm -f $(LINUX_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) $(MINGW_PROGRAMS) $(DEPS) $(BUILD_DIR)/.depend
-	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui $(BUILD_DIR)/game
+	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui $(BUILD_DIR)/game $(BUILD_DIR)/gameui
 	-rmdir $(BUILD_DIR)
 
 $(BUILD_DIR)/.depend: $(DEPS)

@@ -12,6 +12,7 @@ namespace game
 	public:
 		Container(const char *sprite_name, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_static; }
+		virtual EntityFlags entityType() const { return entity_container; }
 
 		void open();
 		void close();

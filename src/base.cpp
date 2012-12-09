@@ -277,7 +277,11 @@ void loadXMLDocument(const char *file_name, XMLDocument &doc) {
 	Loader ldr(file_name);
 	char *xml_string = doc.allocate_string(0, ldr.size());
 	ldr.data(xml_string, ldr.size());
-	doc.parse<0>(xml_string); 
+	try {
+		doc.parse<0>(xml_string); 
+	} catch(const rapidxml::parse_error &ex) {
+		THROW("rapidxml exception caught: %s while parsing: %s", ex.what(), file_name);
+	}
 	
 }
 

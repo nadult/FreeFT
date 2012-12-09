@@ -138,7 +138,7 @@ namespace game {
 	}
 
 	Actor::Actor(const char *sprite_name, const float3 &pos) :Entity(sprite_name, pos) {
-		m_sprite->printInfo();
+		//m_sprite->printInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
 		m_issue_next_order = false;
@@ -435,7 +435,8 @@ namespace game {
 			float3 pos = boundingBox().center();
 			pos.y = this->pos().y;
 			float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
-			m_world->spawnProjectile(0, pos + offset, m_order.attack.target_pos, this);
+			PProjectile projectile(new Projectile(ProjectileType::plasma, pos + offset, m_order.attack.target_pos, this));
+			m_world->spawnProjectile(std::move(projectile));
 		}
 	}
 

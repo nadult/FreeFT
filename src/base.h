@@ -3,6 +3,7 @@
 
 #include <baselib.h>
 #include <cmath>
+#include <cstring>
 #include "rapidxml.hpp"
 
 using namespace baselib;
@@ -438,5 +439,19 @@ int getIntAttribute(XMLNode *node, const char *name);
 int getFloatAttribute(XMLNode *node, const char *name);
 const char *getStringAttribute(XMLNode *node, const char *name);
 
+template <class EnumType, int count>
+EnumType genericFromString(const char *str, const char *strings[count]) {
+	for(int n = 0; n < count; n++)
+		if(strcmp(str, strings[n]) == 0)
+			return (EnumType)n;
+	ASSERT(0);
+	return (EnumType)0;
+}
+
+template <class EnumType, int count>
+const char *genericToString(EnumType value, const char *strings[count]) {
+	DASSERT(value >= 0 && value < count);
+	return strings[value];
+}
 
 #endif

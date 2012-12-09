@@ -112,6 +112,7 @@ namespace game {
 	public:
 		Actor(const char *spr_name, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
+		virtual EntityFlags entityType() const { return entity_actor; }
 
 		void setNextOrder(const Order &order);
 		WeaponClassId::Type weaponId() const { return m_weapon_id; }

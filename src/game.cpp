@@ -18,6 +18,7 @@
 #include "game/world.h"
 #include "game/container.h"
 #include "game/door.h"
+#include "game/item.h"
 
 using namespace gfx;
 using namespace game;
@@ -31,6 +32,8 @@ int safe_main(int argc, char **argv)
 #else
 	int2 res(1400, 768);
 #endif
+
+	ItemDesc::loadItems();
 
 	createWindow(res, false);
 	setWindowTitle("FTremake ver 0.02");
@@ -59,6 +62,14 @@ int safe_main(int argc, char **argv)
 	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, 1, 92), Door::type_rotating, float2(0, -1)));
 	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, 1, 92), Door::type_sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
+
+	const ItemDesc *plasma_rifle = ItemDesc::find("plasma_rifle");
+	const ItemDesc *fusion_cell = ItemDesc::find("fusion_cell");
+	const ItemDesc *leather_armour = ItemDesc::find("leather_armour");
+
+	DASSERT(plasma_rifle && fusion_cell && leather_armour);
+
+	world.addEntity(new Item(*plasma_rifle, float3(100, 1, 100)));
 
 	world.updateNavigationMap(true);
 
@@ -108,7 +119,7 @@ int safe_main(int argc, char **argv)
 		if(isMouseKeyDown(1) && shooting_debug) {
 			actor->setNextOrder(attackOrder(0, (int3)target_pos));
 		}
-		if(navi_debug && isMouseKeyDown(1)) {
+		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
 			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
 			path = world.findPath(last_pos.xz(), wpos.xz());
 			last_pos = wpos;
@@ -137,8 +148,14 @@ int safe_main(int argc, char **argv)
 
 		world.addToRender(renderer);
 
-		if((entity_debug || shooting_debug) && !isect.isEmpty())
+		if((entity_debug || shooting_debug) && !isect.isEmpty()) {
 			renderer.addBox(isect.boundingBox());
+			if(isect.isEntity() && isect.entity()->entityType() == entity_item) {
+				Item *item = static_cast<Item*>(isect.entity());
+				PTexture tex = item->guiImage(false);
+				renderer.add(tex, IRect(int2(0, 0), tex->size()), item->pos() + float3(0, 8, 0), item->boundingBox());
+			}
+		}
 
 		if(!isect.isEmpty() && shooting_debug) {
 			float3 target = ray.at(isect.distance);
@@ -157,7 +174,7 @@ int safe_main(int argc, char **argv)
 
 		if(navi_debug || navi_show) {
 			world.naviMap().visualize(renderer, true);
-			world.naviMap().visualizePath(path, 1, renderer);
+			world.naviMap().visualizePath(path, 3, renderer);
 		}
 
 		renderer.render();

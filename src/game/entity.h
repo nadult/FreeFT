@@ -30,6 +30,15 @@ namespace game {
 		collider_all		= 0xffffffff,
 	};
 
+	enum EntityFlags {
+		entity_container	= 1,
+		entity_door			= 2,
+		entity_actor		= 4,
+		entity_item			= 8,
+		entity_projectile	= 16,
+		entity_impact		= 32,
+	};
+
 	inline ColliderFlags operator|(ColliderFlags a, ColliderFlags b) { return (ColliderFlags)((int)a | (int)b); }
 
 	//TODO: static polimorphism where its possible, or maybe even
@@ -40,6 +49,7 @@ namespace game {
 		virtual ~Entity();
 
 		virtual ColliderFlags colliderType() const = 0;
+		virtual EntityFlags entityType() const = 0;
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }

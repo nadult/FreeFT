@@ -1,0 +1,28 @@
+<item
+	type="weapon"
+	id="plasma_rifle"
+	name="Plasma Rifle"
+	weight="5.0"
+	sprite_name="weapons/Rifles/Plasma Rifle"
+	description="Standard issue Wattz-400 plasma rifle"
+	projectile_type="plasma"
+	projectile_speed="200.0"
+	damage="50.0" />
+
+<item
+	type="ammo"
+	id="fusion_cell"
+	name="Large Energy cell"
+	weight="1.0"
+	sprite_name="items/ammo/Energy Cell Large"
+	description="Large micro fusion cell"
+	damage_modifier="1.0" />
+
+<item
+	type="armour"
+	id="leather_armour"
+	name="Leather Armour"
+	weight="2.0"
+	sprite_name="items/armour/Leather Armour"
+	description="Most basic armour, that you can find in the game"
+	damage_resistance="0.1" />
