@@ -1,6 +1,7 @@
 #include "game/world.h"
 #include "game/projectile.h"
 #include "navigation_bitmap.h"
+#include "sys/xml.h"
 #include <cstdio>
 
 namespace game {
@@ -29,7 +30,7 @@ namespace game {
 	World::World(const char *file_name)
 		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) {
 		XMLDocument doc;
-		loadXMLDocument(file_name, doc);
+		doc.load(file_name);
 		m_tile_map.loadFromXML(doc);
 	
 		updateNavigationMap(true);

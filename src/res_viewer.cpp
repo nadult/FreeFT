@@ -11,6 +11,7 @@
 #include "ui/button.h"
 #include "ui/message_box.h"
 #include "sys/platform.h"
+#include "sys/config.h"
 
 using namespace gfx;
 using namespace ui;
@@ -316,19 +317,15 @@ public:
 
 int safe_main(int argc, char **argv)
 {
-#if defined(RES_X) && defined(RES_Y)
-	int2 res(RES_X, RES_Y);
-#else
-	int2 res(1400, 768);
-#endif
+	Config config = loadConfig("res_viewer");
 
-	createWindow(res, false);
+	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FTremake::Resource Viewer");
 	grabMouse(false);
 
 	setBlendingMode(bmNormal);
 
-	ResViewerWindow main_window(res);
+	ResViewerWindow main_window(config.resolution);
 	clear({0, 0, 0});
 
 	while(pollEvents()) {

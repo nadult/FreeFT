@@ -1,7 +1,9 @@
 *.swp
 *.vim
-src/tags
+/src/tags
+/src/Makefile.local
 /editor
 /game
 /res_viewer
 /*.exe
+/data/config.xml

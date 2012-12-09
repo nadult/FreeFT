@@ -5,18 +5,15 @@
 #include <cwchar>
 #include <cstdarg>
 #include <ext/vstring.h>
+#include "sys/xml.h"
 
 namespace gfx
 {
 	void Font::serialize(Serializer &sr) {
 		ASSERT(sr.isLoading());
 
-		string text;
-		text.resize(sr.size());
-		sr.data(&text[0], sr.size());
-
 		XMLDocument doc;
-		doc.parse<0>(&text[0]); 
+		sr & doc;
 		loadFromXML(doc);
 	}
 
@@ -26,72 +23,61 @@ namespace gfx
 		m_texture = nullptr;
 		m_face_name.clear();
 
-		XMLNode *font_node = doc.first_node("font");
+		XMLNode font_node = doc.child("font");
 		ASSERT(font_node);
 
-		XMLNode *info_node = font_node->first_node("info");
-		XMLNode *pages_node = font_node->first_node("pages");
-		XMLNode *chars_node = font_node->first_node("chars");
-		XMLNode *common_node = font_node->first_node("common");
+		XMLNode info_node = font_node.child("info");
+		XMLNode pages_node = font_node.child("pages");
+		XMLNode chars_node = font_node.child("chars");
+		XMLNode common_node = font_node.child("common");
 		ASSERT(info_node && pages_node && chars_node && common_node);
 
-		const char *face_name = getStringAttribute(info_node, "face");
-		ASSERT(face_name);
-		m_face_name = face_name;
+		m_face_name = info_node.attrib("face");
+		m_tex_size = int2(common_node.intAttrib("scaleW"), common_node.intAttrib("scaleH"));
+		m_line_height = common_node.intAttrib("lineHeight");
+		m_text_base = common_node.intAttrib("base");
 
-		m_tex_size = int2(getIntAttribute(common_node, "scaleW"), getIntAttribute(common_node, "scaleH"));
-		m_line_height = getIntAttribute(common_node, "lineHeight");
-		m_text_base = getIntAttribute(common_node, "base");
-
-		int page_count = getIntAttribute(common_node, "pages");
+		int page_count = common_node.intAttrib("pages");
 		ASSERT(page_count == 1);
 
-		XMLNode *first_page_node = pages_node->first_node("page");
+		XMLNode first_page_node = pages_node.child("page");
 		ASSERT(first_page_node);
-		ASSERT(getIntAttribute(first_page_node, "id") == 0);
+		ASSERT(first_page_node.intAttrib("id") == 0);
 
-		const char *tex_file_name = getStringAttribute(first_page_node, "file");
-		ASSERT(tex_file_name);
-
-		m_texture = tex_mgr[tex_file_name];
+		m_texture = tex_mgr[first_page_node.attrib("file")];
 		ASSERT(m_texture && m_texture->size() == m_tex_size);
 
-		int chars_count = getIntAttribute(chars_node, "count");
-		XMLNode *char_node = chars_node->first_node();
+		int chars_count = chars_node.intAttrib("count");
+		XMLNode char_node = chars_node.child("char");
 
 		while(char_node) {
-			if(strcmp(char_node->name(), "char") == 0) {
-				Character chr;
-				int id = getIntAttribute(char_node, "id");
-				chr.tex_pos = int2(getIntAttribute(char_node, "x"), getIntAttribute(char_node, "y"));
-				chr.size = int2(getIntAttribute(char_node, "width"), getIntAttribute(char_node, "height"));
-				chr.offset = int2(getIntAttribute(char_node, "xoffset"), getIntAttribute(char_node, "yoffset"));
-				chr.x_advance = getIntAttribute(char_node, "xadvance");
-				m_chars[id] = chr;
+			Character chr;
+			int id = char_node.intAttrib("id");
+			chr.tex_pos = int2(char_node.intAttrib("x"), char_node.intAttrib("y"));
+			chr.size = int2(char_node.intAttrib("width"), char_node.intAttrib("height"));
+			chr.offset = int2(char_node.intAttrib("xoffset"), char_node.intAttrib("yoffset"));
+			chr.x_advance = char_node.intAttrib("xadvance");
+			m_chars[id] = chr;
 
-				chars_count--;
-			}
-			
-			char_node = char_node->next_sibling();
+			chars_count--;
+			char_node = char_node.sibling("char");
 		}
 		ASSERT(chars_count == 0);
 		ASSERT(m_chars.find((int)' ') != m_chars.end());
 
-		XMLNode *kernings_node = font_node->first_node("kernings");
+		XMLNode kernings_node = font_node.child("kernings");
 		if(kernings_node) {
-			int kernings_count = getIntAttribute(kernings_node, "count");
+			int kernings_count = kernings_node.intAttrib("count");
 
-			XMLNode *kerning_node = kernings_node->first_node();
+			XMLNode kerning_node = kernings_node.child("kerning");
 			while(kerning_node) {
-				if(strcmp(kerning_node->name(), "kerning") == 0) {
-					int first = getIntAttribute(kerning_node, "first");
-					int second = getIntAttribute(kerning_node, "second");
-					int value = getIntAttribute(kerning_node, "amount");
-					m_kernings[make_pair(first, second)] = value;
-					kernings_count--;
-				}
+				int first = kerning_node.intAttrib("first");
+				int second = kerning_node.intAttrib("second");
+				int value = kerning_node.intAttrib("amount");
+				m_kernings[make_pair(first, second)] = value;
+				kernings_count--;
 
-				kerning_node = kerning_node->next_sibling();
+				kerning_node = kerning_node.sibling("kerning");
 			}
 			ASSERT(kernings_count == 0);
 		}

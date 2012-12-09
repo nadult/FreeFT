@@ -2,6 +2,7 @@
 #include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
 #include "sys/profiler.h"
+#include "sys/xml.h"
 #include <algorithm>
 
 TileInstance::TileInstance(const gfx::Tile *tile, const int3 &pos)
@@ -154,9 +155,6 @@ pair<int, float> TileMapNode::intersect(const Segment &segment) const {
 	return out;
 }
 
-
-using namespace rapidxml;
-
 void TileMap::resize(int2 newSize) {
 	clear();
 
@@ -171,31 +169,31 @@ void TileMap::clear() {
 }
 
 void TileMap::loadFromXML(const XMLDocument &doc) {
-	XMLNode *mnode = doc.first_node("map");
+	XMLNode mnode = doc.child("map");
 	ASSERT(mnode);
 
-	int2 size(getIntAttribute(mnode, "size_x"), getIntAttribute(mnode, "size_y"));
+	int2 size(mnode.intAttrib("size_x"), mnode.intAttrib("size_y"));
 	ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 	resize(size);
 
 	std::map<int, const gfx::Tile*> tile_indices; //TODO: convert to vector
 
-	XMLNode *tnode = doc.first_node("tile");
+	XMLNode tnode = doc.child("tile");
 	while(tnode) {
-		tile_indices[getIntAttribute(tnode, "id")] = &*gfx::Tile::mgr[tnode->value()];
-		tnode = tnode->next_sibling("tile"); 
+		tile_indices[tnode.intAttrib("id")] = &*gfx::Tile::mgr[tnode.value()];
+		tnode = tnode.sibling("tile"); 
 	}
 
-	XMLNode *inode = doc.first_node("instance");
+	XMLNode inode = doc.child("instance");
 	while(inode) {
-		int id = getIntAttribute(inode, "id");
-		int3 pos(getIntAttribute(inode, "pos_x"), getIntAttribute(inode, "pos_y"), getIntAttribute(inode, "pos_z"));
+		int id = inode.intAttrib("id");
+		int3 pos(inode.intAttrib("pos_x"), inode.intAttrib("pos_y"), inode.intAttrib("pos_z"));
 		auto it = tile_indices.find(id);
 		ASSERT(it != tile_indices.end());
 
 		addTile(*it->second, pos, false);
 
-		inode = inode->next_sibling("instance");
+		inode = inode.sibling("instance");
 	}
 }
 
@@ -204,10 +202,9 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 
 	//TODO: dodac jakies sortowanie, tak zeby minimalne zmiany w TileMapie
 	// nie powodowały gigantycznych zmian w generowanym XMLu
-	XMLNode *mnode = doc.allocate_node(node_element, "map");
-	doc.append_node(mnode);
-	addAttribute(mnode, "size_x", m_size.x * Node::size_x);
-	addAttribute(mnode, "size_y", m_size.y * Node::size_z);
+	XMLNode mnode = doc.addChild("map");
+	mnode.addAttrib("size_x", m_size.x * Node::size_x);
+	mnode.addAttrib("size_y", m_size.y * Node::size_z);
 
 	for(int n = 0; n < (int)m_nodes.size(); n++) {
 		const TileMapNode &node = m_nodes[n];
@@ -220,9 +217,8 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 	}
 
 	for(auto it = tile_indices.begin(); it != tile_indices.end(); ++it) {
-		XMLNode *node = doc.allocate_node(node_element, "tile", doc.allocate_string(it->first->name.c_str()));
-		doc.append_node(node);
-		addAttribute(node, "id", it->second);
+		XMLNode node = doc.addChild("tile", doc.own(it->first->name.c_str()));
+		node.addAttrib("id", it->second);
 	}
 
 	for(int n = 0; n < (int)m_nodes.size(); n++) {
@@ -233,12 +229,11 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 			const TileInstance &inst = node.m_instances[i];
 			int id = tile_indices[inst.m_tile];
 			int3 pos = node_pos + inst.pos();
-			XMLNode *node = doc.allocate_node(node_element, "instance");
-			doc.append_node(node);
-			addAttribute(node, "id", id);
-			addAttribute(node, "pos_x", pos.x);
-			addAttribute(node, "pos_y", pos.y);
-			addAttribute(node, "pos_z", pos.z);
+			XMLNode node = doc.addChild("instance");
+			node.addAttrib("id", id);
+			node.addAttrib("pos_x", pos.x);
+			node.addAttrib("pos_y", pos.y);
+			node.addAttrib("pos_z", pos.z);
 		}
 	}
 }

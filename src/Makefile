@@ -11,7 +11,7 @@ _dummy := $(shell [ -d $(BUILD_DIR)/gameui ] || mkdir -p $(BUILD_DIR)/gameui)
 
 SRC_FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
-	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux sys/platform_windows \
+	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux sys/platform_windows sys/xml sys/config \
 	editor game res_viewer base tile_map tile_group navigation_map navigation_bitmap \
 	game/world game/actor game/entity game/container game/door game/projectile game/item \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \

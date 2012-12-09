@@ -1,8 +1,7 @@
 #include "tile_group.h"
+#include "sys/xml.h"
 #include <cstring>
 #include <cstdio>
-
-using namespace rapidxml;
 
 int3 TileGroup::Group::s_side_offsets[TileGroup::Group::side_count] = {
 	{  0, 0,  1 },
@@ -82,59 +81,56 @@ void TileGroup::clear() {
 void TileGroup::saveToXML(XMLDocument &doc) const {
 	for(int n = 0; n < entryCount(); n++) {
 		const Entry &entry = m_entries[n];
-		XMLNode *entry_node = doc.allocate_node(node_element, "entry");
-		doc.append_node(entry_node);
-
-		addAttribute(entry_node, "tile", entry.tile->name.c_str());
-		addAttribute(entry_node, "group_id", entry.group_id);
-		addAttribute(entry_node, "is_dirty", (int)entry.is_dirty);
+		XMLNode entry_node = doc.addChild("entry");
+		entry_node.addAttrib("tile", doc.own(entry.tile->name.c_str()));
+		entry_node.addAttrib("group_id", entry.group_id);
+		entry_node.addAttrib("is_dirty", (int)entry.is_dirty);
 	}
 
 	const char *side_names[Group::side_count];
 	for(int s = 0; s < Group::side_count; s++) {
 		char name[32];
 		snprintf(name, sizeof(name), "side_surf_%d", s);
-		side_names[s] = doc.allocate_string(name);
+		side_names[s] = doc.own(name);
 	}
 
 	for(int n = 0; n < groupCount(); n++) {
 		const Group &group = m_groups[n];
-		XMLNode *group_node = doc.allocate_node(node_element, "group");
-		doc.append_node(group_node);
+		XMLNode group_node = doc.addChild("group");
 
 		for(int s = 0; s < Group::side_count; s++)
-			addAttribute(group_node, side_names[s], group.m_side_surf[s]);
+			group_node.addAttrib(side_names[s], group.m_side_surf[s]);
 	}
 }
 
 void TileGroup::loadFromXML(const XMLDocument &doc) {
 	clear();
 
-	XMLNode *node = doc.first_node("entry");
+	XMLNode node = doc.child("entry");
 
 	while(node) {
 		Entry entry;
-		Ptr<gfx::Tile> tile = gfx::Tile::mgr[getStringAttribute(node, "tile")];
+		Ptr<gfx::Tile> tile = gfx::Tile::mgr[node.attrib("tile")];
 
 		entry.tile = &*tile;
-		entry.group_id = getIntAttribute(node, "group_id");
-		entry.is_dirty = getIntAttribute(node, "is_dirty") != 0;
+		entry.group_id = node.intAttrib("group_id");
+		entry.is_dirty = node.intAttrib("is_dirty") != 0;
 		m_entries.push_back(entry);
 
-		node = node->next_sibling("entry");
+		node = node.sibling("entry");
 	}
 
 	char side_names[Group::side_count][32];
 	for(int s = 0; s < Group::side_count; s++)
 		snprintf(side_names[s], sizeof(side_names[0]), "side_surf_%d", s);
 
-	node = doc.first_node("group");
+	node = doc.child("group");
 	while(node) {
 		Group group;
 		for(int s = 0; s < Group::side_count; s++)
-			group.m_side_surf[s] = getIntAttribute(node, side_names[s]);
+			group.m_side_surf[s] = node.intAttrib(side_names[s]);
 		m_groups.push_back(group);
-		node = node->next_sibling("group");
+		node = node.sibling("group");
 	}
 
 	for(int n = 0; n < entryCount(); n++) {

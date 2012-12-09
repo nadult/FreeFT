@@ -18,6 +18,8 @@
 #include "ui/tile_group_editor.h"
 #include "ui/file_dialog.h"
 #include "sys/platform.h"
+#include "sys/config.h"
+#include "sys/xml.h"
 
 using namespace gfx;
 using namespace ui;
@@ -113,25 +115,25 @@ public:
 	}
 
 	virtual bool onEvent(const Event &ev) {
-		if(ev.type == Event::button_clicked && m_mode_button == ev.source) {
+		if(ev.type == Event::button_clicked && m_mode_button.get() == ev.source) {
 			m_mode = (EditorMode)((m_mode + 1) % emCount);
 			m_mapper->setVisible(m_mode == emMapEdition);
 			m_grouper->setVisible(m_mode == emTileGroupEdition);
 			m_mode_button->setText(s_mode_names[m_mode]);
 		}
-		else if(ev.type == Event::button_clicked && m_load_button == ev.source) {
+		else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
 			m_file_dialog = new FileDialog(dialog_rect, s_load_dialog_names[m_mode], FileDialogMode::opening_file);
 			m_file_dialog->setPath("data/");
 			attach(m_file_dialog.get(), true);
 		}
-		else if(ev.type == Event::button_clicked && m_save_button == ev.source) {
+		else if(ev.type == Event::button_clicked && m_save_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
 			m_file_dialog = new FileDialog(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
 			m_file_dialog->setPath("data/");
 			attach(m_file_dialog.get(), true);
 		}
-		else if(ev.type == Event::button_clicked && m_mapper == ev.source) {
+		else if(ev.type == Event::button_clicked && m_mapper.get() == ev.source) {
 			bool all_tiles =	!(m_mapper->m_mode == TileMapEditor::mPlacingRandom) &&
 								!(m_mapper->m_mode == TileMapEditor::mAutoFilling);
 			if(all_tiles != m_selecting_all_tiles) {
@@ -139,12 +141,12 @@ public:
 				m_selector->setModel(all_tiles? new AllTilesModel : (TileListModel*)new GroupedTilesModel(m_group));
 			}
 		}
-		else if(ev.type == Event::element_selected && m_selector == ev.source) {
+		else if(ev.type == Event::element_selected && m_selector.get() == ev.source) {
 			//TODO: print tile name in selector
 			//printf("new tile: %s\n", m_selector->selection()? m_selector->selection()->name.c_str() : "none");
 			m_mapper->setNewTile(m_selector->selection());
 		}
-		else if(ev.type == Event::window_closed && m_file_dialog == ev.source) {
+		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
 				if(m_mode == emMapEdition)
 					saveTileMap(m_file_dialog->path().c_str());
@@ -161,7 +163,7 @@ public:
 
 			m_file_dialog = nullptr;
 		}
-		else if(ev.type == Event::progress_bar_moved && m_dirty_bar == ev.source)
+		else if(ev.type == Event::progress_bar_moved && m_dirty_bar.get() == ev.source)
 			updateDirtyBar();
 		else
 			return false;
@@ -173,7 +175,7 @@ public:
 		printf("Loading TileMap: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
 			XMLDocument doc;
-			loadXMLDocument(file_name, doc);
+			doc.load(file_name);
 			m_map.loadFromXML(doc);
 		}
 	}
@@ -183,7 +185,7 @@ public:
 		printf("Loading TileGroup: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
 			XMLDocument doc;
-			loadXMLDocument(file_name, doc);
+			doc.load(file_name);
 			m_group.loadFromXML(doc);
 		}
 	}
@@ -192,7 +194,7 @@ public:
 		printf("Saving TileMap: %s\n", file_name);
 		XMLDocument doc;
 		m_map.saveToXML(doc);
-		saveXMLDocument(file_name, doc);
+		doc.save(file_name);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
@@ -200,7 +202,7 @@ public:
 		printf("Saving TileGroup: %s\n", file_name);
 		XMLDocument doc;
 		m_group.saveToXML(doc);
-		saveXMLDocument(file_name, doc);
+		doc.save(file_name);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
@@ -236,13 +238,8 @@ static bool removeSuffix(string &str, const string &suffix) {
 
 int safe_main(int argc, char **argv)
 {
-#if defined(RES_X) && defined(RES_Y)
-	int2 res(RES_X, RES_Y);
-#else
-	int2 res(1900, 768);
-#endif
-
-	createWindow(res, false);
+	Config config = loadConfig("editor");
+	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FTremake::editor ver 0.02");
 	grabMouse(false);
 		
@@ -283,10 +280,12 @@ int safe_main(int argc, char **argv)
 
 //	PFont font = Font::mgr["font1"];
 
-	EditorWindow main_window(res);
+	EditorWindow main_window(config.resolution);
 	clear({0, 0, 0});
 
 	while(pollEvents()) {
+		if(isKeyPressed(Key_lalt) && isKeyDown(Key_f4))
+			break;
 		
 	//	if(isKeyPressed('T')) g_FloatParam[0] += 0.00001f;
 	//	if(isKeyPressed('G')) g_FloatParam[0] -= 0.00001f;

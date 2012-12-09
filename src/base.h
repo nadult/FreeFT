@@ -4,12 +4,16 @@
 #include <baselib.h>
 #include <cmath>
 #include <cstring>
-#include "rapidxml.hpp"
+#include <memory>
 
 using namespace baselib;
 using std::swap;
 using std::pair;
 using std::make_pair;
+using std::unique_ptr;
+
+class XMLNode;
+class XMLDocument;
 
 typedef unsigned int uint;
 
@@ -423,22 +427,6 @@ SERIALIZE_AS_POD(Color)
 
 
 #define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
-
-
-typedef rapidxml::xml_node<> XMLNode;
-typedef rapidxml::xml_attribute<> XMLAttribute;
-typedef rapidxml::xml_document<> XMLDocument;
-
-void loadXMLDocument(const char *file_name, XMLDocument&);
-void saveXMLDocument(const char *file_name, const XMLDocument&);
-
-void addAttribute(XMLNode *node, const char *name, float value);
-void addAttribute(XMLNode *node, const char *name, int value);
-void addAttribute(XMLNode *node, const char *name, const char *value);
-int getIntAttribute(XMLNode *node, const char *name);
-int getFloatAttribute(XMLNode *node, const char *name);
-const char *getStringAttribute(XMLNode *node, const char *name);
-
 template <class EnumType, int count>
 EnumType genericFromString(const char *str, const char *strings[count]) {
 	for(int n = 0; n < count; n++)

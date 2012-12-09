@@ -19,23 +19,19 @@
 #include "game/container.h"
 #include "game/door.h"
 #include "game/item.h"
+#include "sys/config.h"
 
 using namespace gfx;
 using namespace game;
 
 
-
 int safe_main(int argc, char **argv)
 {
-#if defined(RES_X) && defined(RES_Y)
-	int2 res(RES_X, RES_Y);
-#else
-	int2 res(1400, 768);
-#endif
-
+	Config config = loadConfig("game");
 	ItemDesc::loadItems();
 
-	createWindow(res, false);
+	createWindow(config.resolution, config.fullscreen);
+
 	setWindowTitle("FTremake ver 0.02");
 	grabMouse(false);
 
@@ -144,7 +140,7 @@ int safe_main(int argc, char **argv)
 		last_time = time;
 
 		clear({128, 64, 0});
-		SceneRenderer renderer(IRect(0, 0, res.x, res.y), view_pos);
+		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 
 		world.addToRender(renderer);
 

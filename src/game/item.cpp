@@ -1,4 +1,5 @@
 #include "game/item.h"
+#include "sys/xml.h"
 #include <map>
 
 static const char *s_seq_names[3] = {
@@ -47,30 +48,30 @@ namespace game {
 			return;
 
 		XMLDocument doc;
-		loadXMLDocument("data/items.xml", doc);
+		doc.load("data/items.xml");
 
-		XMLNode *node = doc.first_node("item");
+		XMLNode node = doc.child("item");
 		while(node) {
-			ItemType::Type type = ItemType::fromString(getStringAttribute(node, "type"));
+			ItemType::Type type = ItemType::fromString(node.attrib("type"));
 			std::unique_ptr<ItemDesc> item;
 
 			if(type == ItemType::weapon) {
 				WeaponDesc *weapon;
 				item = PItemDesc(weapon = new WeaponDesc);
-				weapon->projectile_type = ProjectileType::fromString(getStringAttribute(node, "projectile_type"));
-				weapon->damage = getFloatAttribute(node, "damage");
-				weapon->projectile_speed = getFloatAttribute(node, "projectile_speed");
+				weapon->projectile_type = ProjectileType::fromString(node.attrib("projectile_type"));
+				weapon->damage = node.floatAttrib("damage");
+				weapon->projectile_speed = node.floatAttrib("projectile_speed");
 
 			}
 			else if(type == ItemType::ammo) {
 				AmmoDesc *ammo;
 				item = PItemDesc(ammo = new AmmoDesc);
-				ammo->damage_modifier = getFloatAttribute(node, "damage_modifier");
+				ammo->damage_modifier = node.floatAttrib("damage_modifier");
 			}
 			else if(type == ItemType::armour) {
 				ArmourDesc *armour;
 				item = PItemDesc(armour = new ArmourDesc);
-				armour->damage_resistance = getFloatAttribute(node, "damage_resistance");
+				armour->damage_resistance = node.floatAttrib("damage_resistance");
 			}
 			else {
 				ASSERT(type == ItemType::other);
@@ -78,19 +79,14 @@ namespace game {
 			}
 
 			//TODO: better error handling when loading XML files
-			const char *id = getStringAttribute(node, "id");
-			const char *name = getStringAttribute(node, "name");
-			const char *sprite_name = getStringAttribute(node, "sprite_name");
-			const char *description = getStringAttribute(node, "description");
-			ASSERT(id && name && sprite_name && description);
-			item->name = name;
-			item->sprite_name = sprite_name;
-			item->description = description;
-			item->weight = getFloatAttribute(node, "weight");
+			item->name = node.attrib("name");
+			item->sprite_name = node.attrib("sprite_name");
+			item->description = node.attrib("description");
+			item->weight = node.floatAttrib("weight");
 
-			s_items[id] = std::move(item);
+			s_items[node.attrib("id")] = std::move(item);
 
-			node = node->next_sibling("item");
+			node = node.sibling("item");
 		}
 
 		s_are_items_loaded = true;
@@ -115,7 +111,7 @@ namespace game {
 	int Inventory::addItem(const ItemDesc *item, int count) {
 		DASSERT(item && count >= 0);
 		if(!count)
-			return;
+			return -1;
 
 		int entry_id = findItem(item);
 		if(entry_id != -1) {
