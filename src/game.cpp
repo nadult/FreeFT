@@ -44,7 +44,6 @@ int safe_main(int argc, char **argv)
 	World world("data/tile_map.xml");
 
 	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", float3(100, 1, 70)));
-	actor->setNextOrder(changeWeaponOrder(WeaponClassId::rifle));
 
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
@@ -65,7 +64,7 @@ int safe_main(int argc, char **argv)
 
 	DASSERT(plasma_rifle && fusion_cell && leather_armour);
 
-	world.addEntity(new Item(*plasma_rifle, float3(100, 1, 100)));
+	world.addEntity(new ItemEntity(plasma_rifle, float3(100, 1, 100)));
 
 	world.updateNavigationMap(true);
 
@@ -101,7 +100,8 @@ int safe_main(int argc, char **argv)
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
 				//isect.entity->interact(nullptr);
-				actor->setNextOrder(interactOrder(isect.entity()));
+				InteractionMode mode = isect.entity()->entityType() == entity_item? interact_pickup : interact_normal;
+				actor->setNextOrder(interactOrder(isect.entity(), mode));
 			}
 			else if(navi_debug) {
 				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
@@ -129,9 +129,8 @@ int safe_main(int argc, char **argv)
 		if(isKeyDown('R') && navi_debug) {
 			world.naviMap().removeColliders();
 		}
-		if(isKeyDown('W') && shooting_debug)
-			actor->setNextOrder(
-				changeWeaponOrder((WeaponClassId::Type)((actor->weaponId() + 1) % WeaponClassId::count)));
+		if(isKeyDown('D') && entity_debug)
+			actor->setNextOrder(dropItemOrder());
 
 		double time = getTime();
 		if(!navi_debug)

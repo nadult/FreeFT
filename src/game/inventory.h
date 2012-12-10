@@ -2,20 +2,19 @@
 #define GAME_INVENTORY_H
 
 #include "base.h"
+#include "game/item.h"
 
 namespace game {
-
-	class ItemDesc;
 
 	class Inventory {
 	public:
 		struct Entry {
-			const ItemDesc *item;
+			Item item;
 			int count;
 		};
 
-		int addItem(const ItemDesc *item, int count);
-		int findItem(const ItemDesc *item);
+		int add(const Item &item, int count);
+		int find(const Item &item);
 		void remove(int entry_id, int count);
 		float weight() const;
 

@@ -1,21 +1,20 @@
 #include "game/inventory.h"
-#include "game/item.h"
 
 namespace game {
 
-	int Inventory::findItem(const ItemDesc *item) {
+	int Inventory::find(const Item &item) {
 		for(int n = 0; n < size(); n++)
 			if(m_entries[n].item == item)
 				return n;
 		return -1;
 	}
 
-	int Inventory::addItem(const ItemDesc *item, int count) {
-		DASSERT(item && count >= 0);
+	int Inventory::add(const Item &item, int count) {
+		DASSERT(count >= 0);
 		if(!count)
 			return -1;
 
-		int entry_id = findItem(item);
+		int entry_id = find(item);
 		if(entry_id != -1) {
 			m_entries[entry_id].count += count;
 			return entry_id;
@@ -40,7 +39,7 @@ namespace game {
 	float Inventory::weight() const {
 		double sum = 0.0;
 		for(int n = 0; n < size(); n++)
-			sum += double(m_entries[n].item->weight) * double(m_entries[n].count);
+			sum += double(m_entries[n].item.weight()) * double(m_entries[n].count);
 		return float(sum);
 	}
 

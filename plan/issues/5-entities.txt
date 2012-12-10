@@ -5,7 +5,7 @@
   - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja
   - pociski: synchronizacja z animacją gracza, generują impacty  DONE
   - eksplozje: generują damage, rendering jako overlay
-  - itemy: można je zostawiać / podnosić
+  - itemy: można je zostawiać / podnosić  DONE
 - Podstawowe komunikaty na które powinny odpowiadać encje: interact, use skill, apply damage (6h)
 - Uwzględnienie encji podczas generacji ścieżek
   - opcja 1 (X): modyfikacja mapy nawigacyjnej (rozbijanie quadów na których znajdują się encje);
@@ -23,13 +23,14 @@
       drzewie a potem w dynamicznym
 
 
-+ESTIMATED_TIME: 18.5h
-+TIME_SPENT: 26.75h
++ESTIMATED_TIME: 18h 30min
++TIME_SPENT: 35h 40min
 
 +WORK_LOG:
-03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8.25h)
-04.12.12: 12:15 - 15:00, 16:00 - 23:15 (10.00h)
-06.12.12: 18:40 - 22:20 (3.66h)
-07.12.12: 18:30 - 20:30, 21:00 - 21:30 (2.50h)
-08.12.12: 11:30 - 12:45, 13:30 - 14:30 (2.25h)
-09.12.12: 12:10 - 13:00, 15:00 - 17:30, 23:00 - 00:30 (7.00h)
+03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8h 15min)
+04.12.12: 12:15 - 15:00, 16:00 - 23:15 (10h)
+06.12.12: 18:40 - 22:20 (3h 40min)
+07.12.12: 18:30 - 20:30, 21:00 - 21:30 (2h 30min)
+08.12.12: 11:30 - 12:45, 13:30 - 14:30 (2h 15min)
+09.12.12: 12:10 - 13:00, 15:00 - 17:30, 23:00 - 00:30 (7h)
+10.12.12: 20:25 - 22:30 (2h)

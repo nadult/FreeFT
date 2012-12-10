@@ -10,8 +10,10 @@ static const char *s_seq_names[3] = {
 
 namespace game {
 
-	Item::Item(const ItemDesc &desc, const float3 &pos)
-		:Entity(desc.sprite_name.c_str(), pos), m_desc(desc) {
+	ItemEntity::ItemEntity(const Item &item, const float3 &pos)
+		:Entity(item.spriteName(), pos), m_item(item) {
+		DASSERT(item.isValid());
+
 		m_sprite->printInfo();
 		setBBox(FBox(float3(0.0f, 0.0f, 0.0f), asXZY(bboxSize().xz(), 0.0f)));
 
@@ -21,7 +23,7 @@ namespace game {
 		}
 	}
 
-	gfx::PTexture Item::guiImage(bool small) const {
+	gfx::PTexture ItemEntity::guiImage(bool small) const {
 		const gfx::Texture &tex = m_sprite->getFrame(m_seq_ids[small?2 : 1], 0, 0);
 		gfx::PTexture out = new gfx::DTexture;
 		out->setSurface(tex);
@@ -49,7 +51,7 @@ namespace game {
 				weapon->projectile_type = ProjectileTypeId::fromString(node.attrib("projectile_type"));
 				weapon->damage = node.floatAttrib("damage");
 				weapon->projectile_speed = node.floatAttrib("projectile_speed");
-
+				weapon->class_id = WeaponClassId::fromString(node.attrib("class"));
 			}
 			else if(type == ItemTypeId::ammo) {
 				AmmoDesc *ammo;
@@ -86,6 +88,37 @@ namespace game {
 		if(it != s_items.end())
 			return it->second.get();
 		return nullptr;
+	}
+
+	void ItemDesc::initialize(ItemParameter *params) const {
+		for(int n = 0; n < param_count; n++)
+			params[n].i = 0;
+	}
+		
+	Item::Item(const ItemDesc *desc) :m_desc(desc) {
+		if(m_desc)
+			m_desc->initialize(params);
+	}
+		
+	float Item::weight() const {
+		DASSERT(isValid());
+		return m_desc->weight;
+	}
+
+	ItemTypeId::Type Item::typeId() const {
+		DASSERT(isValid());
+		return m_desc->type();
+	}
+
+	const char *Item::spriteName() const {
+		DASSERT(isValid());
+		return m_desc->sprite_name.c_str();
+	}
+
+	bool Item::operator==(const Item &rhs) const {
+		if(m_desc != rhs.m_desc)
+			return false;
+		return memcmp(params, rhs.params, sizeof(params)) == 0;
 	}
 
 }

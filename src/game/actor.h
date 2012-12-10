@@ -43,12 +43,18 @@ namespace game {
 			move,
 			attack,
 			change_stance,
-			change_weapon,
 			interact,
+			drop_item,
 
 			count,
 		};
 	}
+
+	enum InteractionMode {
+		interact_normal,
+		interact_pickup,
+		interact_use_item,
+	};
 
 	struct Order {
 		Order(OrderId::Type id = OrderId::do_nothing) :id(id) { }
@@ -56,9 +62,9 @@ namespace game {
 		struct Move			{ int3 target_pos; bool run; };
 		struct ChangeStance	{ int next_stance; };
 		struct Attack		{ int3 target_pos; int mode; };
-		struct ChangeWeapon { WeaponClassId::Type target_weapon; };
 		struct Interact {
 			Entity *target; //TODO: pointer may become invalid
+			InteractionMode mode;
 			bool waiting_for_move;
 		};
 
@@ -67,7 +73,6 @@ namespace game {
 			Move move;
 			Attack attack;
 			ChangeStance change_stance;
-			ChangeWeapon change_weapon;
 			Interact interact;
 		};
 	};
@@ -76,16 +81,15 @@ namespace game {
 	Order doNothingOrder();
 	Order changeStanceOrder(int next_stance);
 	Order attackOrder(int attack_mode, const int3 &target_pos);
-	Order changeWeaponOrder(WeaponClassId::Type target_weapon);
-	Order interactOrder(Entity *target);
+	Order interactOrder(Entity *target, InteractionMode mode);
+	Order dropItemOrder();
 
 	class ActorInventory: public Inventory {
 	public:
-		ActorInventory() :m_armour(nullptr), m_weapon(nullptr), m_ammo(nullptr) { }
+		void add(const Item &item);
+		Item drop();
 
-		const ItemDesc *m_armour;
-		const ItemDesc *m_weapon;
-		const ItemDesc *m_ammo;
+		Item armour, weapon, ammo;
 	};
 
 	class ActorAnimMap {
@@ -108,8 +112,7 @@ namespace game {
 		virtual EntityFlags entityType() const { return entity_actor; }
 
 		void setNextOrder(const Order &order);
-		WeaponClassId::Type weaponId() const { return m_weapon_id; }
-		
+		const WeaponDesc *currentWeapon() const;
 
 	protected:
 		void think();
@@ -117,7 +120,7 @@ namespace game {
 		void issueNextOrder();
 		void issueMoveOrder();
 
-		void setWeapon(WeaponClassId::Type);
+		void updateWeapon();
 		void setSequence(ActionId::Type);
 		void lookAt(const float3 &pos, bool at_once = false);
 
@@ -126,6 +129,7 @@ namespace game {
 
 		void onFireEvent(const int3&);
 		void onSoundEvent();
+		void onPickupEvent();
 
 	private:
 		// orders
@@ -140,9 +144,9 @@ namespace game {
 		int m_path_pos;
 		vector<int3> m_path;
 
+		WeaponClassId::Type m_weapon_class_id;
 		ActionId::Type m_action_id;
 		StanceId::Type m_stance_id;
-		WeaponClassId::Type m_weapon_id;
 
 		ActorInventory m_inventory;
 

@@ -2,6 +2,7 @@
 	type="weapon"
 	id="plasma_rifle"
 	name="Plasma Rifle"
+	class="rifle"
 	weight="5.0"
 	sprite_name="weapons/Rifles/Plasma Rifle"
 	description="Standard issue Wattz-400 plasma rifle"

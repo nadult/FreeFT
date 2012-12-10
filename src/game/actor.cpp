@@ -6,6 +6,27 @@
 
 namespace game {
 
+
+	void ActorInventory::add(const Item &item) {
+		DASSERT(item.isValid());
+		if(item.typeId() == ItemTypeId::weapon) {
+			if(weapon.isValid())
+				Inventory::add(weapon, 1);
+			weapon = item;
+		}
+		else
+			Inventory::add(item, 1);
+	}
+
+	Item ActorInventory::drop() {
+		Item out;
+		if(weapon.isValid()) {
+			out = weapon;
+			weapon = Item();
+		}
+		return out;
+	}
+
 	Order moveOrder(int3 target_pos, bool run)	{
 		Order new_order(OrderId::move);
 		new_order.move = Order::Move{target_pos, run};
@@ -25,14 +46,14 @@ namespace game {
 		new_order.attack = Order::Attack{target_pos, attack_mode};
 		return new_order;
 	}
-	Order changeWeaponOrder(WeaponClassId::Type target_weapon) {
-		Order new_order(OrderId::change_weapon);
-		new_order.change_weapon = Order::ChangeWeapon{target_weapon};
+	Order interactOrder(Entity *target, InteractionMode mode) {
+		Order new_order(OrderId::interact);
+		DASSERT(target);
+		new_order.interact = Order::Interact{target, mode, false};
 		return new_order;
 	}
-	Order interactOrder(Entity *target) {
-		Order new_order(OrderId::interact);
-		new_order.interact = Order::Interact{target, false};
+	Order dropItemOrder() {
+		Order new_order(OrderId::drop_item);
 		return new_order;
 	}
 
@@ -138,16 +159,30 @@ namespace game {
 	}
 
 	Actor::Actor(const char *sprite_name, const float3 &pos) :Entity(sprite_name, pos) {
-		//m_sprite->printInfo();
+		m_sprite->printInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
 		m_issue_next_order = false;
 		m_stance_id = StanceId::standing;
 
-		m_weapon_id = WeaponClassId::unarmed;
 		setSequence(ActionId::standing);
 		lookAt(float3(0, 0, 0), true);
 		m_order = m_next_order = doNothingOrder();
+		m_weapon_class_id = WeaponClassId::unarmed;
+	}
+
+	const WeaponDesc *Actor::currentWeapon() const {
+		const Item &item = m_inventory.weapon;
+		return item.isValid()? static_cast<const WeaponDesc*>(item.desc()) : nullptr;
+	}
+
+	void Actor::updateWeapon() {
+		const WeaponDesc *weapon_desc = currentWeapon();
+		WeaponClassId::Type class_id = weapon_desc? weapon_desc->class_id : WeaponClassId::unarmed;
+		if(class_id != m_weapon_class_id) {
+			m_weapon_class_id = class_id;
+			setSequence(m_action_id);
+		}
 	}
 
 	void Actor::setNextOrder(const Order &order) {
@@ -233,6 +268,9 @@ namespace game {
 	//			m_bbox.y = 2;
 			DASSERT(m_stance_id >= 0 && m_stance_id < StanceId::count);
 		}
+		
+		if(m_order.id == OrderId::drop_item || m_order.id == OrderId::interact)	
+			updateWeapon();
 
 		if(m_next_order.id == OrderId::move) {
 			issueMoveOrder();
@@ -247,7 +285,9 @@ namespace game {
 			if(are_adjacent) {
 				m_order = m_next_order;
 				m_next_order = doNothingOrder();
-				setSequence(ActionId::magic1);
+				ActionId::Type action = m_order.interact.mode == interact_pickup? ActionId::pickup :
+					other_box.max.y < my_box.max.y * 2 / 3? ActionId::magic2 : ActionId::magic1;
+				setSequence(action);
 				lookAt(other_box.center());
 			}
 			else {
@@ -276,10 +316,6 @@ namespace game {
 				}
 			}
 		}
-		else if(m_next_order.id == OrderId::change_weapon) {
-			setWeapon(m_next_order.change_weapon.target_weapon);
-			m_order = m_next_order = doNothingOrder();
-		}
 		else {
 			if(m_next_order.id == OrderId::change_stance) {
 				int next_stance = m_next_order.change_stance.next_stance;
@@ -295,6 +331,9 @@ namespace game {
 				roundPos();
 				lookAt(m_next_order.attack.target_pos);
 				setSequence(ActionId::attack1);
+			}
+			else if(m_next_order.id == OrderId::drop_item) {
+				setSequence(ActionId::pickup);
 			}
 
 			m_order = m_next_order;
@@ -363,21 +402,15 @@ namespace game {
 		DASSERT(!m_path.empty());
 	}
 
-	void Actor::setWeapon(WeaponClassId::Type weapon) {
-		DASSERT(weapon >= 0 && weapon < WeaponClassId::count);
-		m_weapon_id = weapon;
-		setSequence(m_action_id);
-	}
-
 	// sets seq_id, frame_id and seq_name
 	void Actor::setSequence(ActionId::Type action_id) {
 		DASSERT(action_id < ActionId::count && m_stance_id < StanceId::count);
 		
-		int seq_id = m_anim_map.sequenceId(m_stance_id, action_id, m_weapon_id);
+		int seq_id = m_anim_map.sequenceId(m_stance_id, action_id, m_weapon_class_id);
 		if(seq_id == -1) {
 			seq_id = m_anim_map.sequenceId(m_stance_id, action_id, WeaponClassId::unarmed);
 			if(seq_id == -1)
-				printf("Sequence: %s not found!\n", m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_id).c_str());
+				printf("Sequence: %s not found!\n", m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_class_id).c_str());
 			ASSERT(seq_id != -1);
 		}
 
@@ -421,16 +454,33 @@ namespace game {
 	}
 
 	void Actor::onAnimFinished() {
-		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack)
+		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack || m_order.id == OrderId::drop_item)
 			m_issue_next_order = true;
+		else if(m_order.id == OrderId::interact) {
+			if(m_order.interact.mode == interact_normal) {
+				m_order.interact.target->interact(this);
+			}
+			m_issue_next_order = true;
+		}
+	}
+
+	void Actor::onPickupEvent() {
 		if(m_order.id == OrderId::interact) {
-			m_order.interact.target->interact(this);
-			m_issue_next_order = true;
+			DASSERT(m_order.interact.target->entityType() == entity_item);
+			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.interact.target);
+			Item item = item_entity->item();
+			item_entity->remove();
+			m_inventory.add(item);
+		}
+		else if(m_order.id == OrderId::drop_item) {
+			Item item = m_inventory.drop();	
+			if(item.isValid())
+				m_world->addEntity(new ItemEntity(item, pos())); 
 		}
 	}
 		
 	void Actor::onFireEvent(const int3 &off) {
-		if(m_weapon_id == WeaponClassId::rifle && m_order.id == OrderId::attack) {
+		if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack) {
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
 			float3 pos = boundingBox().center();
 			pos.y = this->pos().y;
@@ -441,7 +491,7 @@ namespace game {
 	}
 
 	void Actor::onSoundEvent() {
-	//	if(m_weapon_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
+	//	if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
 	//		printf("Playing sound: plasma!\n");
 	}
 
