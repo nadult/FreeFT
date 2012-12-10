@@ -44,7 +44,7 @@ namespace game {
 	class Item: public Entity {
 	public:
 		Item(const ItemDesc &desc, const float3 &pos);
-		ColliderFlags colliderType() const { return collider_dynamic; }
+		ColliderFlags colliderType() const { return collider_none; }
 		virtual EntityFlags entityType() const { return entity_item; }
 
 		gfx::PTexture guiImage(bool small) const;

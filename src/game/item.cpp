@@ -13,6 +13,7 @@ namespace game {
 	Item::Item(const ItemDesc &desc, const float3 &pos)
 		:Entity(desc.sprite_name.c_str(), pos), m_desc(desc) {
 		m_sprite->printInfo();
+		setBBox(FBox(float3(0.0f, 0.0f, 0.0f), asXZY(bboxSize().xz(), 0.0f)));
 
 		for(int n = 0; n < COUNTOF(m_seq_ids); n++) {
 			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);

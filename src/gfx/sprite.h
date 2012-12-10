@@ -56,7 +56,7 @@ namespace gfx {
 			vector<Color> palettes[4];
 			vector<int2> points;
 
-			Texture getFrame(int frameId, int dirId) const;
+			Texture getFrame(int frame_id, int dir_id) const;
 
 			int m_first_frame, m_frame_count, m_dir_count, m_offset;
 			int type;
@@ -66,7 +66,8 @@ namespace gfx {
 		int frameCount(int seq_id) const;
 		bool isSequenceLooped(int seq_id) const;
 
-		Texture getFrame(int seq_id, int frameId, int dirId, IRect *rect = nullptr) const;
+		Texture getFrame(int seq_id, int frame_id, int dir_id, IRect *rect = nullptr) const;
+		
 		int findSequence(const char *name) const;
 
 		void printInfo() const;

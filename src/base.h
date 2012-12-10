@@ -261,7 +261,7 @@ struct Box
 	}
 
 	void getCorners(Type3 corners[8]) const {
-		for(int n = 0; n < COUNTOF(corners); n++) {
+		for(int n = 0; n < 8; n++) {
 			corners[n].x = (n & 4? min : max).x;
 			corners[n].y = (n & 2? min : max).y;
 			corners[n].z = (n & 1? min : max).z;
