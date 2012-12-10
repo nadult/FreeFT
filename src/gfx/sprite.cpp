@@ -284,34 +284,37 @@ namespace gfx
 			THROW("Saving not supported");
 	}
 
-	Texture Sprite::Collection::getFrame(int frame_id, int dir_id) const {
-		Texture out;
+	void Sprite::Collection::getLayerIndices(int frame_id, int dir_id, int *layer_indices) const {
 		int image_count = m_frame_count * m_dir_count;
-		int2 size(0, 0);
-
-		int ids[4];
 
 		for(int l = 0; l < 4; l++)
-			ids[l] = type == '1'?
+			layer_indices[l] = type == '1'?
 				(frame_id * m_dir_count + dir_id) * 4 + l :
 				dir_id * m_frame_count + l * image_count + frame_id;
+	}
+
+	Texture Sprite::Collection::getFrame(int frame_id, int dir_id) const {
+		Texture out;
+
+		int layer_indices[4];
+		getLayerIndices(frame_id, dir_id, layer_indices);
 
 		//TODO: there are still some bugs here
-		for(int l = 0; l < 4; l++) {
-			int id = ids[l];
+		int2 size(0, 0);
+		for(int l = 0; l < COUNTOF(layer_indices); l++) {
+			int id = layer_indices[l];
 //			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
 			if(id >= (int)images.size())
 				continue;
 			size.x = max(size.x, points[id].x + images[id].size.x);
 			size.y = max(size.y, points[id].y + images[id].size.y);
-
 		}
 
 		out.resize(size.x, size.y);
 		memset(&out(0, 0), 0, size.x * size.y * 4);
 
-		for(int l = 0; l < 4; l++) {
-			int id = ids[l];
+		for(int l = 0; l < COUNTOF(layer_indices); l++) {
+			int id = layer_indices[l];
 //			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
 			if(id >= (int)images.size())
 				continue;
@@ -350,6 +353,28 @@ namespace gfx
 		return out;
 	}
 
+	bool Sprite::Collection::pixelTest(const int2 &screen_pos, int frame_id, int dir_id) const {
+		int layer_indices[4];
+		getLayerIndices(frame_id, dir_id, layer_indices);
+		for(int n = 0; n < COUNTOF(layer_indices); n++) {
+			int id = layer_indices[n];
+//			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
+			if(id >= (int)images.size())
+				continue;
+
+			const Image &img = images[id];
+
+			int2 pos = screen_pos - points[id];
+			if(pos.x < 0 || pos.y < 0 || pos.x >= img.size.x || pos.y >= img.size.y)
+				continue;
+
+			const u8 *alphas = &img.alpha[0];
+			if(alphas[pos.x + pos.y * img.size.x])
+				return true;
+		}
+		return false;
+	}
+
 	int Sprite::frameCount(int seq_id) const {
 		return (int)m_sequences[seq_id].frames.size();
 	}
@@ -362,7 +387,7 @@ namespace gfx
 		return false;
 	}
 
-	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, IRect *rect) const {
+	int Sprite::accessFrame(int seq_id, int frame_id, int dir_id) const {
 		DASSERT(seq_id >= 0 && seq_id < (int)m_sequences.size());
 		DASSERT(frame_id >= 0 && frame_id < (int)m_sequences[seq_id].frames.size());
 
@@ -373,10 +398,25 @@ namespace gfx
 		const Collection &collection = m_collections[seq.collection_id];
 		DASSERT(dir_id < collection.m_dir_count);
 
+		return frame_id;
+	}
+
+	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, IRect *rect) const {
+		frame_id = accessFrame(seq_id, frame_id, dir_id);
+		const Collection &collection = m_collections[m_sequences[seq_id].collection_id];
+
 		if(rect)
 			*rect = collection.rects[frame_id * collection.m_dir_count + dir_id];
 
 		return collection.getFrame(frame_id, dir_id);
+	}
+		
+	bool Sprite::pixelTest(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const {
+		frame_id = accessFrame(seq_id, frame_id, dir_id);
+		const Collection &collection = m_collections[m_sequences[seq_id].collection_id];
+		const IRect &rect = collection.rects[frame_id * collection.m_dir_count + dir_id];
+		return rect.isInside(screen_pos + m_offset)?
+			collection.pixelTest(screen_pos + m_offset - rect.min, frame_id, dir_id) : false;
 	}
 
 	int Sprite::findSequence(const char *name) const {

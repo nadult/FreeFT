@@ -11,6 +11,7 @@ namespace gfx
 		void serialize(Serializer &sr);
 		void loadDTexture();
 		void draw(int2 pos, Color color = Color(255, 255, 255)) const;
+		bool testPixel(const int2 &pos) const;
 
 		string name;
 		Texture texture;

@@ -75,6 +75,7 @@ namespace game {
 	
 		Intersection intersect(const Segment &segment, const Entity *ignore = nullptr,
 								ColliderFlags flags = collider_all) const;
+		Intersection pixelIntersect(const int2 &screen_pos) const;
 
 		bool isInside(const FBox&) const;
 

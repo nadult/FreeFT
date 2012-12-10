@@ -22,3 +22,6 @@
 
  - refactoring: napisanie porządnego interfejsu do serializacji XML; prosty system konfiguracji
    09.12.12: 18:30 - 22:20
+
+ - selekcja obiektów pixel - perfect
+   10.12.12: 15:30 - 19:45

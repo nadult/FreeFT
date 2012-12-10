@@ -78,6 +78,7 @@ struct TileMapNode {
 	const TileInstance& operator()(int idx) const { return m_instances[idx]; }
 	int   instanceCount() const { return m_instances.size(); }
 	pair<int, float> intersect(const Segment &segment) const;
+	int pixelIntersect(const int2 &screen_pos) const;
 
 protected:
 	IBox m_bounding_box; // in local coordinates
@@ -134,6 +135,7 @@ public:
 	};
 
 	Intersection intersect(const Segment &segment) const;
+	pair<int, int> pixelIntersect(const int2 &screen_pos) const;
 
 protected:
 	vector<Node> m_nodes;

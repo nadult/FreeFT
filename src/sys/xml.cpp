@@ -1,6 +1,6 @@
 #define RAPIDXML_NO_STREAMS
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
+#include "rapidxml-1.13/rapidxml.hpp"
+#include "rapidxml-1.13/rapidxml_print.hpp"
 #include "sys/xml.h"
 #include <sstream>
 #include <cstring>

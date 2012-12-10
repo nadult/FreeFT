@@ -37,7 +37,7 @@ LIBS=-lglfw -lbaselib -lpng -lz
 LINUX_LIBS=$(LIBS) -lGL -lGLU
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
 
-INCLUDES=-I./ -Irapidxml-1.13/
+INCLUDES=-I./
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
 		   -Wno-unused-but-set-variable -Wno-unused-variable

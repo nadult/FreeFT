@@ -48,6 +48,10 @@ namespace game {
 		out.add(spr_tex, rect - m_sprite->offset(), m_pos, m_bbox);
 	//	out.addBox(boundingBox(), m_world && m_world->isColliding(boundingBox())? Color::red : Color::white);
 	}
+		
+	bool Entity::pixelTest(const int2 &screen_pos) const {
+		return m_sprite->pixelTest(screen_pos - (int2)worldToScreen(pos()), m_seq_id, m_frame_id, m_dir_idx);
+	}
 
 	void Entity::handleEventFrame(const Sprite::Frame &frame) {
 		DASSERT(frame.id <= Sprite::ev_first_specific);

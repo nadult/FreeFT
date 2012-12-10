@@ -95,7 +95,8 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world.intersect(ray, actor);
+		Intersection isect = world.pixelIntersect(getMousePos() + view_pos);
+		Intersection box_isect = world.intersect(ray, actor);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
@@ -107,8 +108,8 @@ int safe_main(int argc, char **argv)
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
-			else {
-				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
+			else if(box_isect.isTile()) {
+				int3 wpos = (int3)asXZY(ray.at(box_isect.distance).xz(), 1.0f);
 				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 			}
 		}
@@ -144,17 +145,11 @@ int safe_main(int argc, char **argv)
 
 		world.addToRender(renderer);
 
-		if((entity_debug || shooting_debug) && !isect.isEmpty()) {
-			renderer.addBox(isect.boundingBox());
-			if(isect.isEntity() && isect.entity()->entityType() == entity_item) {
-				Item *item = static_cast<Item*>(isect.entity());
-				PTexture tex = item->guiImage(false);
-				renderer.add(tex, IRect(int2(0, 0), tex->size()), item->pos() + float3(0, 8, 0), item->boundingBox());
-			}
-		}
+		if(entity_debug && isect.isEntity())
+			renderer.addBox(isect.boundingBox(), Color::yellow);
 
-		if(!isect.isEmpty() && shooting_debug) {
-			float3 target = ray.at(isect.distance);
+		if(!box_isect.isEmpty() && shooting_debug) {
+			float3 target = ray.at(box_isect.distance);
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
 
@@ -163,7 +158,7 @@ int safe_main(int argc, char **argv)
 
 			if(!shoot_isect.isEmpty()) {
 				FBox box = shoot_isect.boundingBox();
-				renderer.addBox(box, Color::red);
+				renderer.addBox(box, Color(255, 0, 0, 100));
 				target_pos = shoot_ray.at(shoot_isect.distance);
 			}
 		}
@@ -184,10 +179,8 @@ int safe_main(int argc, char **argv)
 
 			gfx::PFont font = gfx::Font::mgr["arial_24"];
 
-			float3 pos = ray.at(isect.distance);
+			float3 pos = ray.at(box_isect.distance);
 			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", pos.x, pos.y, pos.z);
-
-			
 
 //			double time = GetTime();
 //			double frameTime = time - lastFrameTime;

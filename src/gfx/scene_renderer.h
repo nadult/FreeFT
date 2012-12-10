@@ -25,8 +25,6 @@ namespace gfx {
 
 	protected:
 		struct Element {
-			int Compare(const Element &rhs) const;
-
 			//TODO: change to weak ptr to texture, make sure that textures exist
 			PTexture texture;
 			IRect rect;

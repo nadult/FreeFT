@@ -5,7 +5,6 @@
 
 namespace gfx
 {
-	using namespace baselib;
 
 	enum TextureIdent
 	{
@@ -40,15 +39,15 @@ namespace gfx
 		TI_V16U16        = 64,
 		TI_A2W10V10U10   = 67,
 
-		TI_UYVY          = 0x59565955,                                                                                   //MAKEFOURCC('U', 'Y', 'V', 'Y'),
-		TI_R8G8_B8G8     = 0x47424752,                                                                                   //MAKEFOURCC('R', 'G', 'B', 'G'),
-		TI_YUY2          = 0x32595559,                                                                                   //MAKEFOURCC('Y', 'U', 'Y', '2'),
-		TI_G8R8_G8B8     = 0x42475247,                                                                                   //MAKEFOURCC('G', 'R', 'G', 'B'),
-		TI_DXT1          = 0x31545844,                                                                                   //MAKEFOURCC('D', 'X', 'T', '1'),
-		TI_DXT2          = 0x32545844,                                                                                   //MAKEFOURCC('D', 'X', 'T', '2'),
-		TI_DXT3          = 0x33545844,                                                                                   //MAKEFOURCC('D', 'X', 'T', '3'),
-		TI_DXT4          = 0x34545844,                                                                                   //MAKEFOURCC('D', 'X', 'T', '4'),
-		TI_DXT5          = 0x35545844,                                                                                   //MAKEFOURCC('D', 'X', 'T', '5'),
+		TI_UYVY          = 0x59565955,  //MAKEFOURCC('U', 'Y', 'V', 'Y'),
+		TI_R8G8_B8G8     = 0x47424752,  //MAKEFOURCC('R', 'G', 'B', 'G'),
+		TI_YUY2          = 0x32595559,  //MAKEFOURCC('Y', 'U', 'Y', '2'),
+		TI_G8R8_G8B8     = 0x42475247,  //MAKEFOURCC('G', 'R', 'G', 'B'),
+		TI_DXT1          = 0x31545844,  //MAKEFOURCC('D', 'X', 'T', '1'),
+		TI_DXT2          = 0x32545844,  //MAKEFOURCC('D', 'X', 'T', '2'),
+		TI_DXT3          = 0x33545844,  //MAKEFOURCC('D', 'X', 'T', '3'),
+		TI_DXT4          = 0x34545844,  //MAKEFOURCC('D', 'X', 'T', '4'),
+		TI_DXT5          = 0x35545844,  //MAKEFOURCC('D', 'X', 'T', '5'),
 
 		TI_L16           = 81,
 		TI_Q16W16V16U16  =110,
@@ -108,6 +107,7 @@ namespace gfx
 		int height() const { return m_height; }
 		int2 size() const { return int2(m_width, m_height); }
 		bool isEmpty() const { return data.empty(); }
+		bool testPixel(const int2&) const;
 
 		TextureFormat format() const { return TextureFormat(TI_A8B8G8R8); }
 

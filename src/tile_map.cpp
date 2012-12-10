@@ -155,6 +155,30 @@ pair<int, float> TileMapNode::intersect(const Segment &segment) const {
 	return out;
 }
 
+int TileMapNode::pixelIntersect(const int2 &screen_pos) const {
+	if(!m_screen_rect.isInside(screen_pos))
+		return -1;
+	
+	int best = -1;
+	FBox best_box;
+
+	for(int i = 0; i < (int)m_instances.size(); i++) {
+		const TileInstance &inst = m_instances[i];
+		if(!inst.screenRect().isInside(screen_pos))
+			continue;
+		if(!inst.m_tile->testPixel(screen_pos - worldToScreen(inst.pos())))
+			continue;
+
+		FBox box = (FBox)inst.boundingBox();
+
+		if(best == -1 || drawingOrder(box, best_box) == 1) {
+			best = i;
+			best_box = box;
+		}
+	}
+
+	return best;
+}
 void TileMap::resize(int2 newSize) {
 	clear();
 
@@ -355,6 +379,28 @@ TileMap::Intersection TileMap::intersect(const Segment &segment) const {
 			out.node_id = n;
 			out.instance_id = isect.first;
 			out.distance = isect.second;
+		}
+	}
+
+	return out;
+}
+
+pair<int, int> TileMap::pixelIntersect(const int2 &screen_pos) const {
+	pair<int, int> out(-1, -1);
+	FBox best_box;
+
+	for(int n = 0; n < (int)m_nodes.size(); n++) {
+		const TileMapNode &node = m_nodes[n];
+		int inst_id = node.pixelIntersect(screen_pos - worldToScreen(nodePos(n)));
+
+		if(inst_id != -1) {
+			FBox box(node(inst_id).boundingBox() + nodePos(n));
+
+		   	if(out.first == -1 || drawingOrder(box, best_box) == 1) {
+				out.first = n;
+				out.second = inst_id;
+				best_box = box;
+			}
 		}
 	}
 

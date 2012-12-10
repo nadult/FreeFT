@@ -8,22 +8,6 @@ using std::pair;
 
 namespace gfx {
 
-
-	int SceneRenderer::Element::Compare(const SceneRenderer::Element &rhs) const {
-		//DASSERT(!areOverlapping(box, box));
-
-		int y_ret = bbox.max.y <= rhs.bbox.min.y? -1 : rhs.bbox.max.y <= bbox.min.y? 1 : 0;
-		if(y_ret)
-			return y_ret;
-
-		int x_ret = bbox.max.x <= rhs.bbox.min.x? -1 : rhs.bbox.max.x <= bbox.min.x? 1 : 0;
-		if(x_ret)
-			return x_ret;
-
-		int z_ret = bbox.max.z <= rhs.bbox.min.z? -1 : rhs.bbox.max.z <= bbox.min.z? 1 : 0;
-		return z_ret;
-	}
-
 	SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos) :m_viewport(viewport), m_view_pos(view_pos) {
 	}
 
@@ -138,7 +122,7 @@ namespace gfx {
 
 				for(int j = i + 1; j < count; j++) {
 					const Element &elem2 = m_elements[grid[g + j].second];
-					int result = areOverlapping(elem1.rect, elem2.rect)? elem1.Compare(elem2): 0;
+					int result = areOverlapping(elem1.rect, elem2.rect)? drawingOrder(elem1.bbox, elem2.bbox): 0;
 					graph[i + j * count] = result;
 					graph[j + i * count] = -result;
 				}

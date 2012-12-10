@@ -244,6 +244,8 @@ int NavigationMap::findQuad(int2 pos, bool find_disabled) const {
 	return -1;
 }
 
+// powoduje problemy jak się przechodzi diagonalnie przez rogi encji
+// (gracz się zatrzymuje bo jest kolizja)
 #define WALK_DIAGONAL_THROUGH_CORNERS
 
 vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bool do_refining) const {

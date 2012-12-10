@@ -136,6 +136,30 @@ namespace game {
 		return out;
 	}
 
+	Intersection World::pixelIntersect(const int2 &screen_pos) const {
+		FBox best_box;
+		Intersection out;
+		pair<int, int> tile = m_tile_map.pixelIntersect(screen_pos);
+		if(tile.first != -1) {
+			out = Intersection(WorldElement(&m_tile_map, tile.first, tile.second), 0.0f);
+			best_box = FBox(m_tile_map(tile.first)(tile.second).boundingBox() + m_tile_map.nodePos(tile.first));
+		}
+
+		for(int n = 0; n < (int)m_entities.size(); n++) {
+			Entity *entity = m_entities[n].get();
+			if(!entity->pixelTest(screen_pos))
+				continue;
+			FBox box = entity->boundingBox();
+
+			if(out.isEmpty() || drawingOrder(box, best_box) == 1) {
+				out = Intersection(entity, 0.0f);
+				best_box = box;
+			}
+		}
+
+		return out;
+	}
+
 	bool World::isColliding(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
 		if((flags & collider_tiles) && m_tile_map.isOverlapping(enclosingIBox(box)))
 			return true;

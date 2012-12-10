@@ -49,6 +49,8 @@ namespace game {
 
 		void remove();
 
+		bool pixelTest(const int2 &screen_pos) const;
+
 	protected:
 		friend class World;
 		World *m_world;

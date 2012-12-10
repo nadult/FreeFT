@@ -298,6 +298,23 @@ bool areOverlapping(const Box<T> &a, const Box<T> &b) {
 			(b.min.z < a.max.z && a.min.z < b.max.z);
 }
 
+// TODO: support for overlapping boxes
+template <class Type3>
+int drawingOrder(const Box<Type3> &a, const Box<Type3> &b) {
+	//DASSERT(!areOverlapping(box, box));
+
+	int y_ret = a.max.y <= b.min.y? -1 : b.max.y <= a.min.y? 1 : 0;
+	if(y_ret)
+		return y_ret;
+
+	int x_ret = a.max.x <= b.min.x? -1 : b.max.x <= a.min.x? 1 : 0;
+	if(x_ret)
+		return x_ret;
+
+	int z_ret = a.max.z <= b.min.z? -1 : b.max.z <= a.min.z? 1 : 0;
+	return z_ret;
+}
+
 bool areAdjacent(const Rect<int2>&, const Rect<int2>&);
 float distanceSq(const Rect<float2>&, const Rect<float2>&);
 

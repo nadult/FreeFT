@@ -59,6 +59,10 @@ namespace gfx
 		drawQuad(pos.x - m_offset.x, pos.y - m_offset.y, size.x, size.y, col);
 	}
 
+	bool Tile::testPixel(const int2 &pos) const {
+		return texture.testPixel(pos + m_offset);
+	}
+
 	ResourceMgr<Tile> Tile::mgr("refs/tiles/", ".til");
 
 }

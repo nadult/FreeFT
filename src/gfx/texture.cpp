@@ -29,6 +29,13 @@ namespace gfx
 		data.clear();
 	}
 
+	bool Texture::testPixel(const int2 &pos) const {
+		if(pos.x < 0 || pos.y < 0 || pos.x >= m_width || pos.y >= m_height)
+			return false;
+
+		return line(pos.y)[pos.x].a > 0;
+	}
+
 	void Texture::serialize(Serializer &sr) {
 		if(sr.isSaving())
 			THROW("Saving textures not supported (yet)");
