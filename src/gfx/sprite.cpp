@@ -427,6 +427,7 @@ namespace gfx
 	}
 		
 	int Sprite::findDir(int seq_id, float radians) const {
+		DASSERT(seq_id >= 0 && seq_id < size());
 //		DASSERT(radians >= 0.0f && radians < constant::pi * 2.0f);
 
 		//TODO: wtf???

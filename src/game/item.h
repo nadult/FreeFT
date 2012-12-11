@@ -33,7 +33,7 @@ namespace game {
 	struct WeaponDesc: public ItemDesc {
 		ItemTypeId::Type type() const { return ItemTypeId::weapon; }
 
-		ProjectileTypeId::Type projectile_type;
+		ProjectileTypeId::Type projectile_type_id;
 		WeaponClassId::Type class_id;
 		float projectile_speed;
 		float damage;
@@ -48,6 +48,7 @@ namespace game {
 	struct ArmourDesc: public ItemDesc {
 		ItemTypeId::Type type() const { return ItemTypeId::armour; }
 
+		ArmourClassId::Type class_id;
 		float damage_resistance;
 	};
 
@@ -64,6 +65,8 @@ namespace game {
 
 		ItemTypeId::Type typeId() const;
 		const char *spriteName() const;
+		const char *name() const;
+
 		const ItemDesc *desc() const { return m_desc; }
 
 	protected:
@@ -75,6 +78,31 @@ namespace game {
 		// specific methods in ItemDesc
 		ItemParameter params[ItemDesc::param_count];
 	};
+
+	struct Weapon: public Item
+	{
+	public:
+		Weapon(const Item&);
+
+		ProjectileTypeId::Type projectileTypeId() const;
+		WeaponClassId::Type classId() const;
+		float projectileSpeed() const;
+
+		const WeaponDesc *desc() const { return static_cast<const WeaponDesc*>(m_desc); }
+	};
+
+	struct Armour: public Item
+	{
+	public:
+		Armour(const Item&);
+
+		ArmourClassId::Type classId() const;
+
+		const ArmourDesc *desc() const { return static_cast<const ArmourDesc*>(m_desc); }
+	};
+
+	static_assert(sizeof(Weapon) == sizeof(Item), "Weapon should be a simple interface built on top of Item");
+	static_assert(sizeof(Armour) == sizeof(Item), "Armour should be a simple interface built on top of Item");
 
 	class ItemEntity: public Entity {
 	public:

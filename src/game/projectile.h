@@ -9,7 +9,8 @@ namespace game {
 	//maybe this class should be more lightweight
 	class Projectile: public Entity {
 	public:
-		Projectile(ProjectileTypeId::Type type, const float3 &pos, const float3 &target, Entity *spawner);
+		Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos,
+					const float3 &target, Entity *spawner);
 		virtual ColliderFlags colliderType() const { return collider_none; }
 		virtual EntityFlags entityType() const { return entity_projectile; }
 

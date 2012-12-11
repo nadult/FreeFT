@@ -67,8 +67,23 @@ namespace game {
 			onPickupEvent();
 	}
 
+	void Entity::changeSprite(const char *new_name, bool update_bbox) {
+		string sequence_name = (*m_sprite)[m_seq_id].name;
+		m_sprite = Sprite::mgr[new_name];
+		int new_seq_id = m_sprite->findSequence(sequence_name.c_str());
+		if(new_seq_id == -1)
+			new_seq_id = 0;
+		m_seq_id = -1;
+		m_is_looped = false;
+		m_dir_idx = m_sprite->findDir(new_seq_id, m_dir_angle);
+		playSequence(new_seq_id);
+
+		if(update_bbox)
+			m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
+	}
+
 	void Entity::playSequence(int seq_id) {
-		DASSERT(seq_id != -1);
+		DASSERT(seq_id >= 0 && seq_id < m_sprite->size());
 
 		m_is_finished = false;
 		if(seq_id != m_seq_id || !m_is_looped) {

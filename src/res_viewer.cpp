@@ -75,6 +75,8 @@ public:
 			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
 			IRect srect;
 
+			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
+
 			const vector<Sprite::Frame> &frames = (*sprite)[m_seq_id].frames;
 			while(frames[m_frame_id].id < 0) {
 				m_frame_id++;
@@ -90,11 +92,18 @@ public:
 			IBox box({0,0,0}, sprite->boundingBox());
 			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));
 			IRect rect = srect - sprite->offset();
+			if(is_gui_image) {
+				rect -= rect.min;
+				brect -= brect.min;
+			}
 			lookAt(brect.min - pos);
 			drawQuad(rect.min, rect.size());
 		
-			DTexture::bind0();	
-			drawBBox(box, outline_col);
+			DTexture::bind0();
+			if(is_gui_image)
+				drawRect(rect, outline_col);
+			else
+				drawBBox(box, outline_col);
 
 			double time = getTime();
 			if(time - m_last_time > 1 / 15.0) {

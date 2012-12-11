@@ -11,17 +11,18 @@ namespace game {
 	};
 
 	static const char *s_impact_names[ProjectileTypeId::count] = {
-		nullptr,
+		"impactfx/RobotSparks",
 		"impactfx/Impact Plasma",
 		"impactfx/Impact Laser",
 		nullptr,				// rocket impact is handled differently
 	};
 
-	Projectile::Projectile(ProjectileTypeId::Type type, const float3 &pos, const float3 &target, Entity *spawner)
+	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos, const float3 &target,
+			Entity *spawner)
 		:Entity(s_projectile_names[type], pos), m_dir(target - pos), m_spawner(spawner), m_type(type) {
 			m_dir *= 1.0f / length(m_dir);
 			setDir(m_dir.xz());
-			m_speed = 200.0f;
+			m_speed = speed;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}

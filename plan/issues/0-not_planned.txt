@@ -1,4 +1,4 @@
-- Funkcje do obsługi systemu plików (klasa Path, findFiles), na razie w wersji na linuxa (6.50h) DONE
+- Funkcje do obsługi systemu plików (klasa Path, findFiles), na razie w wersji na linuxa (6h 30min) DONE
   26.11.12: 23:30 - 2:00
   27.11.12: 13:00 - 17:00
 

@@ -3,53 +3,63 @@
 
 namespace game {
 
-	namespace WeaponClassId {
-		enum Type {
-			unarmed,
-			club,
-			heavy,
-			knife,
-			minigun,
-			pistol,
-			rifle,
-			rocket,
-			smg,
-			spear,
-			
-			count,
-		};
+	#define DECLARE_ENUM(type, ...) \
+		namespace type { enum Type { __VA_ARGS__, count }; \
+			const char *toString(Type); \
+			Type fromString(const char*); \
+			inline bool isValid(Type val) { return val >= 0 && val < count; } \
+		}
 
-		const char *toString(Type);
-		Type fromString(const char*);
-	};
+	DECLARE_ENUM(WeaponClassId,
+		unarmed,
+		club,
+		heavy,
+		knife,
+		minigun,
+		pistol,
+		rifle,
+		rocket,
+		smg,
+		spear
+	);
 
-	namespace ItemTypeId {
-		enum Type {
-			weapon,
-			ammo,
-			armour,
-			other,
+	DECLARE_ENUM(ArmourClassId,
+		none,
+		leather,
+		metal,
+		environmental,
+		power
+	);
 
-			count,
-		};
+	DECLARE_ENUM(ItemTypeId,
+		invalid = -1,
+		weapon = 0,
+		armour,
+		ammo,
+		other
+	);
 
-		const char *toString(Type);
-		Type fromString(const char*);
-	};
+	DECLARE_ENUM(InventorySlotId,
+		invalid = -1,
+		weapon = 0,
+		armour,
+		ammo
+	);
 
-	namespace ProjectileTypeId {
-		enum Type {
-			bullet,
-			plasma,
-			laser,
-			rocket,
+	DECLARE_ENUM(ActorTypeId,
+		male,
+		female,
+		ghoul
+	);
 
-			count,
-		};
+	DECLARE_ENUM(ProjectileTypeId,
+		bullet,
+		plasma,
+		laser,
+		rocket
+	);
 
-		const char *toString(Type);
-		Type fromString(const char*);
-	};
+#undef DECLARE_ENUM
 
 	enum EntityFlags {
 		entity_container	= 1,

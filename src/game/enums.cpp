@@ -13,56 +13,66 @@ static int fromString(const char *str, const char **strings, int count) {
 	return -1;
 }
 
+#define DEFINE_STRINGS(type, ...) \
+		namespace type { \
+			static const char *s_strings[count] = { __VA_ARGS__ }; \
+			const char *toString(Type value) { \
+				DASSERT(value >= 0 && value < count); \
+				return s_strings[value]; \
+			} \
+			Type fromString(const char *str) { \
+				return (Type)::fromString(str, s_strings, count); \
+			} }
+
 namespace game {
 
-#define STRING_FUNCTIONS() \
-		const char *toString(Type value) { \
-			DASSERT(value >= 0 && value < count); \
-			return s_strings[value]; \
-		} \
-		Type fromString(const char *str) { \
-			return (Type)::fromString(str, s_strings, count); \
-		}
+	DEFINE_STRINGS( WeaponClassId,
+		"unarmed",
+		"club",
+		"heavy",
+		"knife",
+		"minigun",
+		"pistol",
+		"rifle",
+		"rocket",
+		"smg",
+		"spear"
+	)
 
-	namespace ItemTypeId {
-		static const char *s_strings[count] = {
-			"weapon",
-			"ammo",
-			"armour",
-			"other",
-		};
+	DEFINE_STRINGS( ArmourClassId,
+		"none",
+		"leather",
+		"metal",
+		"environmental",
+		"power"
+	)
 
-		STRING_FUNCTIONS();
-	};
+	DEFINE_STRINGS( InventorySlotId,
+		"weapon",
+		"armour"
+		"ammo",
+	)
 
-	namespace WeaponClassId {
-		static const char *s_strings[count] = {
-			"unarmed",
-			"club",
-			"heavy",
-			"knife",
-			"minigun",
-			"pistol",
-			"rifle",
-			"rocket",
-			"smg",
-			"spear",
-		};
+	DEFINE_STRINGS( ItemTypeId,
+		"weapon",
+		"armour",
+		"ammo",
+		"other"
+	)
 
-		STRING_FUNCTIONS();
-	};
+	DEFINE_STRINGS( ActorTypeId,
+		"male",
+		"female",
+		"ghoul"
+	)
 
-	namespace ProjectileTypeId {
-		static const char *s_strings[count] = {
-			"bullet",
-			"plasma",
-			"laser",
-			"rocket",
-		};
-
-		STRING_FUNCTIONS();
-	};
+	DEFINE_STRINGS( ProjectileTypeId,
+		"bullet",
+		"plasma",
+		"laser",
+		"rocket"
+	)
 
 
-#undef STRING_FUNCTIONS
+#undef DEFINE_STRINGS
 }

@@ -2,7 +2,7 @@
 #define GAME_CONTAINER_H
 
 #include "game/entity.h"
-
+#include "game/inventory.h"
 
 namespace game
 {
@@ -22,6 +22,9 @@ namespace game
 		bool isOpened() const { return m_state == state_opened; }
 		bool isAlwaysOpened() const { return m_is_always_opened; }
 
+		const Inventory &inventory() const { return m_inventory; }
+		Inventory &inventory() { return m_inventory; }
+
 		enum State {
 			state_closed,
 			state_opened,
@@ -40,6 +43,7 @@ namespace game
 		bool m_update_anim;
 
 		int m_seq_ids[state_count];
+		Inventory m_inventory;
 	};
 };
 

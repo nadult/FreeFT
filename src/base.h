@@ -251,6 +251,7 @@ struct Box
 	Box operator+(const Type3 &offset) const { return Box(min + offset, max + offset); }
 	Box operator-(const Type3 &offset) const { return Box(min - offset, max - offset); }
 
+	//TODO: union / sum
 	Box operator+(const Box &rhs) { return Box(::min(min, rhs.min), ::max(max, rhs.max)); }
 
 	bool isEmpty() const { return max.x <= min.x || max.y <= min.y || max.z <= min.z; }

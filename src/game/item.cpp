@@ -14,7 +14,6 @@ namespace game {
 		:Entity(item.spriteName(), pos), m_item(item) {
 		DASSERT(item.isValid());
 
-		m_sprite->printInfo();
 		setBBox(FBox(float3(0.0f, 0.0f, 0.0f), asXZY(bboxSize().xz(), 0.0f)));
 
 		for(int n = 0; n < COUNTOF(m_seq_ids); n++) {
@@ -44,36 +43,49 @@ namespace game {
 		while(node) {
 			ItemTypeId::Type type = ItemTypeId::fromString(node.attrib("type"));
 			std::unique_ptr<ItemDesc> item;
+			const char *id = nullptr;
 
-			if(type == ItemTypeId::weapon) {
-				WeaponDesc *weapon;
-				item = PItemDesc(weapon = new WeaponDesc);
-				weapon->projectile_type = ProjectileTypeId::fromString(node.attrib("projectile_type"));
-				weapon->damage = node.floatAttrib("damage");
-				weapon->projectile_speed = node.floatAttrib("projectile_speed");
-				weapon->class_id = WeaponClassId::fromString(node.attrib("class"));
-			}
-			else if(type == ItemTypeId::ammo) {
-				AmmoDesc *ammo;
-				item = PItemDesc(ammo = new AmmoDesc);
-				ammo->damage_modifier = node.floatAttrib("damage_modifier");
-			}
-			else if(type == ItemTypeId::armour) {
-				ArmourDesc *armour;
-				item = PItemDesc(armour = new ArmourDesc);
-				armour->damage_resistance = node.floatAttrib("damage_resistance");
-			}
+			if(type == ItemTypeId::weapon)
+				item = PItemDesc(new WeaponDesc);
+			else if(type == ItemTypeId::ammo)
+				item = PItemDesc(new AmmoDesc);
+			else if(type == ItemTypeId::armour)
+				item = PItemDesc(new ArmourDesc);
 			else {
 				ASSERT(type == ItemTypeId::other);
 				item = PItemDesc(new ItemDesc);
 			}
 
-			item->name = node.attrib("name");
-			item->sprite_name = node.attrib("sprite_name");
-			item->description = node.attrib("description");
-			item->weight = node.floatAttrib("weight");
+			try {
+				id = node.attrib("id");
+				item->name = node.attrib("name");
+				item->sprite_name = node.attrib("sprite_name");
+				item->description = node.attrib("description");
+				item->weight = node.floatAttrib("weight");
 
-			s_items[node.attrib("id")] = std::move(item);
+				if(type == ItemTypeId::weapon) {
+					WeaponDesc *weapon = static_cast<WeaponDesc*>(item.get());
+					weapon->projectile_type_id = ProjectileTypeId::fromString(node.attrib("projectile_type"));
+					weapon->damage = node.floatAttrib("damage");
+					weapon->projectile_speed = node.floatAttrib("projectile_speed");
+					weapon->class_id = WeaponClassId::fromString(node.attrib("class"));
+				}
+				else if(type == ItemTypeId::ammo) {
+					AmmoDesc *ammo = static_cast<AmmoDesc*>(item.get());
+					ammo->damage_modifier = node.floatAttrib("damage_modifier");
+				}
+				else if(type == ItemTypeId::armour) {
+					ArmourDesc *armour = static_cast<ArmourDesc*>(item.get());
+					armour->damage_resistance = node.floatAttrib("damage_resistance");
+					armour->class_id = ArmourClassId::fromString(node.attrib("class"));
+				}
+
+				s_items[id] = std::move(item);
+			}
+			catch(const Exception &ex) {
+				THROW("Error while parsing item with id: %s, type: %s\n%s",
+						id? id : "unknown", ItemTypeId::toString(type), ex.what());
+			}
 
 			node = node.sibling("item");
 		}
@@ -106,8 +118,7 @@ namespace game {
 	}
 
 	ItemTypeId::Type Item::typeId() const {
-		DASSERT(isValid());
-		return m_desc->type();
+		return isValid()? m_desc->type() : ItemTypeId::invalid;
 	}
 
 	const char *Item::spriteName() const {
@@ -115,10 +126,45 @@ namespace game {
 		return m_desc->sprite_name.c_str();
 	}
 
+	const char *Item::name() const {
+		DASSERT(isValid());
+		return m_desc->name.c_str();
+	}
+
 	bool Item::operator==(const Item &rhs) const {
 		if(m_desc != rhs.m_desc)
 			return false;
 		return memcmp(params, rhs.params, sizeof(params)) == 0;
+	}
+
+	Weapon::Weapon(const Item &item) :Item(item) {
+		if(isValid())
+			DASSERT(typeId() == ItemTypeId::weapon);
+	}
+	
+	Armour::Armour(const Item &item) :Item(item) {
+		if(isValid())
+			DASSERT(typeId() == ItemTypeId::armour);
+	}
+
+	ProjectileTypeId::Type Weapon::projectileTypeId() const {
+		DASSERT(isValid());
+		return desc()->projectile_type_id; 
+	}
+	
+	float Weapon::projectileSpeed() const {
+		DASSERT(isValid());
+		return desc()->projectile_speed; 
+	}
+
+	WeaponClassId::Type Weapon::classId() const {
+		DASSERT(isValid());
+		return desc()->class_id; 
+	}
+
+	ArmourClassId::Type Armour::classId() const {
+		DASSERT(isValid());
+		return desc()->class_id; 
 	}
 
 }

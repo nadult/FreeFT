@@ -43,7 +43,7 @@ int safe_main(int argc, char **argv)
 
 	World world("data/tile_map.xml");
 
-	Actor *actor = world.addEntity(new Actor("characters/LeatherMale", float3(100, 1, 70)));
+	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, 1, 70)));
 
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
@@ -58,13 +58,11 @@ int safe_main(int argc, char **argv)
 	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, 1, 92), Door::type_sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
 
-	const ItemDesc *plasma_rifle = ItemDesc::find("plasma_rifle");
-	const ItemDesc *fusion_cell = ItemDesc::find("fusion_cell");
-	const ItemDesc *leather_armour = ItemDesc::find("leather_armour");
-
-	DASSERT(plasma_rifle && fusion_cell && leather_armour);
-
-	world.addEntity(new ItemEntity(plasma_rifle, float3(100, 1, 100)));
+	world.addEntity(new ItemEntity(ItemDesc::find("laser_rifle"),		float3( 85, 1, 108)));
+	world.addEntity(new ItemEntity(ItemDesc::find("plasma_rifle"),		float3( 92, 1, 100)));
+	world.addEntity(new ItemEntity(ItemDesc::find("m60"),				float3(100, 1, 100)));
+	world.addEntity(new ItemEntity(ItemDesc::find("power_armour"),		float3(100, 1, 108)));
+	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"),	float3( 92, 1, 108)));
 
 	world.updateNavigationMap(true);
 
@@ -78,6 +76,7 @@ int safe_main(int argc, char **argv)
 	bool navi_debug = 0;
 	bool shooting_debug = 1;
 	bool entity_debug = 1;
+	bool item_debug = 1;
 	
 	double last_time = getTime();
 	vector<int2> path;
@@ -85,6 +84,8 @@ int safe_main(int argc, char **argv)
 	float3 target_pos(0, 0, 0);
 
 	const TileMap &tile_map = world.tileMap();
+
+	int inventory_sel = -1;
 
 	while(pollEvents()) {
 		if(isKeyDown(Key_esc))
@@ -129,8 +130,23 @@ int safe_main(int argc, char **argv)
 		if(isKeyDown('R') && navi_debug) {
 			world.naviMap().removeColliders();
 		}
-		if(isKeyDown('D') && entity_debug)
-			actor->setNextOrder(dropItemOrder());
+
+		if(item_debug) {
+			if(isKeyDown(Key_up))
+				inventory_sel--;
+			if(isKeyDown(Key_down))
+				inventory_sel++;
+			inventory_sel = clamp(inventory_sel, -2, actor->inventory().size() - 1);
+
+			if(isKeyDown('D') && inventory_sel >= 0)
+				actor->setNextOrder(dropItemOrder(inventory_sel));
+			else if(isKeyDown('E') && inventory_sel >= 0)
+				actor->setNextOrder(equipItemOrder(inventory_sel));
+			else if(isKeyDown('E') && inventory_sel < 0) {
+				InventorySlotId::Type slot_id = InventorySlotId::Type(-inventory_sel - 1);
+				actor->setNextOrder(unequipItemOrder(slot_id));
+			}
+		}
 
 		double time = getTime();
 		if(!navi_debug)
@@ -180,6 +196,13 @@ int safe_main(int argc, char **argv)
 
 			float3 pos = ray.at(box_isect.distance);
 			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", pos.x, pos.y, pos.z);
+
+			if(item_debug) {
+				string inv_info = actor->inventory().printMenu(inventory_sel);
+				IRect extents = font->evalExtents(inv_info.c_str());
+				font->drawShadowed(int2(0, config.resolution.y - extents.height()),
+									Color::white, Color::black, "%s", inv_info.c_str());
+			}
 
 //			double time = GetTime();
 //			double frameTime = time - lastFrameTime;

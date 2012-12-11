@@ -6,27 +6,6 @@
 
 namespace game {
 
-
-	void ActorInventory::add(const Item &item) {
-		DASSERT(item.isValid());
-		if(item.typeId() == ItemTypeId::weapon) {
-			if(weapon.isValid())
-				Inventory::add(weapon, 1);
-			weapon = item;
-		}
-		else
-			Inventory::add(item, 1);
-	}
-
-	Item ActorInventory::drop() {
-		Item out;
-		if(weapon.isValid()) {
-			out = weapon;
-			weapon = Item();
-		}
-		return out;
-	}
-
 	Order moveOrder(int3 target_pos, bool run)	{
 		Order new_order(OrderId::move);
 		new_order.move = Order::Move{target_pos, run};
@@ -52,10 +31,48 @@ namespace game {
 		new_order.interact = Order::Interact{target, mode, false};
 		return new_order;
 	}
-	Order dropItemOrder() {
+	Order dropItemOrder(int item_id) {
 		Order new_order(OrderId::drop_item);
+		new_order.drop_item = Order::DropItem{item_id};
 		return new_order;
 	}
+	Order equipItemOrder(int item_id) {
+		Order new_order(OrderId::equip_item);
+		new_order.equip_item = Order::EquipItem{item_id};
+		return new_order;
+	}
+	Order unequipItemOrder(InventorySlotId::Type slot_id) {
+		Order new_order(OrderId::unequip_item);
+		DASSERT(slot_id >= 0 && slot_id < InventorySlotId::count);
+		new_order.unequip_item = Order::UnequipItem{slot_id};
+		return new_order;
+	}
+
+	static const char *s_sprite_names[ActorTypeId::count][ArmourClassId::count] = {
+		{	// Male
+			"characters/TribalMale",
+			"characters/LeatherMale",
+			"characters/MetalMale",
+			"characters/Environmental",
+			"characters/Power",
+		},
+		{	// Female
+			"characters/TribalFemale",
+			"characters/LeatherFemale",
+			"characters/MetalFemale",
+			"characters/Environmental",
+			"characters/Power",
+		},
+		{	// Ghoul
+			"characters/Ghoul",
+			"characters/Ghoul",
+			"characters/GhoulArmour",
+			"characters/Environmental",
+			"characters/Power",
+		},
+	};
+
+
 
 	static const char *s_wep_names[WeaponClassId::count] = {
 		"",
@@ -158,31 +175,67 @@ namespace game {
 		return m_seq_ids[stance + (action * WeaponClassId::count + weapon) * StanceId::count];
 	}
 
-	Actor::Actor(const char *sprite_name, const float3 &pos) :Entity(sprite_name, pos) {
-		m_sprite->printInfo();
+	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos)
+		:Entity(s_sprite_names[type_id][ArmourClassId::none], pos), m_type_id(type_id) {
+		//m_sprite->printInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
 		m_issue_next_order = false;
 		m_stance_id = StanceId::standing;
 
+		m_armour_class_id = ArmourClassId::none;
+		m_weapon_class_id = WeaponClassId::unarmed;
 		setSequence(ActionId::standing);
 		lookAt(float3(0, 0, 0), true);
 		m_order = m_next_order = doNothingOrder();
-		m_weapon_class_id = WeaponClassId::unarmed;
 	}
 
-	const WeaponDesc *Actor::currentWeapon() const {
-		const Item &item = m_inventory.weapon;
-		return item.isValid()? static_cast<const WeaponDesc*>(item.desc()) : nullptr;
+	void Actor::updateArmour() {
+		const ArmourDesc *desc = m_inventory.armour().desc();
+		ArmourClassId::Type class_id = desc? desc->class_id : ArmourClassId::none;
+		DASSERT(canEquipArmour(class_id));
+
+		if(class_id != m_armour_class_id) {
+			m_armour_class_id = class_id;
+			changeSprite(s_sprite_names[m_type_id][class_id], true);
+		}
 	}
 
 	void Actor::updateWeapon() {
-		const WeaponDesc *weapon_desc = currentWeapon();
+		const WeaponDesc *weapon_desc = m_inventory.weapon().desc();
 		WeaponClassId::Type class_id = weapon_desc? weapon_desc->class_id : WeaponClassId::unarmed;
+		DASSERT(canEquipWeapon(class_id));
+
 		if(class_id != m_weapon_class_id) {
 			m_weapon_class_id = class_id;
 			setSequence(m_action_id);
 		}
+	}
+
+	bool Actor::canEquipItem(int item_id) const {
+		DASSERT(item_id >= 0 && item_id < m_inventory.size());
+		const Item &item = m_inventory[item_id].item;
+		if(item.typeId() == ItemTypeId::weapon)
+			return canEquipWeapon(Weapon(item).classId());
+		else if(item.typeId() == ItemTypeId::armour)
+			return canEquipArmour(Armour(item).classId());
+
+		return true;
+	}
+
+	bool Actor::canEquipWeapon(WeaponClassId::Type class_id) const {
+		for(int s = 0; s < StanceId::count; s++) {
+			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::standing, class_id) == -1)
+				return false;
+			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::walking, class_id) == -1)
+				return false;
+		}
+
+		return true;
+	}
+
+	bool Actor::canEquipArmour(ArmourClassId::Type class_id) const {
+		return true;
 	}
 
 	void Actor::setNextOrder(const Order &order) {
@@ -257,10 +310,11 @@ namespace game {
 	void Actor::issueNextOrder() {
 		if(m_order.id == OrderId::do_nothing && m_next_order.id == OrderId::do_nothing)
 			return;
-
+		
 		if(m_order.id == OrderId::change_stance) {
 			m_stance_id = (StanceId::Type)(m_stance_id - m_order.change_stance.next_stance);
 			//TODO: different bboxes for stances
+			//TODO: support for non-quadratic actor bboxes
 	//		m_bbox = m_sprite->m_bbox;
 	//		if(m_stance_id == StanceId::crouching && m_bbox.y == 9)
 	//			m_bbox.y = 5;
@@ -269,9 +323,6 @@ namespace game {
 			DASSERT(m_stance_id >= 0 && m_stance_id < StanceId::count);
 		}
 		
-		if(m_order.id == OrderId::drop_item || m_order.id == OrderId::interact)	
-			updateWeapon();
-
 		if(m_next_order.id == OrderId::move) {
 			issueMoveOrder();
 			m_next_order = doNothingOrder();
@@ -333,8 +384,34 @@ namespace game {
 				setSequence(ActionId::attack1);
 			}
 			else if(m_next_order.id == OrderId::drop_item) {
-				setSequence(ActionId::pickup);
+				int item_id = m_next_order.drop_item.item_id;
+				if(item_id >= 0 && item_id < m_inventory.size())
+					setSequence(ActionId::pickup);
+				else
+					m_next_order = doNothingOrder();
 			}
+			else if(m_next_order.id == OrderId::equip_item || m_next_order.id == OrderId::unequip_item) {
+				InventorySlotId::Type changed_slot = InventorySlotId::invalid;
+
+				if(m_next_order.id == OrderId::equip_item) {
+					int item_id = m_next_order.equip_item.item_id;
+					if(item_id >= 0 && item_id < m_inventory.size() && canEquipItem(item_id))
+						changed_slot = m_inventory.equip(item_id);
+				}
+				else {
+					InventorySlotId::Type slot_id = m_next_order.unequip_item.slot_id;
+					if(m_inventory.unequip(slot_id) != -1)
+						changed_slot = slot_id;
+				}
+
+				m_next_order = doNothingOrder();
+
+				if(changed_slot == InventorySlotId::armour)
+					updateArmour();
+				else if(changed_slot == InventorySlotId::weapon)
+					updateWeapon();
+			}
+
 
 			m_order = m_next_order;
 			m_next_order = doNothingOrder();
@@ -408,9 +485,8 @@ namespace game {
 		
 		int seq_id = m_anim_map.sequenceId(m_stance_id, action_id, m_weapon_class_id);
 		if(seq_id == -1) {
-			seq_id = m_anim_map.sequenceId(m_stance_id, action_id, WeaponClassId::unarmed);
-			if(seq_id == -1)
-				printf("Sequence: %s not found!\n", m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_class_id).c_str());
+			printf("Sequence: %s not found!\n",
+					m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_class_id).c_str());
 			ASSERT(seq_id != -1);
 		}
 
@@ -465,29 +541,35 @@ namespace game {
 	}
 
 	void Actor::onPickupEvent() {
+		//TODO: magic_hi animation when object to be picked up is high enough
 		if(m_order.id == OrderId::interact) {
 			DASSERT(m_order.interact.target->entityType() == entity_item);
 			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.interact.target);
 			Item item = item_entity->item();
 			item_entity->remove();
-			m_inventory.add(item);
+			m_inventory.add(item, 1);
 		}
 		else if(m_order.id == OrderId::drop_item) {
-			Item item = m_inventory.drop();	
-			if(item.isValid())
-				m_world->addEntity(new ItemEntity(item, pos())); 
+			int item_id = m_order.drop_item.item_id;
+			DASSERT(item_id >= 0 && item_id < m_inventory.size());
+			Item item = m_inventory[item_id].item;
+			m_inventory.remove(item_id, 1);
+			m_world->addEntity(new ItemEntity(item, pos())); 
 		}
 	}
 		
 	void Actor::onFireEvent(const int3 &off) {
-		if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack) {
+		const Weapon &weapon = m_inventory.weapon();
+		if(!weapon.isValid() || m_order.id != OrderId::attack)
+			return;
+
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
-			float3 pos = boundingBox().center();
-			pos.y = this->pos().y;
-			float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
-			PProjectile projectile(new Projectile(ProjectileTypeId::plasma, pos + offset, m_order.attack.target_pos, this));
-			m_world->spawnProjectile(std::move(projectile));
-		}
+		float3 pos = boundingBox().center();
+		pos.y = this->pos().y;
+		float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
+		PProjectile projectile(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
+												pos + offset, m_order.attack.target_pos, this));
+		m_world->spawnProjectile(std::move(projectile));
 	}
 
 	void Actor::onSoundEvent() {

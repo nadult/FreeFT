@@ -15,7 +15,6 @@ namespace game {
 			count,
 		};
 	}
-
 	namespace ActionId {
 		enum Type {
 			standing,
@@ -45,6 +44,8 @@ namespace game {
 			change_stance,
 			interact,
 			drop_item,
+			equip_item,
+			unequip_item,
 
 			count,
 		};
@@ -67,6 +68,9 @@ namespace game {
 			InteractionMode mode;
 			bool waiting_for_move;
 		};
+		struct DropItem { int item_id; };
+		struct EquipItem { int item_id; };
+		struct UnequipItem { InventorySlotId::Type slot_id; };
 
 		OrderId::Type id;
 		union {
@@ -74,6 +78,9 @@ namespace game {
 			Attack attack;
 			ChangeStance change_stance;
 			Interact interact;
+			DropItem drop_item;
+			EquipItem equip_item;
+			UnequipItem unequip_item;
 		};
 	};
 		
@@ -82,15 +89,9 @@ namespace game {
 	Order changeStanceOrder(int next_stance);
 	Order attackOrder(int attack_mode, const int3 &target_pos);
 	Order interactOrder(Entity *target, InteractionMode mode);
-	Order dropItemOrder();
-
-	class ActorInventory: public Inventory {
-	public:
-		void add(const Item &item);
-		Item drop();
-
-		Item armour, weapon, ammo;
-	};
+	Order dropItemOrder(int item_id);
+	Order equipItemOrder(int item_id);
+	Order unequipItemOrder(InventorySlotId::Type item_id);
 
 	class ActorAnimMap {
 	public:
@@ -107,12 +108,12 @@ namespace game {
 
 	class Actor: public Entity {
 	public:
-		Actor(const char *spr_name, const float3 &pos);
+		Actor(ActorTypeId::Type, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 		virtual EntityFlags entityType() const { return entity_actor; }
 
 		void setNextOrder(const Order &order);
-		const WeaponDesc *currentWeapon() const;
+		const ActorInventory &inventory() const { return m_inventory; }
 
 	protected:
 		void think();
@@ -121,6 +122,14 @@ namespace game {
 		void issueMoveOrder();
 
 		void updateWeapon();
+		void updateArmour();
+
+		bool canEquipItem(int item_id) const;
+
+		// TODO: Some weapons can be equipped, but cannot be fired in every possible stance
+		bool canEquipWeapon(WeaponClassId::Type) const;
+		bool canEquipArmour(ArmourClassId::Type) const;
+
 		void setSequence(ActionId::Type);
 		void lookAt(const float3 &pos, bool at_once = false);
 
@@ -144,7 +153,10 @@ namespace game {
 		int m_path_pos;
 		vector<int3> m_path;
 
+		const ActorTypeId::Type m_type_id;
 		WeaponClassId::Type m_weapon_class_id;
+		ArmourClassId::Type m_armour_class_id;
+
 		ActionId::Type m_action_id;
 		StanceId::Type m_stance_id;
 

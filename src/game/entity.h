@@ -67,6 +67,7 @@ namespace game {
 		virtual void onStepEvent(bool left_foot) { }
 		virtual void onPickupEvent() { }
 
+		void changeSprite(const char *new_name, bool update_bbox);
 		void playSequence(int seq_id);
 	
 		// you shouldn't call playAnimation from this method	
