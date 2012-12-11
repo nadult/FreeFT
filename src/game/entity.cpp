@@ -151,4 +151,14 @@ namespace game {
 		setDirAngle(vectorToAngle(vec));
 	}
 
+	bool areAdjacent(const Entity &a, const Entity &b) {
+		FBox box_a = a.boundingBox(), box_b = b.boundingBox();
+
+		if(box_a.max.y < box_b.min.y || box_b.max.y < box_b.min.y)
+			return false;
+
+		return distanceSq(	FRect(box_a.min.xz(), box_a.max.xz()),
+							FRect(box_b.min.xz(), box_b.max.xz())) <= 1.0f;
+	}
+
 }

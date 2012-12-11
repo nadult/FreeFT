@@ -3,6 +3,7 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"
+#include <cstdlib>
 
 using namespace gfx;
 

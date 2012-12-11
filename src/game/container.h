@@ -16,6 +16,7 @@ namespace game
 
 		void open();
 		void close();
+		void setKey(const Item&);
 
 		virtual void interact(const Entity*);
 
@@ -41,6 +42,7 @@ namespace game
 		State m_state, m_target_state;
 		bool m_is_always_opened;
 		bool m_update_anim;
+		Item m_key;
 
 		int m_seq_ids[state_count];
 		Inventory m_inventory;

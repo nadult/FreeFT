@@ -2,6 +2,7 @@
 #define GAME_DOOR_H
 
 #include "game/entity.h"
+#include "game/item.h"
 
 
 namespace game
@@ -39,6 +40,7 @@ namespace game
 
 		bool isOpened() const { return m_state == state_opened_in || m_state == state_opened_out; }
 		Type type() const { return m_type; }
+		void setKey(const Item&);
 		
 	private:
 		virtual void think();
@@ -48,6 +50,7 @@ namespace game
 		State m_state;
 		const Type m_type;
 		bool m_update_anim;
+		Item m_key;
 
 		int m_seq_ids[state_count];
 	};

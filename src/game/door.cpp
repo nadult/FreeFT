@@ -1,6 +1,8 @@
 #include "game/door.h"
 #include "gfx/sprite.h"
 #include "game/world.h"
+#include "game/actor.h"
+#include <cstdio>
 
 namespace game {
 
@@ -50,13 +52,27 @@ namespace game {
 
 		setBBox(computeBBox(m_state));
 	}
+	
+	void Door::setKey(const Item &key) {
+		DASSERT(!key.isValid() || key.typeId() == ItemTypeId::other);
+		m_key = key;
+	}
 
 	void Door::interact(const Entity *interactor) {
 		State target, result = m_state;
 		if(isOpened())
 			target = state_closed;
-		else
+		else {
+			if(m_key.isValid()) {
+				const Actor *actor = dynamic_cast<const Actor*>(interactor);
+				if(!actor || actor->inventory().find(m_key) == -1) {
+					printf("Key required!\n");
+					return;
+				}
+			}
+
 			target = m_type == type_rotating_out? state_opened_out : state_opened_in;
+		}
 
 		for(int n = 0; n < COUNTOF(s_transitions); n++)
 			if(s_transitions[n].current == m_state && s_transitions[n].target == target) {

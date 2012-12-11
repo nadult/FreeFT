@@ -1,5 +1,7 @@
 #include "game/container.h"
+#include "game/actor.h"
 #include "gfx/sprite.h"
+#include <cstdio>
 
 namespace game {
 
@@ -25,14 +27,27 @@ namespace game {
 			playSequence(m_seq_ids[m_state]);
 	}
 
+	void Container::setKey(const Item &key) {
+		DASSERT(!key.isValid() || key.typeId() == ItemTypeId::other);
+		m_key = key;
+	}
+
 	void Container::interact(const Entity *interactor) {
 		if(m_is_always_opened)
 			return;
 		
 		if(isOpened())
 			close();
-		else
+		else {
+			if(m_key.isValid()) {
+				const Actor *actor = dynamic_cast<const Actor*>(interactor);
+				if(!actor || actor->inventory().find(m_key) == -1) {
+					printf("Key required!\n");
+					return;
+				}
+			}
 			open();
+		}
 	}
 
 	void Container::open() {

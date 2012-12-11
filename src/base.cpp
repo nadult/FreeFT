@@ -1,5 +1,6 @@
 #include "base.h"
 #include <cmath>
+#include <cstdlib>
 
 #ifdef WIN32
 void sincosf(float rad, float *s, float *c) {

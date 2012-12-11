@@ -69,6 +69,7 @@
    bboxów
  - pomysł na poprawienie renderingu overlapujących się obiektów: od bboxów odjąć część wspólną i dopiero
   wtedy je porównać
+ - support dla aktorów o różnych wymiarach
 
 
 4. Bajery

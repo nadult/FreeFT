@@ -43,11 +43,11 @@ int safe_main(int argc, char **argv)
 
 	World world("data/tile_map.xml");
 
-	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, 1, 70)));
+	Actor *actor = world.addEntity(new Actor(ActorTypeId::female, float3(100, 1, 70)));
 
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
-	world.addEntity(new Container("containers/Fridge S", float3(134, 1, 25)));
+	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(134, 1, 25)));
 	world.addEntity(new Container("containers/Ice Chest N", float3(120, 1, 25)));
 
 	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 42), Door::type_rotating));
@@ -57,12 +57,18 @@ int safe_main(int argc, char **argv)
 	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, 1, 92), Door::type_rotating, float2(0, -1)));
 	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, 1, 92), Door::type_sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
+	fridge->setDir(float2(-1, 0));
+	door->setKey(ItemDesc::find("prison_key"));
+	fridge->setKey(ItemDesc::find("prison_key"));
 
-	world.addEntity(new ItemEntity(ItemDesc::find("laser_rifle"),		float3( 85, 1, 108)));
-	world.addEntity(new ItemEntity(ItemDesc::find("plasma_rifle"),		float3( 92, 1, 100)));
-	world.addEntity(new ItemEntity(ItemDesc::find("m60"),				float3(100, 1, 100)));
-	world.addEntity(new ItemEntity(ItemDesc::find("power_armour"),		float3(100, 1, 108)));
-	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"),	float3( 92, 1, 108)));
+	chest->inventory().add(ItemDesc::find("laser_rifle"), 1);
+	chest->inventory().add(ItemDesc::find("plasma_rifle"), 1);
+	chest->inventory().add(ItemDesc::find("fusion_cell"), 100);
+	chest->inventory().add(ItemDesc::find("prison_key"), 1);
+	fridge->inventory().add(ItemDesc::find("power_armour"), 1);
+	fridge->inventory().add(ItemDesc::find("m60"), 1);
+
+	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, 1, 60)));
 
 	world.updateNavigationMap(true);
 
@@ -70,7 +76,6 @@ int safe_main(int argc, char **argv)
 			actor->boundingBox().width(),
 			actor->boundingBox().height(),
 			actor->boundingBox().depth());
-
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
@@ -85,7 +90,7 @@ int safe_main(int argc, char **argv)
 
 	const TileMap &tile_map = world.tileMap();
 
-	int inventory_sel = -1;
+	int inventory_sel = -1, container_sel = -1;
 
 	while(pollEvents()) {
 		if(isKeyDown(Key_esc))
@@ -131,23 +136,6 @@ int safe_main(int argc, char **argv)
 			world.naviMap().removeColliders();
 		}
 
-		if(item_debug) {
-			if(isKeyDown(Key_up))
-				inventory_sel--;
-			if(isKeyDown(Key_down))
-				inventory_sel++;
-			inventory_sel = clamp(inventory_sel, -2, actor->inventory().size() - 1);
-
-			if(isKeyDown('D') && inventory_sel >= 0)
-				actor->setNextOrder(dropItemOrder(inventory_sel));
-			else if(isKeyDown('E') && inventory_sel >= 0)
-				actor->setNextOrder(equipItemOrder(inventory_sel));
-			else if(isKeyDown('E') && inventory_sel < 0) {
-				InventorySlotId::Type slot_id = InventorySlotId::Type(-inventory_sel - 1);
-				actor->setNextOrder(unequipItemOrder(slot_id));
-			}
-		}
-
 		double time = getTime();
 		if(!navi_debug)
 			world.updateNavigationMap(false);
@@ -185,32 +173,67 @@ int safe_main(int argc, char **argv)
 
 		renderer.render();
 		lookAt(view_pos);
+			
+		lookAt({0, 0});
+		drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
+		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
 		{
-			lookAt({0, 0});
-			
-			drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
-			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
-
 			gfx::PFont font = gfx::Font::mgr["arial_24"];
+			
+			float3 isect_pos = ray.at(box_isect.distance);
+			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)",
+							isect_pos.x, isect_pos.y, isect_pos.z);
+		}
 
-			float3 pos = ray.at(box_isect.distance);
-			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", pos.x, pos.y, pos.z);
-
-			if(item_debug) {
-				string inv_info = actor->inventory().printMenu(inventory_sel);
-				IRect extents = font->evalExtents(inv_info.c_str());
-				font->drawShadowed(int2(0, config.resolution.y - extents.height()),
-									Color::white, Color::black, "%s", inv_info.c_str());
+		if(item_debug) {
+			if(isKeyPressed(Key_lctrl)) {
+				if(isKeyDown(Key_up))
+					container_sel--;
+				if(isKeyDown(Key_down))
+					container_sel++;
+			}
+			else {
+				if(isKeyDown(Key_up))
+					inventory_sel--;
+				if(isKeyDown(Key_down))
+					inventory_sel++;
 			}
 
-//			double time = GetTime();
-//			double frameTime = time - lastFrameTime;
-//			lastFrameTime = time;
-			
-//			string profData = Profiler::getStats();
-//			Profiler::nextFrame();
-//			printf("%s\n", profData.c_str());
+			Container *container = dynamic_cast<Container*>(isect.entity());
+			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
+				container = nullptr;
+
+			inventory_sel = clamp(inventory_sel, -2, actor->inventory().size() - 1);
+			container_sel = clamp(container_sel, 0, container? container->inventory().size() - 1 : 0);
+
+			if(isKeyDown('D') && inventory_sel >= 0)
+				actor->setNextOrder(dropItemOrder(inventory_sel));
+			else if(isKeyDown('E') && inventory_sel >= 0)
+				actor->setNextOrder(equipItemOrder(inventory_sel));
+			else if(isKeyDown('E') && inventory_sel < 0) {
+				InventorySlotId::Type slot_id = InventorySlotId::Type(-inventory_sel - 1);
+				actor->setNextOrder(unequipItemOrder(slot_id));
+			}
+
+			if(container) {
+				if(isKeyDown(Key_right) && inventory_sel >= 0)
+					actor->setNextOrder(transferItemOrder(container, transfer_to, inventory_sel, 1));
+				if(isKeyDown(Key_left))
+					actor->setNextOrder(transferItemOrder(container, transfer_from, container_sel, 1));
+			}
+
+			string inv_info = actor->inventory().printMenu(inventory_sel);
+			string cont_info = container? container->inventory().printMenu(container_sel) : string();
+				
+			gfx::PFont font = gfx::Font::mgr["arial_16"];
+			IRect extents = font->evalExtents(inv_info.c_str());
+			font->drawShadowed(int2(0, config.resolution.y - extents.height()),
+							Color::white, Color::black, "%s", inv_info.c_str());
+
+			extents = font->evalExtents(cont_info.c_str());
+			font->drawShadowed(int2(config.resolution.x - extents.width(), config.resolution.y - extents.height()),
+							Color::white, Color::black, "%s", cont_info.c_str());
 		}
 
 		swapBuffers();

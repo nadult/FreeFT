@@ -1,5 +1,6 @@
 #include "ui/window.h"
 #include "gfx/device.h"
+#include <cstdlib>
 
 using namespace gfx;
 

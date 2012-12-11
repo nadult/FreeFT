@@ -49,8 +49,8 @@ namespace game {
 
 	DEFINE_STRINGS( InventorySlotId,
 		"weapon",
-		"armour"
-		"ammo",
+		"armour",
+		"ammo"
 	)
 
 	DEFINE_STRINGS( ItemTypeId,
@@ -63,7 +63,9 @@ namespace game {
 	DEFINE_STRINGS( ActorTypeId,
 		"male",
 		"female",
-		"ghoul"
+		"ghoul",
+		"vault_male",
+		"vault_female"
 	)
 
 	DEFINE_STRINGS( ProjectileTypeId,

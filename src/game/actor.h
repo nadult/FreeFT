@@ -46,6 +46,7 @@ namespace game {
 			drop_item,
 			equip_item,
 			unequip_item,
+			transfer_item,
 
 			count,
 		};
@@ -55,6 +56,11 @@ namespace game {
 		interact_normal,
 		interact_pickup,
 		interact_use_item,
+	};
+
+	enum TransferMode {
+		transfer_to,
+		transfer_from,
 	};
 
 	struct Order {
@@ -71,6 +77,7 @@ namespace game {
 		struct DropItem { int item_id; };
 		struct EquipItem { int item_id; };
 		struct UnequipItem { InventorySlotId::Type slot_id; };
+		struct TransferItem { Entity *target; int item_id, count; TransferMode mode; };
 
 		OrderId::Type id;
 		union {
@@ -81,6 +88,7 @@ namespace game {
 			DropItem drop_item;
 			EquipItem equip_item;
 			UnequipItem unequip_item;
+			TransferItem transfer_item;
 		};
 	};
 		
@@ -89,7 +97,12 @@ namespace game {
 	Order changeStanceOrder(int next_stance);
 	Order attackOrder(int attack_mode, const int3 &target_pos);
 	Order interactOrder(Entity *target, InteractionMode mode);
+
+	//TODO: zamiast idkow, w rozkazach przekazywac cale obiekty? jesli, np.
+	//w trakcje wykonywania rozkazu zmieni sie stan kontenera, to zostanie
+	//przekazany nie ten item co trzeba
 	Order dropItemOrder(int item_id);
+	Order transferItemOrder(Entity *target, TransferMode mode, int item_id, int count);
 	Order equipItemOrder(int item_id);
 	Order unequipItemOrder(InventorySlotId::Type item_id);
 
@@ -118,6 +131,7 @@ namespace game {
 	protected:
 		void think();
 
+		//TODO: orders are getting too complicated, refactor them
 		void issueNextOrder();
 		void issueMoveOrder();
 
@@ -127,6 +141,8 @@ namespace game {
 		bool canEquipItem(int item_id) const;
 
 		// TODO: Some weapons can be equipped, but cannot be fired in every possible stance
+		// What sux even more: some weapons can be fired only when actor has the armour on
+		// (some sprites have some animations missing...)!
 		bool canEquipWeapon(WeaponClassId::Type) const;
 		bool canEquipArmour(ArmourClassId::Type) const;
 

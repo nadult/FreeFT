@@ -3,6 +3,7 @@
 #include "sys/frame_allocator.h"
 #include <memory.h>
 #include <cstdio>
+#include <cstdlib>
 
 namespace sys {
 
@@ -21,8 +22,8 @@ namespace sys {
 
 		if(!out) {
 			//TODO: backtrace
-			printf("Allocation error (requested bytes: %llu)!\nTODO: write proper out of memory handler.\n",
-					(unsigned long long)size);
+			printf("Allocation error (requested bytes: %lu)!\nTODO: write proper out of memory handler.\n",
+					(unsigned long)size);
 			exit(0);
 		}
 

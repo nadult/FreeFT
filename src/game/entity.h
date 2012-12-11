@@ -91,6 +91,8 @@ namespace game {
 		float m_dir_angle;
 	};
 
+	bool areAdjacent(const Entity&, const Entity&);
+
 	typedef std::unique_ptr<Entity> PEntity;
 
 }

@@ -49,7 +49,9 @@ namespace game {
 	DECLARE_ENUM(ActorTypeId,
 		male,
 		female,
-		ghoul
+		ghoul,
+		vault_male,
+		vault_female
 	);
 
 	DECLARE_ENUM(ProjectileTypeId,

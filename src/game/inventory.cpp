@@ -1,8 +1,9 @@
 #include "game/inventory.h"
+#include <cstdio>
 
 namespace game {
 
-	int Inventory::find(const Item &item) {
+	int Inventory::find(const Item &item) const {
 		for(int n = 0; n < size(); n++)
 			if(m_entries[n].item == item)
 				return n;
@@ -45,6 +46,22 @@ namespace game {
 			sum += double(m_entries[n].item.weight()) * double(m_entries[n].count);
 		return float(sum);
 	}
+
+	const string Inventory::printMenu(int select) const {
+		char buf[1024], *ptr = buf, *end = buf + sizeof(buf);
+		const char *sel = "(*) ", *desel = "( ) ";
+		buf[0] = 0;
+
+		for(int n = 0; n < size(); n++) {
+			const Entry &entry = (*this)[n];
+			ptr += snprintf(ptr, end - ptr, "%sitem: %s (type: %s)", select == n? sel : desel,
+					entry.item.name(), ItemTypeId::toString(entry.item.typeId()));
+			ptr += snprintf(ptr, end - ptr, entry.count > 1? " [%d]\n" : "\n", entry.count);
+		}
+
+		return string(buf);
+	}
+
 
 	InventorySlotId::Type ActorInventory::equip(int id) {
 		DASSERT(id >= 0 && id < size());
@@ -91,15 +108,7 @@ namespace game {
 				armour().isValid()? armour().name() : "none");
 		ptr += snprintf(ptr, end - ptr, "%sweapon: %s\n", select == -1? sel : desel,
 				weapon().isValid()? weapon().name() : "none");
-
-		for(int n = 0; n < size(); n++) {
-			const Entry &entry = (*this)[n];
-			ptr += snprintf(ptr, end - ptr, "%sitem: %s (type: %s)", select == n? sel : desel,
-					entry.item.name(), ItemTypeId::toString(entry.item.typeId()));
-			ptr += snprintf(ptr, end - ptr, entry.count > 1? " [%d]\n" : "\n", entry.count);
-		}
-
-		return string(buf);
+		return string(buf) + Inventory::printMenu(select);
 	}
 
 }
