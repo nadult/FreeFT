@@ -37,7 +37,7 @@ namespace ui {
 
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const Tile *tile = m_tile_list[n].tile;
-			tile->draw(m_tile_list[n].pos - tile->GetBounds().min - offset);
+			tile->draw(m_tile_list[n].pos - tile->rect().min - offset);
 		}
 		
 		DTexture::bind0();
@@ -45,8 +45,8 @@ namespace ui {
 		if(m_selection) {
 			int2 pos = m_selection->pos - offset;
 
-			lookAt(-clippedRect().min - pos - m_selection->tile->m_offset);
-			IBox box(int3(0, 0, 0), m_selection->tile->m_bbox);
+			lookAt(-clippedRect().min - pos + m_selection->tile->rect().min);
+			IBox box(int3(0, 0, 0), m_selection->tile->bboxSize());
 			drawBBox(box);
 		//	drawRect(IRect(pos, pos + m_selection->size));
 		}

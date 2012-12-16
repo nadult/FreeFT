@@ -401,14 +401,16 @@ namespace gfx
 		return frame_id;
 	}
 
-	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id, IRect *rect) const {
+	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id) const {
 		frame_id = accessFrame(seq_id, frame_id, dir_id);
 		const Collection &collection = m_collections[m_sequences[seq_id].collection_id];
-
-		if(rect)
-			*rect = collection.rects[frame_id * collection.m_dir_count + dir_id];
-
 		return collection.getFrame(frame_id, dir_id);
+	}
+
+	IRect Sprite::getRect(int seq_id, int frame_id, int dir_id) const {
+		frame_id = accessFrame(seq_id, frame_id, dir_id);
+		const Collection &collection = m_collections[m_sequences[seq_id].collection_id];
+		return collection.rects[frame_id * collection.m_dir_count + dir_id] - m_offset;
 	}
 		
 	bool Sprite::pixelTest(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const {

@@ -3,6 +3,7 @@
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 #include "game/world.h"
+#include "sys/profiler.h"
 
 using namespace gfx;
 
@@ -38,14 +39,17 @@ namespace game {
 	}
 
 	void Entity::addToRender(gfx::SceneRenderer &out) const {
-		IRect rect;
+		PROFILE("Entity::addToRender");
+		IRect rect = m_sprite->getRect(m_seq_id, m_frame_id, m_dir_idx);
+		if(!areOverlapping(FRect(out.targetRect()), FRect(rect) + worldToScreen(m_pos)))
+			return;
 
 		//TODO: do not allocate texture every frame
 		PTexture spr_tex = new DTexture;
-		gfx::Texture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx, &rect);
+		gfx::Texture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx);
 		spr_tex->setSurface(tex);
 
-		out.add(spr_tex, rect - m_sprite->offset(), m_pos, m_bbox);
+		out.add(spr_tex, rect, m_pos, m_bbox);
 	//	out.addBox(boundingBox(), m_world && m_world->isColliding(boundingBox())? Color::red : Color::white);
 	}
 		

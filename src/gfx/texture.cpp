@@ -37,8 +37,10 @@ namespace gfx
 	}
 
 	void Texture::serialize(Serializer &sr) {
-		if(sr.isSaving())
-			THROW("Saving textures not supported (yet)");
+		if(sr.isSaving()) {
+			saveTGA(sr);
+			return;
+		}
 
 		string fileName = sr.name(), ext;
 		{

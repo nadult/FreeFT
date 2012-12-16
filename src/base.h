@@ -104,6 +104,7 @@ struct float2
 	explicit operator int2() const { return int2((int)x, (int)y); }
 
 	float2 operator+(const float2 &rhs) const { return float2(x + rhs.x, y + rhs.y); }
+	float2 operator*(const float2 &rhs) const { return float2(x * rhs.x, y * rhs.y); }
 	float2 operator-(const float2 &rhs) const { return float2(x - rhs.x, y - rhs.y); }
 	float2 operator*(float s) const { return float2(x * s, y * s); }
 	float2 operator/(float s) const { return *this * (1.0f / s); }
@@ -255,7 +256,7 @@ struct Box
 	Box operator+(const Box &rhs) { return Box(::min(min, rhs.min), ::max(max, rhs.max)); }
 
 	bool isEmpty() const { return max.x <= min.x || max.y <= min.y || max.z <= min.z; }
-	bool isInside(const int3 &point) const {
+	bool isInside(const Type3 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y &&
 				point.z >= min.z && point.z < max.z;

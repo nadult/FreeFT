@@ -20,17 +20,44 @@
 #include "game/door.h"
 #include "game/item.h"
 #include "sys/config.h"
+#include "bvh.h"
 
 using namespace gfx;
 using namespace game;
 
+float frand() {
+	return float(rand()) / float(RAND_MAX);
+}
+
+void bvhTest() {
+	BVH<int> tree(FBox(0, 0, 0, 100, 100, 100));
+	for(int n = 0; n < 1000000; n++) {
+		if(rand() % 2)
+			tree.addObject(n, FBox(frand() * 90, frand() * 90, frand() * 90, frand() * 10, frand() * 10, frand() * 10));
+		else if(tree.m_objects.size())
+			tree.removeObject(rand() % tree.m_objects.size());
+
+	}
+	int vis = tree.print();
+
+	int count = 0;
+	for(int n = 0; n < (int)tree.m_objects.size(); n++)
+		if(tree.m_objects[n].first != -1)
+			count++;
+	printf("objects: %d nodes: %d visited: %d\n", count, tree.m_nodes.size(), vis);
+}
+
 
 int safe_main(int argc, char **argv)
 {
+//	bvhTest();
+//	return 0;
+
 	Config config = loadConfig("game");
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
+	printDeviceInfo();
 
 	setWindowTitle("FTremake ver 0.02");
 	grabMouse(false);
@@ -43,7 +70,7 @@ int safe_main(int argc, char **argv)
 
 	World world("data/tile_map.xml");
 
-	Actor *actor = world.addEntity(new Actor(ActorTypeId::female, float3(100, 1, 70)));
+	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, 1, 70)));
 
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
@@ -90,9 +117,22 @@ int safe_main(int argc, char **argv)
 
 	const TileMap &tile_map = world.tileMap();
 
+	PTexture atlas; {
+		vector<gfx::Tile*> tiles;
+		for(int n = 0; n < tile_map.nodeCount(); n++)
+			for(int i = 0; i < tile_map(n).instanceCount(); i++)
+				tiles.push_back(const_cast<gfx::Tile*>(tile_map(n)(i).m_tile));
+		sort(tiles.begin(), tiles.end());
+		tiles.resize(unique(tiles.begin(), tiles.end()) - tiles.begin());
+
+		atlas = makeTileAtlas(tiles);
+		Saver("atlas.tga") & *atlas;
+	}
 	int inventory_sel = -1, container_sel = -1;
+	string prof_stats;
 
 	while(pollEvents()) {
+		double loop_start = getTime();
 		if(isKeyDown(Key_esc))
 			break;
 
@@ -178,13 +218,13 @@ int safe_main(int argc, char **argv)
 		drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
 		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
-		{
-			gfx::PFont font = gfx::Font::mgr["arial_24"];
-			
-			float3 isect_pos = ray.at(box_isect.distance);
-			font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)",
-							isect_pos.x, isect_pos.y, isect_pos.z);
-		}
+		DTexture::bind0();
+		drawQuad(0, 0, 250, 200, Color(0, 0, 0, 80));
+		
+		gfx::PFont font = gfx::Font::mgr["arial_16"];
+		float3 isect_pos = ray.at(box_isect.distance);
+		font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", isect_pos.x, isect_pos.y, isect_pos.z);
+		font->drawShadowed(int2(0, 20), Color::white, Color::black, "%s", prof_stats.c_str());
 
 		if(item_debug) {
 			if(isKeyPressed(Key_lctrl)) {
@@ -226,7 +266,6 @@ int safe_main(int argc, char **argv)
 			string inv_info = actor->inventory().printMenu(inventory_sel);
 			string cont_info = container? container->inventory().printMenu(container_sel) : string();
 				
-			gfx::PFont font = gfx::Font::mgr["arial_16"];
 			IRect extents = font->evalExtents(inv_info.c_str());
 			font->drawShadowed(int2(0, config.resolution.y - extents.height()),
 							Color::white, Color::black, "%s", inv_info.c_str());
@@ -237,6 +276,9 @@ int safe_main(int argc, char **argv)
 		}
 
 		swapBuffers();
+		Profiler::updateTimer("main_loop", getTime() - loop_start);
+		prof_stats = Profiler::getStats();
+		Profiler::nextFrame();
 	}
 
 	destroyWindow();

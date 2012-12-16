@@ -2,6 +2,7 @@
 #include "game/projectile.h"
 #include "navigation_bitmap.h"
 #include "sys/xml.h"
+#include "sys/profiler.h"
 #include <cstdio>
 
 namespace game {
@@ -37,6 +38,8 @@ namespace game {
 	}
 
 	void World::updateNavigationMap(bool full_recompute) {
+		PROFILE("updateNavigationMap");
+
 		if(full_recompute) {
 			NavigationBitmap bitmap(m_tile_map, m_navi_map.extend());
 			for(int n = 0; n < (int)m_entities.size(); n++)
@@ -63,6 +66,8 @@ namespace game {
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {
+		PROFILE("World::addToRender");
+
 		m_tile_map.addToRender(renderer);
 		for(int n = 0; n < (int)m_entities.size(); n++)
 			m_entities[n]->addToRender(renderer);
@@ -90,6 +95,8 @@ namespace game {
 	}
 
 	void World::simulate(double time_diff) {
+		PROFILE("World::simulate");
+
 		DASSERT(time_diff >= 0.0);
 		double max_time_diff = 1.0; //TODO: add warning?
 		time_diff = min(time_diff, max_time_diff);
@@ -114,6 +121,7 @@ namespace game {
 	}
 	
 	Intersection World::intersect(const Segment &segment, const Entity *ignore, ColliderFlags flags) const {
+		PROFILE("world::intersect");
 		Intersection out;
 
 		if(flags & collider_tiles) {
@@ -137,6 +145,7 @@ namespace game {
 	}
 
 	Intersection World::pixelIntersect(const int2 &screen_pos) const {
+		PROFILE("world::pixelIntersect");
 		FBox best_box;
 		Intersection out;
 		pair<int, int> tile = m_tile_map.pixelIntersect(screen_pos);
@@ -187,6 +196,7 @@ namespace game {
 	}
 		
 	vector<int2> World::findPath(int2 start, int2 end) const {
+		PROFILE_RARE("world::findPath");
 		return m_navi_map.findPath(start, end);
 	}
 	

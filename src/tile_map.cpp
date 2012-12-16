@@ -18,11 +18,11 @@ int3 TileInstance::pos() const {
 
 IBox TileInstance::boundingBox() const {
 	int3 pos = this->pos();
-	return IBox(pos, pos + m_tile->m_bbox);
+	return IBox(pos, pos + m_tile->bboxSize());
 }
 
 IRect TileInstance::screenRect() const {
-	return m_tile->GetBounds() + worldToScreen(pos());
+	return m_tile->rect() + worldToScreen(pos());
 }
 
 void TileInstance::setPos(int3 pos) {
@@ -41,7 +41,7 @@ bool TileMapNode::isColliding(const IBox &box) const {
 		DASSERT(instance.m_tile);
 
 		int3 tilePos = instance.pos();
-		IBox tileBox(tilePos, tilePos + instance.m_tile->m_bbox);
+		IBox tileBox(tilePos, tilePos + instance.m_tile->bboxSize());
 
 		if(areOverlapping(tileBox, box))
 			return true;
@@ -62,7 +62,7 @@ const TileInstance *TileMapNode::at(int3 pos) const {
 }
 
 void TileMapNode::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
-	if(test_for_collision && isColliding(IBox(pos, pos + tile.m_bbox)))
+	if(test_for_collision && isColliding(IBox(pos, pos + tile.bboxSize())))
 		return;
 	
 	DASSERT(isInside(pos));
@@ -289,22 +289,22 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			int3 pos = instance.pos() + node_pos;
 			
 			if(!tile->dTexture)
-				((gfx::Tile*)tile)->loadDTexture();
+				((gfx::Tile*)tile)->loadDeviceTexture();
 
 			gfx::PTexture tex = tile->dTexture;
-			out.add(tex, IRect(0, 0, tex->width(), tex->height()) - tile->m_offset, pos, tile->m_bbox);
+			out.add(tex, tile->rect(), pos, tile->bboxSize(), Color::white, tile->uvs);
 			if(instance.isSelected())
-				out.addBox(IBox(pos, pos + tile->m_bbox));
+				out.addBox(IBox(pos, pos + tile->bboxSize()));
 			vTiles++;
 		}
 	}
 	
-	Profiler::updateCounter(Profiler::cRenderedNodes, vNodes);
-	Profiler::updateCounter(Profiler::cRenderedTiles, vTiles);
+//	Profiler::updateCounter("rendered nodes", vNodes);
+//	Profiler::updateCounter("rendered tiles", vTiles);
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {
-	if(test_for_collision && isOverlapping(IBox(pos, pos + tile.m_bbox)))
+	if(test_for_collision && isOverlapping(IBox(pos, pos + tile.bboxSize())))
 		return;
 
 	int2 nodeCoord(pos.x / Node::size_x, pos.z / Node::size_z);
@@ -329,7 +329,7 @@ bool TileMap::isOverlapping(const IBox &box) const {
 }
 
 void TileMap::fill(const gfx::Tile &tile, const IBox &box) {
-	int3 bbox = tile.m_bbox;
+	int3 bbox = tile.bboxSize();
 
 	for(int x = box.min.x; x < box.max.x; x += bbox.x)
 		for(int y = box.min.y; y < box.max.y; y += bbox.y)

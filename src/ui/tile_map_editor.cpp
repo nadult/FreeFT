@@ -108,7 +108,7 @@ namespace ui {
 		int3 gbox = asXZY(m_grid_size, 1);
 
 		bool select_mode = m_mode == mSelecting;
-		int3 bbox = m_new_tile && !select_mode? m_new_tile->m_bbox : gbox;
+		int3 bbox = m_new_tile && !select_mode? m_new_tile->bboxSize() : gbox;
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
@@ -173,7 +173,7 @@ namespace ui {
 			entries = dirty_entries;
 		DASSERT(!entries.empty() && !dirty_entries.empty());
 
-		int3 bbox = m_new_tile->m_bbox;
+		int3 bbox = m_new_tile->bboxSize();
 
 		for(int x = fill_box.min.x; x < fill_box.max.x; x += bbox.x)
 			for(int z = fill_box.min.z; z < fill_box.max.z; z += bbox.z) {
@@ -189,7 +189,7 @@ namespace ui {
 		DASSERT(m_tile_group);
 		DASSERT(main_group_id >= 0 && main_group_id < m_tile_group->groupCount());
 
-		int3 bbox = m_new_tile->m_bbox;
+		int3 bbox = m_new_tile->bboxSize();
 		int main_surf = m_tile_group->groupSurface(main_group_id, 0);
 		for(int n = 1; n < TileGroup::Group::side_count; n++)
 			if(m_tile_group->groupSurface(main_group_id, n) != main_surf)
@@ -372,15 +372,15 @@ namespace ui {
 					int3 pos = instance.pos() + node_pos;
 					
 					gfx::PTexture tex = tile->dTexture;
-					IBox box = IBox({0,0,0}, tile->m_bbox) + pos;
+					IBox box = IBox({0,0,0}, tile->bboxSize()) + pos;
 					Color col =	box.max.y < m_selection.min.y? Color::gray :
 								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
 					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
 						col.r = col.g = 255;
 
-					renderer.add(tex, IRect({0, 0}, tex->size()) - tile->m_offset, pos, tile->m_bbox, col);
+					renderer.add(tex, tile->rect(), pos, tile->bboxSize(), col);
 					if(instance.isSelected())
-						renderer.addBox(IBox(pos, pos + tile->m_bbox));
+						renderer.addBox(IBox(pos, pos + tile->bboxSize()));
 				}
 			}
 					
@@ -411,7 +411,7 @@ namespace ui {
 		}
 		
 		if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom || m_mode == mAutoFilling) && m_new_tile) {
-			int3 bbox = m_new_tile->m_bbox;
+			int3 bbox = m_new_tile->bboxSize();
 		
 			for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
 				for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {

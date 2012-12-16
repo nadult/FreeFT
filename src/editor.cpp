@@ -74,7 +74,7 @@ public:
 		m_map.resize({16 * 64, 16 * 64});
 
 		loadTileGroup("data/tile_group.xml");
-		loadTileMap("data/tile_map.xml");
+//		loadTileMap("data/tile_map.xml");
 
 		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
 		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
@@ -249,8 +249,8 @@ int safe_main(int argc, char **argv)
 	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Snow/", FindFiles::regular_file | FindFiles::recursive);
 	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Rock/", FindFiles::regular_file | FindFiles::recursive);
 	findFiles(file_names, "refs/tiles/Generic tiles/Generic floors/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
+//	findFiles(file_names, "refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
+//	findFiles(file_names, "refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading... ");
 	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
@@ -266,7 +266,7 @@ int safe_main(int argc, char **argv)
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
 				tile->name = tile_path;
-				tile->loadDTexture();
+				tile->loadDeviceTexture();
 			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());

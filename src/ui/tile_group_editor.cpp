@@ -174,7 +174,7 @@ namespace {
 			entry.is_selected = m_mode == mAddRemove?
 				m_tile_group->isValidEntryId(entry.tile->m_temp, entry.tile) :
 				entry.group_id == m_selected_group_id;
-			entry.tile->draw(entry.pos - entry.tile->GetBounds().min - offset);
+			entry.tile->draw(entry.pos - entry.tile->rect().min - offset);
 		}
 		
 		DTexture::bind0();

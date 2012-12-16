@@ -45,7 +45,7 @@ namespace ui
 			entry.tile = m_model->get(n, entry.group_id);
 			entry.is_selected = false;
 			entry.model_id = n;
-			entry.size = entry.tile->GetBounds().size();
+			entry.size = entry.tile->rect().size();
 		}
 		std::stable_sort(m_entries.begin(), m_entries.end());
 

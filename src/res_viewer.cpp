@@ -55,8 +55,8 @@ public:
 		if(m_type == ResType::tile) {
 			const Tile *tile = static_cast<const Tile*>(m_resource.get());
 
-			lookAt(-pos - tile->m_offset);
-			IBox box(int3(0, 0, 0), tile->m_bbox);
+			lookAt(-pos + tile->rect().min);
+			IBox box(int3(0, 0, 0), tile->bboxSize());
 			tile->draw(int2(0, 0));
 
 			DTexture::bind0();
@@ -73,7 +73,6 @@ public:
 		}
 		else if(m_type == ResType::sprite) {
 			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
-			IRect srect;
 
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 
@@ -84,14 +83,14 @@ public:
 					m_frame_id = 0;
 			}
 
-			Texture tex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, &srect);
+			IRect rect = sprite->getRect(m_seq_id, m_frame_id, m_dir_id);
+			Texture tex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id);
 			DTexture dtex;
 			dtex.setSurface(tex);
 			dtex.bind();
 
 			IBox box({0,0,0}, sprite->boundingBox());
 			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));
-			IRect rect = srect - sprite->offset();
 			if(is_gui_image) {
 				rect -= rect.min;
 				brect -= brect.min;
@@ -221,7 +220,7 @@ public:
 				PTile tile = new Tile;
 				printf("Loading tile: %s\n", file_name);
 				Loader(file_name) & *tile;
-				tile->loadDTexture();
+				tile->loadDeviceTexture();
 				res = ::Resource(tile, id);
 			}
 			else if(strcasecmp(file_name + len - 4, ".spr") == 0) {

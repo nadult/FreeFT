@@ -19,6 +19,28 @@ namespace gfx
 		u8  imagedescriptor;
 	} __attribute__((packed));
 
+
+	void Texture::saveTGA(Serializer &sr) {
+		Header header;
+		memset(&header, 0, sizeof(header));
+
+		header.datatypecode = 2;
+		header.colourmapdepth = 32;
+		header.width = m_width;
+		header.height = m_height;
+		header.bitsperpixel = 32;
+		header.imagedescriptor = 8;
+
+		sr & header;
+		vector<Color> line(m_width);
+		for(int y = m_height - 1; y >= 0; y--) {
+			memcpy(&line[0], this->line(y), m_width * sizeof(Color));
+			for(int x = 0; x < m_width; x++)
+				line[x] = Color(line[x].b, line[x].g, line[x].r, line[x].a);
+			sr.data(&line[0], m_width * sizeof(Color));
+		}
+	}
+
 	void Texture::loadTGA(Serializer &sr) {
 		Header hdr;
 		enum { max_width = 2048 };
@@ -36,6 +58,10 @@ namespace gfx
 
 		unsigned bpp = hdr.bitsperpixel / 8;
 		resize(hdr.width, hdr.height);
+
+		bool v_flip = hdr.imagedescriptor & 16;
+		bool h_flip = hdr.imagedescriptor & 32;
+		ASSERT(!v_flip && !h_flip && "TODO");
 
 		if(bpp == 3) {
 			for(int y = m_height - 1; y >= 0; y--) {

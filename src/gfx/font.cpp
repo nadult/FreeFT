@@ -184,7 +184,7 @@ namespace gfx
 	}
 
 	void Font::draw(int2 pos, Color color, const char *format, ...) const {
-		char text[256];
+		char text[1024];
 		va_list ap;
 		va_start(ap, format);
 		vsnprintf(text, sizeof(text), format, ap);
@@ -193,7 +193,7 @@ namespace gfx
 		ASSERT(m_texture);
 		m_texture->bind();
 
-		enum { buf_size = 1024 };
+		enum { buf_size = 1024 * 4 };
 		float2 pos_buf[buf_size], uv_buf[buf_size];
 		int quad_count = genQuads(text, pos_buf, uv_buf, buf_size);
 
@@ -207,7 +207,7 @@ namespace gfx
 	}
 
 	void Font::drawShadowed(int2 pos, Color color, Color shadow, const char *format, ...) const {
-		char text[256];
+		char text[1024];
 		va_list ap;
 		va_start(ap, format);
 		vsnprintf(text, sizeof(text), format, ap);
@@ -216,7 +216,7 @@ namespace gfx
 		ASSERT(m_texture);
 		m_texture->bind();
 
-		enum { buf_size = 1024 };
+		enum { buf_size = 1024 * 4 };
 		float2 pos_buf[buf_size], uv_buf[buf_size];
 		int quad_count = genQuads(text, pos_buf, uv_buf, buf_size);
 

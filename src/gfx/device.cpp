@@ -157,6 +157,19 @@ namespace gfx
 		}
 	}
 
+	void printDeviceInfo() {
+		int max_tex_size;
+
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
+		const char *vendor = (const char*)glGetString(GL_VENDOR);
+		const char *renderer = (const char*)glGetString(GL_RENDERER);
+
+		printf(	"Opengl info\n"
+				"vendor: %s  renderer: %s\n"
+				"max texture size: %d\n",
+				vendor, renderer, max_tex_size);
+	}
+
 	void swapBuffers() { glfwSwapBuffers(); }
 	bool pollEvents() {
 		for(;;) {

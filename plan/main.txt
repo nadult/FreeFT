@@ -70,6 +70,8 @@
  - pomysł na poprawienie renderingu overlapujących się obiektów: od bboxów odjąć część wspólną i dopiero
   wtedy je porównać
  - support dla aktorów o różnych wymiarach
+ - podczas rozstawiania tile-i, jeśli koliduje, to znaleźć najbliższą pozycję na której można go wstawić
+   bez kolizji i tam go wyśpwetlać
 
 
 4. Bajery
@@ -80,6 +82,9 @@
  - rakiety naprowadzane laserowo
  - edytor sprite-ów
  - rozbić animację strzału na: rozpoczęcie celowania, celowanie, strzał / ogień ciągły, koniec celowania
+ - binarny diff do sprite-ów i tile-i; patch based filesystem przyda się przy modyfikacji zasobów z tacticsa:
+   najpierw konwertujemy je do własnego formatu, następnie aplikujemy patch-e i ew. kompresujemy lz4 w celu
+   zmniejszenia czasu ładowania
 
 
 Ostateczny cel: Prosta gra RPG zawierająca:

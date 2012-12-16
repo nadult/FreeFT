@@ -126,6 +126,8 @@ namespace gfx
 		void loadPNG(Serializer&);
 		void loadZAR(Serializer&);
 
+		void saveTGA(Serializer&);
+
 private:
 		vector<Color> data;
 		int m_width, m_height;

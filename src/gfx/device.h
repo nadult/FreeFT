@@ -109,6 +109,7 @@ namespace gfx
 
 	void createWindow(int2 size, bool fullscreen);
 	void destroyWindow();
+	void printDeviceInfo();
 
 	bool pollEvents();
 	void swapBuffers();

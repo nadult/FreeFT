@@ -69,7 +69,8 @@ namespace gfx {
 		bool isSequenceLooped(int seq_id) const;
 
 		int accessFrame(int seq_id, int frame_id, int dir_id) const;
-		Texture getFrame(int seq_id, int frame_id, int dir_id, IRect *rect = nullptr) const;
+		Texture getFrame(int seq_id, int frame_id, int dir_id) const;
+		IRect getRect(int seq_id, int frame_id, int dir_id) const;
 		bool pixelTest(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
 		int findSequence(const char *name) const;
@@ -83,7 +84,6 @@ namespace gfx {
 		const Sequence &operator[](int seq_id) const { return m_sequences[seq_id]; }
 
 		const int3 &boundingBox() const { return m_bbox; }
-		int2 offset() const { return m_offset; }
 		
 		static ResourceMgr<Sprite> mgr;
 

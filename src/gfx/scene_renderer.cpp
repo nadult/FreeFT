@@ -9,9 +9,10 @@ using std::pair;
 namespace gfx {
 
 	SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos) :m_viewport(viewport), m_view_pos(view_pos) {
+		m_target_rect = IRect(m_view_pos, m_view_pos + m_viewport.size());
 	}
 
-	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color) {
+	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color, FRect tex_rect) {
 		DASSERT(texture);
 
 		rect += (int2)worldToScreen(pos);
@@ -23,6 +24,7 @@ namespace gfx {
 		new_elem.bbox = bbox + pos;
 		new_elem.rect = rect;
 		new_elem.color = color;
+		new_elem.tex_rect = tex_rect;
 
 		m_elements.push_back(new_elem);
 	}
@@ -65,7 +67,7 @@ namespace gfx {
 	}
 
 	void SceneRenderer::render() {
-		PROFILE(tRendering)
+		PROFILE("SceneRenderer::render");
 
 		setScissorTest(true);
 		lookAt(m_view_pos - m_viewport.min);
@@ -152,14 +154,14 @@ namespace gfx {
 				const Element &elem = m_elements[gdata[i].second];
 				if(elem.texture) {
 					elem.texture->bind();
-					drawQuad(elem.rect.min, elem.rect.size(), elem.color);
+					drawQuad(elem.rect.min, elem.rect.size(), elem.tex_rect.min, elem.tex_rect.max, elem.color);
 				}
 				else {
 					DTexture::bind0();
 					drawBBox(elem.bbox, elem.color, true);
 				}
 			}
-
+			
 			g += count;
 		}
 
