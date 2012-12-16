@@ -7,6 +7,8 @@
 namespace gfx
 {
 
+	class SceneRenderer;
+
 	// TODO: naming convention, attribute hiding
 	struct Tile: public Resource {
 		Tile();
@@ -16,24 +18,30 @@ namespace gfx
 		static ResourceMgr<Tile> mgr;
 
 		string name;
-		Texture texture;
 
-		Ptr<DTexture> dTexture;
-		FRect uvs;
+		int width() const { return m_texture.width(); }
+		int height() const { return m_texture.height(); }
+		const int2 size() const { return m_texture.size(); }
 
-		int width() const { return texture.width(); }
-		int height() const { return texture.height(); }
 		const IRect rect() const;
 
+		const Texture &texture() const { return m_texture; }
+		PTexture deviceTexture() const { return m_dev_texture; }
 		void loadDeviceTexture();
+
 		void bindTextureAtlas(PTexture, const int2 &pos);
-		void draw(int2 pos, Color color = Color(255, 255, 255)) const;
+		void draw(const int2 &pos, Color color = Color::white) const;
+		void addToRender(SceneRenderer&, const int3 &pos, Color color = Color::white) const;
 
 		const int3 &bboxSize() const { return m_bbox; }
 
 		mutable uint m_temp;
 
 	protected:
+		Texture m_texture;
+		Ptr<DTexture> m_dev_texture;
+		FRect m_tex_coords;
+
 		int2 m_offset;
 		int3 m_bbox;
 	};

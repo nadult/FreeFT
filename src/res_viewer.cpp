@@ -29,9 +29,9 @@ class Resource {
 public:
 	Resource() :m_type(ResType::empty), m_id(-1) { }
 	Resource(PTile res, int id) :m_type(ResType::tile), m_id(id) {
-		DASSERT(res && res->dTexture);
+		DASSERT(res && res->deviceTexture());
 		m_resource = res.get();
-		m_rect_size = res->dTexture->size();
+		m_rect_size = res->size();
 	}
 
 	Resource(PTexture res, int id) :m_type(ResType::texture), m_id(id) {

@@ -58,6 +58,7 @@ public:
 		return out_box;
 	}
 
+	BVH() { }
 	BVH(const FBox &box) :m_box(box) {
 		m_nodes.push_back(Node(m_box, -1, -1, maximumAxis(m_box)));
 	}
@@ -143,6 +144,46 @@ public:
 	void addObject(T obj, FBox obj_box) {
 		m_objects.push_back(make_pair(obj, obj_box));
 		addChild(0, (int)m_objects.size() - 1, m_box, 0);
+	}
+
+	struct Intersection {
+		Intersection() :distance(constant::inf), obj_id(-1) { }
+		Intersection(int o, float d) :obj_id(o), distance(d) { }
+
+		int obj_id;
+		float distance;
+	};
+
+	Intersection intersect(const Segment &segment, int node_id) const {
+		Intersection out;
+		const Node &node = m_nodes[node_id];
+		if(node.isLeaf()) {
+			float dist = intersection(segment, m_objects[node.child_id].second);
+			if(dist != constant::inf)
+				return Intersection(node.child_id, dist);
+		}
+
+		bool left_first = (&segment.dir().x)[(int)node.axis] > 0.0f;
+		int first = node.left, second = node.right;
+		if(left_first)
+			swap(first, second);
+
+		if(first != -1 && intersection(segment, m_nodes[first].fit_box) != constant::inf)
+			out = intersect(segment, first);
+		if(second != -1 && intersection(segment, m_nodes[second].fit_box) != constant::inf) {
+			Intersection tmp = intersect(segment, second);
+			if(tmp.distance < out.distance)
+				out = tmp;
+		}
+
+		return out;
+	}
+
+	Intersection intersect(const Segment &segment) const {
+		Intersection out;
+		if(intersection(segment, m_nodes[0].fit_box) != constant::inf)
+			out = intersect(segment, 0);
+		return out;
 	}
 
 	int print(int node_id, FBox box, int level) const {

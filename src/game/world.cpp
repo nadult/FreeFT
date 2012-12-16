@@ -3,9 +3,18 @@
 #include "navigation_bitmap.h"
 #include "sys/xml.h"
 #include "sys/profiler.h"
+#include "gfx/tile.h"
 #include <cstdio>
 
 namespace game {
+
+	const IBox TileInst::boundingBox() const {
+		return IBox(pos, pos + tile->bboxSize());
+	}
+
+	const IRect TileInst::screenRect() const {
+		return tile->rect() + worldToScreen(pos);
+	}
 
 	WorldElement::WorldElement() :m_entity(nullptr), m_tile_node_id(-1) { }
 	WorldElement::WorldElement(Entity *entity) :m_entity(entity), m_tile_node_id(-1) { }
@@ -33,6 +42,15 @@ namespace game {
 		XMLDocument doc;
 		doc.load(file_name);
 		m_tile_map.loadFromXML(doc);
+
+		m_tile_bvh = BVH<TileInst>(FBox(float3(0, 0, 0), (float3)asXZY(m_tile_map.size(), TileMapNode::size_y)));
+		for(int n = 0; n < m_tile_map.nodeCount(); n++)
+			for(int i = 0; i < m_tile_map(n).instanceCount(); i++) {
+				TileInst inst(m_tile_map(n)(i).m_tile, m_tile_map.nodePos(n) + m_tile_map(n)(i).pos());
+				inst.node_id = n;
+				inst.inst_id = i;
+				m_tile_bvh.addObject(inst, (FBox)inst.boundingBox());
+			}
 	
 		updateNavigationMap(true);
 	}
@@ -125,9 +143,14 @@ namespace game {
 		Intersection out;
 
 		if(flags & collider_tiles) {
-			TileMap::Intersection isect = m_tile_map.intersect(segment);
-			if(isect.node_id != -1)
-				out = Intersection(WorldElement(&m_tile_map, isect.node_id, isect.instance_id), isect.distance);
+//			TileMap::Intersection isect = m_tile_map.intersect(segment);
+//			if(isect.node_id != -1)
+//				out = Intersection(WorldElement(&m_tile_map, isect.node_id, isect.instance_id), isect.distance);
+			auto isect = m_tile_bvh.intersect(segment);
+			if(isect.distance != constant::inf) {
+				const TileInst &inst = m_tile_bvh.m_objects[isect.obj_id].first;
+				out = Intersection(WorldElement(&m_tile_map, inst.node_id, inst.inst_id), isect.distance);
+			}
 		}
 
 		if(flags & collider_entities)

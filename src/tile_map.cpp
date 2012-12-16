@@ -288,11 +288,10 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 			const gfx::Tile *tile = instance.m_tile;
 			int3 pos = instance.pos() + node_pos;
 			
-			if(!tile->dTexture)
-				((gfx::Tile*)tile)->loadDeviceTexture();
+			if(!tile->deviceTexture())
+				const_cast<gfx::Tile*>(tile)->loadDeviceTexture();
 
-			gfx::PTexture tex = tile->dTexture;
-			out.add(tex, tile->rect(), pos, tile->bboxSize(), Color::white, tile->uvs);
+			tile->addToRender(out, pos);
 			if(instance.isSelected())
 				out.addBox(IBox(pos, pos + tile->bboxSize()));
 			vTiles++;

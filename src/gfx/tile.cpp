@@ -1,5 +1,6 @@
 #include "gfx/tile.h"
 #include "gfx/device.h"
+#include "gfx/scene_renderer.h"
 #include <cstring>
 #include <GL/gl.h>
 #include <algorithm>
@@ -7,7 +8,7 @@
 
 namespace gfx
 {
-	Tile::Tile() :uvs(0, 0, 1, 1) { }
+	Tile::Tile() :m_tex_coords(0, 0, 1, 1) { }
 
 	void Tile::serialize(Serializer &sr) {
 		sr.signature("<tile>", 7);
@@ -39,35 +40,40 @@ namespace gfx
 		i32 zarCount;
 		sr(dummy2, zarCount);
 
-		texture.loadZAR(sr);
+		m_texture.loadZAR(sr);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 	}
 
 	void Tile::loadDeviceTexture() {
-		dTexture = new DTexture;
-		dTexture->setSurface(texture);
-		uvs = FRect(0, 0, 1, 1);
+		m_dev_texture = new DTexture;
+		m_dev_texture->setSurface(m_texture);
+		m_tex_coords = FRect(0, 0, 1, 1);
 	}
 
 	void Tile::bindTextureAtlas(PTexture tex, const int2 &pos) {
-		dTexture = tex;
+		m_dev_texture = tex;
 		float2 mul(1.0f / (float)tex->width(), 1.0f / (float)tex->height());
-		uvs = FRect(float2(pos) * mul, float2(pos + texture.size()) * mul);
+		m_tex_coords = FRect(float2(pos) * mul, float2(pos + m_texture.size()) * mul);
 	}
 
 	const IRect Tile::rect() const {
-		return IRect(int2(0, 0), texture.size()) - m_offset;
+		return IRect(int2(0, 0), m_texture.size()) - m_offset;
 	}
 
-	void Tile::draw(int2 pos, Color col) const {
-		DASSERT(dTexture);
-		dTexture->bind();
-		drawQuad(pos - m_offset, texture.size(), uvs.min, uvs.max, col);
+	void Tile::draw(const int2 &pos, Color col) const {
+		DASSERT(m_dev_texture);
+		m_dev_texture->bind();
+		drawQuad(pos - m_offset, m_texture.size(), m_tex_coords.min, m_tex_coords.max, col);
+	}
+
+	void Tile::addToRender(SceneRenderer &renderer, const int3 &pos, Color color) const {
+		DASSERT(m_dev_texture);
+		renderer.add(m_dev_texture, rect(), pos, bboxSize(), color, m_tex_coords);
 	}
 
 	bool Tile::testPixel(const int2 &pos) const {
-		return texture.testPixel(pos + m_offset);
+		return m_texture.testPixel(pos + m_offset);
 	}
 
 	struct AtlasEntry {
@@ -88,7 +94,7 @@ namespace gfx
 			int pixel_count = 0;
 	
 			for(int n = 0; n < (int)tiles.size(); n++)
-				pixel_count += tiles[n]->texture.width() * tiles[n]->texture.height();
+				pixel_count += tiles[n]->width() * tiles[n]->height();
 
 			while(width * height > pixel_count * 3 / 2) {
 				if(height >= width)
@@ -108,7 +114,9 @@ namespace gfx
 
 		for(int n = 0; n < (int)entries.size(); n++) {
 			AtlasEntry &entry = entries[n];
-			int2 tile_size = entry.tile->texture.size();
+			const Texture &tile_tex = entry.tile->texture();
+			int2 tile_size = tile_tex.size();
+
 			if(tile_size.y + pos.y > atlas.height())
 				continue;
 			if(tile_size.x + pos.x > atlas.width()) {
@@ -119,7 +127,7 @@ namespace gfx
 			}
 
 			for(int y = 0; y < tile_size.y; y++)
-				memcpy(atlas.line(pos.y + y) + pos.x, entry.tile->texture.line(y), tile_size.x * sizeof(Color));
+				memcpy(atlas.line(pos.y + y) + pos.x, tile_tex.line(y), tile_size.x * sizeof(Color));
 			max_y = max(max_y, tile_size.y);
 			entry.pos = pos;
 			pos.x += tile_size.x;

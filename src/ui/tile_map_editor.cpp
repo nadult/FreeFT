@@ -371,14 +371,13 @@ namespace ui {
 					const gfx::Tile *tile = instance.m_tile;
 					int3 pos = instance.pos() + node_pos;
 					
-					gfx::PTexture tex = tile->dTexture;
 					IBox box = IBox({0,0,0}, tile->bboxSize()) + pos;
 					Color col =	box.max.y < m_selection.min.y? Color::gray :
 								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
 					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
 						col.r = col.g = 255;
 
-					renderer.add(tex, tile->rect(), pos, tile->bboxSize(), col);
+					tile->addToRender(renderer, pos, col);
 					if(instance.isSelected())
 						renderer.addBox(IBox(pos, pos + tile->bboxSize()));
 				}

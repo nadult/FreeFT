@@ -5,6 +5,7 @@
 #include "game/projectile.h"
 #include "navigation_map.h"
 #include "tile_map.h"
+#include "bvh.h"
 
 namespace game {
 
@@ -35,6 +36,18 @@ namespace game {
 		Intersection(const WorldElement &element, float distance) :WorldElement(element), distance(distance) { }
 
 		float distance;
+	};
+
+	struct TileInst {
+		TileInst(const gfx::Tile *tile, const int3 &pos) :tile(tile), pos(pos) { DASSERT(tile); }
+
+		int node_id;
+		int inst_id;
+		const gfx::Tile *tile;
+		int3 pos;
+
+		const IBox boundingBox() const;
+		const IRect screenRect() const;
 	};
 
 //	inline const Intersection &min(const Intersection &a, const Intersection &b) { return a.t < b.t? a : b; }
@@ -89,6 +102,7 @@ namespace game {
 		double m_last_frame_time;
 
 		TileMap m_tile_map;
+		BVH<TileInst> m_tile_bvh;
 		NavigationMap m_navi_map;
 
 		vector<PEntity> m_entities;
