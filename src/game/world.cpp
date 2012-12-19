@@ -4,6 +4,7 @@
 #include "sys/xml.h"
 #include "sys/profiler.h"
 #include "gfx/tile.h"
+#include "bvh_impl.h"
 #include <cstdio>
 
 namespace game {
@@ -49,8 +50,10 @@ namespace game {
 				TileInst inst(m_tile_map(n)(i).m_tile, m_tile_map.nodePos(n) + m_tile_map(n)(i).pos());
 				inst.node_id = n;
 				inst.inst_id = i;
-				m_tile_bvh.addObject(inst, (FBox)inst.boundingBox());
+				m_tile_bvh.addObject(inst);
 			}
+		//m_tile_bvh.check(0);
+		m_tile_bvh.printStats();
 	
 		updateNavigationMap(true);
 	}
@@ -148,7 +151,7 @@ namespace game {
 //				out = Intersection(WorldElement(&m_tile_map, isect.node_id, isect.instance_id), isect.distance);
 			auto isect = m_tile_bvh.intersect(segment);
 			if(isect.distance != constant::inf) {
-				const TileInst &inst = m_tile_bvh.m_objects[isect.obj_id].first;
+				const TileInst &inst = m_tile_bvh[isect.object_id];
 				out = Intersection(WorldElement(&m_tile_map, inst.node_id, inst.inst_id), isect.distance);
 			}
 		}

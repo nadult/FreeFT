@@ -1,6 +1,7 @@
 #ifndef BVH_H
 #define BVH_H
 
+#include "base.h"
 
 // Requirements:
 // - fast element modification, it would be nice if tree quality wouldn't degrade
@@ -43,185 +44,61 @@ public:
 		char is_empty;
 	};
 
-	static int maximumAxis(const FBox &box) {
-		float3 size = box.size();
-		if(size.x > size.y)
-			return size.z > size.x? 2 : 0;
-		else
-			return size.z > size.y? 2 : 1;
-	}
+	struct Object {
+		Object(T object, int node_id) :object(object), node_id(node_id), next_child_id(-1) { }
+		Object() :node_id(-1), next_child_id(-1) { }
 
-	static FBox split(const FBox &box, int axis, bool left) {
-		FBox out_box = box;
-		float mid = ((&box.min.x)[axis] + (&box.max.x)[axis]) * 0.5f;
-		(&(left? out_box.max : out_box.min).x)[axis] = mid;
-		return out_box;
-	}
+		T object;
+		int node_id, next_child_id;
+	};
 
-	BVH() { }
+	struct Intersection {
+		Intersection() :distance(constant::inf), object_id(-1) { }
+		Intersection(int object_id, float distance) :object_id(object_id), distance(distance) { }
+
+		int object_id;
+		float distance;
+	};
+
+	BVH() :m_box(0, 0, 0, 0, 0, 0) { }
 	BVH(const FBox &box) :m_box(box) {
 		m_nodes.push_back(Node(m_box, -1, -1, maximumAxis(m_box)));
 	}
 
-	void addChild(int node_id, int child_id, const FBox &cur_box, int level) {
-		DASSERT(child_id != -1);
+	// call this method if objects bounding box has changed
+	void updateObject(int idx);
+	void removeObject(int idx);
+	void addObject(T obj);
 
-		//printf("Add %d in %d lev: %d\n", child_id, node_id, level);
-		if(m_nodes[node_id].isLeaf()) {
-			Node &node = m_nodes[node_id];
-		//	printf("Splitting leaf with: %d\n", node.child_id);
-			int other_child = node.child_id;
-			if(other_child == -1) {
-				node.child_id = child_id;
-				node.fit_box = m_objects[child_id].second;
-				return;
-			}
-			node = Node(node.fit_box, -1, -1, maximumAxis(cur_box));
-			node.is_empty = true;
 
-			addChild(node_id, other_child, cur_box, level);
-		}
+	Intersection intersect(const Segment &segment, int node_id = 0) const;
 
-		Node &node = m_nodes[node_id];
-		node.is_empty = false;
-
-	//	printf("Normal node with: %d %d\n", node.left, node.right);
-		FBox left_box = split(cur_box, node.axis, true);
-		FBox child_box = m_objects[child_id].second;
-		bool go_left = left_box.isInside(child_box.min);
-		node.fit_box = node.left == -1 && node.right == -1? child_box : node.fit_box + child_box;
-	
-		int next_id = go_left? node.left : node.right;
-		if(next_id == -1) {
-	//		printf("Adding %s leaf with: %d child\n", go_left? "left" : "right", child_id);
-			(go_left? node.left : node.right) = (int)m_nodes.size();
-			Node new_node(child_box, child_id);
-			m_nodes.push_back(new_node);
-			return;
-		}
-
-	//	printf("going %s\n", go_left? "left" : "right");
-		FBox right_box = split(cur_box, node.axis, false);
-		addChild(next_id, child_id, go_left? left_box : right_box, level + 1);
-	}
-
-	void removeChild(int parent_id, int node_id, int child_id, const FBox &box, int level) {
-		Node &node = m_nodes[node_id];
-		if(node.isLeaf()) {
-			if(node.child_id == child_id) {
-				node.is_empty = true;
-				node.child_id = -1;
-			}
-			return;
-		}
-
-		FBox left_box = split(box, node.axis, true), right_box = split(box, node.axis, false);
-		bool go_left = left_box.isInside(m_objects[child_id].second.min);
-		int next_id = go_left? node.left : node.right;
-		if(next_id == -1)
-			return;
-		removeChild(node_id, next_id, child_id, go_left? left_box : right_box, level + 1);
-
-		node.is_empty = true;
-		FBox fit_box = box;
-		if(node.left != -1) {
-			fit_box = m_nodes[node.left].fit_box;
-			node.is_empty = m_nodes[node.left].is_empty;
-		}
-		if(node.right != -1) {
-			const FBox &right_box = m_nodes[node.right].fit_box;
-			fit_box = (node.left == -1? right_box : left_box + right_box);
-			node.is_empty &= m_nodes[node.right].is_empty;
-		}
-		node.fit_box = fit_box;
-	}
-
-	void removeObject(int child_id) {
-		removeChild(-1, 0, child_id, m_box, 0);
-		m_objects[child_id].first = -1; //TODO
-	}
-
-	void addObject(T obj, FBox obj_box) {
-		m_objects.push_back(make_pair(obj, obj_box));
-		addChild(0, (int)m_objects.size() - 1, m_box, 0);
-	}
-
-	struct Intersection {
-		Intersection() :distance(constant::inf), obj_id(-1) { }
-		Intersection(int o, float d) :obj_id(o), distance(d) { }
-
-		int obj_id;
-		float distance;
-	};
-
-	Intersection intersect(const Segment &segment, int node_id) const {
-		Intersection out;
-		const Node &node = m_nodes[node_id];
-		if(node.isLeaf()) {
-			float dist = intersection(segment, m_objects[node.child_id].second);
-			if(dist != constant::inf)
-				return Intersection(node.child_id, dist);
-		}
-
-		bool left_first = (&segment.dir().x)[(int)node.axis] > 0.0f;
-		int first = node.left, second = node.right;
-		if(left_first)
-			swap(first, second);
-
-		if(first != -1 && intersection(segment, m_nodes[first].fit_box) != constant::inf)
-			out = intersect(segment, first);
-		if(second != -1 && intersection(segment, m_nodes[second].fit_box) != constant::inf) {
-			Intersection tmp = intersect(segment, second);
-			if(tmp.distance < out.distance)
-				out = tmp;
-		}
-
-		return out;
-	}
-
-	Intersection intersect(const Segment &segment) const {
-		Intersection out;
-		if(intersection(segment, m_nodes[0].fit_box) != constant::inf)
-			out = intersect(segment, 0);
-		return out;
-	}
-
-	int print(int node_id, FBox box, int level) const {
-	//	for(int n = 0; n < level; n++)
-	//		printf("  ");
-		
-	//	printf("(%.2f %.2f %.2f | %.2f %.2f %.2f) ",
-	//			box.min.x, box.min.y, box.min.z, box.width(), box.height(), box.depth());
-		const Node &node = m_nodes[node_id];
-		int count = 1;
-
-		if(node.isLeaf())
-			;//printf("Leaf: %d\n", node.child_id);
-		else {
-			//printf("Node: %d %d ax:%d is_empty:%d\n", node.left, node.right, (int)node.axis, (int)node.is_empty);
-			FBox left_box, right_box;
-			left_box = split(box, node.axis, true);
-			right_box = split(box, node.axis, false);
-
-			if(node.left != -1 && !node.is_empty)
-				count += print(node.left, left_box, level + 1);
-			if(node.right != -1 && !node.is_empty)
-				count += print(node.right, right_box, level + 1);
-		}
-
-		return count;
-	}
+	int print(int node_id, FBox box, int level) const;
 
 	int print() const {
 		return print(0, m_box, 0);
 	}
 
-	bool isEmpty() const {
-		return m_nodes.empty();
-	}
+	FBox check(int node_id);
+
+	void printStats() const;
+
+	bool isEmpty() const { return m_nodes.empty(); }
+	int size() const { return (int)m_objects.size(); }
+
+	const T &operator[](int idx) const { return m_objects[idx].object; }
+	T &operator[](int idx) { return m_objects[idx].object; }
+
+protected:
+	static int maximumAxis(const FBox &box);
+	static FBox split(const FBox &box, int axis, bool left);
+	static bool canSplitNode(const FBox &box);
+
+	int  addChild(int node_id, int child_id, const FBox &cur_box, const FBox &child_box);
+	void removeChild(int node_id, int child_id, const FBox &box, const FBox &child_box);
 
 	FBox m_box;
-	vector<pair<T, FBox> > m_objects;
+	vector<Object> m_objects;
 	vector<Node> m_nodes;
 };
 

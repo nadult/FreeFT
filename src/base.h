@@ -270,6 +270,8 @@ struct Box
 		}
 	}
 
+	bool operator==(const Box &rhs) const { return min == rhs.min && max == rhs.max; }
+
 	Type3 min, max;
 };
 

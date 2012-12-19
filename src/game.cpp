@@ -29,30 +29,8 @@ float frand() {
 	return float(rand()) / float(RAND_MAX);
 }
 
-void bvhTest() {
-	BVH<int> tree(FBox(0, 0, 0, 100, 100, 100));
-	for(int n = 0; n < 1000000; n++) {
-		if(rand() % 2)
-			tree.addObject(n, FBox(frand() * 90, frand() * 90, frand() * 90, frand() * 10, frand() * 10, frand() * 10));
-		else if(tree.m_objects.size())
-			tree.removeObject(rand() % tree.m_objects.size());
-
-	}
-	int vis = tree.print();
-
-	int count = 0;
-	for(int n = 0; n < (int)tree.m_objects.size(); n++)
-		if(tree.m_objects[n].first != -1)
-			count++;
-	printf("objects: %d nodes: %d visited: %d\n", count, tree.m_nodes.size(), vis);
-}
-
-
 int safe_main(int argc, char **argv)
 {
-//	bvhTest();
-//	return 0;
-
 	Config config = loadConfig("game");
 	ItemDesc::loadItems();
 
@@ -106,7 +84,7 @@ int safe_main(int argc, char **argv)
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
-	bool shooting_debug = 1;
+	bool shooting_debug = 0;
 	bool entity_debug = 1;
 	bool item_debug = 1;
 	
@@ -140,7 +118,7 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world.pixelIntersect(getMousePos() + view_pos);
+		Intersection isect = world.intersect(ray, actor);//world.pixelIntersect(getMousePos() + view_pos);
 		Intersection box_isect = world.intersect(ray, actor);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
@@ -188,7 +166,7 @@ int safe_main(int argc, char **argv)
 
 		world.addToRender(renderer);
 
-		if(entity_debug && isect.isEntity())
+		if((entity_debug && isect.isEntity()) || 1)
 			renderer.addBox(isect.boundingBox(), Color::yellow);
 
 		if(!box_isect.isEmpty() && shooting_debug) {
