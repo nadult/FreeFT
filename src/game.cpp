@@ -8,7 +8,6 @@
 #include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
 
-#include "tile_map.h"
 #include "navigation_map.h"
 #include "navigation_bitmap.h"
 #include "tile_group.h"
@@ -20,7 +19,6 @@
 #include "game/door.h"
 #include "game/item.h"
 #include "sys/config.h"
-#include "bvh.h"
 
 using namespace gfx;
 using namespace game;
@@ -42,7 +40,7 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	int2 view_pos(0, 0);
+	int2 view_pos(-200, 300);
 
 	PFont font = Font::mgr["arial_32"];
 
@@ -84,7 +82,7 @@ int safe_main(int argc, char **argv)
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
-	bool shooting_debug = 0;
+	bool shooting_debug = 1;
 	bool entity_debug = 1;
 	bool item_debug = 1;
 	
@@ -93,13 +91,13 @@ int safe_main(int argc, char **argv)
 	int3 last_pos(0, 0, 0);
 	float3 target_pos(0, 0, 0);
 
-	const TileMap &tile_map = world.tileMap();
+	const TileGrid &tile_grid = world.tileGrid();
 
 	PTexture atlas; {
 		vector<gfx::Tile*> tiles;
-		for(int n = 0; n < tile_map.nodeCount(); n++)
-			for(int i = 0; i < tile_map(n).instanceCount(); i++)
-				tiles.push_back(const_cast<gfx::Tile*>(tile_map(n)(i).m_tile));
+		for(int n = 0; n < tile_grid.size(); n++)
+			if(tile_grid[n].ptr)
+				tiles.push_back((gfx::Tile*)tile_grid[n].ptr);
 		sort(tiles.begin(), tiles.end());
 		tiles.resize(unique(tiles.begin(), tiles.end()) - tiles.begin());
 
@@ -108,6 +106,7 @@ int safe_main(int argc, char **argv)
 	}
 	int inventory_sel = -1, container_sel = -1;
 	string prof_stats;
+	double stat_update_time = getTime();
 
 	while(pollEvents()) {
 		double loop_start = getTime();
@@ -118,8 +117,9 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world.intersect(ray, actor);//world.pixelIntersect(getMousePos() + view_pos);
-		Intersection box_isect = world.intersect(ray, actor);
+		Intersection isect = world.pixelIntersect(getMousePos() + view_pos);
+		//Intersection isect = world.trace(ray, actor);
+		Intersection box_isect = world.trace(ray, actor);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
@@ -133,7 +133,7 @@ int safe_main(int argc, char **argv)
 
 			}
 			else if(box_isect.isTile()) {
-				int3 wpos = (int3)asXZY(ray.at(box_isect.distance).xz(), 1.0f);
+				int3 wpos = (int3)asXZY(ray.at(box_isect.distance()).xz(), 1.0f);
 				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 			}
 		}
@@ -170,17 +170,17 @@ int safe_main(int argc, char **argv)
 			renderer.addBox(isect.boundingBox(), Color::yellow);
 
 		if(!box_isect.isEmpty() && shooting_debug) {
-			float3 target = ray.at(box_isect.distance);
+			float3 target = ray.at(box_isect.distance());
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
 
 			Ray shoot_ray(origin, dir / length(dir));
-			Intersection shoot_isect = world.intersect(Segment(shoot_ray, 0.0f), actor);
+			Intersection shoot_isect = world.trace(Segment(shoot_ray, 0.0f), actor);
 
 			if(!shoot_isect.isEmpty()) {
 				FBox box = shoot_isect.boundingBox();
 				renderer.addBox(box, Color(255, 0, 0, 100));
-				target_pos = shoot_ray.at(shoot_isect.distance);
+				target_pos = shoot_ray.at(shoot_isect.distance());
 			}
 		}
 
@@ -200,7 +200,7 @@ int safe_main(int argc, char **argv)
 		drawQuad(0, 0, 250, 200, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["arial_16"];
-		float3 isect_pos = ray.at(box_isect.distance);
+		float3 isect_pos = ray.at(box_isect.distance());
 		font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", isect_pos.x, isect_pos.y, isect_pos.z);
 		font->drawShadowed(int2(0, 20), Color::white, Color::black, "%s", prof_stats.c_str());
 
@@ -255,7 +255,10 @@ int safe_main(int argc, char **argv)
 
 		swapBuffers();
 		Profiler::updateTimer("main_loop", getTime() - loop_start);
-		prof_stats = Profiler::getStats();
+		if(getTime() - stat_update_time > 0.25) {
+			prof_stats = Profiler::getStats();
+			stat_update_time = getTime();
+		}
 		Profiler::nextFrame();
 	}
 

@@ -36,7 +36,7 @@ int BVH<T>::addChild(int node_id, int child_id, const FBox &cur_box, const FBox 
 		if(other_child == -1 || !canSplitNode(cur_box)) {
 			node.is_empty = false;
 			node.child_id = child_id;
-			node.fit_box = (other_child == -1? child_box : node.fit_box + child_box);
+			node.fit_box = (other_child == -1? child_box : sum(node.fit_box, child_box));
 			m_objects[child_id].next_child_id = other_child;
 			return node_id;
 		}
@@ -53,7 +53,7 @@ int BVH<T>::addChild(int node_id, int child_id, const FBox &cur_box, const FBox 
 //	printf("Normal node with: %d %d\n", node.left, node.right);
 	FBox left_box = split(cur_box, node.axis, true);
 	bool go_left = left_box.isInside(child_box.min);
-	node.fit_box = node.left == -1 && node.right == -1? child_box : node.fit_box + child_box;
+	node.fit_box = node.left == -1 && node.right == -1? child_box : sum(node.fit_box, child_box);
 
 	int next_id = go_left? node.left : node.right;
 	if(next_id == -1) {
@@ -87,7 +87,7 @@ FBox BVH<T>::check(int node_id) {
 		}
 		while(child_id != -1) {
 			count++;
-			box = box + (FBox)m_objects[child_id].object.boundingBox();
+			box = sum(box, (FBox)m_objects[child_id].object.boundingBox());
 			child_id = m_objects[child_id].next_child_id;
 		}	
 	}
@@ -96,7 +96,7 @@ FBox BVH<T>::check(int node_id) {
 			box = check(node.left);
 		if(node.right != -1) {
 			FBox right = check(node.right);
-			box = node.left == -1 || m_nodes[node.left].is_empty? right : box + right;
+			box = node.left == -1 || m_nodes[node.left].is_empty? right : sum(box, right);
 		}
 	}
 	
@@ -139,7 +139,7 @@ void BVH<T>::removeChild(int node_id, int child_id, const FBox &box, const FBox 
 				FBox fit_box = m_objects[node.child_id].object.boundingBox();
 				cur_id = m_objects[node.child_id].next_child_id;
 				while(cur_id != -1) {
-					fit_box = fit_box + m_objects[cur_id].object.boundingBox();
+					fit_box = sum(fit_box, m_objects[cur_id].object.boundingBox());
 					cur_id = m_objects[cur_id].next_child_id;
 				}
 				node.fit_box = fit_box;
@@ -163,7 +163,7 @@ void BVH<T>::removeChild(int node_id, int child_id, const FBox &box, const FBox 
 	}
 	if(node.right != -1) {
 		const FBox &right_box = m_nodes[node.right].fit_box;
-		fit_box = (node.left == -1 || m_nodes[node.left].is_empty? right_box : left_box + right_box);
+		fit_box = (node.left == -1 || m_nodes[node.left].is_empty? right_box : sum(left_box, right_box));
 		node.is_empty &= m_nodes[node.right].is_empty;
 	}
 	node.fit_box = fit_box;

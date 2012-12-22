@@ -38,6 +38,7 @@ namespace game {
 		void setPos(const float3&);
 		const float3 &pos() const { return m_pos; }
 		FBox boundingBox() const;
+		IRect screenRect() const;
 		const float3 bboxSize() const { return m_bbox.size(); }
 
 		float dirAngle() const { return m_dir_angle; }
@@ -49,12 +50,13 @@ namespace game {
 
 		void remove();
 
-		bool pixelTest(const int2 &screen_pos) const;
+		bool testPixel(const int2 &screen_pos) const;
 
 	protected:
 		friend class World;
 		World *m_world;
 		bool m_to_be_removed;
+		int m_grid_index;
 
 	protected:
 		virtual void think() { DASSERT(m_world); }
@@ -77,6 +79,7 @@ namespace game {
 		int dirIdx() const { return m_dir_idx; }
 
 		gfx::PSprite m_sprite;
+		IRect m_max_screen_rect;
 
 	private:
 		float3 m_pos;

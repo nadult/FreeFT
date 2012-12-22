@@ -17,7 +17,7 @@ public:
 	NavigationMap(int extend);
 
 	void update(const NavigationBitmap&);
-	int2 size() const { return m_size; }
+	int2 dimensions() const { return m_size; }
 	int extend() const { return m_extend; }
 
 	void visualize(gfx::SceneRenderer&, bool borders) const;

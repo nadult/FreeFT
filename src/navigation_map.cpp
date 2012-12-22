@@ -134,7 +134,7 @@ void NavigationMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
 }
 
 void NavigationMap::update(const NavigationBitmap &bitmap) {
-	m_size = bitmap.size();
+	m_size = bitmap.dimensions();
 	m_quads.clear();
 	DASSERT(bitmap.extend() == m_extend);
 

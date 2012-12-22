@@ -2,9 +2,9 @@
   można zniszczyć) (6h, uuuh, to będzie znacznie więcej niż 6h)
   - kontener: otwieranie, zamykanie (jeśli są dostępne animacje), transfer itemów, używanie kluczy  DONE
   - drzwi: otwórz, zamknij, używanie kluczy, zmienny bounding box  DONE
-  - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja
+  - przełączniki / terminale: włączanie / wyłączanie jeśli jest animacja  DELAYED
   - pociski: synchronizacja z animacją gracza, generują impacty  DONE
-  - eksplozje: generują damage, rendering jako overlay
+  - eksplozje: generują damage, rendering jako overlay  DELAYED
   - itemy: można je zostawiać / podnosić  DONE
 - Podstawowe komunikaty na które powinny odpowiadać encje: interact, use skill, apply damage (6h)
 - Uwzględnienie encji podczas generacji ścieżek
@@ -21,10 +21,11 @@
     - modyfikacja drzewa gdy encje zmieniają pozycje
     - oddzielne drzewo BVH dla obiektów dynamicznych budowane w realtime, najpierw wyszukujemy w statycznym
       drzewie a potem w dynamicznym
+  - GRID w większości przypadków będzie lepszy niż BVH; BVH może ma sens tylko przy testach widoczności  DONE
 
 
 +ESTIMATED_TIME: 18h 30min
-+TIME_SPENT: 35h 40min
++TIME_SPENT: 48h 40min
 
 +WORK_LOG:
 03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8h 15min)
@@ -34,6 +35,8 @@
 08.12.12: 11:30 - 12:45, 13:30 - 14:30 (2h 15min)
 09.12.12: 12:10 - 13:00, 15:00 - 17:30, 23:00 - 00:30 (7h)
 10.12.12: 20:25 - 22:30 (2h)
-11.12.12: 11:00 - 12:00, 16:00 - 18:30, 19:00 - 22:30
-14.12.12: 14:30 - 16:30
-16.12.12: 22:00 - 00:30
+11.12.12: 11:00 - 12:00, 16:00 - 18:30, 19:00 - 22:30 (7h)
+14.12.12: 14:30 - 16:30 (2h)
+16.12.12: 22:00 - 00:30 (2h 30min)
+21.12.12: 19:00 - 20:30 (1h 30min)
+22.12.12: 12:00 - 13:00, 15:00 - 22:30  (8h 30min)

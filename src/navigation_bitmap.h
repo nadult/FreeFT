@@ -1,9 +1,10 @@
 #ifndef NAVIGATION_BITMAP_H
 #define NAVIGATION_BITMAP_H
 
-#include "tile_map.h"
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
+
+class Grid;
 
 //TODO: support for multiple levels, stairs: it can be implemented by additional heightmaps
 // and transitions between them
@@ -12,9 +13,9 @@
 // with varying ceiling height we can provide ceiling heightmaps
 class NavigationBitmap {
 public:
-	NavigationBitmap(const TileMap&, int extend);
+	NavigationBitmap(const Grid&, int extend);
 
-	int2 size() const { return m_size; }
+	int2 dimensions() const { return m_size; }
 	int extend() const { return m_extend; }
 
 	gfx::PTexture getTexture() const;

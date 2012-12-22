@@ -87,7 +87,10 @@ namespace Profiler {
 			ptr += snprintf(ptr, end - ptr, "Timers:\n");
 		for(int n = 0; n < (int)s_timers.size(); n++) {
 			const Timer &timer = s_timers[n];
-			ptr += snprintf(ptr, end - ptr, "  %s: %.2f ms\n", timer.id, (timer.value * 1000.0));
+			double ms = timer.value * 1000.0;
+			double us = ms * 1000.0;
+			bool print_ms = ms > 0.5;
+			ptr += snprintf(ptr, end - ptr, "  %s: %.2lf %s\n", timer.id, print_ms? ms : us, print_ms? "ms" : "us");
 		}
 
 		if(!s_counters.empty())

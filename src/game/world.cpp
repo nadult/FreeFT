@@ -9,32 +9,6 @@
 
 namespace game {
 
-	const IBox TileInst::boundingBox() const {
-		return IBox(pos, pos + tile->bboxSize());
-	}
-
-	const IRect TileInst::screenRect() const {
-		return tile->rect() + worldToScreen(pos);
-	}
-
-	WorldElement::WorldElement() :m_entity(nullptr), m_tile_node_id(-1) { }
-	WorldElement::WorldElement(Entity *entity) :m_entity(entity), m_tile_node_id(-1) { }
-	WorldElement::WorldElement(const TileMap *tile_map, int tile_node_id, int tile_instance_id)
-		:m_tile_node_id(tile_node_id), m_tile_instance_id(tile_instance_id), m_tile_map(tile_map) {
-			DASSERT(tile_map && tile_node_id != -1 && tile_instance_id != -1);
-		}
-
-	const FBox WorldElement::boundingBox() const {
-		if(isEntity())
-			return m_entity->boundingBox();
-		if(isTile()) {
-			const TileInstance &inst = (*m_tile_map)(m_tile_node_id)(m_tile_instance_id);
-			return (FBox)(inst.boundingBox() + m_tile_map->nodePos(m_tile_node_id));
-		}
-
-		return FBox(0, 0, 0, 0, 0, 0);
-	}
-
 	World::World()
 		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) { } 
 
@@ -42,18 +16,21 @@ namespace game {
 		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) {
 		XMLDocument doc;
 		doc.load(file_name);
-		m_tile_map.loadFromXML(doc);
 
-		m_tile_bvh = BVH<TileInst>(FBox(float3(0, 0, 0), (float3)asXZY(m_tile_map.size(), TileMapNode::size_y)));
-		for(int n = 0; n < m_tile_map.nodeCount(); n++)
-			for(int i = 0; i < m_tile_map(n).instanceCount(); i++) {
-				TileInst inst(m_tile_map(n)(i).m_tile, m_tile_map.nodePos(n) + m_tile_map(n)(i).pos());
-				inst.node_id = n;
-				inst.inst_id = i;
-				m_tile_bvh.addObject(inst);
+		TileMap tile_map;
+		tile_map.loadFromXML(doc);
+
+		m_tile_grid = TileGrid(tile_map.size());
+		for(int n = 0; n < tile_map.nodeCount(); n++)
+			for(int i = 0; i < tile_map(n).instanceCount(); i++) {
+				const TileInstance &inst = tile_map(n)(i);
+				int3 pos = tile_map.nodePos(n) + inst.pos();
+				FBox bbox(pos, pos + inst.m_tile->bboxSize());
+				IRect rect = inst.m_tile->rect() + worldToScreen(pos);
+				m_tile_grid.add(Grid::Object(inst.m_tile, bbox, rect));
 			}
-		//m_tile_bvh.check(0);
-		m_tile_bvh.printStats();
+		m_entity_grid = EntityGrid(tile_map.size());
+		m_tile_grid.printInfo();
 	
 		updateNavigationMap(true);
 	}
@@ -62,7 +39,7 @@ namespace game {
 		PROFILE("updateNavigationMap");
 
 		if(full_recompute) {
-			NavigationBitmap bitmap(m_tile_map, m_navi_map.extend());
+			NavigationBitmap bitmap(m_tile_grid, m_navi_map.extend());
 			for(int n = 0; n < (int)m_entities.size(); n++)
 				if(m_entities[n]->colliderType() == collider_static) {
 					IBox box = enclosingIBox(m_entities[n]->boundingBox());
@@ -78,18 +55,33 @@ namespace game {
 				const IBox &box = enclosingIBox(m_entities[n]->boundingBox());
 				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
 			}
+		for(int n = 0; n < (int)m_entities.size(); n++) {
+			const Entity *entity = m_entities[n].get();
+			if(entity->colliderType() != collider_static)
+				m_entity_grid.update(entity->m_grid_index,
+						Grid::Object(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()));
+		}
 	}
 
 	void World::addEntity(PEntity &&entity) {
 		DASSERT(entity);
 		entity->m_world = this;
+		entity->m_grid_index =
+			m_entity_grid.add(Grid::Object(entity.get(), entity->boundingBox(), entity->screenRect(), entity->colliderType()));
 		m_entities.push_back(std::move(entity));
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {
 		PROFILE("World::addToRender");
 
-		m_tile_map.addToRender(renderer);
+		vector<int> tile_inds;
+		tile_inds.reserve(1024);
+		m_tile_grid.findAll(tile_inds, renderer.targetRect());
+		for(int n = 0; n < (int)tile_inds.size(); n++) {
+			const Grid::Object &obj = m_tile_grid[tile_inds[n]];
+			((const gfx::Tile*)obj.ptr)->addToRender(renderer, (int3)obj.bbox.min);
+		}
+
 		for(int n = 0; n < (int)m_entities.size(); n++)
 			m_entities[n]->addToRender(renderer);
 		for(int n = 0; n < (int)m_projectiles.size(); n++)
@@ -104,6 +96,9 @@ namespace game {
 			T *object = objects[n].get();
 			object->think();
 			if(object->m_to_be_removed) {
+				if(object->m_grid_index != -1)
+					m_entity_grid.remove(object->m_grid_index);
+
 				objects[n--] = std::move(objects.back());
 				objects.pop_back();
 				continue;
@@ -141,84 +136,61 @@ namespace game {
 		m_last_time = current_time;
 	}
 	
-	Intersection World::intersect(const Segment &segment, const Entity *ignore, ColliderFlags flags) const {
-		PROFILE("world::intersect");
+	Intersection World::trace(const Segment &segment, const Entity *ignore, ColliderFlags flags) const {
+		PROFILE("world::trace");
 		Intersection out;
 
 		if(flags & collider_tiles) {
-//			TileMap::Intersection isect = m_tile_map.intersect(segment);
-//			if(isect.node_id != -1)
-//				out = Intersection(WorldElement(&m_tile_map, isect.node_id, isect.instance_id), isect.distance);
-			auto isect = m_tile_bvh.intersect(segment);
-			if(isect.distance != constant::inf) {
-				const TileInst &inst = m_tile_bvh[isect.object_id];
-				out = Intersection(WorldElement(&m_tile_map, inst.node_id, inst.inst_id), isect.distance);
-			}
+			pair<int, float> isect = m_tile_grid.trace(segment);
+			if(isect.first != -1)
+				out = Intersection(&m_tile_grid[isect.first], false, isect.second);
 		}
 
-		if(flags & collider_entities)
-			for(int n = 0; n < (int)m_entities.size(); n++) {
-				Entity *entity = m_entities[n].get();
-				if(!(entity->colliderType() & flags) || entity == ignore)
-					continue;
-
-				float dist = intersection(segment, entity->boundingBox());
-				if(dist < out.distance && dist >= segment.min && dist <= segment.max)
-					out = Intersection(entity, dist);
-			}
+		if(flags & collider_entities) {
+			pair<int, float> isect = m_entity_grid.trace(segment, ignore? ignore->m_grid_index : -1, flags);
+			if(isect.first != -1)
+				out = Intersection(&m_entity_grid[isect.first], true, isect.second);
+		}
 
 		return out;
 	}
 
 	Intersection World::pixelIntersect(const int2 &screen_pos) const {
 		PROFILE("world::pixelIntersect");
-		FBox best_box;
 		Intersection out;
-		pair<int, int> tile = m_tile_map.pixelIntersect(screen_pos);
-		if(tile.first != -1) {
-			out = Intersection(WorldElement(&m_tile_map, tile.first, tile.second), 0.0f);
-			best_box = FBox(m_tile_map(tile.first)(tile.second).boundingBox() + m_tile_map.nodePos(tile.first));
-		}
 
-		for(int n = 0; n < (int)m_entities.size(); n++) {
-			Entity *entity = m_entities[n].get();
-			if(!entity->pixelTest(screen_pos))
-				continue;
-			FBox box = entity->boundingBox();
+		int tile_id = m_tile_grid.pixelIntersect(screen_pos, [](const Grid::Object &object, const int2 &pos)
+				{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); } );
+		if(tile_id != -1)
+			out = Intersection(&m_tile_grid[tile_id], false, 0.0f);
 
-			if(out.isEmpty() || drawingOrder(box, best_box) == 1) {
-				out = Intersection(entity, 0.0f);
-				best_box = box;
-			}
+		int entity_id = m_entity_grid.pixelIntersect(screen_pos, [](const Grid::Object &object, const int2 &pos)
+				{ return ((const Entity*)object.ptr)->testPixel(pos); } );
+		if(entity_id != -1) {
+			const Grid::Object *object = &m_entity_grid[entity_id];
+			if(tile_id == -1 || drawingOrder(object->bbox, out.boundingBox()) == 1)
+				out = Intersection(object, true, 0.0f);
 		}
 
 		return out;
 	}
 
 	bool World::isColliding(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
-		if((flags & collider_tiles) && m_tile_map.isOverlapping(enclosingIBox(box)))
-			return true;
+		PROFILE("world::isColliding");
+
+		if((flags & collider_tiles))
+			if(m_tile_grid.findAny(box) != -1)
+				return true;
 
 		if(flags & collider_entities)
-			for(int n = 0; n < (int)m_entities.size(); n++) {
-				const Entity *entity = m_entities[n].get();
-				if(	(entity->colliderType() & flags) && entity != ignore) {
-					FBox isect = intersection(entity->boundingBox(), box);
-					if(isect.width() > constant::epsilon && isect.height() > constant::epsilon &&
-						isect.depth() > constant::epsilon) {
-						printf("collision: %f %f %f\n", isect.width(), isect.height(), isect.depth());
-						return true;
-					}
-				}
-			}
+			if(m_entity_grid.findAny(box, ignore? ignore->m_grid_index : -1, flags) != -1)
+				return true;
 
 		return false;
 	}
 
 	bool World::isInside(const FBox &box) const {
-		return box.min.x >= 0.0f && box.min.y >= 0.0f && box.min.z >= 0.0f &&
-				box.max.x <= (float)m_tile_map.size().x && box.max.z <= (float)m_tile_map.size().y &&
-				box.max.y <= (float)TileMapNode::size_y;
+		return m_tile_grid.isInside(box);
 	}
 		
 	vector<int2> World::findPath(int2 start, int2 end) const {

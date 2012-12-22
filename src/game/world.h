@@ -4,50 +4,31 @@
 #include "game/entity.h"
 #include "game/projectile.h"
 #include "navigation_map.h"
-#include "tile_map.h"
 #include "bvh.h"
+#include "grid.h"
 
 namespace game {
 
-	class WorldElement {
+	typedef Grid TileGrid;
+	typedef Grid EntityGrid;
+		
+	class Intersection {
 	public:
-		WorldElement();
-		WorldElement(Entity *entity);
-		WorldElement(const TileMap *tile_map, int tile_node_id, int tile_instance_id);
+		Intersection(const Grid::Object *object = nullptr, bool is_entity = false, float distance = constant::inf)
+			:m_object(object), m_is_entity(is_entity), m_distance(distance) { }
 
-		const FBox boundingBox() const;
-		Entity *entity() const { return m_tile_node_id == -1? m_entity : nullptr; }
+		const FBox boundingBox() const { return m_object? m_object->bbox : FBox::empty(); }
+		Entity *entity() const { return isEntity()? (Entity*)m_object->ptr : nullptr; }
 
-		bool isEntity() const { return m_tile_node_id == -1 && m_entity != nullptr; }
-		bool isTile() const { return m_tile_node_id != -1; }
-		bool isEmpty() const { return m_tile_node_id == -1 && m_entity == nullptr; }
+		bool isEntity() const { return m_is_entity && m_object; }
+		bool isTile() const { return !m_is_entity && m_object; }
+		bool isEmpty() const { return !m_object; }
+		float distance() const { return m_distance; }
 
 	private:
-		union {
-			Entity *m_entity;
-			const TileMap *m_tile_map;
-		};
-		int m_tile_node_id;
-		int m_tile_instance_id;
-	};
-
-	struct Intersection : public WorldElement {
-		Intersection() :distance(constant::inf) { }
-		Intersection(const WorldElement &element, float distance) :WorldElement(element), distance(distance) { }
-
-		float distance;
-	};
-
-	struct TileInst {
-		TileInst(const gfx::Tile *tile, const int3 &pos) :tile(tile), pos(pos) { DASSERT(tile); }
-
-		int node_id;
-		int inst_id;
-		const gfx::Tile *tile;
-		int3 pos;
-
-		const IBox boundingBox() const;
-		const IRect screenRect() const;
+		const Grid::Object *m_object;
+		float m_distance;
+		bool m_is_entity;
 	};
 
 //	inline const Intersection &min(const Intersection &a, const Intersection &b) { return a.t < b.t? a : b; }
@@ -82,12 +63,11 @@ namespace game {
 	
 		vector<int2> findPath(int2 start, int2 end) const;
 
-		const TileMap &tileMap() const { return m_tile_map; }
+		const TileGrid &tileGrid() const { return m_tile_grid; }
 		const NavigationMap &naviMap() const { return m_navi_map; }
 		NavigationMap &naviMap() { return m_navi_map; }
 	
-		Intersection intersect(const Segment &segment, const Entity *ignore = nullptr,
-								ColliderFlags flags = collider_all) const;
+		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 		Intersection pixelIntersect(const int2 &screen_pos) const;
 
 		bool isInside(const FBox&) const;
@@ -101,8 +81,8 @@ namespace game {
 		double m_last_time;
 		double m_last_frame_time;
 
-		TileMap m_tile_map;
-		BVH<TileInst> m_tile_bvh;
+		TileGrid m_tile_grid;
+		EntityGrid m_entity_grid;
 		NavigationMap m_navi_map;
 
 		vector<PEntity> m_entities;

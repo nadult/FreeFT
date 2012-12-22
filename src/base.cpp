@@ -15,10 +15,31 @@ const int2 max(const int2 &a, const int2 &b) { return int2(max(a.x, b.x), max(a.
 const int3 min(const int3 &a, const int3 &b) { return int3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
 const int3 max(const int3 &a, const int3 &b) { return int3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
 
+const int2 abs(const int2 &v) { return int2(abs(v.x), abs(v.y)); }
+
 const float2 min(const float2 &a, const float2 &b) { return float2(min(a.x, b.x), min(a.y, b.y)); }
 const float2 max(const float2 &a, const float2 &b) { return float2(max(a.x, b.x), max(a.y, b.y)); }
 const float3 min(const float3 &a, const float3 &b) { return float3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
 const float3 max(const float3 &a, const float3 &b) { return float3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
+template <class T>
+bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {
+	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
+			(b.min.y < a.max.y && a.min.y < b.max.y);
+}
+
+template <class T>
+bool areOverlapping(const Box<T> &a, const Box<T> &b) {
+	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
+			(b.min.y < a.max.y && a.min.y < b.max.y) &&
+			(b.min.z < a.max.z && a.min.z < b.max.z);
+}
+
+template bool areOverlapping<int2>(const Rect<int2>&, const Rect<int2>&);
+template bool areOverlapping<float2>(const Rect<float2>&, const Rect<float2>&);
+
+template bool areOverlapping<int3>(const Box<int3>&, const Box<int3>&);
+template bool areOverlapping<float3>(const Box<float3>&, const Box<float3>&);
 
 float vectorToAngle(const float2 &normalized_vec) {
 	float ang = acos(normalized_vec.x);

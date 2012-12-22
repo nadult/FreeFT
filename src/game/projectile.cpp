@@ -32,11 +32,11 @@ namespace game {
 		Ray ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
-		Intersection isect = m_world->intersect(Segment(ray, 0.0f, ray_pos));
-		float3 new_pos = ray.at(min(isect.distance, ray_pos));
+		Intersection isect = m_world->trace(Segment(ray, 0.0f, ray_pos));
+		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		setPos(new_pos);
 
-		if(isect.distance < ray_pos) {
+		if(isect.distance() < ray_pos) {
 			if(s_impact_names[m_type]) {
 				PProjectileImpact impact(new ProjectileImpact(s_impact_names[m_type], new_pos));
 				m_world->spawnProjectileImpact(std::move(impact));

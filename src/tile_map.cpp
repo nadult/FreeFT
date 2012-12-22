@@ -72,8 +72,8 @@ void TileMapNode::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collisi
 
 	std::sort(m_instances.begin(), m_instances.end());
 
-	m_screen_rect += inst.screenRect();
-	m_bounding_box += inst.boundingBox();
+	m_screen_rect = sum(m_screen_rect, inst.screenRect());
+	m_bounding_box = sum(m_bounding_box, inst.boundingBox());
 }
 
 void TileMapNode::select(const IBox &box, SelectionMode::Type mode) {
@@ -121,8 +121,8 @@ void TileMapNode::deleteSelected() {
 		m_bounding_box = m_instances[0].boundingBox();
 
 		for(uint n = 1; n < m_instances.size(); n++) {
-			m_screen_rect += m_instances[n].screenRect();
-			m_bounding_box += m_instances[n].boundingBox();
+			m_screen_rect = sum(m_screen_rect, m_instances[n].screenRect());
+			m_bounding_box = sum(m_bounding_box, m_instances[n].boundingBox());
 		}
 
 		sort(m_instances.begin(), m_instances.end());

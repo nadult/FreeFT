@@ -11,8 +11,9 @@ using namespace gfx;
 namespace game {
 
 	Entity::Entity(const char *sprite_name, const float3 &pos)
-		:m_world(nullptr), m_to_be_removed(false) {
+		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1) {
 		m_sprite = Sprite::mgr[sprite_name];
+		m_max_screen_rect = m_sprite->getMaxRect();
 		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
 		m_dir_idx = 0;
 		m_dir_angle = 0.0f;
@@ -38,6 +39,10 @@ namespace game {
 		return m_bbox + pos();
 	}
 
+	IRect Entity::screenRect() const {
+		return m_max_screen_rect + (int2)worldToScreen(pos());
+	}
+
 	void Entity::addToRender(gfx::SceneRenderer &out) const {
 		PROFILE("Entity::addToRender");
 		IRect rect = m_sprite->getRect(m_seq_id, m_frame_id, m_dir_idx);
@@ -50,11 +55,12 @@ namespace game {
 		spr_tex->setSurface(tex);
 
 		out.add(spr_tex, rect, m_pos, m_bbox);
-	//	out.addBox(boundingBox(), m_world && m_world->isColliding(boundingBox())? Color::red : Color::white);
+		if(m_world->isColliding(boundingBox(), this))
+			out.addBox(boundingBox(), Color::red);
 	}
 		
-	bool Entity::pixelTest(const int2 &screen_pos) const {
-		return m_sprite->pixelTest(screen_pos - (int2)worldToScreen(pos()), m_seq_id, m_frame_id, m_dir_idx);
+	bool Entity::testPixel(const int2 &screen_pos) const {
+		return m_sprite->testPixel(screen_pos - (int2)worldToScreen(pos()), m_seq_id, m_frame_id, m_dir_idx);
 	}
 
 	void Entity::handleEventFrame(const Sprite::Frame &frame) {
@@ -84,6 +90,8 @@ namespace game {
 
 		if(update_bbox)
 			m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
+
+		m_max_screen_rect = m_sprite->getMaxRect();
 	}
 
 	void Entity::playSequence(int seq_id) {

@@ -353,7 +353,7 @@ namespace gfx
 		return out;
 	}
 
-	bool Sprite::Collection::pixelTest(const int2 &screen_pos, int frame_id, int dir_id) const {
+	bool Sprite::Collection::testPixel(const int2 &screen_pos, int frame_id, int dir_id) const {
 		int layer_indices[4];
 		getLayerIndices(frame_id, dir_id, layer_indices);
 		for(int n = 0; n < COUNTOF(layer_indices); n++) {
@@ -412,13 +412,29 @@ namespace gfx
 		const Collection &collection = m_collections[m_sequences[seq_id].collection_id];
 		return collection.rects[frame_id * collection.m_dir_count + dir_id] - m_offset;
 	}
+
+	IRect Sprite::getMaxRect() const {
+		IRect out;
+		bool is_set = false;
+
+		for(int c = 0; c < (int)m_collections.size(); c++) {
+			const Collection &collection = m_collections[c];
+			for(int r = 0; r < (int)collection.rects.size(); r++) {
+				const IRect &rect = collection.rects[r];
+				out = is_set? sum(out, rect) : rect;
+				is_set = true;
+			}
+		}
+
+		return out - m_offset;
+	}
 		
-	bool Sprite::pixelTest(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const {
+	bool Sprite::testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const {
 		frame_id = accessFrame(seq_id, frame_id, dir_id);
 		const Collection &collection = m_collections[m_sequences[seq_id].collection_id];
 		const IRect &rect = collection.rects[frame_id * collection.m_dir_count + dir_id];
 		return rect.isInside(screen_pos + m_offset)?
-			collection.pixelTest(screen_pos + m_offset - rect.min, frame_id, dir_id) : false;
+			collection.testPixel(screen_pos + m_offset - rect.min, frame_id, dir_id) : false;
 	}
 
 	int Sprite::findSequence(const char *name) const {

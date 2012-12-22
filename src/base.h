@@ -53,6 +53,7 @@ struct int2
 
 const int2 min(const int2 &lhs, const int2 &rhs);
 const int2 max(const int2 &lhs, const int2 &rhs);
+const int2 abs(const int2&);
 
 struct int3
 {
@@ -173,12 +174,14 @@ public:
 	Ray(const float3 &origin, const float3 &dir) :m_origin(origin), m_dir(dir) {
 		m_inv_dir = float3(1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z);
 	}
+	Ray(const float3 &origin, const float3 &dir, const float3 &idir) :m_origin(origin), m_dir(dir), m_inv_dir(idir) { }
 	Ray() { }
 
 	const float3 &dir() const { return m_dir; }
 	const float3 &invDir() const { return m_inv_dir; }
 	const float3 &origin() const { return m_origin; }
 	const float3 at(float t) const { return m_origin + m_dir * t; }
+	const Ray operator-() const { return Ray(m_origin, -m_dir, -m_inv_dir); }
 
 private:
 	float3 m_origin;
@@ -189,6 +192,7 @@ private:
 struct Segment: public Ray {
 	Segment(const Ray &ray, float min = -constant::inf, float max = constant::inf)
 		:Ray(ray), min(min), max(max) { }
+	const Segment operator-() const { return Segment(Ray::operator-(), -max, -min); }
 
 	float min, max;
 };
@@ -204,6 +208,7 @@ struct Rect
 	Rect(Type2 min, Type2 max) :min(min), max(max) { }
 	Rect(Type minX, Type minY, Type maxX, Type maxY) :min(minX, minY), max(maxX, maxY) { }
 	Rect() { }
+	static const Rect empty() { return Rect(0, 0, 0, 0); }
 
 	Type width() const { return max.x - min.x; }
 	Type height() const { return max.y - min.y; }
@@ -230,6 +235,16 @@ bool operator==(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min
 template <class Type2>
 bool operator!=(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }
 
+template <class Type3>
+const Rect<Type3> sum(const Rect<Type3> &a, const Rect<Type3> &b) {
+	return Rect<Type3>(min(a.min, b.min), max(a.max, b.max));
+}
+
+template <class Type3>
+const Rect<Type3> intersection(const Rect<Type3> &a, const Rect<Type3> &b) {
+	return Rect<Type3>(max(a.min, b.min), min(a.max, b.max));
+}
+
 
 template <class Type3>
 struct Box
@@ -242,6 +257,7 @@ struct Box
 	Box(Type minX, Type minY, Type minZ, Type maxX, Type maxY, Type maxZ)
 		:min(minX, minY, minZ), max(maxX, maxY, maxZ) { }
 	Box() { }
+	static const Box empty() { return Box(0, 0, 0, 0, 0, 0); }
 
 	Type width() const { return max.x - min.x; }
 	Type height() const { return max.y - min.y; }
@@ -251,9 +267,6 @@ struct Box
 
 	Box operator+(const Type3 &offset) const { return Box(min + offset, max + offset); }
 	Box operator-(const Type3 &offset) const { return Box(min - offset, max - offset); }
-
-	//TODO: union / sum
-	Box operator+(const Box &rhs) { return Box(::min(min, rhs.min), ::max(max, rhs.max)); }
 
 	bool isEmpty() const { return max.x <= min.x || max.y <= min.y || max.z <= min.z; }
 	bool isInside(const Type3 &point) const {
@@ -276,6 +289,11 @@ struct Box
 };
 
 template <class Type3>
+const Box<Type3> sum(const Box<Type3> &a, const Box<Type3> &b) {
+	return Box<Type3>(min(a.min, b.min), max(a.max, b.max));
+}
+
+template <class Type3>
 const Box<Type3> intersection(const Box<Type3> &a, const Box<Type3> &b) {
 	return Box<Type3>(max(a.min, b.min), min(a.max, b.max));
 }
@@ -290,17 +308,10 @@ float intersection(const Ray &ray, const Box<float3> &box);
 float intersection(const Segment &segment, const Box<float3> &box);
 
 template <class T>
-bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {
-	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
-			(b.min.y < a.max.y && a.min.y < b.max.y);
-}
+bool areOverlapping(const Rect<T> &a, const Rect<T> &b);
 
 template <class T>
-bool areOverlapping(const Box<T> &a, const Box<T> &b) {
-	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
-			(b.min.y < a.max.y && a.min.y < b.max.y) &&
-			(b.min.z < a.max.z && a.min.z < b.max.z);
-}
+bool areOverlapping(const Box<T> &a, const Box<T> &b);
 
 // TODO: support for overlapping boxes
 template <class Type3>

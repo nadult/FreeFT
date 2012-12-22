@@ -10,6 +10,7 @@ namespace gfx {
 
 	SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos) :m_viewport(viewport), m_view_pos(view_pos) {
 		m_target_rect = IRect(m_view_pos, m_view_pos + m_viewport.size());
+		m_elements.reserve(1024);
 	}
 
 	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color, FRect tex_rect) {
@@ -17,7 +18,7 @@ namespace gfx {
 
 		rect += (int2)worldToScreen(pos);
 		if(!areOverlapping(rect, IRect(m_view_pos, m_view_pos + m_viewport.size())))
-			return;
+			return; //TODO: redundant check
 
 		Element new_elem;
 		new_elem.texture = texture;

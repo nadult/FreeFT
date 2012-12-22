@@ -58,7 +58,7 @@ namespace gfx {
 
 			void getLayerIndices(int frame_id, int dir_id, int *layer_indices) const;
 			Texture getFrame(int frame_id, int dir_id) const;
-			bool pixelTest(const int2 &screen_pos, int frame_id, int dir_id) const;
+			bool testPixel(const int2 &screen_pos, int frame_id, int dir_id) const;
 
 			int m_first_frame, m_frame_count, m_dir_count, m_offset;
 			int type;
@@ -71,7 +71,8 @@ namespace gfx {
 		int accessFrame(int seq_id, int frame_id, int dir_id) const;
 		Texture getFrame(int seq_id, int frame_id, int dir_id) const;
 		IRect getRect(int seq_id, int frame_id, int dir_id) const;
-		bool pixelTest(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
+		IRect getMaxRect() const;
+		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
 		int findSequence(const char *name) const;
 
