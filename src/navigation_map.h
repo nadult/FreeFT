@@ -26,19 +26,13 @@ public:
 
 	struct Quad {
 		Quad(const IRect &rect)
-			:rect(rect), is_disabled(false), static_ncount(0) { }
+			:rect(rect), is_disabled(0), static_ncount(0) { }
 		Quad() { }
 
 		IRect rect;
 		vector<int> neighbours;
-		vector<IRect> edges;
-		int static_ncount;
-		bool is_disabled;
-
-		mutable int src_quad;
-		mutable float dist, edist;
-		mutable int2 entry_pos;
-		mutable bool is_finished;
+		int static_ncount: 31;
+		int is_disabled : 1;
 	};
 
 	struct PathNode {

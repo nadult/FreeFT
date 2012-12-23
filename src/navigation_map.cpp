@@ -1,9 +1,8 @@
 #include "navigation_map.h"
 #include "navigation_bitmap.h"
 #include "gfx/texture.h"
+#include "sys/profiler.h"
 #include <cstring>
-#include <cmath>
-#include <set>
 #include <algorithm>
 
 NavigationMap::NavigationMap(int extend) :m_size(0, 0), m_extend(extend) { }
@@ -108,28 +107,37 @@ void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy)
 	delete[] counts;
 }
 
+static const IRect computeEdge(const IRect &quad1, const IRect &quad2) {
+	bool is_horizontal = quad1.max.x > quad2.min.x && quad1.min.x < quad2.max.x;
+	IRect edge(max(quad1.min, quad2.min), min(quad1.max, quad2.max));
+
+	if(is_horizontal) {
+		edge.max.x--;
+		if(quad1.min.y > quad2.min.y) {
+			edge.min.y--;
+			edge.max.y--;
+		}
+	}
+	else {
+		edge.max.y--;
+		if(quad1.min.x > quad2.min.x) {
+			edge.min.x--;
+			edge.max.x--;
+		}
+	}
+
+	DASSERT(edge.max.x >= edge.min.x || edge.max.y >= edge.min.y);
+	return edge;
+}
+
 void NavigationMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
 	DASSERT(quad1_id != quad2_id);
 	Quad &quad1 = m_quads[quad1_id];
 	Quad &quad2 = m_quads[quad2_id];
 
 	if(areAdjacent(quad1.rect, quad2.rect)) {
-		bool is_horizontal = quad1.rect.max.x > quad2.rect.min.x && quad1.rect.min.x < quad2.rect.max.x;
-		IRect edge(max(quad1.rect.min, quad2.rect.min), min(quad1.rect.max, quad2.rect.max));
-
-		if(is_horizontal)
-			edge.max.x--;
-		else
-			edge.max.y--;
-				
-		if( is_horizontal && quad1.rect.min.y > quad2.rect.min.y)
-			edge -= int2(0, 1);
-		if(!is_horizontal && quad1.rect.min.x > quad2.rect.min.x)
-			edge -= int2(1, 0);
-		ASSERT(edge.max.x >= edge.min.x || edge.max.y >= edge.min.y);
-
 		quad1.neighbours.push_back(quad2_id);
-		quad1.edges.push_back(edge);
+		quad2.neighbours.push_back(quad1_id);
 	}
 }
 
@@ -138,20 +146,19 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 	m_quads.clear();
 	DASSERT(bitmap.extend() == m_extend);
 
-//	printf("Creating navigation map: "); fflush(stdout);
+	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 	for(int sy = 0; sy < m_size.y; sy += sector_size)
 		for(int sx = 0; sx < m_size.x; sx += sector_size) {
 			extractQuads(bitmap, sx, sy);
 			//printf("."); fflush(stdout);
 		}
-//	printf("%.2f seconds\n", getTime() - time);
+	printf("%.2f seconds\n", getTime() - time);
 	m_static_count = (int)m_quads.size();
 
 	for(int i = 0; i < (int)m_quads.size(); i++)
-		for(int j = 0; j < (int)m_quads.size(); j++)
-			if(j != i)
-				addAdjacencyInfo(i, j);
+		for(int j = 0; j < i; j++)
+			addAdjacencyInfo(i, j);
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		m_quads[n].static_ncount = (int)m_quads[n].neighbours.size();
 }
@@ -175,15 +182,12 @@ void NavigationMap::addCollider(int parent_id, const IRect &rect) {
 		if(!rects[n].isEmpty())
 			m_quads.push_back(Quad(rects[n]));
 
+	int count = 0;
 	for(int n = first_id; n < (int)m_quads.size(); n++) {
-		for(int i = 0; i < (int)parent.neighbours.size(); i++) {
+		for(int i = 0; i < (int)parent.neighbours.size(); i++)
+			addAdjacencyInfo(n, parent.neighbours[i]);
+		for(int i = first_id; i < n; i++)
 			addAdjacencyInfo(n, i);
-			addAdjacencyInfo(i, n);
-		}
-		for(int i = 0; i < n; i++) {
-			addAdjacencyInfo(n, i);
-			addAdjacencyInfo(i, n);
-		}
 	}
 }
 
@@ -203,15 +207,8 @@ void NavigationMap::removeColliders() {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		Quad &quad = m_quads[n];
 		quad.neighbours.resize(quad.static_ncount);
-		quad.edges.resize(quad.static_ncount);
 		quad.is_disabled = false;
 	}
-}
-
-static float distance(const int2 &a, const int2 &b) {
-	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
-	int dist_diag = min(dist_x, dist_y);
-	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
 }
 
 // Instead, maybe it would be better to search closest path with Rect as a target?
@@ -248,6 +245,98 @@ int NavigationMap::findQuad(int2 pos, bool find_disabled) const {
 // (gracz się zatrzymuje bo jest kolizja)
 #define WALK_DIAGONAL_THROUGH_CORNERS
 
+
+static float distance(const int2 &a, const int2 &b) {
+	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
+	int dist_diag = min(dist_x, dist_y);
+	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
+}
+
+namespace {
+
+	struct SearchData {
+		int2 entry_pos;
+		int src_quad;
+		int heap_pos : 31;
+		int is_finished : 1;
+		float dist, est_dist;
+	};
+
+	struct HeapData {
+		HeapData(SearchData *ptr) :ptr(ptr), value(ptr->dist + ptr->est_dist) { }
+		HeapData() { }
+
+		bool operator<(const HeapData &rhs) const { return value < rhs.value; }
+
+		SearchData *ptr;
+		float value;
+	};
+
+	bool heapInvariant(HeapData *heap, int size) {
+		for(int n = 1; n < size; n++)
+			if(heap[n] < heap[n / 2])
+				return false;
+		return true;
+	}
+
+	void printHeap(HeapData *heap, int size) {
+		for(int n = 0; n < size; n++)
+			printf("%.0f ", heap[n].value);
+		printf("\n");
+	}
+
+#define UPDATE(id)	heap[id].ptr->heap_pos = id;
+	void heapify(HeapData *heap, int size, int id) {
+		int l = id * 2;
+		int r = id * 2 + 1;
+
+		int smallest = l < size && heap[l] < heap[id]? l : id;
+		if(r < size && heap[r] < heap[smallest])
+			smallest = r;
+		if(smallest != id) {
+			swap(heap[id], heap[smallest]);
+			UPDATE(id);
+			UPDATE(smallest);
+			heapify(heap, size, smallest);
+		}
+	}
+
+	HeapData extractMin(HeapData *heap, int &size) {
+		DASSERT(size > 0);
+		HeapData min = heap[0];
+
+		heap[0] = heap[--size];
+		UPDATE(0);
+		heapify(heap, size, 0);
+		return min;
+	}
+
+	void updateKey(HeapData *heap, int &size, SearchData *ptr) {
+		int pos = ptr->heap_pos;
+		DASSERT(pos == -1 || heap[pos].ptr == ptr);
+
+		HeapData new_key(ptr);
+		if(pos == -1)
+			heap[pos = size++].value = new_key.value;
+
+		if(new_key.value > heap[pos].value) {
+			heap[pos].value = new_key.value;
+			heapify(heap, size, pos);
+			return;
+		}
+
+		while(pos > 0 && new_key < heap[pos / 2]) {
+			heap[pos] = heap[pos / 2];
+			UPDATE(pos);
+			pos = pos / 2;
+		}
+		heap[pos] = new_key;
+		UPDATE(pos);
+	}
+
+#undef UPDATE
+}
+
 vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bool do_refining) const {
 	vector<PathNode> out;
 	int start_id = findQuad(start), end_id = findQuad(end);
@@ -255,80 +344,82 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 	if(start_id == -1 || end_id == -1) //TODO: info that path not found
 		return out;
 
+	SearchData data[(int)m_quads.size()];
 	for(int n = 0; n < (int)m_quads.size(); n++) {
-		m_quads[n].dist = 1.0f / 0.0f;
-		m_quads[n].is_finished = false;
+		data[n].dist = 1.0f / 0.0f;
+		data[n].heap_pos = -1;
+		data[n].is_finished = false;
 	}
 
-	m_quads[start_id].dist = 0.0f;
-	m_quads[start_id].edist = distance(start, end);
-	m_quads[start_id].entry_pos = start;
-	m_quads[start_id].src_quad = -1;
+	HeapData heap[(int)m_quads.size()];
+	int heap_size = 0;
 
-	std::set<pair<int, int> > queue;
-	queue.insert(make_pair(m_quads[start_id].edist, start_id));
+	data[start_id].dist = 0.0f;
+	data[start_id].est_dist = distance(start, end);
+	data[start_id].entry_pos = start;
+	data[start_id].src_quad = -1;
+	heap[heap_size++] = HeapData(data + start_id);
 
 	bool end_reached = start_id == end_id;
 
-	while(!queue.empty()) {
-		int quad_id = queue.begin()->second;
+	while(heap_size) {
+		int quad_id = extractMin(heap, heap_size).ptr - data;
 		if(quad_id == end_id)
 			break;
 
-		const Quad &quad = m_quads[quad_id];
-		quad.is_finished = true;
-		queue.erase(queue.begin());
+		const Quad &quad1 = m_quads[quad_id];
+		SearchData &data1 = data[quad_id];
+		data1.is_finished = true;
 
-		for(int n = 0; n < (int)quad.neighbours.size(); n++) {
-			int next_id = quad.neighbours[n];
-			const Quad &next = m_quads[next_id];
-			const IRect &edge = quad.edges[n];
+		for(int n = 0; n < (int)quad1.neighbours.size(); n++) {
+			int quad2_id = quad1.neighbours[n];
+			const Quad &quad2 = m_quads[quad2_id];
+			SearchData &data2 = data[quad2_id];
 
-			if(next.is_finished || next.is_disabled)
+			if(data2.is_finished || quad2.is_disabled)
 				continue;
+			
+			IRect edge = computeEdge(quad1.rect, quad2.rect);
 
 			int2 edge_end_pos = clamp(end, edge.min, edge.max);
-			MoveVector vec(quad.entry_pos, edge_end_pos);
+			MoveVector vec(data1.entry_pos, edge_end_pos);
 
-			int2 closest_pos = clamp(quad.entry_pos + vec.vec * vec.ddiag, next.rect.min, next.rect.max - int2(1, 1));
+			int2 closest_pos = clamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min, quad2.rect.max - int2(1, 1));
 
-			closest_pos = clamp(closest_pos, quad.rect.min - int2(1, 1), quad.rect.max);
+			closest_pos = clamp(closest_pos, quad1.rect.min - int2(1, 1), quad1.rect.max);
 
 #ifndef WALK_DIAGONAL_THROUGH_CORNERS
 			// fixing problem with diagonal moves through obstacle corners
-			if(quad.rect.max.x > next.rect.min.x && quad.rect.min.x < next.rect.max.x) {
-				if(quad.entry_pos.x < closest_pos.x && closest_pos.x == next.rect.min.x && closest_pos.x < next.rect.max.x - 1)
+			if(quad1.rect.max.x > quad2.rect.min.x && quad1.rect.min.x < quad2.rect.max.x) {
+				if(data1.entry_pos.x < closest_pos.x && closest_pos.x == quad2.rect.min.x && closest_pos.x < quad2.rect.max.x - 1)
 					closest_pos.x++;
-				if(quad.entry_pos.x > closest_pos.x && closest_pos.x == next.rect.max.x - 1 && closest_pos.x > next.rect.min.x)
+				if(data1.entry_pos.x > closest_pos.x && closest_pos.x == quad2.rect.max.x - 1 && closest_pos.x > quad2.rect.min.x)
 					closest_pos.x--;
 			}
 			else {
-				if(quad.entry_pos.y < closest_pos.y && closest_pos.y == next.rect.min.y && closest_pos.y < next.rect.max.y - 1)
+				if(data1.entry_pos.y < closest_pos.y && closest_pos.y == quad2.rect.min.y && closest_pos.y < quad2.rect.max.y - 1)
 					closest_pos.y++;
-				if(quad.entry_pos.y > closest_pos.y && closest_pos.y == next.rect.max.y - 1 && closest_pos.y > next.rect.min.y)
+				if(data1.entry_pos.y > closest_pos.y && closest_pos.y == quad2.rect.max.y - 1 && closest_pos.y > quad2.rect.min.y)
 					closest_pos.y--;
 			}
 #endif
 
-			float dist = distance(closest_pos, quad.entry_pos) + quad.dist;
-			float edist = distance(closest_pos, end);
+			float dist = distance(closest_pos, data1.entry_pos) + data1.dist;
+			float est_dist = distance(closest_pos, end);
 
-			if(next_id == end_id) {
+			if(quad2_id == end_id) {
 				end_reached = true;
 				dist += distance(closest_pos, end);
 			}
 
-			if(do_refining? next.dist <= dist : next.dist + next.edist <= dist + edist)
+			if(do_refining? data2.dist <= dist : data2.dist + data2.est_dist <= dist + est_dist)
 				continue;
 
-			if(next.dist != -1)
-				queue.erase(make_pair(next.dist + next.edist, next_id));
-
-			next.dist = dist;
-			next.edist = edist;
-			next.entry_pos = closest_pos;
-			next.src_quad = quad_id;
-			queue.insert(make_pair(dist + next.edist, next_id));
+			data2.dist = dist;
+			data2.est_dist = est_dist;
+			data2.entry_pos = closest_pos;
+			data2.src_quad = quad_id;
+			updateKey(heap, heap_size, &data2);
 		}
 	}
 
@@ -336,10 +427,9 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 		return out;
 
 	out.push_back(PathNode{end, end_id});
-	for(int quad_id = end_id; quad_id != -1; quad_id = m_quads[quad_id].src_quad) {
-		const Quad &quad = m_quads[quad_id];
-		if(out.back().point != quad.entry_pos)
-			out.push_back({quad.entry_pos, quad_id});
+	for(int quad_id = end_id; quad_id != -1; quad_id = data[quad_id].src_quad) {
+		if(out.back().point != data[quad_id].entry_pos)
+			out.push_back({data[quad_id].entry_pos, quad_id});
 	}
 	std::reverse(out.begin(), out.end());
 	
@@ -493,11 +583,10 @@ void NavigationMap::printInfo() const {
 	printf("NavigationMap(%d, %d):\n", m_size.x, m_size.y);
 
 	int bytes = sizeof(Quad) * m_quads.size();
-	for(int n = 0; n < (int)m_quads.size(); n++) {
+	for(int n = 0; n < (int)m_quads.size(); n++)
 		bytes += m_quads[n].neighbours.size() * sizeof(int);
-		bytes += m_quads[n].edges.size() * sizeof(IRect);
-	}
 	printf("  quads(%d): %.0f KB\n", (int)m_quads.size(), double(bytes) / 1024.0);
+	printf("  sizeof(Quad): %d\n", sizeof(Quad));
 
 	if(0) for(int n = 0; n < (int)m_quads.size(); n++) {
 		const Quad &quad = m_quads[n];

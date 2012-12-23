@@ -23,9 +23,11 @@ namespace Profiler {
 		bool auto_clear;
 	};
 
-#define PROFILE(id) Profiler::AutoTimer timer ## __LINE__(id, true)
-#define PROFILE_RARE(id) Profiler::AutoTimer timer ## __LINE__(id, false)
+#define PROFILE(id) Profiler::AutoTimer PROFILE_NAME(__LINE__)(id, true)
+#define PROFILE_RARE(id) Profiler::AutoTimer PROFILE_NAME(__LINE__)(id, false)
 
+#define PROFILE_NAME(a) PROFILE_NAME_(a)
+#define PROFILE_NAME_(a) timer ## a
 };
 
 #endif

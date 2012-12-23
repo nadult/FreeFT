@@ -46,7 +46,7 @@ namespace game {
 					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
 				}
 			m_navi_map.update(bitmap);
-		//	m_navi_map.printInfo();
+			m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();
@@ -55,6 +55,8 @@ namespace game {
 				const IBox &box = enclosingIBox(m_entities[n]->boundingBox());
 				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
 			}
+
+		PROFILE("updateNavi::updateGrid");
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			const Entity *entity = m_entities[n].get();
 			if(entity->colliderType() != collider_static)
@@ -111,8 +113,6 @@ namespace game {
 	}
 
 	void World::simulate(double time_diff) {
-		PROFILE("World::simulate");
-
 		DASSERT(time_diff >= 0.0);
 		double max_time_diff = 1.0; //TODO: add warning?
 		time_diff = min(time_diff, max_time_diff);

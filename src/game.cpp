@@ -102,7 +102,7 @@ int safe_main(int argc, char **argv)
 		tiles.resize(unique(tiles.begin(), tiles.end()) - tiles.begin());
 
 		atlas = makeTileAtlas(tiles);
-		Saver("atlas.tga") & *atlas;
+	//	Saver("atlas.tga") & *atlas;
 	}
 	int inventory_sel = -1, container_sel = -1;
 	string prof_stats;
@@ -132,8 +132,9 @@ int safe_main(int argc, char **argv)
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
-			else if(box_isect.isTile()) {
-				int3 wpos = (int3)asXZY(ray.at(box_isect.distance()).xz(), 1.0f);
+			else if(isect.isTile()) {
+				//TODO: pixel intersect always returns distance == 0
+				int3 wpos = (int3)asXZY(ray.at(isect.distance()).xz(), 1.0f);
 				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 			}
 		}

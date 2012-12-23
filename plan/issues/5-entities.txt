@@ -25,7 +25,7 @@
 
 
 +ESTIMATED_TIME: 18h 30min
-+TIME_SPENT: 48h 40min
++TIME_SPENT: 57h 10min
 
 +WORK_LOG:
 03.12.12: 14:15 - 15:15, 16:00 - 23:15 (8h 15min)

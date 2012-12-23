@@ -41,7 +41,7 @@ MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
 INCLUDES=-I./
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
-		   -Wno-unused-but-set-variable -Wno-unused-variable
+		   -Wno-unused-but-set-variable -Wno-unused-variable -fno-inline-functions-called-once
 
 FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LINUX_FLAGS=$(FLAGS) -rdynamic

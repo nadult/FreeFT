@@ -51,10 +51,6 @@ struct int2
 	int x, y;
 };
 
-const int2 min(const int2 &lhs, const int2 &rhs);
-const int2 max(const int2 &lhs, const int2 &rhs);
-const int2 abs(const int2&);
-
 struct int3
 {
 	int3(int x, int y, int z) : x(x), y(y), z(z) { }
@@ -76,9 +72,6 @@ struct int3
 
 	int x, y, z;
 };
-
-const int3 min(const int3 &lhs, const int3 &rhs);
-const int3 max(const int3 &lhs, const int3 &rhs);
 
 struct int4
 {
@@ -117,9 +110,6 @@ struct float2
 	float x, y;
 };
 
-const float2 min(const float2 &lhs, const float2 &rhs);
-const float2 max(const float2 &lhs, const float2 &rhs);
-
 float vectorToAngle(const float2 &normalized_vector);
 const float2 angleToVector(float radians);
 const float2 rotateVector(const float2 &vec, float radians);
@@ -149,9 +139,6 @@ struct float3
 	float x, y, z;
 };
 
-const float3 min(const float3 &lhs, const float3 &rhs);
-const float3 max(const float3 &lhs, const float3 &rhs);
-
 struct float4
 {
 	float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { }
@@ -168,6 +155,20 @@ struct float4
 
 	float x, y, z, w;
 };
+
+inline const int2 min(const int2 &a, const int2 &b) { return int2(min(a.x, b.x), min(a.y, b.y)); }
+inline const int2 max(const int2 &a, const int2 &b) { return int2(max(a.x, b.x), max(a.y, b.y)); }
+inline const int3 min(const int3 &a, const int3 &b) { return int3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+inline const int3 max(const int3 &a, const int3 &b) { return int3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
+inline const int2 abs(const int2 &v) { return int2(abs(v.x), abs(v.y)); }
+inline const int3 abs(const int3 &v) { return int3(abs(v.x), abs(v.y), abs(v.z)); }
+
+inline const float2 min(const float2 &a, const float2 &b) { return float2(min(a.x, b.x), min(a.y, b.y)); }
+inline const float2 max(const float2 &a, const float2 &b) { return float2(max(a.x, b.x), max(a.y, b.y)); }
+inline const float3 min(const float3 &a, const float3 &b) { return float3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+inline const float3 max(const float3 &a, const float3 &b) { return float3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
 
 class Ray {
 public:
