@@ -146,14 +146,14 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 	m_quads.clear();
 	DASSERT(bitmap.extend() == m_extend);
 
-	printf("Creating navigation map: "); fflush(stdout);
+	//printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 	for(int sy = 0; sy < m_size.y; sy += sector_size)
 		for(int sx = 0; sx < m_size.x; sx += sector_size) {
 			extractQuads(bitmap, sx, sy);
 			//printf("."); fflush(stdout);
 		}
-	printf("%.2f seconds\n", getTime() - time);
+	//printf("%.2f seconds\n", getTime() - time);
 	m_static_count = (int)m_quads.size();
 
 	for(int i = 0; i < (int)m_quads.size(); i++)

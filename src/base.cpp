@@ -116,26 +116,26 @@ float mat[3][3] = {
  *
  */
 
-float2 worldToScreen(float3 pos) {
+const float2 worldToScreen(const float3 &pos) {
 	return float2(	6.0f * (pos.x - pos.z),
 					3.0f * (pos.x + pos.z) - 7.0f * pos.y);
 				//	7.0f * (pos.x + pos.z) + 6.0f * pos.y);
 }
 
-int2 worldToScreen(int3 pos) {
+const int2 worldToScreen(const int3 &pos) {
 	return int2(	6 * (pos.x - pos.z),
 					3 * (pos.x + pos.z) - 7 * pos.y);
 				//	7 * (pos.x + pos.z) - 6 * pos.y);
 }
 
-float2 screenToWorld(float2 pos) {
+const float2 screenToWorld(const float2 &pos) {
 	float x = pos.x * (1.0f / 12.0f);
 	float y = pos.y * (1.0f / 6.0f);
 
 	return float2(y + x, y - x);
 }
 
-int2 screenToWorld(int2 pos) {
+const int2 screenToWorld(const int2 &pos) {
 	int x = pos.x / 12;
 	int y = pos.y / 6;
 
@@ -191,7 +191,7 @@ float intersection(const Segment &segment, const Box<float3> &box) {
 	return lmin < lmax? lmin : constant::inf;
 }
 
-Ray screenRay(int2 screen_pos) {
+const Ray screenRay(const int2 &screen_pos) {
 	float3 origin = asXZ(screenToWorld((float2)screen_pos));
 	float3 dir = float3(-1.0f / 6.0f, -1.0f / 7.0f, -1.0f / 6.0f);
 	return Ray(origin, dir / length(dir));

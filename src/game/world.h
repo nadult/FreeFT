@@ -14,7 +14,7 @@ namespace game {
 		
 	class Intersection {
 	public:
-		Intersection(const Grid::Object *object = nullptr, bool is_entity = false, float distance = constant::inf)
+		Intersection(const Grid::ObjectDef *object = nullptr, bool is_entity = false, float distance = constant::inf)
 			:m_object(object), m_is_entity(is_entity), m_distance(distance) { }
 
 		const FBox boundingBox() const { return m_object? m_object->bbox : FBox::empty(); }
@@ -26,7 +26,7 @@ namespace game {
 		float distance() const { return m_distance; }
 
 	private:
-		const Grid::Object *m_object;
+		const Grid::ObjectDef *m_object;
 		float m_distance;
 		bool m_is_entity;
 	};
@@ -37,6 +37,7 @@ namespace game {
 	public:
 		World();
 		World(const char *file_name);
+		~World();
 
 		template <class T>
 		T *addEntity(T *entity) {

@@ -24,7 +24,7 @@
    issues/3-simple_character_movement.txt DONE  (26 / 15)
 
  - encje, interakcja z otoczeniem
-   issues/5-entities.txt
+   issues/5-entities.txt  DONE (64 / 18.5)
 
  - strzelanie i niszczenie obiektów
    issues/6-basic_shooting.txt

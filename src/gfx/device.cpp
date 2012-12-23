@@ -165,8 +165,8 @@ namespace gfx
 		const char *renderer = (const char*)glGetString(GL_RENDERER);
 
 		printf(	"Opengl info\n"
-				"vendor: %s  renderer: %s\n"
-				"max texture size: %d\n",
+				"Vendor: %s\nRenderer: %s\n"
+				"Maximum texture size: %d\n",
 				vendor, renderer, max_tex_size);
 	}
 

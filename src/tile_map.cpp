@@ -298,8 +298,8 @@ void TileMap::addToRender(gfx::SceneRenderer &out) const {
 		}
 	}
 	
-//	Profiler::updateCounter("rendered nodes", vNodes);
-//	Profiler::updateCounter("rendered tiles", vTiles);
+//	profiler::updateCounter("rendered nodes", vNodes);
+//	profiler::updateCounter("rendered tiles", vTiles);
 }
 
 void TileMap::addTile(const gfx::Tile &tile, int3 pos, bool test_for_collision) {

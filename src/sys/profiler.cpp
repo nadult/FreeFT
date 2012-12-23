@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cstdio>
 
-using namespace Profiler;
+using namespace profiler;
 
 
 namespace
@@ -29,10 +29,23 @@ namespace
 	vector<Timer> s_timers;
 	vector<Counter> s_counters;
 	int s_frame_count = 0;
+	double s_rdtsc_multiplier = 1.0;
+	double s_last_frame_time[2] = { -1.0, -1.0 };
+
 }
 
 
-namespace Profiler {
+namespace profiler {
+
+	double rdtscTime() {
+		unsigned long long val;
+	    __asm__ __volatile__ ("rdtsc" : "=A" (val));
+		return double(val) * 1.0e-9;
+	}
+
+	double rdtscMultiplier() {
+		return s_rdtsc_multiplier;
+	}
 
 	void updateTimer(const char *id, double time, bool auto_clear) {
 		for(int n = 0; n < (int)s_timers.size(); n++)
@@ -71,6 +84,18 @@ namespace Profiler {
 	}
 
 	void nextFrame() {
+		double current_time = getTime();
+		double current_rtime = rdtscTime();
+
+		if(s_last_frame_time[0] > 0.0) {
+			double diff  = current_time  - s_last_frame_time[0];
+			double rdiff = current_rtime - s_last_frame_time[1];
+			s_rdtsc_multiplier = diff / rdiff;
+		}
+
+		s_last_frame_time[0] = current_time;
+		s_last_frame_time[1] = current_rtime;
+
 		for(int n = 0; n < (int)s_timers.size(); n++) if(s_timers[n].auto_clear) {
 			s_timers[n].avg += s_timers[n].value;
 			s_timers[n].value = 0.0;
@@ -87,7 +112,7 @@ namespace Profiler {
 			ptr += snprintf(ptr, end - ptr, "Timers:\n");
 		for(int n = 0; n < (int)s_timers.size(); n++) {
 			const Timer &timer = s_timers[n];
-			double ms = timer.value * 1000.0;
+			double ms = timer.value * s_rdtsc_multiplier * 1000.0;
 			double us = ms * 1000.0;
 			bool print_ms = ms > 0.5;
 			ptr += snprintf(ptr, end - ptr, "  %s: %.2lf %s\n", timer.id, print_ms? ms : us, print_ms? "ms" : "us");

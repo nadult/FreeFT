@@ -109,7 +109,7 @@ int safe_main(int argc, char **argv)
 	double stat_update_time = getTime();
 
 	while(pollEvents()) {
-		double loop_start = getTime();
+		double loop_start = profiler::rdtscTime();
 		if(isKeyDown(Key_esc))
 			break;
 
@@ -255,12 +255,12 @@ int safe_main(int argc, char **argv)
 		}
 
 		swapBuffers();
-		Profiler::updateTimer("main_loop", getTime() - loop_start);
+		profiler::updateTimer("main_loop", profiler::rdtscTime() - loop_start);
 		if(getTime() - stat_update_time > 0.25) {
-			prof_stats = Profiler::getStats();
+			prof_stats = profiler::getStats();
 			stat_update_time = getTime();
 		}
-		Profiler::nextFrame();
+		profiler::nextFrame();
 	}
 
 	destroyWindow();

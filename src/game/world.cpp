@@ -27,12 +27,14 @@ namespace game {
 				int3 pos = tile_map.nodePos(n) + inst.pos();
 				FBox bbox(pos, pos + inst.m_tile->bboxSize());
 				IRect rect = inst.m_tile->rect() + worldToScreen(pos);
-				m_tile_grid.add(Grid::Object(inst.m_tile, bbox, rect));
+				m_tile_grid.add(Grid::ObjectDef(inst.m_tile, bbox, rect));
 			}
 		m_entity_grid = EntityGrid(tile_map.size());
 		m_tile_grid.printInfo();
 	
 		updateNavigationMap(true);
+	}
+	World::~World() {
 	}
 
 	void World::updateNavigationMap(bool full_recompute) {
@@ -46,7 +48,7 @@ namespace game {
 					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
 				}
 			m_navi_map.update(bitmap);
-			m_navi_map.printInfo();
+			//m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();
@@ -61,7 +63,7 @@ namespace game {
 			const Entity *entity = m_entities[n].get();
 			if(entity->colliderType() != collider_static)
 				m_entity_grid.update(entity->m_grid_index,
-						Grid::Object(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()));
+						Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()));
 		}
 	}
 
@@ -69,7 +71,7 @@ namespace game {
 		DASSERT(entity);
 		entity->m_world = this;
 		entity->m_grid_index =
-			m_entity_grid.add(Grid::Object(entity.get(), entity->boundingBox(), entity->screenRect(), entity->colliderType()));
+			m_entity_grid.add(Grid::ObjectDef(entity.get(), entity->boundingBox(), entity->screenRect(), entity->colliderType()));
 		m_entities.push_back(std::move(entity));
 	}
 
@@ -80,7 +82,7 @@ namespace game {
 		tile_inds.reserve(1024);
 		m_tile_grid.findAll(tile_inds, renderer.targetRect());
 		for(int n = 0; n < (int)tile_inds.size(); n++) {
-			const Grid::Object &obj = m_tile_grid[tile_inds[n]];
+			const Grid::ObjectDef &obj = m_tile_grid[tile_inds[n]];
 			((const gfx::Tile*)obj.ptr)->addToRender(renderer, (int3)obj.bbox.min);
 		}
 
@@ -159,15 +161,15 @@ namespace game {
 		PROFILE("world::pixelIntersect");
 		Intersection out;
 
-		int tile_id = m_tile_grid.pixelIntersect(screen_pos, [](const Grid::Object &object, const int2 &pos)
+		int tile_id = m_tile_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); } );
 		if(tile_id != -1)
 			out = Intersection(&m_tile_grid[tile_id], false, 0.0f);
 
-		int entity_id = m_entity_grid.pixelIntersect(screen_pos, [](const Grid::Object &object, const int2 &pos)
+		int entity_id = m_entity_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const Entity*)object.ptr)->testPixel(pos); } );
 		if(entity_id != -1) {
-			const Grid::Object *object = &m_entity_grid[entity_id];
+			const Grid::ObjectDef *object = &m_entity_grid[entity_id];
 			if(tile_id == -1 || drawingOrder(object->bbox, out.boundingBox()) == 1)
 				out = Intersection(object, true, 0.0f);
 		}

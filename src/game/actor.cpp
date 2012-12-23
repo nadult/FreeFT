@@ -274,8 +274,7 @@ namespace game {
 				}
 			}
 
-			//TODO: disabled for grid testing
-			if(0 &&  m_world->isColliding(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
+			if(m_world->isColliding(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				//TODO: response to collision
 				m_issue_next_order = true;
 				m_path.clear();

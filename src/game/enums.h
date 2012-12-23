@@ -79,8 +79,9 @@ namespace game {
 		collider_static		= 2, // updates NavigationMap when its being fully recomputed
 		collider_dynamic_nv	= 4, // updates NavigationMap every frame
 		collider_dynamic	= 8, // does not update NavigationMap
+		collider_item		= 16,
 
-		collider_entities = collider_static | collider_dynamic | collider_dynamic_nv,
+		collider_entities = collider_static | collider_dynamic | collider_dynamic_nv | collider_item,
 
 		collider_all		= 0xffffffff,
 	};

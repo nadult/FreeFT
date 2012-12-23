@@ -3,7 +3,7 @@
 
 #include "base.h"
 
-namespace Profiler {
+namespace profiler {
 
 	void updateTimer(const char *name, double time, bool auto_clear = true);
 	void updateCounter(const char *name, int value);
@@ -14,17 +14,20 @@ namespace Profiler {
 
 	const string getStats(const char *filter = "");
 
+	double rdtscTime();
+	double rdtscMultiplier();
+
 	struct AutoTimer {
-		AutoTimer(const char *id, bool auto_clear) :time(getTime()), id(id), auto_clear(auto_clear) { }
-		~AutoTimer() { updateTimer(id, getTime() - time, auto_clear); }
+		AutoTimer(const char *id, bool auto_clear) :time(rdtscTime()), id(id), auto_clear(auto_clear) { }
+		~AutoTimer() { updateTimer(id, rdtscTime() - time, auto_clear); }
 
 		double time;
 		const char *id;
 		bool auto_clear;
 	};
 
-#define PROFILE(id) Profiler::AutoTimer PROFILE_NAME(__LINE__)(id, true)
-#define PROFILE_RARE(id) Profiler::AutoTimer PROFILE_NAME(__LINE__)(id, false)
+#define PROFILE(id) profiler::AutoTimer PROFILE_NAME(__LINE__)(id, true)
+#define PROFILE_RARE(id) profiler::AutoTimer PROFILE_NAME(__LINE__)(id, false)
 
 #define PROFILE_NAME(a) PROFILE_NAME_(a)
 #define PROFILE_NAME_(a) timer ## a

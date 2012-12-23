@@ -23,8 +23,8 @@ typedef unsigned int uint;
 
 extern float g_FloatParam[16];
 
-template <class T> inline T max(T a, T b) { return a > b? a : b; }
-template <class T> inline T min(T a, T b) { return a < b? a : b; }
+template <class T> inline T max(T a, T b) { return a < b? b : a; }
+template <class T> inline T min(T a, T b) { return a > b? b : a; }
 
 namespace constant {
 	static const float pi		= 3.14159265358979f;
@@ -367,13 +367,13 @@ float length(const float3&);
 float distance(const float3&, const float3&);
 float distance(const float2&, const float2&);
 
-float2 worldToScreen(float3 pos);
-int2 worldToScreen(int3 pos);
+const float2 worldToScreen(const float3 &pos);
+const int2 worldToScreen(const int3 &pos);
 
-float2 screenToWorld(float2 pos);
-int2 screenToWorld(int2 pos);
+const float2 screenToWorld(const float2 &pos);
+const int2 screenToWorld(const int2 &pos);
 
-Ray screenRay(int2 screen_pos);
+const Ray screenRay(const int2 &screen_pos);
 
 template <class Type3>
 const Rect<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
