@@ -1,6 +1,6 @@
 all: ../editor ../game ../res_viewer ../game.exe ../editor.exe ../res_viewer.exe
 
-BUILD_DIR=/tmp/build
+BUILD_DIR=build
 
 _dummy := $(shell [ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR))
 _dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
@@ -9,33 +9,35 @@ _dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
 _dummy := $(shell [ -d $(BUILD_DIR)/game ] || mkdir -p $(BUILD_DIR)/game)
 _dummy := $(shell [ -d $(BUILD_DIR)/gameui ] || mkdir -p $(BUILD_DIR)/gameui)
 
-SRC_FILES=gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
-	  gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
-	sys/frame_allocator sys/memory sys/profiler sys/platform sys/platform_linux sys/platform_windows sys/xml sys/config \
-	editor game res_viewer base tile_map tile_group navigation_map navigation_bitmap grid grid_intersect \
+SHARED_SRC=\
+	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font gfx/texture_cache \
+	gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer \
+	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config \
+	base tile_map tile_group navigation_map navigation_bitmap grid grid_intersect \
 	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile game/item \
 	game/inventory game/enums \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \
 	ui/edit_box ui/tile_selector ui/tile_map_editor ui/tile_group_editor
 
-PROGRAM_SRC_FILES=editor game res_viewer
-NOT_SHARED_FILES=$(PROGRAM_SRC_FILES) sys/platform_linux sys/platform_windows
-SHARED_FILES=$(filter-out $(NOT_SHARED_FILES), $(SRC_FILES))
+PROGRAM_SRC=\
+	editor game res_viewer
 
-DEPS:=$(SRC_FILES:%=$(BUILD_DIR)/%.dep)
-SOURCES:=$(SRC_FILES:%=%.cpp)
+ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC)\
+	sys/platform_linux sys/platform_windows
 
-LINUX_OBJECTS:=$(SRC_FILES:%=$(BUILD_DIR)/%.o)
-MINGW_OBJECTS:=$(SRC_FILES:%=$(BUILD_DIR)/%_.o)
+DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.dep)
 
-LINUX_SHARED_OBJECTS:=$(SHARED_FILES:%=$(BUILD_DIR)/%.o)
-MINGW_SHARED_OBJECTS:=$(SHARED_FILES:%=$(BUILD_DIR)/%_.o)
+LINUX_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%.o)
+MINGW_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%_.o)
 
-LINUX_PROGRAMS:=$(PROGRAM_SRC_FILES:%=../%)
-MINGW_PROGRAMS:=$(PROGRAM_SRC_FILES:%=../%.exe)
+LINUX_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD_DIR)/%.o)
+MINGW_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD_DIR)/%_.o)
+
+LINUX_PROGRAMS:=$(PROGRAM_SRC:%=../%)
+MINGW_PROGRAMS:=$(PROGRAM_SRC:%=../%.exe)
 
 LIBS=-lglfw -lbaselib -lpng -lz
-LINUX_LIBS=$(LIBS) -lGL -lGLU
+LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
 
 INCLUDES=-I./

@@ -245,18 +245,11 @@ int safe_main(int argc, char **argv)
 		
 	setBlendingMode(bmNormal);
 
+	printf("Enumerating tiles\n");
 	vector<FileEntry> file_names;
-//	findFiles(file_names, "refs/tiles/", FindFiles::regular_file | FindFiles::recursive);
-//	printf("all tiles: %d\n", (int)file_names.size());
+	findFiles(file_names, "refs/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
-	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Snow/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Rock/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/Generic tiles/Generic floors/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
-	findFiles(file_names, "refs/tiles/VAULT/", FindFiles::regular_file | FindFiles::recursive);
-
-	printf("Loading... ");
+	printf("Loading tiles");
 	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
 	for(uint n = 0; n < file_names.size(); n++) {
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
@@ -270,7 +263,7 @@ int safe_main(int argc, char **argv)
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
 				tile->name = tile_name;
-				tile->loadDeviceTexture();
+				tile->storeInCache();
 			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());

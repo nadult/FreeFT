@@ -34,10 +34,15 @@ namespace ui {
 		
 	void TileSelector::drawContents() const {
 		int2 offset = innerOffset();
+		IRect clip_rect(int2(0, 0), clippedRect().size());
 
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const Tile *tile = m_tile_list[n].tile;
-			tile->draw(m_tile_list[n].pos - tile->rect().min - offset);
+			IRect tile_rect = tile->rect();
+			int2 pos = m_tile_list[n].pos - tile_rect.min - offset;
+
+			if(areOverlapping(clip_rect, tile_rect + pos))
+				tile->draw(pos);
 		}
 		
 		DTexture::bind0();

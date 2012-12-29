@@ -169,12 +169,19 @@ namespace {
 		for(int n = 0; n < m_tile_group->entryCount(); n++)
 		   m_tile_group->entryTile(n)->m_temp = n;
 
+		IRect clip_rect(int2(0, 0), clippedRect().size());
+
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const ui::TileList::Entry &entry = m_tile_list[n];
 			entry.is_selected = m_mode == mAddRemove?
 				m_tile_group->isValidEntryId(entry.tile->m_temp, entry.tile) :
 				entry.group_id == m_selected_group_id;
-			entry.tile->draw(entry.pos - entry.tile->rect().min - offset);
+
+			IRect tile_rect = entry.tile->rect();
+			int2 pos = entry.pos - tile_rect.min - offset;
+
+			if(areOverlapping(clip_rect, tile_rect + pos))
+				entry.tile->draw(pos);
 		}
 		
 		DTexture::bind0();

@@ -91,6 +91,16 @@ namespace gfx
 		unsigned id;
 	};
 
+	//TODO: finish me
+	struct ZarTexture {
+		void serialize(Serializer&);
+	
+		struct Line {
+			int data_offset;
+			
+		};
+	};
+
 	class Texture: public RefCounter
 	{
 	public:

@@ -3,6 +3,7 @@
 
 #include "gfx/texture.h"
 #include "gfx/device.h"
+#include "gfx/texture_cache.h"
 
 namespace gfx
 {
@@ -10,12 +11,19 @@ namespace gfx
 	class SceneRenderer;
 
 	// TODO: naming convention, attribute hiding
-	struct Tile: public Resource {
+	class Tile: public Resource {
+	public:
 		Tile();
+		~Tile();
+		Tile(const Tile&) = delete;
+		void operator=(const Tile&) = delete;
+
+
 		void serialize(Serializer &sr);
 		bool testPixel(const int2 &pos) const;
 		
 		static ResourceMgr<Tile> mgr;
+		static TextureCache cache;
 
 		string name;
 
@@ -26,10 +34,13 @@ namespace gfx
 		const IRect rect() const;
 
 		const Texture &texture() const { return m_texture; }
-		PTexture deviceTexture() const { return m_dev_texture; }
-		void loadDeviceTexture();
+		PTexture deviceTexture() const;
 
-		void bindTextureAtlas(PTexture, const int2 &pos);
+		//TODO: better names FFS...
+		void storeSingle();
+		void storeInCache();
+		void storeInAtlas(PTexture, const int2 &pos);
+
 		void draw(const int2 &pos, Color color = Color::white) const;
 		void addToRender(SceneRenderer&, const int3 &pos, Color color = Color::white) const;
 
@@ -37,10 +48,21 @@ namespace gfx
 
 		mutable uint m_temp;
 
+		enum StorageMode {
+			storage_none,
+			storage_single,
+			storage_cache,
+			storage_atlas,
+		};
+
+		StorageMode storageMode() const { return m_storage_mode; }
+
 	protected:
 		Texture m_texture;
-		Ptr<DTexture> m_dev_texture;
+		PTexture m_dev_texture;
+		int m_cache_id;
 		FRect m_tex_coords;
+		StorageMode m_storage_mode;
 
 		int2 m_offset;
 		int3 m_bbox;

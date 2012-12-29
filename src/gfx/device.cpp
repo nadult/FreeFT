@@ -16,6 +16,7 @@ extern "C"
 		int  KeyRepeat;
 		int  MouseMoved, OldMouseX, OldMouseY;
 	} _glfwInput;
+	//TODO: make proper input handling
 }
 
 namespace

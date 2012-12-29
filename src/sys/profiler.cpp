@@ -39,11 +39,7 @@ namespace profiler {
 
 	double rdtscTime() {
 		unsigned long long val;
-#ifdef _WIN32
-		__asm__ __volatile__ ( ".byte 0x0F, 0x31;" : "=A" (val) );
-#else
 	    __asm__ __volatile__ ("rdtsc" : "=A" (val));
-#endif
 		return double(val) * 1.0e-9;
 	}
 

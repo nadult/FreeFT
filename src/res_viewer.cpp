@@ -31,7 +31,7 @@ public:
 	Resource(PTile res, int id) :m_type(ResType::tile), m_id(id) {
 		DASSERT(res && res->deviceTexture());
 		m_resource = res.get();
-		m_rect_size = res->size();
+		m_rect_size = res->size() + int2(8, 8);
 	}
 
 	Resource(PTexture res, int id) :m_type(ResType::texture), m_id(id) {
@@ -57,6 +57,9 @@ public:
 
 			lookAt(-pos + tile->rect().min);
 			IBox box(int3(0, 0, 0), tile->bboxSize());
+
+			//TODO: draw only if its visible, otherwise it might create some performance
+			// problems if texture cache is full
 			tile->draw(int2(0, 0));
 
 			DTexture::bind0();
@@ -212,20 +215,20 @@ public:
 			::Resource res;
 			if(strcasecmp(file_name + len - 4, ".zar") == 0 || strcasecmp(file_name + len - 4, ".png") == 0) {
 				PTexture tex = new DTexture;
-				printf("Loading image: %s\n", file_name);
+			//	printf("Loading image: %s\n", file_name);
 				Loader(file_name) & *tex;
 				res = ::Resource(tex, id);
 			}
 			else if(strcasecmp(file_name + len - 4, ".til") == 0) {
 				PTile tile = new Tile;
-				printf("Loading tile: %s\n", file_name);
+			//	printf("Loading tile: %s\n", file_name);
 				Loader(file_name) & *tile;
-				tile->loadDeviceTexture();
+				tile->storeInCache();
 				res = ::Resource(tile, id);
 			}
 			else if(strcasecmp(file_name + len - 4, ".spr") == 0) {
 				PSprite sprite = new Sprite;
-				printf("Loading sprite: %s\n", file_name);
+			//	printf("Loading sprite: %s\n", file_name);
 				Loader(file_name) & *sprite;
 				res = ::Resource(sprite, id);
 			}

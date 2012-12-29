@@ -8,7 +8,51 @@
 
 namespace gfx
 {
-	Tile::Tile() :m_tex_coords(0, 0, 1, 1) { }
+	Tile::Tile() :m_tex_coords(0, 0, 1, 1), m_storage_mode(storage_none), m_cache_id(-1) { }
+
+	Tile::~Tile() {
+		if(m_storage_mode == storage_cache)
+			cache.remove(m_cache_id);
+	}
+
+	static PTexture loadTileTexture(const void *ptr) {
+		const Tile *tile = (const Tile*)ptr;
+		DASSERT(tile);
+
+		PTexture new_texture = new DTexture;
+		new_texture->setSurface(tile->texture());
+		return new_texture;
+	}
+
+	PTexture Tile::deviceTexture() const {
+		if(m_storage_mode == storage_cache)
+			return cache.access(m_cache_id);
+		if(m_storage_mode == storage_atlas || m_storage_mode == storage_single)
+			return m_dev_texture;
+
+		ASSERT(0);
+		return nullptr;
+	}
+
+	void Tile::storeSingle() {
+		DASSERT(m_storage_mode == storage_none);
+		m_dev_texture = loadTileTexture(this);
+		m_storage_mode = storage_single;
+	}
+
+	void Tile::storeInCache() {
+		DASSERT(m_storage_mode == storage_none);
+		m_cache_id = cache.add(this);
+		m_storage_mode = storage_cache;
+	}
+
+	void Tile::storeInAtlas(PTexture tex, const int2 &pos) {
+		DASSERT(m_storage_mode == storage_none);
+		m_dev_texture = tex;
+		float2 mul(1.0f / (float)tex->width(), 1.0f / (float)tex->height());
+		m_tex_coords = FRect(float2(pos) * mul, float2(pos + m_texture.size()) * mul);
+		m_storage_mode = storage_atlas;
+	}
 
 	void Tile::serialize(Serializer &sr) {
 		sr.signature("<tile>", 7);
@@ -32,29 +76,18 @@ namespace gfx
 		sr(width, height);
 
 		char unknown[5];
-		int unk_size = type == '9'? 3 : type == 0x3031? 4 : 5;
+		int unk_size = type == '9'? 3 : type == '7'? 5 : type == '6'? 6 : 4;
 		sr.data(unknown, unk_size);
 
 		sr.signature("<tiledata>\0001", 12);
 		u8 dummy2;
-		i32 zarCount;
-		sr(dummy2, zarCount);
+		i32 zar_count;
+		sr(dummy2, zar_count);
+		//TODO: animation support in tiles (some tiles have more than one zar)
 
 		m_texture.loadZAR(sr);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
-	}
-
-	void Tile::loadDeviceTexture() {
-		m_dev_texture = new DTexture;
-		m_dev_texture->setSurface(m_texture);
-		m_tex_coords = FRect(0, 0, 1, 1);
-	}
-
-	void Tile::bindTextureAtlas(PTexture tex, const int2 &pos) {
-		m_dev_texture = tex;
-		float2 mul(1.0f / (float)tex->width(), 1.0f / (float)tex->height());
-		m_tex_coords = FRect(float2(pos) * mul, float2(pos + m_texture.size()) * mul);
 	}
 
 	const IRect Tile::rect() const {
@@ -62,14 +95,13 @@ namespace gfx
 	}
 
 	void Tile::draw(const int2 &pos, Color col) const {
-		DASSERT(m_dev_texture);
-		m_dev_texture->bind();
+		PTexture tex = deviceTexture();
+		tex->bind();
 		drawQuad(pos - m_offset, m_texture.size(), m_tex_coords.min, m_tex_coords.max, col);
 	}
 
 	void Tile::addToRender(SceneRenderer &renderer, const int3 &pos, Color color) const {
-		DASSERT(m_dev_texture);
-		renderer.add(m_dev_texture, rect(), pos, bboxSize(), color, m_tex_coords);
+		renderer.add(deviceTexture(), rect(), pos, bboxSize(), color, m_tex_coords);
 	}
 
 	bool Tile::testPixel(const int2 &pos) const {
@@ -85,6 +117,7 @@ namespace gfx
 		int2 pos, size;
 	};
 
+	//TODO: move to some different file, make usable also for sprites?
 	PTexture makeTileAtlas(const vector<gfx::Tile*> &tiles) {
 		int max_size = 1024;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
@@ -112,6 +145,7 @@ namespace gfx
 		int2 pos(0, 0);
 		int max_y = 0;
 
+		//TODO: better texture fitting
 		for(int n = 0; n < (int)entries.size(); n++) {
 			AtlasEntry &entry = entries[n];
 			const Texture &tile_tex = entry.tile->texture();
@@ -140,10 +174,11 @@ namespace gfx
 		for(int n = 0; n < (int)entries.size(); n++) {
 			AtlasEntry &entry = entries[n];
 			if(entry.pos == int2(-1, -1)) {
+				entry.tile->storeSingle();
 				missed++;
 				continue;
 			}
-			entry.tile->bindTextureAtlas(dev_atlas, entry.pos);
+			entry.tile->storeInAtlas(dev_atlas, entry.pos);
 			used_pixels += entry.tile->width() * entry.tile->height();
 		}
 		
@@ -156,5 +191,6 @@ namespace gfx
 	}
 
 	ResourceMgr<Tile> Tile::mgr("refs/tiles/", ".til");
+	TextureCache Tile::cache(64 * 1024 * 1024, loadTileTexture);
 
 }
