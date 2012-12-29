@@ -39,7 +39,11 @@ namespace profiler {
 
 	double rdtscTime() {
 		unsigned long long val;
+#ifdef _WIN32
+		__asm__ __volatile__ ( ".byte 0x0F, 0x31;" : "=A" (val) );
+#else
 	    __asm__ __volatile__ ("rdtsc" : "=A" (val));
+#endif
 		return double(val) * 1.0e-9;
 	}
 
@@ -115,7 +119,7 @@ namespace profiler {
 			double ms = timer.value * s_rdtsc_multiplier * 1000.0;
 			double us = ms * 1000.0;
 			bool print_ms = ms > 0.5;
-			ptr += snprintf(ptr, end - ptr, "  %s: %.2lf %s\n", timer.id, print_ms? ms : us, print_ms? "ms" : "us");
+			ptr += snprintf(ptr, end - ptr, "  %s: %.2f %s\n", timer.id, print_ms? ms : us, print_ms? "ms" : "us");
 		}
 
 		if(!s_counters.empty())

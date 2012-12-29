@@ -4,6 +4,8 @@
 #include <baselib.h>
 #include <cmath>
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
 
 using namespace baselib;

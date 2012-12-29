@@ -17,20 +17,11 @@ namespace game {
 		XMLDocument doc;
 		doc.load(file_name);
 
-	/*	TileMap tile_map;
+		TileMap tile_map;
 		tile_map.loadFromXML(doc);
-
-		m_tile_grid = TileGrid(tile_map.size());
-		for(int n = 0; n < tile_map.nodeCount(); n++)
-			for(int i = 0; i < tile_map(n).instanceCount(); i++) {
-				const TileInstance &inst = tile_map(n)(i);
-				int3 pos = tile_map.nodePos(n) + inst.pos();
-				FBox bbox(pos, pos + inst.m_tile->bboxSize());
-				IRect rect = inst.m_tile->rect() + worldToScreen(pos);
-				m_tile_grid.add(Grid::ObjectDef(inst.m_tile, bbox, rect));
-			}
-		m_entity_grid = EntityGrid(tile_map.size());
-		m_tile_grid.printInfo(); */
+		m_tile_grid = tile_map;
+		m_entity_grid = EntityGrid(tile_map.dimensions());
+		m_tile_grid.printInfo();
 	
 		updateNavigationMap(true);
 	}

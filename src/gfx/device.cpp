@@ -2,7 +2,6 @@
 #include <memory.h>
 #include <GL/glfw.h>
 
-
 extern "C"
 {
 	extern struct
