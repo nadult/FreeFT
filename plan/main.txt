@@ -35,6 +35,17 @@
  - proste udźwiękowienie
    issues/9-simple_audio.txt
 
+ - system skryptów
+   - LUA; skrypty mają być małe, nie wymagające debugowania; każdy bardziej skomplikowany kawałek
+     kodu przenieść do C++; nie robić AI na skryptach! tzn. co najwyżej umożliwić sterowanie, ale
+     cały rdzeń jest w C++; domyślnie AI powinno działać wogóle bez użycia jakichkolwiek skryptów,
+     jedynie bardziej zaawansowana interakcja z userem może wymagać skryptowania;
+     Skrypty mają być prostymi funkcjami, nie należy używać zaawansowanych ficzerów z LUY, unikać
+     słowników i innych rzeczy które mają niejasną charakterystykę wydajnościowo pamięciową
+
+ - system dialogów
+   - taki jak w 2drpg? ale w XML
+
 3. Różne rzeczy do zrobienia:
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt
@@ -70,8 +81,7 @@
  - pomysł na poprawienie renderingu overlapujących się obiektów: od bboxów odjąć część wspólną i dopiero
   wtedy je porównać
  - support dla aktorów o różnych wymiarach
- - podczas rozstawiania tile-i, jeśli koliduje, to znaleźć najbliższą pozycję na której można go wstawić
-   bez kolizji i tam go wyśpwetlać
+ - zrobić porządek ze Screen-rectami które są na intach choć wyliczane są z bbox-ów opartych o float-y
 
 
 4. Bajery

@@ -586,7 +586,7 @@ void NavigationMap::printInfo() const {
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		bytes += m_quads[n].neighbours.size() * sizeof(int);
 	printf("  quads(%d): %.0f KB\n", (int)m_quads.size(), double(bytes) / 1024.0);
-	printf("  sizeof(Quad): %d\n", sizeof(Quad));
+	printf("  sizeof(Quad): %d\n", (int)sizeof(Quad));
 
 	if(0) for(int n = 0; n < (int)m_quads.size(); n++) {
 		const Quad &quad = m_quads[n];

@@ -17,7 +17,7 @@ namespace game {
 		XMLDocument doc;
 		doc.load(file_name);
 
-		TileMap tile_map;
+	/*	TileMap tile_map;
 		tile_map.loadFromXML(doc);
 
 		m_tile_grid = TileGrid(tile_map.size());
@@ -30,7 +30,7 @@ namespace game {
 				m_tile_grid.add(Grid::ObjectDef(inst.m_tile, bbox, rect));
 			}
 		m_entity_grid = EntityGrid(tile_map.size());
-		m_tile_grid.printInfo();
+		m_tile_grid.printInfo(); */
 	
 		updateNavigationMap(true);
 	}

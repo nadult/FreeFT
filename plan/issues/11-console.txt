@@ -1,5 +1,6 @@
 Konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
 - wypisywanie różnego rodzaju komunikatów które znikają po pewnym czasie
+- graficzne wyświetlanie danych z profilera
 
 
 +ESTIMATED_TIME:

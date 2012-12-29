@@ -36,10 +36,14 @@ namespace gfx {
 			return;
 		}
 
+		IRect rect = (IRect)worldToScreen(bbox);
+		if(!areOverlapping(rect, IRect(m_view_pos, m_view_pos + m_viewport.size())))
+			return;
+
 		Element new_elem;
 		new_elem.texture = nullptr;
 		new_elem.bbox = bbox;
-		new_elem.rect = (IRect)worldToScreen(bbox);
+		new_elem.rect = rect;
 		new_elem.color = color;
 		m_elements.push_back(new_elem);
 	}

@@ -57,6 +57,62 @@ float XMLNode::floatAttrib(const char *name) const {
 	return out;
 }
 
+const int2 XMLNode::int2Attrib(const char *name) const {
+	const char *str = attrib(name);
+	int2 out;
+	if(sscanf(str, "%d %d", &out.x, &out.y) != 2)
+		parsingError(name);
+	return out;
+}
+
+const int3 XMLNode::int3Attrib(const char *name) const {
+	const char *str = attrib(name);
+	int3 out;
+	if(sscanf(str, "%d %d %d", &out.x, &out.y, &out.z) != 3)
+		parsingError(name);
+	return out;
+}
+
+const float2 XMLNode::float2Attrib(const char *name) const {
+	const char *str = attrib(name);
+	float2 out;
+	if(sscanf(str, "%f %f", &out.x, &out.y) != 2)
+		parsingError(name);
+	return out;
+}
+
+const float3 XMLNode::float3Attrib(const char *name) const {
+	const char *str = attrib(name);
+	float3 out;
+	if(sscanf(str, "%f %f %f", &out.x, &out.y, &out.z) != 3)
+		parsingError(name);
+	return out;
+}
+
+void XMLNode::addAttrib(const char *name, const int2 &value) {
+	char str_value[65];
+	sprintf(str_value, "%d %d", value.x, value.y);
+	addAttrib(name, own(str_value));
+}
+
+void XMLNode::addAttrib(const char *name, const int3 &value) {
+	char str_value[98];
+	sprintf(str_value, "%d %d %d", value.x, value.y, value.z);
+	addAttrib(name, own(str_value));
+}
+
+void XMLNode::addAttrib(const char *name, const float2 &value) {
+	char str_value[129];
+	sprintf(str_value, "%f %f", value.x, value.y);
+	addAttrib(name, own(str_value));
+}
+
+void XMLNode::addAttrib(const char *name, const float3 &value) {
+	char str_value[194];
+	sprintf(str_value, "%f %f %f", value.x, value.y, value.z);
+	addAttrib(name, own(str_value));
+}
+
 const char *XMLNode::name() const {
 	return m_ptr->name();
 }

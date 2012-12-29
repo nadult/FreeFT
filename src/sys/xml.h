@@ -16,12 +16,20 @@ namespace rapidxml
 class XMLNode {
 public:
 	XMLNode(const XMLNode &rhs) :m_ptr(rhs.m_ptr), m_doc(rhs.m_doc) { }
+	XMLNode() :m_ptr(nullptr), m_doc(nullptr) { }
 
 	// If an attribute cannot be found or properly parsed,
 	// then exception is thrown
 	const char *attrib(const char *name) const;
 	float  floatAttrib(const char *name) const;
 	int      intAttrib(const char *name) const;
+	
+	const int2 int2Attrib(const char *name) const;
+	const int3 int3Attrib(const char *name) const;
+
+	const float2 float2Attrib(const char *name) const;
+	const float3 float3Attrib(const char *name) const;
+
 
 	// When adding new nodes, you have to make sure that strings given as
 	// arguments will exist as long as XMLNode exists; use 'own' method
@@ -29,6 +37,11 @@ public:
 	void addAttrib(const char *name, const char *value);
 	void addAttrib(const char *name, float value);
 	void addAttrib(const char *name, int value);
+
+	void addAttrib(const char *name, const int2 &value);
+	void addAttrib(const char *name, const int3 &value);
+	void addAttrib(const char *name, const float2 &value);
+	void addAttrib(const char *name, const float3 &value);
 	
 	XMLNode addChild(const char *name, const char *value = nullptr);
 	XMLNode sibling(const char *name = nullptr) const;

@@ -3,6 +3,7 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"
+#include <algorithm>
 #include <cstdlib>
 
 using namespace gfx;
@@ -14,7 +15,8 @@ namespace ui {
 		m_tile_group = nullptr;
 		m_view_pos = int2(0, 0);
 		m_is_selecting = false;
-		m_mode = mSelecting;
+		m_mode = mode_selection;
+		m_selection_mode = selection_normal;
 
 		m_cursor_height = 0;
 		m_grid_height = 0;
@@ -64,19 +66,22 @@ namespace ui {
 
 		//TODO: make proper accelerators
 		if(isKeyDown('S')) {
-			m_mode = mSelecting;
+			m_selection_mode = m_mode == mode_selection?
+				(SelectionMode)((m_selection_mode + 1) % selection_mode_count) : selection_normal;
+
+			m_mode = mode_selection;
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 		if(isKeyDown('P')) {
-			m_mode = mPlacing;
+			m_mode = mode_placing;
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 		if(isKeyDown('R')) {
-			m_mode = mPlacingRandom;
+			m_mode = mode_placing_random;
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 		if(isKeyDown('F')) {
-			m_mode = mAutoFilling;
+			m_mode = mode_filling;
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 
@@ -99,16 +104,18 @@ namespace ui {
 		}
 
 
-		if(isKeyPressed(Key_del))
-			m_tile_map->deleteSelected();
+		if(isKeyPressed(Key_del)) {
+			for(int i = 0; i < (int)m_selected_ids.size(); i++)
+				m_tile_map->remove(m_selected_ids[i]);
+			m_selected_ids.clear();
+		}
 	}
 
 	IBox TileMapEditor::computeCursor(int2 start, int2 end) const {
 		float2 height_off = worldToScreen(int3(0, m_grid_height, 0));
 		int3 gbox = asXZY(m_grid_size, 1);
 
-		bool select_mode = m_mode == mSelecting;
-		int3 bbox = m_new_tile && !select_mode? m_new_tile->bboxSize() : gbox;
+		int3 bbox = m_new_tile && m_mode != mode_selection? m_new_tile->bboxSize() : gbox;
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
@@ -145,12 +152,12 @@ namespace ui {
 		if(start_pos.z > end_pos.z) swap(start_pos.z, end_pos.z);
 		
 		if(m_tile_map) {
-			IBox map_box = m_tile_map->boundingBox();
-			start_pos = clamp(start_pos, map_box.min, map_box.max);
-			end_pos = clamp(end_pos, map_box.min, map_box.max);
+			int2 dims = m_tile_map->dimensions();
+			start_pos = asXZY(clamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
+			  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
 		}
 
-		if(select_mode)
+		if(m_mode == mode_selection)
 			end_pos.y = start_pos.y;
 
 		return IBox(start_pos, end_pos);
@@ -180,9 +187,24 @@ namespace ui {
 				const vector<int> &source = rand() % 1000 < 1000 * m_dirty_percent? dirty_entries : entries;
 				int random_id = rand() % source.size();
 				const Tile *tile = m_tile_group->entryTile(source[random_id]);
-				try { m_tile_map->addTile(*tile, int3(x, fill_box.min.y, z)); }
+				try { m_tile_map->add(tile, int3(x, fill_box.min.y, z)); }
 				catch(...) { }
 			}
+	}
+
+	void TileMapEditor::fill(const IBox &box) {
+		int3 bbox = m_new_tile->bboxSize();
+
+		for(int x = box.min.x; x < box.max.x; x += bbox.x)
+			for(int y = box.min.y; y < box.max.y; y += bbox.y)
+				for(int z = box.min.z; z < box.max.z; z += bbox.z) {
+					try { m_tile_map->add(m_new_tile, int3(x, y, z)); }
+					catch(...) { }
+				}
+	}
+
+	int TileMapEditor::findAt(const int3 &pos) const {
+		return m_tile_map->findAny(FBox(pos, pos + int3(1, 1, 1)));
 	}
 
 	void TileMapEditor::fillHoles(int main_group_id, const IBox &fill_box) {
@@ -201,16 +223,16 @@ namespace ui {
 		for(int x = fill_box.min.x; x < fill_box.max.x; x += bbox.x)
 			for(int z = fill_box.min.z; z < fill_box.max.z; z += bbox.z) {
 				int3 pos(x, fill_box.min.y, z);
-				const TileInstance *neighbours[8] = {
-					m_tile_map->at(pos + int3(0, 0, bbox.z)),
-					m_tile_map->at(pos + int3(bbox.x, 0, 0)),
-					m_tile_map->at(pos - int3(0, 0, bbox.z)),
-					m_tile_map->at(pos - int3(bbox.x, 0, 0)),
+				int neighbours[8] = {
+					findAt(pos + int3(0, 0, bbox.z)),
+					findAt(pos + int3(bbox.x, 0, 0)),
+					findAt(pos - int3(0, 0, bbox.z)),
+					findAt(pos - int3(bbox.x, 0, 0)),
 
-					m_tile_map->at(pos + int3( bbox.x, 0,  bbox.z)),
-					m_tile_map->at(pos + int3( bbox.x, 0, -bbox.z)),
-					m_tile_map->at(pos + int3(-bbox.x, 0, -bbox.z)),
-					m_tile_map->at(pos + int3(-bbox.x, 0,  bbox.z)),
+					findAt(pos + int3( bbox.x, 0,  bbox.z)),
+					findAt(pos + int3( bbox.x, 0, -bbox.z)),
+					findAt(pos + int3(-bbox.x, 0, -bbox.z)),
+					findAt(pos + int3(-bbox.x, 0,  bbox.z)),
 			   	};
 
 				int sides[8] = {-1, -1, -1, -1, -1, -1, -1, -1}; // -1: any, -2: error
@@ -221,7 +243,9 @@ namespace ui {
 				bool error = false;
 
 				for(int n = 0; n < 8; n++) {
-					int entry_id = neighbours[n]? m_tile_group->findEntry(neighbours[n]->m_tile) : -1;
+					const gfx::Tile *ntile = neighbours[n] == -1? nullptr : (*m_tile_map)[neighbours[n]].ptr;
+
+					int entry_id = ntile? m_tile_group->findEntry(ntile) : -1;
 					ngroups[n] = entry_id == -1? -1 : m_tile_group->entryGroup(entry_id);
 					if(ngroups[n] == -1)
 						continue;
@@ -277,7 +301,7 @@ namespace ui {
 				if(!entries.empty()) {
 					int random_id = rand() % entries.size();
 					const Tile *tile = m_tile_group->entryTile(entries[random_id]);
-					try { m_tile_map->addTile(*tile, int3(x, fill_box.min.y, z)); }
+					try { m_tile_map->add(tile, int3(x, fill_box.min.y, z)); }
 					catch(...) { }
 				}
 			}
@@ -295,20 +319,41 @@ namespace ui {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(is_final && is_final != -1) {
-				if(m_mode == mSelecting) {
-					m_tile_map->select(IBox(m_selection.min, m_selection.max + int3(0, 1, 0)),
-							isKeyPressed(Key_lctrl)? SelectionMode::add : SelectionMode::normal);
+				if(m_mode == mode_selection) {
+					vector<int> new_ids;
+					m_tile_map->findAll(new_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
+					std::sort(new_ids.begin(), new_ids.end());
+
+					if(m_selection_mode == selection_normal)
+						m_selected_ids = new_ids;
+					else {
+						vector<int> out;
+						out.resize(new_ids.size() + m_selected_ids.size());
+
+						vector<int>::iterator end_it;
+						if(m_selection_mode == selection_union)
+							end_it = set_union(m_selected_ids.begin(), m_selected_ids.end(),
+									new_ids.begin(), new_ids.end(), out.begin());
+						else if(m_selection_mode == selection_intersection)
+							end_it = set_intersection(m_selected_ids.begin(), m_selected_ids.end(),
+									new_ids.begin(), new_ids.end(), out.begin());
+						else if(m_selection_mode == selection_difference)
+							end_it = set_difference(m_selected_ids.begin(), m_selected_ids.end(),
+									new_ids.begin(), new_ids.end(), out.begin());
+						out.resize(end_it - out.begin());
+						m_selected_ids = out;
+					}
 				}
-				else if(m_mode == mPlacing && m_new_tile) {
-					m_tile_map->fill(*m_new_tile, IBox(m_selection.min, m_selection.max));
+				else if(m_mode == mode_placing && m_new_tile) {
+					fill(m_selection);
 				}
-				else if(m_mode == mPlacingRandom && m_new_tile && m_tile_group) {
+				else if(m_mode == mode_placing_random && m_new_tile && m_tile_group) {
 					int entry_id = m_tile_group->findEntry(m_new_tile);
 					int group_id = entry_id != -1? m_tile_group->entryGroup(entry_id) : -1;
 					if(group_id != -1)
 						fillRandomized(group_id, m_selection);
 				}
-				else if(m_mode == mAutoFilling && m_tile_group && m_new_tile) {
+				else if(m_mode == mode_filling && m_tile_group && m_new_tile) {
 					int entry_id = m_tile_group->findEntry(m_new_tile);
 					int group_id = entry_id != -1? m_tile_group->entryGroup(entry_id) : -1;
 					if(group_id != -1)
@@ -328,7 +373,7 @@ namespace ui {
 		DTexture::bind0();
 
 		int3 pos = box.min, bbox = box.max - box.min;
-		int3 tsize = asXZY(m_tile_map->size(), TileMapNode::size_y);
+		int3 tsize = asXZY(m_tile_map->dimensions(), 32);
 
 		drawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
 		drawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
@@ -351,38 +396,27 @@ namespace ui {
 
 		SceneRenderer renderer(clippedRect(), m_view_pos);
 
+
 		{
-			IRect view = renderer.targetRect();
+			vector<int> visible_ids;
+			visible_ids.reserve(1024);
+			m_tile_map->findAll(visible_ids, renderer.targetRect());
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 
-			for(int n = 0; n < m_tile_map->nodeCount(); n++) {
-				const TileMapNode &node = (*m_tile_map)(n);
-				if(!node.instanceCount())
-					continue;
+			for(int i = 0; i < (int)visible_ids.size(); i++) {
+				auto object = (*m_tile_map)[visible_ids[i]];
+				int3 pos(object.bbox.min);
+				
+				IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
+				Color col =	box.max.y < m_selection.min.y? Color::gray :
+							box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
+				if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
+					col.r = col.g = 255;
 
-				int3 node_pos = m_tile_map->nodePos(n);
-				IRect screen_rect = node.screenRect() + worldToScreen(node_pos);
-
-				if(!areOverlapping(screen_rect, view))
-					continue;
-
-				for(uint i = 0; i < node.m_instances.size(); i++) {
-					const TileInstance &instance = node.m_instances[i];
-					const gfx::Tile *tile = instance.m_tile;
-					int3 pos = instance.pos() + node_pos;
-					
-					IBox box = IBox({0,0,0}, tile->bboxSize()) + pos;
-					Color col =	box.max.y < m_selection.min.y? Color::gray :
-								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
-					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
-						col.r = col.g = 255;
-
-					tile->addToRender(renderer, pos, col);
-					if(instance.isSelected())
-						renderer.addBox(IBox(pos, pos + tile->bboxSize()));
-				}
+				object.ptr->addToRender(renderer, pos, col);
 			}
-					
+			for(int i = 0; i < (int)m_selected_ids.size(); i++)
+				renderer.addBox((*m_tile_map)[m_selected_ids[i]].bbox);
 		}
 		renderer.render();
 
@@ -403,20 +437,20 @@ namespace ui {
 			int2 tmin = min(min(p[0], p[1]), min(p[2], p[3]));
 			int2 tmax = max(max(p[0], p[1]), max(p[2], p[3]));
 			IBox box(tmin.x, 0, tmin.y, tmax.x, 0, tmax.y);
-			IBox bbox = m_tile_map->boundingBox();
+			IBox bbox(int3(0, 0, 0), asXZY(m_tile_map->dimensions(), 32));
 			box = IBox(max(box.min, bbox.min), min(box.max, bbox.max));
 
 			drawGrid(box, m_grid_size, m_grid_height);
 		}
 		
-		if(m_new_tile && (m_mode == mPlacing || m_mode == mPlacingRandom || m_mode == mAutoFilling) && m_new_tile) {
+		if(m_new_tile && (m_mode == mode_placing || m_mode == mode_placing_random || m_mode == mode_filling) && m_new_tile) {
 			int3 bbox = m_new_tile->bboxSize();
 		
 			for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
 				for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
 					int3 pos(x, m_selection.min.y, z);
 
-					bool collides = m_tile_map->isOverlapping(IBox(pos, pos + bbox));
+					bool collides = m_tile_map->findAny(FBox(pos, pos + bbox)) != -1;
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
 					m_new_tile->draw(int2(worldToScreen(pos)), color);
@@ -442,22 +476,30 @@ namespace ui {
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[s_font_names[1]];
 
-		const char *mode_names[mCount] = {
+		const char *mode_names[mode_count] = {
 			"selecting tiles",
 			"placing new tiles",
 			"placing new tiles (randomized)",
 			"filling holes",
 		};
 
+		const char *selection_names[selection_mode_count] = {
+			"",
+			" (union)",
+			" (intersection)",
+			" (difference)",
+		};
+
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
-				"Cursor: (%d, %d, %d)  Mode: %s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode]);
+				"Cursor: (%d, %d, %d)  Mode: %s%s\n",
+				m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode],
+				m_mode == mode_selection? selection_names[m_selection_mode] : "");
 	}
 
 	void TileMapEditor::clampViewPos() {
 		DASSERT(m_tile_map);
 		int2 rsize = rect().size();
-		IRect rect = worldToScreen(m_tile_map->boundingBox());
+		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map->dimensions(), 32)));
 		m_view_pos = clamp(m_view_pos, rect.min, rect.max - rsize);
 	}
 

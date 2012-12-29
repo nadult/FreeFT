@@ -8,12 +8,13 @@ Grid::Node::Node()
 Grid::Grid(const int2 &size) {
 	m_bounding_box = FBox::empty();
 	m_size = worldToGrid(size + int2(node_size - 1, node_size - 1));
-	m_nodes.resize(m_size.x * m_size.y);
-	m_row_rects.resize(m_size.y, int2(0, 0));
-
-	m_free_list.reserve(1024);
-	m_free_overlaps.reserve(1024);
-	m_overlaps.reserve(1024 * 16);
+	if(m_size.x * m_size.y > 0) {
+		m_nodes.resize(m_size.x * m_size.y);
+		m_row_rects.resize(m_size.y, int2(0, 0));
+		m_free_list.reserve(1024);
+		m_free_overlaps.reserve(1024);
+		m_overlaps.reserve(1024 * 16);
+	}
 }
 	
 int Grid::add(const ObjectDef &def) {
@@ -228,4 +229,20 @@ void Grid::printInfo() const {
 										(float)(m_free_list.size() + m_free_overlaps.size()) * sizeof(int) / 1024.0);
 	printf("  sizeof(Node): %d\n", sizeof(Node));
 	printf("  sizeof(Object): %d\n", sizeof(Object));
+}
+
+void Grid::swap(Grid &rhs) {
+	std::swap(m_bounding_box, rhs.m_bounding_box);
+	std::swap(m_size, rhs.m_size);
+	m_row_rects.swap(rhs.m_row_rects);
+	m_free_list.swap(rhs.m_free_list);
+	m_free_overlaps.swap(rhs.m_free_overlaps);
+	m_overlaps.swap(rhs.m_overlaps);
+	m_nodes.swap(rhs.m_nodes);
+	m_objects.swap(rhs.m_objects);
+}
+
+void Grid::clear() {
+	Grid empty(dimensions());
+	swap(empty);
 }

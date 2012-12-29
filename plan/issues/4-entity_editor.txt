@@ -1,11 +1,21 @@
-Rozstawianie encji i edycja ich parametrów:
-- 
+Pomysły:
+- Rozstawianie encji i edycja ich parametrów
+- Przerobienie TileMap-y na interfejs który używa Grida  DONE
+- Sensowniejsza serializacja do/z XML  DONE
+- Po lewej stronie katalogowa przeglądarka tile-ów, oprócz katalogu z tile-ami można
+  też załadować tile-groupę
+- Albo: po lewej stronie wyświetlane są wszystkie dostępne tile, ale są ładowane na żądanie i 
+  można sobie ustawić filtry
+- Podczas rozstawiania tile-i, jeśli koliduje, to znaleźć najbliższą pozycję na której można go wstawić
+  bez kolizji i tam go wyświetlać
 
 +REQUIREMENTS:
 issues/5-entities
 issues/10-ui_improvements
 
-+ESTIMATED_TIME:
++ESTIMATED_TIME: 20h (VERY ROUGH)
 +TIME_SPENT: 0h
 
 +WORK_LOG:
+28.12.12: 20:00 - 21:50
+29.12.12: 12:15 - 13:15 

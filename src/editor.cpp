@@ -134,8 +134,8 @@ public:
 			attach(m_file_dialog.get(), true);
 		}
 		else if(ev.type == Event::button_clicked && m_mapper.get() == ev.source) {
-			bool all_tiles =	!(m_mapper->m_mode == TileMapEditor::mPlacingRandom) &&
-								!(m_mapper->m_mode == TileMapEditor::mAutoFilling);
+			bool all_tiles =	!(m_mapper->m_mode == TileMapEditor::mode_placing_random) &&
+								!(m_mapper->m_mode == TileMapEditor::mode_filling);
 			if(all_tiles != m_selecting_all_tiles) {
 				m_selecting_all_tiles = all_tiles;
 				m_selector->setModel(all_tiles? new AllTilesModel : (TileListModel*)new GroupedTilesModel(m_group));
@@ -246,11 +246,15 @@ int safe_main(int argc, char **argv)
 	setBlendingMode(bmNormal);
 
 	vector<FileEntry> file_names;
+//	findFiles(file_names, "refs/tiles/", FindFiles::regular_file | FindFiles::recursive);
+//	printf("all tiles: %d\n", (int)file_names.size());
+
 	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Snow/", FindFiles::regular_file | FindFiles::recursive);
 	findFiles(file_names, "refs/tiles/Mountains/Mountain FLOORS/Rock/", FindFiles::regular_file | FindFiles::recursive);
 	findFiles(file_names, "refs/tiles/Generic tiles/Generic floors/", FindFiles::regular_file | FindFiles::recursive);
 	findFiles(file_names, "refs/tiles/RAIDERS/", FindFiles::regular_file | FindFiles::recursive);
 	findFiles(file_names, "refs/tiles/Wasteland/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "refs/tiles/VAULT/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading... ");
 	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
@@ -265,7 +269,7 @@ int safe_main(int argc, char **argv)
 			string tile_name = tile_path;
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
-				tile->name = tile_path;
+				tile->name = tile_name;
 				tile->loadDeviceTexture();
 			}
 		} catch(const Exception &ex) {

@@ -1,9 +1,9 @@
 #ifndef UI_TILE_MAP_EDITOR_H
 #define UI_TILE_MAP_EDITOR_H
 
-#include "tile_map.h"
 #include "gfx/tile.h"
 #include "ui/window.h"
+#include "tile_map.h"
 
 class TileGroup;
 
@@ -24,14 +24,23 @@ namespace ui {
 
 		static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
+		enum SelectionMode {
+			selection_normal,
+			selection_union,
+			selection_intersection,
+			selection_difference,
+
+			selection_mode_count,
+		} m_selection_mode;
+
 		//TODO: naming
 		enum Mode {
-			mSelecting,
-			mPlacing,
-			mPlacingRandom,
-			mAutoFilling,
+			mode_selection,
+			mode_placing,
+			mode_placing_random,
+			mode_filling,
 
-			mCount,
+			mode_count,
 		} m_mode;
 		
 		float m_dirty_percent;
@@ -40,9 +49,13 @@ namespace ui {
 		TileMap *m_tile_map;
 		const TileGroup *m_tile_group;
 		const gfx::Tile *m_new_tile;
+		vector<int> m_selected_ids;
 		
+		void fill(const IBox &fill_box);
 		void fillRandomized(int group_id, const IBox &fill_box);
 		void fillHoles(int main_group_id, const IBox &fill_box);
+
+		int findAt(const int3 &pos) const;
 
 		void drawBoxHelpers(const IBox &box) const;
 		IBox computeCursor(int2 start, int2 end) const;

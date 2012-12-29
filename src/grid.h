@@ -20,7 +20,7 @@ public:
 		ObjectDef(const void *ptr = nullptr, const FBox &bbox = FBox::empty(), const IRect &rect = IRect::empty(), int flags = -1)
 			:ptr(ptr), bbox(bbox), rect(rect), flags(flags) { }
 
-		const void *ptr; 
+		const void *ptr;
 		FBox bbox;
 		IRect rect;
 		int flags;
@@ -49,6 +49,9 @@ public:
 	void printInfo() const;
 
 	const int2 dimensions() const { return m_size * node_size; }
+
+	void swap(Grid&);
+	void clear();
 
 protected:
 	const IRect nodeCoords(const FBox &box) const __attribute__((noinline));
