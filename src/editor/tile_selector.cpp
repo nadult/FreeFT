@@ -1,4 +1,4 @@
-#include "ui/tile_selector.h"
+#include "editor/tile_selector.h"
 #include "gfx/device.h"
 
 using namespace gfx;

@@ -91,16 +91,6 @@ namespace gfx
 		unsigned id;
 	};
 
-	//TODO: finish me
-	struct ZarTexture {
-		void serialize(Serializer&);
-	
-		struct Line {
-			int data_offset;
-			
-		};
-	};
-
 	class Texture: public RefCounter
 	{
 	public:
@@ -109,7 +99,7 @@ namespace gfx
 		Texture(const Texture&) = default;
 		Texture();
 
-		// poprzednie dane zostaja utracone
+		//TODO: make non-destructive
 		void resize(int width, int height);
 		void free();
 

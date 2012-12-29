@@ -5,7 +5,7 @@ Pomysły:
 - Po lewej stronie katalogowa przeglądarka tile-ów, oprócz katalogu z tile-ami można
   też załadować tile-groupę
 - Albo: po lewej stronie wyświetlane są wszystkie dostępne tile, ale są ładowane na żądanie i 
-  można sobie ustawić filtry
+  można sobie ustawić filtry  DONE
 - Podczas rozstawiania tile-i, jeśli koliduje, to znaleźć najbliższą pozycję na której można go wstawić
   bez kolizji i tam go wyświetlać
 - Rozwiązać problem ładowania tekstur tile-i w edytorze (dodać TextureCache)  DONE
@@ -19,5 +19,5 @@ issues/10-ui_improvements
 +TIME_SPENT: 0h
 
 +WORK_LOG:
-28.12.12: 20:00 - 21:50
-29.12.12: 12:15 - 13:30, 14:30 - 15:00, 17:30 - 20:30
+28.12.12: 20:00 - 21:50 (1h 50min)
+29.12.12: 12:15 - 13:30, 14:30 - 15:00, 17:30 - 20:30, 21:00 - 22:15 (6h)

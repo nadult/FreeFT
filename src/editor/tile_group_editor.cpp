@@ -1,4 +1,4 @@
-#include "ui/tile_group_editor.h"
+#include "editor/tile_group_editor.h"
 #include "gfx/device.h"
 #include "tile_group.h"
 #include <algorithm>

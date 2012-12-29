@@ -18,7 +18,6 @@ namespace gfx
 		Tile(const Tile&) = delete;
 		void operator=(const Tile&) = delete;
 
-
 		void serialize(Serializer &sr);
 		bool testPixel(const int2 &pos) const;
 		
@@ -58,7 +57,7 @@ namespace gfx
 		StorageMode storageMode() const { return m_storage_mode; }
 
 	protected:
-		Texture m_texture;
+		Texture m_texture; //TODO: store in compressed format
 		PTexture m_dev_texture;
 		int m_cache_id;
 		FRect m_tex_coords;

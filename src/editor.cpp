@@ -13,9 +13,9 @@
 #include "ui/button.h"
 #include "ui/progress_bar.h"
 #include "ui/text_box.h"
-#include "ui/tile_selector.h"
-#include "ui/tile_map_editor.h"
-#include "ui/tile_group_editor.h"
+#include "editor/tile_selector.h"
+#include "editor/tile_map_editor.h"
+#include "editor/tile_group_editor.h"
 #include "ui/file_dialog.h"
 #include "sys/platform.h"
 #include "sys/config.h"
@@ -25,15 +25,33 @@ using namespace gfx;
 using namespace ui;
 
 enum EditorMode {
-	emMapEdition,
-	emTileGroupEdition,
+	editing_tiles,
+	editing_tile_groups,
 
-	emCount,
+	editing_modes_count,
+};
+
+enum TileFilter {
+	filter_all,
+	filter_floors,
+	filter_walls,
+	filter_objects,
+	filter_other,
+
+	filter_count,
+};
+
+static const char *s_filter_names[filter_count] = {
+	"all",
+	"floors",
+	"walls",
+	"objects",
+	"other",
 };
 
 static const char *s_mode_names[] = {
-	"Mode: map edition",
-	"Mode: tile group edition",
+	"Mode: tiles edition",
+	"Mode: tile groups edition",
 };
 
 static const char *s_save_dialog_names[] = {
@@ -44,6 +62,8 @@ static const char *s_load_dialog_names[] = {
 	"Loading tile map",
 	"Loading tile group",
 };
+
+typedef Ptr<TileListModel> PTileListModel;
 
 struct GroupedTilesModel: public TileListModel {
 	GroupedTilesModel(const TileGroup &tile_group) {
@@ -61,8 +81,109 @@ struct GroupedTilesModel: public TileListModel {
 	vector<const gfx::Tile*> tiles;
 };
 
-typedef Ptr<TileListModel> PTileListModel;
+struct FilteredTilesModel: public TileListModel {
+	FilteredTilesModel(PTileListModel model, TileFilter filter) {
+		for(int n = 0; n < model->size(); n++)	{
+			int group = 0;
+			const gfx::Tile *tile = model->get(n, group);
+			string name = tile->name;
+			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
+			bool is_floor = strstr(name.c_str(), "floors/");
+			bool is_wall = strstr(name.c_str(), "walls/");
+			bool is_object = strstr(name.c_str(), "objects/");
+
+			if(filter == filter_all || (!is_floor && !is_wall && !is_object && filter == filter_other) ||
+				(is_floor && filter == filter_floors) ||
+				(is_wall && filter == filter_walls) ||
+				(is_object && filter == filter_objects))
+				m_tiles.push_back(tile);
+		}
+	}
+
+	int size() const { return (int)m_tiles.size(); }
+	const gfx::Tile* get(int idx, int&) const { return m_tiles[idx]; }
+
+protected:
+	vector<const gfx::Tile*> m_tiles;
+};
+
+
+class TilesEditorPad: public Window
+{
+public:
+	TilesEditorPad(const IRect &rect, PTileMapEditor editor, TileGroup *group)
+		:Window(rect, Color::transparent), m_editor(editor), m_group(group), m_filter(filter_all) {
+		int width = rect.width();
+
+		m_filter_button = new Button(IRect(0, 0, width/2, 22), "");
+		m_dirty_bar = new ProgressBar(IRect(width/2, 0, width, 22), true);
+		m_selector = new TileSelector(IRect(0, 22, width, rect.height()));
+		
+		m_selecting_all_tiles = true;
+		updateTileList();
+
+		attach(m_filter_button.get());
+		attach(m_dirty_bar.get());
+		attach(m_selector.get());
+
+		updateDirtyBar();
+	}
+
+	void updateTileList() {
+		PTileListModel model = m_selecting_all_tiles?
+			new AllTilesModel : (TileListModel*)new GroupedTilesModel(*m_group);
+		model = new FilteredTilesModel(model, m_filter);
+		m_selector->setModel(model);
+		
+		char text[256];
+		snprintf(text, sizeof(text), "Filter: %s (%d)", s_filter_names[m_filter], model->size());	
+		m_filter_button->setText(text);
+	}
+
+	void updateDirtyBar() {
+		char text[64];
+		snprintf(text, sizeof(text), "Dirty tiles: %d%%", (int)(m_dirty_bar->pos() * 100));
+		m_dirty_bar->setText(text);
+		m_editor->m_dirty_percent = m_dirty_bar->pos();
+	}
+	
+	virtual bool onEvent(const Event &ev) {
+		if(ev.type == Event::progress_bar_moved && m_dirty_bar.get() == ev.source)
+			updateDirtyBar();
+		else if(ev.type == Event::button_clicked && m_editor.get() == ev.source) {
+			bool all_tiles =	!(m_editor->m_mode == TileMapEditor::mode_placing_random) &&
+								!(m_editor->m_mode == TileMapEditor::mode_filling);
+			if(all_tiles != m_selecting_all_tiles) {
+				m_selecting_all_tiles = all_tiles;
+				updateTileList();
+			}
+		}
+		else if(ev.type == Event::element_selected && m_selector.get() == ev.source) {
+			//TODO: print tile name in selector
+			//printf("new tile: %s\n", m_selector->selection()? m_selector->selection()->name.c_str() : "none");
+			m_editor->setNewTile(m_selector->selection());
+		}
+		else if(ev.type == Event::button_clicked && m_filter_button.get() == ev.source) {
+			m_filter = (TileFilter)((m_filter + 1) % filter_count);
+			updateTileList();
+		}
+		else
+			return false;
+
+		return true;
+	}
+
+	TileGroup		*m_group;
+
+	PTileMapEditor	m_editor;
+	PButton			m_filter_button;
+	PProgressBar 	m_dirty_bar;
+	PTileSelector	m_selector;
+
+	TileFilter m_filter;
+	bool m_selecting_all_tiles;
+};
 
 class EditorWindow: public Window
 {
@@ -70,56 +191,47 @@ public:
 	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent) {
 		int left_width = width() / 5;
 
-		m_mode = emMapEdition;
+		m_mode = editing_tiles;
 		m_map.resize({16 * 64, 16 * 64});
 
 		loadTileGroup("data/tile_group.xml");
 		loadTileMap("data/tile_map.xml");
 
-		m_mapper = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
+		m_tile_editor = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
 		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
-		m_selector = new TileSelector(IRect(0, 44, left_width, res.y));
 
 		m_mode_button = new Button(IRect(0, 0, left_width * 1 / 2, 22), s_mode_names[m_mode]);
 		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 22), "Save");
 		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 22), "Load");
 
-		m_dirty_bar = new ProgressBar(IRect(0, 22, left_width, 44), true);
-		updateDirtyBar();
+		m_tiles_editor_pad = new TilesEditorPad(IRect(0, 22, left_width, res.y), m_tile_editor, &m_group);
 
-		m_selector->setModel(new AllTilesModel);
-		m_selecting_all_tiles = true;
-
-		m_mapper->setTileMap(&m_map);
-		m_mapper->setTileGroup(&m_group);
+		m_tile_editor->setTileMap(&m_map);
+		m_tile_editor->setTileGroup(&m_group);
 		m_grouper->setTarget(&m_group);
 
-		PWindow left = new Window(IRect(0, 0, left_width, res.y));
+		PWindow left = new Window(IRect(0, 0, left_width, res.y), Color::gui_dark);
 		left->attach(m_mode_button.get());
 		left->attach(m_save_button.get());
 		left->attach(m_load_button.get());
-		left->attach(m_selector.get());
-		left->attach(m_dirty_bar.get());
+		left->attach(m_tiles_editor_pad.get());
 
 		attach(std::move(left));
-		attach(m_mapper.get());
+		attach(m_tile_editor.get());
 		attach(m_grouper.get());
 		m_grouper->setVisible(false);
 	}
 
-	void updateDirtyBar() {
-		char text[64];
-		snprintf(text, sizeof(text), "Dirty tiles percentage: %d%%", (int)(m_dirty_bar->pos() * 100));
-		m_dirty_bar->setText(text);
-		m_mapper->m_dirty_percent = m_dirty_bar->pos();
-	}
-
 	virtual bool onEvent(const Event &ev) {
-		if(ev.type == Event::button_clicked && m_mode_button.get() == ev.source) {
-			m_mode = (EditorMode)((m_mode + 1) % emCount);
-			m_mapper->setVisible(m_mode == emMapEdition);
-			m_grouper->setVisible(m_mode == emTileGroupEdition);
+		if(ev.source == m_tile_editor.get())
+			m_tiles_editor_pad->onEvent(ev);
+		else if(ev.type == Event::button_clicked && m_mode_button.get() == ev.source) {
+			m_mode = (EditorMode)((m_mode + 1) % editing_modes_count);
+			m_tile_editor->setVisible(m_mode == editing_tiles);
+			m_grouper->setVisible(m_mode == editing_tile_groups);
 			m_mode_button->setText(s_mode_names[m_mode]);
+
+			m_tiles_editor_pad->setVisible(m_mode == editing_tiles);
 		}
 		else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
@@ -133,28 +245,15 @@ public:
 			m_file_dialog->setPath("data/");
 			attach(m_file_dialog.get(), true);
 		}
-		else if(ev.type == Event::button_clicked && m_mapper.get() == ev.source) {
-			bool all_tiles =	!(m_mapper->m_mode == TileMapEditor::mode_placing_random) &&
-								!(m_mapper->m_mode == TileMapEditor::mode_filling);
-			if(all_tiles != m_selecting_all_tiles) {
-				m_selecting_all_tiles = all_tiles;
-				m_selector->setModel(all_tiles? new AllTilesModel : (TileListModel*)new GroupedTilesModel(m_group));
-			}
-		}
-		else if(ev.type == Event::element_selected && m_selector.get() == ev.source) {
-			//TODO: print tile name in selector
-			//printf("new tile: %s\n", m_selector->selection()? m_selector->selection()->name.c_str() : "none");
-			m_mapper->setNewTile(m_selector->selection());
-		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
-				if(m_mode == emMapEdition)
+				if(m_mode == editing_tiles)
 					saveTileMap(m_file_dialog->path().c_str());
 				else
 					saveTileGroup(m_file_dialog->path().c_str());
 			}
 			else if(ev.value && m_file_dialog->mode() == FileDialogMode::opening_file) {
-				if(m_mode == emMapEdition)
+				if(m_mode == editing_tiles)
 					loadTileMap(m_file_dialog->path().c_str());
 				else
 					loadTileGroup(m_file_dialog->path().c_str());
@@ -163,8 +262,6 @@ public:
 
 			m_file_dialog = nullptr;
 		}
-		else if(ev.type == Event::progress_bar_moved && m_dirty_bar.get() == ev.source)
-			updateDirtyBar();
 		else
 			return false;
 
@@ -216,14 +313,10 @@ public:
 	PButton		m_load_button;
 	PFileDialog m_file_dialog;
 
-	PTileMapEditor		m_mapper;
+	Ptr<TilesEditorPad> m_tiles_editor_pad;
+
+	PTileMapEditor		m_tile_editor;
 	PTileGroupEditor	m_grouper;
-	PTileSelector		m_selector;
-
-	PProgressBar		m_dirty_bar;
-	PTextBox			m_dirty_label;
-
-	bool m_selecting_all_tiles;
 };
 
 

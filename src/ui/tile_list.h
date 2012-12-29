@@ -23,7 +23,6 @@ namespace ui
 	};
 
 
-
 	class TileList
 	{
 	public:

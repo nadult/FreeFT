@@ -1,4 +1,4 @@
-#include "ui/tile_map_editor.h"
+#include "editor/tile_map_editor.h"
 #include "tile_group.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -490,6 +490,9 @@ namespace ui {
 			" (difference)",
 		};
 
+		if(m_new_tile)
+			font->drawShadowed(int2(0, clippedRect().height() - 50), Color::white, Color::black,
+					"Tile: %s\n", m_new_tile->name.c_str());
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%d, %d, %d)  Mode: %s%s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode],

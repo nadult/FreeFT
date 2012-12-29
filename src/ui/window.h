@@ -64,7 +64,7 @@ namespace ui
 		Color backgroundColor() const { return m_background_color; }
 		void setBackgroundColor(Color col);
 
-		Window* parent() const { return m_parent; }
+		Window *parent() const { return m_parent; }
 		Window *mainWindow() { return m_parent? m_parent->mainWindow() : nullptr; }
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
