@@ -1,4 +1,4 @@
-#include "editor/tile_group_editor.h"
+#include "editor/group_editor.h"
 #include "gfx/device.h"
 #include "tile_group.h"
 #include <algorithm>
@@ -29,7 +29,7 @@ namespace {
 
 }
 
-	TileGroupEditor::TileGroupEditor(IRect rect)
+	GroupEditor::GroupEditor(IRect rect)
 		:ui::Window(rect, Color(0, 0, 0)), m_tile_list(rect.width(), 2) {
 		m_view = clippedRect();
 
@@ -43,15 +43,22 @@ namespace {
 		m_selected_surface_id = -1;
 		m_select_mode = 0;
 		m_selection_mode = 0;
+		m_tile_filter = TileFilter::floors;
 
 		updateSelector();
 	}
 
-	void TileGroupEditor::updateSelector() {
-		if(m_mode == mAddRemove)
-			m_tile_list.setModel(new ui::AllTilesModel);
-		else
-			m_tile_list.setModel(m_tile_group? new TileGroupModel(*m_tile_group) : nullptr);
+	void GroupEditor::setTileFilter(TileFilter::Type filter) {
+		m_tile_filter = filter;
+		updateSelector();
+	}
+
+	void GroupEditor::updateSelector() {
+		PTileListModel model =
+			m_mode == mAddRemove? allTilesModel() :
+				m_tile_group? new TileGroupModel(*m_tile_group) : nullptr;
+
+		m_tile_list.setModel(filteredTilesModel(model, TileFilter::test, m_tile_filter));
 
 		int2 pos(0, -m_offset[m_mode].y);
 		int2 size(rect().width(), m_tile_list.m_height + (m_mode == mAddRemove? 0 : rect().height() / 2));
@@ -59,7 +66,7 @@ namespace {
 		setInnerRect(IRect(pos, pos + size));
 	}
 
-	void TileGroupEditor::onInput(int2 mouse_pos) {
+	void GroupEditor::onInput(int2 mouse_pos) {
 		ASSERT(m_tile_group);
 
 		if(isKeyDown(Key_space)) {
@@ -132,7 +139,7 @@ namespace {
 		}
 	}
 		
-	bool TileGroupEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+	bool GroupEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if(key == 0) {
 			const ui::TileList::Entry *entry = m_tile_list.find(current + innerOffset());
 			m_current_entry = entry;
@@ -163,7 +170,7 @@ namespace {
 		return false;
 	}
 
-	void TileGroupEditor::drawContents() const {
+	void GroupEditor::drawContents() const {
 		int2 offset = innerOffset();
 
 		for(int n = 0; n < m_tile_group->entryCount(); n++)
@@ -238,7 +245,7 @@ namespace {
 					m_current_entry->tile->name.c_str());
 	}
 
-	void TileGroupEditor::setTarget(TileGroup* tile_group) {
+	void GroupEditor::setTarget(TileGroup* tile_group) {
 		m_tile_group = tile_group;
 		updateSelector();
 	}

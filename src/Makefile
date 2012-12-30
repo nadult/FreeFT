@@ -18,7 +18,8 @@ SHARED_SRC=\
 	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile game/item \
 	game/inventory game/enums \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \
-	ui/edit_box ui/combo_box editor/tile_selector editor/tile_map_editor editor/tile_group_editor
+	ui/edit_box ui/combo_box \
+	editor/tile_selector editor/tiles_editor editor/group_editor editor/tiles_pad editor/group_pad
 
 PROGRAM_SRC=editor game res_viewer
 

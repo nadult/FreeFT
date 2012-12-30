@@ -25,7 +25,7 @@ namespace ui {
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 end, int key, int is_final);
 
-		void addEntry(const char *text, Color col);
+		void addEntry(const char *text, Color col = Color::white);
 		int findEntry(const char*) const;
 		int selectedId() const;
 		void selectEntry(int id);

@@ -1,5 +1,5 @@
-#ifndef UI_TILE_GROUP_EDITOR_H
-#define UI_TILE_GROUP_EDITOR_H
+#ifndef EDITOR_GROUP_EDITOR_H
+#define EDITOR_GROUP_EDITOR_H
 
 #include "base.h"
 #include "gfx/tile.h"
@@ -12,15 +12,17 @@ class TileGroup;
 
 namespace ui {
 
-	class TileGroupEditor: public ui::Window {
+	class GroupEditor: public ui::Window {
 	public:
-		TileGroupEditor(IRect rect);
+		GroupEditor(IRect rect);
 
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
 		virtual void drawContents() const;
 
 		void setTarget(TileGroup* tile_group);
+		void setTileFilter(TileFilter::Type);
+		TileFilter::Type tileFilter() const { return m_tile_filter; }
 
 	protected:
 		void updateSelector();
@@ -30,6 +32,8 @@ namespace ui {
 
 		gfx::PFont m_font;
 		IRect m_view;
+
+		TileFilter::Type m_tile_filter;
 
 		int2 m_offset[3];
 		const ui::TileList::Entry *m_current_entry;
@@ -43,7 +47,7 @@ namespace ui {
 		} m_mode;
 	};
 
-	typedef Ptr<TileGroupEditor> PTileGroupEditor;
+	typedef Ptr<GroupEditor> PGroupEditor;
 
 }
 

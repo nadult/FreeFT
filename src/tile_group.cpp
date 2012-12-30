@@ -24,6 +24,7 @@ void TileGroup::addEntry(const gfx::Tile *tile) {
 	Entry new_entry;
 	new_entry.tile = tile;
 	new_entry.group_id = groupCount();
+	new_entry.is_dirty = false;
 	m_entries.push_back(new_entry);
 	m_groups.push_back(Group());
 	m_groups.back().m_entry_count++;
@@ -71,6 +72,14 @@ void TileGroup::removeEntry(int entry_id) {
 	m_entries[entry_id] = m_entries.back();
 	m_entries.pop_back();
 	decGroupEntryCount(group_id);
+}
+
+bool TileGroup::isGroupSurfaceUniform(int group_id) const {
+	const Group &group = m_groups[group_id];
+	for(int n = 1; n < Group::side_count; n++)
+		if(group.m_side_surf[n] != group.m_side_surf[0])
+			return false;
+	return true;
 }
 
 void TileGroup::clear() {

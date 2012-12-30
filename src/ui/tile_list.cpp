@@ -1,13 +1,95 @@
 #include "ui/tile_list.h"
+#include "tile_group.h"
 #include <algorithm>
 
 namespace ui
 {
 
-	AllTilesModel::AllTilesModel() {
-		gfx::Tile::mgr.iterateOver( [&](const string&, const gfx::Tile &tile) { m_tiles.push_back(&tile); } );
+	namespace TileFilter {
+
+		static const char *s_strings[TileFilter::count] = {
+			"all",
+			"floors",
+			"walls",
+			"objects",
+			"other",
+		};
+
+		const char **strings() {
+			return s_strings;
+		}
+
+		bool test(const gfx::Tile *tile, int filter) {
+			DASSERT(tile);
+
+			string name = tile->name;
+			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+			bool is_floor = strstr(name.c_str(), "floors/");
+			bool is_wall = strstr(name.c_str(), "walls/");
+			bool is_object = strstr(name.c_str(), "objects/");
+
+			return filter == TileFilter::all ||
+				(!is_floor && !is_wall && !is_object && filter == TileFilter::other) ||
+				(is_floor && filter == TileFilter::floors) ||
+				(is_wall && filter == TileFilter::walls) ||
+				(is_object && filter == TileFilter::objects);
+		}
 	}
 
+	namespace {
+
+		struct VectorBasedModel: public TileListModel {
+			VectorBasedModel(const vector<const gfx::Tile*> &tiles) :m_tiles(tiles) { }
+
+			int size() const { return (int)m_tiles.size(); }
+			const gfx::Tile* get(int idx, int&) const { return m_tiles[idx]; }
+
+		protected:
+			vector<const gfx::Tile*> m_tiles;
+		};
+
+		struct FilteredModel: public TileListModel {
+			FilteredModel(PTileListModel model, bool (*filter)(const gfx::Tile*, int), int param)
+								:m_sub_model(model) {
+				for(int n = 0; n < model->size(); n++)	{
+					int group = 0;
+					const gfx::Tile *tile = model->get(n, group);
+					if(filter(tile, param))
+						m_indices.push_back(n);
+				}
+			}
+			
+			int size() const { return (int)m_indices.size(); }
+			const gfx::Tile* get(int id, int &group) const { return m_sub_model->get(m_indices[id], group); }
+
+		protected:
+			PTileListModel m_sub_model;
+			vector<int> m_indices;
+		};
+
+	}
+
+	PTileListModel allTilesModel() {
+		vector<const gfx::Tile*> tiles;
+		gfx::Tile::mgr.iterateOver( [&](const string&, const gfx::Tile &tile) { tiles.push_back(&tile); } );
+		return new VectorBasedModel(tiles);
+	}
+
+	PTileListModel groupedTilesModel(const TileGroup &tile_group, bool only_uniform) {
+		vector<const gfx::Tile*> tiles(tile_group.groupCount());
+		for(int n = 0; n < tile_group.entryCount(); n++) {
+			int group_id = tile_group.entryGroup(n);
+			if(!tiles[group_id] && (!only_uniform || tile_group.isGroupSurfaceUniform(group_id)))
+				tiles[group_id] = tile_group.entryTile(n);
+		}
+		tiles.resize(remove(tiles.begin(), tiles.end(), nullptr) - tiles.begin());
+		return new VectorBasedModel(tiles);
+	}
+
+	PTileListModel filteredTilesModel(PTileListModel model, bool (*filter)(const gfx::Tile*, int), int param) {
+		return new FilteredModel(model, filter, param);
+	}
 
 	bool TileList::Entry::operator<(const TileList::Entry &rhs) const {
 		return group_id == rhs.group_id? tile->name < rhs.tile->name : group_id < rhs.group_id;

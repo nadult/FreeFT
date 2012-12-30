@@ -11,6 +11,7 @@ Pomysły:
 - Rozwiązać problem ładowania tekstur tile-i w edytorze (dodać TextureCache)  DONE
 - W Tile-ach zary trzymać w formie skompresowanej, ale tak żeby dało się zrobić pixelTest
 - ComboBox się przyda do filtrów  DONE
+- Dodać tryb zastępowania w którym kasowane są wszystkie tile które kolidują  DONE
 
 +REQUIREMENTS:
 issues/5-entities
@@ -22,4 +23,4 @@ issues/10-ui_improvements
 +WORK_LOG:
 28.12.12: 20:00 - 21:50 (1h 50min)
 29.12.12: 12:15 - 13:30, 14:30 - 15:00, 17:30 - 20:30, 21:00 - 22:15 (6h)
-30.12.12: 11:30 - 14:20
+30.12.12: 11:30 - 14:20, 15:00 - 16:15, 17:30 - 

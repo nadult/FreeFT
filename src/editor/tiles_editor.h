@@ -1,5 +1,5 @@
-#ifndef UI_TILE_MAP_EDITOR_H
-#define UI_TILE_MAP_EDITOR_H
+#ifndef EDITOR_TILES_EDITOR_H
+#define EDITOR_TILES_EDITOR_H
 
 #include "gfx/tile.h"
 #include "ui/window.h"
@@ -9,10 +9,10 @@ class TileGroup;
 
 namespace ui {
 
-	class TileMapEditor: public ui::Window
+	class TilesEditor: public ui::Window
 	{
 	public:
-		TileMapEditor(IRect rect);
+		TilesEditor(IRect rect);
 
 		void setTileMap(TileMap*);
 		void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
@@ -33,9 +33,11 @@ namespace ui {
 			selection_mode_count,
 		} m_selection_mode;
 
+		bool m_is_replacing;
+
 		//TODO: naming
 		enum Mode {
-			mode_selection,
+			mode_selecting,
 			mode_placing,
 			mode_placing_random,
 			mode_filling,
@@ -51,9 +53,9 @@ namespace ui {
 		const gfx::Tile *m_new_tile;
 		vector<int> m_selected_ids;
 		
-		void fill(const IBox &fill_box);
-		void fillRandomized(int group_id, const IBox &fill_box);
+		void fill(const IBox &fill_box, bool is_randomized = false, int group_id = -1);
 		void fillHoles(int main_group_id, const IBox &fill_box);
+		void removeAll(const IBox &box);
 
 		int findAt(const int3 &pos) const;
 
@@ -69,7 +71,7 @@ namespace ui {
 		bool m_show_grid, m_is_selecting;
 	};
 
-	typedef Ptr<TileMapEditor> PTileMapEditor;
+	typedef Ptr<TilesEditor> PTilesEditor;
 
 }
 

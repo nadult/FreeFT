@@ -42,6 +42,7 @@ public:
 	void setGroupSurface(int group_id, int side, int surface) { m_groups[group_id].m_side_surf[side] = surface; }
 	int  groupSurface(int group_id, int side) const { return m_groups[group_id].m_side_surf[side]; }
 	const int* groupSurface(int group_id) const { return m_groups[group_id].m_side_surf; }
+	bool isGroupSurfaceUniform(int group_id) const;
 
 	int entryCount() const { return (int)m_entries.size(); }
 	int groupCount() const { return (int)m_groups.size(); }

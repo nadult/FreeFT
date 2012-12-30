@@ -27,18 +27,24 @@ namespace ui {
 		else if(ev.type == Event::button_clicked && ev.source == m_button.get()) {
 			DASSERT(!m_popup);
 
-			int popup_size = min(m_drop_size, m_dummy->size() * m_dummy->lineHeight());
-			IRect clip_rect = clippedRect();
-			IRect rect(clip_rect.min, int2(clip_rect.max.x, clip_rect.min.y + popup_size));
+			if(m_drop_size > 0) {
+				int popup_size = min(m_drop_size, m_dummy->size() * m_dummy->lineHeight());
+				IRect clip_rect = clippedRect();
+				IRect rect(clip_rect.min, int2(clip_rect.max.x, clip_rect.min.y + popup_size));
 
-			m_popup = new ListBox(rect, Color::gui_popup);
-			for(int n = 0; n < size(); n++) {
-				const ListBox::Entry &entry = (*m_dummy)[n];
-				m_popup->addEntry(entry.text.c_str(), entry.color);
+				m_popup = new ListBox(rect, Color::gui_popup);
+				for(int n = 0; n < size(); n++) {
+					const ListBox::Entry &entry = (*m_dummy)[n];
+					m_popup->addEntry(entry.text.c_str(), entry.color);
+				}
+				m_popup->selectEntry(m_dummy->selectedId());
+				mainWindow()->attach(m_popup.get(), true);
 			}
-			m_popup->selectEntry(m_dummy->selectedId());
-			mainWindow()->attach(m_popup.get(), true);
-
+			else if(size() > 1) {
+				int next_id = (selectedId() + 1) % size();
+				selectEntry(next_id);
+				sendEvent(this, Event::element_selected, next_id);
+			}
 		}
 		else
 			return false;

@@ -8,6 +8,8 @@
 
 namespace ui {
 
+	// if drop_size == 0 then drop list won't be shown,
+	// items will be selected in cyclic order
 	class ComboBox: public Window {
 	public:
 		ComboBox(const IRect &rect, int drop_size, const char *prefix = "",
@@ -15,7 +17,7 @@ namespace ui {
 	
 		virtual bool onEvent(const Event &ev);
 
-		void addEntry(const char *text, Color col);
+		void addEntry(const char *text, Color col = Color::white);
 		int findEntry(const char*) const;
 		int selectedId() const;
 		void selectEntry(int id);

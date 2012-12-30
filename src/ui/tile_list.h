@@ -3,8 +3,25 @@
 
 #include "gfx/tile.h"
 
+class TileGroup;
+
 namespace ui
 {
+
+	namespace TileFilter {
+		enum Type {
+			all,
+			floors,
+			walls,
+			objects,
+			other,
+
+			count,
+		};
+
+		const char **strings();
+		bool test(const gfx::Tile *tile, int filter);
+	};
 
 	struct TileListModel: public RefCounter {
 		virtual ~TileListModel() { }
@@ -13,14 +30,9 @@ namespace ui
 	};
 	typedef Ptr<TileListModel> PTileListModel;
 
-	struct AllTilesModel: public TileListModel {
-		AllTilesModel();
-		int size() const { return (int)m_tiles.size(); }
-		const gfx::Tile* get(int idx, int&) const { return m_tiles[idx]; }
-
-	protected:
-		vector<const gfx::Tile*> m_tiles;
-	};
+	PTileListModel allTilesModel();
+	PTileListModel groupedTilesModel(const TileGroup&, bool only_uniform);
+	PTileListModel filteredTilesModel(PTileListModel, bool (*filter)(const gfx::Tile*, int param), int param);
 
 
 	class TileList

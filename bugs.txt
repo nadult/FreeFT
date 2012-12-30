@@ -1,1 +1,2 @@
 - Podczas zamykania drzwi przesuwanych gracz może się zacząć kręcić w kółko
+- Podczas zmiany filtra w Tile Groupie edytor sie wywalil

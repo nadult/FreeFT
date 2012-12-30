@@ -4,6 +4,8 @@
 /src/Makefile.local
 /editor
 /game
+/build
+/refs
 /res_viewer
 /*.exe
 /data/config.xml
