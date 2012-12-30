@@ -15,6 +15,7 @@ namespace ui {
 	void TileSelector::setModel(PTileListModel model) {
 		m_tile_list.setModel(model);
 		setInnerRect(IRect(0, 0, rect().width(), m_tile_list.m_height));
+		m_selection = nullptr;
 	}
 
 	void TileSelector::update() {

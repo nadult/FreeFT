@@ -13,6 +13,7 @@
 #include "ui/button.h"
 #include "ui/progress_bar.h"
 #include "ui/text_box.h"
+#include "ui/combo_box.h"
 #include "editor/tile_selector.h"
 #include "editor/tile_map_editor.h"
 #include "editor/tile_group_editor.h"
@@ -49,9 +50,9 @@ static const char *s_filter_names[filter_count] = {
 	"other",
 };
 
-static const char *s_mode_names[] = {
-	"Mode: tiles edition",
-	"Mode: tile groups edition",
+static const char *s_mode_names[editing_modes_count] = {
+	"tiles edition",
+	"tile groups edition",
 };
 
 static const char *s_save_dialog_names[] = {
@@ -108,37 +109,53 @@ protected:
 	vector<const gfx::Tile*> m_tiles;
 };
 
+class GroupEditorPad: public Window
+{
+public:
+	GroupEditorPad(const IRect &rect, PTileGroupEditor editor, TileGroup *group)
+		:Window(rect), m_editor(editor), m_group(group) {
+		m_combo_box = new ComboBox(IRect(0, 0, rect.width(), 22), 200, "Filter: ", s_filter_names, filter_count);
+		attach(m_combo_box.get());
+	}
+
+	PComboBox			m_combo_box;
+	TileGroup			*m_group;
+	PTileGroupEditor	m_editor;
+};
 
 class TilesEditorPad: public Window
 {
 public:
 	TilesEditorPad(const IRect &rect, PTileMapEditor editor, TileGroup *group)
-		:Window(rect, Color::transparent), m_editor(editor), m_group(group), m_filter(filter_all) {
+		:Window(rect, Color::transparent), m_editor(editor), m_group(group) {
 		int width = rect.width();
 
-		m_filter_button = new Button(IRect(0, 0, width/2, 22), "");
+		m_filter_box = new ComboBox(IRect(0, 0, width/2, 22), 200, "Filter: ", s_filter_names, filter_count);
+		m_filter_box->selectEntry(0);
 		m_dirty_bar = new ProgressBar(IRect(width/2, 0, width, 22), true);
 		m_selector = new TileSelector(IRect(0, 22, width, rect.height()));
 		
 		m_selecting_all_tiles = true;
 		updateTileList();
 
-		attach(m_filter_button.get());
+		attach(m_filter_box.get());
 		attach(m_dirty_bar.get());
 		attach(m_selector.get());
 
 		updateDirtyBar();
 	}
 
+	TileFilter currentFilter() const {
+		TileFilter filter = (TileFilter)m_filter_box->selectedId();
+		DASSERT(filter >= 0 && filter < filter_count);
+		return filter;
+	}
+
 	void updateTileList() {
 		PTileListModel model = m_selecting_all_tiles?
 			new AllTilesModel : (TileListModel*)new GroupedTilesModel(*m_group);
-		model = new FilteredTilesModel(model, m_filter);
+		model = new FilteredTilesModel(model, currentFilter());
 		m_selector->setModel(model);
-		
-		char text[256];
-		snprintf(text, sizeof(text), "Filter: %s (%d)", s_filter_names[m_filter], model->size());	
-		m_filter_button->setText(text);
 	}
 
 	void updateDirtyBar() {
@@ -164,10 +181,8 @@ public:
 			//printf("new tile: %s\n", m_selector->selection()? m_selector->selection()->name.c_str() : "none");
 			m_editor->setNewTile(m_selector->selection());
 		}
-		else if(ev.type == Event::button_clicked && m_filter_button.get() == ev.source) {
-			m_filter = (TileFilter)((m_filter + 1) % filter_count);
+		else if(ev.type == Event::element_selected && m_filter_box.get() == ev.source)
 			updateTileList();
-		}
 		else
 			return false;
 
@@ -177,11 +192,10 @@ public:
 	TileGroup		*m_group;
 
 	PTileMapEditor	m_editor;
-	PButton			m_filter_button;
+	PComboBox		m_filter_box;
 	PProgressBar 	m_dirty_bar;
 	PTileSelector	m_selector;
 
-	TileFilter m_filter;
 	bool m_selecting_all_tiles;
 };
 
@@ -198,40 +212,44 @@ public:
 		loadTileMap("data/tile_map.xml");
 
 		m_tile_editor = new TileMapEditor(IRect(left_width, 0, res.x, res.y));
-		m_grouper = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
+		m_group_editor = new TileGroupEditor(IRect(left_width, 0, res.x, res.y));
 
-		m_mode_button = new Button(IRect(0, 0, left_width * 1 / 2, 22), s_mode_names[m_mode]);
+		m_mode_box = new ComboBox(IRect(0, 0, left_width * 1 / 2, 22), 200, "Mode: ", s_mode_names, editing_modes_count);
 		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 22), "Save");
 		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 22), "Load");
 
 		m_tiles_editor_pad = new TilesEditorPad(IRect(0, 22, left_width, res.y), m_tile_editor, &m_group);
+		m_group_editor_pad = new GroupEditorPad(IRect(0, 22, left_width, res.y), m_group_editor, &m_group);
 
 		m_tile_editor->setTileMap(&m_map);
 		m_tile_editor->setTileGroup(&m_group);
-		m_grouper->setTarget(&m_group);
+		m_group_editor->setTarget(&m_group);
 
 		PWindow left = new Window(IRect(0, 0, left_width, res.y), Color::gui_dark);
-		left->attach(m_mode_button.get());
+		left->attach(m_mode_box.get());
 		left->attach(m_save_button.get());
 		left->attach(m_load_button.get());
 		left->attach(m_tiles_editor_pad.get());
+		left->attach(m_group_editor_pad.get());
 
 		attach(std::move(left));
 		attach(m_tile_editor.get());
-		attach(m_grouper.get());
-		m_grouper->setVisible(false);
+		attach(m_group_editor.get());
+
+		m_group_editor->setVisible(false);
+		m_group_editor_pad->setVisible(false);
 	}
 
 	virtual bool onEvent(const Event &ev) {
 		if(ev.source == m_tile_editor.get())
 			m_tiles_editor_pad->onEvent(ev);
-		else if(ev.type == Event::button_clicked && m_mode_button.get() == ev.source) {
-			m_mode = (EditorMode)((m_mode + 1) % editing_modes_count);
+		else if(ev.type == Event::element_selected && m_mode_box.get() == ev.source) {
+			m_mode = (EditorMode)(ev.value);
 			m_tile_editor->setVisible(m_mode == editing_tiles);
-			m_grouper->setVisible(m_mode == editing_tile_groups);
-			m_mode_button->setText(s_mode_names[m_mode]);
+			m_group_editor->setVisible(m_mode == editing_tile_groups);
 
 			m_tiles_editor_pad->setVisible(m_mode == editing_tiles);
+			m_group_editor_pad->setVisible(m_mode == editing_tile_groups);
 		}
 		else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
@@ -308,15 +326,16 @@ public:
 	TileMap		m_map;
 	TileGroup	m_group;
 	
-	PButton		m_mode_button;
+	PComboBox	m_mode_box;
 	PButton		m_save_button;
 	PButton		m_load_button;
 	PFileDialog m_file_dialog;
 
+	Ptr<GroupEditorPad> m_group_editor_pad;
 	Ptr<TilesEditorPad> m_tiles_editor_pad;
 
 	PTileMapEditor		m_tile_editor;
-	PTileGroupEditor	m_grouper;
+	PTileGroupEditor	m_group_editor;
 };
 
 

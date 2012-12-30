@@ -1,6 +1,6 @@
 all: ../editor ../game ../res_viewer ../game.exe ../editor.exe ../res_viewer.exe
 
-BUILD_DIR=build
+BUILD_DIR=../build
 
 _dummy := $(shell [ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR))
 _dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
@@ -18,7 +18,7 @@ SHARED_SRC=\
 	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile game/item \
 	game/inventory game/enums \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \
-	ui/edit_box editor/tile_selector editor/tile_map_editor editor/tile_group_editor
+	ui/edit_box ui/combo_box editor/tile_selector editor/tile_map_editor editor/tile_group_editor
 
 PROGRAM_SRC=editor game res_viewer
 

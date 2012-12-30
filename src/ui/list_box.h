@@ -6,10 +6,12 @@
 
 namespace ui {
 
+	// When created as a popup, it behaves a bit differently,
+	// so it can be used in a combo box
 	class ListBox: public ui::Window
 	{
 	public:
-		ListBox(const IRect &rect);
+		ListBox(const IRect &rect, Color color = Color::gui_dark);
 		virtual const char *typeName() const { return "ListBox"; }
 
 		struct Entry {
@@ -18,6 +20,7 @@ namespace ui {
 			mutable bool is_selected;
 		};
 		
+		virtual bool onEvent(const Event&);
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 end, int key, int is_final);
@@ -28,12 +31,11 @@ namespace ui {
 		void selectEntry(int id);
 		void clear();
 
-		int m_max_width, m_spacing;
-		int m_height;
-
 		int size() const { return (int)m_entries.size(); }
 		const Entry& operator[](int idx) const { return m_entries[idx]; }
 		Entry& operator[](int idx) { return m_entries[idx]; }
+
+		int lineHeight() const { return m_line_height; }
 
 	private:
 		void update();

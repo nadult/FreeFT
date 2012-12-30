@@ -13,6 +13,7 @@ namespace ui
 	}
 
 	void Button::setText(const char *text) {
+		DASSERT(text);
 		m_text = text;
 		m_text_extents = m_font->evalExtents(text);
 		m_text_extents.min.y = 0;
@@ -33,7 +34,7 @@ namespace ui
 	bool Button::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;
 		if(key == 0 && m_is_enabled) {
-			if(is_final == 1)
+			if(is_final == 1 && localRect().isInside(current))
 				sendEvent(this, Event::button_clicked, m_id);
 			return true;
 		}

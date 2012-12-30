@@ -5,7 +5,7 @@ using namespace gfx;
 namespace ui {
 
 
-	ListBox::ListBox(const IRect &rect) :Window(rect, Color::gui_dark), m_over_id(-1), m_dragging_id(-1) {
+	ListBox::ListBox(const IRect &rect, Color color) :Window(rect, color), m_over_id(-1), m_dragging_id(-1) {
 		m_font = Font::mgr[s_font_names[0]];
 		m_line_height = m_font->lineHeight();
 	}
@@ -13,6 +13,7 @@ namespace ui {
 	void ListBox::drawContents() const {
 		int2 offset = innerOffset();
 		int2 vis_entries = visibleEntriesIds();
+		
 
 		DTexture::bind0();
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
@@ -31,6 +32,9 @@ namespace ui {
 			if(col != Color(Color::transparent))
 				drawQuad(rect.min, rect.size(), col);
 		}
+		
+		if(isPopup())
+			drawRect(IRect(1, 0, width(), height() - 1), backgroundColor());
 
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
 			int2 pos = int2(0, m_line_height * n) - offset;
@@ -55,6 +59,15 @@ namespace ui {
 				return n;
 		return -1;
 	}
+		
+	bool ListBox::onEvent(const Event &ev) {
+		if(ev.type == Event::escape && isPopup()) {
+			close(0);
+			return true;
+		}
+
+		return false;
+	}
 
 	void ListBox::onInput(int2 mouse_pos) {
 		m_over_id = entryId(mouse_pos);
@@ -66,8 +79,13 @@ namespace ui {
 			m_dragging_id = entryId(start);
 
 			if(is_final == 1 && m_over_id == m_dragging_id) {
-				selectEntry(m_over_id);
+				bool do_select = localRect().isInside(end) && (!isPopup() || (m_over_id >= 0 && m_over_id < size()));
+
+				if(do_select)
+					selectEntry(m_over_id);
 				sendEvent(this, Event::element_clicked, m_over_id);
+				if(isPopup())
+					close(do_select?1 : 0);
 			}
 			if(is_final)
 				m_dragging_id = -1;

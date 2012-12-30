@@ -36,7 +36,7 @@ namespace ui {
 	}
 
 	void MessageBox::drawContents() const {
-		drawWindow(IRect({0, 0}, rect().size()), Color::gui_dark, 3);
+		drawWindow(IRect({0, 0}, rect().size()), Color::gui_popup, 3);
 	}
 
 }

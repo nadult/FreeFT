@@ -54,8 +54,9 @@ namespace ui
 
 		// it will also reset inner rect
 		void setRect(const IRect &rect);
-		IRect rect() const { return m_rect; }
-		IRect clippedRect() const { return m_clipped_rect; }
+		const IRect localRect() const { return IRect(int2(0, 0), m_rect.size()); }
+		const IRect &rect() const { return m_rect; }
+		const IRect &clippedRect() const { return m_clipped_rect; }
 		int width() const { return m_rect.width(); }
 		int height() const { return m_rect.height(); }
 		int2 size() const { return m_rect.size(); }
@@ -65,12 +66,13 @@ namespace ui
 		void setBackgroundColor(Color col);
 
 		Window *parent() const { return m_parent; }
-		Window *mainWindow() { return m_parent? m_parent->mainWindow() : nullptr; }
+		Window *mainWindow() { return m_parent? m_parent->mainWindow() : this; }
 
 		void setVisible(bool is_visible) { m_is_visible = is_visible; }
 		bool isVisible() const { return m_is_visible; }
 		bool isFocused() const;
 		bool isMouseOver() const;
+		bool isPopup() const { return m_is_popup; }
 
 		//TODO: should events be sent to unfocused objects?
 

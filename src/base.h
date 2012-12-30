@@ -431,7 +431,13 @@ struct Color
 		gui_dark	= 0xffe86f25u,
 		gui_medium	= 0xffe77738u,
 		gui_light	= 0xffe7864cu,
+		gui_popup	= 0xffffa060u,
 		transparent = 0x00000000u,
+	};
+
+	enum {
+		alpha_mask	= 0xff000000u,
+		rgb_mask	= 0x00ffffffu,
 	};
 
 	union {
