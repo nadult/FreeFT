@@ -18,7 +18,7 @@ namespace gfx {
 			ev_jump_to_frame	= -5,
 			ev_overlay			= -6,
 
-			ev_first_specific	= -40,	// these events wont be handled directly by Entity
+			ev_first_specific	= -40,	// these events won't be handled directly by Entity
 			ev_step_left		= -40,
 			ev_step_right		= -41,
 			ev_hit				= -42,

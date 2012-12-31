@@ -1,4 +1,4 @@
-all: editor game res_viewer game.exe editor.exe res_viewer.exe
+all: editor game res_viewer convert game.exe editor.exe res_viewer.exe
 
 BUILD=build
 
@@ -25,7 +25,7 @@ SHARED_SRC=\
 
 LIBS_SRC=lz4/lz4 lz4/lz4hc
 
-PROGRAM_SRC=editor game res_viewer
+PROGRAM_SRC=editor game res_viewer convert
 
 ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC) sys/platform_linux sys/platform_windows
 

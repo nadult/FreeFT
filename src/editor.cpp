@@ -203,16 +203,6 @@ public:
 	PGroupEditor	m_group_editor;
 };
 
-
-static bool removeSuffix(string &str, const string &suffix) {
-	if(str.size() >= suffix.size() && suffix == str.c_str() + str.size() - suffix.size()) {
-		str = str.substr(0, str.size() - suffix.size());
-		return true;
-	}
-
-	return false;
-}
-
 int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("editor");
@@ -224,7 +214,7 @@ int safe_main(int argc, char **argv)
 
 	printf("Enumerating tiles\n");
 	vector<FileEntry> file_names;
-	findFiles(file_names, "refs/tiles/", FindFiles::regular_file | FindFiles::recursive);
+	findFiles(file_names, "data/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
 	int mem_size = 0, bit_size = 0;
 

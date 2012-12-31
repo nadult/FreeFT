@@ -219,7 +219,7 @@ public:
 				Loader(file_name) & *tex;
 				res = ::Resource(tex, id);
 			}
-			else if(strcasecmp(file_name + len - 4, ".til") == 0) {
+			else if(strcasecmp(file_name + len - 5, ".tile") == 0) {
 				PTile tile = new Tile;
 			//	printf("Loading tile: %s\n", file_name);
 				Loader(file_name) & *tile;

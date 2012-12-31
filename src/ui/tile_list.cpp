@@ -131,7 +131,8 @@ namespace ui
 		}
 		std::stable_sort(m_entries.begin(), m_entries.end());
 
-		m_entries[0].group_size = 1;
+		if(!m_entries.empty())
+			m_entries[0].group_size = 1;
 		for(int n = 1; n < (int)m_entries.size(); n++) {
 			Entry &cur = m_entries[n], &prev = m_entries[n - 1];
 			cur.group_size = cur.group_id == prev.group_id? prev.group_size + 1 : 1;

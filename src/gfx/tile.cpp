@@ -63,7 +63,7 @@ namespace gfx
 		m_storage_mode = storage_atlas;
 	}
 
-	void Tile::serialize(Serializer &sr) {
+	void Tile::serializeTil(Serializer &sr) {
 		sr.signature("<tile>", 7);
 		i16 type; sr & type;
 
@@ -97,6 +97,12 @@ namespace gfx
 		m_texture.serializeZar(sr);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
+	}
+
+	void Tile::serialize(Serializer &sr) {
+		sr.signature("TILE", 4);
+		sr(m_bbox, m_offset);
+		sr & m_texture;
 	}
 
 	const IRect Tile::rect() const {
@@ -202,7 +208,7 @@ namespace gfx
 		return dev_atlas;
 	}
 
-	ResourceMgr<Tile> Tile::mgr("refs/tiles/", ".til");
+	ResourceMgr<Tile> Tile::mgr("data/tiles/", ".tile");
 	TextureCache Tile::cache(64 * 1024 * 1024, loadTileTexture);
 
 }

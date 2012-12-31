@@ -84,6 +84,8 @@ typedef bool (*FindFilesFilter)(const char *path, const char* name, bool is_dir)
 
 
 void findFiles(vector<FileEntry> &out, const Path &path, int flags = FindFiles::regular_file);
+bool removeSuffix(string &str, const string &suffix);
+void mkdirRecursive(const Path &path);
 
 
 #endif

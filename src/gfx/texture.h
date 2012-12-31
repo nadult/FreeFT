@@ -119,6 +119,7 @@ namespace gfx
 		friend class PalTexture;
 
 		int m_width, m_height;
+		int m_palette_size;
 		int m_dec_stream_size;
 		vector<char> m_stream;
 	};

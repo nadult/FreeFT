@@ -185,3 +185,13 @@ const Path &Path::operator/=(const Path &other) {
 	construct(elems);
 	return *this;
 }
+
+bool removeSuffix(string &str, const string &suffix) {
+	if(str.size() >= suffix.size() && suffix == str.c_str() + str.size() - suffix.size()) {
+		str = str.substr(0, str.size() - suffix.size());
+		return true;
+	}
+
+	return false;
+}
+
