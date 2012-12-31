@@ -7,17 +7,9 @@ namespace gfx {
 
 	class Sprite: public RefCounter {
 	public:
+		Sprite();
 		void loadFromSpr(Serializer &sr);
 		void serialize(Serializer &sr);
-
-		struct Image {
-			Image() :size(0, 0) { }
-			void serialize(Serializer &sr);
-
-			vector<u8> color;
-			vector<u8> alpha;
-			int2 size;
-		};
 
 		enum EventId {
 			ev_stop_anim		= -2,
@@ -52,7 +44,7 @@ namespace gfx {
 		struct Collection {
 			string name;
 			vector<IRect> rects;
-			vector<Image> images;
+			vector<CompressedTexture> images;
 			vector<Color> palettes[4];
 			vector<int2> points;
 
@@ -77,6 +69,7 @@ namespace gfx {
 		int findSequence(const char *name) const;
 
 		void printInfo() const;
+		void printSequencesInfo() const;
 		void printSequenceInfo(int seq_id) const;
 
 		int findDir(int seq_id, float radians) const;
@@ -91,6 +84,8 @@ namespace gfx {
 	private:
 		vector<Collection> m_collections;
 		vector<Sequence> m_sequences;
+		string m_name;
+		int m_file_size;
 
 		int2 m_offset;
 		int3 m_bbox;

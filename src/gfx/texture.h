@@ -91,6 +91,62 @@ namespace gfx
 		unsigned id;
 	};
 
+	struct Bitmap {
+		int width, height;
+		vector<u8> bits;
+	};
+
+	class Texture;
+	class PalTexture;
+
+	class CompressedTexture {
+	public:
+		CompressedTexture();
+
+		void serialize(Serializer&);
+		void serializeZar(Serializer&);
+
+		void decompress(PalTexture&) const;
+
+		bool operator==(const CompressedTexture&) const;
+
+		int width() const { return m_width; }
+		int height() const { return m_height; }
+		const int2 dimensions() const { return int2(m_width, m_height); }
+		int memorySize() const { return (int)(sizeof(CompressedTexture) + m_stream.size()); }
+
+	protected:
+		friend class PalTexture;
+
+		int m_width, m_height;
+		int m_dec_stream_size;
+		vector<char> m_stream;
+	};
+
+	class PalTexture {
+	public:
+		PalTexture(int width = 0, int height = 0);
+		
+		void serializeZar(Serializer&);
+		void serialize(Serializer&);
+		void compress(CompressedTexture&) const;
+		
+		int width() const { return m_width; }
+		int height() const { return m_height; }
+		const int2 dimensions() const { return int2(m_width, m_height); }
+
+		void toBitmap(Bitmap&) const;
+		void toTexture(Texture&, const vector<Color> *palette = nullptr) const;
+
+//	protected:
+		friend class CompressedTexture;
+
+		vector<Color> m_palette;
+		vector<u8> m_colors; //TODO: merge colors & alpha into one vector
+		vector<u8> m_alphas;
+		int m_width, m_height;
+	};
+
 	class Texture: public RefCounter
 	{
 	public:

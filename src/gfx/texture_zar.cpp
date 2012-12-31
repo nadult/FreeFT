@@ -22,11 +22,12 @@ namespace gfx
 				palette[n] = swapBR(palette[n]);
 		}
 
-		Color defaultCol(0, 0, 0);
-		if(zar_type == 0x34 || zar_type == 0x33) {  // TODO: 0x33 has no palette in some cases???
-			u32 def; sr & def;
-			if(def < palette.size())
-				defaultCol = palette[def];
+		Color default_col(0, 0, 0);
+		if(zar_type == 0x34 || zar_type == 0x33) {
+			u32 def; sr & def; //TODO: there is something else here
+			def = def & 255;
+			ASSERT(def < palette.size());
+			default_col = palette[def];
 		}
 
 		resize(img_width, img_height);
@@ -50,7 +51,8 @@ namespace gfx
 				sr.data(buf, n_pixels);
 				
 				for(int n = 0; n < n_pixels; n++) {
-					Color col = buf[n] < palette.size()? palette[buf[n]] : defaultCol;
+					ASSERT(buf[n * 2] < palette.size());
+					Color col = palette[buf[n]];
 					col.a = 0xff;
 					*dst++ = col;
 				}
@@ -58,7 +60,8 @@ namespace gfx
 			else if(command == 2) {
 				sr.data(buf, n_pixels * 2);
 				for(int n = 0; n < n_pixels; n++) {
-					Color col = buf[n * 2] < palette.size()? palette[buf[n * 2]] : defaultCol;
+					ASSERT(buf[n * 2] < palette.size());
+					Color col = palette[buf[n * 2]];
 					col.a = buf[n * 2 + 1];
 					*dst++ = col;
 				}
@@ -66,7 +69,7 @@ namespace gfx
 			else { // command == 3
 				sr.data(buf, n_pixels);
 				for(int n = 0; n < n_pixels; n++) {
-					Color col = defaultCol;
+					Color col = default_col;
 					col.a = buf[n];
 					*dst++ = col;
 				}

@@ -75,60 +75,6 @@ namespace gfx
 		return 0;
 	}
 
-	void Sprite::Image::serialize(Serializer &sr) {
-		sr.signature("<zar>", 6);
-
-		char zar_type, dummy1, has_palette;
-		u32 img_width, img_height;
-
-		sr(zar_type, dummy1, img_width, img_height, has_palette);
-
-		if(zar_type != 0x33 && zar_type != 0x34)
-			THROW("Wrong zar type: %d", (int)zar_type);
-
-		DASSERT(!has_palette);
-
-		u8 defaultCol = 0;
-		u32 rleSize; sr & rleSize;
-		uint endPos = sr.pos() + rleSize;
-
-		color.resize(img_width * img_height);
-		alpha.resize(img_width * img_height, 255);
-		size = int2(img_width, img_height);
-
-		u8 *color_dst = &color[0], *end = &color.back();
-		u8 *alpha_dst = &alpha[0];
-
-		while(color_dst < end) {
-			u8 cmd; sr & cmd;
-			int n_pixels = cmd >> 2;
-			int command = cmd & 3;
-
-			if(command == 0)
-				memset(alpha_dst, 0, n_pixels);
-			else if(command == 1)
-				sr.data(color_dst, n_pixels);
-			else if(command == 2) {
-				u8 buf[128];
-
-				sr.data(buf, n_pixels * 2);
-				for(int n = 0; n < n_pixels; n++) {
-					color_dst[n] = buf[n * 2 + 0];
-					alpha_dst[n] = buf[n * 2 + 1];
-				}
-			}
-			else {
-				sr.data(alpha_dst, n_pixels);
-				memset(color_dst, defaultCol, n_pixels);
-			}
-				
-			color_dst += n_pixels;
-			alpha_dst += n_pixels;
-		}
-
-		sr.seek(endPos);
-	}
-
 	void Sprite::loadFromSpr(Serializer &sr) {
 		sr.signature("<sprite>", 9);
 
@@ -267,7 +213,7 @@ namespace gfx
 				if(type == 1) {
 					i32 x, y; imgSr(x, y);
 					collection.points[n] = int2(x, y);
-					imgSr & collection.images[n];
+					collection.images[n].serializeZar(imgSr);
 				}
 				else if(type == 0) { // empty image
 				}
@@ -277,9 +223,14 @@ namespace gfx
 		}
 	}
 
+	Sprite::Sprite() :m_file_size(0) { }
+
 	void Sprite::serialize(Serializer &sr) {
-		if(sr.isLoading())
+		if(sr.isLoading()) {
 			loadFromSpr(sr);
+			m_name = sr.name();
+			m_file_size = sr.size();
+		}
 		else
 			THROW("Saving not supported");
 	}
@@ -306,8 +257,8 @@ namespace gfx
 //			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
 			if(id >= (int)images.size())
 				continue;
-			size.x = max(size.x, points[id].x + images[id].size.x);
-			size.y = max(size.y, points[id].y + images[id].size.y);
+
+			size = max(size, points[id] + images[id].dimensions());
 		}
 
 		out.resize(size.x, size.y);
@@ -318,14 +269,16 @@ namespace gfx
 //			ASSERT(id >= 0 && id <= (int)images.size()); //TODO
 			if(id >= (int)images.size())
 				continue;
-			if(!images[id].size.x || !images[id].size.y)
+			if(!images[id].width() || !images[id].height())
 				continue;
 
-			int2 lsize = images[id].size;
+			int2 lsize = images[id].dimensions();
 
 			const Color *palette = &palettes[l][0];
-			const u8 *colors = &images[id].color[0];
-			const u8 *alphas = &images[id].alpha[0];
+			PalTexture tex;
+			images[id].decompress(tex);
+			const u8 *colors = &tex.m_colors[0];
+			const u8 *alphas = &tex.m_alphas[0];
 			Color *dst = &out(points[id].x, points[id].y);
 
 			for(int y = 0; y < lsize.y; y++) {
@@ -362,15 +315,15 @@ namespace gfx
 			if(id >= (int)images.size())
 				continue;
 
-			const Image &img = images[id];
+			const CompressedTexture &img = images[id];
 
 			int2 pos = screen_pos - points[id];
-			if(pos.x < 0 || pos.y < 0 || pos.x >= img.size.x || pos.y >= img.size.y)
+			if(pos.x < 0 || pos.y < 0 || pos.x >= img.width() || pos.y >= img.height())
 				continue;
 
-			const u8 *alphas = &img.alpha[0];
-			if(alphas[pos.x + pos.y * img.size.x])
-				return true;
+			//TODO: write me
+		//	if(img.alphas[pos.x + pos.y * img.width])
+		//		return true;
 		}
 		return false;
 	}
@@ -458,6 +411,27 @@ namespace gfx
 	}
 
 	void Sprite::printInfo() const {
+		size_t bytes = sizeof(Sprite), img_bytes = 0;
+
+		for(int n = 0; n < (int)m_sequences.size(); n++) {
+			const Sequence &seq = m_sequences[n];
+			bytes += sizeof(seq) + seq.name.size() + 1 + seq.frames.size() * sizeof(Frame);
+		}
+		for(int n = 0; n < (int)m_collections.size(); n++) {
+			const Collection &col = m_collections[n];
+			bytes += sizeof(col) + col.name.size() + 1 + col.rects.size() * sizeof(IRect) +
+				col.images.size() * sizeof(PalTexture) + col.points.size() * sizeof(int2);
+			for(int i = 0; i < COUNTOF(col.palettes); i++)
+				bytes += col.palettes[i].size() * sizeof(Color);
+			for(int i = 0; i < (int)col.images.size(); i++)
+				img_bytes += col.images[i].memorySize();
+		}
+
+		printf("Sprite %s memory:\nstuff: %d KB\nimages: %d KB\nfile: %d KB\n",
+				m_name.c_str(), (int)(bytes/1024), (int)(img_bytes/1024), m_file_size/1024);
+	}
+
+	void Sprite::printSequencesInfo() const {
 		for(int a = 0; a < (int)m_collections.size(); a++) {
 			const Sprite::Collection &collection = m_collections[a];
 			printf("Collection %d: %s (%d*%d frames)\n", a, collection.name.c_str(),

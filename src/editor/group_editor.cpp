@@ -58,6 +58,7 @@ namespace {
 			m_mode == mAddRemove? allTilesModel() :
 				m_tile_group? new TileGroupModel(*m_tile_group) : nullptr;
 
+		m_current_entry = nullptr;
 		m_tile_list.setModel(filteredTilesModel(model, TileFilter::test, m_tile_filter));
 
 		int2 pos(0, -m_offset[m_mode].y);

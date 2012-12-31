@@ -28,11 +28,12 @@ namespace gfx
 
 		int width() const { return m_texture.width(); }
 		int height() const { return m_texture.height(); }
-		const int2 size() const { return m_texture.size(); }
+		const int2 dimensions() const { return m_texture.dimensions(); }
+		int memorySize() const { return m_texture.memorySize() + (int)sizeof(Tile) + (int)name.size(); }
 
 		const IRect rect() const;
 
-		const Texture &texture() const { return m_texture; }
+		Texture texture() const;
 		PTexture deviceTexture() const;
 
 		//TODO: better names FFS...
@@ -56,8 +57,8 @@ namespace gfx
 
 		StorageMode storageMode() const { return m_storage_mode; }
 
-	protected:
-		Texture m_texture; //TODO: store in compressed format
+//	protected:
+		CompressedTexture m_texture;
 		PTexture m_dev_texture;
 		int m_cache_id;
 		FRect m_tex_coords;

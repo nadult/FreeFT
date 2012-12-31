@@ -20,7 +20,7 @@ namespace ui {
 		m_selection_mode = selection_normal;
 
 		m_cursor_height = 0;
-		m_grid_height = 0;
+		m_grid_height = 1;
 		m_dirty_percent = 0.0f;
 	}
 

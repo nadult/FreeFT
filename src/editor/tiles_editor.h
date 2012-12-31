@@ -35,7 +35,6 @@ namespace ui {
 
 		bool m_is_replacing;
 
-		//TODO: naming
 		enum Mode {
 			mode_selecting,
 			mode_placing,

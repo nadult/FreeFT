@@ -17,6 +17,7 @@
 #include "editor/tile_selector.h"
 #include "editor/tiles_editor.h"
 #include "editor/group_editor.h"
+#include "editor/entities_editor.h"
 #include "editor/tiles_pad.h"
 #include "editor/group_pad.h"
 #include "ui/file_dialog.h"
@@ -29,6 +30,7 @@ using namespace ui;
 
 enum EditorMode {
 	editing_tiles,
+	editing_entities,
 	editing_group,
 
 	editing_modes_count,
@@ -36,6 +38,7 @@ enum EditorMode {
 
 static const char *s_mode_names[editing_modes_count] = {
 	"tile map edition",
+	"entities edition",
 	"tile group edition",
 };
 
@@ -55,25 +58,30 @@ public:
 		int left_width = width() / 5;
 
 		m_mode = editing_tiles;
-		m_map.resize({16 * 64, 16 * 64});
+		m_tile_map.resize(int2(1024, 1024));
+		m_entity_map = Grid(int2(1024, 1024));
 
 		loadTileGroup("data/tile_group.xml");
 		loadTileMap("data/tile_map.xml");
 
-		m_tile_editor = new TilesEditor(IRect(left_width, 0, res.x, res.y));
+		m_tiles_editor = new TilesEditor(IRect(left_width, 0, res.x, res.y));
 		m_group_editor = new GroupEditor(IRect(left_width, 0, res.x, res.y));
+		m_entities_editor = new EntitiesEditor(IRect(left_width, 0, res.x, res.y));
 
 		m_mode_box = new ComboBox(IRect(0, 0, left_width * 1 / 2, 22), 0,
 				"Mode: ", s_mode_names, editing_modes_count);
 		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 22), "Save");
 		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 22), "Load");
 
-		m_tiles_pad = new TilesPad(IRect(0, 22, left_width, res.y), m_tile_editor, &m_group);
+		m_tiles_pad = new TilesPad(IRect(0, 22, left_width, res.y), m_tiles_editor, &m_group);
 		m_group_pad = new GroupPad(IRect(0, 22, left_width, res.y), m_group_editor, &m_group);
 
-		m_tile_editor->setTileMap(&m_map);
-		m_tile_editor->setTileGroup(&m_group);
+		m_tiles_editor->setTileMap(&m_tile_map);
+		m_tiles_editor->setTileGroup(&m_group);
 		m_group_editor->setTarget(&m_group);
+
+		m_entities_editor->setTileMap(&m_tile_map);
+		m_entities_editor->setEntityMap(&m_entity_map);
 
 		PWindow left = new Window(IRect(0, 0, left_width, res.y), Color::gui_dark);
 		left->attach(m_mode_box.get());
@@ -83,23 +91,28 @@ public:
 		left->attach(m_group_pad.get());
 
 		attach(std::move(left));
-		attach(m_tile_editor.get());
+		attach(m_tiles_editor.get());
 		attach(m_group_editor.get());
+		attach(m_entities_editor.get());
 
-		m_group_editor->setVisible(false);
-		m_group_pad->setVisible(false);
+		updateVisibility();
+	}
+
+	void updateVisibility() {
+		m_entities_editor->setVisible(m_mode == editing_entities);
+		m_tiles_editor->setVisible(m_mode == editing_tiles);
+		m_group_editor->setVisible(m_mode == editing_group);
+
+		m_tiles_pad->setVisible(m_mode == editing_tiles);
+		m_group_pad->setVisible(m_mode == editing_group);
 	}
 
 	virtual bool onEvent(const Event &ev) {
-		if(ev.source == m_tile_editor.get())
+		if(ev.source == m_tiles_editor.get())
 			m_tiles_pad->onEvent(ev);
 		else if(ev.type == Event::element_selected && m_mode_box.get() == ev.source) {
 			m_mode = (EditorMode)(ev.value);
-			m_tile_editor->setVisible(m_mode == editing_tiles);
-			m_group_editor->setVisible(m_mode == editing_group);
-
-			m_tiles_pad->setVisible(m_mode == editing_tiles);
-			m_group_pad->setVisible(m_mode == editing_group);
+			updateVisibility();
 		}
 		else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
@@ -141,7 +154,7 @@ public:
 		if(access(file_name, R_OK) == 0) {
 			XMLDocument doc;
 			doc.load(file_name);
-			m_map.loadFromXML(doc);
+			m_tile_map.loadFromXML(doc);
 		}
 	}
 
@@ -158,7 +171,7 @@ public:
 	void saveTileMap(const char *file_name) const {
 		printf("Saving TileMap: %s\n", file_name);
 		XMLDocument doc;
-		m_map.saveToXML(doc);
+		m_tile_map.saveToXML(doc);
 		doc.save(file_name);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
@@ -173,7 +186,8 @@ public:
 
 	EditorMode	m_mode;
 
-	TileMap		m_map;
+	TileMap		m_tile_map;
+	EntityMap	m_entity_map;
 	TileGroup	m_group;
 	
 	PComboBox	m_mode_box;
@@ -184,7 +198,8 @@ public:
 	PGroupPad		m_group_pad;
 	PTilesPad		m_tiles_pad;
 
-	PTilesEditor	m_tile_editor;
+	PTilesEditor	m_tiles_editor;
+	PEntitiesEditor	m_entities_editor;
 	PGroupEditor	m_group_editor;
 };
 
@@ -202,7 +217,7 @@ int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("editor");
 	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("FTremake::editor ver 0.02");
+	setWindowTitle("FTremake::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
 		
 	setBlendingMode(bmNormal);
@@ -210,6 +225,8 @@ int safe_main(int argc, char **argv)
 	printf("Enumerating tiles\n");
 	vector<FileEntry> file_names;
 	findFiles(file_names, "refs/tiles/", FindFiles::regular_file | FindFiles::recursive);
+
+	int mem_size = 0, bit_size = 0;
 
 	printf("Loading tiles");
 	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
@@ -224,6 +241,9 @@ int safe_main(int argc, char **argv)
 			string tile_name = tile_path;
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
+				bit_size += tile->width() * tile->height() / 8;
+				mem_size += tile->memorySize();
+
 				tile->name = tile_name;
 				tile->storeInCache();
 			}
@@ -232,6 +252,9 @@ int safe_main(int argc, char **argv)
 		}
 	}
 	printf("\n");
+
+	printf("Tiles memory: %d KB\nBitmaps: %d KB\n",
+			mem_size/1024, bit_size/1024);
 
 	EditorWindow main_window(config.resolution);
 	clear({0, 0, 0});

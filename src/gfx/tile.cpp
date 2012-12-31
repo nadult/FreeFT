@@ -15,12 +15,21 @@ namespace gfx
 			cache.remove(m_cache_id);
 	}
 
+	Texture Tile::texture() const {
+		Texture out;
+		PalTexture pal_texture;
+		m_texture.decompress(pal_texture);
+		pal_texture.toTexture(out);
+		return out;
+	}
+
 	static PTexture loadTileTexture(const void *ptr) {
 		const Tile *tile = (const Tile*)ptr;
 		DASSERT(tile);
 
 		PTexture new_texture = new DTexture;
-		new_texture->setSurface(tile->texture());
+		Texture tex = tile->texture();
+		new_texture->setSurface(tex);
 		return new_texture;
 	}
 
@@ -50,7 +59,7 @@ namespace gfx
 		DASSERT(m_storage_mode == storage_none);
 		m_dev_texture = tex;
 		float2 mul(1.0f / (float)tex->width(), 1.0f / (float)tex->height());
-		m_tex_coords = FRect(float2(pos) * mul, float2(pos + m_texture.size()) * mul);
+		m_tex_coords = FRect(float2(pos) * mul, float2(pos + m_texture.dimensions()) * mul);
 		m_storage_mode = storage_atlas;
 	}
 
@@ -85,19 +94,19 @@ namespace gfx
 		sr(dummy2, zar_count);
 		//TODO: animation support in tiles (some tiles have more than one zar)
 
-		m_texture.loadZAR(sr);
+		m_texture.serializeZar(sr);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 	}
 
 	const IRect Tile::rect() const {
-		return IRect(int2(0, 0), m_texture.size()) - m_offset;
+		return IRect(int2(0, 0), m_texture.dimensions()) - m_offset;
 	}
 
 	void Tile::draw(const int2 &pos, Color col) const {
 		PTexture tex = deviceTexture();
 		tex->bind();
-		drawQuad(pos - m_offset, m_texture.size(), m_tex_coords.min, m_tex_coords.max, col);
+		drawQuad(pos - m_offset, m_texture.dimensions(), m_tex_coords.min, m_tex_coords.max, col);
 	}
 
 	void Tile::addToRender(SceneRenderer &renderer, const int3 &pos, Color color) const {
@@ -105,7 +114,9 @@ namespace gfx
 	}
 
 	bool Tile::testPixel(const int2 &pos) const {
-		return m_texture.testPixel(pos + m_offset);
+		return false;
+		//TODO
+		//return m_texture.testPixel(pos + m_offset);
 	}
 
 	struct AtlasEntry {
@@ -148,7 +159,8 @@ namespace gfx
 		//TODO: better texture fitting
 		for(int n = 0; n < (int)entries.size(); n++) {
 			AtlasEntry &entry = entries[n];
-			const Texture &tile_tex = entry.tile->texture();
+			Texture tile_tex = entry.tile->texture();
+
 			int2 tile_size = tile_tex.size();
 
 			if(tile_size.y + pos.y > atlas.height())

@@ -31,7 +31,7 @@ public:
 	Resource(PTile res, int id) :m_type(ResType::tile), m_id(id) {
 		DASSERT(res && res->deviceTexture());
 		m_resource = res.get();
-		m_rect_size = res->size() + int2(8, 8);
+		m_rect_size = res->dimensions() + int2(8, 8);
 	}
 
 	Resource(PTexture res, int id) :m_type(ResType::texture), m_id(id) {
@@ -231,6 +231,7 @@ public:
 			//	printf("Loading sprite: %s\n", file_name);
 				Loader(file_name) & *sprite;
 				res = ::Resource(sprite, id);
+				sprite->printInfo();
 			}
 			else
 				return;

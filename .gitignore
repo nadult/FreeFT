@@ -1,7 +1,7 @@
 *.swp
 *.vim
 /src/tags
-/src/Makefile.local
+/Makefile.local
 /editor
 /game
 /build
