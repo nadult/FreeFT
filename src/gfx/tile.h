@@ -18,7 +18,7 @@ namespace gfx
 		Tile(const Tile&) = delete;
 		void operator=(const Tile&) = delete;
 
-		void legacyLoad(Serializer &sr);
+		void legacyLoad(Serializer &sr, bool fast_compression);
 		void serialize(Serializer &sr);
 		bool testPixel(const int2 &pos) const;
 		

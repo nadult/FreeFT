@@ -63,7 +63,7 @@ namespace gfx
 		m_storage_mode = storage_atlas;
 	}
 
-	void Tile::legacyLoad(Serializer &sr) {
+	void Tile::legacyLoad(Serializer &sr, bool fast_compression) {
 		ASSERT(sr.isLoading());
 
 		sr.signature("<tile>", 7);
@@ -96,7 +96,7 @@ namespace gfx
 		sr(dummy2, zar_count);
 		//TODO: animation support in tiles (some tiles have more than one zar)
 
-		m_texture.serializeZar(sr);
+		m_texture.legacyLoad(sr, fast_compression);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 	}

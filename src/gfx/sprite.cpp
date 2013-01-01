@@ -1,4 +1,5 @@
 #include "gfx/sprite.h"
+#include "sys/platform.h"
 #include <cstring>
 #include <cstdio>
 
@@ -53,7 +54,7 @@ namespace gfx
 		//TODO optimize format (add compression)
 
 		if(sr.isLoading())
-			m_name = sr.name();
+			m_name = Path(sr.name()).fileName();
 		sr & m_sequences & m_frames & m_palettes & m_images;
 		sr(m_offset, m_bbox);
 	}
@@ -194,8 +195,8 @@ namespace gfx
 		return (int(dir) + dir_count) % dir_count;
 	}
 
-	void Sprite::printInfo() const {
-		size_t bytes = sizeof(Sprite) + sizeof(Frame) * m_frames.size(), img_bytes = 0;
+	int Sprite::memorySize() const {
+		size_t bytes = sizeof(Sprite) + sizeof(Frame) * m_frames.size();
 
 		for(int n = 0; n < (int)m_sequences.size(); n++) {
 			const Sequence &seq = m_sequences[n];
@@ -207,11 +208,23 @@ namespace gfx
 			const MultiImage &image = m_images[n];
 			bytes += sizeof(image);
 			for(int i = 0; i < layer_count; i++)
-				img_bytes += image.images[i].memorySize() - sizeof(CompressedTexture);
+				bytes += image.images[i].memorySize() - sizeof(CompressedTexture);
 		}
 
-		printf("Sprite %s memory:\nstuff: %d KB\nimages: %d KB\n",
-				m_name.c_str(), (int)(bytes/1024), (int)(img_bytes/1024));
+		return (int)bytes;
+	}
+
+	void Sprite::printInfo() const {
+		int img_bytes = 0, bytes = memorySize();
+		for(int n = 0; n < (int)m_images.size(); n++) 
+			for(int i = 0; i < layer_count; i++)
+				img_bytes += m_images[n].images[i].memorySize();
+		int pal_bytes = (int)(m_palettes.size() * sizeof(MultiPalette));
+		for(int p = 0; p < (int)m_palettes.size(); p++)
+			pal_bytes += (int)m_palettes[p].colors.size() * sizeof(Color);
+
+		printf("%30s: %6d KB (images: %6d KB, palettes: %4dKB)\n",
+			m_name.c_str(), bytes/1024, img_bytes/1024, pal_bytes/1024);
 	}
 
 	void Sprite::printSequencesInfo() const {

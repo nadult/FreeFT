@@ -8,7 +8,7 @@ namespace gfx {
 	class Sprite: public RefCounter {
 	public:
 		Sprite();
-		void legacyLoad(Serializer &sr);
+		void legacyLoad(Serializer &sr, bool fast_compression);
 		void serialize(Serializer &sr);
 
 		enum EventId {
@@ -30,13 +30,14 @@ namespace gfx {
 		enum { layer_count = 4 };
 
 		struct Frame {
-			Frame() :id(0) { params[0] = params[1] = params[2] = 0; }
+			Frame() :id(0) { memset(params, 0, sizeof(params)); }
 			static int paramCount(char id);
 
-			//TODO: bit-packing
 			int id;
-			char params[3];
+			short params[4];
 		};
+
+		static_assert(sizeof(Frame) == 12, "Wrong size of Sprite::Frame");
 
 		struct Sequence {
 			void serialize(Serializer&);
@@ -80,6 +81,7 @@ namespace gfx {
 		
 		int findSequence(const char *name) const;
 
+		int memorySize() const;
 		void printInfo() const;
 		void printSequencesInfo() const;
 		void printSequenceInfo(int seq_id) const;
@@ -112,7 +114,7 @@ namespace gfx {
 	typedef Ptr<Sprite> PSprite;
 
 };
-
+	
 SERIALIZE_AS_POD(gfx::Sprite::Frame);
 
 #endif

@@ -98,11 +98,3 @@ void findFiles(vector<FileEntry> &out, const Path &path, int flags) {
 	findFiles(out, path.absolute(), append, flags);
 }
 
-void mkdirRecursive(const Path &path) {
-	Path parent = path.parent();
-	if(access(parent.c_str(), R_OK) != 0)
-			mkdirRecursive(parent);
-	int ret = mkdir(path.c_str(), 0775);
-	if(ret != 0)
-		THROW("Cannot create directory: %s error: %s\n", path.c_str(), strerror(errno));
-}

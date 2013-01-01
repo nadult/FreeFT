@@ -93,8 +93,7 @@ namespace gfx
 
 	}
 
-
-	void Sprite::legacyLoad(Serializer &sr) {
+	void Sprite::legacyLoad(Serializer &sr, bool fast_compression) {
 		ASSERT(sr.isLoading());
 		sr.signature("<sprite>", 9);
 		
@@ -123,41 +122,35 @@ namespace gfx
 			Sequence &sequence = m_sequences[n];
 
 			i16 frame_count, dummy1; sr(frame_count, dummy1);
-			vector<i16> frame_data(frame_count);
-			sr.data(&frame_data[0], frame_count * sizeof(i16));
-
-			for(int f = 0; f < (int)frame_data.size(); f++) {
-				ASSERT(frame_data[f] >= -128 && frame_data[f] <= 127);
-				int param_count = Frame::paramCount((char)frame_data[f]);
-				if(param_count > 0) {
-					frame_count -= param_count;
-					f += param_count;
-				}
-			}
-
-			sequence.first_frame = (int)m_frames.size();
+			i16 frame_data[frame_count];
+			sr.data(frame_data, frame_count * sizeof(i16));
 			sequence.frame_count = frame_count;
+			sequence.first_frame = (int)m_frames.size();
 
-			for(int f = 0, frame_id = 0; f < (int)frame_data.size(); f++) {
-				int param_count = Frame::paramCount((char)frame_data[f]);
+			for(int f = 0; f < frame_count; f++) {
 				Frame frame;
 				frame.id = frame_data[f];
-				for(int p = 1; p <= param_count; p++) {
-					ASSERT(frame_data[f + p] >= -128 && frame_data[f + p] <= 127);
-					frame.params[p - 1] = frame_data[f + p];
-				}
+
+				int param_count = Frame::paramCount((char)frame_data[f]);
+				for(int p = 0; p < param_count; p++)
+					frame.params[p] = frame_data[f + p + 1];
+
 				f += param_count;
+				sequence.frame_count -= param_count;
+
 				m_frames.push_back(frame);
 			}
 
-			// Skip zeros
-			sr.seek(sr.pos() + int(frame_data.size()) * 4);
+
+			i32 frame_data2[frame_count];
+			sr.data(frame_data2, frame_count * 4);
 
 			i32 nameLen; sr & nameLen;
 			ASSERT(nameLen >= 0 && nameLen <= 256);
 
 			sequence.name.resize(nameLen);
 			sr.data(&sequence.name[0], nameLen);
+			
 			i16 collection_id; sr & collection_id;
 			seq2col[n] = collection_id;
 		}
@@ -242,7 +235,7 @@ namespace gfx
 				if(type == 1) {
 					i32 x, y; imgSr(x, y);
 					collection.points[n] = int2(x, y);
-					collection.images[n].serializeZar(imgSr);
+					collection.images[n].legacyLoad(imgSr, fast_compression);
 				}
 				else if(type == 0) { // empty image
 				}
@@ -275,8 +268,11 @@ namespace gfx
 
 				for(int f = 0; f < seq.frame_count; f++) {
 					Frame &frame = m_frames[seq.first_frame + f];
-					if(frame.id >= 0)
+					if(frame.id >= 0) {
+						if((frame.id >= collection.frame_count))
+							frame.id = collection.frame_count - 1;
 						frame.id = (int)m_images.size() + frame.id * seq.dir_count;
+					}
 				}
 			}
 
@@ -296,6 +292,5 @@ namespace gfx
 				}
 		}
 	}
-
 
 }

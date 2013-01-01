@@ -109,7 +109,7 @@ namespace gfx
 		CompressedTexture();
 
 		void serialize(Serializer&);
-		void serializeZar(Serializer&);
+		void legacyLoad(Serializer&, bool fast_compression);
 
 		void decompress(PalTexture&) const;
 
@@ -133,9 +133,9 @@ namespace gfx
 	public:
 		PalTexture(int width = 0, int height = 0);
 		
-		void serializeZar(Serializer&);
+		void legacyLoad(Serializer&);
 		void serialize(Serializer&);
-		void compress(CompressedTexture&) const;
+		void compress(CompressedTexture&, bool fast) const;
 		
 		int width() const { return m_width; }
 		int height() const { return m_height; }

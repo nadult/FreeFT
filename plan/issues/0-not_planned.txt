@@ -31,4 +31,7 @@
 
 - Poprawianie wydajności NavigationMapy: updateowanie colliderow w mapie nawigacji; przyspieszone wyszukiwanie sciezek
   (wywalone std::set, kolejka priorytetowa oparta o własną implementację sterty)
-  23.12.12: 12:00 - 16:00
+  23.12.12: 12:00 - 16:00 (4h)
+
+- Poprawienie wydajności konwersji zasobów (openmp pod linuxem)
+  01.01.13: 11:20 - 15:20 (4h)

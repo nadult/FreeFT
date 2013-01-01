@@ -30,10 +30,10 @@ namespace gfx {
 		}
 	}
 
-	void CompressedTexture::serializeZar(Serializer &sr) {
+	void CompressedTexture::legacyLoad(Serializer &sr, bool fast_compression) {
 		PalTexture pal_texture;
-		pal_texture.serializeZar(sr);
-		pal_texture.compress(*this);
+		pal_texture.legacyLoad(sr);
+		pal_texture.compress(*this, fast_compression);
 	}
 
 	void CompressedTexture::serialize(Serializer &sr) {
@@ -47,7 +47,8 @@ namespace gfx {
 		m_alphas.resize(m_width * m_height);
 	}
 
-	void PalTexture::serializeZar(Serializer &sr) {
+	void PalTexture::legacyLoad(Serializer &sr) {
+		DASSERT(sr.isLoading());
 		sr.signature("<zar>", 6);
 
 		char zar_type, dummy1, has_palette;
@@ -68,18 +69,12 @@ namespace gfx {
 				m_palette[n] = swapBR(m_palette[n]);
 		}
 
-		u8 default_col = 0;
-		if((zar_type == 0x34 || zar_type == 0x33) && has_palette) {
-			u32 def;
-			sr & def;
-			default_col = def & 255;
-		}
+		u32 value;
+		sr & value;
 
-		int end_pos = -1;
-		if(!has_palette) {
-			u32 rleSize; sr & rleSize;
-			end_pos = (int)(sr.pos() + rleSize);
-		}
+		u8 default_col = 0;
+		if((zar_type == 0x34 || zar_type == 0x33) && has_palette)
+			default_col = value & 255; //TODO: endianess
 
 		//TODO: unnecesary initialization
 		int offset = 0, total_pixels = m_width * m_height;
@@ -112,12 +107,9 @@ namespace gfx {
 			}
 			offset += n_pixels;
 		}
-
-		if(end_pos != -1)
-			sr.seek(end_pos);
 	}
 
-	void PalTexture::compress(CompressedTexture &out) const {
+	void PalTexture::compress(CompressedTexture &out, bool fast) const {
 		//TODO: palette reordering, pixel reordering
 		int pixels = m_width * m_height;
 		vector<u8> packed(pixels * 2 + m_palette.size() * 3);
@@ -134,7 +126,8 @@ namespace gfx {
 		memcpy(ptr, m_alphas.data(), pixels); ptr += pixels;
 
 		vector<char> stream(LZ4_compressBound(packed.size()));
-		int compressed_size = LZ4_compressHC((char*)packed.data(), stream.data(), (int)packed.size());
+		int compressed_size = (fast? LZ4_compress : LZ4_compressHC)
+			((char*)packed.data(), stream.data(), (int)packed.size());
 		stream.resize(compressed_size);
 
 		out.m_stream.resize(stream.size());

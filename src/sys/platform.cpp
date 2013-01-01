@@ -1,6 +1,9 @@
 #include "sys/platform.h"
 #include <cstring>
 #include <cstdio>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 bool Path::Element::isDot() const {
 	return size == 1 && ptr[0] == '.';
@@ -195,3 +198,17 @@ bool removeSuffix(string &str, const string &suffix) {
 	return false;
 }
 
+void mkdirRecursive(const Path &path) {
+	Path parent = path.parent();
+	if(access(parent.c_str(), R_OK) != 0)
+			mkdirRecursive(parent);
+
+#ifdef _WIN32
+	int ret = mkdir(path.c_str());
+#else
+	int ret = mkdir(path.c_str(), 0775);
+#endif
+
+	if(ret != 0)
+		THROW("Cannot create directory: %s error: %s\n", path.c_str(), strerror(errno));
+}

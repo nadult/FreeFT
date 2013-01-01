@@ -1,4 +1,4 @@
-all: editor game res_viewer convert game.exe editor.exe res_viewer.exe
+all: editor game res_viewer convert convert.exe game.exe editor.exe res_viewer.exe
 
 BUILD=build
 
@@ -45,7 +45,7 @@ LINUX_PROGRAMS:=$(PROGRAM_SRC:%=%)
 MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
 LIBS=-lglfw -lbaselib -lpng -lz
-LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt
+LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp
 MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
 
 INCLUDES=-Isrc/
@@ -56,7 +56,7 @@ NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reor
 FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LIB_FLAGS=-O2
 
-LINUX_FLAGS=$(FLAGS) -rdynamic
+LINUX_FLAGS=$(FLAGS) -rdynamic -fopenmp
 MINGW_FLAGS=$(FLAGS)
 
 CXX=g++
