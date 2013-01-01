@@ -15,7 +15,7 @@ namespace gfx
 	void Texture::resize(int w, int h) {
 		m_width  = w;
 		m_height = h;
-		data.resize(m_width * m_height);
+		data.resize(m_width * m_height, Color::transparent);
 	}
 		
 	void Texture::swap(Texture &tex) {
@@ -53,7 +53,11 @@ namespace gfx
 			if(ext == ".png") loadPNG(sr);
 			else if(ext == ".bmp") loadBMP(sr);
 			else if(ext == ".tga") loadTGA(sr);
-			else if(ext == ".zar") loadZAR(sr);
+			else if(ext == ".zar") {
+				PalTexture pal_texture;
+				pal_texture.serializeZar(sr);
+				pal_texture.toTexture(*this);
+			}
 			else THROW("%s format is not supported (Only BMP, TGA and PNG for now)", ext.c_str());
 		}
 	}

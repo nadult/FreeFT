@@ -92,6 +92,11 @@ namespace gfx
 	};
 
 	struct Bitmap {
+		void clear() {
+			width = height = 0;
+			bits.clear();
+		}
+
 		int width, height;
 		vector<u8> bits;
 	};

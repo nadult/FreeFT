@@ -99,15 +99,16 @@ namespace game {
 
 		m_is_finished = false;
 		if(seq_id != m_seq_id || !m_is_looped) {
-			const vector<Sprite::Frame> &frames = (*m_sprite)[seq_id].frames;
+			int frame_count = m_sprite->frameCount(seq_id);
 			m_frame_id = 0;
-			while(m_frame_id < (int)frames.size() && frames[m_frame_id].id < 0) {
-				if(frames[m_frame_id].id <= Sprite::ev_first_specific)
-					handleEventFrame(frames[m_frame_id]);
+
+			while(m_frame_id < frame_count && m_sprite->frame(seq_id, m_frame_id).id < 0) {
+				if(m_sprite->frame(seq_id, m_frame_id).id <= Sprite::ev_first_specific)
+					handleEventFrame(m_sprite->frame(seq_id, m_frame_id));
 				m_frame_id++;
 			}
 
-			DASSERT(m_frame_id < (int)frames.size());
+			DASSERT(m_frame_id < frame_count);
 		}
 		if(seq_id != m_seq_id) {
 			m_seq_id = seq_id;
@@ -120,12 +121,12 @@ namespace game {
 		if(m_is_finished)
 			return;
 
-		const vector<Sprite::Frame> &frames = (*m_sprite)[m_seq_id].frames;
 		int prev_frame = m_frame_id;
 		m_frame_id++;
+		int frame_count = m_sprite->frameCount(m_seq_id);
 
-		while(m_frame_id < (int)frames.size() && frames[m_frame_id].id < 0) {
-			const Sprite::Frame &frame = frames[m_frame_id];
+		while(m_frame_id < frame_count && m_sprite->frame(m_seq_id, m_frame_id).id < 0) {
+			const Sprite::Frame &frame = m_sprite->frame(m_seq_id, m_frame_id);
 			if(frame.id == Sprite::ev_repeat_all)
 				m_frame_id = 0;
 			else if(frame.id == Sprite::ev_jump_to_frame) 
@@ -137,7 +138,7 @@ namespace game {
 			}
 		}
 
-		if(m_frame_id == (int)frames.size()) {
+		if(m_frame_id == frame_count) {
 			m_is_finished = true;
 			m_frame_id = prev_frame;
 			onAnimFinished();

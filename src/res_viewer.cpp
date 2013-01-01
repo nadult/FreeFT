@@ -79,10 +79,9 @@ public:
 
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 
-			const vector<Sprite::Frame> &frames = (*sprite)[m_seq_id].frames;
-			while(frames[m_frame_id].id < 0) {
+			while(sprite->frame(m_seq_id, m_frame_id).id < 0) {
 				m_frame_id++;
-				if(m_frame_id == (int)frames.size())
+				if(m_frame_id == sprite->frameCount(m_seq_id))
 					m_frame_id = 0;
 			}
 
@@ -226,7 +225,7 @@ public:
 				tile->storeInCache();
 				res = ::Resource(tile, id);
 			}
-			else if(strcasecmp(file_name + len - 4, ".spr") == 0) {
+			else if(strcasecmp(file_name + len - 7, ".sprite") == 0) {
 				PSprite sprite = new Sprite;
 			//	printf("Loading sprite: %s\n", file_name);
 				Loader(file_name) & *sprite;

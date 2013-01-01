@@ -12,16 +12,17 @@ _dummy := $(shell [ -d $(BUILD)/editor ] || mkdir -p $(BUILD)/editor)
 _dummy := $(shell [ -d $(BUILD)/lz4 ] || mkdir -p $(BUILD)/lz4)
 
 SHARED_SRC=\
-	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font gfx/texture_cache \
-	gfx/device gfx/device_texture gfx/drawing gfx/texture_zar gfx/sprite gfx/tile gfx/scene_renderer gfx/pal_texture \
+	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
+	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/sprite gfx/sprite_legacy \
+	gfx/tile gfx/scene_renderer gfx/pal_texture \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config \
 	base tile_map tile_group navigation_map navigation_bitmap grid grid_intersect \
-	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile game/item \
-	game/inventory game/enums \
-	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box ui/file_dialog \
-	ui/edit_box ui/combo_box \
-	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor editor/tiles_pad \
-	editor/group_pad
+	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile \
+	game/item game/inventory game/enums \
+	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
+	ui/file_dialog ui/edit_box ui/combo_box \
+	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor \
+	editor/tiles_pad editor/group_pad
 
 LIBS_SRC=lz4/lz4 lz4/lz4hc
 

@@ -8,7 +8,7 @@ namespace gfx {
 	class Sprite: public RefCounter {
 	public:
 		Sprite();
-		void loadFromSpr(Serializer &sr);
+		void legacyLoad(Serializer &sr);
 		void serialize(Serializer &sr);
 
 		enum EventId {
@@ -27,40 +27,52 @@ namespace gfx {
 			ev_pickup			= -45,
 		};
 
+		enum { layer_count = 4 };
+
 		struct Frame {
 			Frame() :id(0) { params[0] = params[1] = params[2] = 0; }
 			static int paramCount(char id);
 
-			char id; // frame_id if >= 0, event_id if < 0
+			//TODO: bit-packing
+			int id;
 			char params[3];
 		};
 
 		struct Sequence {
+			void serialize(Serializer&);
+
 			string name;
-			vector<Frame> frames;
-			int collection_id;
+			int frame_count, dir_count;
+			int first_frame;
+			int palette_id;
 		};
 
-		struct Collection {
-			string name;
-			vector<IRect> rects;
-			vector<CompressedTexture> images;
-			vector<Color> palettes[4];
-			vector<int2> points;
+		struct MultiPalette {
+			void serialize(Serializer&);
+			int size(int layer) const;
+			const Color *access(int layer) const;
+			bool operator==(const MultiPalette&) const;
 
-			void getLayerIndices(int frame_id, int dir_id, int *layer_indices) const;
-			Texture getFrame(int frame_id, int dir_id) const;
-			bool testPixel(const int2 &screen_pos, int frame_id, int dir_id) const;
-
-			int m_first_frame, m_frame_count, m_dir_count, m_offset;
-			int type;
+			vector<Color> colors;
+			int offset[layer_count];
 		};
 
-		int dirCount(int seq_id) const { return m_collections[m_sequences[seq_id].collection_id].m_dir_count; }
-		int frameCount(int seq_id) const;
+		struct MultiImage {
+			void serialize(Serializer&);
+			Texture toTexture(const MultiPalette&) const;
+			bool testPixel(const int2&) const;
+
+			CompressedTexture images[layer_count];
+			int2 points[layer_count];
+			Bitmap bitmap;
+			IRect rect;
+		};
+
+		int dirCount(int seq_id) const { return m_sequences[seq_id].dir_count; }
+		int frameCount(int seq_id) const { return m_sequences[seq_id].frame_count; }
 		bool isSequenceLooped(int seq_id) const;
 
-		int accessFrame(int seq_id, int frame_id, int dir_id) const;
+		int imageIndex(int seq_id, int frame_id, int dir_id) const;
 		Texture getFrame(int seq_id, int frame_id, int dir_id) const;
 		IRect getRect(int seq_id, int frame_id, int dir_id) const;
 		IRect getMaxRect() const;
@@ -76,24 +88,32 @@ namespace gfx {
 
 		int size() const { return (int)m_sequences.size(); }
 		const Sequence &operator[](int seq_id) const { return m_sequences[seq_id]; }
+		
+		const Frame &frame(int seq_id, int frame_id) const
+			{ return m_frames[m_sequences[seq_id].first_frame + frame_id]; }
+
+		void clear();
 
 		const int3 &boundingBox() const { return m_bbox; }
 		
 		static ResourceMgr<Sprite> mgr;
 
 	private:
-		vector<Collection> m_collections;
 		vector<Sequence> m_sequences;
-		string m_name;
-		int m_file_size;
+		vector<Frame> m_frames;
+		vector<MultiPalette> m_palettes;
+		vector<MultiImage> m_images;
 
+		string m_name;
 		int2 m_offset;
-		int3 m_bbox;
+		int3 m_bbox; //TODO: naming
 	};
 
 	typedef Ptr<Sprite> PSprite;
 
 };
+
+SERIALIZE_AS_POD(gfx::Sprite::Frame);
 
 #endif
 

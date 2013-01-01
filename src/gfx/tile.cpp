@@ -63,7 +63,9 @@ namespace gfx
 		m_storage_mode = storage_atlas;
 	}
 
-	void Tile::serializeTil(Serializer &sr) {
+	void Tile::legacyLoad(Serializer &sr) {
+		ASSERT(sr.isLoading());
+
 		sr.signature("<tile>", 7);
 		i16 type; sr & type;
 
