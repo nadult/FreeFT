@@ -91,66 +91,32 @@ namespace gfx
 		unsigned id;
 	};
 
-	struct Bitmap {
-		void clear() {
-			width = height = 0;
-			bits.clear();
-		}
-
-		int width, height;
-		vector<u8> bits;
-	};
-
 	class Texture;
-	class PalTexture;
+	typedef PodArray<Color> Palette;
 
-	class CompressedTexture {
+	// Pallettized, RLE - encoded (as in ZAR) texture
+	class PackedTexture {
 	public:
-		CompressedTexture();
-
-		void serialize(Serializer&);
-		void legacyLoad(Serializer&, bool fast_compression);
-
-		void decompress(PalTexture&) const;
-
-		bool operator==(const CompressedTexture&) const;
-
-		int width() const { return m_width; }
-		int height() const { return m_height; }
-		const int2 dimensions() const { return int2(m_width, m_height); }
-		int memorySize() const { return (int)(sizeof(CompressedTexture) + m_stream.size()); }
-
-	protected:
-		friend class PalTexture;
-
-		int m_width, m_height;
-		int m_palette_size;
-		int m_dec_stream_size;
-		vector<char> m_stream;
-	};
-
-	class PalTexture {
-	public:
-		PalTexture(int width = 0, int height = 0);
+		PackedTexture();
 		
 		void legacyLoad(Serializer&);
 		void serialize(Serializer&);
-		void compress(CompressedTexture&, bool fast) const;
-		
+
 		int width() const { return m_width; }
 		int height() const { return m_height; }
 		const int2 dimensions() const { return int2(m_width, m_height); }
+		int memorySize() const;
 
-		void toBitmap(Bitmap&) const;
-		void toTexture(Texture&, const vector<Color> *palette = nullptr) const;
+		void toTexture(Texture&, const Palette *palette = nullptr) const;
+		void blit(Texture&, const int2 &offset, const Color *palette = nullptr) const;
+		bool testPixel(const int2 &pixel) const;
 
-//	protected:
-		friend class CompressedTexture;
-
-		vector<Color> m_palette;
-		vector<u8> m_colors; //TODO: merge colors & alpha into one vector
-		vector<u8> m_alphas;
+	protected:
+		Palette m_palette;
+		PodArray<u8> m_data;
+		int m_colors_offset, m_alphas_offset;
 		int m_width, m_height;
+		u8 m_default_color;
 	};
 
 	class Texture: public RefCounter

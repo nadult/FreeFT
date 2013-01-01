@@ -14,6 +14,9 @@ namespace gfx {
 		:m_memory_limit(bytes), m_alloc_func(alloc_func), m_memory_size(0), m_head_id(-1), m_tail_id(-1) {
 		DASSERT(alloc_func);
 	}
+	
+	TextureCache::~TextureCache() {	
+	}
 
 	int TextureCache::add(const void *res_ptr) {
 		DASSERT(res_ptr);
@@ -45,7 +48,8 @@ namespace gfx {
 
 	void TextureCache::remove(int res_id) {
 		DASSERT(isValidId(res_id));
-		unload(res_id);
+		if(m_resources[res_id].device_texture)
+			unload(res_id);
 		m_free_list.push_back(res_id);
 		m_resources[res_id].res_ptr = nullptr;
 	}

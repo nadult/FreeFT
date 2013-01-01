@@ -10,10 +10,11 @@ Pomysły:
   bez kolizji i tam go wyświetlać
 - Rozwiązać problem ładowania tekstur tile-i w edytorze (dodać TextureCache)  DONE
 - Podobnie z ładowanie sprite-ów, trzeba też cos poradzić na zajmowaną przez nie pamięć,
-  zrobić cache tekstur dla sprite-ów
+  zrobić cache tekstur dla sprite-ów  DONE
 - W Tile-ach zary trzymać w formie skompresowanej, ale tak żeby dało się zrobić pixelTest
 - ComboBox się przyda do filtrów  DONE
 - Dodać tryb zastępowania w którym kasowane są wszystkie tile które kolidują  DONE
+- Posprzątać SYF! jaki się naprobił w Spritach, Tileach, texturkach i paletach (zrobić pełne)
 
 +REQUIREMENTS:
 issues/5-entities
@@ -27,4 +28,4 @@ issues/10-ui_improvements
 29.12.12: 12:15 - 13:30, 14:30 - 15:00, 17:30 - 20:30, 21:00 - 22:15 (6h)
 30.12.12: 11:30 - 14:20, 15:00 - 16:15, 17:30 - 18:30 (5h 5min)
 31.12.12: 13:00 - 21:30, 22:00 - 02:20 (12h 50min, nice!)
-01.01.13: 
+01.01.12: 16:00 - 21:45 (5h 45min)

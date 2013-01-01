@@ -49,12 +49,7 @@ namespace game {
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))
 			return;
 
-		//TODO: do not allocate texture every frame
-		PTexture spr_tex = new DTexture;
-		gfx::Texture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx);
-		spr_tex->setSurface(tex);
-
-		out.add(spr_tex, rect, m_pos, m_bbox);
+		out.add(m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx), rect, m_pos, m_bbox);
 		if(m_world->isColliding(boundingBox(), this))
 			out.addBox(boundingBox(), Color::red);
 	}

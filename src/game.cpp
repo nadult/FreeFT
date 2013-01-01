@@ -263,6 +263,8 @@ int safe_main(int argc, char **argv)
 		profiler::nextFrame();
 	}
 
+	//TODO: sprites with references to cache die after cache dies
+	Sprite::mgr.clear();
 	destroyWindow();
 
 	return 0;

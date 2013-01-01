@@ -237,3 +237,35 @@ MoveVector::MoveVector(const int2 &start, const int2 &end) {
 }
 MoveVector::MoveVector() :vec(0, 0), dx(0), dy(0), ddiag(0) { }
 
+
+#include "../libs/lz4/lz4.h"
+#include "../libs/lz4/lz4hc.h"
+
+enum { max_size = 16 * 1024 * 1024 };
+
+//TODO: testme
+void compress(const PodArray<char> &in, PodArray<char> &out, bool hc) {
+	ASSERT(in.size() <= max_size);
+
+	PodArray<char> temp(LZ4_compressBound(in.size()));
+	int size = (hc? LZ4_compressHC : LZ4_compress)(in.data(), temp.data(), in.size());
+	//int size = in.size(); memcpy(temp.data(), in.data(), size);
+
+	out.resize(size + 4);
+	memcpy(out.data(), &size, 4);
+	memcpy(out.data() + 4, temp.data(), size);
+}
+
+void decompress(const PodArray<char> &in, PodArray<char> &out) {
+	i32 size;
+	ASSERT(in.size() >= 4);
+	memcpy(&size, in.data(), 4);
+	ASSERT(size <= max_size);
+	out.resize(size);
+
+//	memcpy(out.data(), in.data() + 4, size);
+//	int decompressed_bytes = size;
+	int decompressed_bytes = LZ4_uncompress(in.data() + 4, out.data(), size);
+	ASSERT(decompressed_bytes == size);
+}
+

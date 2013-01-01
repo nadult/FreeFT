@@ -18,7 +18,7 @@ namespace gfx
 		Tile(const Tile&) = delete;
 		void operator=(const Tile&) = delete;
 
-		void legacyLoad(Serializer &sr, bool fast_compression);
+		void legacyLoad(Serializer &sr);
 		void serialize(Serializer &sr);
 		bool testPixel(const int2 &pos) const;
 		
@@ -30,7 +30,7 @@ namespace gfx
 		int width() const { return m_texture.width(); }
 		int height() const { return m_texture.height(); }
 		const int2 dimensions() const { return m_texture.dimensions(); }
-		int memorySize() const { return m_texture.memorySize() + (int)sizeof(Tile) + (int)name.size(); }
+		int memorySize() const;
 
 		const IRect rect() const;
 
@@ -58,8 +58,8 @@ namespace gfx
 
 		StorageMode storageMode() const { return m_storage_mode; }
 
-//	protected:
-		CompressedTexture m_texture;
+	protected:
+		PackedTexture m_texture;
 		PTexture m_dev_texture;
 		int m_cache_id;
 		FRect m_tex_coords;

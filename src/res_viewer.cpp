@@ -86,10 +86,8 @@ public:
 			}
 
 			IRect rect = sprite->getRect(m_seq_id, m_frame_id, m_dir_id);
-			Texture tex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id);
-			DTexture dtex;
-			dtex.setSurface(tex);
-			dtex.bind();
+			PTexture dtex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id);
+			dtex->bind();
 
 			IBox box({0,0,0}, sprite->boundingBox());
 			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));

@@ -54,9 +54,9 @@ namespace gfx
 			else if(ext == ".bmp") loadBMP(sr);
 			else if(ext == ".tga") loadTGA(sr);
 			else if(ext == ".zar") {
-				PalTexture pal_texture;
-				pal_texture.legacyLoad(sr);
-				pal_texture.toTexture(*this);
+				PackedTexture packed;
+				packed.legacyLoad(sr);
+				packed.toTexture(*this);
 			}
 			else THROW("%s format is not supported (Only BMP, TGA and PNG for now)", ext.c_str());
 		}

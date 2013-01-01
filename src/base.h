@@ -35,6 +35,81 @@ namespace constant {
 	static const float epsilon	= 0.0001f;
 }
 
+// Very simple and efficent vector for POD Types; Use with care:
+// - user is responsible for initializing the data
+// - when resizing, data is destroyed
+// - assigning PodArray to itself is illegal
+template <class T>
+class PodArray {
+public:
+	PodArray() :m_data(nullptr), m_size(0) { }
+	PodArray(int size) :m_data(nullptr), m_size(0) { resize(size); }
+	PodArray(const PodArray &rhs) :m_size(rhs.m_size) {
+		m_data = (T*)sys::alloc(m_size * sizeof(T));
+		memcpy(m_data, rhs.m_data, sizeof(T) * m_size);
+	}
+	PodArray(PodArray &&rhs) :m_size(rhs.m_size), m_data(rhs.m_data) {
+		rhs.m_data = nullptr;
+		rhs.m_size = 0;
+	}
+	~PodArray() {
+		resize(0);
+	}
+
+	void operator=(const PodArray &rhs) {
+		DASSERT(&rhs != this);
+		resize(rhs.m_size);
+		memcpy(m_data, rhs.m_data, rhs.m_size);
+	}
+	void operator=(PodArray &&rhs) {
+		DASSERT(&rhs != this);
+		clear();
+		m_data = rhs.m_data;
+		m_size = rhs.m_size;
+		rhs.m_data = nullptr;
+		rhs.m_size = 0;
+	}
+	void serialize(Serializer &sr) {
+		i32 size = m_size;
+		sr & size;
+		if(sr.isLoading()) {
+			ASSERT(size >= 0);
+			resize(size);
+		}
+		if(m_data)
+			sr.data(m_data, sizeof(T) * m_size);
+	}
+
+	void resize(int new_size) {
+		DASSERT(new_size >= 0);
+		if(m_size == new_size)
+			return;
+
+		clear();
+		m_size = new_size;
+		if(new_size)
+			m_data = (T*)sys::alloc(new_size * sizeof(T));
+	}
+
+	void clear() {
+		m_size = 0;
+		sys::free(m_data);
+		m_data = nullptr;
+	}
+
+	T *data() { return m_data; }
+	const T *data() const { return m_data; }
+
+	T &operator[](int idx) { return m_data[idx]; }
+	const T&operator[](int idx) const { return m_data[idx]; }
+
+	int size() const { return m_size; }
+
+private:
+	T *m_data;
+	int m_size;
+};
+
 struct int2
 {
 	int2(int x, int y) : x(x), y(y) { }
@@ -452,6 +527,9 @@ inline bool operator!=(const Color &lhs, const Color &rhs) { return lhs.rgba != 
 inline Color swapBR(Color col) {
 	return ((col.rgba & 0xff) << 16) | ((col.rgba & 0xff0000) >> 16) | (col.rgba & 0xff00ff00);
 }
+
+void compress(const PodArray<char> &in, PodArray<char> &out, bool hc);
+void decompress(const PodArray<char> &in, PodArray<char> &out);
 
 SERIALIZE_AS_POD(int2)
 SERIALIZE_AS_POD(int3)

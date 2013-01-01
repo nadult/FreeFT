@@ -1,7 +1,6 @@
 #include "gfx/sprite.h"
 #include <zlib.h>
 
-
 namespace
 {
 
@@ -75,7 +74,7 @@ namespace gfx
 			string name;
 			vector<IRect> rects;
 			vector<Color> palettes[layer_count];
-			vector<CompressedTexture> images;
+			vector<PackedTexture> images;
 			vector<int2> points;
 			int frame_count, dir_count, offset;
 			int type;
@@ -93,7 +92,7 @@ namespace gfx
 
 	}
 
-	void Sprite::legacyLoad(Serializer &sr, bool fast_compression) {
+	void Sprite::legacyLoad(Serializer &sr) {
 		ASSERT(sr.isLoading());
 		sr.signature("<sprite>", 9);
 		
@@ -227,7 +226,7 @@ namespace gfx
 			int image_count = collection.frame_count * collection.dir_count * 4;
 			collection.images.resize(image_count);
 			collection.points.resize(image_count, int2(0, 0));
-
+			
 			for(int n = 0; n < image_count; n++) {
 				DASSERT(imgSr.pos() < imgSr.size());
 				char type; imgSr & type;
@@ -235,7 +234,7 @@ namespace gfx
 				if(type == 1) {
 					i32 x, y; imgSr(x, y);
 					collection.points[n] = int2(x, y);
-					collection.images[n].legacyLoad(imgSr, fast_compression);
+					collection.images[n].legacyLoad(imgSr);
 				}
 				else if(type == 0) { // empty image
 				}
@@ -288,6 +287,7 @@ namespace gfx
 						image.images[l] = collection.images[layer_inds[l]];
 						image.points[l] = collection.points[layer_inds[l]];
 					}
+						
 					m_images.push_back(image);
 				}
 		}

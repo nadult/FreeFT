@@ -40,14 +40,74 @@ namespace gfx
 	}
 
 	void Sprite::MultiImage::serialize(Serializer &sr) {
-		for(int l = 0; l < layer_count; l++)
+		for(int l = 0; l < 4; l++)
 			sr & images[l];
 		sr.data(points, sizeof(points));
 		sr & rect;
-
-		if(sr.isLoading())
-			bitmap.clear();
 	}
+
+	Sprite::MultiImage::MultiImage() :cache_id(-1), prev_palette(nullptr) { }
+	
+	Sprite::MultiImage::~MultiImage() {
+		if(cache_id != -1)
+			cache.remove(cache_id);
+	}
+			
+	Sprite::MultiImage::MultiImage(const MultiImage &rhs) :cache_id(-1), prev_palette(nullptr) {
+		*this = rhs;
+	}
+
+	void Sprite::MultiImage::operator=(const MultiImage &rhs) {
+		DASSERT(rhs.cache_id == -1);
+		for(int n = 0; n < layer_count; n++) {
+			images[n] = rhs.images[n];
+			points[n] = rhs.points[n];
+		}
+		rect = rhs.rect;
+	}
+
+	int Sprite::MultiImage::memorySize() const {
+		int bytes = sizeof(MultiImage) - sizeof(images);
+		for(int n = 0; n < layer_count; n++)
+			bytes += images[n].memorySize();
+		return bytes;
+	}
+
+	static PTexture loadSpriteTexture(const void *ptr) {
+		const Sprite::MultiImage *image = (const Sprite::MultiImage*)ptr;
+		DASSERT(image && image->prev_palette);
+
+		PTexture new_texture = new DTexture;
+
+		Texture out(image->rect.width(), image->rect.height());
+		if(!out.isEmpty()) {
+			memset(out.line(0), 0, image->rect.width() * image->rect.height() * sizeof(Color));
+			for(int l = 0; l < Sprite::layer_count; l++)
+				image->images[l].blit(out, image->points[l], image->prev_palette->access(l));
+		}
+
+		new_texture->setSurface(out);
+		return new_texture;
+	}
+
+	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette) const {
+		if(cache_id == -1) {
+			cache_id = cache.add(this);
+			prev_palette = &palette;
+		}
+
+		return cache.access(cache_id);
+	}
+
+	bool Sprite::MultiImage::testPixel(const int2 &screen_pos) const {
+		if(!rect.isInside(screen_pos))
+			return false;
+		for(int l = 0; l < layer_count; l++)
+			if(images[l].testPixel(screen_pos - points[l] - rect.min))
+				return true;
+		return false;
+	}
+
 
 	void Sprite::serialize(Serializer &sr) {
 		sr.signature("SPRITE", 6);
@@ -69,63 +129,6 @@ namespace gfx
 
 		m_offset = int2(0, 0);
 		m_bbox = int3(0, 0, 0);
-	}
-
-	Texture Sprite::MultiImage::toTexture(const MultiPalette &palette) const {
-		Texture out;
-
-		//TODO: there are still some bugs here
-		int2 size(0, 0);
-		for(int l = 0; l < layer_count; l++)
-			size = max(size, points[l] + images[l].dimensions());
-
-		out.resize(size.x, size.y);
-
-		for(int l = 0; l < layer_count; l++) {
-			if(!images[l].width() || !images[l].height())
-				continue;
-
-			int2 lsize = images[l].dimensions();
-
-			const Color *pal = palette.access(l);
-			int pal_size = palette.size(l);
-			//TODO: add assertions that colors[x] < palette_size
-
-			PalTexture tex;
-			images[l].decompress(tex);
-
-			const u8 *colors = &tex.m_colors[0];
-			const u8 *alphas = &tex.m_alphas[0];
-			Color *dst = &out(points[l].x, points[l].y);
-
-			for(int y = 0; y < lsize.y; y++) {
-				for(int x = 0; x < lsize.x; x++) {
-					if(alphas[x]) {
-						if(dst[x].a) {
-							float4 dstCol = dst[x];
-							float4 srcCol = pal[colors[x]];
-							float4 col = (srcCol - dstCol) * float(alphas[x]) * (1.0f / 255.0f) + dstCol;
-							dst[x] = Color(col.x, col.y, col.z, 1.0f);
-						}
-						else {
-							dst[x] = pal[colors[x]];
-							dst[x].a = alphas[x];
-						}
-					}
-				}
-
-				colors += lsize.x;
-				alphas += lsize.x;
-				dst += size.x;
-			}
-		}
-
-		return out;
-	}
-
-	bool Sprite::MultiImage::testPixel(const int2 &screen_pos) const {
-		//TODO: rect test, bitmap test
-		return rect.isInside(screen_pos);
 	}
 
 	bool Sprite::isSequenceLooped(int seq_id) const {
@@ -151,7 +154,7 @@ namespace gfx
 		return out;
 	}
 
-	Texture Sprite::getFrame(int seq_id, int frame_id, int dir_id) const {
+	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id) const {
 		const MultiPalette &palette = m_palettes[m_sequences[seq_id].palette_id];
 		return m_images[imageIndex(seq_id, frame_id, dir_id)].toTexture(palette);
 	}
@@ -204,21 +207,16 @@ namespace gfx
 		}
 		for(int i = 0; i < (int)m_palettes.size(); i++)
 			bytes += sizeof(MultiPalette) + m_palettes[i].colors.size() * sizeof(Color);
-		for(int n = 0; n < (int)m_images.size(); n++) {
-			const MultiImage &image = m_images[n];
-			bytes += sizeof(image);
-			for(int i = 0; i < layer_count; i++)
-				bytes += image.images[i].memorySize() - sizeof(CompressedTexture);
-		}
+		for(int n = 0; n < (int)m_images.size(); n++)
+			bytes += m_images[n].memorySize();
 
 		return (int)bytes;
 	}
 
 	void Sprite::printInfo() const {
 		int img_bytes = 0, bytes = memorySize();
-		for(int n = 0; n < (int)m_images.size(); n++) 
-			for(int i = 0; i < layer_count; i++)
-				img_bytes += m_images[n].images[i].memorySize();
+		for(int n = 0; n < (int)m_images.size(); n++)
+			img_bytes += m_images[n].memorySize();
 		int pal_bytes = (int)(m_palettes.size() * sizeof(MultiPalette));
 		for(int p = 0; p < (int)m_palettes.size(); p++)
 			pal_bytes += (int)m_palettes[p].colors.size() * sizeof(Color);
@@ -245,5 +243,6 @@ namespace gfx
 	}
 
 	ResourceMgr<Sprite> Sprite::mgr("data/sprites/", ".sprite");
+	TextureCache Sprite::cache(40 * 1024 * 1024, loadSpriteTexture);
 
 }

@@ -200,7 +200,7 @@ bool removeSuffix(string &str, const string &suffix) {
 
 void mkdirRecursive(const Path &path) {
 	Path parent = path.parent();
-	if(access(parent.c_str(), R_OK) != 0)
+	if(access(parent.c_str(), F_OK) != 0)
 			mkdirRecursive(parent);
 
 #ifdef _WIN32

@@ -13,6 +13,7 @@ namespace gfx {
 		typedef PTexture (*AllocFunction)(const void *res_ptr);
 
 		TextureCache(int max_bytes, AllocFunction); 
+		~TextureCache();
 
 		int add(const void *res_ptr);
 		void remove(int res_id);

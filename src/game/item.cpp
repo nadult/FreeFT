@@ -23,10 +23,7 @@ namespace game {
 	}
 
 	gfx::PTexture ItemEntity::guiImage(bool small) const {
-		const gfx::Texture &tex = m_sprite->getFrame(m_seq_ids[small?2 : 1], 0, 0);
-		gfx::PTexture out = new gfx::DTexture;
-		out->setSurface(tex);
-		return out;
+		return m_sprite->getFrame(m_seq_ids[small?2 : 1], 0, 0);
 	}
 
 	static std::map<string, PItemDesc> s_items;

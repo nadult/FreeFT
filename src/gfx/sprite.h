@@ -2,13 +2,15 @@
 #define GFX_SPRITE_H
 
 #include "gfx/texture.h"
+#include "gfx/device.h"
+#include "gfx/texture_cache.h"
 
 namespace gfx {
 
 	class Sprite: public RefCounter {
 	public:
 		Sprite();
-		void legacyLoad(Serializer &sr, bool fast_compression);
+		void legacyLoad(Serializer &sr);
 		void serialize(Serializer &sr);
 
 		enum EventId {
@@ -59,14 +61,22 @@ namespace gfx {
 		};
 
 		struct MultiImage {
-			void serialize(Serializer&);
-			Texture toTexture(const MultiPalette&) const;
-			bool testPixel(const int2&) const;
+			MultiImage();
+			~MultiImage();
+			MultiImage(const MultiImage &rhs);
+			void operator=(const MultiImage&);
 
-			CompressedTexture images[layer_count];
+			void serialize(Serializer&);
+			PTexture toTexture(const MultiPalette&) const;
+			bool testPixel(const int2&) const;
+			int memorySize() const;
+
+			PackedTexture images[layer_count];
 			int2 points[layer_count];
-			Bitmap bitmap;
 			IRect rect;
+
+			mutable const MultiPalette *prev_palette;
+			mutable int cache_id;
 		};
 
 		int dirCount(int seq_id) const { return m_sequences[seq_id].dir_count; }
@@ -74,7 +84,7 @@ namespace gfx {
 		bool isSequenceLooped(int seq_id) const;
 
 		int imageIndex(int seq_id, int frame_id, int dir_id) const;
-		Texture getFrame(int seq_id, int frame_id, int dir_id) const;
+		PTexture getFrame(int seq_id, int frame_id, int dir_id) const;
 		IRect getRect(int seq_id, int frame_id, int dir_id) const;
 		IRect getMaxRect() const;
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
@@ -99,6 +109,7 @@ namespace gfx {
 		const int3 &boundingBox() const { return m_bbox; }
 		
 		static ResourceMgr<Sprite> mgr;
+		static TextureCache cache;
 
 	private:
 		vector<Sequence> m_sequences;
