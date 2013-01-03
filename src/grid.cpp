@@ -227,8 +227,8 @@ void Grid::printInfo() const {
 	printf("    overlaps(%d): %.2f KB\n", (int)m_overlaps.size(), (float)m_overlaps.size() * sizeof(Overlap) / 1024.0);
 	printf("  free_lists(%d): %.2f KB\n", (int)m_free_list.size() + (int)m_free_overlaps.size(),
 										(float)(m_free_list.size() + m_free_overlaps.size()) * sizeof(int) / 1024.0);
-	printf("  sizeof(Node): %d\n", sizeof(Node));
-	printf("  sizeof(Object): %d\n", sizeof(Object));
+	printf("  sizeof(Node): %d\n", (int)sizeof(Node));
+	printf("  sizeof(Object): %d\n", (int)sizeof(Object));
 }
 
 void Grid::swap(Grid &rhs) {

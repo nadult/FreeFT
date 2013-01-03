@@ -19,7 +19,8 @@ namespace gfx
 		void bind() const;
 		static void bind0();
 		void create(int mips);
-		
+
+// TODO: better name		
 		void setSurface(const Texture &in);
 		void getSurface(Texture& out);
 

@@ -247,7 +247,7 @@ int safe_main(int argc, char **argv)
 			mem_size/1024, bit_size/1024);
 
 	EditorWindow main_window(config.resolution);
-	clear({0, 0, 0});
+	clear(Color(0, 0, 0));
 
 	while(pollEvents()) {
 		if(isKeyPressed(Key_lalt) && isKeyDown(Key_f4))

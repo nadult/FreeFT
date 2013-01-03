@@ -47,7 +47,6 @@ int safe_main(int argc, char **argv)
 	World world("data/tile_map.xml");
 
 	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, 1, 70)));
-
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
 	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(134, 1, 25)));
@@ -162,7 +161,7 @@ int safe_main(int argc, char **argv)
 		world.simulate((time - last_time));
 		last_time = time;
 
-		clear({128, 64, 0});
+		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 
 		world.addToRender(renderer);

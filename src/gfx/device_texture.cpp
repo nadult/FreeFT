@@ -81,7 +81,7 @@ namespace gfx
 	void DTexture::setSurface(const Texture &in) {
 		create(1);
 		m_size = int2(in.width(), in.height());
-		SetTextureData(0, in.format(), in.width(), in.height(), &in(0, 0));
+		SetTextureData(0, in.format(), in.width(), in.height(), in.data());
 	}
 
 	void DTexture::getSurface(Texture &out) {

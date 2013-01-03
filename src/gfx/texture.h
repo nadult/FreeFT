@@ -92,7 +92,22 @@ namespace gfx
 	};
 
 	class Texture;
-	typedef PodArray<Color> Palette;
+
+	// Alpha component is always 255
+	class Palette {
+	public:
+		void serialize(Serializer&);
+
+		void resize(int size);
+		int size() const { return m_data.size(); }
+
+		void set(int idx, Color col) { m_data[idx] = Color(col, 255); }
+		Color operator[](int idx) const { return m_data[idx]; }
+		const Color *data() const { return m_data.data(); }
+
+	protected:
+		PodArray<Color> m_data;
+	};
 
 	// Pallettized, RLE - encoded (as in ZAR) texture
 	class PackedTexture {
@@ -102,23 +117,25 @@ namespace gfx
 		void legacyLoad(Serializer&);
 		void serialize(Serializer&);
 
+		const Palette &palette() const { return m_palette; }
+
 		int width() const { return m_width; }
 		int height() const { return m_height; }
 		const int2 dimensions() const { return int2(m_width, m_height); }
 		int memorySize() const;
 
-		void toTexture(Texture&, const Palette *palette = nullptr) const;
-		void blit(Texture&, const int2 &offset, const Color *palette = nullptr) const;
+		void toTexture(Texture&, const Color *pal = nullptr, int size = 0) const;
+		void blit(Texture&, const int2 &offset, const Color *palette, int size) const;
 		bool testPixel(const int2 &pixel) const;
 
 	protected:
 		Palette m_palette;
 		PodArray<u8> m_data;
-		int m_colors_offset, m_alphas_offset;
 		int m_width, m_height;
-		u8 m_default_color;
+		u8 m_default_idx, m_max_idx;
 	};
 
+	// simple RGBA32 texture
 	class Texture: public RefCounter
 	{
 	public:
@@ -129,12 +146,15 @@ namespace gfx
 
 		//TODO: make non-destructive
 		void resize(int width, int height);
-		void free();
+		void clear();
+		void fill(Color);
 
 		int width() const { return m_width; }
 		int height() const { return m_height; }
-		int2 size() const { return int2(m_width, m_height); }
-		bool isEmpty() const { return data.empty(); }
+		const int2 dimensions() const { return int2(m_width, m_height); }
+		int size() const { return m_width * m_height; }
+
+		bool isEmpty() const { return m_data.isEmpty(); }
 		bool testPixel(const int2&) const;
 
 		TextureFormat format() const { return TextureFormat(TI_A8B8G8R8); }
@@ -143,11 +163,17 @@ namespace gfx
 		void serialize(Serializer&);
 		void swap(Texture&);
 
-		Color* line(int y) { DASSERT(y < m_height); return &data[y * m_width]; }
-		const Color* line(int y) const { DASSERT(y < m_height); return &data[y * m_width]; }
+		Color *data() { return m_data.data(); }
+		const Color *data() const { return m_data.data(); }
 
-		Color& operator()(int x, int y) { return data[x + y * m_width]; }
-		const Color& operator()(int x, int y) const { return data[x + y * m_width]; }
+		Color *line(int y) { DASSERT(y < m_height); return &m_data[y * m_width]; }
+		const Color *line(int y) const { DASSERT(y < m_height); return &m_data[y * m_width]; }
+
+		Color &operator()(int x, int y) { return m_data[x + y * m_width]; }
+		const Color operator()(int x, int y) const { return m_data[x + y * m_width]; }
+
+		Color &operator[](int idx) { return m_data[idx]; }
+		const Color operator[](int idx) const { return m_data[idx]; }
 		
 		void loadTGA(Serializer&);
 		void loadBMP(Serializer&);
@@ -157,7 +183,7 @@ namespace gfx
 		void saveTGA(Serializer&);
 
 private:
-		vector<Color> data;
+		PodArray<Color> m_data;
 		int m_width, m_height;
 	};
 }

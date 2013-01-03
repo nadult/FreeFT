@@ -4,10 +4,10 @@
 namespace gfx
 {
 
-	Texture::Texture(int w, int h) :data(w * h), m_width(w), m_height(h) { }
+	Texture::Texture(int w, int h) :m_data(w * h), m_width(w), m_height(h) { }
 
 	Texture::Texture(Texture &&rhs) :m_width(rhs.m_width), m_height(rhs.m_height) {
-		data.swap(rhs.data);
+		m_data = std::move(rhs.m_data);
 	}
 
 	Texture::Texture() : m_width(0), m_height(0) { }
@@ -15,25 +15,30 @@ namespace gfx
 	void Texture::resize(int w, int h) {
 		m_width  = w;
 		m_height = h;
-		data.resize(m_width * m_height, Color::transparent);
+		m_data.resize(m_width * m_height);
 	}
 		
 	void Texture::swap(Texture &tex) {
 		std::swap(m_width, tex.m_width);
 		std::swap(m_height, tex.m_height);
-		data.swap(tex.data);
+		m_data.swap(tex.m_data);
 	}
 
-	void Texture::free() {
+	void Texture::clear() {
 		m_width = m_height = 0;
-		data.clear();
+		m_data.clear();
+	}
+
+	void Texture::fill(Color color) {
+		for(int n = 0; n < m_data.size(); n++)
+			m_data[n] = color;
 	}
 
 	bool Texture::testPixel(const int2 &pos) const {
 		if(pos.x < 0 || pos.y < 0 || pos.x >= m_width || pos.y >= m_height)
 			return false;
 
-		return line(pos.y)[pos.x].a > 0;
+		return (*this)(pos.x, pos.y).a > 0;
 	}
 
 	void Texture::serialize(Serializer &sr) {

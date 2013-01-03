@@ -9,13 +9,23 @@ template <class TResource>
 void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
 			bool detailed, const string &filter) {
 	vector<FileEntry> file_names;
+	printf("Scanning...\n");
+	Path main_path = Path(src_dir).absolute();
+	findFiles(file_names, main_path, FindFiles::regular_file | FindFiles::recursive);
+	int total_before = 0, total_after = 0;
+
+	printf("Recreating directories...\n");	
+	for(int n = 0; n < (int)file_names.size(); n++) {
+		Path path = file_names[n].path.relative(main_path);
+		Path dir = Path(dst_dir) / path.parent();
+		if(access(dir.c_str(), R_OK) != 0)
+			mkdirRecursive(dir.c_str());
+	}
+	
 	if(!detailed) {
 		printf("Converting");
 		fflush(stdout);
 	}
-	Path main_path = Path(src_dir).absolute();
-	findFiles(file_names, main_path, FindFiles::regular_file | FindFiles::recursive);
-	int total_before = 0, total_after = 0;
 
 #pragma omp parallel for num_threads(4)
 	for(uint n = 0; n < file_names.size(); n++) {
@@ -35,11 +45,6 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 			if(removeSuffix(name, old_ext)) {
 				Path new_path = Path(dst_dir) / path.parent() / (name + new_ext);
 				Path parent = new_path.parent();
-					
-				if(access(parent.c_str(), R_OK) != 0) {
-#pragma omp critical
-					mkdirRecursive(parent.c_str());
-				}
 
 				try {
 					TResource resource;
@@ -50,7 +55,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 					resource.serialize(target);
 					if(detailed)
 						printf("%55s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
-								(int)(source.size()/1024), target.size()/1024, (getTime() - time) * 1024.0);
+								(int)(source.size()/1024), (int)(target.size()/1024), (getTime() - time) * 1024.0);
 
 #pragma omp atomic
 						total_before += source.size();

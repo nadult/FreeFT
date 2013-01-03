@@ -21,7 +21,7 @@ namespace game {
 		tile_map.loadFromXML(doc);
 		m_tile_grid = tile_map;
 		m_entity_grid = EntityGrid(tile_map.dimensions());
-		m_tile_grid.printInfo();
+	//	m_tile_grid.printInfo();
 	
 		updateNavigationMap(true);
 	}

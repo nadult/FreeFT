@@ -7,7 +7,7 @@ namespace gfx
 {
 			
 	int Sprite::MultiPalette::size(int layer) const {
-		int next = layer == layer_count - 1? (int)colors.size() - offset[layer_count - 1] : offset[layer + 1];
+		int next = layer == layer_count - 1? (int)colors.size() : offset[layer + 1];
 		return next - offset[layer];
 	}
 
@@ -83,7 +83,8 @@ namespace gfx
 		if(!out.isEmpty()) {
 			memset(out.line(0), 0, image->rect.width() * image->rect.height() * sizeof(Color));
 			for(int l = 0; l < Sprite::layer_count; l++)
-				image->images[l].blit(out, image->points[l], image->prev_palette->access(l));
+				image->images[l].blit(out, image->points[l],
+						image->prev_palette->access(l), image->prev_palette->size(l));
 		}
 
 		new_texture->setSurface(out);

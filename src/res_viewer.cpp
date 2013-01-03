@@ -335,7 +335,7 @@ int safe_main(int argc, char **argv)
 	setBlendingMode(bmNormal);
 
 	ResViewerWindow main_window(config.resolution);
-	clear({0, 0, 0});
+	clear(Color(0, 0, 0));
 
 	while(pollEvents()) {
 		main_window.process();

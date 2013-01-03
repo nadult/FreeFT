@@ -30,7 +30,9 @@ namespace gfx
 		int width() const { return m_texture.width(); }
 		int height() const { return m_texture.height(); }
 		const int2 dimensions() const { return m_texture.dimensions(); }
+
 		int memorySize() const;
+		void printInfo() const;
 
 		const IRect rect() const;
 

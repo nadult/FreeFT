@@ -35,3 +35,7 @@
 
 - Poprawienie wydajności konwersji zasobów (openmp pod linuxem)
   01.01.13: 11:20 - 15:20 (4h)
+
+- Sprzątanie jaki się narobił w Spritach, Tileach, texturkach i paletach (zrobić pełne)
+  02.01.13: 23:30 - 01:00
+  03.01.13: 19:30 - 00:30

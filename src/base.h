@@ -91,14 +91,25 @@ public:
 			m_data = (T*)sys::alloc(new_size * sizeof(T));
 	}
 
+	void swap(PodArray &rhs) {
+		::swap(m_data, rhs.m_data);
+		::swap(m_size, rhs.m_size);
+	}
+
 	void clear() {
 		m_size = 0;
 		sys::free(m_data);
 		m_data = nullptr;
 	}
+	bool isEmpty() const {
+		return m_size == 0;
+	}
 
 	T *data() { return m_data; }
 	const T *data() const { return m_data; }
+	
+	T *end() { return m_data + m_size; }
+	const T *end() const { return m_data + m_size; }
 
 	T &operator[](int idx) { return m_data[idx]; }
 	const T&operator[](int idx) const { return m_data[idx]; }
@@ -478,18 +489,19 @@ struct MoveVector {
 
 struct Color
 {
-	Color(u8 r, u8 g, u8 b, u8 a = 255)
+	explicit Color(u8 r, u8 g, u8 b, u8 a = 255)
 		:r(r), g(g), b(b), a(a) { }
-	Color(int r, int g, int b, int a = 255)
+	explicit Color(int r, int g, int b, int a = 255)
 		:r(clamp(r, 0, 255)), g(clamp(g, 0, 255)), b(clamp(b, 0, 255)), a(clamp(a, 0, 255)) { }
-	Color(float r, float g, float b, float a = 1.0f)
+	explicit Color(float r, float g, float b, float a = 1.0f)
 		:r(clamp(r * 255.0f, 0.0f, 255.0f)), g(clamp(g * 255.0f, 0.0f, 255.0f)), b(clamp(b * 255.0f, 0.0f, 255.0f)), 
 		 a(clamp(a * 255.0f, 0.0f, 255.0f)) { }
-	Color(const float3 &c, float a = 1.0f)
+	explicit Color(const float3 &c, float a = 1.0f)
 		:r(clamp(c.x * 255.0f, 0.0f, 255.0f)), g(clamp(c.y * 255.0f, 0.0f, 255.0f)), b(clamp(c.z * 255.0f, 0.0f, 255.0f)), 
 		 a(clamp(a * 255.0f, 0.0f, 255.0f)) { }
 	Color(u32 rgba) :rgba(rgba) { }
-	Color() { }
+	Color(Color col, u8 alpha) :rgba((col.rgba & rgb_mask) | ((u32)alpha << 24)) { }
+	Color() = default;
 
 	Color operator|(Color rhs) const { return rgba | rhs.rgba; }
 	operator float4() const { return float4(r, g, b, a) * (1.0f / 255.0f); }

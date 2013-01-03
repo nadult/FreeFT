@@ -45,6 +45,11 @@ namespace gfx
 		return (int)(m_texture.memorySize() - sizeof(PackedTexture) + sizeof(Tile) + name.size());
 	}
 
+	void Tile::printInfo() const {
+		printf("Tile %s:\n  Dimensions: %dx%d\nMemory: %.2f KB\nPalette: %d entries\n",
+				name.c_str(), width(), height(), memorySize()/1024.0, m_texture.palette().size());
+	}
+
 	void Tile::storeSingle() {
 		DASSERT(m_storage_mode == storage_none);
 		m_dev_texture = loadTileTexture(this);
@@ -167,7 +172,7 @@ namespace gfx
 			AtlasEntry &entry = entries[n];
 			Texture tile_tex = entry.tile->texture();
 
-			int2 tile_size = tile_tex.size();
+			int2 tile_size = tile_tex.dimensions();
 
 			if(tile_size.y + pos.y > atlas.height())
 				continue;

@@ -56,7 +56,7 @@ namespace gfx {
 			const Color *access(int layer) const;
 			bool operator==(const MultiPalette&) const;
 
-			vector<Color> colors;
+			vector<Color> colors; //todo serialize as in Palette
 			int offset[layer_count];
 		};
 
@@ -103,6 +103,12 @@ namespace gfx {
 		
 		const Frame &frame(int seq_id, int frame_id) const
 			{ return m_frames[m_sequences[seq_id].first_frame + frame_id]; }
+
+		int imageCount() const { return m_images.size(); }
+		const MultiImage &image(int id) const { return m_images[id]; }
+		
+		int paletteCount() const { return m_palettes.size(); }
+		const MultiPalette &palette(int id) const { return m_palettes[id]; }
 
 		void clear();
 

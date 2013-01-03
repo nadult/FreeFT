@@ -52,13 +52,13 @@ namespace game {
 
 		bool testPixel(const int2 &screen_pos) const;
 
-	protected:
+//	protected:
 		friend class World;
 		World *m_world;
 		bool m_to_be_removed;
 		int m_grid_index;
 
-	protected:
+//	protected:
 		virtual void think() { DASSERT(m_world); }
 		virtual void nextFrame();
 		virtual void handleFrameEvent(int sprite_event_id) { }
