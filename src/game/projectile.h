@@ -22,7 +22,7 @@ namespace game {
 
 	private:
 		ProjectileTypeId::Type m_type;
-		Entity *m_spawner; //TODO: make a EntityRef class which will be zeroed when entity is destroyed
+		EntityRef m_spawner;
 		float3 m_dir;
 		float m_speed;
 	};

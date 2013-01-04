@@ -70,16 +70,16 @@ namespace game {
 		struct ChangeStance	{ int next_stance; };
 		struct Attack		{ int3 target_pos; int mode; };
 		struct Interact {
-			Entity *target; //TODO: pointer may become invalid
 			InteractionMode mode;
 			bool waiting_for_move;
 		};
 		struct DropItem { int item_id; };
 		struct EquipItem { int item_id; };
 		struct UnequipItem { InventorySlotId::Type slot_id; };
-		struct TransferItem { Entity *target; int item_id, count; TransferMode mode; };
+		struct TransferItem { int item_id, count; TransferMode mode; };
 
 		OrderId::Type id;
+		EntityRef target;
 		union {
 			Move move;
 			Attack attack;

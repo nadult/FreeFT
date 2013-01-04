@@ -339,7 +339,7 @@ namespace game {
 			m_issue_next_order = true;
 		else if(m_order.id == OrderId::interact) {
 			if(m_order.interact.mode == interact_normal) {
-				m_order.interact.target->interact(this);
+				m_order.target->interact(this);
 			}
 			m_issue_next_order = true;
 		}
@@ -348,8 +348,8 @@ namespace game {
 	void Actor::onPickupEvent() {
 		//TODO: magic_hi animation when object to be picked up is high enough
 		if(m_order.id == OrderId::interact) {
-			DASSERT(m_order.interact.target->entityType() == entity_item);
-			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.interact.target);
+			DASSERT(m_order.target->entityType() == entity_item);
+			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.target.get());
 			Item item = item_entity->item();
 			item_entity->remove();
 			m_inventory.add(item, 1);

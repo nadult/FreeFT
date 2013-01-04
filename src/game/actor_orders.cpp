@@ -27,7 +27,8 @@ namespace game {
 	Order interactOrder(Entity *target, InteractionMode mode) {
 		Order new_order(OrderId::interact);
 		DASSERT(target);
-		new_order.interact = Order::Interact{target, mode, false};
+		new_order.target = target;
+		new_order.interact = Order::Interact{mode, false};
 		return new_order;
 	}
 	Order dropItemOrder(int item_id) {
@@ -49,7 +50,8 @@ namespace game {
 	Order transferItemOrder(Entity *target, TransferMode mode, int item_id, int count) {
 		Order new_order(OrderId::transfer_item);
 		DASSERT(target); //TODO: entity pointer may become invalid
-		new_order.transfer_item = Order::TransferItem{target, item_id, count, mode};
+		new_order.target = target;
+		new_order.transfer_item = Order::TransferItem{item_id, count, mode};
 		return new_order;
 	}
 
@@ -79,9 +81,9 @@ namespace game {
 		}
 		else if(m_next_order.id == OrderId::interact) {
 			IBox my_box(boundingBox());
-			IBox other_box = enclosingIBox(m_next_order.interact.target->boundingBox());
+			IBox other_box = enclosingIBox(m_next_order.target->boundingBox());
 
-			if(areAdjacent(*this, *m_next_order.interact.target)) {
+			if(areAdjacent(*this, *m_next_order.target)) {
 				m_order = m_next_order;
 				m_next_order = doNothingOrder();
 				ActionId::Type action = m_order.interact.mode == interact_pickup? ActionId::pickup :
@@ -141,9 +143,10 @@ namespace game {
 			}
 			else if(m_next_order.id == OrderId::transfer_item) {
 				auto params = m_next_order.transfer_item;
+				const EntityRef &target = m_next_order.target;
 
-				if(areAdjacent(*this, *params.target) && params.target->entityType() == entity_container) {
-					Container *container = static_cast<Container*>(params.target);
+				if(areAdjacent(*this, *target) && target->entityType() == entity_container) {
+					Container *container = static_cast<Container*>(target.get());
 					Inventory *src = &m_inventory, *dst = &container->inventory();
 					if(params.mode == transfer_from)
 						swap(src, dst);

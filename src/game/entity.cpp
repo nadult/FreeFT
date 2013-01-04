@@ -11,7 +11,7 @@ using namespace gfx;
 namespace game {
 
 	Entity::Entity(const char *sprite_name, const float3 &pos)
-		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1) {
+		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) {
 		m_sprite = Sprite::mgr[sprite_name];
 		m_max_screen_rect = m_sprite->getMaxRect();
 		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
@@ -21,7 +21,16 @@ namespace game {
 		m_seq_id = -1;
 		playSequence(0);
 	}
-	Entity::~Entity() { }
+	Entity::~Entity() {
+		if(m_first_ref) {
+			EntityRef* ref = m_first_ref;
+			do {
+				ref->m_node = nullptr;
+				ref = ref->m_next;
+			}
+			while(ref != m_first_ref);
+		}
+	}
 
 	void Entity::roundPos() {
 		m_pos = (int3)(m_pos + float3(0.5f, 0, 0.5f));
@@ -167,6 +176,89 @@ namespace game {
 
 		return distanceSq(	FRect(box_a.min.xz(), box_a.max.xz()),
 							FRect(box_b.min.xz(), box_b.max.xz())) <= 1.0f;
+	}
+
+	EntityRef::EntityRef(Entity* node) :m_node(node) {
+		if(node && node->m_first_ref) {
+			m_next = node->m_first_ref;
+			m_prev = m_next->m_prev;
+			m_next->m_prev = this;
+			m_prev->m_next = this;
+		}
+		else {
+			m_next = this;
+			m_prev = this;
+		}
+
+		if(node)	
+			node->m_first_ref = this;
+	}
+
+	void EntityRef::zero() {
+		m_node = nullptr;
+		m_next = m_prev = nullptr;
+	}
+
+	void EntityRef::unlink() {
+		if(m_next == this) {
+			if(m_node)
+				m_node->m_first_ref = nullptr;
+		}
+		if(m_next)
+			m_next->m_prev = m_prev;
+		if(m_prev)
+			m_prev->m_next = m_next;
+
+		if(m_node && m_node->m_first_ref == this)
+			m_node->m_first_ref = m_next == this? nullptr : m_next;
+		zero();
+	}
+
+	void EntityRef::link(Entity* node) {
+		if(node) {
+			m_node = node;
+
+			if(node->m_first_ref) {
+				m_next = node->m_first_ref;
+				m_prev = m_next->m_prev;
+				m_next->m_prev = this;
+				m_prev->m_next = this;
+			}
+			else
+				m_next = m_prev = node->m_first_ref = this;
+		}
+	}
+
+	EntityRef::EntityRef() {
+		zero();
+	}
+
+	EntityRef::EntityRef(const EntityRef& rhs) {
+		zero();
+		link(rhs.m_node);
+	}
+
+	EntityRef::EntityRef(EntityRef&& rhs) {
+		m_node = rhs.m_node;
+		m_prev = rhs.m_prev;
+		m_next = rhs.m_next;
+		if(m_prev)
+			m_prev->m_next = this;
+		if(m_next)
+			m_next->m_prev = this;
+		rhs.zero();
+	}
+
+	void EntityRef::operator=(const EntityRef& rhs) {
+		if(this == &rhs)
+			return;
+
+		unlink();
+		link(rhs.m_node);
+	}
+
+	EntityRef::~EntityRef() {
+		unlink();
 	}
 
 }

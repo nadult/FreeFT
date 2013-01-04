@@ -64,7 +64,7 @@ namespace gfx {
 
 		m_default_idx = 0;
 		if((zar_type == 0x34 || zar_type == 0x33) && has_palette)
-			m_default_idx = value & 255; //TODO: endianess
+			m_default_idx = value & 255;
 		m_max_idx = m_default_idx;
 
 		int offset = 0, total_pixels = m_width * m_height;
@@ -254,65 +254,3 @@ namespace gfx {
 	}
 
 }
-
-
-// OLD streaming code, not used
-/*	
-	struct Header {
-		int width, height;
-		int pal_size, color_off, alpha_off;
-	};
-
-	int PackedTexture::streamSize() const {
-		return sizeof(Header) + m_palette.size() * 3 + m_data.size();
-	}
-
-	void PackedTexture::toStream(char *stream) const {
-		u8 *ptr = (u8*)stream;
-
-		Header header{m_width, m_height, (int)m_palette.size(), m_colors_offset, m_alphas_offset};
-		memcpy(ptr, &header, sizeof(Header));
-		ptr += sizeof(Header);
-
-		//TODO: palette reordering, pixel reordering
-		int pixels = m_width * m_height;
-
-		for(int n = 0; n < (int)m_palette.size(); n++)
-			*ptr++ = m_palette[n].r;
-		for(int n = 0; n < (int)m_palette.size(); n++)
-			*ptr++ = m_palette[n].g;
-		for(int n = 0; n < (int)m_palette.size(); n++)
-			*ptr++ = m_palette[n].b;
-
-		memcpy(ptr, m_data.data(), m_data.size());
-	}
-	
-	void PackedTexture::fromStream(const char *stream, int stream_size) {
-		ASSERT(stream_size >= (int)sizeof(Header));
-		const u8 *ptr = (const u8*)stream;
-
-		Header header;
-		memcpy(&header, ptr, sizeof(Header));
-		ptr += sizeof(Header);
-
-		m_width = header.width;
-		m_height = header.height;
-
-		int data_size = stream_size - sizeof(Header) - header.pal_size * 3;
-		ASSERT(data_size >= 0);
-
-		const u8 *red = ptr, *green = red + header.pal_size, *blue = green + header.pal_size;
-		m_palette.resize(header.pal_size * 3);
-		for(int n = 0; n < (int)m_palette.size(); n++)
-			m_palette[n] = Color(red[n], green[n], blue[n]);
-
-		ptr += header.pal_size * 3;
-		m_data.resize(data_size);
-		memcpy(m_data.data(), ptr, data_size);
-
-		m_colors_offset = header.color_off;
-		m_alphas_offset = header.alpha_off;
-		ASSERT(m_colors_offset <= data_size && m_alphas_offset <= data_size);
-	}*/
-	
-

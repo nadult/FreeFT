@@ -112,8 +112,6 @@ namespace gfx
 
 	void Sprite::serialize(Serializer &sr) {
 		sr.signature("SPRITE", 6);
-		//TODO optimize format (add compression)
-
 		if(sr.isLoading())
 			m_name = Path(sr.name()).fileName();
 		sr & m_sequences & m_frames & m_palettes & m_images;

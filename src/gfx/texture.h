@@ -144,7 +144,6 @@ namespace gfx
 		Texture(const Texture&) = default;
 		Texture();
 
-		//TODO: make non-destructive
 		void resize(int width, int height);
 		void clear();
 		void fill(Color);

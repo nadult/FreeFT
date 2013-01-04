@@ -17,6 +17,7 @@ namespace game {
 	
 	class World;
 	class Actor;
+	class EntityRef;
 
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each type of Entity
@@ -52,13 +53,13 @@ namespace game {
 
 		bool testPixel(const int2 &screen_pos) const;
 
-//	protected:
+	protected:
 		friend class World;
 		World *m_world;
 		bool m_to_be_removed;
 		int m_grid_index;
 
-//	protected:
+	protected:
 		virtual void think() { DASSERT(m_world); }
 		virtual void nextFrame();
 		virtual void handleFrameEvent(int sprite_event_id) { }
@@ -92,6 +93,37 @@ namespace game {
 		bool m_is_looped, m_is_finished;
 		int m_dir_idx;
 		float m_dir_angle;
+
+	private:
+		EntityRef *m_first_ref;
+		friend class EntityRef;
+	};
+
+	class EntityRef
+	{
+	public:
+		EntityRef();
+		EntityRef(Entity* node);
+		EntityRef(const EntityRef& rhs);
+		EntityRef(EntityRef&& rhs);
+		void operator=(const EntityRef& rhs);
+		~EntityRef();
+	
+		// TODO: add verification (!=null) code everywhere, where EntityRef is used	
+		Entity* get() const { return m_node; }
+		Entity *operator->() const { return m_node; }
+		Entity &operator*() const { DASSERT(m_node); return *m_node; }
+		
+	private:
+		void zero();
+		void unlink();
+		// assume zeroed
+		void link(Entity* node);
+
+		Entity* m_node;
+		EntityRef *m_next, *m_prev;
+
+		friend class Entity;
 	};
 
 	bool areAdjacent(const Entity&, const Entity&);

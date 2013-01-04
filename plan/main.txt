@@ -46,6 +46,11 @@
  - system dialogów
    - taki jak w 2drpg? ale w XML
 
+ - prosty system walki i proste AI (dra crittersów)
+   - reakcja na obrażenia
+   - AI dla crittersów
+   - HPki, proste skille
+
 3. Różne rzeczy do zrobienia:
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt
@@ -67,7 +72,6 @@
    jest mały kwadracik którego chyba nie powinno tam być)
  - w edytorze zaznaczanie na szaro obiektów które się przecinają z kursorem
  - zrobic porządek z ładowaniem tile-i i spritów do tekstur na GPU
- - obsługa specjalnych akcji w sprajtach (opis w SpriteCreatorze); 
  - zastanowić się jak można najlepiej skompresować teksturki i je później zdekompresować tak żeby
    było 60 FPS na netbooku
  - focus na itemie w ListBoxie zostaje jak mysz wyjedzie poza listę
@@ -80,7 +84,6 @@
    bboxów
  - pomysł na poprawienie renderingu overlapujących się obiektów: od bboxów odjąć część wspólną i dopiero
   wtedy je porównać
- - support dla aktorów o różnych wymiarach
  - zrobić porządek ze Screen-rectami które są na intach choć wyliczane są z bbox-ów opartych o float-y
 
 
@@ -106,5 +109,3 @@ Ostateczny cel: Prosta gra RPG zawierająca:
 - prosta mapka z kilkoma questami jako proof of concept  8h
 56h - 96h
 
-
-Termin: koniec roku: 17 dni od 4 grudnia: 136 godzin
