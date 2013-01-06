@@ -110,7 +110,7 @@ namespace game {
 		ColliderFlags colliderType() const { return collider_item; }
 		virtual EntityFlags entityType() const { return entity_item; }
 
-		gfx::PTexture guiImage(bool small) const;
+		gfx::PTexture guiImage(bool small, FRect &tex_image) const;
 		const Item &item() const { return m_item; }
 		Item &item() { return m_item; }
 

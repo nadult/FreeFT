@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <algorithm>
 
+//#define LOGGING
+
 namespace gfx {
 
 	CachedTexture::CachedTexture() :m_id(-1), m_cache(nullptr) { }
@@ -39,7 +41,6 @@ namespace gfx {
 	}
 
 	static int textureMemorySize(PTexture tex) {
-		//TODO: mipmaps
 		TextureFormat format = tex->format();
 		return format.evalImageSize(tex->width(), tex->height());
 	}
@@ -105,7 +106,9 @@ namespace gfx {
 
 			m_atlas.resize(TI_A8B8G8R8, m_atlas_size.x, m_atlas_size.y);
 			m_memory_limit -= textureMemorySize(PTexture(&m_atlas));
+#ifdef LOGGING
 			printf("Atlas size: %dKB\n", textureMemorySize(PTexture(&m_atlas))/1024);
+#endif
 
 			int x_nodes = m_atlas_size.x / node_size, y_nodes = m_atlas_size.y / node_size;
 			m_atlas_nodes.resize(x_nodes * y_nodes);
@@ -159,6 +162,9 @@ namespace gfx {
 
 				if(!can_fit) {
 					if(res.atlas_node_id != -1) {
+#ifdef LOGGING
+						printf("Removing from atlas node %d: %dKB\n", m_last_node, (res.size.x * res.size.y * 4)/1024);
+#endif
 						REMOVE(atlas_node.list, atlas, index);
 						res.atlas_node_id = -1;
 						m_atlas_counter--;
@@ -173,6 +179,9 @@ namespace gfx {
 				m_atlas.upload(tex, res.atlas_pos);
 
 				if(res.atlas_node_id == -1) {
+#ifdef LOGGING
+					printf("Inserting to atlas node %d: %dKB\n", m_last_node, (res.size.x * res.size.y * 4)/1024);
+#endif
 					REMOVE(m_atlas_queue, atlas, index);
 					INSERT(atlas_node.list, atlas, index);
 					res.atlas_node_id = m_last_node;
@@ -184,10 +193,9 @@ namespace gfx {
 			}
 
 			m_last_node = (m_last_node + 1) % (int)m_atlas_nodes.size();
-		//	while(m_atlas_queue.head != -1)
-		//		REMOVE(m_atlas_queue, atlas, m_atlas_queue.head);
+			while(m_atlas_queue.head != -1)
+				REMOVE(m_atlas_queue, atlas, m_atlas_queue.head);
 		}
-		//printf("atlas: %d\n", m_atlas_counter);
 
 		if(m_last_update == INT_MAX) {
 			for(int n = 0; n < (int)m_resources.size(); n++)
@@ -216,7 +224,9 @@ namespace gfx {
 		if(res.device_texture) {
 			REMOVE(m_main_list, main, res_id);
 			int size = textureMemorySize(res.device_texture);
-		//	printf("Freeing %dKB (current: %dKB / %dKB)\n", size/1024, m_memory_size/1024, m_memory_limit/1024);
+#ifdef LOGGING
+			printf("Freeing %dKB (current: %dKB / %dKB)\n", size/1024, m_memory_size/1024, m_memory_limit/1024);
+#endif
 			m_memory_size -= size;
 			res.device_texture = nullptr;
 		}
@@ -243,6 +253,8 @@ namespace gfx {
 		res.last_update = m_last_update;
 
 		if(res.atlas_node_id != -1) {
+			if(res.device_texture)
+				unload(res_id);
 			float2 mul(1.0f / float(m_atlas_size.x), 1.0f / float(m_atlas_size.y));
 			tex_rect = FRect(float2(res.atlas_pos) * mul, float2(res.atlas_pos + res.size) * mul);
 			return PTexture(&m_atlas);
@@ -253,7 +265,6 @@ namespace gfx {
 				INSERT(m_atlas_queue, atlas, res_id);
 		}
 
-		//TODO: textures shouldnt be stored both in atlas & normally
 		if(!res.device_texture) {
 			DASSERT(res.res_ptr);
 			Texture temp_tex;
@@ -262,7 +273,9 @@ namespace gfx {
 			res.device_texture->set(temp_tex);
 
 			int new_size = textureMemorySize(res.device_texture);
-			//printf("Loading %dKB (current: %dKB / %dKB)\n", new_size/1024, m_memory_size/1024, m_memory_limit/1024);
+#ifdef LOGGING
+			printf("Loading %dKB (current: %dKB / %dKB)\n", new_size/1024, m_memory_size/1024, m_memory_limit/1024);
+#endif
 			m_memory_size += new_size;
 			while(m_memory_size > m_memory_limit && m_main_list.tail != -1)
 				unload(m_main_list.tail);

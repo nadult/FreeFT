@@ -32,6 +32,13 @@ namespace gfx {
 		mutable int m_id;
 	};
 
+	// accesed textures are valid only until nextFrame, if the texture
+	// was in the atlas, it's data might change, so accessTexture should be called every frame
+	//
+	// TODO: texture packing in the atlas can be greatly improved:
+	// - instead of round robin, select next AtlasNode based on active texture count, free space, etc.
+	// - when packing textures, use some smarter algorithm to save space
+	// - use PBO to copy textures from res.device_texture, and not from system memory
 	class TextureCache {
 	public:
 		TextureCache(int max_bytes); 

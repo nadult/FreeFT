@@ -22,9 +22,8 @@ namespace game {
 		}
 	}
 
-	gfx::PTexture ItemEntity::guiImage(bool small) const {
-		return gfx::PTexture(nullptr); //TODO
-		//return m_sprite->getFrame(m_seq_ids[small?2 : 1], 0, 0);
+	gfx::PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
+		return m_sprite->getFrame(m_seq_ids[small?2 : 1], 0, 0, tex_rect);
 	}
 
 	static std::map<string, PItemDesc> s_items;

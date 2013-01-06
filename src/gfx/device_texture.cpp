@@ -104,6 +104,13 @@ namespace gfx
 				m_format.glFormat(), m_format.glType(), pixels);
 	}
 
+	void DTexture::download(Texture &target) const {
+		bind();
+		DASSERT(m_format == target.format());
+		target.resize(m_width, m_height);
+		glGetTexImage(GL_TEXTURE_2D, 0, m_format.glFormat(), m_format.glType(), target.data());
+	}
+
 	void DTexture::blit(DTexture &target, const IRect &src_rect, const int2 &target_pos) const {
 		//TODO: use PBO's
 		THROW("blitting from one DTexture to another not supported yet");

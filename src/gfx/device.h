@@ -29,6 +29,7 @@ namespace gfx
 		void set(const Texture&);
 		void upload(const Texture &src, const int2 &target_pos = int2(0, 0));
 		void upload(const void *pixels, const int2 &dimensions, const int2 &target_pos);
+		void download(Texture &target) const;
 		void blit(DTexture &target, const IRect &src_rect, const int2 &target_pos) const;
 
 		int width() const { return m_width; }
