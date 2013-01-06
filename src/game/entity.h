@@ -6,10 +6,6 @@
 #include "gfx/sprite.h"
 #include "game/enums.h"
 
-namespace gfx
-{
-	class SceneRenderer;
-}
 
 namespace game {
 

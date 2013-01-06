@@ -1,8 +1,7 @@
 #ifndef NAVIGATION_BITMAP_H
 #define NAVIGATION_BITMAP_H
 
-#include "gfx/device.h"
-#include "gfx/scene_renderer.h"
+#include "base.h"
 
 class Grid;
 

@@ -1,10 +1,6 @@
 #include "navigation_bitmap.h"
 #include "grid.h"
-#include "gfx/texture.h"
-#include <cstring>
-#include <cmath>
-#include <set>
-#include <algorithm>
+#include "gfx/device.h"
 
 static void extractheightMap(const Grid &tile_grid, u8 *out, int2 size, int extend) {
 	DASSERT(out);
@@ -72,7 +68,7 @@ gfx::PTexture NavigationBitmap::getTexture() const {
 			tex(x, y) = (*this)(x, y)? Color(255, 255, 255) : Color(0, 0, 0);
 	
 	gfx::PTexture out = new gfx::DTexture;
-	out->setSurface(tex);
+	out->set(tex);
 	return out;
 }
 

@@ -155,6 +155,7 @@ namespace gfx {
 			grid_rect.max = min(grid_rect.max, m_viewport.max);
 			setScissorRect(grid_rect);
 
+			//PROFILE("SceneRenderer::blit");
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
 				if(elem.texture) {

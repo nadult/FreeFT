@@ -4,7 +4,7 @@
 namespace gfx
 {
 	
-	void TestGlError(const char*);
+	void testGlError(const char*);
 
 	static float s_default_matrix[16];
 	static int2 s_viewport_size;
@@ -166,7 +166,7 @@ namespace gfx
 
 	void setScissorRect(const IRect &rect) {
 		glScissor(rect.min.x, s_viewport_size.y - rect.max.y, rect.width(), rect.height());
-		TestGlError("glScissor");
+		testGlError("glScissor");
 	}
 
 	void setScissorTest(bool is_enabled) {

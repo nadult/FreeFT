@@ -29,7 +29,7 @@ class Resource {
 public:
 	Resource() :m_type(ResType::empty), m_id(-1) { }
 	Resource(PTile res, int id) :m_type(ResType::tile), m_id(id) {
-		DASSERT(res && res->deviceTexture());
+		DASSERT(res);
 		m_resource = res.get();
 		m_rect_size = res->dimensions() + int2(8, 8);
 	}
@@ -37,7 +37,7 @@ public:
 	Resource(PTexture res, int id) :m_type(ResType::texture), m_id(id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = res->size();
+		m_rect_size = res->dimensions();
 	}
 
 	Resource(PSprite res, int id) :m_type(ResType::sprite), m_id(id) {
@@ -86,7 +86,8 @@ public:
 			}
 
 			IRect rect = sprite->getRect(m_seq_id, m_frame_id, m_dir_id);
-			PTexture dtex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id);
+			FRect tex_rect;
+			PTexture dtex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
 			dtex->bind();
 
 			IBox box({0,0,0}, sprite->boundingBox());
@@ -96,7 +97,7 @@ public:
 				brect -= brect.min;
 			}
 			lookAt(brect.min - pos);
-			drawQuad(rect.min, rect.size());
+			drawQuad(rect.min, rect.size(), tex_rect.min, tex_rect.max);
 		
 			DTexture::bind0();
 			if(is_gui_image)
@@ -220,7 +221,6 @@ public:
 				PTile tile = new Tile;
 			//	printf("Loading tile: %s\n", file_name);
 				Loader(file_name) & *tile;
-				tile->storeInCache();
 				res = ::Resource(tile, id);
 			}
 			else if(strcasecmp(file_name + len - 7, ".sprite") == 0) {
@@ -342,6 +342,7 @@ int safe_main(int argc, char **argv)
 		main_window.draw();
 
 		swapBuffers();
+		TextureCache::main_cache.nextFrame();
 	}
 
 	destroyWindow();

@@ -46,19 +46,13 @@ namespace gfx
 		sr & rect;
 	}
 
-	Sprite::MultiImage::MultiImage() :cache_id(-1), prev_palette(nullptr) { }
+	Sprite::MultiImage::MultiImage() :prev_palette(nullptr) { }
 	
-	Sprite::MultiImage::~MultiImage() {
-		if(cache_id != -1)
-			cache.remove(cache_id);
-	}
-			
-	Sprite::MultiImage::MultiImage(const MultiImage &rhs) :cache_id(-1), prev_palette(nullptr) {
+	Sprite::MultiImage::MultiImage(const MultiImage &rhs) :prev_palette(nullptr) {
 		*this = rhs;
 	}
 
 	void Sprite::MultiImage::operator=(const MultiImage &rhs) {
-		DASSERT(rhs.cache_id == -1);
 		for(int n = 0; n < layer_count; n++) {
 			images[n] = rhs.images[n];
 			points[n] = rhs.points[n];
@@ -73,31 +67,24 @@ namespace gfx
 		return bytes;
 	}
 
-	static PTexture loadSpriteTexture(const void *ptr) {
-		const Sprite::MultiImage *image = (const Sprite::MultiImage*)ptr;
-		DASSERT(image && image->prev_palette);
+	void Sprite::MultiImage::cacheUpload(Texture &tex) const {
+		DASSERT(prev_palette);
 
-		PTexture new_texture = new DTexture;
-
-		Texture out(image->rect.width(), image->rect.height());
-		if(!out.isEmpty()) {
-			memset(out.line(0), 0, image->rect.width() * image->rect.height() * sizeof(Color));
+		tex.resize(rect.width(), rect.height());
+		if(!tex.isEmpty()) {
+			memset(tex.line(0), 0, rect.width() * rect.height() * sizeof(Color));
 			for(int l = 0; l < Sprite::layer_count; l++)
-				image->images[l].blit(out, image->points[l],
-						image->prev_palette->access(l), image->prev_palette->size(l));
+				images[l].blit(tex, points[l], prev_palette->access(l), prev_palette->size(l));
 		}
-
-		new_texture->setSurface(out);
-		return new_texture;
 	}
 
-	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette) const {
-		if(cache_id == -1) {
-			cache_id = cache.add(this);
+	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect) const {
+		if(cacheId() == -1) {
+			bindToCache(TextureCache::main_cache);
 			prev_palette = &palette;
 		}
 
-		return cache.access(cache_id);
+		return accessTexture(tex_rect);
 	}
 
 	bool Sprite::MultiImage::testPixel(const int2 &screen_pos) const {
@@ -153,9 +140,9 @@ namespace gfx
 		return out;
 	}
 
-	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id) const {
+	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const {
 		const MultiPalette &palette = m_palettes[m_sequences[seq_id].palette_id];
-		return m_images[imageIndex(seq_id, frame_id, dir_id)].toTexture(palette);
+		return m_images[imageIndex(seq_id, frame_id, dir_id)].toTexture(palette, tex_rect);
 	}
 
 	IRect Sprite::getRect(int seq_id, int frame_id, int dir_id) const {
@@ -242,6 +229,5 @@ namespace gfx
 	}
 
 	ResourceMgr<Sprite> Sprite::mgr("data/sprites/", ".sprite");
-	TextureCache Sprite::cache(40 * 1024 * 1024, loadSpriteTexture);
 
 }

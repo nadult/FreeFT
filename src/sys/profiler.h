@@ -3,6 +3,9 @@
 
 #include "base.h"
 
+//#define USE_RDTSC
+
+
 namespace profiler {
 
 	void updateTimer(const char *name, double time, bool auto_clear = true);
@@ -14,12 +17,22 @@ namespace profiler {
 
 	const string getStats(const char *filter = "");
 
+#ifdef USE_RDTSC
 	double rdtscTime();
 	double rdtscMultiplier();
+	inline double getTime() { return rdtscTime(); }
+#else
+	inline double getTime() { return baselib::getTime(); }
+#endif
 
 	struct AutoTimer {
+#ifdef USE_RDTSC
 		AutoTimer(const char *id, bool auto_clear) :time(rdtscTime()), id(id), auto_clear(auto_clear) { }
 		~AutoTimer() { updateTimer(id, rdtscTime() - time, auto_clear); }
+#else
+		AutoTimer(const char *id, bool auto_clear) :time(getTime()), id(id), auto_clear(auto_clear) { }
+		~AutoTimer() { updateTimer(id, getTime() - time, auto_clear); }
+#endif
 
 		double time;
 		const char *id;

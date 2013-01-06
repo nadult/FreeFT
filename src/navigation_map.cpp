@@ -1,9 +1,9 @@
 #include "navigation_map.h"
 #include "navigation_bitmap.h"
-#include "gfx/texture.h"
 #include "sys/profiler.h"
 #include <cstring>
 #include <algorithm>
+#include "gfx/scene_renderer.h"
 
 NavigationMap::NavigationMap(int extend) :m_size(0, 0), m_extend(extend) { }
 

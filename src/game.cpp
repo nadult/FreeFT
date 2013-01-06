@@ -1,6 +1,5 @@
 #include <memory.h>
 #include <cstdio>
-#include <algorithm>
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -92,23 +91,12 @@ int safe_main(int argc, char **argv)
 
 	const TileGrid &tile_grid = world.tileGrid();
 
-	PTexture atlas; {
-		vector<gfx::Tile*> tiles;
-		for(int n = 0; n < tile_grid.size(); n++)
-			if(tile_grid[n].ptr)
-				tiles.push_back((gfx::Tile*)tile_grid[n].ptr);
-		sort(tiles.begin(), tiles.end());
-		tiles.resize(unique(tiles.begin(), tiles.end()) - tiles.begin());
-
-		atlas = makeTileAtlas(tiles);
-	//	Saver("atlas.tga") & *atlas;
-	}
 	int inventory_sel = -1, container_sel = -1;
 	string prof_stats;
 	double stat_update_time = getTime();
 
 	while(pollEvents()) {
-		double loop_start = profiler::rdtscTime();
+		double loop_start = profiler::getTime();
 		if(isKeyDown(Key_esc))
 			break;
 
@@ -254,7 +242,9 @@ int safe_main(int argc, char **argv)
 		}
 
 		swapBuffers();
-		profiler::updateTimer("main_loop", profiler::rdtscTime() - loop_start);
+		TextureCache::main_cache.nextFrame();
+
+		profiler::updateTimer("main_loop", profiler::getTime() - loop_start);
 		if(getTime() - stat_update_time > 0.25) {
 			prof_stats = profiler::getStats();
 			stat_update_time = getTime();

@@ -307,6 +307,7 @@ struct Rect
 
 	Rect operator+(const Type2 &offset) const { return Rect(min + offset, max + offset); }
 	Rect operator-(const Type2 &offset) const { return Rect(min - offset, max - offset); }
+	Rect operator*(Type scale) const { return Rect(min * scale, max * scale); }
 
 	Rect operator+(const Rect &rhs) { return Rect(::min(min, rhs.min), ::max(max, rhs.max)); }
 
@@ -555,5 +556,14 @@ SERIALIZE_AS_POD(IBox)
 SERIALIZE_AS_POD(FBox)
 SERIALIZE_AS_POD(Color)
 
+
+namespace gfx {
+	class Tile;
+	class Sprite;
+	class SceneRenderer;
+	class Texture;
+	class DTexture;
+	typedef Ptr<DTexture> PTexture;
+}
 
 #endif

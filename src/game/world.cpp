@@ -4,6 +4,7 @@
 #include "sys/xml.h"
 #include "sys/profiler.h"
 #include "gfx/tile.h"
+#include "gfx/scene_renderer.h"
 #include "bvh_impl.h"
 #include <cstdio>
 

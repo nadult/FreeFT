@@ -235,7 +235,6 @@ int safe_main(int argc, char **argv)
 				mem_size += tile->memorySize();
 
 				tile->name = tile_name;
-				tile->storeInCache();
 			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());
@@ -248,8 +247,11 @@ int safe_main(int argc, char **argv)
 
 	EditorWindow main_window(config.resolution);
 	clear(Color(0, 0, 0));
+	string prof_stats;
+	double stat_update_time = getTime();
 
 	while(pollEvents()) {
+		double loop_start = profiler::getTime();
 		if(isKeyPressed(Key_lalt) && isKeyDown(Key_f4))
 			break;
 		
@@ -257,7 +259,21 @@ int safe_main(int argc, char **argv)
 		main_window.draw();
 		lookAt({0, 0});
 		
+		DTexture::bind0();
+		drawQuad(config.resolution - int2(250, 200), config.resolution, Color(0, 0, 0, 80));
+
+		gfx::PFont font = gfx::Font::mgr["arial_16"];
+		font->drawShadowed(config.resolution - int2(250, 180), Color::white, Color::black, "%s", prof_stats.c_str());
+		
 		swapBuffers();
+		TextureCache::main_cache.nextFrame();
+
+		profiler::updateTimer("main_loop", profiler::getTime() - loop_start);
+		if(getTime() - stat_update_time > 0.25) {
+			prof_stats = profiler::getStats();
+			stat_update_time = getTime();
+		}
+		profiler::nextFrame();
 	}
 
 	destroyWindow();

@@ -37,6 +37,7 @@ namespace
 
 namespace profiler {
 
+#ifdef USE_RDTSC
 	double rdtscTime() {
 		unsigned long long val;
 	    __asm__ __volatile__ ("rdtsc" : "=A" (val));
@@ -46,6 +47,7 @@ namespace profiler {
 	double rdtscMultiplier() {
 		return s_rdtsc_multiplier;
 	}
+#endif
 
 	void updateTimer(const char *id, double time, bool auto_clear) {
 		for(int n = 0; n < (int)s_timers.size(); n++)
@@ -84,6 +86,7 @@ namespace profiler {
 	}
 
 	void nextFrame() {
+#ifdef USE_RDTSC
 		double current_time = getTime();
 		double current_rtime = rdtscTime();
 
@@ -95,6 +98,7 @@ namespace profiler {
 
 		s_last_frame_time[0] = current_time;
 		s_last_frame_time[1] = current_rtime;
+#endif
 
 		for(int n = 0; n < (int)s_timers.size(); n++) if(s_timers[n].auto_clear) {
 			s_timers[n].avg += s_timers[n].value;
@@ -108,11 +112,17 @@ namespace profiler {
 	const string getStats(const char *filter) {
 		char buffer[1024], *ptr = buffer, *end = buffer + sizeof(buffer);
 
+#ifdef USE_RDTSC
+		double multiplier = s_rdtsc_multiplier;
+#else
+		double multiplier = 1.0;
+#endif
+
 		if(!s_timers.empty())
 			ptr += snprintf(ptr, end - ptr, "Timers:\n");
 		for(int n = 0; n < (int)s_timers.size(); n++) {
 			const Timer &timer = s_timers[n];
-			double ms = timer.value * s_rdtsc_multiplier * 1000.0;
+			double ms = timer.value * multiplier * 1000.0;
 			double us = ms * 1000.0;
 			bool print_ms = ms > 0.5;
 			ptr += snprintf(ptr, end - ptr, "  %s: %.2f %s\n", timer.id, print_ms? ms : us, print_ms? "ms" : "us");
@@ -128,6 +138,5 @@ namespace profiler {
 
 		return buffer;
 	}
-
 
 }

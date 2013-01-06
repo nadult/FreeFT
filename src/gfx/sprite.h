@@ -7,6 +7,7 @@
 
 namespace gfx {
 
+	//TODO: naming: toTexture, getFrame etc
 	class Sprite: public RefCounter {
 	public:
 		Sprite();
@@ -60,14 +61,16 @@ namespace gfx {
 			int offset[layer_count];
 		};
 
-		struct MultiImage {
+		struct MultiImage: public CachedTexture {
 			MultiImage();
-			~MultiImage();
 			MultiImage(const MultiImage &rhs);
 			void operator=(const MultiImage&);
 
+			virtual void cacheUpload(Texture&) const;
+			virtual int2 textureSize() const { return rect.size(); }
+
 			void serialize(Serializer&);
-			PTexture toTexture(const MultiPalette&) const;
+			PTexture toTexture(const MultiPalette&, FRect&) const;
 			bool testPixel(const int2&) const;
 			int memorySize() const;
 
@@ -76,7 +79,6 @@ namespace gfx {
 			IRect rect;
 
 			mutable const MultiPalette *prev_palette;
-			mutable int cache_id;
 		};
 
 		int dirCount(int seq_id) const { return m_sequences[seq_id].dir_count; }
@@ -84,10 +86,11 @@ namespace gfx {
 		bool isSequenceLooped(int seq_id) const;
 
 		int imageIndex(int seq_id, int frame_id, int dir_id) const;
-		PTexture getFrame(int seq_id, int frame_id, int dir_id) const;
 		IRect getRect(int seq_id, int frame_id, int dir_id) const;
 		IRect getMaxRect() const;
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
+		
+		PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const;
 		
 		int findSequence(const char *name) const;
 

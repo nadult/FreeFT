@@ -58,7 +58,9 @@ namespace game {
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))
 			return;
 
-		out.add(m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx), rect, m_pos, m_bbox);
+		FRect tex_rect;
+		PTexture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx, tex_rect);
+		out.add(tex, rect, m_pos, m_bbox, Color::white, tex_rect);
 		if(m_world->isColliding(boundingBox(), this))
 			out.addBox(boundingBox(), Color::red);
 	}

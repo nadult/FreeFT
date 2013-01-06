@@ -11,19 +11,13 @@ namespace gfx
 	class SceneRenderer;
 
 	// TODO: naming convention, attribute hiding
-	class Tile: public Resource {
+	class Tile: public Resource, CachedTexture {
 	public:
-		Tile();
-		~Tile();
-		Tile(const Tile&) = delete;
-		void operator=(const Tile&) = delete;
-
 		void legacyLoad(Serializer &sr);
 		void serialize(Serializer &sr);
 		bool testPixel(const int2 &pos) const;
 		
 		static ResourceMgr<Tile> mgr;
-		static TextureCache cache;
 
 		string name;
 
@@ -37,12 +31,7 @@ namespace gfx
 		const IRect rect() const;
 
 		Texture texture() const;
-		PTexture deviceTexture() const;
-
-		//TODO: better names FFS...
-		void storeSingle();
-		void storeInCache();
-		void storeInAtlas(PTexture, const int2 &pos);
+		PTexture deviceTexture(FRect &tex_rect) const;
 
 		void draw(const int2 &pos, Color color = Color::white) const;
 		void addToRender(SceneRenderer&, const int3 &pos, Color color = Color::white) const;
@@ -51,29 +40,14 @@ namespace gfx
 
 		mutable uint m_temp;
 
-		enum StorageMode {
-			storage_none,
-			storage_single,
-			storage_cache,
-			storage_atlas,
-		};
-
-		StorageMode storageMode() const { return m_storage_mode; }
+		virtual void cacheUpload(Texture&) const;
+		virtual int2 textureSize() const { return dimensions(); }
 
 	protected:
 		PackedTexture m_texture;
-		PTexture m_dev_texture;
-		int m_cache_id;
-		FRect m_tex_coords;
-		StorageMode m_storage_mode;
-
 		int2 m_offset;
 		int3 m_bbox;
 	};
-
-	// dTexture & uvs attributes in tiles will be modified accordingly
-	PTexture makeTileAtlas(const vector<gfx::Tile*>&);
-
 
 	typedef Ptr<Tile> PTile;
 

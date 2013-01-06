@@ -2,8 +2,6 @@
 #define NAVIGATION_MAP_H
 
 #include "tile_map.h"
-#include "gfx/device.h"
-#include "gfx/scene_renderer.h"
 
 class NavigationBitmap;
 

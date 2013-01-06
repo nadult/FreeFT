@@ -15,6 +15,8 @@ Pomysły:
 - ComboBox się przyda do filtrów  DONE
 - Dodać tryb zastępowania w którym kasowane są wszystkie tile które kolidują  DONE
 - Posprzątać SYF! jaki się naprobił w Spritach, Tileach, texturkach i paletach (zrobić pełne)
+- Dodano porządne cache-owanie tekstur, połączone z automatycznym pakowaniem ich do atlasu
+  (modyfikowanego w kawałkach)  DONE
 
 +REQUIREMENTS:
 issues/5-entities
@@ -29,3 +31,4 @@ issues/10-ui_improvements
 30.12.12: 11:30 - 14:20, 15:00 - 16:15, 17:30 - 18:30 (5h 5min)
 31.12.12: 13:00 - 21:30, 22:00 - 02:20 (12h 50min, nice!)
 01.01.12: 16:00 - 21:45 (5h 45min)
+05.01.12: 9:15 - 11:30, 18:00 - 22:00, 23:30 - 02:15 (7h)

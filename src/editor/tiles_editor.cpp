@@ -13,7 +13,7 @@ namespace ui {
 	TilesEditor::TilesEditor(IRect rect)
 		:ui::Window(rect, Color(0, 0, 0)), m_show_grid(false), m_grid_size(1, 1), m_tile_map(0), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
-		m_view_pos = int2(0, 0);
+		m_view_pos = int2(-200, 300);
 		m_is_selecting = false;
 		m_is_replacing = false;
 		m_mode = mode_selecting;

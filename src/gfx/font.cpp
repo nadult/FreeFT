@@ -45,7 +45,7 @@ namespace gfx
 		ASSERT(first_page_node.intAttrib("id") == 0);
 
 		m_texture = tex_mgr[first_page_node.attrib("file")];
-		ASSERT(m_texture && m_texture->size() == m_tex_size);
+		ASSERT(m_texture && m_texture->dimensions() == m_tex_size);
 
 		int chars_count = chars_node.intAttrib("count");
 		XMLNode char_node = chars_node.child("char");

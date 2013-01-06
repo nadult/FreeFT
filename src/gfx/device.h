@@ -7,44 +7,42 @@
 namespace gfx
 {
 
-	//! Device texture
+	// Device texture, no support for mipmaps,
 	class DTexture: public Resource
 	{
 	public:
 		DTexture();
+		DTexture(DTexture&&);
+		DTexture(const DTexture&) = delete;
+		void operator=(const DTexture&) = delete;
+		void operator=(DTexture&&);
 		~DTexture();
 
-		void serialize(Serializer &sr);
+		void serialize(Serializer&);
 
 		void bind() const;
 		static void bind0();
-		void create(int mips);
 
-// TODO: better name		
-		void setSurface(const Texture &in);
-		void getSurface(Texture& out);
+		void resize(TextureFormat format, int width, int height);
+		void clear();
 
-		void free();
-		int2 size() const { return m_size; }
-		int width() const { return m_size.x; }
-		int height() const { return m_size.y; }
-		TextureFormat format() const;
+		void set(const Texture&);
+		void upload(const Texture &src, const int2 &target_pos = int2(0, 0));
+		void upload(const void *pixels, const int2 &dimensions, const int2 &target_pos);
+		void blit(DTexture &target, const IRect &src_rect, const int2 &target_pos) const;
+
+		int width() const { return m_width; }
+		int height() const { return m_height; }
+		const int2 dimensions() const { return int2(m_width, m_height); }
+		const TextureFormat format() const { return m_format; }
 
 		int id() const { return m_id; }
 		bool isValid() const { return m_id > 0; }
 
-		static ResourceMgr<DTexture> mgr;
-
 	private:
-		void setMip(int mip, TextureFormat fmt, void *pixels);
-		void createMip(int mip, int width, int height, TextureFormat fmt);
-		void updateMip(int mip, int x, int y, int w, int h, void *pixels, int pixelsInRow);
-
-		DTexture(const DTexture&) { }
-		void operator=(const DTexture&) { }
-
-		int m_id, m_mips;
-		int2 m_size;
+		int m_id;
+		int m_width, m_height;
+		TextureFormat m_format;
 	};
 
 	typedef Ptr<DTexture> PTexture;

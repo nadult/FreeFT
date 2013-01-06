@@ -4,7 +4,7 @@
 
 namespace gfx
 {
-	void TestGlError(const char *msg) {
+	void testGlError(const char *msg) {
 		int err = glGetError();
 		if(err == GL_NO_ERROR)
 			return;
@@ -21,135 +21,107 @@ namespace gfx
 	#undef CASE
 		}
 	}
+	
+	static int s_current_tex = 0;
 
-	void SetTextureData(int level, TextureFormat fmt, int width, int height, const void *pixels) {
-		DASSERT(width <= 4096 && height <= 4096);
-
-		if(fmt.isCompressed()) {
-			THROW("Texture compression is not supported");
-		}
-		else {
-			glTexImage2D(GL_TEXTURE_2D, level, fmt.glInternal(), width, height, 0,
-							fmt.glFormat(), fmt.glType(), pixels);
-
-			TestGlError("Error while loading texture surface to the device");
-		}
-	}
-
-	void GetTextureData(int level, TextureFormat fmt, void *pixels) {
-		if(fmt.isCompressed()) {
-			THROW("Texture compression is not supported");
-		}
-		else {
-			glGetTexImage(GL_TEXTURE_2D, level, fmt.glFormat(), fmt.glType(), pixels);
-			TestGlError("Error while loading texture surface from the device");
-		}
-	}
-
-	DTexture::DTexture() :m_id(0), m_mips(0) { }
+	DTexture::DTexture() :m_id(0), m_width(0), m_height(0), m_format(TI_Unknown) { }
 
 	DTexture::~DTexture() {
-		free();
-	}
-
-	void DTexture::free() {
-		if(m_id > 0) {
-			GLuint gl_id = m_id;
-			glDeleteTextures(1, &gl_id);
-			m_id = 0;
-		}
-	}
-	
-	void DTexture::create(int mips) {
-		free();
-		
-		GLuint gl_id;
-		glGenTextures(1, &gl_id);
-		TestGlError("Error while creating texture");
-		m_id = (int)gl_id;
-		
-		::glBindTexture(GL_TEXTURE_2D, gl_id);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mips > 1? GL_LINEAR : GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mips > 1? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST);
-
-		m_mips = mips;
-	}
-
-	void DTexture::setSurface(const Texture &in) {
-		create(1);
-		m_size = int2(in.width(), in.height());
-		SetTextureData(0, in.format(), in.width(), in.height(), in.data());
-	}
-
-	void DTexture::getSurface(Texture &out) {
-		out.resize(width(), height());
-		TextureFormat fmt = out.format();
-		GetTextureData(0, fmt, &out(0, 0));
+		clear();
 	}
 
 	void DTexture::serialize(Serializer &sr) {
-		Texture surface;
-		if(sr.isSaving())
-			getSurface(surface);
+		//TODO: saving
+		ASSERT(sr.isLoading());
+		Texture temp;
+		sr & temp;
+		set(temp);
+	}
 
-		sr & surface;
+	void DTexture::resize(TextureFormat format, int width, int height) {
+		if(!m_id) {
+			GLuint gl_id;
+			glGenTextures(1, &gl_id);
+			testGlError("glGenTextures");
+			m_id = (int)gl_id;
+		}
 
-		if(sr.isLoading())
-			setSurface(surface);
+		if(m_width == width && m_height == height && m_format == format)
+			return;
+
+		try {		
+			bind();
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexImage2D(GL_TEXTURE_2D, 0, format.glInternal(), width, height,
+					0, format.glFormat(), format.glType(), 0);
+			testGlError("glTexImage2D");
+
+		}
+		catch(const Exception &ex) {
+			clear();
+			THROW("Error while creating texture (width: %d height: %d format id: %d): %s",
+					width, height, (int)format.ident(), ex.what());
+		}
+		
+		m_width = width;
+		m_height = height;
+		m_format = format;
+	}
+		
+	void DTexture::clear() {
+		if(m_id) {
+			GLuint gl_id = m_id;
+			glDeleteTextures(1, &gl_id);
+			if(s_current_tex == m_id)
+				s_current_tex = 0;
+			m_id = 0;
+		}
+			
+		m_width = m_height = 0;
+		m_format = TI_Unknown;
+	}
+	
+	void DTexture::set(const Texture &src) {
+		resize(src.format(), src.width(), src.height());
+		upload(src, int2(0, 0));
+	}
+		
+	void DTexture::upload(const Texture &src, const int2 &target_pos) {
+		DASSERT(isValid());
+		DASSERT(src.format() == m_format);
+		upload(src.data(), src.dimensions(), target_pos);
+	}
+
+	void DTexture::upload(const void *pixels, const int2 &dimensions, const int2 &target_pos) {
+		bind();
+		DASSERT(dimensions.x + target_pos.x <= m_width && dimensions.y + target_pos.y <= m_height);
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, target_pos.x, target_pos.y, dimensions.x, dimensions.y,
+				m_format.glFormat(), m_format.glType(), pixels);
+	}
+
+	void DTexture::blit(DTexture &target, const IRect &src_rect, const int2 &target_pos) const {
+		//TODO: use PBO's
+		THROW("blitting from one DTexture to another not supported yet");
 	}
 
 	void DTexture::bind() const {
 		DASSERT(isValid());
-		::glBindTexture(GL_TEXTURE_2D, m_id);
+		if(m_id != s_current_tex) {
+			::glBindTexture(GL_TEXTURE_2D, m_id);
+			s_current_tex = m_id;
+		}
 	}
 
 	void DTexture::bind0() {
-		::glBindTexture(GL_TEXTURE_2D, 0);
+		if(s_current_tex) {
+			::glBindTexture(GL_TEXTURE_2D, 0);
+			s_current_tex = 0;
+		}
 	}
-	
-	void DTexture::createMip(int level, int w, int h, TextureFormat fmt) {
-		DASSERT(isValid());
-
-	//TODO: GL_TEXTURE_2D_BINDING_EXT not available on windows
-	//	GLint gl_id;
-	//	glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
-		::glBindTexture(GL_TEXTURE_2D, m_id);
-		
-		glTexImage2D(GL_TEXTURE_2D, level, fmt.glInternal(), w, h, 0, fmt.glFormat(), fmt.glType(), 0);
-					
-	//	::glBindTexture(GL_TEXTURE_2D, gl_id);
-	}
-	
-	void DTexture::updateMip(int mip, int x, int y, int w, int h, void *pix, int pixelsInRow) {
-		DASSERT(isValid());
-
-	//	GLint gl_id;
-	//	glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
-		::glBindTexture(GL_TEXTURE_2D, m_id);
-	
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, pixelsInRow);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, pix);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-					
-	//	::glBindTexture(GL_TEXTURE_2D, gl_id);
-	}
-
-	TextureFormat DTexture::format() const {
-		DASSERT(isValid());
-
-		GLint internal = 0;
-	//	GLint gl_id;
-	//	glGetIntegerv(GL_TEXTURE_2D_BINDING_EXT, &gl_id);
-		::glBindTexture(GL_TEXTURE_2D, m_id);
-		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal);
-	//	::glBindTexture(GL_TEXTURE_2D, gl_id);
-
-		return TextureFormat(internal);
-	}
-
-	ResourceMgr<DTexture> DTexture::mgr("data/textures/", "");
 
 }

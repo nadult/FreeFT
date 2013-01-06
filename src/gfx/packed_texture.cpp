@@ -1,7 +1,10 @@
 #include "gfx/texture.h"
-#include <emmintrin.h>
 
 namespace gfx {
+
+	bool Palette::operator==(const Palette &rhs) const {
+		return size() == rhs.size() && memcmp(data(), rhs.data(), size()) == 0;
+	}
 
 	void Palette::resize(int size) {
 		DASSERT(size <= 256);
