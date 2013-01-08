@@ -51,6 +51,7 @@ namespace gfx {
 
 		void unload(int res_id);
 		PTexture access(int res_id, FRect&);
+		PTexture atlas() { return PTexture(&m_atlas); }
 
 		void setMemoryLimit(int bytes) { m_memory_limit = bytes; }
 		int memoryLimit() const { return m_memory_limit; }

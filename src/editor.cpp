@@ -62,7 +62,7 @@ public:
 		m_entity_map = Grid(int2(1024, 1024));
 
 		loadTileGroup("data/tile_group.xml");
-		loadTileMap("data/tile_map.xml");
+		loadTileMap("data/conv_map.xml");
 
 		m_tiles_editor = new TilesEditor(IRect(left_width, 0, res.x, res.y));
 		m_group_editor = new GroupEditor(IRect(left_width, 0, res.x, res.y));
@@ -210,13 +210,20 @@ int safe_main(int argc, char **argv)
 	setWindowTitle("FTremake::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
 		
+	TileMap orig_map;
+	Loader ldr("refs/maps/mission07.mis");
+	orig_map.legacyLoad(ldr);
+	XMLDocument doc;
+	orig_map.saveToXML(doc);
+	doc.save("data/conv_map.xml");
+
 	setBlendingMode(bmNormal);
 
 	printf("Enumerating tiles\n");
 	vector<FileEntry> file_names;
 	findFiles(file_names, "data/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
-	int mem_size = 0, bit_size = 0;
+	int mem_size = 0;
 
 	printf("Loading tiles");
 	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
@@ -231,7 +238,6 @@ int safe_main(int argc, char **argv)
 			string tile_name = tile_path;
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
-				bit_size += tile->width() * tile->height() / 8;
 				mem_size += tile->memorySize();
 
 				tile->name = tile_name;
@@ -242,8 +248,7 @@ int safe_main(int argc, char **argv)
 	}
 	printf("\n");
 
-	printf("Tiles memory: %d KB\nBitmaps: %d KB\n",
-			mem_size/1024, bit_size/1024);
+	printf("Tiles memory: %d KB\n",	mem_size/1024);
 
 	EditorWindow main_window(config.resolution);
 	clear(Color(0, 0, 0));
@@ -258,13 +263,13 @@ int safe_main(int argc, char **argv)
 		main_window.process();
 		main_window.draw();
 		lookAt({0, 0});
-		
+
 		DTexture::bind0();
 		drawQuad(config.resolution - int2(250, 200), config.resolution, Color(0, 0, 0, 80));
 
 		gfx::PFont font = gfx::Font::mgr["arial_16"];
 		font->drawShadowed(config.resolution - int2(250, 180), Color::white, Color::black, "%s", prof_stats.c_str());
-		
+
 		swapBuffers();
 		TextureCache::main_cache.nextFrame();
 

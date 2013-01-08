@@ -18,6 +18,7 @@
 #include "game/door.h"
 #include "game/item.h"
 #include "sys/config.h"
+#include "sys/xml.h"
 
 using namespace gfx;
 using namespace game;
@@ -39,11 +40,11 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	int2 view_pos(-200, 300);
+	int2 view_pos(-140, 2400);
 
 	PFont font = Font::mgr["arial_32"];
 
-	World world("data/tile_map.xml");
+	World world("data/conv_map.xml");
 
 	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, 1, 70)));
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
@@ -185,11 +186,12 @@ int safe_main(int argc, char **argv)
 		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
 		DTexture::bind0();
-		drawQuad(0, 0, 250, 200, Color(0, 0, 0, 80));
+		drawQuad(0, 0, 250, 250, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["arial_16"];
 		float3 isect_pos = ray.at(box_isect.distance());
-		font->drawShadowed(int2(0, 0), Color::white, Color::black, "(%.2f %.2f %.2f)", isect_pos.x, isect_pos.y, isect_pos.z);
+		font->drawShadowed(int2(0, 0), Color::white, Color::black, "View:(%d %d) Ray:(%.2f %.2f %.2f)",
+				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
 		font->drawShadowed(int2(0, 20), Color::white, Color::black, "%s", prof_stats.c_str());
 
 		if(item_debug) {
@@ -252,8 +254,11 @@ int safe_main(int argc, char **argv)
 		profiler::nextFrame();
 	}
 
-	//TODO: sprites with references to cache die after cache dies
-	Sprite::mgr.clear();
+	PTexture atlas = TextureCache::main_cache.atlas();
+	Texture tex;
+	atlas->download(tex);
+	Saver("atlas.tga") & tex;
+
 	destroyWindow();
 
 	return 0;

@@ -43,6 +43,8 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 
 			for(int n = 0; n < count; n++)
 				if(areOverlapping(box, objects[n]->bbox)) {
+					if(objects[n]->node_id == -1)
+						disableOverlap(objects[n]);
 					out.push_back(objects[n] - &m_objects[0]);
 					anything_found = true;
 				}
@@ -50,6 +52,8 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 			if(!anything_found && node.is_dirty)
 				updateNode(node_id);	
 		}
+
+	clearDisables();
 }
 
 pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) const {
@@ -142,6 +146,8 @@ void Grid::findAll(vector<int> &out, const IRect &view_rect) const {
 
 			for(int n = 0; n < count; n++)
 				if(areOverlapping(view_rect, objects[n]->rect)) {
+					if(objects[n]->node_id == -1)
+						disableOverlap(objects[n]);
 					out.push_back(objects[n] - &m_objects[0]);
 					anything_found = true;
 				}
@@ -150,6 +156,8 @@ void Grid::findAll(vector<int> &out, const IRect &view_rect) const {
 				updateNode(node_id);	
 		}
 	}
+
+	clearDisables();
 }
 
 int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectDef&, const int2&)) const {

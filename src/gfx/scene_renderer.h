@@ -21,8 +21,6 @@ namespace gfx {
 
 		const IRect &targetRect() const { return m_target_rect; }
 
-		enum { node_size = 128 };
-
 	protected:
 		struct Element {
 			//TODO: change to weak ptr to texture, make sure that textures exist

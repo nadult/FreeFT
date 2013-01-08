@@ -21,13 +21,15 @@ int TileMap::add(const gfx::Tile *tile, const int3 &pos) {
 
 	FBox bbox(pos, pos + tile->bboxSize());
 	IRect rect = tile->rect() + worldToScreen(pos);
-	ASSERT(findAny(bbox) == -1);
+//	ASSERT(findAny(bbox) == -1);
 	return Grid::add(ObjectDef(tile, bbox, rect, -1));
 }
 
 void TileMap::loadFromXML(const XMLDocument &doc) {
 	XMLNode main_node = doc.child("tile_map");
 	ASSERT(main_node);
+
+	clear();
 
 	int2 size = main_node.int2Attrib("size");
 	ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
@@ -66,6 +68,7 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 		const TileDef &object = (*this)[indices[n]];
 		if(object.ptr != prev) {
 			tile_node = main_node.addChild("tile");
+			ASSERT(!object.ptr->name.empty());
 		   	tile_node.addAttrib("name", doc.own(object.ptr->name.c_str()));
 			prev = object.ptr;
 		}

@@ -37,6 +37,7 @@ public:
 
 	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = -1) const;
 	
+	//TODO: 
 	void findAll(vector<int> &out, const IRect &view_rect) const;
 	int pixelIntersect(const int2 &pos, bool (*pixelTest)(const ObjectDef&, const int2 &pos)) const;
 
@@ -77,7 +78,8 @@ protected:
 	struct Object: public ObjectDef {
 		int node_id; // -1 means that its overlapping more than one node
 		int next_id;
-		int prev_id;
+		int prev_id :31;
+		mutable int is_disabled :1;
 	} __attribute__((aligned(64)));
 
 	//TODO: wrong for negative values
@@ -92,14 +94,19 @@ protected:
 	int extractObjects(int node_id, const Object **out, int ignored_id = -1, int flags = -1) const;
 
 protected:
+	void disableOverlap(const Object*) const;
+	void clearDisables() const;
+
 	FBox m_bounding_box;
 	int2 m_size;
 	vector<int2> m_row_rects;
 	vector<int> m_free_list;
-	vector<int> m_free_overlaps;
+	vector<int> m_free_overlaps; // do as in TextureCache
 	vector<Overlap> m_overlaps;
 	vector<Node> m_nodes;
 	vector<Object> m_objects;
+
+	mutable vector<int> m_disabled_overlaps;
 };
 
 #endif

@@ -14,6 +14,7 @@ Grid::Grid(const int2 &size) {
 		m_free_list.reserve(1024);
 		m_free_overlaps.reserve(1024);
 		m_overlaps.reserve(1024 * 16);
+		m_disabled_overlaps.reserve(256);
 	}
 }
 	
@@ -32,6 +33,7 @@ int Grid::add(const ObjectDef &def) {
 	if(m_free_list.empty()) {
 		m_objects.push_back(Object());
 		object_id = (int)m_objects.size() - 1;
+		m_objects.back().is_disabled = 0;
 	}
 	else {
 		object_id = m_free_list.back();
@@ -198,7 +200,6 @@ bool Grid::isInside(const FBox &box) const {
 int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int flags) const {
 	const Object **start = out;
 
-	//TODO: mailboxing
 	const Node &node = m_nodes[node_id];
 	int object_id = node.first_id;
 	while(object_id != -1) {
@@ -212,7 +213,7 @@ int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int fl
 	while(overlap_id != -1) {
 		object_id = m_overlaps[overlap_id].object_id;
 		const Object &object = m_objects[object_id];
-		if((flags & object.flags) && object_id != ignored_id)
+		if((flags & object.flags) && object_id != ignored_id && !object.is_disabled)
 			*out++ = &object;
 		overlap_id = m_overlaps[overlap_id].next_id;
 	}
@@ -245,4 +246,18 @@ void Grid::swap(Grid &rhs) {
 void Grid::clear() {
 	Grid empty(dimensions());
 	swap(empty);
+}
+
+void Grid::disableOverlap(const Object *object) const {
+	DASSERT(object && object->node_id == -1);
+	object->is_disabled = 1;
+	m_disabled_overlaps.push_back(object - m_objects.data());
+}
+
+void Grid::clearDisables() const {
+	if(!m_disabled_overlaps.empty()) {
+		for(int n = 0; n < (int)m_disabled_overlaps.size(); n++)
+			m_objects[m_disabled_overlaps[n]].is_disabled = 0;
+		m_disabled_overlaps.clear();
+	}
 }

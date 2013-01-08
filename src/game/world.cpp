@@ -22,7 +22,7 @@ namespace game {
 		tile_map.loadFromXML(doc);
 		m_tile_grid = tile_map;
 		m_entity_grid = EntityGrid(tile_map.dimensions());
-	//	m_tile_grid.printInfo();
+		m_tile_grid.printInfo();
 	
 		updateNavigationMap(true);
 	}
@@ -30,7 +30,7 @@ namespace game {
 	}
 
 	void World::updateNavigationMap(bool full_recompute) {
-		PROFILE("updateNavigationMap");
+		//PROFILE("updateNavigationMap");
 
 		if(full_recompute) {
 			NavigationBitmap bitmap(m_tile_grid, m_navi_map.extend());
@@ -50,7 +50,7 @@ namespace game {
 				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
 			}
 
-		PROFILE("updateNavi::updateGrid");
+		//PROFILE("updateNavi::updateGrid");
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			const Entity *entity = m_entities[n].get();
 			if(entity->colliderType() != collider_static)
@@ -150,7 +150,7 @@ namespace game {
 	}
 
 	Intersection World::pixelIntersect(const int2 &screen_pos) const {
-		PROFILE("world::pixelIntersect");
+		//PROFILE("world::pixelIntersect");
 		Intersection out;
 
 		int tile_id = m_tile_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
@@ -170,7 +170,7 @@ namespace game {
 	}
 
 	bool World::isColliding(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
-		PROFILE("world::isColliding");
+		//PROFILE("world::isColliding");
 
 		if((flags & collider_tiles))
 			if(m_tile_grid.findAny(box) != -1)

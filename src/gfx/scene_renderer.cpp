@@ -17,7 +17,7 @@ namespace gfx {
 		DASSERT(texture);
 
 		rect += (int2)worldToScreen(pos);
-		if(!areOverlapping(rect, IRect(m_view_pos, m_view_pos + m_viewport.size())))
+		if(!areOverlapping(rect, m_target_rect))
 			return; //TODO: redundant check
 
 		Element new_elem;
@@ -56,23 +56,64 @@ namespace gfx {
 		m_lines.push_back(line);
 	}
 
+	struct GNode {
+		bool operator<(const GNode &node) const {
+			return first == node.first? second < node.second : first < node.first;
+		}
+		int first, second, flag;
+	};
 
-	static int DFS(const vector<char> &graph, vector<pair<int, int> > &gdata, int count, int i, int time) {
+	static int DFS(const vector<char> &graph, vector<GNode> &gdata, int count, int i, int time) {
+		gdata[i].flag = 1;
+
 		for(int k = 0; k < count; k++) {
 			if(k == i || graph[i + k * count] != -1)
 				continue;
+			if(gdata[k].flag)
+				profiler::updateCounter("loops", 1);
 			if(gdata[k].second)
 				continue;
 			gdata[k].second = time++;
 			time = DFS(graph, gdata, count, k, time);
 		}
 
+		gdata[i].flag = 0;
 		gdata[i].first = time++;
 		return time;
 	}
 
+	inline static bool fastOverlapTest(const IRect &a, const IRect &b) {
+		int ret1 = ( ((b.min.x - a.max.x) & (a.min.x - b.max.x)) & ((b.min.y - a.max.y) & (a.min.y - b.max.y)) ) >> 31;
+	//	int ret2 = (b.min.x < a.max.x && a.min.x < b.max.x) && (b.min.y < a.max.y && a.min.y < b.max.y);
+	//	ASSERT((bool)ret1 == (bool)ret2);
+		return ret1;
+	}
+	
+	int fastDrawingOrder(const FBox &a, const FBox &b) {
+		bool overlap_x = b.min.x <= a.max.x && a.min.x <= b.max.x;
+		bool overlap_y = b.min.y <= a.max.y && a.min.y <= b.max.y;
+		bool overlap_z = b.min.z <= a.max.z && a.min.z <= b.max.z;
+
+		int x_ret = a.max.x <= b.min.x? -1 : b.max.x <= a.min.x? 1 : 0;
+		int y_ret = a.max.y <= b.min.y? -1 : b.max.y <= a.min.y? 1 : 0;
+		int z_ret = a.max.z <= b.min.z? -1 : b.max.z <= a.min.z? 1 : 0;
+		
+		if(y_ret)
+			return y_ret;
+
+		if(x_ret)
+			return x_ret;
+
+		if(z_ret)
+			return z_ret;
+
+		return 0;
+	}
+
 	void SceneRenderer::render() {
 		PROFILE("SceneRenderer::render");
+
+		enum { node_size = 128 };
 
 		setScissorTest(true);
 		lookAt(m_view_pos - m_viewport.min);
@@ -81,7 +122,7 @@ namespace gfx {
 		int xNodes = (m_viewport.width() + node_size - 1) / node_size;
 		int yNodes = (m_viewport.height() + node_size - 1) / node_size;
 
-//		std::random_shuffle(m_elements.begin(), m_elements.end());
+		std::random_shuffle(m_elements.begin(), m_elements.end());
 
 		// Screen is divided into a set of squares. Rendered elements are assigned to covered
 		// squares and sorting is done independently for each of the squares, so that, we can
@@ -89,6 +130,7 @@ namespace gfx {
 		vector<std::pair<int, int> > grid;
 		grid.reserve(m_elements.size() * 4);
 
+		profiler::updateCounter("SceneRenderer::total_count", m_elements.size());
 		for(int n = 0; n < (int)m_elements.size(); n++) {
 			const Element &elem = m_elements[n];
 			IRect rect = elem.rect - m_view_pos;
@@ -109,7 +151,7 @@ namespace gfx {
 		// than one tile should be drawn before the other; cycles in this graph result
 		// in glitches in the end (unavoidable)
 		vector<char> graph(1024, 0);
-		vector<std::pair<int, int> > gdata(32, make_pair(0, 0));
+		vector<GNode> gdata(32);
 
 		for(int g = 0; g < (int)grid.size();) {
 			int node_id = grid[g].first;
@@ -124,19 +166,28 @@ namespace gfx {
 			if((int)gdata.size() < count)
 				gdata.resize(count);
 
-			for(int i = 0; i < count; i++) {
-				const Element &elem1 = m_elements[grid[g + i].second];
+			{ PROFILE("SceneRenderer::inner_loop"); 
+				IRect rects[count];
+				FBox bboxes[count];
+				for(int i = 0; i < count; i++) {
+					const Element &elem = m_elements[grid[g + i].second];
+					rects[i] = elem.rect;
+					bboxes[i] = elem.bbox;
+				}
+				for(int i = 0; i < count; i++) {
+					bool overlaps[count];
+					IRect rect = rects[i];
 
-				for(int j = i + 1; j < count; j++) {
-					const Element &elem2 = m_elements[grid[g + j].second];
-					int result = areOverlapping(elem1.rect, elem2.rect)? drawingOrder(elem1.bbox, elem2.bbox): 0;
-					graph[i + j * count] = result;
-					graph[j + i * count] = -result;
+					for(int j = i + 1; j < count; j++) {
+						int result = fastOverlapTest(rect, rects[j])? fastDrawingOrder(bboxes[i], bboxes[j]): 0;
+						graph[i + j * count] = result;
+						graph[j + i * count] = -result;
+					}
 				}
 			}
 
 			for(int i = 0; i < count; i++)
-				gdata[i] = make_pair(0, 0);
+				gdata[i] = GNode{0, 0, 0};
 
 			int time = 1;
 			for(int i = 0; i < count; i++) {
@@ -155,7 +206,8 @@ namespace gfx {
 			grid_rect.max = min(grid_rect.max, m_viewport.max);
 			setScissorRect(grid_rect);
 
-			//PROFILE("SceneRenderer::blit");
+			profiler::updateCounter("SceneRenderer::rendered_count", count);
+			PROFILE("SceneRenderer::blit");
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
 				if(elem.texture) {

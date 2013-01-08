@@ -53,7 +53,7 @@ namespace game {
 	}
 
 	void Entity::addToRender(gfx::SceneRenderer &out) const {
-		PROFILE("Entity::addToRender");
+		//PROFILE("Entity::addToRender");
 		IRect rect = m_sprite->getRect(m_seq_id, m_frame_id, m_dir_idx);
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))
 			return;

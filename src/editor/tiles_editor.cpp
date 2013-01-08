@@ -65,6 +65,10 @@ namespace ui {
 			}
 		}
 
+		if(getMouseWheelMove()) {
+			m_grid_height += getMouseWheelMove();
+		}
+
 		//TODO: make proper accelerators
 		if(isKeyDown('S')) {
 			m_selection_mode = m_mode == mode_selecting?
@@ -102,11 +106,10 @@ namespace ui {
 			};
 			
 			for(int n = 0; n < COUNTOF(actions); n++)
-				if(isKeyDown(actions[n]))
+				if(isKeyPressed(actions[n]))
 					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_grid_size.x);
 			clampViewPos();
 		}
-
 
 		if(isKeyPressed(Key_del)) {
 			for(int i = 0; i < (int)m_selected_ids.size(); i++)
@@ -124,7 +127,7 @@ namespace ui {
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 
-		start_pos.y = end_pos.y = m_cursor_height;
+		start_pos.y = end_pos.y = m_grid_height + m_cursor_height;
 		
 		{
 			int apos1 = start_pos.x % gbox.x;
@@ -435,6 +438,8 @@ namespace ui {
 				if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
 					col.r = col.g = 255;
 
+//				if(m_tile_map->findAny(object.bbox, visible_ids[i]) != -1)
+//					renderer.addBox(object.bbox, Color::red, false);
 				object.ptr->addToRender(renderer, pos, col);
 			}
 			for(int i = 0; i < (int)m_selected_ids.size(); i++)
@@ -454,6 +459,9 @@ namespace ui {
 				screenToWorld(m_view_pos + int2(0, wsize.y)),
 				screenToWorld(m_view_pos + int2(wsize.x, wsize.y)),
 				screenToWorld(m_view_pos + int2(wsize.x, 0)) };
+			int2 offset = screenToWorld(worldToScreen(int3(0, m_grid_height, 0)));
+			for(int n = 0; n < 4; n++)
+				p[n] -= offset;
 
 			int2 tmin = min(min(p[0], p[1]), min(p[2], p[3]));
 			int2 tmax = max(max(p[0], p[1]), max(p[2], p[3]));
@@ -487,7 +495,7 @@ namespace ui {
 		{
 			IBox under = m_selection;
 			under.max.y = under.min.y;
-			under.min.y = 0;
+			under.min.y = m_grid_height;
 
 			drawBBox(under, Color(127, 127, 127, 255));
 			drawBBox(m_selection);
@@ -511,19 +519,20 @@ namespace ui {
 			" (difference)",
 		};
 
+		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map->size());
 		if(m_new_tile)
 			font->drawShadowed(int2(0, clippedRect().height() - 50), Color::white, Color::black,
 					"Tile: %s\n", m_new_tile->name.c_str());
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
-				"Cursor: (%d, %d, %d)  Mode: %s%s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, mode_names[m_mode],
+				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s%s\n",
+				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid_height, mode_names[m_mode],
 				m_mode == mode_selecting? selection_names[m_selection_mode] : m_is_replacing? " (replacing)" : "");
 	}
 
 	void TilesEditor::clampViewPos() {
 		DASSERT(m_tile_map);
 		int2 rsize = rect().size();
-		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map->dimensions(), 32)));
+		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map->dimensions(), 256)));
 		m_view_pos = clamp(m_view_pos, rect.min, rect.max - rsize);
 	}
 

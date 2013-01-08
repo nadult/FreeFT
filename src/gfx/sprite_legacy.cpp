@@ -1,65 +1,60 @@
 #include "gfx/sprite.h"
 #include <zlib.h>
 
-namespace
-{
+// source: http://www.zlib.net/zlib_how.html
+void zlibInflate(Serializer &sr, vector<char> &dest, int inSize) {
+	enum { CHUNK = 16 * 1024 };
 
-	// source: http://www.zlib.net/zlib_how.html
-	void inflate(Serializer &sr, vector<char> &dest, int inSize) {
-		enum { CHUNK = 16 * 1024 };
+	int ret;
+	unsigned have;
+	z_stream strm;
+	unsigned char in[CHUNK];
+	unsigned char out[CHUNK];
 
-		int ret;
-		unsigned have;
-		z_stream strm;
-		unsigned char in[CHUNK];
-		unsigned char out[CHUNK];
+	dest.clear();
 
-		dest.clear();
+	/* allocate inflate state */
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+	if(inflateInit(&strm) != Z_OK)
+		THROW("Error while decompressing image data");
 
-		/* allocate inflate state */
-		strm.zalloc = Z_NULL;
-		strm.zfree = Z_NULL;
-		strm.opaque = Z_NULL;
-		strm.avail_in = 0;
-		strm.next_in = Z_NULL;
-		if(inflateInit(&strm) != Z_OK)
-			THROW("Error while decompressing image data");
+	/* decompress until deflate stream ends or end of file */
+	do {
+		strm.avail_in = inSize < CHUNK? inSize : CHUNK;
+		sr.data(in, strm.avail_in);
+		strm.next_in = in;
+		inSize -= strm.avail_in;
 
-		/* decompress until deflate stream ends or end of file */
+		/* run inflate() on input until output buffer not full */
 		do {
-			strm.avail_in = inSize < CHUNK? inSize : CHUNK;
-			sr.data(in, strm.avail_in);
-			strm.next_in = in;
-			inSize -= strm.avail_in;
+			strm.avail_out = CHUNK;
+			strm.next_out = out;
+			ret = inflate(&strm, Z_NO_FLUSH);
+			DASSERT(ret != Z_STREAM_ERROR);  /* state not clobbered */
 
-			/* run inflate() on input until output buffer not full */
-			do {
-				strm.avail_out = CHUNK;
-				strm.next_out = out;
-				ret = inflate(&strm, Z_NO_FLUSH);
-				DASSERT(ret != Z_STREAM_ERROR);  /* state not clobbered */
+			switch (ret) {
+			case Z_NEED_DICT:
+				ret = Z_DATA_ERROR;     /* and fall through */
+			case Z_DATA_ERROR:
+			case Z_MEM_ERROR:
+				inflateEnd(&strm);
+				THROW("Z_MEM_ERROR while decompressing image data");
+			}
+			have = CHUNK - strm.avail_out;
+			dest.resize(dest.size() + have);
+			memcpy(&dest[dest.size() - have], out, have);
+		} while (strm.avail_out == 0);
+		/* done when inflate() says it's done */
+	} while (ret != Z_STREAM_END && inSize);
+	
+	inflateEnd(&strm);
 
-				switch (ret) {
-				case Z_NEED_DICT:
-					ret = Z_DATA_ERROR;     /* and fall through */
-				case Z_DATA_ERROR:
-				case Z_MEM_ERROR:
-					inflateEnd(&strm);
-					THROW("Z_MEM_ERROR while decompressing image data");
-				}
-				have = CHUNK - strm.avail_out;
-				dest.resize(dest.size() + have);
-				memcpy(&dest[dest.size() - have], out, have);
-			} while (strm.avail_out == 0);
-			/* done when inflate() says it's done */
-		} while (ret != Z_STREAM_END && inSize);
-		
-		inflateEnd(&strm);
-
-		if(ret != Z_STREAM_END)
-			THROW("Error while decompressing image data");
-	}
-
+	if(ret != Z_STREAM_END)
+		THROW("Error while decompressing image data");
 }
 
 namespace gfx
@@ -208,7 +203,7 @@ namespace gfx
 			else {
 				i32 plainSize = 0;
 				sr & plainSize;
-				inflate(sr, data, size - 4);
+				zlibInflate(sr, data, size - 4);
 				DASSERT((int)data.size() == plainSize);
 			}
 

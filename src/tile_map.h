@@ -26,6 +26,8 @@ public:
 	void loadFromXML(const XMLDocument&);
 	void saveToXML(XMLDocument&) const;
 	void swap(const TileMap&);
+
+	void legacyLoad(Serializer&);
 };
 
 

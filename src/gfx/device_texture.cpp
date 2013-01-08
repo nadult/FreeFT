@@ -1,6 +1,7 @@
 #include "gfx/device.h"
 #include "gfx/texture.h"
 #include <GL/gl.h>
+#include "sys/profiler.h"
 
 namespace gfx
 {
@@ -119,6 +120,7 @@ namespace gfx
 	void DTexture::bind() const {
 		DASSERT(isValid());
 		if(m_id != s_current_tex) {
+			profiler::updateCounter("tex_swaps", 1);
 			::glBindTexture(GL_TEXTURE_2D, m_id);
 			s_current_tex = m_id;
 		}
