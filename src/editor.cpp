@@ -62,7 +62,7 @@ public:
 		m_entity_map = Grid(int2(1024, 1024));
 
 		loadTileGroup("data/tile_group.xml");
-		loadTileMap("data/conv_map.xml");
+		loadTileMap("data/tile_map.xml");
 
 		m_tiles_editor = new TilesEditor(IRect(left_width, 0, res.x, res.y));
 		m_group_editor = new GroupEditor(IRect(left_width, 0, res.x, res.y));
@@ -210,13 +210,6 @@ int safe_main(int argc, char **argv)
 	setWindowTitle("FTremake::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
 		
-	TileMap orig_map;
-	Loader ldr("refs/maps/mission07.mis");
-	orig_map.legacyLoad(ldr);
-	XMLDocument doc;
-	orig_map.saveToXML(doc);
-	doc.save("data/conv_map.xml");
-
 	setBlendingMode(bmNormal);
 
 	printf("Enumerating tiles\n");

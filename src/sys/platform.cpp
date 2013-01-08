@@ -33,13 +33,7 @@ Path::Path(const string &path) {
 	divide(path.c_str(), elements);
 	construct(elements);
 }
-Path::Path(const string &&path) {
-	vector<Element> elements;
-	elements.reserve(32);
-	divide(path.c_str(), elements);
-	construct(elements);
-}
-Path::Path(Path &&ref) :m_path(std::move(ref.m_path)) { }
+Path::Path(Path &&ref) { ref.m_path.swap(m_path); }
 Path::Path(const Path &rhs) :m_path(rhs.m_path) { }
 Path::Path() :m_path(".") { }
 

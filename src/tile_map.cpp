@@ -77,3 +77,12 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 		instance.addAttrib("pos", int3(object.bbox.min));
 	}
 }
+
+void TileMap::serialize(Serializer &sr) {
+	XMLDocument doc;
+	if(sr.isSaving())
+		saveToXML(doc);
+	sr & doc;
+	if(sr.isLoading())
+		loadFromXML(doc);
+}

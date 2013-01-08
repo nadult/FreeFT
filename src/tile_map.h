@@ -23,6 +23,7 @@ public:
 	int add(const gfx::Tile*, const int3 &pos);
 	void resize(const int2 &new_dims);
 
+	void serialize(Serializer&);
 	void loadFromXML(const XMLDocument&);
 	void saveToXML(XMLDocument&) const;
 	void swap(const TileMap&);

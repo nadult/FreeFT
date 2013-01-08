@@ -8,13 +8,12 @@ class Path {
 public:
 	Path(const char*);
 	Path(const string&);
-	Path(const string&&);
 	Path(Path&&);
 	Path(const Path&);
 	Path();
 
 	void operator=(const Path &rhs) { m_path = rhs.m_path; }
-	void operator=(Path &&rhs) { m_path = std::move(rhs.m_path); }
+	void operator=(Path &&rhs) { m_path.swap(rhs.m_path); }
 
 	bool isRoot() const;
 	bool isAbsolute() const;

@@ -1,7 +1,10 @@
 #include "gfx/tile.h"
 #include "gfx/sprite.h"
+#include "tile_map.h"
 #include "sys/platform.h"
 #include <unistd.h>
+#include <omp.h>
+#include <algorithm>
 
 using namespace gfx;
 
@@ -12,6 +15,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 	printf("Scanning...\n");
 	Path main_path = Path(src_dir).absolute();
 	findFiles(file_names, main_path, FindFiles::regular_file | FindFiles::recursive);
+	std::sort(file_names.begin(), file_names.end());
 	int total_before = 0, total_after = 0;
 
 	printf("Recreating directories...\n");	
@@ -27,7 +31,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 		fflush(stdout);
 	}
 
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for
 	for(uint n = 0; n < file_names.size(); n++) {
 		if(!detailed && n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
@@ -77,27 +81,38 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 int safe_main(int argc, char **argv) {
 	bool conv_tiles = false;
 	bool conv_sprites = false;
+	bool conv_maps = false;
+	int jobs = 0;
 	string filter;
 
 	for(int n = 1; n < argc; n++) {
 		if(strcmp(argv[n], "-f") == 0 && n + 1 < argc)
 			filter = argv[++n];
+		else if(strcmp(argv[n], "-j") == 0 && n + 1 < argc)
+			jobs = atoi(argv[++n]);
 		else if(strcmp(argv[n], "tiles") == 0)
 			conv_tiles = true;
 		else if(strcmp(argv[n], "sprites") == 0)
 			conv_sprites = true;
+		else if(strcmp(argv[n], "maps") == 0)
+			conv_maps = true;
 	}
 
-	if(!conv_tiles && !conv_sprites) {
-		printf("Usage:\n%s [options] tiles|sprites\nOptions:\n"
+	if(!conv_tiles && !conv_sprites && !conv_maps) {
+		printf("Usage:\n%s [options] tiles|sprites|maps\nOptions:\n"
 				"-f filter	Converting only those files that match given filter\n\n", argv[0]);
 		return 0;
 	}
+
+	if(jobs)
+		omp_set_num_threads(jobs);
 
 	if(conv_tiles)
 		convert<Tile>("refs/tiles/", "data/tiles", ".til", ".tile", 0, filter);
 	else if(conv_sprites)
 		convert<Sprite>("refs/sprites/", "data/sprites/", ".spr", ".sprite", 1, filter);
+	else if(conv_maps)
+		convert<TileMap>("refs/maps/", "data/maps/", ".mis", ".map", 1, filter);
 
 	return 0;
 }
