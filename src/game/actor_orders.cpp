@@ -216,8 +216,8 @@ namespace game {
 		m_order = m_next_order;
 
 		for(int n = 1; n < (int)tmp_path.size(); n++) {
-			cur_pos = asXZY(tmp_path[n - 1], 1);
-			new_pos = asXZY(tmp_path[n], 1);
+			cur_pos = asXZY(tmp_path[n - 1], 128);
+			new_pos = asXZY(tmp_path[n], 128);
 			if(new_pos == cur_pos)
 				continue;
 

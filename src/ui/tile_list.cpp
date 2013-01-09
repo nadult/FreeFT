@@ -1,5 +1,5 @@
 #include "ui/tile_list.h"
-#include "tile_group.h"
+#include "editor/tile_group.h"
 #include <algorithm>
 
 namespace ui

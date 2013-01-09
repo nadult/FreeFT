@@ -182,7 +182,7 @@ min: 1 max: 123505 */
 		}
 	}
 
-	Saver("mission.dec") & bytes;
+//	Saver("mission.dec") & bytes;
 
 	/*int tex_id = 0;
 	for(int n = 0; n < (int)bytes.size() - 6; n++) {

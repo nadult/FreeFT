@@ -4,7 +4,6 @@
 #include "game/entity.h"
 #include "game/projectile.h"
 #include "navigation_map.h"
-#include "bvh.h"
 #include "grid.h"
 
 namespace game {

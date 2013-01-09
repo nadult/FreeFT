@@ -3,8 +3,15 @@
 #include "tile_map.h"
 #include "sys/platform.h"
 #include <unistd.h>
-#include <omp.h>
 #include <algorithm>
+
+#ifndef _WIN32
+#define USE_OPENMP
+#endif
+
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
 
 using namespace gfx;
 
@@ -88,8 +95,10 @@ int safe_main(int argc, char **argv) {
 	for(int n = 1; n < argc; n++) {
 		if(strcmp(argv[n], "-f") == 0 && n + 1 < argc)
 			filter = argv[++n];
+#ifdef USE_OPENMP
 		else if(strcmp(argv[n], "-j") == 0 && n + 1 < argc)
 			jobs = atoi(argv[++n]);
+#endif
 		else if(strcmp(argv[n], "tiles") == 0)
 			conv_tiles = true;
 		else if(strcmp(argv[n], "sprites") == 0)
@@ -100,19 +109,27 @@ int safe_main(int argc, char **argv) {
 
 	if(!conv_tiles && !conv_sprites && !conv_maps) {
 		printf("Usage:\n%s [options] tiles|sprites|maps\nOptions:\n"
-				"-f filter	Converting only those files that match given filter\n\n", argv[0]);
+				"-f filter    Converting only those files that match given filter\n"
+#ifdef USE_OPENMP
+				"-j jobcnt    Use jobcnt threads during conversion\n"
+#endif
+				"\n", argv[0]);
 		return 0;
 	}
 
+	if(conv_maps) // ResourceManager<Tile> is single-threaded (used in tile_map_legacy.cpp)
+		jobs = 1;
+#ifdef USE_OPENMP
 	if(jobs)
 		omp_set_num_threads(jobs);
+#endif
 
 	if(conv_tiles)
 		convert<Tile>("refs/tiles/", "data/tiles", ".til", ".tile", 0, filter);
 	else if(conv_sprites)
 		convert<Sprite>("refs/sprites/", "data/sprites/", ".spr", ".sprite", 1, filter);
 	else if(conv_maps)
-		convert<TileMap>("refs/maps/", "data/maps/", ".mis", ".map", 1, filter);
+		convert<TileMap>("refs/maps/", "data/maps/", ".mis", ".xml", 1, filter);
 
 	return 0;
 }

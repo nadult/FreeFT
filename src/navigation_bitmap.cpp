@@ -54,7 +54,7 @@ NavigationBitmap::NavigationBitmap(const Grid &tile_grid, int extend) :m_size(0,
 		for(int x = 0; x < m_size.x; x += 8) {
 			u8 octet = 0;
 			for(int i = 0; i < 8; i++)
-				octet |= src[x + i] == 1? (1 << i) : 0;
+				octet |= src[x + i] >= 127 && src[x + i] <= 129? (1 << i) : 0;
 			dst[x >> 3] = octet;
 		}
 	}

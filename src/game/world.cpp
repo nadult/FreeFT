@@ -5,7 +5,6 @@
 #include "sys/profiler.h"
 #include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
-#include "bvh_impl.h"
 #include <cstdio>
 
 namespace game {
@@ -24,7 +23,7 @@ namespace game {
 		m_entity_grid = EntityGrid(tile_map.dimensions());
 		m_tile_grid.printInfo();
 	
-		updateNavigationMap(true);
+//		updateNavigationMap(true);
 	}
 	World::~World() {
 	}
@@ -40,7 +39,7 @@ namespace game {
 					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
 				}
 			m_navi_map.update(bitmap);
-			//m_navi_map.printInfo();
+			m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();

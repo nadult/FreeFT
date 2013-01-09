@@ -9,7 +9,6 @@
 
 #include "navigation_map.h"
 #include "navigation_bitmap.h"
-#include "tile_group.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "game/actor.h"
@@ -33,31 +32,32 @@ int safe_main(int argc, char **argv)
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
+	setWindowTitle("FTremake::game; built " __DATE__ " " __TIME__);
 	printDeviceInfo();
-
-	setWindowTitle("FTremake ver 0.02");
 	grabMouse(false);
 
 	setBlendingMode(bmNormal);
 
-	int2 view_pos(-140, 2400);
+	int2 view_pos(-400, -900);
 
 	PFont font = Font::mgr["arial_32"];
 
-	World world("data/conv_map.xml");
+	World world("data/maps/mission06.xml");
 
-	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, 1, 70)));
-	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, 1, 37)));
-	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, 1, 37)));
-	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(134, 1, 25)));
-	world.addEntity(new Container("containers/Ice Chest N", float3(120, 1, 25)));
+	int height = 128;
 
-	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 42), Door::type_rotating));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 82), Door::type_rotating, float2(1, 0)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, 1, 92), Door::type_rotating, float2(-1, 0)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, 1, 82), Door::type_rotating, float2(0, 1)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, 1, 92), Door::type_rotating, float2(0, -1)));
-	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, 1, 92), Door::type_sliding, float2(0, -1)));
+	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, height, 70)));
+	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, height, 37)));
+	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, height, 37)));
+	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(134, height, 25)));
+	world.addEntity(new Container("containers/Ice Chest N", float3(120, height, 25)));
+
+	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 42), Door::type_rotating));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 82), Door::type_rotating, float2(1, 0)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 92), Door::type_rotating, float2(-1, 0)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 82), Door::type_rotating, float2(0, 1)));
+	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 92), Door::type_rotating, float2(0, -1)));
+	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, height, 92), Door::type_sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
 	fridge->setDir(float2(-1, 0));
 	door->setKey(ItemDesc::find("prison_key"));
@@ -70,7 +70,7 @@ int safe_main(int argc, char **argv)
 	fridge->inventory().add(ItemDesc::find("power_armour"), 1);
 	fridge->inventory().add(ItemDesc::find("m60"), 1);
 
-	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, 1, 60)));
+	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
 
 	world.updateNavigationMap(true);
 
@@ -116,13 +116,13 @@ int safe_main(int argc, char **argv)
 				actor->setNextOrder(interactOrder(isect.entity(), mode));
 			}
 			else if(navi_debug) {
-				int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
+				int3 wpos = (int3)ray.at(box_isect.distance());
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
 			else if(isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
-				int3 wpos = (int3)asXZY(ray.at(isect.distance()).xz(), 1.0f);
+				int3 wpos = (int3)ray.at(box_isect.distance());
 				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 			}
 		}
@@ -130,7 +130,7 @@ int safe_main(int argc, char **argv)
 			actor->setNextOrder(attackOrder(0, (int3)target_pos));
 		}
 		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
-			int3 wpos = asXZY(screenToWorld(getMousePos() + view_pos), 1);
+			int3 wpos = (int3)ray.at(box_isect.distance());
 			path = world.findPath(last_pos.xz(), wpos.xz());
 			last_pos = wpos;
 		}

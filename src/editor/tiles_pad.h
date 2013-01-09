@@ -3,9 +3,9 @@
 
 #include "editor/tiles_editor.h"
 #include "editor/tile_selector.h"
+#include "editor/tile_group.h"
 #include "ui/combo_box.h"
 #include "ui/progress_bar.h"
-#include "tile_group.h"
 
 namespace ui {
 

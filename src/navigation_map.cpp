@@ -146,14 +146,14 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 	m_quads.clear();
 	DASSERT(bitmap.extend() == m_extend);
 
-	//printf("Creating navigation map: "); fflush(stdout);
+	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 	for(int sy = 0; sy < m_size.y; sy += sector_size)
 		for(int sx = 0; sx < m_size.x; sx += sector_size) {
 			extractQuads(bitmap, sx, sy);
 			//printf("."); fflush(stdout);
 		}
-	//printf("%.2f seconds\n", getTime() - time);
+	printf("%.2f seconds\n", getTime() - time);
 	m_static_count = (int)m_quads.size();
 
 	for(int i = 0; i < (int)m_quads.size(); i++)
@@ -548,9 +548,9 @@ void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const 
 			continue;
 		const IRect &rect = m_quads[n].rect;
 
-		renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(70, 220, 200, 80), true);
+		renderer.addBox(IBox(asXZY(rect.min, 128), asXZY(rect.max, 128)), Color(70, 220, 200, 80), true);
 		if(borders)
-			renderer.addBox(IBox(asXZY(rect.min, 1), asXZY(rect.max, 1)), Color(255, 255, 255, 100));
+			renderer.addBox(IBox(asXZY(rect.min, 128), asXZY(rect.max, 128)), Color(255, 255, 255, 100));
 	}
 }
 
@@ -558,7 +558,7 @@ void NavigationMap::visualizePath(const vector<int2> &path, int elem_size, gfx::
 	if(path.empty())
 		return;
 
-	IBox box(0, 1, 0, elem_size, 1, elem_size);
+	IBox box(0, 128, 0, elem_size, 128, elem_size);
 	renderer.addBox(box + asXZ(path.front()), Color::red);
 
 	for(int n = 1; n < (int)path.size(); n++) {

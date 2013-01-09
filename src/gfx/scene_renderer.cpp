@@ -82,13 +82,7 @@ namespace gfx {
 		return time;
 	}
 
-	inline static bool fastOverlapTest(const IRect &a, const IRect &b) {
-		int ret1 = ( ((b.min.x - a.max.x) & (a.min.x - b.max.x)) & ((b.min.y - a.max.y) & (a.min.y - b.max.y)) ) >> 31;
-	//	int ret2 = (b.min.x < a.max.x && a.min.x < b.max.x) && (b.min.y < a.max.y && a.min.y < b.max.y);
-	//	ASSERT((bool)ret1 == (bool)ret2);
-		return ret1;
-	}
-	
+	// TODO: Not really sure if its fast...
 	int fastDrawingOrder(const FBox &a, const FBox &b) {
 		bool overlap_x = b.min.x <= a.max.x && a.min.x <= b.max.x;
 		bool overlap_y = b.min.y <= a.max.y && a.min.y <= b.max.y;
@@ -179,7 +173,7 @@ namespace gfx {
 					IRect rect = rects[i];
 
 					for(int j = i + 1; j < count; j++) {
-						int result = fastOverlapTest(rect, rects[j])? fastDrawingOrder(bboxes[i], bboxes[j]): 0;
+						int result = areOverlapping(rect, rects[j])? fastDrawingOrder(bboxes[i], bboxes[j]): 0;
 						graph[i + j * count] = result;
 						graph[j + i * count] = -result;
 					}

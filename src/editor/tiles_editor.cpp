@@ -1,5 +1,5 @@
 #include "editor/tiles_editor.h"
-#include "tile_group.h"
+#include "editor/tile_group.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"

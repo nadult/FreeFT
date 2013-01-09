@@ -183,10 +183,9 @@ void Grid::link(int cur_id, int next_id) {
 }
 
 const IRect Grid::nodeCoords(const FBox &box) const {
-	DASSERT(isInside(box));
-
-	return IRect(	worldToGrid( int2(box.min.x, box.min.z) ),
-					worldToGrid( int2(box.max.x - constant::epsilon, box.max.z - constant::epsilon) ) );
+	return IRect(	worldToGrid( max(int2(0, 0), int2(box.min.x, box.min.z)) ),
+					min(m_size - int2(1, 1),
+						worldToGrid( int2(box.max.x - constant::epsilon, box.max.z - constant::epsilon) )) );
 }
 
 bool Grid::isInside(const float3 &pos) const {

@@ -11,20 +11,11 @@ void sincosf(float rad, float *s, float *c) {
 #endif
 
 template <class T>
-bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {
-	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
-			(b.min.y < a.max.y && a.min.y < b.max.y);
-}
-
-template <class T>
 bool areOverlapping(const Box<T> &a, const Box<T> &b) {
 	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
 			(b.min.y < a.max.y && a.min.y < b.max.y) &&
 			(b.min.z < a.max.z && a.min.z < b.max.z);
 }
-
-template bool areOverlapping<int2>(const Rect<int2>&, const Rect<int2>&);
-template bool areOverlapping<float2>(const Rect<float2>&, const Rect<float2>&);
 
 template bool areOverlapping<int3>(const Box<int3>&, const Box<int3>&);
 template bool areOverlapping<float3>(const Box<float3>&, const Box<float3>&);

@@ -398,6 +398,16 @@ float intersection(const Ray &ray, const Box<float3> &box);
 float intersection(const Segment &segment, const Box<float3> &box);
 
 template <class T>
+bool areOverlapping(const Rect<T> &a, const Rect<T> &b) {
+	return	(b.min.x < a.max.x && a.min.x < b.max.x) &&
+			(b.min.y < a.max.y && a.min.y < b.max.y);
+}
+
+inline bool areOverlapping(const Rect<int2> &a, const Rect<int2> &b) {
+	return ( ((b.min.x - a.max.x) & (a.min.x - b.max.x)) & ((b.min.y - a.max.y) & (a.min.y - b.max.y)) ) >> 31;
+}
+
+template <class T>
 bool areOverlapping(const Rect<T> &a, const Rect<T> &b);
 
 template <class T>

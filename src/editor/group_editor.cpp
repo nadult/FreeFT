@@ -1,6 +1,6 @@
 #include "editor/group_editor.h"
 #include "gfx/device.h"
-#include "tile_group.h"
+#include "editor/tile_group.h"
 #include <algorithm>
 #include <cstring>
 #include <tuple>

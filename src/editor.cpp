@@ -7,7 +7,6 @@
 #include "gfx/font.h"
 #include "gfx/tile.h"
 #include "tile_map.h"
-#include "tile_group.h"
 #include "sys/profiler.h"
 #include "ui/window.h"
 #include "ui/button.h"
