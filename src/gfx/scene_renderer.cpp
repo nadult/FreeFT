@@ -63,18 +63,20 @@ namespace gfx {
 		int first, second, flag;
 	};
 
-	static int DFS(const vector<char> &graph, vector<GNode> &gdata, int count, int i, int time) {
+	static int DFS(const PodArray<char> &graph, PodArray<GNode> &gdata, int count, int i, int time, bool detect_cycles) {
 		gdata[i].flag = 1;
 
 		for(int k = 0; k < count; k++) {
-			if(k == i || graph[i + k * count] != -1)
+			if(k == i || graph[i + k * count] >= (detect_cycles? 0 : -1))
 				continue;
-			if(gdata[k].flag)
-				profiler::updateCounter("loops", 1);
+			if(gdata[k].flag && detect_cycles)
+				return -1;
 			if(gdata[k].second)
 				continue;
 			gdata[k].second = time++;
-			time = DFS(graph, gdata, count, k, time);
+			time = DFS(graph, gdata, count, k, time, detect_cycles);
+			if(time == -1)
+				return -1;
 		}
 
 		gdata[i].flag = 0;
@@ -82,24 +84,31 @@ namespace gfx {
 		return time;
 	}
 
+	const float3 worldToScreenFull(const float3 &pos) {
+		return float3(	6.0f * (pos.x - pos.z),
+						3.0f * (pos.x + pos.z) - 7.0f * pos.y,
+						7.0f * (pos.x + pos.z) + 6.0f * pos.y);
+	}
+
 	// TODO: Not really sure if its fast...
 	int fastDrawingOrder(const FBox &a, const FBox &b) {
-		bool overlap_x = b.min.x <= a.max.x && a.min.x <= b.max.x;
-		bool overlap_y = b.min.y <= a.max.y && a.min.y <= b.max.y;
-		bool overlap_z = b.min.z <= a.max.z && a.min.z <= b.max.z;
-
-		int x_ret = a.max.x <= b.min.x? -1 : b.max.x <= a.min.x? 1 : 0;
 		int y_ret = a.max.y <= b.min.y? -1 : b.max.y <= a.min.y? 1 : 0;
-		int z_ret = a.max.z <= b.min.z? -1 : b.max.z <= a.min.z? 1 : 0;
 		
-		if(y_ret)
-			return y_ret;
+		if(y_ret) {
+			if(y_ret == -1 && (b.max.x <= a.min.x || b.max.z <= a.min.z))
+				return y_ret;
+			if(y_ret ==  1 && (a.max.x <= b.min.x || a.max.z <= b.min.z))
+				return y_ret;
+			return y_ret * 2;
+		}
+		int x_ret = a.max.x <= b.min.x? -1 : b.max.x <= a.min.x? 1 : 0;
+		int z_ret = a.max.z <= b.min.z? -1 : b.max.z <= a.min.z? 1 : 0;
 
-		if(x_ret)
-			return x_ret;
-
+		if(x_ret) {
+			return x_ret * 2;
+		}
 		if(z_ret)
-			return z_ret;
+			return z_ret * 2;
 
 		return 0;
 	}
@@ -116,7 +125,8 @@ namespace gfx {
 		int xNodes = (m_viewport.width() + node_size - 1) / node_size;
 		int yNodes = (m_viewport.height() + node_size - 1) / node_size;
 
-		std::random_shuffle(m_elements.begin(), m_elements.end());
+		// useful for identifying glitches
+		//std::random_shuffle(m_elements.begin(), m_elements.end());
 
 		// Screen is divided into a set of squares. Rendered elements are assigned to covered
 		// squares and sorting is done independently for each of the squares, so that, we can
@@ -144,8 +154,8 @@ namespace gfx {
 		// Now we need to do topological sort for a graph in which each edge means
 		// than one tile should be drawn before the other; cycles in this graph result
 		// in glitches in the end (unavoidable)
-		vector<char> graph(1024, 0);
-		vector<GNode> gdata(32);
+		PodArray<char> graph(1024);
+		PodArray<GNode> gdata(32);
 
 		for(int g = 0; g < (int)grid.size();) {
 			int node_id = grid[g].first;
@@ -159,6 +169,7 @@ namespace gfx {
 				graph.resize(count * count);
 			if((int)gdata.size() < count)
 				gdata.resize(count);
+			bool any_weak = false;
 
 			{ PROFILE("SceneRenderer::inner_loop"); 
 				IRect rects[count];
@@ -176,19 +187,28 @@ namespace gfx {
 						int result = areOverlapping(rect, rects[j])? fastDrawingOrder(bboxes[i], bboxes[j]): 0;
 						graph[i + j * count] = result;
 						graph[j + i * count] = -result;
+						if(result == 1 || result == -1)
+							any_weak = true;
 					}
 				}
 			}
 
-			for(int i = 0; i < count; i++)
-				gdata[i] = GNode{0, 0, 0};
+			int time; {
+REPEAT:
+				for(int i = 0; i < count; i++)
+					gdata[i] = GNode{0, 0, 0};
 
-			int time = 1;
-			for(int i = 0; i < count; i++) {
-				if(gdata[i].second)
-					continue;
-				gdata[i].second = time++;
-				time = DFS(graph, gdata, count, i, time);
+				time = 1;
+				for(int i = 0; i < count; i++) {
+					if(gdata[i].second)
+						continue;
+					gdata[i].second = time++;
+					time = DFS(graph, gdata, count, i, time, any_weak);
+					if(time == -1) {
+						any_weak = false;
+						goto REPEAT;
+					}
+				}
 			}
 
 			for(int i = 0; i < count; i++)

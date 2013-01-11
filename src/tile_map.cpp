@@ -21,7 +21,7 @@ int TileMap::add(const gfx::Tile *tile, const int3 &pos) {
 
 	FBox bbox(pos, pos + tile->bboxSize());
 	IRect rect = tile->rect() + worldToScreen(pos);
-//	ASSERT(findAny(bbox) == -1);
+	ASSERT(findAny(bbox) == -1);
 	return Grid::add(ObjectDef(tile, bbox, rect, -1));
 }
 

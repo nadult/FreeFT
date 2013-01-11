@@ -1,7 +1,10 @@
-0. Szczegółowy opis co trzeba zrobić w każdym z punktów, zastanowienie się ile czasu co zajmie,
-   plik issue dla każdego podpunktu
+DEADLINE: Pre-alpha release (31st January, 12 days (96h) from 10th):
+ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE UNSURE ARE NECESSARY
+ - Pre-alpha release
+   issues/13-pre_alpha_release.txt
 
-  issues/0-not_planned.txt (10.25)
+ - Not planned stuff
+   issues/0-not_planned.txt (10.25)
 
 1. Edytor map
  - prosty edytor tile-ów:
@@ -98,14 +101,3 @@
  - binarny diff do sprite-ów i tile-i; patch based filesystem przyda się przy modyfikacji zasobów z tacticsa:
    najpierw konwertujemy je do własnego formatu, następnie aplikujemy patch-e i ew. kompresujemy lz4 w celu
    zmniejszenia czasu ładowania
-
-
-Ostateczny cel: Prosta gra RPG zawierająca:
-- system levelowania postaci, kilka skillów, na razie oparte o HPki 8h - 16h
-- NPC z prostym AI, systemem dialogów, możliwością handlowania, walki; prosty system widoczności 24h - 32h
-- interakcja z otoczeniem: otwieranie drzwi, używanie kontenerów, terminali, włączanie świateł,
-  włamywanie się do systemów zabezpieczeń, etc.   8h - 24h
-- oświetlenie  8h - 16h
-- prosta mapka z kilkoma questami jako proof of concept  8h
-56h - 96h
-

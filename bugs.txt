@@ -1,2 +1,1 @@
 - Podczas zamykania drzwi przesuwanych gracz może się zacząć kręcić w kółko
-- Bug podczas usuwania tile-i, jak się wypełni z zastępowaniem duży kawałek zawierający budynek w mapce testowej

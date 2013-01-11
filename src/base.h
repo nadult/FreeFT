@@ -35,10 +35,12 @@ namespace constant {
 	static const float epsilon	= 0.0001f;
 }
 
+
 // Very simple and efficent vector for POD Types; Use with care:
 // - user is responsible for initializing the data
 // - when resizing, data is destroyed
 // - assigning PodArray to itself is illegal
+// TODO: derive from PodArrayBase, resize, and serialize can be shared (modulo sizeof(T) multiplier)
 template <class T>
 class PodArray {
 public:
@@ -69,27 +71,8 @@ public:
 		rhs.m_data = nullptr;
 		rhs.m_size = 0;
 	}
-	void serialize(Serializer &sr) {
-		i32 size = m_size;
-		sr & size;
-		if(sr.isLoading()) {
-			ASSERT(size >= 0);
-			resize(size);
-		}
-		if(m_data)
-			sr.data(m_data, sizeof(T) * m_size);
-	}
-
-	void resize(int new_size) {
-		DASSERT(new_size >= 0);
-		if(m_size == new_size)
-			return;
-
-		clear();
-		m_size = new_size;
-		if(new_size)
-			m_data = (T*)sys::alloc(new_size * sizeof(T));
-	}
+	void serialize(Serializer &sr) __attribute__((noinline));
+	void resize(int new_size) __attribute__((noinline));
 
 	void swap(PodArray &rhs) {
 		::swap(m_data, rhs.m_data);
@@ -120,6 +103,30 @@ private:
 	T *m_data;
 	int m_size;
 };
+
+template <class T>
+void PodArray<T>::serialize(Serializer &sr) {
+	i32 size = m_size;
+	sr & size;
+	if(sr.isLoading()) {
+		ASSERT(size >= 0);
+		resize(size);
+	}
+	if(m_data)
+		sr.data(m_data, sizeof(T) * m_size);
+}
+
+template <class T>
+void PodArray<T>::resize(int new_size) {
+	DASSERT(new_size >= 0);
+	if(m_size == new_size)
+		return;
+
+	clear();
+	m_size = new_size;
+	if(new_size)
+		m_data = (T*)sys::alloc(new_size * sizeof(T));
+}
 
 struct int2
 {
