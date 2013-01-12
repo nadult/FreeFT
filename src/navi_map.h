@@ -1,20 +1,18 @@
-#ifndef NAVIGATION_MAP_H
-#define NAVIGATION_MAP_H
+#ifndef NAVI_MAP_H
+#define NAVI_MAP_H
 
-#include "tile_map.h"
+#include "base.h"
 
-class NavigationBitmap;
+class NaviHeightmap;
 
-//TODO: support for multiple levels, stairs: it can be implemented by additional heightmaps
-// and transitions between them
-//
 //TODO: sometimes we can only crouch or be in prone position, because ceiling is low. In nodes
 // with varying ceiling height we can provide ceiling heightmaps
-class NavigationMap {
+class NaviMap {
 public:
-	NavigationMap(int extend);
+	NaviMap(int extend);
 
-	void update(const NavigationBitmap&);
+	void update(const NaviHeightmap&);
+
 	int2 dimensions() const { return m_size; }
 	int extend() const { return m_extend; }
 
@@ -51,7 +49,7 @@ public:
 	const Quad &operator[](int idx) const { return m_quads[idx]; }
 
 protected:
-	void extractQuads(const NavigationBitmap&, int sx, int sy);
+	void extractQuads(const vector<u8>&, int sx, int sy);
 	void addAdjacencyInfo(int target_id, int src_id);
 	void addCollider(int quad_id, const IRect &rect);
 

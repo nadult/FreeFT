@@ -1,10 +1,11 @@
 #include "game/world.h"
 #include "game/projectile.h"
-#include "navigation_bitmap.h"
+#include "tile_map.h"
 #include "sys/xml.h"
 #include "sys/profiler.h"
 #include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
+#include "navi_heightmap.h"
 #include <cstdio>
 
 namespace game {
@@ -22,23 +23,34 @@ namespace game {
 		m_tile_grid = tile_map;
 		m_entity_grid = EntityGrid(tile_map.dimensions());
 		m_tile_grid.printInfo();
-	
-//		updateNavigationMap(true);
+
+//		updateNaviMap(true);
 	}
 	World::~World() {
 	}
 
-	void World::updateNavigationMap(bool full_recompute) {
-		//PROFILE("updateNavigationMap");
+	void World::updateNaviMap(bool full_recompute) {
+		//PROFILE("updateNaviMap");
 
 		if(full_recompute) {
-			NavigationBitmap bitmap(m_tile_grid, m_navi_map.extend());
+			vector<IBox> bboxes;
+			bboxes.reserve(m_tile_grid.size() + m_entities.size());
+
+			for(int n = 0; n < m_tile_grid.size(); n++)
+				if(m_tile_grid[n].ptr)
+					bboxes.push_back((IBox)m_tile_grid[n].bbox);
 			for(int n = 0; n < (int)m_entities.size(); n++)
 				if(m_entities[n]->colliderType() == collider_static) {
 					IBox box = enclosingIBox(m_entities[n]->boundingBox());
-					bitmap.blit(IRect(box.min.xz(), box.max.xz()), false);
+					bboxes.push_back(box);
 				}
-			m_navi_map.update(bitmap);
+
+			NaviHeightmap heightmap(m_tile_grid.dimensions());
+			heightmap.update(bboxes);
+			heightmap.saveLevels();
+			heightmap.printInfo();
+
+			m_navi_map.update(heightmap);
 			m_navi_map.printInfo();
 		}
 

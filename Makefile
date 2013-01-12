@@ -16,7 +16,7 @@ SHARED_SRC=\
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/sprite gfx/sprite_legacy \
 	gfx/tile gfx/scene_renderer gfx/packed_texture \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config \
-	base tile_map tile_map_legacy editor/tile_group navigation_map navigation_bitmap grid grid_intersect \
+	base tile_map tile_map_legacy editor/tile_group navi_map navi_heightmap grid grid_intersect \
 	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile \
 	game/item game/inventory game/enums \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \

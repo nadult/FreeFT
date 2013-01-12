@@ -7,8 +7,7 @@
 #include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
 
-#include "navigation_map.h"
-#include "navigation_bitmap.h"
+#include "navi_map.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "game/actor.h"
@@ -72,18 +71,18 @@ int safe_main(int argc, char **argv)
 
 	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
 
-	world.updateNavigationMap(true);
+	world.updateNaviMap(true);
 
 	printf("Actor size: %.0f %.0f %.0f\n",
 			actor->boundingBox().width(),
 			actor->boundingBox().height(),
 			actor->boundingBox().depth());
 
-	bool navi_show = 0;
+	bool navi_show = 1;
 	bool navi_debug = 0;
-	bool shooting_debug = 1;
-	bool entity_debug = 1;
-	bool item_debug = 1;
+	bool shooting_debug = 0;
+	bool entity_debug = 0;
+	bool item_debug = 0;
 	
 	double last_time = getTime();
 	vector<int2> path;
@@ -145,7 +144,7 @@ int safe_main(int argc, char **argv)
 
 		double time = getTime();
 		if(!navi_debug)
-			world.updateNavigationMap(false);
+			world.updateNaviMap(false);
 
 		world.simulate((time - last_time));
 		last_time = time;

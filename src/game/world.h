@@ -3,7 +3,7 @@
 
 #include "game/entity.h"
 #include "game/projectile.h"
-#include "navigation_map.h"
+#include "navi_map.h"
 #include "grid.h"
 
 namespace game {
@@ -48,7 +48,7 @@ namespace game {
 		void addEntity(PEntity&&);
 		void simulate(double time_diff);
 
-		void updateNavigationMap(bool full_recompute);
+		void updateNaviMap(bool full_recompute);
 	
 		void spawnProjectile(PProjectile);
 		void spawnProjectileImpact(PProjectileImpact);
@@ -64,8 +64,8 @@ namespace game {
 		vector<int2> findPath(int2 start, int2 end) const;
 
 		const TileGrid &tileGrid() const { return m_tile_grid; }
-		const NavigationMap &naviMap() const { return m_navi_map; }
-		NavigationMap &naviMap() { return m_navi_map; }
+		const NaviMap &naviMap() const { return m_navi_map; }
+		NaviMap &naviMap() { return m_navi_map; }
 	
 		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 		Intersection pixelIntersect(const int2 &screen_pos) const;
@@ -83,7 +83,7 @@ namespace game {
 
 		TileGrid m_tile_grid;
 		EntityGrid m_entity_grid;
-		NavigationMap m_navi_map;
+		NaviMap m_navi_map;
 
 		vector<PEntity> m_entities;
 		vector<PProjectile> m_projectiles;

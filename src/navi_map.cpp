@@ -1,13 +1,13 @@
-#include "navigation_map.h"
-#include "navigation_bitmap.h"
+#include "navi_map.h"
+#include "navi_heightmap.h"
 #include "sys/profiler.h"
+#include "gfx/scene_renderer.h"
 #include <cstring>
 #include <algorithm>
-#include "gfx/scene_renderer.h"
 
-NavigationMap::NavigationMap(int extend) :m_size(0, 0), m_extend(extend) { }
+NaviMap::NaviMap(int extend) :m_size(0, 0), m_extend(extend) { }
 
-enum { sector_size = 1024 };
+enum { sector_size = 512 };
 
 	
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) __attribute__((noinline));
@@ -48,7 +48,7 @@ static IRect findBestRect(const short *counts, const short *skip_list, int2 size
 	return best;
 }
 
-void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy) {
+void NaviMap::extractQuads(const vector<u8> &bitmap, int sx, int sy) {
 	int2 size(min((int)sector_size, m_size.x - sx), min((int)sector_size, m_size.y - sy));
 
 	int pixels = 0;
@@ -58,7 +58,7 @@ void NavigationMap::extractQuads(const NavigationBitmap &bitmap, int sx, int sy)
 	for(int y = 0; y < size.y; y++) {
 		int yoff = y * sector_size;
 		for(int x = 0; x < size.x; x++) {
-			if(bitmap(sx + x, sy + y)) {
+			if(bitmap[sx + x + (sy + y) * m_size.x]) {
 				counts[x + yoff] = 1 + (y > 0? counts[x + yoff - sector_size] : 0);
 				pixels++;
 			}
@@ -130,7 +130,7 @@ static const IRect computeEdge(const IRect &quad1, const IRect &quad2) {
 	return edge;
 }
 
-void NavigationMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
+void NaviMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
 	DASSERT(quad1_id != quad2_id);
 	Quad &quad1 = m_quads[quad1_id];
 	Quad &quad2 = m_quads[quad2_id];
@@ -141,10 +141,15 @@ void NavigationMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
 	}
 }
 
-void NavigationMap::update(const NavigationBitmap &bitmap) {
-	m_size = bitmap.dimensions();
+void NaviMap::update(const NaviHeightmap &heightmap) {
+	m_size = heightmap.dimensions();
 	m_quads.clear();
-	DASSERT(bitmap.extend() == m_extend);
+
+	//TODO: floodfill
+	vector<u8> bitmap(m_size.x * m_size.y);
+	for(int y = 0; y < m_size.y; y++)
+		for(int x = 0; x < m_size.x; x++)
+			bitmap[x + y * m_size.x] = heightmap.test(x, y, 0, m_extend)? 1 : 0;
 
 	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
@@ -161,9 +166,10 @@ void NavigationMap::update(const NavigationBitmap &bitmap) {
 			addAdjacencyInfo(i, j);
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		m_quads[n].static_ncount = (int)m_quads[n].neighbours.size();
+		
 }
 
-void NavigationMap::addCollider(int parent_id, const IRect &rect) {
+void NaviMap::addCollider(int parent_id, const IRect &rect) {
 	Quad &parent = m_quads[parent_id];
 	IRect prect = parent.rect;
 	IRect crect(max(rect.min, prect.min), min(rect.max, prect.max));
@@ -191,7 +197,7 @@ void NavigationMap::addCollider(int parent_id, const IRect &rect) {
 	}
 }
 
-void NavigationMap::addCollider(const IRect &rect) {
+void NaviMap::addCollider(const IRect &rect) {
 	if(rect.isEmpty())
 		return;
 
@@ -202,7 +208,7 @@ void NavigationMap::addCollider(const IRect &rect) {
 			addCollider(n, extended_rect);
 }
 
-void NavigationMap::removeColliders() {
+void NaviMap::removeColliders() {
 	m_quads.resize(m_static_count);
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		Quad &quad = m_quads[n];
@@ -213,7 +219,7 @@ void NavigationMap::removeColliders() {
 
 // Instead, maybe it would be better to search closest path with Rect as a target?
 // (we would use dist_to rect extended by (-extend,-extend) and (1,1)
-int2 NavigationMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const {
+int2 NaviMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const {
 	int2 closest_pos = pos;
 	float min_distance = 1.0f / 0.0f, min_distance2 = 0.0f;
 	FRect fdist_to(dist_to.min, dist_to.max);
@@ -233,7 +239,7 @@ int2 NavigationMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to)
 	return closest_pos;
 }
 
-int NavigationMap::findQuad(int2 pos, bool find_disabled) const {
+int NaviMap::findQuad(int2 pos, bool find_disabled) const {
 	//TODO: speed up?
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		if(m_quads[n].is_disabled == find_disabled && m_quads[n].rect.isInside(pos))
@@ -243,7 +249,7 @@ int NavigationMap::findQuad(int2 pos, bool find_disabled) const {
 
 // powoduje problemy jak się przechodzi diagonalnie przez rogi encji
 // (gracz się zatrzymuje bo jest kolizja)
-#define WALK_DIAGONAL_THROUGH_CORNERS
+//#define WALK_DIAGONAL_THROUGH_CORNERS
 
 
 static float distance(const int2 &a, const int2 &b) {
@@ -337,7 +343,7 @@ namespace {
 #undef UPDATE
 }
 
-vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bool do_refining) const {
+vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refining) const {
 	vector<PathNode> out;
 	int start_id = findQuad(start), end_id = findQuad(end);
 
@@ -465,7 +471,7 @@ vector<NavigationMap::PathNode> NavigationMap::findPath(int2 start, int2 end, bo
 	return out;
 }
 
-vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
+vector<int2> NaviMap::findPath(int2 start, int2 end) const {
 	vector<PathNode> input = findPath(start, end, true);
 	vector<int2> path;
 
@@ -542,7 +548,7 @@ vector<int2> NavigationMap::findPath(int2 start, int2 end) const {
 	return std::move(simplified);
 }
 
-void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
+void NaviMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		if(m_quads[n].is_disabled)
 			continue;
@@ -554,7 +560,7 @@ void NavigationMap::visualize(gfx::SceneRenderer &renderer, bool borders) const 
 	}
 }
 
-void NavigationMap::visualizePath(const vector<int2> &path, int elem_size, gfx::SceneRenderer &renderer) const {
+void NaviMap::visualizePath(const vector<int2> &path, int elem_size, gfx::SceneRenderer &renderer) const {
 	if(path.empty())
 		return;
 
@@ -579,8 +585,8 @@ void NavigationMap::visualizePath(const vector<int2> &path, int elem_size, gfx::
 	}
 }
 
-void NavigationMap::printInfo() const {
-	printf("NavigationMap(%d, %d):\n", m_size.x, m_size.y);
+void NaviMap::printInfo() const {
+	printf("NaviMap(%d, %d):\n", m_size.x, m_size.y);
 
 	int bytes = sizeof(Quad) * m_quads.size();
 	for(int n = 0; n < (int)m_quads.size(); n++)

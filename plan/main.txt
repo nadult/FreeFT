@@ -6,7 +6,7 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE
  - Not planned stuff
    issues/0-not_planned.txt (10.25)
 
-1. Edytor map
+1. Map editor
  - prosty edytor tile-ów:
    issues/1-tile_editor.txt DONE (27 / 18)
 
@@ -22,7 +22,7 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE
  - ulepszony UI:
    issues/10-ui_improvements.txt DONE  (20 / 31)
 
-2. Prosta gra:
+2. Simple game
  - poruszanie się postacią
    issues/3-simple_character_movement.txt DONE  (26 / 15)
 
@@ -54,7 +54,7 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE
    - AI dla crittersów
    - HPki, proste skille
 
-3. Różne rzeczy do zrobienia:
+3. Random, useful things
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt
  
@@ -90,7 +90,7 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE
  - zrobić porządek ze Screen-rectami które są na intach choć wyliczane są z bbox-ów opartych o float-y
 
 
-4. Bajery
+4. Interesting / Innovative ideas, not crucial, but nice to have
  - możliwość rozmawiania z wrogo nastawionymi NPC-ami (podczas walki) np. możliwość poddania się lub
    zmuszenia przeciwnika do poddania
  - otwieranie drzwi z kopa i przywalenie komuś drzwiami jeśli blisko stoi (tak
@@ -101,3 +101,4 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE
  - binarny diff do sprite-ów i tile-i; patch based filesystem przyda się przy modyfikacji zasobów z tacticsa:
    najpierw konwertujemy je do własnego formatu, następnie aplikujemy patch-e i ew. kompresujemy lz4 w celu
    zmniejszenia czasu ładowania
+ - we can generate mini-maps from NaviHeightmaps
