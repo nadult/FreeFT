@@ -1,1 +1,2 @@
 - Podczas zamykania drzwi przesuwanych gracz może się zacząć kręcić w kółko
+- Dodać czyszczenie selekcji w edytorze jak się załaduje mapę

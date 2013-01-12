@@ -61,7 +61,7 @@ namespace game {
 		// returns true if box collides with any of the tiles
 		bool isColliding(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 	
-		vector<int2> findPath(int2 start, int2 end) const;
+		vector<int3> findPath(const int3 &start, const int3 &end) const;
 
 		const TileGrid &tileGrid() const { return m_tile_grid; }
 		const NaviMap &naviMap() const { return m_navi_map; }

@@ -5,9 +5,9 @@
 #include <cstring>
 #include <algorithm>
 
-NaviMap::NaviMap(int extend) :m_size(0, 0), m_extend(extend) { }
+NaviMap::NaviMap(int extend) :m_size(0, 0), m_agent_size(extend) { }
 
-enum { sector_size = 512 };
+enum { sector_size = 256 };
 
 	
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) __attribute__((noinline));
@@ -48,12 +48,12 @@ static IRect findBestRect(const short *counts, const short *skip_list, int2 size
 	return best;
 }
 
-void NaviMap::extractQuads(const vector<u8> &bitmap, int sx, int sy) {
+void NaviMap::extractQuads(const PodArray<u8> &bitmap, int sx, int sy) {
 	int2 size(min((int)sector_size, m_size.x - sx), min((int)sector_size, m_size.y - sy));
 
 	int pixels = 0;
-	short *counts = new short[sector_size * size.y * 2];
-	short *skips = counts + sector_size * size.y;
+	PodArray<short> counts(sector_size * size.y * 2);
+	short *skips = counts.data() + sector_size * size.y;
 
 	for(int y = 0; y < size.y; y++) {
 		int yoff = y * sector_size;
@@ -97,14 +97,22 @@ void NaviMap::extractQuads(const vector<u8> &bitmap, int sx, int sy) {
 					break;
 			}
 		}
-				
-		m_quads.push_back(Quad(best + int2(sx, sy)));
+		
+		IRect rect = best + int2(sx, sy);
+		int min_height = bitmap[rect.min.x + rect.min.y * m_size.x];
+		int max_height = min_height;
+
+		for(int y = rect.min.y; y < rect.max.y; y++)
+			for(int x = rect.min.x; x < rect.max.x; x++) {
+				int height = bitmap[x + y * m_size.x];
+				min_height = min(min_height, height);
+				max_height = max(max_height, height);
+			}
+
+		m_quads.push_back(Quad(rect, min_height, max_height));
 
 		pixels -= best.width() * best.height();
 	}
-
-	//TODO: m_quads.push_back can throw
-	delete[] counts;
 }
 
 static const IRect computeEdge(const IRect &quad1, const IRect &quad2) {
@@ -135,7 +143,8 @@ void NaviMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
 	Quad &quad1 = m_quads[quad1_id];
 	Quad &quad2 = m_quads[quad2_id];
 
-	if(areAdjacent(quad1.rect, quad2.rect)) {
+	if(quad1.min_height <= quad2.max_height + 1 && quad2.min_height <= quad1.max_height + 1 &&
+			areAdjacent(quad1.rect, quad2.rect)) {
 		quad1.neighbours.push_back(quad2_id);
 		quad2.neighbours.push_back(quad1_id);
 	}
@@ -145,20 +154,96 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 	m_size = heightmap.dimensions();
 	m_quads.clear();
 
-	//TODO: floodfill
-	vector<u8> bitmap(m_size.x * m_size.y);
-	for(int y = 0; y < m_size.y; y++)
-		for(int x = 0; x < m_size.x; x++)
-			bitmap[x + y * m_size.x] = heightmap.test(x, y, 0, m_extend)? 1 : 0;
-
 	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
-	for(int sy = 0; sy < m_size.y; sy += sector_size)
-		for(int sx = 0; sx < m_size.x; sx += sector_size) {
-			extractQuads(bitmap, sx, sy);
-			//printf("."); fflush(stdout);
+
+	for(int l = 0; l < heightmap.levelCount(); l++) {
+		PodArray<u8> bitmap(m_size.x * m_size.y);
+		memset(bitmap.data(), 0, bitmap.dataSize());
+		int pixel_count = 0;
+
+		for(int y = 0; y < m_size.y; y++)
+			for(int x = 0; x < m_size.x; x++)
+				if(heightmap.test(x, y, l, m_agent_size)) {
+					pixel_count++;
+					bitmap[x + y * m_size.x] = heightmap(x, y, l);
+				}
+		PodArray<u8> subbitmap = bitmap;
+		memset(subbitmap.data(), 0, subbitmap.dataSize());
+
+		vector<int2> positions;
+		positions.reserve((m_size.x + m_size.y) * 4);
+		int max_diff = 0;
+
+		while(pixel_count) {
+			IRect subrect;
+			positions.clear();
+			int hmin, hmax;
+
+			for(int y = 0; y < m_size.y; y++)
+				for(int x = 0; x < m_size.x; x++)
+					if(bitmap[x + y * m_size.x]) {
+						hmin = hmax = bitmap[x + y * m_size.x];
+						positions.push_back(int2(x, y));
+						subrect = IRect(x, y, x, y);
+						break;
+					}
+
+			while(!positions.empty()) {
+				int2 pos = positions.back();
+				positions.pop_back();
+
+				int offset = pos.x + pos.y * m_size.x;
+				int height = bitmap[offset];
+				if(!height)
+					continue;
+				if(max(height - hmin, hmax - height) > max_diff)
+					continue;
+
+				hmin = min(hmin, height);
+				hmax = max(hmax, height);
+
+				subrect.min = min(subrect.min, pos);
+				subrect.max = max(subrect.max, pos);
+				bitmap[offset] = 0;
+				subbitmap[offset] = height;
+				pixel_count--;
+
+				int2 offsets[4] = {
+					int2(-1, 0),
+					int2(0, -1),
+					int2(1, 0),
+					int2(0, 1)
+				};
+
+				int neighbours[4] = {
+					pos.x > 0? bitmap[offset - 1] : 0,
+					pos.y > 0? bitmap[offset - m_size.x] : 0,
+					pos.x < m_size.x - 1? bitmap[offset + 1] : 0,
+					pos.y < m_size.y - 1? bitmap[offset + m_size.x] : 0
+				};
+
+				for(int n = 0; n < 4; n++) {
+					int height = neighbours[n];
+					if(height && max(height - hmin, hmax - height) <= max_diff)
+						positions.push_back(pos + offsets[n]);
+				}
+			}
+			subrect.max += int2(1, 1);
+		//	printf("subrect: %d %d\n", subrect.width(), subrect.height());
+
+			for(int sy = 0; sy < m_size.y; sy += sector_size)
+				for(int sx = 0; sx < m_size.x; sx += sector_size)
+					if(areOverlapping(subrect, IRect(sx, sy, sx + sector_size, sy + sector_size)))
+						extractQuads(subbitmap, sx, sy);
+
+			for(int y = subrect.min.y; y < subrect.max.y; y++)
+				memset(subbitmap.data() + y * m_size.x + subrect.min.x, 0, subrect.width());
 		}
-	printf("%.2f seconds\n", getTime() - time);
+
+		printf("."); fflush(stdout);
+	}
+	printf(" %.2f seconds\n", getTime() - time);
 	m_static_count = (int)m_quads.size();
 
 	for(int i = 0; i < (int)m_quads.size(); i++)
@@ -186,7 +271,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect) {
 	int first_id = (int)m_quads.size();
 	for(int n = 0; n < COUNTOF(rects); n++)
 		if(!rects[n].isEmpty())
-			m_quads.push_back(Quad(rects[n]));
+			m_quads.push_back(Quad(rects[n], parent.min_height, parent.max_height));
 
 	int count = 0;
 	for(int n = first_id; n < (int)m_quads.size(); n++) {
@@ -201,7 +286,8 @@ void NaviMap::addCollider(const IRect &rect) {
 	if(rect.isEmpty())
 		return;
 
-	IRect extended_rect(rect.min - int2(m_extend, m_extend), rect.max);
+	//TODO
+	IRect extended_rect(rect.min - int2(m_agent_size - 1, m_agent_size - 1), rect.max);
 
 	for(int n = 0, count = (int)m_quads.size(); n < count; n++)
 		if(!m_quads[n].is_disabled && areOverlapping(m_quads[n].rect, extended_rect))
@@ -239,17 +325,32 @@ int2 NaviMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const
 	return closest_pos;
 }
 
-int NaviMap::findQuad(int2 pos, bool find_disabled) const {
+int NaviMap::findQuad(const int3 &pos, bool find_disabled) const {
+	int best_quad = -1;
+	int best_height = -1;
+
 	//TODO: speed up?
-	for(int n = 0; n < (int)m_quads.size(); n++)
-		if(m_quads[n].is_disabled == find_disabled && m_quads[n].rect.isInside(pos))
-			return n;
-	return -1;
+	for(int n = 0; n < (int)m_quads.size(); n++) {
+		const Quad &quad = m_quads[n];
+
+		if(quad.rect.isInside(pos.xz()) && quad.is_disabled == find_disabled && pos.y >= quad.min_height) {
+			if(pos.y <= quad.max_height)
+				return n;
+			if(quad.max_height > best_height) {
+				best_height = quad.max_height;
+				best_quad = n;
+			}
+		}
+	}
+
+	return best_quad;
 }
 
 // powoduje problemy jak się przechodzi diagonalnie przez rogi encji
 // (gracz się zatrzymuje bo jest kolizja)
-//#define WALK_DIAGONAL_THROUGH_CORNERS
+// This should be solved by creating paths that are trying to be in the middle
+// between colliders
+#define WALK_DIAGONAL_THROUGH_CORNERS
 
 
 static float distance(const int2 &a, const int2 &b) {
@@ -343,7 +444,7 @@ namespace {
 #undef UPDATE
 }
 
-vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refining) const {
+vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, bool do_refining) const {
 	vector<PathNode> out;
 	int start_id = findQuad(start), end_id = findQuad(end);
 
@@ -361,8 +462,8 @@ vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refini
 	int heap_size = 0;
 
 	data[start_id].dist = 0.0f;
-	data[start_id].est_dist = distance(start, end);
-	data[start_id].entry_pos = start;
+	data[start_id].est_dist = distance(start.xz(), end.xz());
+	data[start_id].entry_pos = start.xz();
 	data[start_id].src_quad = -1;
 	heap[heap_size++] = HeapData(data + start_id);
 
@@ -387,7 +488,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refini
 			
 			IRect edge = computeEdge(quad1.rect, quad2.rect);
 
-			int2 edge_end_pos = clamp(end, edge.min, edge.max);
+			int2 edge_end_pos = clamp(end.xz(), edge.min, edge.max);
 			MoveVector vec(data1.entry_pos, edge_end_pos);
 
 			int2 closest_pos = clamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min, quad2.rect.max - int2(1, 1));
@@ -411,11 +512,11 @@ vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refini
 #endif
 
 			float dist = distance(closest_pos, data1.entry_pos) + data1.dist;
-			float est_dist = distance(closest_pos, end);
+			float est_dist = distance(closest_pos, end.xz());
 
 			if(quad2_id == end_id) {
 				end_reached = true;
-				dist += distance(closest_pos, end);
+				dist += est_dist;
 			}
 
 			if(do_refining? data2.dist <= dist : data2.dist + data2.est_dist <= dist + est_dist)
@@ -432,7 +533,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refini
 	if(!end_reached)
 		return out;
 
-	out.push_back(PathNode{end, end_id});
+	out.push_back(PathNode{end.xz(), end_id});
 	for(int quad_id = end_id; quad_id != -1; quad_id = data[quad_id].src_quad) {
 		if(out.back().point != data[quad_id].entry_pos)
 			out.push_back({data[quad_id].entry_pos, quad_id});
@@ -448,7 +549,10 @@ vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refini
 			if(sdist * 1.001f >= dist)
 				continue;
 
-			vector<PathNode> other = findPath(out[n].point, out[n + 3].point, false);
+			int height1 = m_quads[out[n].quad_id].max_height;
+			int height2 = m_quads[out[n].quad_id].min_height;
+
+			vector<PathNode> other = findPath(asXZY(out[n].point, height1), asXZY(out[n + 3].point, height2), false);
 
 			if(!other.empty()) {
 				ASSERT(other.front().point == out[n].point && other.back().point == out[n + 3].point);
@@ -471,9 +575,9 @@ vector<NaviMap::PathNode> NaviMap::findPath(int2 start, int2 end, bool do_refini
 	return out;
 }
 
-vector<int2> NaviMap::findPath(int2 start, int2 end) const {
+vector<int3> NaviMap::findPath(const int3 &start, const int3 &end) const {
 	vector<PathNode> input = findPath(start, end, true);
-	vector<int2> path;
+	vector<int3> path;
 
 	if(input.empty())
 		return path;
@@ -485,7 +589,7 @@ vector<int2> NaviMap::findPath(int2 start, int2 end) const {
 		int2 src = input[n + 0].point;
 		int2 dst = input[n + 1].point;
 		MoveVector vec(src, dst);
-		MoveVector prev_vec = path.empty()? MoveVector() : MoveVector(path.back(), src);
+		MoveVector prev_vec = path.empty()? MoveVector() : MoveVector(path.back().xz(), src);
 		
 		bool is_horizontal = src_quad.max.x > dst_quad.min.x && src_quad.min.x < dst_quad.max.x;
 
@@ -520,27 +624,35 @@ vector<int2> NaviMap::findPath(int2 start, int2 end) const {
 			prev_diag = vec.ddiag != 0;
 		}
 
-		path.push_back(src);
-		path.push_back(mid);
-		path.push_back(pdst);
+		int src_height = m_quads[input[n + 0].quad_id].max_height;
+		int dst_height = m_quads[input[n + 1].quad_id].max_height;
+		path.push_back(asXZY(src, src_height));
+		path.push_back(asXZY(mid, src_height));
+		path.push_back(asXZY(pdst, max(src_height, dst_height)));
 	}
-	path.push_back(input.back().point);
+	path.push_back(asXZY(input.back().point, m_quads[input.back().quad_id].max_height));
 	if(path.size() <= 2)
 		return std::move(path);
 
-	vector<int2> simplified;
+	vector<int3> simplified;
 	simplified.push_back(path[0]);
 	int2 prev(0, 0);
+	int prev_height = 0;
+	bool height_changed = false;
 
 	for(int n = 1; n < (int)path.size(); n++) {
-		int2 vec = MoveVector(simplified.back(), path[n]).vec;
+		int2 vec = MoveVector(simplified.back().xz(), path[n].xz()).vec;
 		if(vec == int2(0, 0))
 			continue;
 
-		if(vec == prev)
+		if(vec == prev && path[n].y == prev_height && !height_changed) {
 			simplified.back() = path[n];
+			height_changed = false;
+		}
 		else {
+			prev_height = path[n].y;
 			prev = vec;
+			height_changed = true;
 			simplified.push_back(path[n]);
 		}
 	}
@@ -553,27 +665,28 @@ void NaviMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
 		if(m_quads[n].is_disabled)
 			continue;
 		const IRect &rect = m_quads[n].rect;
+		int height = m_quads[n].max_height;
 
-		renderer.addBox(IBox(asXZY(rect.min, 128), asXZY(rect.max, 128)), Color(70, 220, 200, 80), true);
+		renderer.addBox(IBox(asXZY(rect.min, height), asXZY(rect.max, height)), Color(70, 220, 200, 80), true);
 		if(borders)
-			renderer.addBox(IBox(asXZY(rect.min, 128), asXZY(rect.max, 128)), Color(255, 255, 255, 100));
+			renderer.addBox(IBox(asXZY(rect.min, height), asXZY(rect.max, height)), Color(255, 255, 255, 100));
 	}
 }
 
-void NaviMap::visualizePath(const vector<int2> &path, int elem_size, gfx::SceneRenderer &renderer) const {
+void NaviMap::visualizePath(const vector<int3> &path, int agent_size, gfx::SceneRenderer &renderer) const {
 	if(path.empty())
 		return;
 
-	IBox box(0, 128, 0, elem_size, 128, elem_size);
-	renderer.addBox(box + asXZ(path.front()), Color::red);
+	IBox box(0, 0, 0, agent_size, 0, agent_size);
+	renderer.addBox(box + path.front(), Color::red);
 
 	for(int n = 1; n < (int)path.size(); n++) {
-		int2 begin = path[n - 1], end = path[n];
+		int3 begin = path[n - 1], end = path[n];
 		bool first = true;
 
-		IBox start_box = box + asXZ(begin), end_box = box + asXZ(end);
+		IBox start_box = box + begin, end_box = box + end;
 		renderer.addBox(end_box, Color::red);
-		MoveVector vec(begin, end);
+		MoveVector vec(begin.xz(), end.xz());
 
 		if(vec.vec == int2(1, 1) || vec.vec == int2(-1, -1)) {
 			swap(start_box.min.x, start_box.max.x);

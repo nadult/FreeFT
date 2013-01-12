@@ -30,7 +30,7 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 		
 	for(int n = 0; n < bboxes.size(); n++) {
 		const IBox &bbox = bboxes[n];
-		short min_y = bbox.min.y, max_y = bbox.max.y;
+		u8 min_y = bbox.min.y, max_y = bbox.max.y;
 
 		for(int z = 0; z < bbox.depth(); z++)
 			for(int x = 0; x < bbox.width(); x++) {
@@ -39,8 +39,8 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 				int pz = z + bbox.min.z;
 
 				while(level < m_level_count) {
-					short value = m_data[index(px, pz, level)];
-					if(value == -1 || value >= min_y - 2)
+					u8 value = m_data[index(px, pz, level)];
+					if(value == invalid_value || value >= min_y - 4)
 						break;
 					level++;
 				}
@@ -53,6 +53,10 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 				m_data[index(px, pz, level)] = max_y;
 			}
 	}
+
+//TODO: remove, unnecesary
+//	for(int l = 0; l < m_level_count; l++)
+//		fixLevels();
 }
 	
 const gfx::Texture NaviHeightmap::toTexture(int level) const {
@@ -62,7 +66,7 @@ const gfx::Texture NaviHeightmap::toTexture(int level) const {
 		for(int x = 0; x < m_size.x; x++) {
 			short height = m_data[index(x, y, level)];
 			bool ok = test(x, y, level, 3);
-			out(x, y) = height < 0? Color(255, 0, 0) : Color(ok? height : 255, height, height);
+			out(x, y) = height == invalid_value? Color(255, 0, 0) : Color(ok? height : 255, height, height);
 		}
 
 	return out;
@@ -78,7 +82,7 @@ void NaviHeightmap::saveLevels() const {
 }
 
 void NaviHeightmap::printInfo() const {
-	int level_mem = m_size.x * m_size.y * sizeof(short) / 1024;
+	int level_mem = m_size.x * m_size.y / 1024;
 	printf("NaviHeightmap(%dx%d):\n  levels: %d\n  memory: %dKB * %d = %dKB\n",
 			m_size.x, m_size.y, m_level_count, level_mem, m_level_count, level_mem * m_level_count);
 }
@@ -86,7 +90,7 @@ void NaviHeightmap::printInfo() const {
 void NaviHeightmap::addLevel() {
 	ASSERT(m_level_count < max_levels);
 	m_level_count++;
-	m_data.resize(m_size.x * m_size.y * m_level_count, -1);
+	m_data.resize(m_size.x * m_size.y * m_level_count, invalid_value);
 }
 
 bool NaviHeightmap::test(int x, int y, int level, int extents) const {
@@ -97,23 +101,23 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 
 	if(x < 0 || y < 0 || x + extents > m_size.x || y + extents > m_size.y)
 		return false;
-	if(m_data[index(x, y, level)] < 0)
+	if(m_data[index(x, y, level)] == invalid_value)
 		return false;
 
-	short heights[max_extents][max_extents];
+	u8 heights[max_extents][max_extents];
 	heights[0][0] = m_data[index(x, y, level)];
 
 	for(int ty = 0; ty < extents; ty++) {
-		short prev = heights[ty == 0? 0 : ty - 1][0];
+		u8 prev = heights[ty == 0? 0 : ty - 1][0];
 		for(int tx = 0; tx < extents; tx++) {
-			short height = m_data[index(x + tx, y + ty, level)];
-			if(abs(height - prev) > 1 || height < 0)
+			u8 height = m_data[index(x + tx, y + ty, level)];
+			if(abs(height - prev) > 1 || height == invalid_value)
 				for(int l = 0; l < m_level_count; l++) {
 					height = m_data[index(x + tx, y + ty, l)];
 					if(height >= 0 && abs(height - prev) <= 1)
 						break;
 				}
-			if(abs(height - prev) > 1 || height < 0)
+			if(abs(height - prev) > 1 || height == invalid_value)
 				return false;
 			heights[ty][tx] = prev = height;
 		}
@@ -128,3 +132,42 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 
 	return true;
 }
+
+/*
+//TODO: remove, unnecesary
+void NaviHeightmap::fixLevels() {
+	int lev_count = m_size.x * m_size.y;
+
+	for(int l = m_level_count - 1; l > 0; l--) {
+		u8 *current = m_data.data() + l * lev_count;
+		u8 *prev    = current - lev_count;
+
+		double caverage = 0.0, paverage = 0.0; {
+			int ccount = 0, pcount = 0;
+			for(int n = 0; n < lev_count; n++) {
+				double cvalue = (double)current[n];
+				double pvalue = (double)prev[n];
+
+				if(cvalue >= 0.0) {
+					caverage += cvalue;
+					ccount++;
+				}
+				if(pvalue >= 0.0) {
+					paverage += pvalue;
+					pcount++;
+				}
+			}
+			caverage /= double(ccount);
+			paverage /= double(pcount);
+		}
+
+		for(int n = 0; n < lev_count; n++) if(current[n] == invalid_value && prev[n] >= 0) {
+			double value = prev[n];
+			if(fabs(value - caverage) < fabs(value - paverage)) {
+				current[n] = prev[n];
+				prev[n] = invalid_value;
+			}
+		}
+	}
+}
+*/

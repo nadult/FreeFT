@@ -9,27 +9,29 @@ class NaviHeightmap;
 // with varying ceiling height we can provide ceiling heightmaps
 class NaviMap {
 public:
-	NaviMap(int extend);
+	NaviMap(int agent_size);
 
 	void update(const NaviHeightmap&);
 
 	int2 dimensions() const { return m_size; }
-	int extend() const { return m_extend; }
+	int agentSize() const { return m_agent_size; }
 
 	void visualize(gfx::SceneRenderer&, bool borders) const;
-	void visualizePath(const vector<int2>&, int elem_size, gfx::SceneRenderer&) const;
+	void visualizePath(const vector<int3>&, int agent_size, gfx::SceneRenderer&) const;
 	void printInfo() const;
 
 	struct Quad {
-		Quad(const IRect &rect)
-			:rect(rect), is_disabled(0), static_ncount(0) { }
+		Quad(const IRect &rect, int min_height, int max_height)
+			:rect(rect), is_disabled(0), static_ncount(0), min_height(min_height), max_height(max_height) { }
 		Quad() { }
 
 		IRect rect;
 		vector<int> neighbours;
 		int static_ncount: 31;
 		int is_disabled : 1;
-	};
+
+		int min_height, max_height;
+	} __attribute__((aligned(64)));
 
 	struct PathNode {
 		int2 point;
@@ -37,23 +39,23 @@ public:
 	};
 
 	int2 findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const;
-	int findQuad(int2 pos, bool find_disabled = false) const;
+	int findQuad(const int3 &pos, bool find_disabled = false) const;
 
 	void addCollider(const IRect &rect);
 	void removeColliders();
 
-	vector<PathNode> findPath(int2 start, int2 end, bool do_refining) const;
-	vector<int2> findPath(int2 start, int2 end) const;
+	vector<PathNode> findPath(const int3 &start, const int3 &end, bool do_refining) const;
+	vector<int3> findPath(const int3 &start, const int3 &end) const;
 
 	int quadCount() const { return (int)m_quads.size(); }
 	const Quad &operator[](int idx) const { return m_quads[idx]; }
 
 protected:
-	void extractQuads(const vector<u8>&, int sx, int sy);
+	void extractQuads(const PodArray<u8>&, int sx, int sy);
 	void addAdjacencyInfo(int target_id, int src_id);
 	void addCollider(int quad_id, const IRect &rect);
 
-	int m_extend;
+	int m_agent_size;
 	int m_static_count;
 	vector<Quad> m_quads;
 	int2 m_size;

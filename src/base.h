@@ -98,6 +98,7 @@ public:
 	const T&operator[](int idx) const { return m_data[idx]; }
 
 	int size() const { return m_size; }
+	int dataSize() const { return m_size * (int)sizeof(T); }
 
 private:
 	T *m_data;

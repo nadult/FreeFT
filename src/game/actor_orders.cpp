@@ -199,7 +199,7 @@ namespace game {
 		new_pos = max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
 		int3 cur_pos = (int3)pos();
-		vector<int2> tmp_path = m_world->findPath(cur_pos.xz(), new_pos.xz());
+		vector<int3> tmp_path = m_world->findPath(cur_pos, new_pos);
 
 		if(cur_pos == new_pos || tmp_path.empty()) {
 			m_order = doNothingOrder();
@@ -216,12 +216,12 @@ namespace game {
 		m_order = m_next_order;
 
 		for(int n = 1; n < (int)tmp_path.size(); n++) {
-			cur_pos = asXZY(tmp_path[n - 1], 128);
-			new_pos = asXZY(tmp_path[n], 128);
+			cur_pos = tmp_path[n - 1];
+			new_pos = tmp_path[n];
 			if(new_pos == cur_pos)
 				continue;
 
-			MoveVector mvec(tmp_path[n - 1], tmp_path[n]);
+			MoveVector mvec(tmp_path[n - 1].xz(), tmp_path[n].xz());
 
 			while(mvec.dx) {
 				int step = min(mvec.dx, 3);

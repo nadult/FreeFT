@@ -78,14 +78,14 @@ int safe_main(int argc, char **argv)
 			actor->boundingBox().height(),
 			actor->boundingBox().depth());
 
-	bool navi_show = 1;
+	bool navi_show = 0;
 	bool navi_debug = 0;
-	bool shooting_debug = 0;
-	bool entity_debug = 0;
-	bool item_debug = 0;
+	bool shooting_debug = 1;
+	bool entity_debug = 1;
+	bool item_debug = 1;
 	
 	double last_time = getTime();
-	vector<int2> path;
+	vector<int3> path;
 	int3 last_pos(0, 0, 0);
 	float3 target_pos(0, 0, 0);
 
@@ -105,8 +105,8 @@ int safe_main(int argc, char **argv)
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos);
-		//Intersection isect = world.trace(ray, actor);
-		Intersection box_isect = world.trace(ray, actor);
+		if(isect.distance() == constant::inf)
+			isect = world.trace(ray, actor);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
@@ -115,13 +115,13 @@ int safe_main(int argc, char **argv)
 				actor->setNextOrder(interactOrder(isect.entity(), mode));
 			}
 			else if(navi_debug) {
-				int3 wpos = (int3)ray.at(box_isect.distance());
+				int3 wpos = (int3)ray.at(isect.distance());
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
 			else if(isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
-				int3 wpos = (int3)ray.at(box_isect.distance());
+				int3 wpos = (int3)ray.at(isect.distance());
 				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
 			}
 		}
@@ -129,8 +129,8 @@ int safe_main(int argc, char **argv)
 			actor->setNextOrder(attackOrder(0, (int3)target_pos));
 		}
 		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
-			int3 wpos = (int3)ray.at(box_isect.distance());
-			path = world.findPath(last_pos.xz(), wpos.xz());
+			int3 wpos = (int3)ray.at(isect.distance());
+			path = world.findPath(last_pos, wpos);
 			last_pos = wpos;
 		}
 		if(isKeyDown(Key_kp_add))
@@ -157,8 +157,8 @@ int safe_main(int argc, char **argv)
 		if((entity_debug && isect.isEntity()) || 1)
 			renderer.addBox(isect.boundingBox(), Color::yellow);
 
-		if(!box_isect.isEmpty() && shooting_debug) {
-			float3 target = ray.at(box_isect.distance());
+		if(!isect.isEmpty() && shooting_debug) {
+			float3 target = ray.at(isect.distance());
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
 
@@ -188,9 +188,11 @@ int safe_main(int argc, char **argv)
 		drawQuad(0, 0, 250, 250, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["arial_16"];
-		float3 isect_pos = ray.at(box_isect.distance());
-		font->drawShadowed(int2(0, 0), Color::white, Color::black, "View:(%d %d) Ray:(%.2f %.2f %.2f)",
-				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
+		float3 isect_pos = ray.at(isect.distance());
+		float3 actor_pos = actor->pos();
+		font->drawShadowed(int2(0, 0), Color::white, Color::black,
+				"View:(%d %d) Ray:(%.2f %.2f %.2f) Actor:(%.2f %.2f %.2f)",
+				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, actor_pos.x, actor_pos.y, actor_pos.z);
 		font->drawShadowed(int2(0, 20), Color::white, Color::black, "%s", prof_stats.c_str());
 
 		if(item_debug) {

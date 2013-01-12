@@ -10,11 +10,14 @@
 
 namespace game {
 
+	// TODO: multiple navigation maps (2, 3, 4 at least)
+	enum { agent_size = 3 };
+
 	World::World()
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) { } 
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size) { } 
 
 	World::World(const char *file_name)
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(2) {
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size) {
 		XMLDocument doc;
 		doc.load(file_name);
 
@@ -163,18 +166,19 @@ namespace game {
 	Intersection World::pixelIntersect(const int2 &screen_pos) const {
 		//PROFILE("world::pixelIntersect");
 		Intersection out;
+		Ray ray = screenRay(screen_pos);
 
 		int tile_id = m_tile_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); } );
 		if(tile_id != -1)
-			out = Intersection(&m_tile_grid[tile_id], false, 0.0f);
+			out = Intersection(&m_tile_grid[tile_id], false, intersection(ray, m_tile_grid[tile_id].bbox));
 
 		int entity_id = m_entity_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const Entity*)object.ptr)->testPixel(pos); } );
 		if(entity_id != -1) {
 			const Grid::ObjectDef *object = &m_entity_grid[entity_id];
 			if(tile_id == -1 || drawingOrder(object->bbox, out.boundingBox()) == 1)
-				out = Intersection(object, true, 0.0f);
+				out = Intersection(object, true, intersection(ray, object->bbox));
 		}
 
 		return out;
@@ -198,7 +202,7 @@ namespace game {
 		return m_tile_grid.isInside(box);
 	}
 		
-	vector<int2> World::findPath(int2 start, int2 end) const {
+	vector<int3> World::findPath(const int3 &start, const int3 &end) const {
 		PROFILE_RARE("world::findPath");
 		return m_navi_map.findPath(start, end);
 	}
