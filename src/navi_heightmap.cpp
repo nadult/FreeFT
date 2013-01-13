@@ -53,10 +53,6 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 				m_data[index(px, pz, level)] = max_y;
 			}
 	}
-
-//TODO: remove, unnecesary
-//	for(int l = 0; l < m_level_count; l++)
-//		fixLevels();
 }
 	
 const gfx::Texture NaviHeightmap::toTexture(int level) const {
@@ -133,41 +129,3 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 	return true;
 }
 
-/*
-//TODO: remove, unnecesary
-void NaviHeightmap::fixLevels() {
-	int lev_count = m_size.x * m_size.y;
-
-	for(int l = m_level_count - 1; l > 0; l--) {
-		u8 *current = m_data.data() + l * lev_count;
-		u8 *prev    = current - lev_count;
-
-		double caverage = 0.0, paverage = 0.0; {
-			int ccount = 0, pcount = 0;
-			for(int n = 0; n < lev_count; n++) {
-				double cvalue = (double)current[n];
-				double pvalue = (double)prev[n];
-
-				if(cvalue >= 0.0) {
-					caverage += cvalue;
-					ccount++;
-				}
-				if(pvalue >= 0.0) {
-					paverage += pvalue;
-					pcount++;
-				}
-			}
-			caverage /= double(ccount);
-			paverage /= double(pcount);
-		}
-
-		for(int n = 0; n < lev_count; n++) if(current[n] == invalid_value && prev[n] >= 0) {
-			double value = prev[n];
-			if(fabs(value - caverage) < fabs(value - paverage)) {
-				current[n] = prev[n];
-				prev[n] = invalid_value;
-			}
-		}
-	}
-}
-*/

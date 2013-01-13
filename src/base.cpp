@@ -154,7 +154,7 @@ float intersection(const Ray &ray, const Box<float3> &box) {
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
-	return lmin < lmax? lmin : constant::inf;
+	return lmin <= lmax? lmin : constant::inf;
 }
 
 float intersection(const Segment &segment, const Box<float3> &box) {

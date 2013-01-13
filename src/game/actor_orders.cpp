@@ -97,21 +97,20 @@ namespace game {
 					m_order = m_next_order = doNothingOrder();
 				}
 				else {
-					int2 target_pos = my_box.min.xz();
+					int3 target_pos = my_box.min;
 					if(my_box.max.x < other_box.min.x)
 						target_pos.x = other_box.min.x - my_box.width();
 					else if(my_box.min.x > other_box.max.x)
 						target_pos.x = other_box.max.x;
 					if(my_box.max.z < other_box.min.z)
-						target_pos.y = other_box.min.z - my_box.depth();
+						target_pos.z = other_box.min.z - my_box.depth();
 					else if(my_box.min.z > other_box.max.z)
-						target_pos.y = other_box.max.z;
+						target_pos.z = other_box.max.z;
 					
-					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos,
-							IRect(other_box.min.xz(), other_box.max.xz()));
+					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos, other_box);
 					Order order = m_next_order;
 					order.interact.waiting_for_move = true;
-					m_next_order = moveOrder(asXZY(target_pos, 1), true);
+					m_next_order = moveOrder(target_pos, true);
 					issueMoveOrder();
 					if(m_order.id == OrderId::move)
 						m_next_order = order;

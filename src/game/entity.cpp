@@ -58,11 +58,17 @@ namespace game {
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))
 			return;
 
+		FBox bbox = m_bbox;
+		if(shrinkRenderedBBox())
+			bbox.min.y = min(bbox.min.y + 1.0f, bbox.max.y - 0.5f);
+
 		FRect tex_rect;
 		PTexture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx, tex_rect);
-		out.add(tex, rect, m_pos, m_bbox, Color::white, tex_rect);
-		if(m_world->isColliding(boundingBox(), this))
-			out.addBox(boundingBox(), Color::red);
+		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
+
+		bbox += pos();
+		if(m_world->isColliding(bbox, this))
+			out.addBox(bbox, Color::red);
 	}
 		
 	bool Entity::testPixel(const int2 &screen_pos) const {

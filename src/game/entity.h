@@ -16,7 +16,7 @@ namespace game {
 	class EntityRef;
 
 	//TODO: static polimorphism where its possible, or maybe even
-	// array for each type of Entity
+	// array for each subtype of Entity class
 	class Entity {
 	public:
 		Entity(const char *sprite_name, const float3 &pos);
@@ -74,6 +74,9 @@ namespace game {
 
 		void setBBox(const FBox &box) { m_bbox = box; }
 		int dirIdx() const { return m_dir_idx; }
+
+		// When entity is moving up/down, it might overlap with some of the tiles
+		virtual bool shrinkRenderedBBox() const { return false; }
 
 		gfx::PSprite m_sprite;
 		IRect m_max_screen_rect;

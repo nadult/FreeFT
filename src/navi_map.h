@@ -38,19 +38,20 @@ public:
 		int quad_id;
 	};
 
-	int2 findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const;
+	int3 findClosestCorrectPos(const int3 &pos, const IBox &dist_to) const;
 	int findQuad(const int3 &pos, bool find_disabled = false) const;
 
 	void addCollider(const IRect &rect);
 	void removeColliders();
 
-	vector<PathNode> findPath(const int3 &start, const int3 &end, bool do_refining) const;
 	vector<int3> findPath(const int3 &start, const int3 &end) const;
 
 	int quadCount() const { return (int)m_quads.size(); }
 	const Quad &operator[](int idx) const { return m_quads[idx]; }
 
 protected:
+	vector<PathNode> findPath(const int2 &start, const int2 &end, int start_id, int end_id, bool do_refining) const;
+
 	void extractQuads(const PodArray<u8>&, int sx, int sy);
 	void addAdjacencyInfo(int target_id, int src_id);
 	void addCollider(int quad_id, const IRect &rect);

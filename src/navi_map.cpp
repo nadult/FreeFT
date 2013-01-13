@@ -174,20 +174,26 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 		vector<int2> positions;
 		positions.reserve((m_size.x + m_size.y) * 4);
 		int max_diff = 0;
+		int start_line = 0;
 
 		while(pixel_count) {
 			IRect subrect;
 			positions.clear();
 			int hmin, hmax;
 
-			for(int y = 0; y < m_size.y; y++)
-				for(int x = 0; x < m_size.x; x++)
+			for(int y = start_line; y < m_size.y; y++) {
+				for(int x = 0; x < m_size.x; x++) 
 					if(bitmap[x + y * m_size.x]) {
 						hmin = hmax = bitmap[x + y * m_size.x];
 						positions.push_back(int2(x, y));
 						subrect = IRect(x, y, x, y);
 						break;
 					}
+
+				if(!positions.empty())
+					break;
+				start_line = y + 1;
+			}
 
 			while(!positions.empty()) {
 				int2 pos = positions.back();
@@ -230,7 +236,6 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 				}
 			}
 			subrect.max += int2(1, 1);
-		//	printf("subrect: %d %d\n", subrect.width(), subrect.height());
 
 			for(int sy = 0; sy < m_size.y; sy += sector_size)
 				for(int sx = 0; sx < m_size.x; sx += sector_size)
@@ -243,7 +248,6 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 
 		printf("."); fflush(stdout);
 	}
-	printf(" %.2f seconds\n", getTime() - time);
 	m_static_count = (int)m_quads.size();
 
 	for(int i = 0; i < (int)m_quads.size(); i++)
@@ -251,7 +255,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 			addAdjacencyInfo(i, j);
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		m_quads[n].static_ncount = (int)m_quads[n].neighbours.size();
-		
+	printf(" %.2f seconds\n", getTime() - time);
 }
 
 void NaviMap::addCollider(int parent_id, const IRect &rect) {
@@ -303,16 +307,20 @@ void NaviMap::removeColliders() {
 	}
 }
 
-// Instead, maybe it would be better to search closest path with Rect as a target?
+// Instead, maybe it would be better to search closest path with Box as a target?
 // (we would use dist_to rect extended by (-extend,-extend) and (1,1)
-int2 NaviMap::findClosestCorrectPos(const int2 &pos, const IRect &dist_to) const {
-	int2 closest_pos = pos;
+int3 NaviMap::findClosestCorrectPos(const int3 &pos, const IBox &dist_to) const {
+	int3 closest_pos = pos;
 	float min_distance = 1.0f / 0.0f, min_distance2 = 0.0f;
-	FRect fdist_to(dist_to.min, dist_to.max);
+	FRect fdist_to(dist_to.min.xz(), dist_to.max.xz());
 
 	for(int n = 0; n < (int)m_quads.size(); n++) {
-		int2 new_pos = clamp(pos, m_quads[n].rect.min, m_quads[n].rect.max - int2(1, 1));
-		float dist = distanceSq(fdist_to, FRect(new_pos, new_pos + int2(3, 3)));
+		if(m_quads[n].min_height > pos.y)
+			continue;
+		
+		int3 new_pos = clamp(pos,	asXZY(m_quads[n].rect.min, m_quads[n].min_height),
+								 	asXZY(m_quads[n].rect.max - int2(1, 1), m_quads[n].max_height));
+		float dist  = distanceSq(fdist_to, FRect(new_pos.xz(), new_pos.xz() + int2(m_agent_size, m_agent_size)));
 		float dist2 = distanceSq(new_pos, pos);
 
 		if(dist < min_distance || (dist == min_distance && dist2 < min_distance2)) {
@@ -444,12 +452,12 @@ namespace {
 #undef UPDATE
 }
 
-vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, bool do_refining) const {
+vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, int start_id, int end_id,
+											bool do_refining) const {
 	vector<PathNode> out;
-	int start_id = findQuad(start), end_id = findQuad(end);
 
 	if(start_id == -1 || end_id == -1) //TODO: info that path not found
-		return out;
+		return std::move(out);
 
 	SearchData data[(int)m_quads.size()];
 	for(int n = 0; n < (int)m_quads.size(); n++) {
@@ -462,8 +470,8 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, 
 	int heap_size = 0;
 
 	data[start_id].dist = 0.0f;
-	data[start_id].est_dist = distance(start.xz(), end.xz());
-	data[start_id].entry_pos = start.xz();
+	data[start_id].est_dist = distance(start, end);
+	data[start_id].entry_pos = start;
 	data[start_id].src_quad = -1;
 	heap[heap_size++] = HeapData(data + start_id);
 
@@ -488,7 +496,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, 
 			
 			IRect edge = computeEdge(quad1.rect, quad2.rect);
 
-			int2 edge_end_pos = clamp(end.xz(), edge.min, edge.max);
+			int2 edge_end_pos = clamp(end, edge.min, edge.max);
 			MoveVector vec(data1.entry_pos, edge_end_pos);
 
 			int2 closest_pos = clamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min, quad2.rect.max - int2(1, 1));
@@ -512,7 +520,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, 
 #endif
 
 			float dist = distance(closest_pos, data1.entry_pos) + data1.dist;
-			float est_dist = distance(closest_pos, end.xz());
+			float est_dist = distance(closest_pos, end);
 
 			if(quad2_id == end_id) {
 				end_reached = true;
@@ -531,9 +539,9 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, 
 	}
 
 	if(!end_reached)
-		return out;
+		return std::move(out);
 
-	out.push_back(PathNode{end.xz(), end_id});
+	out.push_back(PathNode{end, end_id});
 	for(int quad_id = end_id; quad_id != -1; quad_id = data[quad_id].src_quad) {
 		if(out.back().point != data[quad_id].entry_pos)
 			out.push_back({data[quad_id].entry_pos, quad_id});
@@ -552,7 +560,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, 
 			int height1 = m_quads[out[n].quad_id].max_height;
 			int height2 = m_quads[out[n].quad_id].min_height;
 
-			vector<PathNode> other = findPath(asXZY(out[n].point, height1), asXZY(out[n + 3].point, height2), false);
+			vector<PathNode> other = findPath(out[n].point, out[n+3].point, out[n].quad_id, out[n+3].quad_id, false);
 
 			if(!other.empty()) {
 				ASSERT(other.front().point == out[n].point && other.back().point == out[n + 3].point);
@@ -572,11 +580,14 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int3 &start, const int3 &end, 
 		}
 	}
 
-	return out;
+	return std::move(out);
 }
 
 vector<int3> NaviMap::findPath(const int3 &start, const int3 &end) const {
-	vector<PathNode> input = findPath(start, end, true);
+	int start_id = findQuad(start);
+	int end_id = findQuad(end);
+
+	vector<PathNode> input = findPath(start.xz(), end.xz(), start_id, end_id, true);
 	vector<int3> path;
 
 	if(input.empty())

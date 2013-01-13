@@ -243,6 +243,9 @@ namespace game {
 
 			while(dist > 0.0001f) {
 				int3 target = m_path[m_path_pos];
+				if(m_world->isColliding(boundingBox() - pos() + float3(target), this, collider_tiles))
+					target.y += 1;
+
 				int3 diff = target - m_last_pos;
 				float3 diff_vec(diff); diff_vec = diff_vec / length(diff_vec);
 				float3 cur_pos = float3(m_last_pos) + float3(diff) * m_path_t;

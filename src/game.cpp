@@ -95,6 +95,9 @@ int safe_main(int argc, char **argv)
 	string prof_stats;
 	double stat_update_time = getTime();
 
+//	while(true)
+//		path = world.findPath(int3(50, 128, 50), int3(858, 144, 730));
+
 	while(pollEvents()) {
 		double loop_start = profiler::getTime();
 		if(isKeyDown(Key_esc))

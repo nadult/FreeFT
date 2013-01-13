@@ -1,9 +1,12 @@
 - fix (most of) graphics glitches that show up on different FOT maps (DONE)
+  - still visible on map mission07; if you cant sort the tiles properly, at least
+    make sure that sorting order wont change rapidly, when the player moves the camera
 - smooth running around original maps: NavigationMap with true 3d support
-  - multi-layered heightmap
-  - conversion from heightmap to bitmap in Navigationmap
+  - multi-layered heightmap  DONE
+  - conversion from heightmap to bitmap in Navigationmap  DONE
   - quickly finding adjacent quads (also from different levels)
-  - when moving some collision tests should be made to make sure, player is on correct height
+  - when moving some collision tests should be made to make sure, player is on correct height  DONE
+  - proper moving through diagonals and over tiles with different height
 - some enemies with basic AI (scorpions)
 - hiding upper floors, so that player is visible
 - convert should be able to take FOT path, and extract and convert all necessary resources
@@ -22,4 +25,5 @@ issues/10-ui_improvements
 +WORK_LOG:
 10.01.12: 21:00 - 24:30 (3h 30min)
 11.01.12: 18:30 - 23:00
-12.01.12: 13:00 - 15:00, 16:00 - 
+12.01.12: 13:00 - 15:00, 16:00 - 20:30, 21:00 - 21:30
+13.01.12: 14:15 - 

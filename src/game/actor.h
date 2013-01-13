@@ -157,6 +157,7 @@ namespace game {
 		void onPickupEvent();
 
 	private:
+		virtual bool shrinkRenderedBBox() const { return true; }
 		// orders
 		bool m_issue_next_order;
 		Order m_order;
