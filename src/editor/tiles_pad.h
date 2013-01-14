@@ -26,7 +26,9 @@ namespace ui {
 		PProgressBar 	m_dirty_bar;
 		PTileSelector	m_selector;
 
-		TilesEditor::Mode m_editor_mode;
+		PComboBox		m_editor_mode_box;
+
+		bool			m_is_grouped_model;
 	};
 	
 	typedef Ptr<TilesPad> PTilesPad;

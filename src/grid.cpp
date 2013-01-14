@@ -25,8 +25,8 @@ int Grid::add(const ObjectDef &def) {
 	for(int y = grid_box.min.y; y <= grid_box.max.y; y++) {
 		int2 &min_max = m_row_rects[y];
 		min_max = min_max.y == min_max.x?
-				int2(def.rect.min.y, def.rect.max.y) :
-				int2(min(min_max.x, def.rect.min.y), max(min_max.y, def.rect.max.y));
+				int2(def.rect_pos.y, def.rect_pos.y + def.rect_size.y) :
+				int2(min(min_max.x, def.rect_pos.y), max(min_max.y, def.rect_pos.y + def.rect_size.y));
 	}
 
 	int object_id;
@@ -139,13 +139,13 @@ void Grid::updateNode(int node_id, const ObjectDef &def) const {
 
 	if(node.size == 0) {
 		node.bbox = def.bbox;
-		node.rect = def.rect;
+		node.rect = def.rect();
 		node.obj_flags = def.flags;
 		return;
 	}
 
 	node.bbox = sum(def.bbox, node.bbox);
-	node.rect = sum(def.rect, node.rect);
+	node.rect = sum(def.rect(), node.rect);
 	node.obj_flags |= def.flags;
 }
 

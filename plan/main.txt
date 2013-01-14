@@ -1,5 +1,5 @@
 DEADLINE: Pre-alpha release (31st January, 12 days (96h) from 10th):
-ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE UNSURE ARE NECESSARY
+ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF, THAT YOU'RE UNSURE IS NECESSARY
  - Pre-alpha release
    issues/13-pre_alpha_release.txt
 
@@ -102,3 +102,4 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR STUFF YOURE
    najpierw konwertujemy je do własnego formatu, następnie aplikujemy patch-e i ew. kompresujemy lz4 w celu
    zmniejszenia czasu ładowania
  - we can generate mini-maps from NaviHeightmaps
+ - rendering occluders to texture, so that we can nicely blend them in/out

@@ -154,6 +154,8 @@ public:
 			XMLDocument doc;
 			doc.load(file_name);
 			m_tile_map.loadFromXML(doc);
+			if(m_tiles_editor)
+				m_tiles_editor->onTileMapReload();
 		}
 	}
 
@@ -256,11 +258,13 @@ int safe_main(int argc, char **argv)
 		main_window.draw();
 		lookAt({0, 0});
 
-		DTexture::bind0();
-		drawQuad(config.resolution - int2(250, 200), config.resolution, Color(0, 0, 0, 80));
+		if(config.profiler_enabled) {
+			DTexture::bind0();
+			drawQuad(config.resolution - int2(250, 200), config.resolution, Color(0, 0, 0, 80));
 
-		gfx::PFont font = gfx::Font::mgr["arial_16"];
-		font->drawShadowed(config.resolution - int2(250, 180), Color::white, Color::black, "%s", prof_stats.c_str());
+			gfx::PFont font = gfx::Font::mgr["arial_16"];
+			font->drawShadowed(config.resolution - int2(250, 180), Color::white, Color::black, "%s", prof_stats.c_str());
+		}
 
 		swapBuffers();
 		TextureCache::main_cache.nextFrame();

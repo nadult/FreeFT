@@ -16,15 +16,28 @@ public:
 		node_size = 24
 	};
 
-	struct ObjectDef {
-		ObjectDef(const void *ptr = nullptr, const FBox &bbox = FBox::empty(), const IRect &rect = IRect::empty(), int flags = -1)
-			:ptr(ptr), bbox(bbox), rect(rect), flags(flags) { }
+	template <typename PtrBase>
+	struct TObjectDef {
+		TObjectDef(const PtrBase* ptr = nullptr, const FBox &bbox = FBox::empty(),
+				const IRect &rect = IRect::empty(), int flags = -1)
+			:ptr(ptr), bbox(bbox), rect_pos(rect.min), rect_size(rect.size()), flags(flags),
+				occluder_id(-1), occluded_by(-1) {
+			DASSERT(rect.size() == (int2)rect_size);
+		}
 
-		const void *ptr;
+		const IRect rect() const { return IRect(rect_pos, rect_pos + rect_size); }
+
+		const PtrBase *ptr;
 		FBox bbox;
-		IRect rect;
+		int2 rect_pos;
+		short2 rect_size;
 		int flags;
+
+		short occluder_id;
+		short occluded_by;
 	};
+
+	typedef TObjectDef<void> ObjectDef;
 
 	Grid(const int2 &dimensions = int2(0, 0));
 
@@ -101,7 +114,7 @@ protected:
 	int2 m_size;
 	vector<int2> m_row_rects;
 	vector<int> m_free_list;
-	vector<int> m_free_overlaps; // do as in TextureCache
+	vector<int> m_free_overlaps; // TODO: do as in TextureCache
 	vector<Overlap> m_overlaps;
 	vector<Node> m_nodes;
 	vector<Object> m_objects;

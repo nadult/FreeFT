@@ -307,7 +307,7 @@ void NaviMap::removeColliders() {
 	}
 }
 
-// Instead, maybe it would be better to search closest path with Box as a target?
+// TODO: Instead, maybe it would be better to search closest path with Box as a target?
 // (we would use dist_to rect extended by (-extend,-extend) and (1,1)
 int3 NaviMap::findClosestCorrectPos(const int3 &pos, const IBox &dist_to) const {
 	int3 closest_pos = pos;

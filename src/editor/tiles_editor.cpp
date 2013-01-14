@@ -10,18 +10,38 @@ using namespace gfx;
 
 namespace ui {
 
+	static const char *s_mode_strings[TilesEditor::mode_count] = {
+		"[S]electing (normal)",
+		"[S]electing (union)",
+		"[S]electing (intersection)",
+		"[S]electing (difference)",
+
+		"[P]lacing",
+		"[P]lacing (removing obstacles)",
+		
+		"Placing [r]andom",
+		"Placing [r]andom (removing obstacles)",
+
+		"[F]illing holes",
+
+		"Creating/removing [o]ccluders",
+	};
+
+	const char **TilesEditor::modeStrings() { return s_mode_strings; }
+
 	TilesEditor::TilesEditor(IRect rect)
 		:ui::Window(rect, Color(0, 0, 0)), m_show_grid(false), m_grid_size(1, 1), m_tile_map(0), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
 		m_view_pos = int2(-200, 300);
 		m_is_selecting = false;
-		m_is_replacing = false;
-		m_mode = mode_selecting;
-		m_selection_mode = selection_normal;
+		m_mode = mode_selecting_normal;
 
 		m_cursor_height = 0;
 		m_grid_height = 1;
 		m_dirty_percent = 0.0f;
+
+		m_current_occluder = -1;
+		m_mouseover_tile_id = -1;
 	}
 
 	void TilesEditor::drawGrid(const IBox &box, int2 node_size, int y) {
@@ -34,15 +54,28 @@ namespace ui {
 			drawLine(int3(box.min.x, y, z), int3(box.max.x, y, z), Color(255, 255, 255, 64));
 	}
 
+	void TilesEditor::onTileMapReload() {
+		m_selected_ids.clear();
+		m_current_occluder = -1;
+		m_mouseover_tile_id = -1;
+	}
+
 	void TilesEditor::setTileMap(TileMap *new_tile_map) {
 		//TODO: do some cleanup within the old tile map?
 		m_tile_map = new_tile_map;
+	}
+
+	void TilesEditor::setMode(Mode mode) {
+		DASSERT(mode >= 0 && mode < mode_count);
+		m_mode = mode;
+		sendEvent(this, Event::button_clicked, m_mode);
 	}
 
 	void TilesEditor::onInput(int2 mouse_pos) {
 		ASSERT(m_tile_map);
 
 		m_selection = computeCursor(mouse_pos, mouse_pos);
+
 		if(isKeyDown(Key_kp_add))
 			m_cursor_height++;
 		if(isKeyDown(Key_kp_subtract))
@@ -70,28 +103,16 @@ namespace ui {
 		}
 
 		//TODO: make proper accelerators
-		if(isKeyDown('S')) {
-			m_selection_mode = m_mode == mode_selecting?
-				(SelectionMode)((m_selection_mode + 1) % selection_mode_count) : selection_normal;
-
-			m_mode = mode_selecting;
-			sendEvent(this, Event::button_clicked, m_mode);
-		}
-		if(isKeyDown('P')) {
-			m_is_replacing = m_mode == mode_placing? m_is_replacing ^ 1 : false;
-			m_mode = mode_placing;
-			sendEvent(this, Event::button_clicked, m_mode);
-		}
-		if(isKeyDown('R')) {
-			m_is_replacing = m_mode == mode_placing_random? m_is_replacing ^ 1 : false;
-			m_mode = mode_placing_random;
-			sendEvent(this, Event::button_clicked, m_mode);
-		}
-		if(isKeyDown('F')) {
-			m_is_replacing = false;
-			m_mode = mode_filling;
-			sendEvent(this, Event::button_clicked, m_mode);
-		}
+		if(isKeyDown('S'))
+			setMode(isSelecting() && m_mode != mode_selecting_difference? (Mode)(m_mode + 1) : mode_selecting_normal);
+		if(isKeyDown('P'))
+			setMode(m_mode == mode_placing? mode_replacing : mode_placing);
+		if(isKeyDown('R'))
+			setMode(m_mode == mode_placing_random? mode_replacing_random : mode_placing_random);
+		if(isKeyDown('F'))
+			setMode(mode_filling);
+		if(isKeyDown('O'))
+			setMode(mode_occluders);
 
 		{
 			KeyId actions[TileGroup::Group::side_count] = {
@@ -111,10 +132,33 @@ namespace ui {
 			clampViewPos();
 		}
 
-		if(isKeyPressed(Key_del)) {
-			for(int i = 0; i < (int)m_selected_ids.size(); i++)
-				m_tile_map->remove(m_selected_ids[i]);
-			m_selected_ids.clear();
+		OccluderMap &occmap = m_tile_map->occluderMap();
+		int2 screen_pos = mouse_pos + m_view_pos;
+		Ray screen_ray = screenRay(screen_pos);
+		
+		auto test_func = [](const Grid::ObjectDef &object, const int2 &pos)
+			{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); };
+
+		m_mouseover_tile_id = m_tile_map->pixelIntersect(screen_pos, test_func);
+		if(m_mouseover_tile_id == -1)
+			m_mouseover_tile_id = m_tile_map->trace(screen_ray).first;
+			
+		m_current_occluder = m_mouseover_tile_id == -1? -1 : (*m_tile_map)[m_mouseover_tile_id].occluder_id;
+
+		if(isChangingOccluders()) {
+			if(isMouseKeyDown(0)) {
+				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
+					m_current_occluder = occmap.addOccluder(m_mouseover_tile_id);
+				else
+					occmap.removeOccluder(m_current_occluder);
+			}
+		}
+		else {
+			if(isKeyPressed(Key_del)) {
+				for(int i = 0; i < (int)m_selected_ids.size(); i++)
+					m_tile_map->remove(m_selected_ids[i]);
+				m_selected_ids.clear();
+			}
 		}
 	}
 
@@ -122,7 +166,7 @@ namespace ui {
 		float2 height_off = worldToScreen(int3(0, m_grid_height, 0));
 		int3 gbox = asXZY(m_grid_size, 1);
 
-		int3 bbox = m_new_tile && m_mode != mode_selecting? m_new_tile->bboxSize() : gbox;
+		int3 bbox = m_new_tile && !isSelecting()? m_new_tile->bboxSize() : gbox;
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
@@ -164,7 +208,7 @@ namespace ui {
 			  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
 		}
 
-		if(m_mode == mode_selecting)
+		if(isSelecting())
 			end_pos.y = start_pos.y;
 
 		return IBox(start_pos, end_pos);
@@ -189,7 +233,7 @@ namespace ui {
 	void TilesEditor::fill(const IBox &fill_box, bool is_randomized, int group_id) {
 		int3 bbox = m_new_tile->bboxSize();
 		
-		if(m_is_replacing) {
+		if(isReplacing()) {
 			IBox col_box = fill_box;
 			col_box.max = col_box.min +
 				int3(col_box.width() / bbox.x, col_box.height() / bbox.y, col_box.depth() / bbox.z) * bbox;
@@ -307,7 +351,6 @@ namespace ui {
 				if(all_sides_main || error)
 					continue;
 
-				//TODO: speed up
 				vector<int> entries;
 				for(int n = 0; n < m_tile_group->entryCount(); n++) {
 					int group_id = m_tile_group->entryGroup(n);
@@ -340,45 +383,45 @@ namespace ui {
 			clampViewPos();
 			return true;
 		}
-		else if(key == 0) {
+		else if(key == 0 && !isChangingOccluders()) {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(is_final && is_final != -1) {
-				if(m_mode == mode_selecting) {
+				if(isSelecting()) {
 					vector<int> new_ids;
 					m_tile_map->findAll(new_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
 					std::sort(new_ids.begin(), new_ids.end());
 
-					if(m_selection_mode == selection_normal)
+					if(m_mode == mode_selecting_normal)
 						m_selected_ids = new_ids;
 					else {
 						vector<int> out;
 						out.resize(new_ids.size() + m_selected_ids.size());
 
 						vector<int>::iterator end_it;
-						if(m_selection_mode == selection_union)
+						if(m_mode == mode_selecting_union)
 							end_it = set_union(m_selected_ids.begin(), m_selected_ids.end(),
 									new_ids.begin(), new_ids.end(), out.begin());
-						else if(m_selection_mode == selection_intersection)
+						else if(m_mode == mode_selecting_intersection)
 							end_it = set_intersection(m_selected_ids.begin(), m_selected_ids.end(),
 									new_ids.begin(), new_ids.end(), out.begin());
-						else if(m_selection_mode == selection_difference)
+						else if(m_mode == mode_selecting_difference)
 							end_it = set_difference(m_selected_ids.begin(), m_selected_ids.end(),
 									new_ids.begin(), new_ids.end(), out.begin());
 						out.resize(end_it - out.begin());
 						m_selected_ids = out;
 					}
 				}
-				else if(m_mode == mode_placing && m_new_tile) {
+				else if(isPlacing() && m_new_tile) {
 					fill(m_selection);
 				}
-				else if(m_mode == mode_placing_random && m_new_tile && m_tile_group) {
+				else if(isPlacingRandom() && m_new_tile && m_tile_group) {
 					int entry_id = m_tile_group->findEntry(m_new_tile);
 					int group_id = entry_id != -1? m_tile_group->entryGroup(entry_id) : -1;
 					if(group_id != -1)
 						fill(m_selection, true, group_id);
 				}
-				else if(m_mode == mode_filling && m_tile_group && m_new_tile) {
+				else if(isFilling() && m_tile_group && m_new_tile) {
 					int entry_id = m_tile_group->findEntry(m_new_tile);
 					int group_id = entry_id != -1? m_tile_group->entryGroup(entry_id) : -1;
 					if(group_id != -1)
@@ -421,29 +464,81 @@ namespace ui {
 
 		SceneRenderer renderer(clippedRect(), m_view_pos);
 
-
 		{
 			vector<int> visible_ids;
-			visible_ids.reserve(1024);
+			visible_ids.reserve(1024 * 8);
 			m_tile_map->findAll(visible_ids, renderer.targetRect());
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
+			vector<Color> tile_colors(visible_ids.size(), Color::white);
+
+			if(isChangingOccluders()) {
+				OccluderMap &occmap = m_tile_map->occluderMap();
+
+				int new_occluder = -1;
+				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
+					new_occluder = occmap.addOccluder(m_mouseover_tile_id);
+
+				Color colors[] = {
+					Color(255, 200, 200),
+					Color(255, 255, 200),
+					Color(255, 200, 255),
+					Color(200, 255, 255),
+					Color(200, 255, 200),
+					Color(200, 200, 255)
+				};
+
+				int selected_occluder = new_occluder == -1? m_current_occluder : new_occluder;
+				vector<int> is_occluder_selected(occmap.size(), 0);
+				for(int n = 0; n < occmap.size(); n++) {
+					int id = n;
+					while(id != -1) {
+						if(id == selected_occluder)
+							is_occluder_selected[n] = 1;
+						id = occmap[id].parent_id;
+					}
+				}
+
+				for(int n = 0; n < (int)visible_ids.size(); n++) {
+					auto object = (*m_tile_map)[visible_ids[n]];
+					int3 pos(object.bbox.min);
+				
+					Color col = Color::white;
+					if(object.occluder_id != -1) {
+						col = colors[object.occluder_id % COUNTOF(colors)];
+						if(is_occluder_selected[object.occluder_id])
+							col.a = 127;
+					}
+					tile_colors[n] = col;
+				}
+				
+				if(new_occluder != -1)
+					occmap.removeOccluder(new_occluder);
+			}
+			else {
+				for(int n = 0; n < (int)visible_ids.size(); n++) {
+					auto object = (*m_tile_map)[visible_ids[n]];
+					int3 pos(object.bbox.min);
+
+					IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
+					Color col =	box.max.y < m_selection.min.y? Color::gray :
+								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
+					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
+						col.r = col.g = 255;
+					tile_colors[n] = col;
+				}
+			}
 
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
 				auto object = (*m_tile_map)[visible_ids[i]];
 				int3 pos(object.bbox.min);
 				
-				IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
-				Color col =	box.max.y < m_selection.min.y? Color::gray :
-							box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
-				if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
-					col.r = col.g = 255;
-
 //				if(m_tile_map->findAny(object.bbox, visible_ids[i]) != -1)
 //					renderer.addBox(object.bbox, Color::red, false);
-				object.ptr->addToRender(renderer, pos, col);
+				object.ptr->addToRender(renderer, pos, tile_colors[i]);
 			}
 			for(int i = 0; i < (int)m_selected_ids.size(); i++)
 				renderer.addBox((*m_tile_map)[m_selected_ids[i]].bbox);
+
 		}
 		renderer.render();
 
@@ -472,7 +567,7 @@ namespace ui {
 			drawGrid(box, m_grid_size, m_grid_height);
 		}
 		
-		if(m_new_tile && (m_mode == mode_placing || m_mode == mode_placing_random || m_mode == mode_filling) && m_new_tile) {
+		if(m_new_tile && (isPlacing() || isPlacingRandom() || isFilling()) && m_new_tile) {
 			int3 bbox = m_new_tile->bboxSize();
 		
 			for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
@@ -492,7 +587,7 @@ namespace ui {
 	//	m_tile_map->drawBoxHelpers(m_selection);
 		DTexture::bind0();
 
-		{
+		if(!isChangingOccluders()) {
 			IBox under = m_selection;
 			under.max.y = under.min.y;
 			under.min.y = m_grid_height;
@@ -500,33 +595,23 @@ namespace ui {
 			drawBBox(under, Color(127, 127, 127, 255));
 			drawBBox(m_selection);
 		}
-
 		
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[s_font_names[1]];
 
-		const char *mode_names[mode_count] = {
-			"selecting tiles",
-			"placing tiles",
-			"placing random tiles",
-			"filling holes",
-		};
-
-		const char *selection_names[selection_mode_count] = {
-			"",
-			" (union)",
-			" (intersection)",
-			" (difference)",
-		};
-
 		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map->size());
+		if(isChangingOccluders() && m_current_occluder != -1) {
+			auto occluder = m_tile_map->occluderMap()[m_current_occluder];
+			font->drawShadowed(int2(0, 25), Color::white, Color::black, "Occluder: %d (%d objects) parent: %d\n",
+				   	m_current_occluder, (int)occluder.objects.size(), occluder.parent_id);
+		}
+
 		if(m_new_tile)
 			font->drawShadowed(int2(0, clippedRect().height() - 50), Color::white, Color::black,
 					"Tile: %s\n", m_new_tile->name.c_str());
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
-				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s%s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid_height, mode_names[m_mode],
-				m_mode == mode_selecting? selection_names[m_selection_mode] : m_is_replacing? " (replacing)" : "");
+				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
+				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid_height, s_mode_strings[m_mode]);
 	}
 
 	void TilesEditor::clampViewPos() {

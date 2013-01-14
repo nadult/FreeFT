@@ -188,15 +188,16 @@ int safe_main(int argc, char **argv)
 		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
 		DTexture::bind0();
-		drawQuad(0, 0, 250, 250, Color(0, 0, 0, 80));
+		drawQuad(0, 0, 250, config.profiler_enabled? 300 : 50, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["arial_16"];
 		float3 isect_pos = ray.at(isect.distance());
 		float3 actor_pos = actor->pos();
 		font->drawShadowed(int2(0, 0), Color::white, Color::black,
-				"View:(%d %d) Ray:(%.2f %.2f %.2f) Actor:(%.2f %.2f %.2f)",
+				"View:(%d %d)\nRay:(%.2f %.2f %.2f)\nActor:(%.2f %.2f %.2f)",
 				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, actor_pos.x, actor_pos.y, actor_pos.z);
-		font->drawShadowed(int2(0, 20), Color::white, Color::black, "%s", prof_stats.c_str());
+		if(config.profiler_enabled)
+			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", prof_stats.c_str());
 
 		if(item_debug) {
 			if(isKeyPressed(Key_lctrl)) {

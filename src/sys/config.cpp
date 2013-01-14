@@ -16,6 +16,7 @@ Config loadConfig(const char *name) {
 			config.resolution.x = node.intAttrib("res_x");
 			config.resolution.y = node.intAttrib("res_y");
 			config.fullscreen = node.intAttrib("fullscreen") != 0;	
+			config.profiler_enabled = node.intAttrib("profiler") != 0;
 		}
 	}
 	catch(...) { }

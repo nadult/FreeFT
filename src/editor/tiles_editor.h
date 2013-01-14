@@ -9,11 +9,13 @@ class TileGroup;
 
 namespace ui {
 
+	//TODO: simplify code by recreating TilesEditor when reloading map and/or doing something drastic?
 	class TilesEditor: public ui::Window
 	{
 	public:
 		TilesEditor(IRect rect);
 
+		void onTileMapReload();
 		void setTileMap(TileMap*);
 		void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
 		void setNewTile(const gfx::Tile *tile) { m_new_tile = tile; }
@@ -24,29 +26,48 @@ namespace ui {
 
 		static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
-		enum SelectionMode {
-			selection_normal,
-			selection_union,
-			selection_intersection,
-			selection_difference,
-
-			selection_mode_count,
-		} m_selection_mode;
-
-		bool m_is_replacing;
-
 		enum Mode {
-			mode_selecting,
+			mode_selecting_normal,
+			mode_selecting_union,
+			mode_selecting_intersection,
+			mode_selecting_difference,
+
 			mode_placing,
+			mode_replacing,
+
 			mode_placing_random,
+			mode_replacing_random,
+
 			mode_filling,
 
+			mode_occluders,
+
 			mode_count,
-		} m_mode;
+		};
+
+		bool isSelecting() const
+			{ return m_mode >= mode_selecting_normal && m_mode <= mode_selecting_difference; }
+		bool isReplacing() const
+			{ return m_mode == mode_replacing || m_mode == mode_replacing_random; }
+		bool isPlacing() const
+			{ return m_mode >= mode_placing && m_mode <= mode_replacing; }
+		bool isPlacingRandom() const
+			{ return m_mode >= mode_placing_random && m_mode <= mode_replacing_random; }
+		bool isFilling() const
+			{ return m_mode == mode_filling; }
+		bool isChangingOccluders() const
+			{ return m_mode == mode_occluders; }
+
+		void setMode(Mode);
+		Mode mode() const { return m_mode; }
+
+		static const char **modeStrings();
 		
 		float m_dirty_percent;
 
 	private:
+		Mode m_mode;
+
 		TileMap *m_tile_map;
 		const TileGroup *m_tile_group;
 		const gfx::Tile *m_new_tile;
@@ -68,6 +89,10 @@ namespace ui {
 
 		int2 m_grid_size;
 		bool m_show_grid, m_is_selecting;
+
+		//TODO: make sure that this occluder wont be saved
+		int m_current_occluder;
+		int m_mouseover_tile_id;
 	};
 
 	typedef Ptr<TilesEditor> PTilesEditor;

@@ -6,6 +6,9 @@
 #include <algorithm>
 
 
+TileMap::TileMap(const int2 &dimensions)
+	:Grid(dimensions), m_occluder_map(this) { }
+
 void TileMap::resize(const int2 &new_size) {
 	TileMap new_map(new_size);
 	for(int n = 0; n < size(); n++) {
@@ -32,6 +35,8 @@ void TileMap::loadFromXML(const XMLDocument &doc) {
 	clear();
 
 	int2 size = main_node.int2Attrib("size");
+	int tile_count = main_node.intAttrib("tile_count");
+
 	ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 	resize(size);
 
@@ -46,6 +51,8 @@ void TileMap::loadFromXML(const XMLDocument &doc) {
 		}
 		tnode = tnode.sibling("tile");
 	}
+
+	m_occluder_map.loadFromXML(doc);
 }
 
 void TileMap::saveToXML(XMLDocument &doc) const {
@@ -57,15 +64,33 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 	for(int n = 0; n < size(); n++)
 		if((*this)[n].ptr)
 			indices.push_back(n);
+	main_node.addAttrib("tile_count", (int)indices.size());
 
-	std::sort(indices.begin(), indices.end(), [this](int a, int b)
-			{ return (*this)[a].ptr->name < (*this)[b].ptr->name; } );
+	std::sort(indices.begin(), indices.end(), [this](int a, int b) {
+		const auto &obj1 = (*this)[a];
+		const auto &obj2 = (*this)[b];
+
+		int cmp = strcmp(obj1.ptr->name.c_str(), obj2.ptr->name.c_str());
+		if(cmp == 0) {
+			const float3 p1 = obj1.bbox.min, p2 = obj2.bbox.min;
+			return p1.x == p2.x? p1.y == p2.y? p1.z < p2.z : p1.y < p2.y : p1.x < p2.x;
+		}
+
+		return cmp < 0;
+	} );
 	
 	const gfx::Tile *prev = nullptr;
 	XMLNode tile_node;
 
+	PodArray<int> tile_ids(size());
+	for(int n = 0; n < size(); n++)
+		tile_ids[n] = -1;
+	int object_id = 0;
+
 	for(int n = 0; n < (int)indices.size(); n++) {
 		const TileDef &object = (*this)[indices[n]];
+		tile_ids[indices[n]] = object_id++;
+
 		if(object.ptr != prev) {
 			tile_node = main_node.addChild("tile");
 			ASSERT(!object.ptr->name.empty());
@@ -76,6 +101,8 @@ void TileMap::saveToXML(XMLDocument &doc) const {
 		XMLNode instance = tile_node.addChild("i");
 		instance.addAttrib("pos", int3(object.bbox.min));
 	}
+
+	m_occluder_map.saveToXML(tile_ids, doc);
 }
 
 void TileMap::serialize(Serializer &sr) {

@@ -1,16 +1,26 @@
 - fix (most of) graphics glitches that show up on different FOT maps (DONE)
   - still visible on map mission07; if you cant sort the tiles properly, at least
-    make sure that sorting order wont change rapidly, when the player moves the camera
+    make sure that sorting order wont change rapidly, when the player moves the camera;
+    We can do that by offsetting the grid as camera moves, so that in each grid node there is
+    always the same set of objects, and hopefully in the same order; grid nodes can also be partially
+    precomputed and sorted;
 - smooth running around original maps: NavigationMap with true 3d support
   - multi-layered heightmap  DONE
   - conversion from heightmap to bitmap in Navigationmap  DONE
-  - quickly finding adjacent quads (also from different levels)
   - when moving some collision tests should be made to make sure, player is on correct height  DONE
-  - proper moving through diagonals and over tiles with different height
+  - proper movement over tiles with different height  DONE
+  - proper moving through diagonals
+  - SECONDARY: quickly finding adjacent quads (also from different levels)
 - some enemies with basic AI (scorpions)
 - hiding upper floors, so that player is visible
+  - selecting occluder maps byb represetative in the editor  DONE
+  - generating occlusion bitmap and small number of occlusion rects from occlusion maps
+  - using occlusion bitmaps to connect tiles to occluders
+  - hiding/showing tiles belonging to occlusion maps in the game based on the player position
+    (if player is being occluded)
 - convert should be able to take FOT path, and extract and convert all necessary resources
 - Tile animations
+- Use Open Sourced fonts
 
 - pick best GPL license
 - put up on github, announce on nma-fallout
@@ -24,6 +34,6 @@ issues/10-ui_improvements
 
 +WORK_LOG:
 10.01.12: 21:00 - 24:30 (3h 30min)
-11.01.12: 18:30 - 23:00
-12.01.12: 13:00 - 15:00, 16:00 - 20:30, 21:00 - 21:30
-13.01.12: 14:15 - 
+11.01.12: 18:30 - 23:00 (4h 30min)
+12.01.12: 13:00 - 15:00, 16:00 - 20:30, 21:00 - 21:30 (6h)
+13.01.12: 14:15 - 15:15, 17:00 - 01:00 (9h)
