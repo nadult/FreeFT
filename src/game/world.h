@@ -5,27 +5,32 @@
 #include "game/projectile.h"
 #include "navi_map.h"
 #include "grid.h"
+#include "tile_map.h"
 
 namespace game {
 
-	typedef Grid TileGrid;
 	typedef Grid EntityGrid;
 		
 	class Intersection {
 	public:
-		Intersection(const Grid::ObjectDef *object = nullptr, bool is_entity = false, float distance = constant::inf)
-			:m_object(object), m_is_entity(is_entity), m_distance(distance) { }
+		Intersection(const TileMap::TileDef *object = nullptr, float distance = constant::inf)
+			:m_tile(object), m_is_entity(false), m_distance(distance) { }
+		Intersection(const Grid::ObjectDef *object, float distance = constant::inf)
+			:m_object(object), m_is_entity(true), m_distance(distance) { }
 
 		const FBox boundingBox() const { return m_object? m_object->bbox : FBox::empty(); }
 		Entity *entity() const { return isEntity()? (Entity*)m_object->ptr : nullptr; }
 
 		bool isEntity() const { return m_is_entity && m_object; }
-		bool isTile() const { return !m_is_entity && m_object; }
+		bool isTile() const { return !m_is_entity && m_tile; }
 		bool isEmpty() const { return !m_object; }
 		float distance() const { return m_distance; }
 
 	private:
-		const Grid::ObjectDef *m_object;
+		union {
+			const Grid::ObjectDef *m_object;
+			const TileMap::TileDef *m_tile;
+		};
 		float m_distance;
 		bool m_is_entity;
 	};
@@ -63,14 +68,15 @@ namespace game {
 	
 		vector<int3> findPath(const int3 &start, const int3 &end) const;
 
-		const TileGrid &tileGrid() const { return m_tile_grid; }
+		const TileMap &tileMap() const { return m_tile_map; }
 		const NaviMap &naviMap() const { return m_navi_map; }
 		NaviMap &naviMap() { return m_navi_map; }
 	
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
-		Intersection pixelIntersect(const int2 &screen_pos) const;
+		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
+		Intersection pixelIntersect(const int2 &screen_pos, int flags = collider_all) const;
 
 		bool isInside(const FBox&) const;
+		void updateVisibility(const FBox &main_bbox);
 
 	private:
 		template <class T>
@@ -81,7 +87,7 @@ namespace game {
 		double m_last_time;
 		double m_last_frame_time;
 
-		TileGrid m_tile_grid;
+		TileMap m_tile_map;
 		EntityGrid m_entity_grid;
 		NaviMap m_navi_map;
 

@@ -13,13 +13,20 @@
 class Grid {
 public:
 	enum {
-		node_size = 24
+		node_size = 24,
+
+		type_flags			= 0x0000ffff, // at least one type flag have to be set
+		functional_flags	= 0xffff0000, // all functional flags have to be set
+
+		//TODO: currently flag test passes if at leas one bit is set,
+		// it would be useful to check if all bits from within some range are set
+		visibility_flag		= 0x80000000,
 	};
 
 	template <typename PtrBase>
 	struct TObjectDef {
 		TObjectDef(const PtrBase* ptr = nullptr, const FBox &bbox = FBox::empty(),
-				const IRect &rect = IRect::empty(), int flags = -1)
+				const IRect &rect = IRect::empty(), int flags = type_flags)
 			:ptr(ptr), bbox(bbox), rect_pos(rect.min), rect_size(rect.size()), flags(flags),
 				occluder_id(-1), occluded_by(-1) {
 			DASSERT(rect.size() == (int2)rect_size);
@@ -31,11 +38,14 @@ public:
 		FBox bbox;
 		int2 rect_pos;
 		short2 rect_size;
+
 		int flags;
 
 		short occluder_id;
 		short occluded_by;
 	};
+
+	static bool flagTest(int obj_flags, int test_flags);
 
 	typedef TObjectDef<void> ObjectDef;
 
@@ -44,15 +54,15 @@ public:
 	int add(const ObjectDef&);
 	void remove(int idx);
 	void update(int idx, const ObjectDef&);
+	void updateNodes();
 
-	int findAny(const FBox &box, int ignored_id = -1, int flags = -1) const;
-	void findAll(vector<int> &out, const FBox &box, int ignored_id = -1, int flags = -1) const;
+	int findAny(const FBox &box, int ignored_id = -1, int flags = type_flags) const;
+	void findAll(vector<int> &out, const FBox &box, int ignored_id = -1, int flags = type_flags) const;
 
-	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = -1) const;
+	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = type_flags) const;
 	
-	//TODO: 
-	void findAll(vector<int> &out, const IRect &view_rect) const;
-	int pixelIntersect(const int2 &pos, bool (*pixelTest)(const ObjectDef&, const int2 &pos)) const;
+	void findAll(vector<int> &out, const IRect &view_rect, int flags = 0) const;
+	int pixelIntersect(const int2 &pos, bool (*pixelTest)(const ObjectDef&, const int2 &pos), int flags = type_flags) const;
 
 	int size() const { return (int)m_objects.size(); }
 	const ObjectDef &operator[](int idx) const { return m_objects[idx]; }
@@ -104,7 +114,7 @@ protected:
 	void link(int cur_id, int next_id);
 	void updateNode(int node_id) const __attribute((noinline));
 	void updateNode(int node_id, const ObjectDef&) const __attribute((noinline));
-	int extractObjects(int node_id, const Object **out, int ignored_id = -1, int flags = -1) const;
+	int extractObjects(int node_id, const Object **out, int ignored_id = -1, int flags = 0) const;
 
 protected:
 	void disableOverlap(const Object*) const;

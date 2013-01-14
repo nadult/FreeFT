@@ -3,7 +3,13 @@
 
 //TODO: better names, refactoring, remove copy&pasted code in intersection functions 
 Grid::Node::Node()
-	:size(0), first_id(-1), first_overlap_id(-1), is_dirty(false), bbox(FBox::empty()), rect(IRect::empty()), obj_flags(0) { }
+	:size(0), first_id(-1), first_overlap_id(-1), is_dirty(false),
+	bbox(FBox::empty()), rect(IRect::empty()), obj_flags(0) { }
+	
+	
+bool Grid::flagTest(int object, int test) {
+	return (object & type_flags) && ((object & functional_flags & test) == (test & functional_flags));
+}
 
 Grid::Grid(const int2 &size) {
 	m_bounding_box = FBox::empty();
@@ -134,6 +140,11 @@ void Grid::update(int id, const ObjectDef &object) {
 	DASSERT(new_id == id);
 }
 
+void Grid::updateNodes() {
+	for(int n = 0; n < (int)m_nodes.size(); n++)
+		updateNode(n);
+}
+
 void Grid::updateNode(int node_id, const ObjectDef &def) const {
 	const Node &node = m_nodes[node_id];
 
@@ -203,7 +214,7 @@ int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int fl
 	int object_id = node.first_id;
 	while(object_id != -1) {
 		const Object &object = m_objects[object_id];
-		if((flags & object.flags) && object_id != ignored_id)
+		if(flagTest(object.flags, flags) && object_id != ignored_id)
 			*out++ = &object;
 		object_id = object.next_id;
 	}
@@ -212,7 +223,7 @@ int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int fl
 	while(overlap_id != -1) {
 		object_id = m_overlaps[overlap_id].object_id;
 		const Object &object = m_objects[object_id];
-		if((flags & object.flags) && object_id != ignored_id && !object.is_disabled)
+		if(flagTest(object.flags, flags) && object_id != ignored_id && !object.is_disabled)
 			*out++ = &object;
 		overlap_id = m_overlaps[overlap_id].next_id;
 	}

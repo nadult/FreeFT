@@ -6,6 +6,13 @@
 
 namespace game {
 
+	static const float s_speeds[StanceId::count + 1] = {
+		20.0f,
+		10.0f,
+		6.0f,
+		3.5f,
+	};
+
 	static const char *s_sprite_names[ActorTypeId::count][ArmourClassId::count] = {
 		{	// Male
 			"characters/TribalMale",
@@ -234,9 +241,7 @@ namespace game {
 		else if(order_id == OrderId::move) {
 			DASSERT(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
 			
-			float speed = m_order.move.run? 20.0f:
-				m_stance_id == StanceId::standing? 10.0f : m_stance_id == StanceId::crouching? 6.0f : 3.5f;
-
+			float speed = s_speeds[m_order.move.run? 0 : m_stance_id + 1];
 			float dist = speed * time_delta;
 			m_issue_next_order = false;
 			float3 new_pos;

@@ -4,9 +4,10 @@
 #include "base.h"
 
 struct Config {
-	Config() :resolution(1400, 768), fullscreen(false), profiler_enabled(false) { }
+	Config() :resolution(1400, 768), time_multiplier(1.0f), fullscreen(false), profiler_enabled(false) { }
 
 	int2 resolution;
+	float time_multiplier;
 	bool fullscreen;
 	bool profiler_enabled;
 };

@@ -136,10 +136,7 @@ namespace ui {
 		int2 screen_pos = mouse_pos + m_view_pos;
 		Ray screen_ray = screenRay(screen_pos);
 		
-		auto test_func = [](const Grid::ObjectDef &object, const int2 &pos)
-			{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); };
-
-		m_mouseover_tile_id = m_tile_map->pixelIntersect(screen_pos, test_func);
+		m_mouseover_tile_id = m_tile_map->pixelIntersect(screen_pos);
 		if(m_mouseover_tile_id == -1)
 			m_mouseover_tile_id = m_tile_map->trace(screen_ray).first;
 			
@@ -601,7 +598,7 @@ namespace ui {
 
 		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map->size());
 		if(isChangingOccluders() && m_current_occluder != -1) {
-			auto occluder = m_tile_map->occluderMap()[m_current_occluder];
+			auto &occluder = m_tile_map->occluderMap()[m_current_occluder];
 			font->drawShadowed(int2(0, 25), Color::white, Color::black, "Occluder: %d (%d objects) parent: %d\n",
 				   	m_current_occluder, (int)occluder.objects.size(), occluder.parent_id);
 		}

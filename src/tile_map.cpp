@@ -28,6 +28,45 @@ int TileMap::add(const gfx::Tile *tile, const int3 &pos) {
 	return Grid::add(ObjectDef(tile, bbox, rect, -1));
 }
 
+void TileMap::remove(int idx) {
+	DASSERT(idx >= 0 && idx < size());
+
+	//TODO: speed up somehow?
+	if((*this)[idx].ptr) {
+		int occluder_id = (*this)[idx].occluder_id;
+		OccluderMap::Occluder &occluder = m_occluder_map[occluder_id];
+		for(int n = 0; n < (int)occluder.objects.size(); n++)
+			if(occluder.objects[n] == idx) {
+				occluder.objects[n] = occluder.objects.back();
+				occluder.objects.pop_back();
+			}
+	}
+	Grid::remove(idx);
+}
+	
+int TileMap::pixelIntersect(const int2 &pos, int flags) const {
+	return Grid::pixelIntersect(pos,
+		[](const Grid::ObjectDef &object, const int2 &pos)
+			{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); },
+		   flags);
+}
+
+void TileMap::updateVisibility(const FBox &main_bbox) {
+	m_occluder_map.updateVisibility(main_bbox);
+
+	//TODO: update only occluders that has changed
+	for(int n = 0; n < size(); n++) {
+		Object &object = m_objects[n];
+		if(object.ptr && object.occluder_id != -1) {
+			if(m_occluder_map[object.occluder_id].is_visible)
+				object.flags |= visibility_flag;
+			else
+				object.flags &= ~visibility_flag;
+		}
+	}
+	updateNodes();
+}
+
 void TileMap::loadFromXML(const XMLDocument &doc) {
 	XMLNode main_node = doc.child("tile_map");
 	ASSERT(main_node);

@@ -37,29 +37,29 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	int2 view_pos(-400, -900);
+	int2 view_pos(-1000, 500);
 
 	PFont font = Font::mgr["arial_32"];
 
-	World world("data/maps/mission06.xml");
+	World world("data/maps/mission06_mod.xml");
 
 	int height = 128;
 
-	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(100, height, 70)));
-	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(134, height, 37)));
-	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(120, height, 37)));
-	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(134, height, 25)));
-	world.addEntity(new Container("containers/Ice Chest N", float3(120, height, 25)));
+	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(245, height, 335)));
+	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
+	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(260, height, 350)));
+	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(250, height, 340)));
+	world.addEntity(new Container("containers/Ice Chest N", float3(240, height, 345)));
 
-	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 42), Door::type_rotating));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 82), Door::type_rotating, float2(1, 0)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 92), Door::type_rotating, float2(-1, 0)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 82), Door::type_rotating, float2(0, 1)));
-	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 92), Door::type_rotating, float2(0, -1)));
-	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, height, 92), Door::type_sliding, float2(0, -1)));
+//	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 42), Door::type_rotating));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 82), Door::type_rotating, float2(1, 0)));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 92), Door::type_rotating, float2(-1, 0)));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 82), Door::type_rotating, float2(0, 1)));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 92), Door::type_rotating, float2(0, -1)));
+//	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, height, 92), Door::type_sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
 	fridge->setDir(float2(-1, 0));
-	door->setKey(ItemDesc::find("prison_key"));
+//	door->setKey(ItemDesc::find("prison_key"));
 	fridge->setKey(ItemDesc::find("prison_key"));
 
 	chest->inventory().add(ItemDesc::find("laser_rifle"), 1);
@@ -69,7 +69,7 @@ int safe_main(int argc, char **argv)
 	fridge->inventory().add(ItemDesc::find("power_armour"), 1);
 	fridge->inventory().add(ItemDesc::find("m60"), 1);
 
-	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
+//	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
 
 	world.updateNaviMap(true);
 
@@ -89,8 +89,6 @@ int safe_main(int argc, char **argv)
 	int3 last_pos(0, 0, 0);
 	float3 target_pos(0, 0, 0);
 
-	const TileGrid &tile_grid = world.tileGrid();
-
 	int inventory_sel = -1, container_sel = -1;
 	string prof_stats;
 	double stat_update_time = getTime();
@@ -107,9 +105,10 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world.pixelIntersect(getMousePos() + view_pos);
+		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
+				collider_tiles|collider_entities|Grid::visibility_flag);
 		if(isect.distance() == constant::inf)
-			isect = world.trace(ray, actor);
+			isect = world.trace(ray, actor, collider_tiles|collider_entities|Grid::visibility_flag);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
@@ -149,11 +148,13 @@ int safe_main(int argc, char **argv)
 		if(!navi_debug)
 			world.updateNaviMap(false);
 
-		world.simulate((time - last_time));
+		world.simulate((time - last_time) * config.time_multiplier);
 		last_time = time;
 
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
+
+		world.updateVisibility(actor->boundingBox());
 
 		world.addToRender(renderer);
 

@@ -15,19 +15,24 @@ public:
 	int addOccluder(int representative_id);
 	void removeOccluder(int occluder_id);
 	void clear();
+	void updateParents();
 
 	void loadFromXML(const XMLDocument&);
 	void saveToXML(const PodArray<int> &tile_ids, XMLDocument&) const;
 
 	struct Occluder {
-		Occluder() :parent_id(-1) { }
+		Occluder() :parent_id(-1), is_visible(true) { }
 
+		FBox bbox; //TODO: updating
 		vector<int> objects;
 		int parent_id;
+		bool is_visible;
 	};
 
 	const Occluder &operator[](int id) const { return m_occluders[id]; }
+	Occluder &operator[](int id) { return m_occluders[id]; }
 	int size() const { return (int)m_occluders.size(); }
+	void updateVisibility(const FBox &main_bbox);
 	
 private:
 	vector<Occluder> m_occluders;

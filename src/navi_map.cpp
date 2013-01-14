@@ -358,7 +358,7 @@ int NaviMap::findQuad(const int3 &pos, bool find_disabled) const {
 // (gracz się zatrzymuje bo jest kolizja)
 // This should be solved by creating paths that are trying to be in the middle
 // between colliders
-#define WALK_DIAGONAL_THROUGH_CORNERS
+//#define WALK_DIAGONAL_THROUGH_CORNERS
 
 
 static float distance(const int2 &a, const int2 &b) {

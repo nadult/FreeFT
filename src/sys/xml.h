@@ -18,6 +18,8 @@ public:
 	XMLNode(const XMLNode &rhs) :m_ptr(rhs.m_ptr), m_doc(rhs.m_doc) { }
 	XMLNode() :m_ptr(nullptr), m_doc(nullptr) { }
 
+	//TODO: add function hasAttrib, use it in sys::config
+	
 	// If an attribute cannot be found or properly parsed,
 	// then exception is thrown
 	const char *attrib(const char *name) const;

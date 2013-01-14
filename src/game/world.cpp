@@ -21,11 +21,9 @@ namespace game {
 		XMLDocument doc;
 		doc.load(file_name);
 
-		TileMap tile_map;
-		tile_map.loadFromXML(doc);
-		m_tile_grid = tile_map;
-		m_entity_grid = EntityGrid(tile_map.dimensions());
-		m_tile_grid.printInfo();
+		m_tile_map.loadFromXML(doc);
+		m_entity_grid = EntityGrid(m_tile_map.dimensions());
+		m_tile_map.printInfo();
 
 //		updateNaviMap(true);
 	}
@@ -37,18 +35,18 @@ namespace game {
 
 		if(full_recompute) {
 			vector<IBox> bboxes;
-			bboxes.reserve(m_tile_grid.size() + m_entities.size());
+			bboxes.reserve(m_tile_map.size() + m_entities.size());
 
-			for(int n = 0; n < m_tile_grid.size(); n++)
-				if(m_tile_grid[n].ptr)
-					bboxes.push_back((IBox)m_tile_grid[n].bbox);
+			for(int n = 0; n < m_tile_map.size(); n++)
+				if(m_tile_map[n].ptr)
+					bboxes.push_back((IBox)m_tile_map[n].bbox);
 			for(int n = 0; n < (int)m_entities.size(); n++)
 				if(m_entities[n]->colliderType() == collider_static) {
 					IBox box = enclosingIBox(m_entities[n]->boundingBox());
 					bboxes.push_back(box);
 				}
 
-			NaviHeightmap heightmap(m_tile_grid.dimensions());
+			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes);
 			heightmap.saveLevels();
 			heightmap.printInfo();
@@ -73,11 +71,16 @@ namespace game {
 		}
 	}
 
+	void World::updateVisibility(const FBox &bbox) {
+		m_tile_map.updateVisibility(bbox);
+		//TODO: entities visibility
+	}
+
 	void World::addEntity(PEntity &&entity) {
 		DASSERT(entity);
 		entity->m_world = this;
-		entity->m_grid_index =
-			m_entity_grid.add(Grid::ObjectDef(entity.get(), entity->boundingBox(), entity->screenRect(), entity->colliderType()));
+		entity->m_grid_index = m_entity_grid.add(Grid::ObjectDef(entity.get(), entity->boundingBox(),
+					entity->screenRect(), entity->colliderType() | Grid::visibility_flag));
 		m_entities.push_back(std::move(entity));
 	}
 
@@ -86,10 +89,10 @@ namespace game {
 
 		vector<int> tile_inds;
 		tile_inds.reserve(1024);
-		m_tile_grid.findAll(tile_inds, renderer.targetRect());
+		m_tile_map.findAll(tile_inds, renderer.targetRect(), Grid::visibility_flag);
 		for(int n = 0; n < (int)tile_inds.size(); n++) {
-			const Grid::ObjectDef &obj = m_tile_grid[tile_inds[n]];
-			((const gfx::Tile*)obj.ptr)->addToRender(renderer, (int3)obj.bbox.min);
+			const auto &obj = m_tile_map[tile_inds[n]];
+			obj.ptr->addToRender(renderer, (int3)obj.bbox.min);
 		}
 
 		for(int n = 0; n < (int)m_entities.size(); n++)
@@ -121,7 +124,7 @@ namespace game {
 	}
 
 	void World::simulate(double time_diff) {
-		DASSERT(time_diff >= 0.0);
+		DASSERT(time_diff > 0.0);
 		double max_time_diff = 1.0; //TODO: add warning?
 		time_diff = min(time_diff, max_time_diff);
 
@@ -144,41 +147,45 @@ namespace game {
 		m_last_time = current_time;
 	}
 	
-	Intersection World::trace(const Segment &segment, const Entity *ignore, ColliderFlags flags) const {
+	Intersection World::trace(const Segment &segment, const Entity *ignore, int flags) const {
 		PROFILE("world::trace");
 		Intersection out;
 
 		if(flags & collider_tiles) {
-			pair<int, float> isect = m_tile_grid.trace(segment);
+			pair<int, float> isect = m_tile_map.trace(segment, -1, flags);
 			if(isect.first != -1)
-				out = Intersection(&m_tile_grid[isect.first], false, isect.second);
+				out = Intersection(&m_tile_map[isect.first], isect.second);
 		}
 
 		if(flags & collider_entities) {
 			pair<int, float> isect = m_entity_grid.trace(segment, ignore? ignore->m_grid_index : -1, flags);
 			if(isect.first != -1)
-				out = Intersection(&m_entity_grid[isect.first], true, isect.second);
+				out = Intersection(&m_entity_grid[isect.first], isect.second);
 		}
 
 		return out;
 	}
 
-	Intersection World::pixelIntersect(const int2 &screen_pos) const {
+	Intersection World::pixelIntersect(const int2 &screen_pos, int flags) const {
 		//PROFILE("world::pixelIntersect");
 		Intersection out;
 		Ray ray = screenRay(screen_pos);
 
-		int tile_id = m_tile_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
-				{ return ((const gfx::Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); } );
-		if(tile_id != -1)
-			out = Intersection(&m_tile_grid[tile_id], false, intersection(ray, m_tile_grid[tile_id].bbox));
+		if(flags & collider_tiles) {
+			int tile_id = m_tile_map.pixelIntersect(screen_pos, flags);
+			if(tile_id != -1)
+				out = Intersection(&m_tile_map[tile_id], intersection(ray, m_tile_map[tile_id].bbox));
+		}
 
-		int entity_id = m_entity_grid.pixelIntersect(screen_pos, [](const Grid::ObjectDef &object, const int2 &pos)
-				{ return ((const Entity*)object.ptr)->testPixel(pos); } );
-		if(entity_id != -1) {
-			const Grid::ObjectDef *object = &m_entity_grid[entity_id];
-			if(tile_id == -1 || drawingOrder(object->bbox, out.boundingBox()) == 1)
-				out = Intersection(object, true, intersection(ray, object->bbox));
+		if(flags & collider_entities) {
+			int entity_id = m_entity_grid.pixelIntersect(screen_pos,
+					[](const Grid::ObjectDef &object, const int2 &pos)
+						{ return ((const Entity*)object.ptr)->testPixel(pos); }, flags);
+			if(entity_id != -1) {
+				const Grid::ObjectDef *object = &m_entity_grid[entity_id];
+				if(out.isEmpty() || drawingOrder(object->bbox, out.boundingBox()) == 1)
+					out = Intersection(object, intersection(ray, object->bbox));
+			}
 		}
 
 		return out;
@@ -188,7 +195,7 @@ namespace game {
 		//PROFILE("world::isColliding");
 
 		if((flags & collider_tiles))
-			if(m_tile_grid.findAny(box) != -1)
+			if(m_tile_map.findAny(box, flags) != -1)
 				return true;
 
 		if(flags & collider_entities)
@@ -199,7 +206,7 @@ namespace game {
 	}
 
 	bool World::isInside(const FBox &box) const {
-		return m_tile_grid.isInside(box);
+		return m_tile_map.isInside(box);
 	}
 		
 	vector<int3> World::findPath(const int3 &start, const int3 &end) const {

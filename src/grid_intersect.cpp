@@ -9,7 +9,7 @@ int Grid::findAny(const FBox &box, int ignored_id, int flags) const {
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
-			if(!node.size || !(node.obj_flags & flags) || !areOverlapping(box, node.bbox))
+			if(!node.size || !flagTest(node.obj_flags, flags) || !areOverlapping(box, node.bbox))
 				continue;
 
 			const Object *objects[node.size];
@@ -34,7 +34,7 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
-			if(!(node.obj_flags & flags) || !areOverlapping(box, node.bbox))
+			if(!flagTest(node.obj_flags, flags) || !areOverlapping(box, node.bbox))
 				continue;
 			bool anything_found = false;
 
@@ -90,7 +90,7 @@ pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) 
 		int node_id = nodeAt(pos);
 		const Node &node = m_nodes[node_id];
 
-		if((node.obj_flags & flags) && intersection(segment, node.bbox) < out_dist) {
+		if(flagTest(node.obj_flags, flags) && intersection(segment, node.bbox) < out_dist) {
 			const Object *objects[node.size];
 			int count = extractObjects(node_id, objects, ignored_id, flags);
 
@@ -126,7 +126,7 @@ pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) 
 	return make_pair(out, out_dist);
 }
 
-void Grid::findAll(vector<int> &out, const IRect &view_rect) const {
+void Grid::findAll(vector<int> &out, const IRect &view_rect, int flags) const {
 	IRect grid_box(0, 0, m_size.x, m_size.y);
 
 	for(int y = grid_box.min.y; y < grid_box.max.y; y++) {
@@ -142,7 +142,7 @@ void Grid::findAll(vector<int> &out, const IRect &view_rect) const {
 				continue;
 			bool anything_found = false;
 			const Object *objects[node.size];
-			int count = extractObjects(node_id, objects);
+			int count = extractObjects(node_id, objects, -1, flags);
 
 			for(int n = 0; n < count; n++)
 				if(areOverlapping(view_rect, objects[n]->rect())) {
@@ -160,7 +160,7 @@ void Grid::findAll(vector<int> &out, const IRect &view_rect) const {
 	clearDisables();
 }
 
-int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectDef&, const int2&)) const {
+int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectDef&, const int2&), int flags) const {
 	IRect grid_box(0, 0, m_size.x, m_size.y);
 	
 	int best = -1;
@@ -181,7 +181,7 @@ int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectD
 				updateNode(node_id);	
 
 			const Object *objects[node.size];
-			int count = extractObjects(node_id, objects);
+			int count = extractObjects(node_id, objects, -1, flags);
 
 			for(int n = 0; n < count; n++)
 				if(objects[n]->rect().isInside(screen_pos) && pixelTest(*objects[n], screen_pos)) {

@@ -83,7 +83,7 @@ namespace game {
 
 		collider_entities = collider_static | collider_dynamic | collider_dynamic_nv | collider_item,
 
-		collider_all		= 0xffffffff,
+		collider_all		= 0xffff,
 	};
 	
 	inline ColliderFlags operator|(ColliderFlags a, ColliderFlags b) { return (ColliderFlags)((int)a | (int)b); }

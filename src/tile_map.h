@@ -17,7 +17,10 @@ public:
 	TileMap(const int2 &dimensions = int2(0, 0));
 
 	int add(const gfx::Tile*, const int3 &pos);
+	void remove(int idx);
 	void resize(const int2 &new_dims);
+	
+	int pixelIntersect(const int2 &pos, int flags = 0) const;
 
 	void serialize(Serializer&);
 	void loadFromXML(const XMLDocument&);
@@ -28,6 +31,7 @@ public:
 
 	OccluderMap &occluderMap() { return m_occluder_map; }
 	const OccluderMap &occluderMap() const { return m_occluder_map; }
+	void updateVisibility(const FBox &main_bbox);
 
 protected:
 	OccluderMap m_occluder_map;
