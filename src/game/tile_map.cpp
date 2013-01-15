@@ -73,8 +73,9 @@ namespace game {
 			   flags);
 	}
 
-	void TileMap::updateVisibility(const FBox &main_bbox) {
-		m_occluder_map.updateVisibility(main_bbox);
+	bool TileMap::updateVisibility(const FBox &main_bbox) {
+		if(!m_occluder_map.updateVisibility(main_bbox))
+			return false;
 
 		//TODO: update only occluders that has changed
 		for(int n = 0; n < size(); n++) {
@@ -86,7 +87,10 @@ namespace game {
 					object.flags &= ~visibility_flag;
 			}
 		}
+
+		//TODO: use dirty flags to update nodes lazily?
 		updateNodes();
+		return true;
 	}
 
 	void TileMap::loadFromXML(const XMLDocument &doc) {

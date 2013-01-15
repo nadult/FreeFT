@@ -33,17 +33,20 @@ public:
 	void saveToXML(const PodArray<int> &tile_ids, XMLDocument&) const;
 
 	struct Occluder {
-		Occluder() :is_visible(true) { }
+		Occluder() :is_visible(true), is_overlapping(false) { }
 
 		FBox bbox; //TODO: updating
 		vector<int> objects;
 		bool is_visible;
+		bool is_overlapping;
 	};
 
 	const Occluder &operator[](int id) const { return m_occluders[id]; }
 	Occluder &operator[](int id) { return m_occluders[id]; }
 	int size() const { return (int)m_occluders.size(); }
-	void updateVisibility(const FBox &main_bbox);
+
+	// returns true if anything has changed
+	bool updateVisibility(const FBox &main_bbox);
 
 	bool isUnder(int lower_id, int upper_id) const;
 	

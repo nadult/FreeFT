@@ -29,15 +29,17 @@ namespace game {
 	enum { agent_size = 3 };
 
 	World::World()
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size) { } 
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size),
+   		m_entity_map(m_tile_map) { } 
 
 	World::World(const char *file_name)
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size) {
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size),
+   			m_entity_map(m_tile_map) {
 		XMLDocument doc;
 		doc.load(file_name);
 
 		m_tile_map.loadFromXML(doc);
-		m_entity_map = EntityMap(m_tile_map.dimensions());
+		m_entity_map.resize(m_tile_map.dimensions());
 		m_tile_map.printInfo();
 
 //		updateNaviMap(true);
@@ -63,8 +65,8 @@ namespace game {
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes);
-			heightmap.saveLevels();
-			heightmap.printInfo();
+		//	heightmap.saveLevels();
+		//	heightmap.printInfo();
 
 			m_navi_map.update(heightmap);
 			m_navi_map.printInfo();
@@ -87,8 +89,8 @@ namespace game {
 
 	void World::updateVisibility(const FBox &bbox) {
 		PROFILE("World::updateVisibility");
-		m_tile_map.updateVisibility(bbox);
-		//TODO: entities visibility
+		if(m_tile_map.updateVisibility(bbox))
+			m_entity_map.updateVisibility();
 	}
 
 	void World::addEntity(PEntity &&entity) {
@@ -101,16 +103,23 @@ namespace game {
 	void World::addToRender(gfx::SceneRenderer &renderer) {
 		PROFILE("World::addToRender");
 
-		vector<int> tile_inds;
-		tile_inds.reserve(1024);
-		m_tile_map.findAll(tile_inds, renderer.targetRect(), collider_all|visibility_flag);
-		for(int n = 0; n < (int)tile_inds.size(); n++) {
-			const auto &obj = m_tile_map[tile_inds[n]];
+		vector<int> inds;
+		inds.reserve(1024);
+		m_tile_map.findAll(inds, renderer.targetRect(), collider_all|visibility_flag);
+		for(int n = 0; n < (int)inds.size(); n++) {
+			const auto &obj = m_tile_map[inds[n]];
 			obj.ptr->addToRender(renderer, (int3)obj.bbox.min);
 		}
 
-		for(int n = 0; n < (int)m_entities.size(); n++)
-			m_entities[n]->addToRender(renderer);
+		inds.clear();
+		m_entity_map.findAll(inds, renderer.targetRect(), collider_all|visibility_flag);
+		for(int n = 0; n < (int)inds.size(); n++) {
+			const auto &obj = m_entity_map[inds[n]];
+			obj.ptr->addToRender(renderer);
+		}
+
+		//TODO: projectiles will have to be (probably) stored in a grid also, because
+		// when hiding occluders, everything that overlaps with the occluder should be hidden also
 		for(int n = 0; n < (int)m_projectiles.size(); n++)
 			m_projectiles[n]->addToRender(renderer);
 		for(int n = 0; n < (int)m_impacts.size(); n++)

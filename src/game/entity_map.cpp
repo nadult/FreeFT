@@ -19,11 +19,12 @@
 namespace game
 {
 
-	EntityMap::EntityMap(const int2 &dimensions) :Grid(dimensions) { }
+	//TODO: this is stupid
+	EntityMap::EntityMap(const TileMap &tile_map, const int2 &dimensions)
+		:Grid(dimensions), m_tile_map(tile_map) { }
 	
 	void EntityMap::resize(const int2 &new_size) {
-		//TODO: occluders?
-		EntityMap new_map(new_size);
+		EntityMap new_map(m_tile_map, new_size);
 		for(int n = 0; n < size(); n++) {
 			const Grid::ObjectDef &obj = Grid::operator[](n);
 			if(obj.ptr && new_map.isInside(obj.bbox))
@@ -43,6 +44,30 @@ namespace game
 		int id = Grid::add(Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
 					entity->colliderType() | visibility_flag));
 		entity->m_grid_index = id;
+
+		FBox bbox = entity->boundingBox();
+		bbox.max.y = bbox.min.y;
+		bbox.min.y = 0.0f;
+
+		vector<int> temp;
+		temp.reserve(128);
+		m_tile_map.findAll(temp, bbox);
+
+		int best_occluder_id = -1;
+		float best_pos = 0.0f;
+
+		for(int n = 0; n < (int)temp.size(); n++) {
+			const auto &object = m_tile_map[temp[n]];
+			int occluder_id = object.occluder_id;
+			if(occluder_id != -1) {
+				if(best_occluder_id == -1 || object.bbox.max.y > best_pos) {
+					best_pos = object.bbox.max.y;
+					best_occluder_id = occluder_id;
+				}
+			}
+		}
+				
+		Grid::operator[](id).occluder_id = best_occluder_id;
 	}
 
 	void EntityMap::remove(const Entity *entity) {
@@ -58,6 +83,21 @@ namespace game
 		Grid::update(entity->m_grid_index,
 				Grid::ObjectDef(const_cast<Entity*>(entity), entity->boundingBox(), entity->screenRect(),
 					entity->colliderType() | visibility_flag));
+	}
+
+	void EntityMap::updateVisibility() {
+		const OccluderMap &occmap = m_tile_map.occluderMap();
+
+		for(int n = 0; n < size(); n++) {
+			auto &object = Grid::operator[](n);
+			if(object.occluder_id != -1) {
+				bool is_visible = occmap[object.occluder_id].is_visible;
+				if(is_visible)
+					object.flags |= visibility_flag;
+				else
+					object.flags &= ~visibility_flag;
+			}
+		}
 	}
 
 }

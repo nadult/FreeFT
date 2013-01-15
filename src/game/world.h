@@ -95,6 +95,8 @@ namespace game {
 		bool isInside(const FBox&) const;
 		void updateVisibility(const FBox &main_bbox);
 
+		//TODO: remove m_entities, m_projectiles, m_impacts containers and keep all the entities
+		// in the grid only
 	private:
 		template <class T>
 		void handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip);

@@ -146,19 +146,31 @@ void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) con
 	}
 }
 
-void OccluderMap::updateVisibility(const FBox &bbox) {
+bool OccluderMap::updateVisibility(const FBox &bbox) {
 	//TODO: hiding when close to a door/window
 	FBox test_box(bbox.min.x, bbox.min.y + 1.0f, bbox.min.z, bbox.max.x, 256, bbox.max.z);
 	float3 mid_point = asXZY(test_box.center().xz(), bbox.min.y + 1.0f);
 
-	for(int n = 0; n < size(); n++) {
-		if(m_occluders[n].objects.empty())
-			continue;
+	bool vis_changed = false;
 
-		FBox rbox = m_grid[m_occluders[n].objects[0]].bbox;
-		bool overlaps = areOverlapping(m_occluders[n].bbox, test_box);
-		m_occluders[n].is_visible = !overlaps || mid_point.y >= rbox.min.y;
+	for(int n = 0; n < size(); n++) {
+		bool is_overlapping = false;
+		Occluder &occluder = m_occluders[n];
+
+		if(!occluder.objects.empty()) {
+			FBox rbox = m_grid[occluder.objects[0]].bbox;
+			is_overlapping = areOverlapping(occluder.bbox, test_box) && mid_point.y < rbox.min.y;
+		}
+
+		if(is_overlapping != occluder.is_overlapping) {
+			occluder.is_overlapping = is_overlapping;
+			occluder.is_visible = !occluder.is_overlapping;
+			vis_changed = true;
+		}
 	}
+
+	if(!vis_changed)
+		return false;
 
 //TODO: isUnder can be precomputed
 	for(int n = 0; n < size(); n++) {
@@ -171,6 +183,7 @@ void OccluderMap::updateVisibility(const FBox &bbox) {
 				break;
 			}
 	}
+	return true;
 }
 
 bool OccluderMap::isUnder(int lower_id, int upper_id) const {

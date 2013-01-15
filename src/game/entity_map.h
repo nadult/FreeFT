@@ -19,6 +19,7 @@
 #include "grid.h"
 #include "occluder_map.h"
 #include "game/entity.h"
+#include "game/tile_map.h"
 
 namespace game
 {
@@ -31,7 +32,7 @@ namespace game
 		const ObjectDef &operator [](int idx) const
 			{ return reinterpret_cast<const ObjectDef&>(Grid::operator[](idx)); }
 
-		EntityMap(const int2 &dimensions = int2(0, 0));
+		explicit EntityMap(const TileMap&, const int2 &dimensions = int2(0, 0));
 		void resize(const int2 &new_dims);
 	
 		void add(Entity*);
@@ -39,6 +40,10 @@ namespace game
 		void update(const Entity*);
 		
 		int pixelIntersect(const int2 &pos, int flags = collider_flags) const;
+		void updateVisibility();
+
+	protected:
+		const TileMap &m_tile_map;
 	};
 
 }
