@@ -1,3 +1,18 @@
+/* Copyright (C) 2013 Krzysztof Jakubowski <nadult@fastmail.fm>
+
+   This file is part of FTremake.
+
+   FTremake is free software; you can redistribute it and/or modify it under the terms of the
+   GNU General Public License as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
+
+   FTremake is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+   even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along with this program.
+   If not, see http://www.gnu.org/licenses/ . */
+
 #include "game/tile_map.h"
 #include "game/tile.h"
 #include "gfx/scene_renderer.h"
@@ -28,7 +43,7 @@ namespace game {
 		FBox bbox(pos, pos + tile->bboxSize());
 		IRect rect = tile->rect() + worldToScreen(pos);
 		ASSERT(findAny(bbox) == -1);
-		return Grid::add(Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())));
+		return Grid::add(Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())|visibility_flag));
 	}
 
 	void TileMap::remove(int idx) {

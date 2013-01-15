@@ -29,7 +29,7 @@ int safe_main(int argc, char **argv)
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("OpenFT::game; built " __DATE__ " " __TIME__);
+	setWindowTitle("FTremake::game; built " __DATE__ " " __TIME__);
 	printDeviceInfo();
 	grabMouse(false);
 
@@ -39,7 +39,7 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["arial_32"];
 
-	World world("data/maps/mission06_mod.xml");
+	World world("data/maps/mission05_mod.xml");
 
 	int height = 128;
 
@@ -118,13 +118,13 @@ int safe_main(int argc, char **argv)
 			}
 			else if(navi_debug) {
 				//TODO: do this on floats, in actor and navi code too
-				int3 wpos = (int3)(ray.at(isect.distance()) + float3(0, 0.5f, 0));
+				int3 wpos = (int3)(ray.at(isect.distance()));
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
 			else if(isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
-				int3 wpos = (int3)ray.at(isect.distance());
+				int3 wpos = int3(ray.at(isect.distance()) + float3(0, 0.5f, 0));
 				actor->setNextOrder(moveOrder(wpos, !isKeyPressed(Key_lshift)));
 			}
 		}
