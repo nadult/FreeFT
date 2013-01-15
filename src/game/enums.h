@@ -61,29 +61,48 @@ namespace game {
 		rocket
 	);
 
+	DECLARE_ENUM(EntityId,
+		container,
+		door,
+		actor,
+		item,
+		projectile,
+		impact
+	);
+
+	DECLARE_ENUM(TileId,
+		floor,
+		wall,
+		roof,
+		object,
+		unknown
+	);
+
 #undef DECLARE_ENUM
 
-	enum EntityFlags {
-		entity_container	= 1,
-		entity_door			= 2,
-		entity_actor		= 4,
-		entity_item			= 8,
-		entity_projectile	= 16,
-		entity_impact		= 32,
-	};
+	inline constexpr int tileIdToFlag(TileId::Type id) { return 1 << (16 + id); }
 
+	//TODO: better name
 	enum ColliderFlags {
-		collider_none		= 0,
-		collider_tiles		= 1,
+		collider_none			= 0x0000,
 
-		collider_static		= 2, // updates NavigationMap when its being fully recomputed
-		collider_dynamic_nv	= 4, // updates NavigationMap every frame
-		collider_dynamic	= 8, // does not update NavigationMap
-		collider_item		= 16,
+		collider_static			= 0x0002, // updates NavigationMap when its being fully recomputed
+		collider_dynamic_nv		= 0x0004, // updates NavigationMap every frame
+		collider_dynamic		= 0x0008, // does not update NavigationMap
+		collider_item			= 0x0010,
+		collider_entities		= 0x00ffff,
 
-		collider_entities = collider_static | collider_dynamic | collider_dynamic_nv | collider_item,
+		collider_tile_floors	= tileIdToFlag(TileId::floor),
+		collider_tile_walls		= tileIdToFlag(TileId::wall),
+		collider_tile_roofs		= tileIdToFlag(TileId::roof),
+		collider_tile_objects	= tileIdToFlag(TileId::object),
+		collider_tiles			= 0xff0000,
 
-		collider_all		= 0xffff,
+		collider_all			= 0xffffff,
+	};
+	
+	enum FunctionalFlags {
+		visibility_flag			= 0x80000000,
 	};
 	
 	inline ColliderFlags operator|(ColliderFlags a, ColliderFlags b) { return (ColliderFlags)((int)a | (int)b); }

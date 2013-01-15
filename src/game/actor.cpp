@@ -1,6 +1,6 @@
 #include "game/actor.h"
 #include "game/world.h"
-#include "gfx/sprite.h"
+#include "game/sprite.h"
 #include <cmath>
 #include <cstdio>
 
@@ -114,7 +114,7 @@ namespace game {
 		{ "StandMagiclow", 	"CrouchMagic", 		"ProneMagic" },			// magic 2
 	};
 
-	ActorAnimMap::ActorAnimMap(gfx::PSprite sprite) {
+	ActorAnimMap::ActorAnimMap(PSprite sprite) {
 		DASSERT(sprite);
 		m_seq_ids.resize(ActionId::count * WeaponClassId::count * StanceId::count, -1);
 
@@ -356,7 +356,7 @@ namespace game {
 	void Actor::onPickupEvent() {
 		//TODO: magic_hi animation when object to be picked up is high enough
 		if(m_order.id == OrderId::interact) {
-			DASSERT(m_order.target->entityType() == entity_item);
+			DASSERT(m_order.target->entityType() == EntityId::item);
 			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.target.get());
 			Item item = item_entity->item();
 			item_entity->remove();

@@ -15,18 +15,17 @@ public:
 	enum {
 		node_size = 24,
 
-		type_flags			= 0x0000ffff, // at least one type flag have to be set
-		functional_flags	= 0xffff0000, // all functional flags have to be set
+		collider_flags		= 0x00ffffff, // at least one type flag have to be set
+		functional_flags	= 0xff000000, // all functional flags have to be set
 
-		//TODO: currently flag test passes if at leas one bit is set,
+		//TODO: currently flag test passes if at least one bit is set,
 		// it would be useful to check if all bits from within some range are set
-		visibility_flag		= 0x80000000,
 	};
 
 	template <typename PtrBase>
 	struct TObjectDef {
-		TObjectDef(const PtrBase* ptr = nullptr, const FBox &bbox = FBox::empty(),
-				const IRect &rect = IRect::empty(), int flags = type_flags)
+		TObjectDef(PtrBase* ptr = nullptr, const FBox &bbox = FBox::empty(),
+				const IRect &rect = IRect::empty(), int flags = collider_flags)
 			:ptr(ptr), bbox(bbox), rect_pos(rect.min), rect_size(rect.size()), flags(flags),
 				occluder_id(-1), occluded_by(-1) {
 			DASSERT(rect.size() == (int2)rect_size);
@@ -34,7 +33,7 @@ public:
 
 		const IRect rect() const { return IRect(rect_pos, rect_pos + rect_size); }
 
-		const PtrBase *ptr;
+		PtrBase *ptr;
 		FBox bbox;
 		int2 rect_pos;
 		short2 rect_size;
@@ -56,13 +55,13 @@ public:
 	void update(int idx, const ObjectDef&);
 	void updateNodes();
 
-	int findAny(const FBox &box, int ignored_id = -1, int flags = type_flags) const;
-	void findAll(vector<int> &out, const FBox &box, int ignored_id = -1, int flags = type_flags) const;
+	int findAny(const FBox &box, int ignored_id = -1, int flags = collider_flags) const;
+	void findAll(vector<int> &out, const FBox &box, int ignored_id = -1, int flags = collider_flags) const;
 
-	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = type_flags) const;
+	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = collider_flags) const;
 	
-	void findAll(vector<int> &out, const IRect &view_rect, int flags = 0) const;
-	int pixelIntersect(const int2 &pos, bool (*pixelTest)(const ObjectDef&, const int2 &pos), int flags = type_flags) const;
+	void findAll(vector<int> &out, const IRect &view_rect, int flags = collider_flags) const;
+	int pixelIntersect(const int2 &pos, bool (*pixelTest)(const ObjectDef&, const int2 &pos), int flags = collider_flags) const;
 
 	int size() const { return (int)m_objects.size(); }
 	const ObjectDef &operator[](int idx) const { return m_objects[idx]; }

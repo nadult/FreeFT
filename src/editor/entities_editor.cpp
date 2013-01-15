@@ -1,12 +1,15 @@
 #include "editor/entities_editor.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
+#include "game/tile_map.h"
+#include "game/entity_map.h"
+#include "game/tile.h"
 #include <algorithm>
 #include <cstdlib>
 
 using namespace gfx;
+using namespace game;
 
 namespace ui {
 

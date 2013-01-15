@@ -4,8 +4,6 @@
 #include "base.h"
 #include <memory>
 
-namespace gfx { class Tile; }
-
 namespace ui
 {
 

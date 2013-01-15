@@ -3,33 +3,34 @@
 
 #include "game/entity.h"
 #include "game/projectile.h"
+#include "game/tile_map.h"
+#include "game/entity_map.h"
 #include "navi_map.h"
-#include "grid.h"
-#include "tile_map.h"
 
 namespace game {
 
-	typedef Grid EntityGrid;
-		
 	class Intersection {
 	public:
-		Intersection(const TileMap::TileDef *object = nullptr, float distance = constant::inf)
+		Intersection(const   TileMap::ObjectDef *object = nullptr, float distance = constant::inf)
 			:m_tile(object), m_is_entity(false), m_distance(distance) { }
-		Intersection(const Grid::ObjectDef *object, float distance = constant::inf)
-			:m_object(object), m_is_entity(true), m_distance(distance) { }
+		Intersection(const EntityMap::ObjectDef *object, float distance = constant::inf)
+			:m_entity(object), m_is_entity(true), m_distance(distance) { }
 
-		const FBox boundingBox() const { return m_object? m_object->bbox : FBox::empty(); }
-		Entity *entity() const { return isEntity()? (Entity*)m_object->ptr : nullptr; }
+		const FBox boundingBox() const { return m_entity? m_entity->bbox : FBox::empty(); }
 
-		bool isEntity() const { return m_is_entity && m_object; }
-		bool isTile() const { return !m_is_entity && m_tile; }
-		bool isEmpty() const { return !m_object; }
+		const Tile *tile() const { return   isTile()?   m_tile->ptr : nullptr; }
+		  Entity *entity() const { return isEntity()? m_entity->ptr : nullptr; }
+
+		bool isEntity() const { return  m_is_entity && m_entity; }
+		bool   isTile() const { return !m_is_entity && m_tile; }
+
+		bool isEmpty() const { return !m_entity; }
 		float distance() const { return m_distance; }
 
 	private:
 		union {
-			const Grid::ObjectDef *m_object;
-			const TileMap::TileDef *m_tile;
+			const EntityMap::ObjectDef *m_entity;
+			const   TileMap::ObjectDef *m_tile;
 		};
 		float m_distance;
 		bool m_is_entity;
@@ -37,6 +38,7 @@ namespace game {
 
 //	inline const Intersection &min(const Intersection &a, const Intersection &b) { return a.t < b.t? a : b; }
 
+	//TODO: make sure to remove entities from grid also
 	class World {
 	public:
 		World();
@@ -87,8 +89,8 @@ namespace game {
 		double m_last_time;
 		double m_last_frame_time;
 
-		TileMap m_tile_map;
-		EntityGrid m_entity_grid;
+		TileMap   m_tile_map;
+		EntityMap m_entity_map;
 		NaviMap m_navi_map;
 
 		vector<PEntity> m_entities;

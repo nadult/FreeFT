@@ -3,7 +3,7 @@
 #include "tile_map.h"
 #include "sys/xml.h"
 #include "sys/profiler.h"
-#include "gfx/tile.h"
+#include "game/tile.h"
 #include "gfx/scene_renderer.h"
 #include "navi_heightmap.h"
 #include <cstdio>
@@ -22,7 +22,7 @@ namespace game {
 		doc.load(file_name);
 
 		m_tile_map.loadFromXML(doc);
-		m_entity_grid = EntityGrid(m_tile_map.dimensions());
+		m_entity_map = EntityMap(m_tile_map.dimensions());
 		m_tile_map.printInfo();
 
 //		updateNaviMap(true);
@@ -66,12 +66,12 @@ namespace game {
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			const Entity *entity = m_entities[n].get();
 			if(entity->colliderType() != collider_static)
-				m_entity_grid.update(entity->m_grid_index,
-						Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()));
+				m_entity_map.update(entity);
 		}
 	}
 
 	void World::updateVisibility(const FBox &bbox) {
+		PROFILE("World::updateVisibility");
 		m_tile_map.updateVisibility(bbox);
 		//TODO: entities visibility
 	}
@@ -79,8 +79,7 @@ namespace game {
 	void World::addEntity(PEntity &&entity) {
 		DASSERT(entity);
 		entity->m_world = this;
-		entity->m_grid_index = m_entity_grid.add(Grid::ObjectDef(entity.get(), entity->boundingBox(),
-					entity->screenRect(), entity->colliderType() | Grid::visibility_flag));
+		m_entity_map.add(entity.get());
 		m_entities.push_back(std::move(entity));
 	}
 
@@ -89,7 +88,7 @@ namespace game {
 
 		vector<int> tile_inds;
 		tile_inds.reserve(1024);
-		m_tile_map.findAll(tile_inds, renderer.targetRect(), Grid::visibility_flag);
+		m_tile_map.findAll(tile_inds, renderer.targetRect(), collider_all|visibility_flag);
 		for(int n = 0; n < (int)tile_inds.size(); n++) {
 			const auto &obj = m_tile_map[tile_inds[n]];
 			obj.ptr->addToRender(renderer, (int3)obj.bbox.min);
@@ -110,8 +109,7 @@ namespace game {
 			object->think();
 			if(object->m_to_be_removed) {
 				if(object->m_grid_index != -1)
-					m_entity_grid.remove(object->m_grid_index);
-
+					m_entity_map.remove(object);
 				objects[n--] = std::move(objects.back());
 				objects.pop_back();
 				continue;
@@ -158,9 +156,9 @@ namespace game {
 		}
 
 		if(flags & collider_entities) {
-			pair<int, float> isect = m_entity_grid.trace(segment, ignore? ignore->m_grid_index : -1, flags);
+			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->m_grid_index : -1, flags);
 			if(isect.first != -1)
-				out = Intersection(&m_entity_grid[isect.first], isect.second);
+				out = Intersection(&m_entity_map[isect.first], isect.second);
 		}
 
 		return out;
@@ -178,11 +176,9 @@ namespace game {
 		}
 
 		if(flags & collider_entities) {
-			int entity_id = m_entity_grid.pixelIntersect(screen_pos,
-					[](const Grid::ObjectDef &object, const int2 &pos)
-						{ return ((const Entity*)object.ptr)->testPixel(pos); }, flags);
+			int entity_id = m_entity_map.pixelIntersect(screen_pos, flags);
 			if(entity_id != -1) {
-				const Grid::ObjectDef *object = &m_entity_grid[entity_id];
+				const auto *object = &m_entity_map[entity_id];
 				if(out.isEmpty() || drawingOrder(object->bbox, out.boundingBox()) == 1)
 					out = Intersection(object, intersection(ray, object->bbox));
 			}
@@ -199,7 +195,7 @@ namespace game {
 				return true;
 
 		if(flags & collider_entities)
-			if(m_entity_grid.findAny(box, ignore? ignore->m_grid_index : -1, flags) != -1)
+			if(m_entity_map.findAny(box, ignore? ignore->m_grid_index : -1, flags) != -1)
 				return true;
 
 		return false;

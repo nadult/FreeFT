@@ -3,6 +3,8 @@
 #include <cstring>
 #include <cstdio>
 
+using namespace game;
+
 int3 TileGroup::Group::s_side_offsets[TileGroup::Group::side_count] = {
 	{  0, 0,  1 },
 	{  1, 0,  1 },
@@ -18,7 +20,7 @@ TileGroup::Group::Group() :m_entry_count(0) {
 	   m_side_surf[n] = -1;	
 }
 
-void TileGroup::addEntry(const gfx::Tile *tile) {
+void TileGroup::addEntry(const Tile *tile) {
 	DASSERT(tile);
 
 	Entry new_entry;
@@ -31,7 +33,7 @@ void TileGroup::addEntry(const gfx::Tile *tile) {
 
 }
 
-int TileGroup::findEntry(const gfx::Tile *tile) const {
+int TileGroup::findEntry(const Tile *tile) const {
 	for(int n = 0; n < entryCount(); n++)
 		if(m_entries[n].tile == tile)
 			return n;
@@ -91,7 +93,7 @@ void TileGroup::saveToXML(XMLDocument &doc) const {
 	for(int n = 0; n < entryCount(); n++) {
 		const Entry &entry = m_entries[n];
 		XMLNode entry_node = doc.addChild("entry");
-		entry_node.addAttrib("tile", doc.own(entry.tile->name.c_str()));
+		entry_node.addAttrib("tile", doc.own(entry.tile->name()));
 		entry_node.addAttrib("group_id", entry.group_id);
 		entry_node.addAttrib("is_dirty", (int)entry.is_dirty);
 	}
@@ -119,7 +121,7 @@ void TileGroup::loadFromXML(const XMLDocument &doc) {
 
 	while(node) {
 		Entry entry;
-		Ptr<gfx::Tile> tile = gfx::Tile::mgr[node.attrib("tile")];
+		PTile tile = Tile::mgr[node.attrib("tile")];
 
 		entry.tile = &*tile;
 		entry.group_id = node.intAttrib("group_id");

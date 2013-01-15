@@ -1,4 +1,4 @@
-#include "gfx/sprite.h"
+#include "game/sprite.h"
 #include <zlib.h>
 
 // source: http://www.zlib.net/zlib_how.html
@@ -57,7 +57,7 @@ void zlibInflate(Serializer &sr, vector<char> &dest, int inSize) {
 		THROW("Error while decompressing image data");
 }
 
-namespace gfx
+namespace game
 {
 
 	namespace {
@@ -69,7 +69,7 @@ namespace gfx
 			string name;
 			vector<IRect> rects;
 			vector<Color> palettes[layer_count];
-			vector<PackedTexture> images;
+			vector<gfx::PackedTexture> images;
 			vector<int2> points;
 			int frame_count, dir_count, offset;
 			int type;

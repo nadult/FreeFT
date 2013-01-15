@@ -2,9 +2,6 @@
 #define EDITOR_GROUP_EDITOR_H
 
 #include "base.h"
-#include "gfx/tile.h"
-#include "gfx/font.h"
-#include "gfx/device.h"
 #include "ui/window.h"
 #include "ui/tile_list.h"
 

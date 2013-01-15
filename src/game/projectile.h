@@ -12,7 +12,7 @@ namespace game {
 		Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos,
 					const float3 &target, Entity *spawner);
 		virtual ColliderFlags colliderType() const { return collider_none; }
-		virtual EntityFlags entityType() const { return entity_projectile; }
+		virtual EntityId::Type entityType() const { return EntityId::projectile; }
 
 		ProjectileTypeId::Type type() const { return m_type; }
 
@@ -31,7 +31,7 @@ namespace game {
 	public:
 		ProjectileImpact(const char *sprite_name, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_none; }
-		virtual EntityFlags entityType() const { return entity_impact; }
+		virtual EntityId::Type entityType() const { return EntityId::impact; }
 	
 	protected:
 		virtual void onAnimFinished();

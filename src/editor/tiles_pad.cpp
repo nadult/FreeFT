@@ -36,7 +36,7 @@ namespace ui {
 	void TilesPad::updateTileList() {
 		PTileListModel model = m_is_grouped_model?
 			groupedTilesModel(*m_group, m_editor->isFilling()) : allTilesModel();
-		model = filteredTilesModel(model, TileFilter::test, currentFilter());
+		model = filteredTilesModel(model, currentFilter());
 		m_selector->setModel(model);
 	}
 

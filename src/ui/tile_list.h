@@ -1,7 +1,7 @@
 #ifndef UI_TILE_LIST_H
 #define UI_TILE_LIST_H
 
-#include "gfx/tile.h"
+#include "game/tile.h"
 
 class TileGroup;
 
@@ -13,6 +13,7 @@ namespace ui
 			all,
 			floors,
 			walls,
+			roofs,
 			objects,
 			other,
 
@@ -20,26 +21,26 @@ namespace ui
 		};
 
 		const char **strings();
-		bool test(const gfx::Tile *tile, int filter);
+		bool test(const game::Tile *tile, int filter);
 	};
 
 	struct TileListModel: public RefCounter {
 		virtual ~TileListModel() { }
 		virtual int size() const = 0;
-		virtual const gfx::Tile* get(int idx, int &group_id) const = 0;
+		virtual const game::Tile* get(int idx, int &group_id) const = 0;
 	};
 	typedef Ptr<TileListModel> PTileListModel;
 
 	PTileListModel allTilesModel();
 	PTileListModel groupedTilesModel(const TileGroup&, bool only_uniform);
-	PTileListModel filteredTilesModel(PTileListModel, bool (*filter)(const gfx::Tile*, int param), int param);
+	PTileListModel filteredTilesModel(PTileListModel, TileFilter::Type);
 
 
 	class TileList
 	{
 	public:
 		struct Entry {
-			const gfx::Tile *tile;
+			const game::Tile *tile;
 			int2 pos, size;
 			int group_id, model_id, group_size;
 			mutable bool is_selected;

@@ -1,13 +1,13 @@
-#ifndef TILE_GROUP_H
-#define TILE_GROUP_H
+#ifndef EDITOR_TILE_GROUP_H
+#define EDITOR_TILE_GROUP_H
 
-#include "gfx/tile.h"
+#include "game/tile.h"
 
 
 class TileGroup {
 public:	
 	struct Entry {
-		const gfx::Tile *tile;
+		const game::Tile *tile;
 		int group_id;
 		bool is_dirty; // like a floor tile with rubble; dirty tiles shouldnt be too dense on the map
 	};
@@ -21,18 +21,18 @@ public:
 		static int3 s_side_offsets[side_count];
 	};
 
-	void addEntry(const gfx::Tile*);
-	int findEntry(const gfx::Tile*) const;
+	void addEntry(const game::Tile*);
+	int findEntry(const game::Tile*) const;
 
 	bool isValidEntryId(int id) const { return id >= 0 && id < entryCount(); }
-	bool isValidEntryId(int id, const gfx::Tile *tile) const { return isValidEntryId(id) && entryTile(id) == tile; }
+	bool isValidEntryId(int id, const game::Tile *tile) const { return isValidEntryId(id) && entryTile(id) == tile; }
 
 	void setEntryGroup(int entry_id, int group_id);
 	void removeEntry(int entry_id);
 
 	// an entry always has some group assigned
 	int entryGroup(int entry_id) const { return m_entries[entry_id].group_id; }
-	const gfx::Tile *entryTile(int entry_id) const { return m_entries[entry_id].tile; }
+	const game::Tile *entryTile(int entry_id) const { return m_entries[entry_id].tile; }
 
 	bool isEntryDirty(int entry_id) const { return m_entries[entry_id].is_dirty; }
 	void setEntryDirty(int entry_id, bool is_dirty) { m_entries[entry_id].is_dirty = is_dirty; }

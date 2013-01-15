@@ -1,8 +1,8 @@
 #include "game/entity.h"
-#include "gfx/sprite.h"
+#include "game/sprite.h"
+#include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
-#include "game/world.h"
 #include "sys/profiler.h"
 
 using namespace gfx;

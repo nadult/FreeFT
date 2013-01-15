@@ -1,11 +1,11 @@
-#ifndef GFX_SPRITE_H
-#define GFX_SPRITE_H
+#ifndef GAME_SPRITE_H
+#define GAME_SPRITE_H
 
 #include "gfx/texture.h"
 #include "gfx/device.h"
 #include "gfx/texture_cache.h"
 
-namespace gfx {
+namespace game {
 
 	//TODO: naming: toTexture, getFrame etc
 	class Sprite: public RefCounter {
@@ -61,20 +61,20 @@ namespace gfx {
 			int offset[layer_count];
 		};
 
-		struct MultiImage: public CachedTexture {
+		struct MultiImage: public gfx::CachedTexture {
 			MultiImage();
 			MultiImage(const MultiImage &rhs);
 			void operator=(const MultiImage&);
 
-			virtual void cacheUpload(Texture&) const;
+			virtual void cacheUpload(gfx::Texture&) const;
 			virtual int2 textureSize() const { return rect.size(); }
 
 			void serialize(Serializer&);
-			PTexture toTexture(const MultiPalette&, FRect&) const;
+			gfx::PTexture toTexture(const MultiPalette&, FRect&) const;
 			bool testPixel(const int2&) const;
 			int memorySize() const;
 
-			PackedTexture images[layer_count];
+			gfx::PackedTexture images[layer_count];
 			int2 points[layer_count];
 			IRect rect;
 
@@ -90,7 +90,7 @@ namespace gfx {
 		IRect getMaxRect() const;
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
-		PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const;
+		gfx::PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const;
 		
 		int findSequence(const char *name) const;
 
@@ -118,7 +118,7 @@ namespace gfx {
 		const int3 &boundingBox() const { return m_bbox; }
 		
 		static ResourceMgr<Sprite> mgr;
-		static TextureCache cache;
+		static gfx::TextureCache cache;
 
 	private:
 		vector<Sequence> m_sequences;
@@ -135,7 +135,7 @@ namespace gfx {
 
 };
 	
-SERIALIZE_AS_POD(gfx::Sprite::Frame);
+SERIALIZE_AS_POD(game::Sprite::Frame);
 
 #endif
 

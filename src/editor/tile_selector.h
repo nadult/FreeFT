@@ -2,7 +2,7 @@
 #define UI_TILE_SELECTOR_H
 
 #include "base.h"
-#include "gfx/tile.h"
+#include "game/tile.h"
 #include "ui/window.h"
 #include "ui/tile_list.h"
 
@@ -20,8 +20,8 @@ namespace ui {
 		void setModel(PTileListModel);
 		void update(); // call every time model changes
 
-		const gfx::Tile *selection() const { return m_selection? m_selection->tile : nullptr; }
-		void setSelection(const gfx::Tile*);
+		const game::Tile *selection() const { return m_selection? m_selection->tile : nullptr; }
+		void setSelection(const game::Tile*);
 
 	protected:
 		TileList m_tile_list;

@@ -75,6 +75,22 @@ namespace game {
 		"rocket"
 	)
 
+	DEFINE_STRINGS(EntityId,
+		"container",
+		"door",
+		"actor",
+		"item",
+		"projectile",
+		"impact"
+	);
+
+	DEFINE_STRINGS(TileId,
+		"floor",
+		"wall",
+		"roof",
+		"object",
+		"unknown"
+	);
 
 #undef DEFINE_STRINGS
 }

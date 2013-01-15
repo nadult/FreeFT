@@ -108,7 +108,7 @@ namespace game {
 
 	class ActorAnimMap {
 	public:
-		ActorAnimMap(gfx::PSprite);
+		ActorAnimMap(PSprite);
 		ActorAnimMap() = default;
 
 		int sequenceId(StanceId::Type, ActionId::Type, WeaponClassId::Type) const;
@@ -123,7 +123,7 @@ namespace game {
 	public:
 		Actor(ActorTypeId::Type, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
-		virtual EntityFlags entityType() const { return entity_actor; }
+		virtual EntityId::Type entityType() const { return EntityId::actor; }
 
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }

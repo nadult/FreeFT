@@ -1,6 +1,6 @@
 #include "game/container.h"
 #include "game/actor.h"
-#include "gfx/sprite.h"
+#include "game/sprite.h"
 #include <cstdio>
 
 namespace game {

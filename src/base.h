@@ -596,12 +596,22 @@ SERIALIZE_AS_POD(Color)
 
 
 namespace gfx {
-	class Tile;
-	class Sprite;
 	class SceneRenderer;
 	class Texture;
+	class Font;
 	class DTexture;
+
+	typedef Ptr<Font> PFont;
 	typedef Ptr<DTexture> PTexture;
+}
+
+namespace game {
+	class Tile;
+	class Sprite;
+	class Entity;
+	class TileMap;
+	class EntityMap;
+	typedef Ptr<Sprite> PSprite;
 }
 
 #endif

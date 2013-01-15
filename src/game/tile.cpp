@@ -1,13 +1,26 @@
-#include "gfx/tile.h"
+#include "game/tile.h"
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 #include <cstring>
 #include <GL/gl.h>
 #include <algorithm>
 
+using namespace gfx;
 
-namespace gfx
+namespace game
 {
+
+	struct TypeName { TileId::Type type; const char *name; } s_type_names[] = {
+		{ TileId::floor,	"_floor_" },
+		{ TileId::wall,		"_wall_" },
+		{ TileId::roof,		"_roof_" },
+		{ TileId::object,	"_object_" },
+		{ TileId::floor,	"_cap_" },
+		{ TileId::floor,	"_stair_" },
+		{ TileId::floor,	"_step_" },
+	};
+
+	Tile::Tile() :m_type(TileId::unknown) { }
 
 	Texture Tile::texture() const {
 		Texture out;
@@ -36,16 +49,29 @@ namespace gfx
 	}
 		
 	int Tile::memorySize() const {
-		return (int)(m_texture.memorySize() - sizeof(PackedTexture) + sizeof(Tile) + name.size());
+		return (int)(m_texture.memorySize() - sizeof(PackedTexture) + sizeof(Tile) + m_name.size());
 	}
 
 	void Tile::printInfo() const {
 		printf("Tile %s:\n  Dimensions: %dx%d\nMemory: %.2f KB\nPalette: %d entries\n",
-				name.c_str(), width(), height(), memorySize()/1024.0, m_texture.palette().size());
+				m_name.c_str(), width(), height(), memorySize()/1024.0, m_texture.palette().size());
 	}
 
 	void Tile::legacyLoad(Serializer &sr) {
 		ASSERT(sr.isLoading());
+
+		{
+			string lowercase = sr.name();
+			std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(), ::tolower);
+			int slash = lowercase.rfind('/');
+
+			m_type = TileId::unknown;
+			for(int n = 0; n < COUNTOF(s_type_names); n++)
+				if(lowercase.find(s_type_names[n].name, slash) != string::npos) {
+					m_type = s_type_names[n].type;
+					break;
+				}
+		}
 
 		sr.signature("<tile>", 7);
 		i16 type; sr & type;
@@ -82,8 +108,10 @@ namespace gfx
 
 	void Tile::serialize(Serializer &sr) {
 		sr.signature("TILE", 4);
+		sr(m_type, m_bbox, m_offset);
+		if(sr.isLoading())
+			ASSERT(TileId::isValid(m_type));
 		sr & m_texture;
-		sr(m_bbox, m_offset);
 	}
 
 	const IRect Tile::rect() const {

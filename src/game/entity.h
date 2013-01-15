@@ -3,14 +3,12 @@
 
 #include "base.h"
 #include <memory>
-#include "gfx/sprite.h"
+#include "game/sprite.h"
 #include "game/enums.h"
 
 
 namespace game {
 
-	using gfx::Sprite;
-	
 	class World;
 	class Actor;
 	class EntityRef;
@@ -23,7 +21,7 @@ namespace game {
 		virtual ~Entity();
 
 		virtual ColliderFlags colliderType() const = 0;
-		virtual EntityFlags entityType() const = 0;
+		virtual EntityId::Type entityType() const = 0;
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
@@ -51,9 +49,10 @@ namespace game {
 
 	protected:
 		friend class World;
+		friend class EntityMap;
 		World *m_world;
 		bool m_to_be_removed;
-		int m_grid_index;
+		mutable int m_grid_index;
 
 	protected:
 		virtual void think() { DASSERT(m_world); }
@@ -78,7 +77,7 @@ namespace game {
 		// When entity is moving up/down, it might overlap with some of the tiles
 		virtual bool shrinkRenderedBBox() const { return false; }
 
-		gfx::PSprite m_sprite;
+		PSprite m_sprite;
 		IRect m_max_screen_rect;
 
 	private:

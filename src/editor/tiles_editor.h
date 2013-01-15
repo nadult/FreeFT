@@ -1,9 +1,7 @@
 #ifndef EDITOR_TILES_EDITOR_H
 #define EDITOR_TILES_EDITOR_H
 
-#include "gfx/tile.h"
 #include "ui/window.h"
-#include "tile_map.h"
 
 class TileGroup;
 
@@ -16,9 +14,9 @@ namespace ui {
 		TilesEditor(IRect rect);
 
 		void onTileMapReload();
-		void setTileMap(TileMap*);
+		void setTileMap(game::TileMap*);
 		void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
-		void setNewTile(const gfx::Tile *tile) { m_new_tile = tile; }
+		void setNewTile(const game::Tile *tile) { m_new_tile = tile; }
 			
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
@@ -68,9 +66,9 @@ namespace ui {
 	private:
 		Mode m_mode;
 
-		TileMap *m_tile_map;
+		game::TileMap *m_tile_map;
 		const TileGroup *m_tile_group;
-		const gfx::Tile *m_new_tile;
+		const game::Tile *m_new_tile;
 		vector<int> m_selected_ids;
 		
 		void fill(const IBox &fill_box, bool is_randomized = false, int group_id = -1);

@@ -2,8 +2,7 @@
 #include "gfx/device.h"
 
 using namespace gfx;
-
-
+using game::Tile;
 
 namespace ui {
 
@@ -23,7 +22,7 @@ namespace ui {
 		setInnerRect(IRect(0, 0, rect().width(), m_tile_list.m_height));
 	}
 		
-	void TileSelector::setSelection(const gfx::Tile *tile) {
+	void TileSelector::setSelection(const game::Tile *tile) {
 		m_selection = nullptr;
 
 		for(int n = 0; n < m_tile_list.size(); n++)

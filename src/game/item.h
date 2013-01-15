@@ -108,7 +108,7 @@ namespace game {
 	public:
 		ItemEntity(const Item &item, const float3 &pos);
 		ColliderFlags colliderType() const { return collider_item; }
-		virtual EntityFlags entityType() const { return entity_item; }
+		virtual EntityId::Type entityType() const { return EntityId::item; }
 
 		gfx::PTexture guiImage(bool small, FRect &tex_image) const;
 		const Item &item() const { return m_item; }

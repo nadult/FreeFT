@@ -144,7 +144,7 @@ namespace game {
 				auto params = m_next_order.transfer_item;
 				const EntityRef &target = m_next_order.target;
 
-				if(areAdjacent(*this, *target) && target->entityType() == entity_container) {
+				if(areAdjacent(*this, *target) && target->entityType() == EntityId::container) {
 					Container *container = static_cast<Container*>(target.get());
 					Inventory *src = &m_inventory, *dst = &container->inventory();
 					if(params.mode == transfer_from)

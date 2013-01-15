@@ -3,10 +3,13 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"
+#include "game/tile.h"
+#include "game/tile_map.h"
 #include <algorithm>
 #include <cstdlib>
 
 using namespace gfx;
+using namespace game;
 
 namespace ui {
 
@@ -146,8 +149,11 @@ namespace ui {
 			if(isMouseKeyDown(0)) {
 				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
 					m_current_occluder = occmap.addOccluder(m_mouseover_tile_id);
-				else
+				else {
 					occmap.removeOccluder(m_current_occluder);
+					m_current_occluder = -1;
+					m_mouseover_tile_id = -1;
+				}
 			}
 		}
 		else {
@@ -309,7 +315,7 @@ namespace ui {
 				bool error = false;
 
 				for(int n = 0; n < 8; n++) {
-					const gfx::Tile *ntile = neighbours[n] == -1? nullptr : (*m_tile_map)[neighbours[n]].ptr;
+					const Tile *ntile = neighbours[n] == -1? nullptr : (*m_tile_map)[neighbours[n]].ptr;
 
 					int entry_id = ntile? m_tile_group->findEntry(ntile) : -1;
 					ngroups[n] = entry_id == -1? -1 : m_tile_group->entryGroup(entry_id);
@@ -485,27 +491,24 @@ namespace ui {
 				};
 
 				int selected_occluder = new_occluder == -1? m_current_occluder : new_occluder;
-				vector<int> is_occluder_selected(occmap.size(), 0);
-				for(int n = 0; n < occmap.size(); n++) {
-					int id = n;
-					while(id != -1) {
-						if(id == selected_occluder)
-							is_occluder_selected[n] = 1;
-						id = occmap[id].parent_id;
-					}
-				}
 
-				for(int n = 0; n < (int)visible_ids.size(); n++) {
-					auto object = (*m_tile_map)[visible_ids[n]];
-					int3 pos(object.bbox.min);
+				if(selected_occluder != -1) {
+					PodArray<int> is_occluder_selected(occmap.size());
+					for(int n = 0; n < occmap.size(); n++)
+						is_occluder_selected[n] = n == selected_occluder? 1 : occmap.isUnder(selected_occluder, n);
+
+					for(int n = 0; n < (int)visible_ids.size(); n++) {
+						auto object = (*m_tile_map)[visible_ids[n]];
+						int3 pos(object.bbox.min);
 				
-					Color col = Color::white;
-					if(object.occluder_id != -1) {
-						col = colors[object.occluder_id % COUNTOF(colors)];
-						if(is_occluder_selected[object.occluder_id])
-							col.a = 127;
+						Color col = Color::white;
+						if(object.occluder_id != -1) {
+							col = colors[object.occluder_id % COUNTOF(colors)];
+							if(is_occluder_selected[object.occluder_id])
+								col.a = 127;
+						}
+						tile_colors[n] = col;
 					}
-					tile_colors[n] = col;
 				}
 				
 				if(new_occluder != -1)
@@ -599,13 +602,13 @@ namespace ui {
 		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map->size());
 		if(isChangingOccluders() && m_current_occluder != -1) {
 			auto &occluder = m_tile_map->occluderMap()[m_current_occluder];
-			font->drawShadowed(int2(0, 25), Color::white, Color::black, "Occluder: %d (%d objects) parent: %d\n",
-				   	m_current_occluder, (int)occluder.objects.size(), occluder.parent_id);
+			font->drawShadowed(int2(0, 25), Color::white, Color::black, "Occluder: %d (%d objects)\n",
+				   	m_current_occluder, (int)occluder.objects.size());
 		}
 
 		if(m_new_tile)
 			font->drawShadowed(int2(0, clippedRect().height() - 50), Color::white, Color::black,
-					"Tile: %s\n", m_new_tile->name.c_str());
+					"Tile: %s\n", m_new_tile->name());
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid_height, s_mode_strings[m_mode]);

@@ -1,6 +1,6 @@
-#include "gfx/tile.h"
-#include "gfx/sprite.h"
-#include "tile_map.h"
+#include "game/tile.h"
+#include "game/sprite.h"
+#include "game/tile_map.h"
 #include "sys/platform.h"
 #include <unistd.h>
 #include <algorithm>
@@ -13,7 +13,7 @@
 #include <omp.h>
 #endif
 
-using namespace gfx;
+using namespace game;
 
 template <class TResource>
 void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,

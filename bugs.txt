@@ -1,2 +1,4 @@
 - Podczas zamykania drzwi przesuwanych gracz może się zacząć kręcić w kółko
 - jak się kliknie na schody to gracz może się zaklinować
+- aniamcja poruszania się w przykucnięciu zacina się po jednym odtworzeniu
+- cos jest nie tak, jak się w edytorze zaladuje mapę będąc w entity editorze

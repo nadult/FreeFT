@@ -1,6 +1,7 @@
 #include "editor/group_editor.h"
-#include "gfx/device.h"
 #include "editor/tile_group.h"
+#include "gfx/font.h"
+#include "gfx/device.h"
 #include <algorithm>
 #include <cstring>
 #include <tuple>
@@ -11,6 +12,7 @@ const char* strcasestr(const char *a, const char *b) { return strstr(a, b); }
 #endif
 
 using namespace gfx;
+using namespace game;
 
 namespace ui {
 
@@ -19,7 +21,7 @@ namespace {
 	struct TileGroupModel: public ui::TileListModel {
 		TileGroupModel(TileGroup &tile_group) :m_tile_group(tile_group) { }
 		int size() const { return m_tile_group.entryCount(); }
-		const gfx::Tile *get(int idx, int &group_id) const {
+		const Tile *get(int idx, int &group_id) const {
 			group_id = m_tile_group.entryGroup(idx);
 			return m_tile_group.entryTile(idx);
 		}
@@ -59,7 +61,7 @@ namespace {
 				m_tile_group? new TileGroupModel(*m_tile_group) : nullptr;
 
 		m_current_entry = nullptr;
-		m_tile_list.setModel(filteredTilesModel(model, TileFilter::test, m_tile_filter));
+		m_tile_list.setModel(filteredTilesModel(model, m_tile_filter));
 
 		int2 pos(0, -m_offset[m_mode].y);
 		int2 size(rect().width(), m_tile_list.m_height + (m_mode == mAddRemove? 0 : rect().height() / 2));
@@ -102,7 +104,7 @@ namespace {
 
 				for(int n = 0; n < m_tile_group->entryCount(); n++) {
 					if(m_tile_group->entryGroup(n) == m_selected_group_id) {
-						const char *name = m_tile_group->entryTile(n)->name.c_str();
+						const char *name = m_tile_group->entryTile(n)->name();
 
 						for(int s = 0; s < subgroup_count; s++)
 							if(strcasestr(name, infixes[s])) {
@@ -243,7 +245,7 @@ namespace {
 
 		if(m_current_entry)
 			m_font->drawShadowed(int2(5, height() - 20), Color::white, Color::black, "%s",
-					m_current_entry->tile->name.c_str());
+					m_current_entry->tile->name());
 	}
 
 	void GroupEditor::setTarget(TileGroup* tile_group) {

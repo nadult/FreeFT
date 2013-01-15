@@ -2,21 +2,18 @@
 #define EDITOR_ENTITIES_EDITOR_H
 
 #include "ui/window.h"
-#include "tile_map.h"
 
 class TileGroup;
 
 namespace ui {
-
-	typedef Grid EntityMap;
 
 	class EntitiesEditor: public ui::Window
 	{
 	public:
 		EntitiesEditor(IRect rect);
 
-		void setEntityMap(EntityMap*);
-		void setTileMap(TileMap*);
+		void setEntityMap(game::EntityMap*);
+		void setTileMap(game::TileMap*);
 			
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
@@ -30,8 +27,8 @@ namespace ui {
 		} m_mode;
 
 	private:
-		EntityMap *m_entity_map;
-		TileMap *m_tile_map;
+		game::EntityMap *m_entity_map;
+		game::TileMap *m_tile_map;
 		vector<int> m_selected_ids;
 		
 		void drawBoxHelpers(const IBox &box) const;

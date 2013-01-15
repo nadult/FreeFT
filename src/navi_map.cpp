@@ -341,7 +341,8 @@ int NaviMap::findQuad(const int3 &pos, bool find_disabled) const {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		const Quad &quad = m_quads[n];
 
-		if(quad.rect.isInside(pos.xz()) && quad.is_disabled == find_disabled && pos.y >= quad.min_height) {
+		if(quad.rect.isInside(pos.xz()) && quad.is_disabled == find_disabled
+				&& pos.y >= quad.min_height && pos.y <= quad.max_height + 1.0f) {
 			if(pos.y <= quad.max_height)
 				return n;
 			if(quad.max_height > best_height) {

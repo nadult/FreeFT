@@ -8,7 +8,8 @@ Grid::Node::Node()
 	
 	
 bool Grid::flagTest(int object, int test) {
-	return (object & type_flags) && ((object & functional_flags & test) == (test & functional_flags));
+	int func_test = test & functional_flags;
+	return (object & collider_flags & test) && ((object & func_test) == func_test);
 }
 
 Grid::Grid(const int2 &size) {
@@ -134,7 +135,7 @@ void Grid::remove(int idx) {
 }
 
 void Grid::update(int id, const ObjectDef &object) {
-	//TODO: speed up
+	//TODO: speed up; in most cases it can be done fast, coz we have a pointer to node
 	remove(id);
 	int new_id = add(object);
 	DASSERT(new_id == id);

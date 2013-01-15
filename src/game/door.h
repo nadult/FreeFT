@@ -34,7 +34,7 @@ namespace game
 
 		Door(const char *sprite_name, const float3 &pos, Type type, const float2 &dir = float2(1, 0));
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
-		virtual EntityFlags entityType() const { return entity_door; }
+		virtual EntityId::Type entityType() const { return EntityId::door; }
 
 		virtual void interact(const Entity*);
 

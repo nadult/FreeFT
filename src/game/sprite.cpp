@@ -1,9 +1,11 @@
-#include "gfx/sprite.h"
+#include "game/sprite.h"
 #include "sys/platform.h"
 #include <cstring>
 #include <cstdio>
 
-namespace gfx
+using namespace gfx;
+
+namespace game
 {
 			
 	int Sprite::MultiPalette::size(int layer) const {

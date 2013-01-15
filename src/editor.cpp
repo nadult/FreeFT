@@ -5,8 +5,8 @@
 
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "gfx/tile.h"
-#include "tile_map.h"
+#include "game/tile_map.h"
+#include "game/entity_map.h"
 #include "sys/profiler.h"
 #include "ui/window.h"
 #include "ui/button.h"
@@ -26,6 +26,7 @@
 
 using namespace gfx;
 using namespace ui;
+using namespace game;
 
 enum EditorMode {
 	editing_tiles,
@@ -58,7 +59,7 @@ public:
 
 		m_mode = editing_tiles;
 		m_tile_map.resize(int2(1024, 1024));
-		m_entity_map = Grid(int2(1024, 1024));
+		m_entity_map.resize(int2(1024, 1024));
 
 		loadTileGroup("data/tile_group.xml");
 		loadTileMap("data/tile_map.xml");
@@ -233,8 +234,7 @@ int safe_main(int argc, char **argv)
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
 				mem_size += tile->memorySize();
-
-				tile->name = tile_name;
+				tile->setName(tile_name.c_str());
 			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());

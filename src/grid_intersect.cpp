@@ -137,9 +137,10 @@ void Grid::findAll(vector<int> &out, const IRect &view_rect, int flags) const {
 		for(int x = grid_box.min.x; x < grid_box.max.x; x++) {
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
-
-			if(!areOverlapping(view_rect, node.rect))
+	
+			if(!flagTest(node.obj_flags, flags) || !areOverlapping(view_rect, node.rect))
 				continue;
+
 			bool anything_found = false;
 			const Object *objects[node.size];
 			int count = extractObjects(node_id, objects, -1, flags);
@@ -175,7 +176,7 @@ int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectD
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
-			if(!node.rect.isInside(screen_pos))
+			if(!flagTest(node.obj_flags, flags) || !node.rect.isInside(screen_pos))
 				continue;
 			if(node.is_dirty)
 				updateNode(node_id);	

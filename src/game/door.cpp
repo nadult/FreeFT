@@ -1,7 +1,7 @@
 #include "game/door.h"
-#include "gfx/sprite.h"
 #include "game/world.h"
 #include "game/actor.h"
+#include "game/sprite.h"
 #include <cstdio>
 
 namespace game {

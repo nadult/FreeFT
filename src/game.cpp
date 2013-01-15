@@ -3,8 +3,6 @@
 
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "gfx/sprite.h"
-#include "gfx/tile.h"
 #include "gfx/scene_renderer.h"
 
 #include "navi_map.h"
@@ -31,7 +29,7 @@ int safe_main(int argc, char **argv)
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("FTremake::game; built " __DATE__ " " __TIME__);
+	setWindowTitle("OpenFT::game; built " __DATE__ " " __TIME__);
 	printDeviceInfo();
 	grabMouse(false);
 
@@ -49,7 +47,7 @@ int safe_main(int argc, char **argv)
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(260, height, 350)));
 	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(250, height, 340)));
-	world.addEntity(new Container("containers/Ice Chest N", float3(240, height, 345)));
+//	world.addEntity(new Container("containers/Ice Chest N", float3(240, height, 345)));
 
 //	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 42), Door::type_rotating));
 //	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 82), Door::type_rotating, float2(1, 0)));
@@ -106,25 +104,28 @@ int safe_main(int argc, char **argv)
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
-				collider_tiles|collider_entities|Grid::visibility_flag);
+				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 		if(isect.distance() == constant::inf)
-			isect = world.trace(ray, actor, collider_tiles|collider_entities|Grid::visibility_flag);
+			isect = world.trace(ray, actor,
+				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
 				//isect.entity->interact(nullptr);
-				InteractionMode mode = isect.entity()->entityType() == entity_item? interact_pickup : interact_normal;
+				InteractionMode mode = isect.entity()->entityType() == EntityId::item?
+					interact_pickup : interact_normal;
 				actor->setNextOrder(interactOrder(isect.entity(), mode));
 			}
 			else if(navi_debug) {
-				int3 wpos = (int3)ray.at(isect.distance());
+				//TODO: do this on floats, in actor and navi code too
+				int3 wpos = (int3)(ray.at(isect.distance()) + float3(0, 0.5f, 0));
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
 			else if(isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
 				int3 wpos = (int3)ray.at(isect.distance());
-				actor->setNextOrder(moveOrder(wpos, isKeyPressed(Key_lshift)));
+				actor->setNextOrder(moveOrder(wpos, !isKeyPressed(Key_lshift)));
 			}
 		}
 		if(isMouseKeyDown(1) && shooting_debug) {

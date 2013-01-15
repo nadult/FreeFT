@@ -4,8 +4,9 @@
 
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "gfx/sprite.h"
-#include "gfx/tile.h"
+
+#include "game/sprite.h"
+#include "game/tile.h"
 
 #include "ui/list_box.h"
 #include "ui/button.h"
@@ -14,6 +15,7 @@
 #include "sys/config.h"
 
 using namespace gfx;
+using namespace game;
 using namespace ui;
 
 namespace ResType {
