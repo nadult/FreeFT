@@ -21,6 +21,9 @@
 #include "base.h"
 
 
+// TODO: Change this class to EditorView or something, it should also contain m_view_pos, and
+// code responsible for changing view_pos
+//
 class SnappingGrid {
 public:
 	SnappingGrid();

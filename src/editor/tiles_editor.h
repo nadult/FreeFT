@@ -23,14 +23,11 @@ class SnappingGrid;
 
 namespace ui {
 
-	//TODO: simplify code by recreating TilesEditor when reloading map and/or doing something drastic?
 	class TilesEditor: public ui::Window
 	{
 	public:
-		TilesEditor(SnappingGrid&, IRect rect);
+		TilesEditor(game::TileMap&, SnappingGrid&, IRect rect);
 
-		void onTileMapReload();
-		void setTileMap(game::TileMap*);
 		void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
 		void setNewTile(const game::Tile *tile) { m_new_tile = tile; }
 			
@@ -81,8 +78,9 @@ namespace ui {
 		Mode m_mode;
 
 		SnappingGrid &m_grid;
-		game::TileMap *m_tile_map;
+		game::TileMap &m_tile_map;
 		const TileGroup *m_tile_group;
+
 		const game::Tile *m_new_tile;
 		vector<int> m_selected_ids;
 		

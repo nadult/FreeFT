@@ -72,46 +72,64 @@ class EditorWindow: public Window
 {
 public:
 	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent), m_entity_map(m_tile_map) {
-		int left_width = width() / 5;
+		m_left_width = width() / 5;
 
 		m_mode = editing_tiles;
 		m_tile_map.resize(int2(1024, 1024));
 		m_entity_map.resize(int2(1024, 1024));
 
 		loadTileGroup("data/tile_group.xml");
-		loadTileMap("data/tile_map.xml");
-
-		m_tiles_editor = new TilesEditor(m_snapping_grid, IRect(left_width, 0, res.x, res.y));
-		m_group_editor = new GroupEditor(IRect(left_width, 0, res.x, res.y));
-		m_entities_editor = new EntitiesEditor(IRect(left_width, 0, res.x, res.y));
-
-		m_mode_box = new ComboBox(IRect(0, 0, left_width * 1 / 2, 22), 0,
-				"Mode: ", s_mode_names, editing_modes_count);
-		m_save_button = new Button(IRect(left_width * 1 / 2, 0, left_width * 3 / 4, 22), "Save");
-		m_load_button = new Button(IRect(left_width * 3 / 4, 0, left_width, 22), "Load");
-
-		m_tiles_pad = new TilesPad(IRect(0, 22, left_width, res.y), m_tiles_editor, &m_group);
-		m_group_pad = new GroupPad(IRect(0, 22, left_width, res.y), m_group_editor, &m_group);
-
-		m_tiles_editor->setTileMap(&m_tile_map);
-		m_tiles_editor->setTileGroup(&m_group);
+		m_group_editor = new GroupEditor(IRect(m_left_width, 0, res.x, res.y));
 		m_group_editor->setTarget(&m_group);
 
-		m_entities_editor->setTileMap(&m_tile_map);
-		m_entities_editor->setEntityMap(&m_entity_map);
+		m_mode_box = new ComboBox(IRect(0, 0, m_left_width * 1 / 2, 22), 0,
+				"Mode: ", s_mode_names, editing_modes_count);
+		m_save_button = new Button(IRect(m_left_width * 1 / 2, 0, m_left_width * 3 / 4, 22), "Save");
+		m_load_button = new Button(IRect(m_left_width * 3 / 4, 0, m_left_width, 22), "Load");
 
-		PWindow left = new Window(IRect(0, 0, left_width, res.y), Color::gui_dark);
-		left->attach(m_mode_box.get());
-		left->attach(m_save_button.get());
-		left->attach(m_load_button.get());
-		left->attach(m_tiles_pad.get());
-		left->attach(m_group_pad.get());
+		m_group_pad = new GroupPad(IRect(0, 22, m_left_width, res.y), m_group_editor, &m_group);
 
-		attach(std::move(left));
-		attach(m_tiles_editor.get());
+		m_left_window = new Window(IRect(0, 0, m_left_width, res.y), Color::gui_dark);
+		m_left_window->attach(m_mode_box.get());
+		m_left_window->attach(m_save_button.get());
+		m_left_window->attach(m_load_button.get());
+		m_left_window->attach(m_group_pad.get());
+
+		attach(m_left_window.get());
 		attach(m_group_editor.get());
-		attach(m_entities_editor.get());
 
+		loadTileMap("data/tile_map.xml");
+
+		recreateEditors();
+	}
+
+	void freeEditors() {
+		if(m_tiles_editor) {
+			DASSERT(m_left_window);
+			m_left_window->detach((PWindow)m_tiles_pad.get());
+			detach((PWindow)m_tiles_editor.get());
+			detach((PWindow)m_entities_editor.get());
+
+			m_tiles_editor = nullptr;
+			m_entities_editor = nullptr;
+			m_tiles_pad = nullptr;
+		}
+	}
+
+	void recreateEditors() {
+		freeEditors();
+
+		IRect rect(m_left_width, 0, width(), height());
+		m_tiles_editor = new TilesEditor(m_tile_map, m_snapping_grid, rect);
+		m_entities_editor = new EntitiesEditor(m_tile_map, m_entity_map, m_snapping_grid, rect);
+		m_tiles_editor->setTileGroup(&m_group);
+
+		m_tiles_pad = new TilesPad(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
+		
+		attach(m_tiles_editor.get());
+		attach(m_entities_editor.get());
+		m_left_window->attach(m_tiles_pad.get());
+		
 		updateVisibility();
 	}
 
@@ -151,7 +169,7 @@ public:
 					saveTileGroup(m_file_dialog->path().c_str());
 			}
 			else if(ev.value && m_file_dialog->mode() == FileDialogMode::opening_file) {
-				if(m_mode == editing_tiles)
+				if(m_mode == editing_tiles || m_mode == editing_entities)
 					loadTileMap(m_file_dialog->path().c_str());
 				else
 					loadTileGroup(m_file_dialog->path().c_str());
@@ -172,8 +190,7 @@ public:
 			XMLDocument doc;
 			doc.load(file_name);
 			m_tile_map.loadFromXML(doc);
-			if(m_tiles_editor)
-				m_tiles_editor->onTileMapReload();
+			recreateEditors();
 		}
 	}
 
@@ -214,6 +231,7 @@ public:
 	PButton		m_load_button;
 	PFileDialog m_file_dialog;
 
+	PWindow			m_left_window;
 	PGroupPad		m_group_pad;
 	PTilesPad		m_tiles_pad;
 
@@ -221,6 +239,8 @@ public:
 	PTilesEditor	m_tiles_editor;
 	PEntitiesEditor	m_entities_editor;
 	PGroupEditor	m_group_editor;
+
+	int m_left_width;
 };
 
 int safe_main(int argc, char **argv)

@@ -64,6 +64,7 @@ namespace ui
 		// Popups have higher priority though
 		void setFocus(bool set);
 		void attach(PWindow, bool as_popup = false);
+		void detach(PWindow);
 
 		// it will also reset inner rect
 		void setRect(const IRect &rect);

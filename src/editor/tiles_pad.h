@@ -33,6 +33,7 @@ namespace ui {
 		void updateTileList();
 		void updateDirtyBar();
 		virtual bool onEvent(const Event &ev);
+		void updateEditor(PTilesEditor);
 
 		TileGroup		*m_group;
 

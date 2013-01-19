@@ -18,18 +18,17 @@
 
 #include "ui/window.h"
 
+class SnappingGrid;
 class TileGroup;
 
 namespace ui {
 
+	// TODO: remove duplicated code (here and in tiles_editor)
 	class EntitiesEditor: public ui::Window
 	{
 	public:
-		EntitiesEditor(IRect rect);
+		EntitiesEditor(game::TileMap&, game::EntityMap&, SnappingGrid&, IRect rect);
 
-		void setEntityMap(game::EntityMap*);
-		void setTileMap(game::TileMap*);
-			
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
@@ -42,9 +41,11 @@ namespace ui {
 		} m_mode;
 
 	private:
-		game::EntityMap *m_entity_map;
-		game::TileMap *m_tile_map;
+		game::EntityMap &m_entity_map;
+		game::TileMap &m_tile_map;
 		vector<int> m_selected_ids;
+
+		SnappingGrid &m_grid;
 		
 		void drawBoxHelpers(const IBox &box) const;
 		IBox computeCursor(int2 start, int2 end) const;

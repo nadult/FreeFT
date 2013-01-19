@@ -234,6 +234,14 @@ namespace ui
 		m_children.push_back(std::move(child));
 	}
 
+	void Window::detach(PWindow child) {
+		for(int n = 0; n < (int)m_children.size(); n++)
+			if(m_children[n] == child) {
+				m_children.erase(m_children.begin() + n);
+				break;
+			}
+	}
+
 	void Window::setRect(const IRect &rect) {
 		DASSERT(!m_dragging_mode);
 		DASSERT(!rect.isEmpty());

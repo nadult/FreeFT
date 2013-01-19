@@ -48,8 +48,8 @@ namespace ui {
 
 	const char **TilesEditor::modeStrings() { return s_mode_strings; }
 
-	TilesEditor::TilesEditor(SnappingGrid &grid, IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_grid(grid), m_tile_map(0), m_new_tile(nullptr) {
+	TilesEditor::TilesEditor(TileMap &tile_map, SnappingGrid &grid, IRect rect)
+		:ui::Window(rect, Color(0, 0, 0)), m_grid(grid), m_tile_map(tile_map), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
 		m_view_pos = int2(-200, 300);
 		m_is_selecting = false;
@@ -60,17 +60,8 @@ namespace ui {
 
 		m_current_occluder = -1;
 		m_mouseover_tile_id = -1;
-	}
 
-	void TilesEditor::onTileMapReload() {
-		m_selected_ids.clear();
-		m_current_occluder = -1;
-		m_mouseover_tile_id = -1;
-	}
-
-	void TilesEditor::setTileMap(TileMap *new_tile_map) {
-		//TODO: do some cleanup within the old tile map?
-		m_tile_map = new_tile_map;
+		m_selection = IBox::empty();
 	}
 
 	void TilesEditor::setMode(Mode mode) {
@@ -80,8 +71,6 @@ namespace ui {
 	}
 
 	void TilesEditor::onInput(int2 mouse_pos) {
-		ASSERT(m_tile_map);
-
 		m_selection = computeCursor(mouse_pos, mouse_pos);
 
 		if(isKeyDown(Key_kp_add))
@@ -121,15 +110,15 @@ namespace ui {
 			clampViewPos();
 		}
 
-		OccluderMap &occmap = m_tile_map->occluderMap();
+		OccluderMap &occmap = m_tile_map.occluderMap();
 		int2 screen_pos = mouse_pos + m_view_pos;
 		Ray screen_ray = screenRay(screen_pos);
 		
-		m_mouseover_tile_id = m_tile_map->pixelIntersect(screen_pos, collider_all|visibility_flag);
+		m_mouseover_tile_id = m_tile_map.pixelIntersect(screen_pos, collider_all|visibility_flag);
 		if(m_mouseover_tile_id == -1)
-			m_mouseover_tile_id = m_tile_map->trace(screen_ray).first;
+			m_mouseover_tile_id = m_tile_map.trace(screen_ray).first;
 			
-		m_current_occluder = m_mouseover_tile_id == -1? -1 : (*m_tile_map)[m_mouseover_tile_id].occluder_id;
+		m_current_occluder = m_mouseover_tile_id == -1? -1 : m_tile_map[m_mouseover_tile_id].occluder_id;
 
 		if(isChangingOccluders()) {
 			if(isMouseKeyDown(0)) {
@@ -145,7 +134,7 @@ namespace ui {
 		else {
 			if(isKeyPressed(Key_del)) {
 				for(int i = 0; i < (int)m_selected_ids.size(); i++)
-					m_tile_map->remove(m_selected_ids[i]);
+					m_tile_map.remove(m_selected_ids[i]);
 				m_selected_ids.clear();
 			}
 		}
@@ -191,11 +180,9 @@ namespace ui {
 		if(start_pos.x > end_pos.x) swap(start_pos.x, end_pos.x);
 		if(start_pos.z > end_pos.z) swap(start_pos.z, end_pos.z);
 		
-		if(m_tile_map) {
-			int2 dims = m_tile_map->dimensions();
-			start_pos = asXZY(clamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
-			  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
-		}
+		int2 dims = m_tile_map.dimensions();
+		start_pos = asXZY(clamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
+		  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
 
 		if(isSelecting())
 			end_pos.y = start_pos.y;
@@ -206,7 +193,7 @@ namespace ui {
 
 	void TilesEditor::removeAll(const IBox &box) {
 		vector<int> colliders;
-		m_tile_map->findAll(colliders, (FBox)box);
+		m_tile_map.findAll(colliders, (FBox)box);
 		sort(colliders.begin(), colliders.end());
 
 		vector<int> new_selection(m_selected_ids.size());
@@ -216,7 +203,7 @@ namespace ui {
 		m_selected_ids.swap(new_selection);
 
 		for(int i = 0; i < (int)colliders.size(); i++)
-			m_tile_map->remove(colliders[i]);
+			m_tile_map.remove(colliders[i]);
 	}
 
 	void TilesEditor::fill(const IBox &fill_box, bool is_randomized, int group_id) {
@@ -256,13 +243,13 @@ namespace ui {
 					m_tile_group->entryTile(source[random_id]);
 				}
 
-				try { m_tile_map->add(tile, int3(x, fill_box.min.y, z)); }
+				try { m_tile_map.add(tile, int3(x, fill_box.min.y, z)); }
 				catch(...) { }
 			}
 	}
 
 	int TilesEditor::findAt(const int3 &pos) const {
-		return m_tile_map->findAny(FBox(pos, pos + int3(1, 1, 1)));
+		return m_tile_map.findAny(FBox(pos, pos + int3(1, 1, 1)));
 	}
 
 	void TilesEditor::fillHoles(int main_group_id, const IBox &fill_box) {
@@ -301,7 +288,7 @@ namespace ui {
 				bool error = false;
 
 				for(int n = 0; n < 8; n++) {
-					const Tile *ntile = neighbours[n] == -1? nullptr : (*m_tile_map)[neighbours[n]].ptr;
+					const Tile *ntile = neighbours[n] == -1? nullptr : m_tile_map[neighbours[n]].ptr;
 
 					int entry_id = ntile? m_tile_group->findEntry(ntile) : -1;
 					ngroups[n] = entry_id == -1? -1 : m_tile_group->entryGroup(entry_id);
@@ -358,7 +345,7 @@ namespace ui {
 				if(!entries.empty()) {
 					int random_id = rand() % entries.size();
 					const Tile *tile = m_tile_group->entryTile(entries[random_id]);
-					try { m_tile_map->add(tile, int3(x, fill_box.min.y, z)); }
+					try { m_tile_map.add(tile, int3(x, fill_box.min.y, z)); }
 					catch(...) { }
 				}
 			}
@@ -378,7 +365,7 @@ namespace ui {
 			if(is_final && is_final != -1) {
 				if(isSelecting()) {
 					vector<int> new_ids;
-					m_tile_map->findAll(new_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
+					m_tile_map.findAll(new_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
 					std::sort(new_ids.begin(), new_ids.end());
 
 					if(m_mode == mode_selecting_normal)
@@ -430,7 +417,7 @@ namespace ui {
 		DTexture::bind0();
 
 		int3 pos = box.min, bbox = box.max - box.min;
-		int3 tsize = asXZY(m_tile_map->dimensions(), 32);
+		int3 tsize = asXZY(m_tile_map.dimensions(), 32);
 
 		drawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
 		drawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
@@ -449,10 +436,8 @@ namespace ui {
 	}
 	
 	void TilesEditor::drawContents() const {
-		ASSERT(m_tile_map);
-
 		{
-			OccluderMap &occmap = m_tile_map->occluderMap();
+			OccluderMap &occmap = m_tile_map.occluderMap();
 			float max_pos = m_grid.height() + m_cursor_height;
 			bool has_changed = false;
 
@@ -463,7 +448,7 @@ namespace ui {
 			}
 
 			if(has_changed) {
-				m_tile_map->updateVisibility();
+				m_tile_map.updateVisibility();
 			}
 		}
 
@@ -472,12 +457,12 @@ namespace ui {
 		{
 			vector<int> visible_ids;
 			visible_ids.reserve(1024 * 8);
-			m_tile_map->findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
+			m_tile_map.findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 			vector<Color> tile_colors(visible_ids.size(), Color::white);
 
 			if(isChangingOccluders()) {
-				OccluderMap &occmap = m_tile_map->occluderMap();
+				OccluderMap &occmap = m_tile_map.occluderMap();
 
 				int new_occluder = -1;
 				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
@@ -500,7 +485,7 @@ namespace ui {
 						is_occluder_selected[n] = n == selected_occluder? 1 : occmap.isUnder(selected_occluder, n);
 
 					for(int n = 0; n < (int)visible_ids.size(); n++) {
-						auto object = (*m_tile_map)[visible_ids[n]];
+						auto object = m_tile_map[visible_ids[n]];
 						int3 pos(object.bbox.min);
 				
 						Color col = Color::white;
@@ -518,7 +503,7 @@ namespace ui {
 			}
 			else {
 				for(int n = 0; n < (int)visible_ids.size(); n++) {
-					auto object = (*m_tile_map)[visible_ids[n]];
+					auto object = m_tile_map[visible_ids[n]];
 					int3 pos(object.bbox.min);
 
 					IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
@@ -531,15 +516,15 @@ namespace ui {
 			}
 
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
-				auto object = (*m_tile_map)[visible_ids[i]];
+				auto object = m_tile_map[visible_ids[i]];
 				int3 pos(object.bbox.min);
 				
-//				if(m_tile_map->findAny(object.bbox, visible_ids[i]) != -1)
+//				if(m_tile_map.findAny(object.bbox, visible_ids[i]) != -1)
 //					renderer.addBox(object.bbox, Color::red, false);
 				object.ptr->addToRender(renderer, pos, tile_colors[i]);
 			}
 			for(int i = 0; i < (int)m_selected_ids.size(); i++)
-				renderer.addBox((*m_tile_map)[m_selected_ids[i]].bbox);
+				renderer.addBox(m_tile_map[m_selected_ids[i]].bbox);
 
 		}
 		renderer.render();
@@ -548,7 +533,7 @@ namespace ui {
 		setScissorTest(true);
 		IRect view_rect = clippedRect() - m_view_pos;
 		lookAt(-view_rect.min);
-		m_grid.draw(m_view_pos, view_rect.size(), m_tile_map->dimensions());
+		m_grid.draw(m_view_pos, view_rect.size(), m_tile_map.dimensions());
 		
 		if(m_new_tile && (isPlacing() || isPlacingRandom() || isFilling()) && m_new_tile) {
 			int3 bbox = m_new_tile->bboxSize();
@@ -557,17 +542,17 @@ namespace ui {
 				for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
 					int3 pos(x, m_selection.min.y, z);
 
-					bool collides = m_tile_map->findAny(FBox(pos, pos + bbox)) != -1;
+					bool collides = m_tile_map.findAny(FBox(pos, pos + bbox)) != -1;
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
 					m_new_tile->draw(int2(worldToScreen(pos)), color);
 					DTexture::bind0();
 					drawBBox(IBox(pos, pos + bbox));
 				}
-	//		m_tile_map->drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
+	//		m_tile_map.drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
 		}
 
-	//	m_tile_map->drawBoxHelpers(m_selection);
+	//	m_tile_map.drawBoxHelpers(m_selection);
 		DTexture::bind0();
 
 		if(!isChangingOccluders()) {
@@ -582,9 +567,9 @@ namespace ui {
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[s_font_names[1]];
 
-		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map->size());
+		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map.size());
 		if(isChangingOccluders() && m_current_occluder != -1) {
-			auto &occluder = m_tile_map->occluderMap()[m_current_occluder];
+			auto &occluder = m_tile_map.occluderMap()[m_current_occluder];
 			font->drawShadowed(int2(0, 25), Color::white, Color::black, "Occluder: %d (%d objects)\n",
 				   	m_current_occluder, (int)occluder.objects.size());
 		}
@@ -598,9 +583,8 @@ namespace ui {
 	}
 
 	void TilesEditor::clampViewPos() {
-		DASSERT(m_tile_map);
 		int2 rsize = rect().size();
-		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map->dimensions(), 256)));
+		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));
 		m_view_pos = clamp(m_view_pos, rect.min, rect.max - rsize);
 	}
 
