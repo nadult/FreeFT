@@ -21,16 +21,17 @@
 - fix some of the TODO-s  DONE
 - pick best GPL license, add copyright notices  DONE
 - Use Open Sourced fonts  DONE
+- add license for baselib also  DONE
+- find better name: FreeFT  DONE
 
+- write basic readme with acknowledgements
 - some enemies with basic AI (scorpions)
 - basic (working) entity editor
 - convert should be able to take FOT path, and extract and convert all necessary resources
 - mod file format: patch on original xml map file, loading&saving in editor
 - Tile animations
 - pack tiles into single file, so they will load faster?
-- add license for baselib also
 - put up on github, announce on nma-fallout
-- think of better name
 - SECONDARY: in the game use shift to select surface on a level relative somehow to the players position
 
 +REQUIREMENTS:

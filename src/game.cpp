@@ -29,7 +29,7 @@ int safe_main(int argc, char **argv)
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("FTremake::game; built " __DATE__ " " __TIME__);
+	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
 	printDeviceInfo();
 	grabMouse(false);
 

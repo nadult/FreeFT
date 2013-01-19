@@ -1,12 +1,12 @@
 /* Copyright (C) 2013 Krzysztof Jakubowski <nadult@fastmail.fm>
 
-   This file is part of FTremake.
+   This file is part of FreeFt.
 
-   FTremake is free software; you can redistribute it and/or modify it under the terms of the
+   FreeFt is free software; you can redistribute it and/or modify it under the terms of the
    GNU General Public License as published by the Free Software Foundation; either version 2
    of the License, or (at your option) any later version.
 
-   FTremake is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+   FreeFt is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
    even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
    GNU General Public License for more details.
 
@@ -224,7 +224,7 @@ int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("editor");
 	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("FTremake::editor; built " __DATE__ " " __TIME__);
+	setWindowTitle("FreeFT::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
 		
 	setBlendingMode(bmNormal);
@@ -275,10 +275,10 @@ int safe_main(int argc, char **argv)
 
 		if(config.profiler_enabled) {
 			DTexture::bind0();
-			drawQuad(config.resolution - int2(250, 200), config.resolution, Color(0, 0, 0, 80));
+			drawQuad(config.resolution - int2(280, 200), config.resolution, Color(0, 0, 0, 80));
 
-			gfx::PFont font = gfx::Font::mgr["arial_16"];
-			font->drawShadowed(config.resolution - int2(250, 180), Color::white, Color::black, "%s", prof_stats.c_str());
+			gfx::PFont font = gfx::Font::mgr["liberation_16"];
+			font->drawShadowed(config.resolution - int2(280, 180), Color::white, Color::black, "%s", prof_stats.c_str());
 		}
 
 		swapBuffers();
