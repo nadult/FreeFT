@@ -293,9 +293,9 @@ namespace ui
 	}
 
 	const char *Window::s_font_names[3] = {
-		"arial_16",
-		"times_24",
-		"times_36",
+		"liberation_16",
+		"liberation_24",
+		"liberation_32",
 	};
 
 }

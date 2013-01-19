@@ -2,3 +2,4 @@
 - jak się kliknie na schody to gracz może się zaklinować
 - aniamcja poruszania się w przykucnięciu zacina się po jednym odtworzeniu
 - cos jest nie tak, jak się w edytorze zaladuje mapę będąc w entity editorze
+- bug w wyswietlaniu fontow w edytorze w wersji windowsowej

@@ -160,6 +160,7 @@ namespace game {
 		// (some sprites have some animations missing...)!
 		bool canEquipWeapon(WeaponClassId::Type) const;
 		bool canEquipArmour(ArmourClassId::Type) const;
+		bool canChangeStance() const;
 
 		void setSequence(ActionId::Type);
 		void lookAt(const float3 &pos, bool at_once = false);

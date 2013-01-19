@@ -164,13 +164,15 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 
 		if(is_overlapping != occluder.is_overlapping) {
 			occluder.is_overlapping = is_overlapping;
-			occluder.is_visible = !occluder.is_overlapping;
 			vis_changed = true;
 		}
 	}
 
 	if(!vis_changed)
 		return false;
+
+	for(int n= 0; n < size(); n++)
+		m_occluders[n].is_visible = !m_occluders[n].is_overlapping;
 
 //TODO: isUnder can be precomputed
 	for(int n = 0; n < size(); n++) {

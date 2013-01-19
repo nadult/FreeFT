@@ -20,17 +20,18 @@
   - SECONDARY: using occlusion bitmaps to connect occluded tiles to occluders
 - fix some of the TODO-s  DONE
 - pick best GPL license, add copyright notices  DONE
+- Use Open Sourced fonts  DONE
 
 - some enemies with basic AI (scorpions)
 - basic (working) entity editor
 - convert should be able to take FOT path, and extract and convert all necessary resources
 - mod file format: patch on original xml map file, loading&saving in editor
 - Tile animations
-- Use Open Sourced fonts
 - pack tiles into single file, so they will load faster?
-- SECONDARY: in the game use shift to select surface on a level relative somehow to the players position
 - add license for baselib also
 - put up on github, announce on nma-fallout
+- think of better name
+- SECONDARY: in the game use shift to select surface on a level relative somehow to the players position
 
 +REQUIREMENTS:
 issues/5-entities
@@ -45,4 +46,4 @@ issues/10-ui_improvements
 12.01.12: 13:00 - 15:00, 16:00 - 20:30, 21:00 - 21:30 (6h)
 13.01.12: 14:15 - 15:15, 17:00 - 01:00 (9h)
 14.01.12: 16:00 - 23:00 (7h)
-15.01.12: 13:00 - 17:15, 19:30 - 20:45 (6h)
+15.01.12: 13:00 - 17:15, 19:30 - 21:00 (6h 15min)

@@ -37,7 +37,7 @@ int safe_main(int argc, char **argv)
 
 	int2 view_pos(-1000, 500);
 
-	PFont font = Font::mgr["arial_32"];
+	PFont font = Font::mgr["liberation_32"];
 
 	World world("data/maps/mission05_mod.xml");
 
@@ -47,6 +47,7 @@ int safe_main(int argc, char **argv)
 	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(260, height, 350)));
 	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(250, height, 340)));
+//	actor = world.addEntity(new Actor(ActorTypeId::mutant, float3(260, height, 335)));
 //	world.addEntity(new Container("containers/Ice Chest N", float3(240, height, 345)));
 
 //	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 42), Door::type_rotating));
@@ -108,6 +109,9 @@ int safe_main(int argc, char **argv)
 		if(isect.distance() == constant::inf)
 			isect = world.trace(ray, actor,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
+		
+		if(isKeyDown('T') && isect.distance() != constant::inf)
+			actor->setPos(ray.at(isect.distance()));
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			if(isect.entity() && entity_debug) {
@@ -192,7 +196,7 @@ int safe_main(int argc, char **argv)
 		DTexture::bind0();
 		drawQuad(0, 0, 250, config.profiler_enabled? 300 : 50, Color(0, 0, 0, 80));
 		
-		gfx::PFont font = gfx::Font::mgr["arial_16"];
+		gfx::PFont font = gfx::Font::mgr["liberation_16"];
 		float3 isect_pos = ray.at(isect.distance());
 		float3 actor_pos = actor->pos();
 		font->drawShadowed(int2(0, 0), Color::white, Color::black,

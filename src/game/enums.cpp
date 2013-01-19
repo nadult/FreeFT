@@ -80,7 +80,15 @@ namespace game {
 		"female",
 		"ghoul",
 		"vault_male",
-		"vault_female"
+		"vault_female",
+		"mutant",
+
+		"rad_scorpion",
+		"giant_rat",
+		"wolf",
+		"brahmin",
+		"mdc",
+		"sdc"
 	)
 
 	DEFINE_STRINGS( ProjectileTypeId,

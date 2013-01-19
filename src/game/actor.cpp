@@ -22,7 +22,7 @@
 namespace game {
 
 	static const float s_speeds[StanceId::count + 1] = {
-		20.0f,
+		25.0f,
 		10.0f,
 		6.0f,
 		3.5f,
@@ -64,6 +64,19 @@ namespace game {
 			"characters/Environmental",
 			"characters/Power",
 		},
+		{ // Mutant
+			"characters/Mutant",
+			nullptr,
+			"characters/MutantArmour",
+			nullptr,
+			nullptr,
+		},
+		{ "critters/RadScorpion",		nullptr, nullptr, nullptr, nullptr, },
+		{ "critters/GiantRat",			nullptr, nullptr, nullptr, nullptr, },
+		{ "critters/Wolf",				nullptr, nullptr, nullptr, nullptr, },
+		{ "critters/TwoHeadedBrahmin",	nullptr, nullptr, nullptr, nullptr, },
+		{ "critters/MDC",				nullptr, nullptr, nullptr, nullptr, },
+		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
 	};
 
 	static const char *s_wep_names[WeaponClassId::count] = {
@@ -169,7 +182,7 @@ namespace game {
 
 	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos)
 		:Entity(s_sprite_names[type_id][ArmourClassId::none], pos), m_type_id(type_id) {
-		//m_sprite->printInfo();
+		m_sprite->printSequencesInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
 		m_issue_next_order = false;
@@ -239,6 +252,17 @@ namespace game {
 	bool Actor::canEquipArmour(ArmourClassId::Type class_id) const {
 		DASSERT(ArmourClassId::isValid(class_id));
 		return s_sprite_names[m_type_id][class_id] != nullptr;
+	}
+
+	bool Actor::canChangeStance() const {
+		for(int s = 0; s < StanceId::count; s++) {
+			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::standing, WeaponClassId::unarmed) == -1)
+				return false;
+			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::walking, WeaponClassId::unarmed) == -1)
+				return false;
+		}
+
+		return true;
 	}
 
 	void Actor::think() {
