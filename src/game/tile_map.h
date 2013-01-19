@@ -47,7 +47,7 @@ namespace game {
 
 		OccluderMap &occluderMap() { return m_occluder_map; }
 		const OccluderMap &occluderMap() const { return m_occluder_map; }
-		bool updateVisibility(const FBox &main_bbox);
+		void updateVisibility();
 
 	protected:
 		OccluderMap m_occluder_map;

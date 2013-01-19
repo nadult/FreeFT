@@ -19,6 +19,7 @@
 #include "ui/window.h"
 
 class TileGroup;
+class SnappingGrid;
 
 namespace ui {
 
@@ -26,7 +27,7 @@ namespace ui {
 	class TilesEditor: public ui::Window
 	{
 	public:
-		TilesEditor(IRect rect);
+		TilesEditor(SnappingGrid&, IRect rect);
 
 		void onTileMapReload();
 		void setTileMap(game::TileMap*);
@@ -36,8 +37,6 @@ namespace ui {
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
-
-		static void drawGrid(const IBox &box, int2 nodeSize, int y);
 
 		enum Mode {
 			mode_selecting_normal,
@@ -81,6 +80,7 @@ namespace ui {
 	private:
 		Mode m_mode;
 
+		SnappingGrid &m_grid;
 		game::TileMap *m_tile_map;
 		const TileGroup *m_tile_group;
 		const game::Tile *m_new_tile;
@@ -96,12 +96,11 @@ namespace ui {
 		IBox computeCursor(int2 start, int2 end) const;
 		void clampViewPos();
 		
-		int m_cursor_height, m_grid_height;
+		int m_cursor_height;
 		IBox m_selection;
 		int2 m_view_pos;
 
-		int2 m_grid_size;
-		bool m_show_grid, m_is_selecting;
+		bool m_is_selecting;
 
 		//TODO: make sure that this occluder wont be saved
 		int m_current_occluder;

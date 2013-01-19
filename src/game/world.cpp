@@ -89,8 +89,10 @@ namespace game {
 
 	void World::updateVisibility(const FBox &bbox) {
 		PROFILE("World::updateVisibility");
-		if(m_tile_map.updateVisibility(bbox))
+		if(m_tile_map.occluderMap().updateVisibility(bbox)) {
+			m_tile_map.updateVisibility();
 			m_entity_map.updateVisibility();
+		}
 	}
 
 	void World::addEntity(PEntity &&entity) {

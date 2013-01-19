@@ -48,7 +48,7 @@ int OccluderMap::addOccluder(int representative_id) {
 		occluder.bbox = sum(occluder.bbox, box);
 
 		box.min -= float3(1, 0, 1);
-		box.max += float3(1, 1, 1);
+		box.max += float3(1, 256, 1);
 		box.min.y = max(box.min.y - 1, (float)min_height);
 	
 		temp.clear();
@@ -152,6 +152,10 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 	float3 mid_point = asXZY(test_box.center().xz(), bbox.min.y + 1.0f);
 
 	bool vis_changed = false;
+	vector<int> temp;
+	temp.reserve(256);
+	IRect test_rect = (IRect)worldToScreen(bbox);
+	m_grid.findAll(temp, test_rect);
 
 	for(int n = 0; n < size(); n++) {
 		bool is_overlapping = false;
@@ -159,7 +163,14 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 
 		if(!occluder.objects.empty()) {
 			FBox rbox = m_grid[occluder.objects[0]].bbox;
-			is_overlapping = areOverlapping(occluder.bbox, test_box) && mid_point.y < rbox.min.y;
+			bool box_is_overlapping = /*areOverlapping(occluder.bbox, test_box) &&*/ mid_point.y < rbox.min.y;
+			if(box_is_overlapping) {
+				for(int i = 0; i < (int)temp.size(); i++)
+					if(m_grid[temp[i]].occluder_id == n && drawingOrder(m_grid[temp[i]].bbox, bbox) == 1) {
+						is_overlapping = true;
+						break;
+					}
+			}
 		}
 
 		if(is_overlapping != occluder.is_overlapping) {

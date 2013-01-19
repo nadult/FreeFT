@@ -34,6 +34,8 @@
 #include "editor/entities_editor.h"
 #include "editor/tiles_pad.h"
 #include "editor/group_pad.h"
+
+#include "editor/snapping_grid.h"
 #include "ui/file_dialog.h"
 #include "sys/platform.h"
 #include "sys/config.h"
@@ -79,7 +81,7 @@ public:
 		loadTileGroup("data/tile_group.xml");
 		loadTileMap("data/tile_map.xml");
 
-		m_tiles_editor = new TilesEditor(IRect(left_width, 0, res.x, res.y));
+		m_tiles_editor = new TilesEditor(m_snapping_grid, IRect(left_width, 0, res.x, res.y));
 		m_group_editor = new GroupEditor(IRect(left_width, 0, res.x, res.y));
 		m_entities_editor = new EntitiesEditor(IRect(left_width, 0, res.x, res.y));
 
@@ -215,6 +217,7 @@ public:
 	PGroupPad		m_group_pad;
 	PTilesPad		m_tiles_pad;
 
+	SnappingGrid	m_snapping_grid;
 	PTilesEditor	m_tiles_editor;
 	PEntitiesEditor	m_entities_editor;
 	PGroupEditor	m_group_editor;

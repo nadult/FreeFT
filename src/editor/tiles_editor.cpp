@@ -15,6 +15,7 @@
 
 #include "editor/tiles_editor.h"
 #include "editor/tile_group.h"
+#include "editor/snapping_grid.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"
@@ -47,29 +48,18 @@ namespace ui {
 
 	const char **TilesEditor::modeStrings() { return s_mode_strings; }
 
-	TilesEditor::TilesEditor(IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_show_grid(false), m_grid_size(1, 1), m_tile_map(0), m_new_tile(nullptr) {
+	TilesEditor::TilesEditor(SnappingGrid &grid, IRect rect)
+		:ui::Window(rect, Color(0, 0, 0)), m_grid(grid), m_tile_map(0), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
 		m_view_pos = int2(-200, 300);
 		m_is_selecting = false;
 		m_mode = mode_selecting_normal;
 
 		m_cursor_height = 0;
-		m_grid_height = 1;
 		m_dirty_percent = 0.0f;
 
 		m_current_occluder = -1;
 		m_mouseover_tile_id = -1;
-	}
-
-	void TilesEditor::drawGrid(const IBox &box, int2 node_size, int y) {
-		DTexture::bind0();
-
-		//TODO: proper Drawing when y != 0
-		for(int x = box.min.x - box.min.x % node_size.x; x <= box.max.x; x += node_size.x)
-			drawLine(int3(x, y, box.min.z), int3(x, y, box.max.z), Color(255, 255, 255, 64));
-		for(int z = box.min.z - box.min.z % node_size.y; z <= box.max.z; z += node_size.y)
-			drawLine(int3(box.min.x, y, z), int3(box.max.x, y, z), Color(255, 255, 255, 64));
 	}
 
 	void TilesEditor::onTileMapReload() {
@@ -99,26 +89,7 @@ namespace ui {
 		if(isKeyDown(Key_kp_subtract))
 			m_cursor_height--;
 
-		if(isKeyDown('G')) {
-			if(m_show_grid) {
-				if(m_grid_size.x == 3)
-					m_grid_size = int2(6, 6);
-				else if(m_grid_size.x == 6)
-					m_grid_size = int2(9, 9);
-				else {
-					m_grid_size = int2(1, 1);
-					m_show_grid = false;
-				}
-			}
-			else {
-				m_grid_size = int2(3, 3);
-				m_show_grid = true;
-			}
-		}
-
-		if(getMouseWheelMove()) {
-			m_grid_height += getMouseWheelMove();
-		}
+		m_grid.update();
 
 		//TODO: make proper accelerators
 		if(isKeyDown('S'))
@@ -146,7 +117,7 @@ namespace ui {
 			
 			for(int n = 0; n < COUNTOF(actions); n++)
 				if(isKeyPressed(actions[n]))
-					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_grid_size.x);
+					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_grid.cellSize());
 			clampViewPos();
 		}
 
@@ -154,7 +125,7 @@ namespace ui {
 		int2 screen_pos = mouse_pos + m_view_pos;
 		Ray screen_ray = screenRay(screen_pos);
 		
-		m_mouseover_tile_id = m_tile_map->pixelIntersect(screen_pos);
+		m_mouseover_tile_id = m_tile_map->pixelIntersect(screen_pos, collider_all|visibility_flag);
 		if(m_mouseover_tile_id == -1)
 			m_mouseover_tile_id = m_tile_map->trace(screen_ray).first;
 			
@@ -181,15 +152,15 @@ namespace ui {
 	}
 
 	IBox TilesEditor::computeCursor(int2 start, int2 end) const {
-		float2 height_off = worldToScreen(int3(0, m_grid_height, 0));
-		int3 gbox = asXZY(m_grid_size, 1);
+		float2 height_off = worldToScreen(int3(0, m_grid.height(), 0));
+		int3 gbox(m_grid.cellSize(), 1, m_grid.cellSize());
 
 		int3 bbox = m_new_tile && !isSelecting()? m_new_tile->bboxSize() : gbox;
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
 
-		start_pos.y = end_pos.y = m_grid_height + m_cursor_height;
+		start_pos.y = end_pos.y = m_grid.height() + m_cursor_height;
 		
 		{
 			int apos1 = start_pos.x % gbox.x;
@@ -480,12 +451,28 @@ namespace ui {
 	void TilesEditor::drawContents() const {
 		ASSERT(m_tile_map);
 
+		{
+			OccluderMap &occmap = m_tile_map->occluderMap();
+			float max_pos = m_grid.height() + m_cursor_height;
+			bool has_changed = false;
+
+			for(int n = 0; n < occmap.size(); n++) {
+				bool is_visible =occmap[n].bbox.min.y <= max_pos;
+				has_changed |= is_visible != occmap[n].is_visible;
+				occmap[n].is_visible = is_visible;
+			}
+
+			if(has_changed) {
+				m_tile_map->updateVisibility();
+			}
+		}
+
 		SceneRenderer renderer(clippedRect(), m_view_pos);
 
 		{
 			vector<int> visible_ids;
 			visible_ids.reserve(1024 * 8);
-			m_tile_map->findAll(visible_ids, renderer.targetRect());
+			m_tile_map->findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 			vector<Color> tile_colors(visible_ids.size(), Color::white);
 
@@ -561,26 +548,7 @@ namespace ui {
 		setScissorTest(true);
 		IRect view_rect = clippedRect() - m_view_pos;
 		lookAt(-view_rect.min);
-		int2 wsize = view_rect.size();
-
-		if(m_show_grid) {
-			int2 p[4] = {
-				screenToWorld(m_view_pos + int2(0, 0)),
-				screenToWorld(m_view_pos + int2(0, wsize.y)),
-				screenToWorld(m_view_pos + int2(wsize.x, wsize.y)),
-				screenToWorld(m_view_pos + int2(wsize.x, 0)) };
-			int2 offset = screenToWorld(worldToScreen(int3(0, m_grid_height, 0)));
-			for(int n = 0; n < 4; n++)
-				p[n] -= offset;
-
-			int2 tmin = min(min(p[0], p[1]), min(p[2], p[3]));
-			int2 tmax = max(max(p[0], p[1]), max(p[2], p[3]));
-			IBox box(tmin.x, 0, tmin.y, tmax.x, 0, tmax.y);
-			IBox bbox(int3(0, 0, 0), asXZY(m_tile_map->dimensions(), 32));
-			box = IBox(max(box.min, bbox.min), min(box.max, bbox.max));
-
-			drawGrid(box, m_grid_size, m_grid_height);
-		}
+		m_grid.draw(m_view_pos, view_rect.size(), m_tile_map->dimensions());
 		
 		if(m_new_tile && (isPlacing() || isPlacingRandom() || isFilling()) && m_new_tile) {
 			int3 bbox = m_new_tile->bboxSize();
@@ -605,7 +573,7 @@ namespace ui {
 		if(!isChangingOccluders()) {
 			IBox under = m_selection;
 			under.max.y = under.min.y;
-			under.min.y = m_grid_height;
+			under.min.y = m_grid.height();
 
 			drawBBox(under, Color(127, 127, 127, 255));
 			drawBBox(m_selection);
@@ -626,7 +594,7 @@ namespace ui {
 					"Tile: %s\n", m_new_tile->name());
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid_height, s_mode_strings[m_mode]);
+				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid.height(), s_mode_strings[m_mode]);
 	}
 
 	void TilesEditor::clampViewPos() {
