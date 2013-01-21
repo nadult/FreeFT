@@ -26,12 +26,7 @@ namespace game
 	class Door: public Entity
 	{
 	public:
-		enum Type {
-			type_sliding,
-			type_rotating,
-			type_rotating_in,
-			type_rotating_out,
-		};
+		typedef DoorTypeId::Type Type;
 
 		enum State {
 			state_closed,
@@ -47,9 +42,12 @@ namespace game
 			state_count
 		};
 
+		static bool testSpriteType(PSprite, Type);
+
 		Door(const char *sprite_name, const float3 &pos, Type type, const float2 &dir = float2(1, 0));
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
 		virtual EntityId::Type entityType() const { return EntityId::door; }
+		virtual Entity *clone() const;
 
 		virtual void interact(const Entity*);
 

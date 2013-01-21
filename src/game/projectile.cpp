@@ -41,6 +41,10 @@ namespace game {
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}
+	
+	Entity *Projectile::clone() const {
+		return new Projectile(*this);
+	}
 
 	void Projectile::think() {
 		float time_delta = m_world->timeDelta();
@@ -62,6 +66,10 @@ namespace game {
 
 	ProjectileImpact::ProjectileImpact(const char *sprite_name, const float3 &pos)
 		:Entity(sprite_name, pos) { }
+	
+	Entity *ProjectileImpact::clone() const {
+		return new ProjectileImpact(*this);
+	}
 
 	void ProjectileImpact::onAnimFinished() {
 		remove();

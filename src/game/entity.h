@@ -33,7 +33,11 @@ namespace game {
 	class Entity {
 	public:
 		Entity(const char *sprite_name, const float3 &pos);
+		Entity(const Entity&);
+		void operator=(const Entity&);
 		virtual ~Entity();
+
+		virtual Entity *clone() const = 0;
 
 		virtual ColliderFlags colliderType() const = 0;
 		virtual EntityId::Type entityType() const = 0;

@@ -36,6 +36,26 @@ namespace game {
 		m_seq_id = -1;
 		playSequence(0);
 	}
+
+	Entity::Entity(const Entity &rhs)
+		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) {
+		operator=(rhs);
+	}
+
+	void Entity::operator=(const Entity &rhs) {
+		m_sprite = rhs.m_sprite;
+		m_max_screen_rect = rhs.m_max_screen_rect;
+		m_pos = rhs.m_pos;
+		m_bbox = rhs.m_bbox;
+		
+		m_seq_id = rhs.m_seq_id;
+		m_frame_id = rhs.m_frame_id;
+		m_is_looped = rhs.m_is_looped;
+		m_is_finished = rhs.m_is_finished;
+		m_dir_idx = rhs.m_dir_idx;
+		m_dir_angle = rhs.m_dir_angle;
+	}
+
 	Entity::~Entity() {
 		if(m_first_ref) {
 			EntityRef* ref = m_first_ref;
@@ -82,7 +102,7 @@ namespace game {
 		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
 
 		bbox += pos();
-		if(m_world->isColliding(bbox, this))
+		if(m_world && m_world->isColliding(bbox, this))
 			out.addBox(bbox, Color::red);
 	}
 		

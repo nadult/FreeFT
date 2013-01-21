@@ -42,7 +42,7 @@ namespace ui {
 		else if(ev.type == Event::button_clicked && ev.source == m_button.get()) {
 			DASSERT(!m_popup);
 
-			if(m_drop_size > 0) {
+			if(m_drop_size > 0 && size()) {
 				int popup_size = min(m_drop_size, m_dummy->size() * m_dummy->lineHeight());
 				IRect clip_rect = clippedRect();
 				IRect rect(clip_rect.min, int2(clip_rect.max.x, clip_rect.min.y + popup_size));
@@ -53,6 +53,7 @@ namespace ui {
 					m_popup->addEntry(entry.text.c_str(), entry.color);
 				}
 				m_popup->selectEntry(m_dummy->selectedId());
+				m_popup->setInnerOffset(int2(0, m_dummy->selectedId() * m_dummy->lineHeight()));
 				mainWindow()->attach(m_popup.get(), true);
 			}
 			else if(size() > 1) {

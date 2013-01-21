@@ -104,6 +104,8 @@ namespace ui
 
 		// Default font names: small, normal, big
 		static const char *s_font_names[3];
+		
+		void setInnerOffset(const int2&);
 	
 	protected:
 		virtual void drawContents() const { }
@@ -123,7 +125,6 @@ namespace ui
 		IRect innerRect() const { return m_inner_rect; }
 
 		int2 innerOffset() const { return -m_inner_rect.min; }
-		void setInnerOffset(const int2&);
 
 	private:
 		void updateRects();

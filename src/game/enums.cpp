@@ -115,5 +115,12 @@ namespace game {
 		"unknown"
 	);
 
+	DEFINE_STRINGS(DoorTypeId,
+		"sliding",
+		"rotating",
+		"rotating_in",
+		"rotating_out"
+	);
+
 #undef DEFINE_STRINGS
 }

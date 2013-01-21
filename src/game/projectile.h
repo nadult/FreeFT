@@ -28,6 +28,7 @@ namespace game {
 					const float3 &target, Entity *spawner);
 		virtual ColliderFlags colliderType() const { return collider_none; }
 		virtual EntityId::Type entityType() const { return EntityId::projectile; }
+		virtual Entity *clone() const;
 
 		ProjectileTypeId::Type type() const { return m_type; }
 
@@ -47,6 +48,7 @@ namespace game {
 		ProjectileImpact(const char *sprite_name, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_none; }
 		virtual EntityId::Type entityType() const { return EntityId::impact; }
+		virtual Entity *clone() const;
 	
 	protected:
 		virtual void onAnimFinished();

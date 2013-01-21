@@ -41,6 +41,10 @@ namespace game {
 		if(!m_is_always_opened)
 			playSequence(m_seq_ids[m_state]);
 	}
+	
+	Entity *Container::clone() const {
+		return new Container(*this);
+	}
 
 	void Container::setKey(const Item &key) {
 		DASSERT(!key.isValid() || key.typeId() == ItemTypeId::other);

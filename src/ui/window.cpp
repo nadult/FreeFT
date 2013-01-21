@@ -196,7 +196,7 @@ namespace ui
 
 			Color col1 = Color::gui_dark;
 			Color col2 = Color::gui_light;
-			col1 = Color(int(col1.r) * 4 / 3, int(col1.g) * 4 / 3, int(col1.b) * 4 / 3, 128);
+			col1 = Color(int(col1.r) * 4 / 5, int(col1.g) * 4 / 5, int(col1.b) * 4 / 5, 128);
 			col2 = Color(int(col2.r) * 4 / 3, int(col2.g) * 4 / 3, int(col2.b) * 4 / 3, 128);
 
 			DTexture::bind0();

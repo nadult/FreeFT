@@ -52,16 +52,14 @@ namespace game {
 
 		if(full_recompute) {
 			vector<IBox> bboxes;
-			bboxes.reserve(m_tile_map.size() + m_entities.size());
+			bboxes.reserve(m_tile_map.size() + m_entity_map.size());
 
 			for(int n = 0; n < m_tile_map.size(); n++)
 				if(m_tile_map[n].ptr)
 					bboxes.push_back((IBox)m_tile_map[n].bbox);
-			for(int n = 0; n < (int)m_entities.size(); n++)
-				if(m_entities[n]->colliderType() == collider_static) {
-					IBox box = enclosingIBox(m_entities[n]->boundingBox());
-					bboxes.push_back(box);
-				}
+			for(int n = 0; n < m_entity_map.size(); n++)
+				if(m_entity_map[n].ptr && m_entity_map[n].flags & collider_static)
+					bboxes.push_back(enclosingIBox(m_entity_map[n].ptr->boundingBox()));
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes);
@@ -73,17 +71,16 @@ namespace game {
 		}
 
 		m_navi_map.removeColliders();
-		for(int n = 0; n < (int)m_entities.size(); n++)
-			if(m_entities[n]->colliderType() == collider_dynamic_nv) {
-				const IBox &box = enclosingIBox(m_entities[n]->boundingBox());
+
+		for(int n = 0; n < m_entity_map.size(); n++) {
+			auto &object = m_entity_map[n];
+			if(!object.ptr)
+				continue;
+
+			if(object.flags & collider_dynamic_nv) {
+				const IBox &box = enclosingIBox(object.ptr->boundingBox());
 				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
 			}
-
-		//PROFILE("updateNavi::updateGrid");
-		for(int n = 0; n < (int)m_entities.size(); n++) {
-			const Entity *entity = m_entities[n].get();
-			if(entity->colliderType() != collider_static)
-				m_entity_map.update(entity);
 		}
 	}
 
@@ -95,11 +92,10 @@ namespace game {
 		}
 	}
 
-	void World::addEntity(PEntity &&entity) {
+	void World::addEntity(Entity *entity) {
 		DASSERT(entity);
 		entity->m_world = this;
-		m_entity_map.add(entity.get());
-		m_entities.push_back(std::move(entity));
+		m_entity_map.add(entity);
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {
@@ -164,7 +160,24 @@ namespace game {
 			m_last_frame_time += (double)frame_skip * frame_time;
 		}
 
-		handleContainer(m_entities, frame_skip);
+		for(int n = 0; n < m_entity_map.size(); n++) {
+			auto &object = m_entity_map[n];
+			if(!object.ptr)
+				continue;
+
+			object.ptr->think();
+			if(object.ptr->m_to_be_removed) {
+				m_entity_map.remove(object.ptr);
+				continue;
+			}
+			if(object.flags & (collider_dynamic | collider_dynamic_nv))
+				m_entity_map.update(object.ptr);
+
+			for(int f = 0; f < frame_skip; f++)
+				object.ptr->nextFrame();
+		}
+
+
 		handleContainer(m_projectiles, frame_skip);
 		handleContainer(m_impacts, frame_skip);
 

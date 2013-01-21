@@ -184,7 +184,7 @@ namespace game {
 
 	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos)
 		:Entity(s_sprite_names[type_id][ArmourClassId::none], pos), m_type_id(type_id) {
-		m_sprite->printSequencesInfo();
+		//m_sprite->printSequencesInfo();
 		m_anim_map = ActorAnimMap(m_sprite);
 
 		m_issue_next_order = false;
@@ -195,6 +195,10 @@ namespace game {
 		setSequence(ActionId::standing);
 		lookAt(float3(0, 0, 0), true);
 		m_order = m_next_order = doNothingOrder();
+	}
+		
+	Entity *Actor::clone() const {
+		return new Actor(*this);
 	}
 
 	void Actor::updateArmour() {

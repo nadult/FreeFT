@@ -101,6 +101,13 @@ namespace game {
 		unknown
 	);
 
+	DECLARE_ENUM(DoorTypeId,
+		sliding,
+		rotating,
+		rotating_in,
+		rotating_out
+	);
+
 #undef DECLARE_ENUM
 
 	inline constexpr int tileIdToFlag(TileId::Type id) { return 1 << (16 + id); }

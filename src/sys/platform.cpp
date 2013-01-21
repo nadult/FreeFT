@@ -207,6 +207,16 @@ bool removeSuffix(string &str, const string &suffix) {
 	return false;
 }
 
+bool removePrefix(string &str, const string &prefix) {
+	if(str.size() >= prefix.size() && memcmp(str.c_str(), prefix.c_str(), prefix.size()) == 0) {
+		str = str.substr(prefix.size());
+		return true;
+	}
+
+	return false;
+}
+
+
 void mkdirRecursive(const Path &path) {
 	Path parent = path.parent();
 	if(access(parent.c_str(), F_OK) != 0)

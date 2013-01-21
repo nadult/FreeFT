@@ -63,11 +63,11 @@ namespace game {
 		template <class T>
 		T *addEntity(T *entity) {
 			static_assert(std::is_base_of<Entity, T>::value, "T should be Entity-based");
-			addEntity(PEntity(entity));
+			addEntity(static_cast<Entity*>(entity));
 			return entity;
 		}
 
-		void addEntity(PEntity&&);
+		void addEntity(Entity*);
 		void simulate(double time_diff);
 
 		void updateNaviMap(bool full_recompute);
@@ -110,7 +110,6 @@ namespace game {
 		EntityMap m_entity_map;
 		NaviMap m_navi_map;
 
-		vector<PEntity> m_entities;
 		vector<PProjectile> m_projectiles;
 		vector<PProjectileImpact> m_impacts;
 	};

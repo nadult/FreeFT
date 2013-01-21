@@ -19,6 +19,11 @@
 namespace game
 {
 
+	EntityMap::~EntityMap() {
+		for(int n = 0; n < size(); n++)
+			delete (*this)[n].ptr;
+	}
+
 	//TODO: this is stupid
 	EntityMap::EntityMap(const TileMap &tile_map, const int2 &dimensions)
 		:Grid(dimensions), m_tile_map(tile_map) { }
@@ -44,8 +49,15 @@ namespace game
 		int id = Grid::add(Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
 					entity->colliderType() | visibility_flag));
 		entity->m_grid_index = id;
+		updateOccluderId(id);
+	}
 
-		FBox bbox = entity->boundingBox();
+	void EntityMap::updateOccluderId(int object_id) {
+		DASSERT(object_id >= 0 && object_id < size());
+		auto &object = (*this)[object_id];
+		DASSERT(object.ptr);
+
+		FBox bbox = object.ptr->boundingBox();
 		bbox.max.y = bbox.min.y;
 		bbox.min.y = 0.0f;
 
@@ -67,22 +79,35 @@ namespace game
 			}
 		}
 				
-		Grid::operator[](id).occluder_id = best_occluder_id;
+		object.occluder_id = best_occluder_id;
 	}
 
-	void EntityMap::remove(const Entity *entity) {
-		DASSERT(entity);
-		DASSERT(entity->m_grid_index != -1);
-		Grid::remove(entity->m_grid_index);
-		entity->m_grid_index = -1;
+	void EntityMap::remove(Entity *entity) {
+		DASSERT(entity && entity->m_grid_index != -1);
+		remove(entity->m_grid_index);
+	}
+	
+	void EntityMap::remove(int entity_id) {
+		DASSERT(entity_id >= 0 && entity_id < size());
+		Grid::remove(entity_id);
+		delete (*this)[entity_id].ptr;
 	}
 
-	void EntityMap::update(const Entity *entity) {
-		DASSERT(entity);
-		DASSERT(entity->m_grid_index != -1);
-		Grid::update(entity->m_grid_index,
-				Grid::ObjectDef(const_cast<Entity*>(entity), entity->boundingBox(), entity->screenRect(),
-					entity->colliderType() | visibility_flag));
+	void EntityMap::update(Entity *entity) {
+		DASSERT(entity && entity->m_grid_index != -1);
+		update(entity->m_grid_index);
+	}
+
+	void EntityMap::update(int entity_id) {
+		auto &object = (*this)[entity_id];
+		FBox old_bbox = object.bbox;
+		Entity *entity = object.ptr;
+
+		Grid::update(entity_id,
+				Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType() | visibility_flag));
+		
+		if(object.bbox != old_bbox)
+			updateOccluderId(entity_id);
 	}
 
 	void EntityMap::updateVisibility() {

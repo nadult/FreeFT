@@ -131,6 +131,7 @@ void OccluderMap::loadFromXML(const XMLDocument &doc) {
 
 void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) const {
 	//TODO: there are invalid objects in the grid, adjust object id accordingly
+	//TODO: minimal changes in the grid produce drastic changes in outputted XML
 	XMLNode main_node = doc.addChild("occluders");
 	for(int n = 0; n < (int)m_occluders.size(); n++) {
 		const Occluder &occluder = m_occluders[n];

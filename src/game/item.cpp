@@ -36,12 +36,17 @@ namespace game {
 			ASSERT(m_seq_ids[n] != -1);
 		}
 	}
+	
+	Entity *ItemEntity::clone() const {
+		return new ItemEntity(*this);
+	}
 
 	gfx::PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
 		return m_sprite->getFrame(m_seq_ids[small?2 : 1], 0, 0, tex_rect);
 	}
 
-	static std::map<string, PItemDesc> s_items;
+	static std::vector<PItemDesc> s_items;
+	static std::map<string, int> s_item_map;
 	static bool s_are_items_loaded = false;
 
 	void ItemDesc::loadItems() {
@@ -92,7 +97,8 @@ namespace game {
 					armour->class_id = ArmourClassId::fromString(node.attrib("class"));
 				}
 
-				s_items[id] = std::move(item);
+				s_items.push_back(std::move(item));
+				s_item_map[id] = (int)s_items.size() - 1;
 			}
 			catch(const Exception &ex) {
 				THROW("Error while parsing item with id: %s, type: %s\n%s",
@@ -108,10 +114,18 @@ namespace game {
 	const ItemDesc *ItemDesc::find(const char *name) {
 		DASSERT(s_are_items_loaded);
 
-		auto it = s_items.find(name);
-		if(it != s_items.end())
-			return it->second.get();
+		auto it = s_item_map.find(name);
+		if(it != s_item_map.end())
+			return s_items[it->second].get();
 		return nullptr;
+	}
+		
+	const ItemDesc *ItemDesc::get(int id) {
+		return s_items[id].get();
+	}
+
+	int ItemDesc::count() {
+		return s_items.size();
 	}
 
 	void ItemDesc::initialize(ItemParameter *params) const {

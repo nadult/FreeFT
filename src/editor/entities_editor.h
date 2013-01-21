@@ -38,20 +38,30 @@ namespace ui {
 			mode_placing,
 
 			mode_count,
-		} m_mode;
+		};
+
+		Mode mode() const { return m_mode; }
+		void setMode(Mode mode) { m_mode = mode; }
+		
+		static const char **modeStrings();
+
+		void setProto(game::Entity *proto) { m_proto = proto; }
 
 	private:
+		Mode m_mode;
 		game::EntityMap &m_entity_map;
 		game::TileMap &m_tile_map;
 		vector<int> m_selected_ids;
 
 		SnappingGrid &m_grid;
+
+		game::Entity *m_proto;
+		int m_proto_angle;
 		
 		void drawBoxHelpers(const IBox &box) const;
 		IBox computeCursor(int2 start, int2 end) const;
 		void clampViewPos();
 		
-		int m_cursor_height;
 		IBox m_selection;
 		int2 m_view_pos;
 		bool m_is_selecting;

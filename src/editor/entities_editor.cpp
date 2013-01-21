@@ -29,21 +29,23 @@ using namespace game;
 
 namespace ui {
 
+	static const char *s_mode_strings[EntitiesEditor::mode_count] = {
+		"[S]electing entities",
+		"[P]lacing entities",
+	};
+	const char **EntitiesEditor::modeStrings() { return s_mode_strings; }
+
 	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, SnappingGrid &grid, IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_grid(grid), m_tile_map(tile_map), m_entity_map(entity_map) {
+		:ui::Window(rect, Color(0, 0, 0)), m_grid(grid), m_tile_map(tile_map), m_entity_map(entity_map), m_proto(nullptr) {
 		m_view_pos = int2(0, 0);
 		m_is_selecting = false;
 		m_mode = mode_selecting;
-		m_cursor_height = 0;
 		m_selection = IBox::empty();
+		m_proto_angle = 0;
 	}
 
 	void EntitiesEditor::onInput(int2 mouse_pos) {
 		m_selection = computeCursor(mouse_pos, mouse_pos);
-		if(isKeyDown(Key_kp_add))
-			m_cursor_height++;
-		if(isKeyDown(Key_kp_subtract))
-			m_cursor_height--;
 
 		//TODO: make proper accelerators
 		if(isKeyDown('S')) {
@@ -55,10 +57,25 @@ namespace ui {
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 
+		if(m_proto) {
+			int inc = 0;
+			if(isKeyDown(Key_left)) inc = -1;
+			if(isKeyDown(Key_right)) inc = 1;
+
+			if(inc) {
+				float2 old_dir = m_proto->actualDir();
+
+				do {
+					m_proto_angle = (m_proto_angle + inc + 16) % 16;
+					m_proto->setDirAngle(constant::pi * 2.0f * (float)m_proto_angle / 16.0f);
+				} while(m_proto->actualDir() == old_dir);
+			}
+		}
+
 		if(isKeyPressed(Key_del)) {
-		//	for(int i = 0; i < (int)m_selected_ids.size(); i++)
-		//		m_entity_map.remove(m_selected_ids[i]);
-		//	m_selected_ids.clear();
+			for(int i = 0; i < (int)m_selected_ids.size(); i++)
+				m_entity_map.remove(m_selected_ids[i]);
+			m_selected_ids.clear();
 		}
 
 		m_grid.update();
@@ -67,24 +84,30 @@ namespace ui {
 	IBox EntitiesEditor::computeCursor(int2 start, int2 end) const {
 		float2 height_off = worldToScreen(int3(0, 0, 0));
 
-		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
-		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view_pos) - height_off) + float2(0.5f, 0.5f)));
+		start += m_view_pos;
+		  end += m_view_pos;
 
-		if(start_pos.x > end_pos.x) swap(start_pos.x, end_pos.x);
-		if(start_pos.z > end_pos.z) swap(start_pos.z, end_pos.z);
-		
-		int2 dims = m_tile_map.dimensions();
-		start_pos = asXZY(clamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
-		  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
+		Ray start_ray = screenRay(start);
+		Ray   end_ray = screenRay(end);
 
-		if(m_mode == mode_selecting)
-			end_pos.y = start_pos.y;
+		int flags = collider_all;
+		if(isKeyPressed(Key_lshift))
+			flags &= ~(collider_tile_walls | collider_tile_objects);
+
+		auto start_isect = m_tile_map.trace(start_ray, -1, flags|visibility_flag);
+		auto   end_isect = m_tile_map.trace(  end_ray, -1, flags|visibility_flag);
+
+		int3 start_pos = start_isect.first == -1? asXZ(screenToWorld(start)) : (int3)start_ray.at(start_isect.second);
+		int3   end_pos =   end_isect.first == -1? asXZ(screenToWorld(  end)) : (int3)  end_ray.at(start_isect.second);
+
+		if(end_pos == start_pos)
+			end_pos = start_pos + int3(1, 0, 1);
 
 		return IBox(start_pos, end_pos);
-
 	}
 
 	bool EntitiesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+
 		if((isKeyPressed(Key_lctrl) && key == 0) || key == 2) {
 			m_view_pos -= getMouseMove();
 			clampViewPos();
@@ -93,18 +116,14 @@ namespace ui {
 		else if(key == 0) {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
-			if(is_final && is_final != -1) {
-				if(m_mode == mode_selecting) {
-					m_selected_ids.clear();
-					m_entity_map.findAll(m_selected_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
-					std::sort(m_selected_ids.begin(), m_selected_ids.end());
-				}
-			//	else if(m_mode == mode_placing && m_new_tile) {
-			//		fill(m_selection);
-			//	}
-
+			if(m_mode == mode_selecting && is_final && is_final != -1) {
+				m_selected_ids.clear();
+				m_entity_map.findAll(m_selected_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
+				std::sort(m_selected_ids.begin(), m_selected_ids.end());
 				m_selection = computeCursor(current, current);
 			}
+			else if(m_mode == mode_placing && is_final)
+				m_entity_map.add(m_proto->clone());
 
 			return true;
 		}
@@ -139,7 +158,7 @@ namespace ui {
 
 		{			
 			OccluderMap &occmap = m_tile_map.occluderMap();
-			float max_pos = m_grid.height() + m_cursor_height;
+			float max_pos = m_grid.height();
 			bool has_changed = false;
 
 			for(int n = 0; n < occmap.size(); n++) {
@@ -158,23 +177,48 @@ namespace ui {
 			vector<int> visible_ids;
 			visible_ids.reserve(1024);
 			m_tile_map.findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
-			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
-				auto object = m_tile_map[visible_ids[i]];
+				auto &object = m_tile_map[visible_ids[i]];
 				int3 pos(object.bbox.min);
 				
 				IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
-				Color col =	box.max.y < m_selection.min.y? Color::gray :
-							box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
-				if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
-					col.r = col.g = 255;
-
-				object.ptr->addToRender(renderer, pos, col);
+				object.ptr->addToRender(renderer, pos, Color::white);
 			}
-			for(int i = 0; i < (int)m_selected_ids.size(); i++)
-				renderer.addBox(m_tile_map[m_selected_ids[i]].bbox);
+
+			visible_ids.clear();
+			m_entity_map.findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
+			for(int n = 0; n < (int)visible_ids.size(); n++) {
+				auto &object = m_entity_map[visible_ids[n]];
+				object.ptr->addToRender(renderer);
+			}
+
+			for(int n = 0; n < (int)m_selected_ids.size(); n++) {
+				auto &object = m_entity_map[m_selected_ids[n]];
+				renderer.addBox(object.bbox, Color::white);
+			}
 		}
+
+		if(m_proto && m_mode == mode_placing) {
+			m_proto->setPos(m_selection.min);
+			m_proto->addToRender(renderer);
+			FBox bbox = m_proto->boundingBox();
+
+			bool is_colliding = m_tile_map.findAny(bbox) != -1;
+			renderer.addBox(bbox, is_colliding? Color::red : Color::white);
+
+			int over_ground = 0;
+			while(over_ground < 16 && m_tile_map.findAny(bbox - float3(0, 1 + over_ground, 0)) == -1)
+				over_ground++;
+
+			if(over_ground)
+				renderer.addBox(FBox(asXZY(bbox.min.xz(), bbox.min.y - over_ground), asXZY(bbox.max.xz(), bbox.min.y)),
+						Color::yellow);
+		}
+		else {
+			renderer.addBox(m_selection, Color::white);
+		}
+
 		renderer.render();
 
 
@@ -187,28 +231,13 @@ namespace ui {
 
 	//	m_tile_map.drawBoxHelpers(m_selection);
 		DTexture::bind0();
-
-		{
-			IBox under = m_selection;
-			under.max.y = under.min.y;
-			under.min.y = 0;
-
-			drawBBox(under, Color(127, 127, 127, 255));
-			drawBBox(m_selection);
-		}
-
 		
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[s_font_names[1]];
 
-		const char *mode_names[mode_count] = {
-			"selecting entities",
-			"placing entities",
-		};
-
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid.height(), mode_names[m_mode]);
+				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid.height(), s_mode_strings[m_mode]);
 	}
 
 	void EntitiesEditor::clampViewPos() {

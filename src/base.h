@@ -422,6 +422,12 @@ struct Box
 };
 
 template <class Type3>
+bool operator==(const Box<Type3> &lhs, const Box<Type3> &rhs) { return lhs.min == rhs.min && lhs.max == rhs.max; }
+template <class Type3>
+bool operator!=(const Box<Type3> &lhs, const Box<Type3> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }
+
+
+template <class Type3>
 const Box<Type3> sum(const Box<Type3> &a, const Box<Type3> &b) {
 	return Box<Type3>(min(a.min, b.min), max(a.max, b.max));
 }
@@ -627,6 +633,7 @@ namespace game {
 	class TileMap;
 	class EntityMap;
 	typedef Ptr<Sprite> PSprite;
+	typedef std::unique_ptr<Entity> PEntity;
 }
 
 #endif

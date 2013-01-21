@@ -139,6 +139,7 @@ namespace game {
 		Actor(ActorTypeId::Type, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 		virtual EntityId::Type entityType() const { return EntityId::actor; }
+		virtual Entity *clone() const;
 
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }

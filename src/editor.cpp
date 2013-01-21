@@ -33,6 +33,7 @@
 #include "editor/group_editor.h"
 #include "editor/entities_editor.h"
 #include "editor/tiles_pad.h"
+#include "editor/entities_pad.h"
 #include "editor/group_pad.h"
 
 #include "editor/snapping_grid.h"
@@ -98,7 +99,7 @@ public:
 		attach(m_left_window.get());
 		attach(m_group_editor.get());
 
-		loadTileMap("data/tile_map.xml");
+		loadTileMap("data/maps/mission05_mod.xml");
 
 		recreateEditors();
 	}
@@ -107,12 +108,14 @@ public:
 		if(m_tiles_editor) {
 			DASSERT(m_left_window);
 			m_left_window->detach((PWindow)m_tiles_pad.get());
+			m_left_window->detach((PWindow)m_entities_pad.get());
 			detach((PWindow)m_tiles_editor.get());
 			detach((PWindow)m_entities_editor.get());
 
 			m_tiles_editor = nullptr;
 			m_entities_editor = nullptr;
 			m_tiles_pad = nullptr;
+			m_entities_pad = nullptr;
 		}
 	}
 
@@ -125,10 +128,12 @@ public:
 		m_tiles_editor->setTileGroup(&m_group);
 
 		m_tiles_pad = new TilesPad(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
+		m_entities_pad = new EntitiesPad(IRect(0, 22, m_left_width, height()), m_entities_editor);
 		
 		attach(m_tiles_editor.get());
 		attach(m_entities_editor.get());
 		m_left_window->attach(m_tiles_pad.get());
+		m_left_window->attach(m_entities_pad.get());
 		
 		updateVisibility();
 	}
@@ -139,6 +144,7 @@ public:
 		m_group_editor->setVisible(m_mode == editing_group);
 
 		m_tiles_pad->setVisible(m_mode == editing_tiles);
+		m_entities_pad->setVisible(m_mode == editing_entities);
 		m_group_pad->setVisible(m_mode == editing_group);
 	}
 
@@ -163,7 +169,7 @@ public:
 		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
-				if(m_mode == editing_tiles)
+				if(m_mode == editing_tiles || m_mode == editing_entities)
 					saveTileMap(m_file_dialog->path().c_str());
 				else
 					saveTileGroup(m_file_dialog->path().c_str());
@@ -234,6 +240,7 @@ public:
 	PWindow			m_left_window;
 	PGroupPad		m_group_pad;
 	PTilesPad		m_tiles_pad;
+	PEntitiesPad	m_entities_pad;
 
 	SnappingGrid	m_snapping_grid;
 	PTilesEditor	m_tiles_editor;

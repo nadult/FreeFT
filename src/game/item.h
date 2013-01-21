@@ -34,6 +34,8 @@ namespace game {
 
 		static void loadItems();
 		static const ItemDesc *find(const char *name);
+		static const ItemDesc *get(int id);
+		static int count();
 
 		virtual void initialize(ItemParameter*) const;
 
@@ -124,6 +126,7 @@ namespace game {
 		ItemEntity(const Item &item, const float3 &pos);
 		ColliderFlags colliderType() const { return collider_item; }
 		virtual EntityId::Type entityType() const { return EntityId::item; }
+		virtual Entity *clone() const;
 
 		gfx::PTexture guiImage(bool small, FRect &tex_image) const;
 		const Item &item() const { return m_item; }
