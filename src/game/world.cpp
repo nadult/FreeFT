@@ -39,7 +39,9 @@ namespace game {
 		doc.load(file_name);
 
 		m_tile_map.loadFromXML(doc);
-		m_entity_map.resize(m_tile_map.dimensions());
+		m_entity_map.loadFromXML(doc);
+		for(int n = 0; n < m_entity_map.size(); n++)
+			m_entity_map[n].ptr->m_world = this;
 		m_tile_map.printInfo();
 
 //		updateNaviMap(true);

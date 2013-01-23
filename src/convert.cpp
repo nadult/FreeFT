@@ -17,6 +17,7 @@
 #include "game/sprite.h"
 #include "game/tile_map.h"
 #include "sys/platform.h"
+#include "sys/xml.h"
 #include <unistd.h>
 #include <algorithm>
 
@@ -29,6 +30,17 @@
 #endif
 
 using namespace game;
+
+struct TileMapProxy: public TileMap {
+	void serialize(Serializer &sr) {
+		ASSERT(sr.isSaving());
+		
+		XMLDocument doc;
+		saveToXML(doc);
+		sr & doc;
+	}
+	void setResourceName(const char*) { }
+};
 
 template <class TResource>
 void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
@@ -79,6 +91,8 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 					resource.legacyLoad(source);
 					Saver target(new_path);
 					resource.serialize(target);
+					resource.setResourceName((Path(name).fileName()).c_str());
+
 					if(detailed)
 						printf("%55s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
 								(int)(source.size()/1024), (int)(target.size()/1024), (getTime() - time) * 1024.0);
@@ -144,7 +158,7 @@ int safe_main(int argc, char **argv) {
 	else if(conv_sprites)
 		convert<Sprite>("refs/sprites/", "data/sprites/", ".spr", ".sprite", 1, filter);
 	else if(conv_maps)
-		convert<TileMap>("refs/maps/", "data/maps/", ".mis", ".xml", 1, filter);
+		convert<TileMapProxy>("refs/maps/", "data/maps/", ".mis", ".xml", 1, filter);
 
 	return 0;
 }

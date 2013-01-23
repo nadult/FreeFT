@@ -119,7 +119,7 @@ namespace {
 
 				for(int n = 0; n < m_tile_group->entryCount(); n++) {
 					if(m_tile_group->entryGroup(n) == m_selected_group_id) {
-						const char *name = m_tile_group->entryTile(n)->name();
+						const char *name = m_tile_group->entryTile(n)->resourceName();
 
 						for(int s = 0; s < subgroup_count; s++)
 							if(strcasestr(name, infixes[s])) {
@@ -260,7 +260,7 @@ namespace {
 
 		if(m_current_entry)
 			m_font->drawShadowed(int2(5, height() - 20), Color::white, Color::black, "%s",
-					m_current_entry->tile->name());
+					m_current_entry->tile->resourceName());
 	}
 
 	void GroupEditor::setTarget(TileGroup* tile_group) {

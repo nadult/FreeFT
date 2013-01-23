@@ -131,8 +131,10 @@ namespace game {
 		gfx::PTexture guiImage(bool small, FRect &tex_image) const;
 		const Item &item() const { return m_item; }
 		Item &item() { return m_item; }
-
+		
 	private:
+		virtual void saveContentsToXML(XMLNode&) const;
+
 		int m_seq_ids[3];
 		Item m_item;
 	};

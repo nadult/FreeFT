@@ -54,7 +54,7 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	World world("data/maps/mission05_mod.xml");
+	World world("data/test.xml");
 
 	int height = 128;
 
@@ -65,12 +65,12 @@ int safe_main(int argc, char **argv)
 //	actor = world.addEntity(new Actor(ActorTypeId::mutant, float3(260, height, 335)));
 //	world.addEntity(new Container("containers/Ice Chest N", float3(240, height, 345)));
 
-//	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 42), Door::type_rotating));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 82), Door::type_rotating, float2(1, 0)));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(95, height, 92), Door::type_rotating, float2(-1, 0)));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 82), Door::type_rotating, float2(0, 1)));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(85, height, 92), Door::type_rotating, float2(0, -1)));
-//	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(75, height, 92), Door::type_sliding, float2(0, -1)));
+//	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(495, height, 342), DoorTypeId::rotating));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(495, height, 382), DoorTypeId::rotating, float2(1, 0)));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(495, height, 392), DoorTypeId::rotating, float2(-1, 0)));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(485, height, 382), DoorTypeId::rotating, float2(0, 1)));
+//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(485, height, 392), DoorTypeId::rotating, float2(0, -1)));
+//	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(475, height, 392), DoorTypeId::sliding, float2(0, -1)));
 	chest->setDir(float2(0, -1));
 	fridge->setDir(float2(-1, 0));
 //	door->setKey(ItemDesc::find("prison_key"));

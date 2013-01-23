@@ -25,6 +25,15 @@ namespace game
 	class Container: public Entity
 	{
 	public:
+		enum State {
+			state_closed,
+			state_opened,
+			state_opening,
+			state_closing,
+
+			state_count
+		};
+
 		Container(const char *sprite_name, const float3 &pos);
 		virtual ColliderFlags colliderType() const { return collider_static; }
 		virtual EntityId::Type entityType() const { return EntityId::container; }
@@ -41,17 +50,10 @@ namespace game
 
 		const Inventory &inventory() const { return m_inventory; }
 		Inventory &inventory() { return m_inventory; }
-
-		enum State {
-			state_closed,
-			state_opened,
-			state_opening,
-			state_closing,
-
-			state_count
-		};
-
+		
 	private:
+		virtual void saveContentsToXML(XMLNode&) const;
+
 		virtual void think();
 		virtual void onAnimFinished();
 

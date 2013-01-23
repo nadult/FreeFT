@@ -300,6 +300,8 @@ inline const float2 max(const float2 &a, const float2 &b) { return float2(max(a.
 inline const float3 min(const float3 &a, const float3 &b) { return float3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
 inline const float3 max(const float3 &a, const float3 &b) { return float3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
 
+inline const int2 round(const float2 &v) { return int2(v.x + 0.5f, v.y + 0.5f); }
+inline const int3 round(const float3 &v) { return int3(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f); }
 
 class Ray {
 public:

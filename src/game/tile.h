@@ -35,10 +35,7 @@ namespace game
 		
 		static ResourceMgr<Tile> mgr;
 
-		const char *name() const { return m_name.empty()? nullptr : m_name.c_str(); }
 		TileId::Type type() const { return m_type; }
-		
-		void setName(const char *str) { if(str) m_name = str; else m_name.clear(); }
 		void setType(TileId::Type type) { m_type = type; }
 
 		int width() const { return m_texture.width(); }
@@ -68,7 +65,6 @@ namespace game
 		int2 m_offset;
 		int3 m_bbox;
 
-		string m_name;
 		TileId::Type m_type;
 	};
 

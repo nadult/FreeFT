@@ -45,7 +45,7 @@ namespace ui {
 		
 		static const char **modeStrings();
 
-		void setProto(game::Entity *proto) { m_proto = proto; }
+		void setProto(game::Entity *proto);
 
 	private:
 		Mode m_mode;
@@ -59,10 +59,11 @@ namespace ui {
 		int m_proto_angle;
 		
 		void drawBoxHelpers(const IBox &box) const;
-		IBox computeCursor(int2 start, int2 end) const;
+		void computeCursor(int2 start, int2 end);
 		void clampViewPos();
-		
-		IBox m_selection;
+	
+		IRect m_selection;
+		float3 m_cursor_pos;	
 		int2 m_view_pos;
 		bool m_is_selecting;
 	};

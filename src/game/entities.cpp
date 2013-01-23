@@ -19,9 +19,64 @@
 #include "game/item.h"
 #include "game/door.h"
 #include "game/container.h"
+#include <sys/xml.h>
 
 namespace game {
 
-	// TODO: generic serialization
+	Entity *Entity::constructFromXML(const XMLNode &node) {
+		EntityId::Type entity_type = EntityId::fromString(node.name());
+
+		float3 pos = node.float3Attrib("pos");
+		float angle = node.floatAttrib("angle");
+		const char *sprite_name = node.attrib("sprite");
+
+		Entity *out = nullptr;
+
+		if(entity_type == EntityId::actor) {
+			ActorTypeId::Type type = ActorTypeId::fromString(node.attrib("actor_type"));
+			out = new Actor(type, pos);
+		}
+		else if(entity_type == EntityId::door) {
+			DoorTypeId::Type type = DoorTypeId::fromString(node.attrib("door_type"));
+			out = new Door(sprite_name, pos, type, rotateVector(float2(1, 0), angle));
+		}
+		else if(entity_type == EntityId::container) {
+			out = new Container(sprite_name, pos);
+		}
+		else if(entity_type == EntityId::item) {
+			out = new ItemEntity(ItemDesc::find(node.attrib("item_desc")), pos);
+		}
+
+		out->setDirAngle(angle);
+			
+		if(!out)
+			THROW("Unknown entity type: %d\n", (int)entity_type);
+
+		return out;
+	}
+	
+	void Entity::saveToXML(XMLNode &parent) const {
+		XMLNode node = parent.addChild(EntityId::toString(entityType()));
+		node.addAttrib("pos", m_pos);
+		node.addAttrib("sprite", node.own(m_sprite->resourceName()));
+		node.addAttrib("angle", m_dir_angle);
+		saveContentsToXML(node);
+	}
+	
+	void Actor::saveContentsToXML(XMLNode &node) const {
+		node.addAttrib("actor_type", ActorTypeId::toString(m_type_id));
+	}
+	
+	void Container::saveContentsToXML(XMLNode &node) const {
+		
+	}
+	
+	void Door::saveContentsToXML(XMLNode &node) const {
+		node.addAttrib("door_type", DoorTypeId::toString(m_type));
+	}
+	
+	void ItemEntity::saveContentsToXML(XMLNode &node) const {
+		node.addAttrib("item_desc", node.own(m_item.desc()->name.c_str()));
+	}
 
 }

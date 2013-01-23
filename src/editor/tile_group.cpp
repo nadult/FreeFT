@@ -108,7 +108,7 @@ void TileGroup::saveToXML(XMLDocument &doc) const {
 	for(int n = 0; n < entryCount(); n++) {
 		const Entry &entry = m_entries[n];
 		XMLNode entry_node = doc.addChild("entry");
-		entry_node.addAttrib("tile", doc.own(entry.tile->name()));
+		entry_node.addAttrib("tile", doc.own(entry.tile->resourceName()));
 		entry_node.addAttrib("group_id", entry.group_id);
 		entry_node.addAttrib("is_dirty", (int)entry.is_dirty);
 	}

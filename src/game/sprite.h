@@ -23,7 +23,7 @@
 namespace game {
 
 	//TODO: naming: toTexture, getFrame etc
-	class Sprite: public RefCounter {
+	class Sprite: public Resource {
 	public:
 		Sprite();
 		void legacyLoad(Serializer &sr);
@@ -131,7 +131,7 @@ namespace game {
 		void clear();
 
 		const int3 &boundingBox() const { return m_bbox; }
-		
+
 		static ResourceMgr<Sprite> mgr;
 		static gfx::TextureCache cache;
 
@@ -141,7 +141,6 @@ namespace game {
 		vector<MultiPalette> m_palettes;
 		vector<MultiImage> m_images;
 
-		string m_name;
 		int2 m_offset;
 		int3 m_bbox; //TODO: naming
 	};

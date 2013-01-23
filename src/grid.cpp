@@ -33,6 +33,9 @@ Grid::Grid(const int2 &size) {
 	if(m_size.x * m_size.y > 0) {
 		m_nodes.resize(m_size.x * m_size.y);
 		m_row_rects.resize(m_size.y, int2(0, 0));
+		//TODO: row_rects not updated when removing objects, this will degrade performance
+		// when drawing entitiy grids
+
 		m_free_list.reserve(1024);
 		m_free_overlaps.reserve(1024);
 		m_overlaps.reserve(1024 * 16);

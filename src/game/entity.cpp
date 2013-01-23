@@ -79,12 +79,16 @@ namespace game {
 		m_pos = new_pos;
 	}
 
-	FBox Entity::boundingBox() const {
+	const FBox Entity::boundingBox() const {
 		return m_bbox + pos();
 	}
 
-	IRect Entity::screenRect() const {
+	const IRect Entity::screenRect() const {
 		return m_max_screen_rect + (int2)worldToScreen(pos());
+	}
+	
+	const IRect Entity::currentScreenRect() const {
+		return m_sprite->getRect(m_seq_id, m_frame_id, m_dir_idx) + (int2)worldToScreen(pos());
 	}
 
 	void Entity::addToRender(gfx::SceneRenderer &out) const {
@@ -192,6 +196,10 @@ namespace game {
 		}
 	}
 
+	void Entity::setDir(const float2 &vec) {
+		setDirAngle(vectorToAngle(vec));
+	}
+
 	void Entity::setDirAngle(float angle) {
 		m_dir_angle = angle;
 		m_dir_idx = m_sprite->findDir(m_seq_id, angle);
@@ -205,10 +213,6 @@ namespace game {
 		int dir_count = m_sprite->dirCount(m_seq_id);
 		float angle = float(m_dir_idx) * (constant::pi * 2.0f) / float(dir_count);
 		return angleToVector(angle);
-	}
-
-	void Entity::setDir(const float2 &vec) {
-		setDirAngle(vectorToAngle(vec));
 	}
 
 	bool areAdjacent(const Entity &a, const Entity &b) {

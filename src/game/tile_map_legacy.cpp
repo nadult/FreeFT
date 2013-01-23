@@ -105,7 +105,6 @@ namespace game {
 				}
 
 				tiles.push_back(Tile::mgr[names[n]]);
-				tiles.back()->setName(names[n].c_str());
 				ASSERT(int3(tile_params[n].bbox_x, tile_params[n].bbox_y, tile_params[n].bbox_z) == tiles.back()->bboxSize());
 			}
 			

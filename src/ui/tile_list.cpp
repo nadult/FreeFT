@@ -110,7 +110,7 @@ namespace ui
 	}
 
 	bool TileList::Entry::operator<(const TileList::Entry &rhs) const {
-		return group_id == rhs.group_id? strcmp(tile->name(), rhs.tile->name()) < 0 : group_id < rhs.group_id;
+		return group_id == rhs.group_id? strcmp(tile->resourceName(), rhs.tile->resourceName()) < 0 : group_id < rhs.group_id;
 	}
 
 	TileList::TileList(int max_width, int spacing)

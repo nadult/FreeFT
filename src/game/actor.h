@@ -172,8 +172,10 @@ namespace game {
 		void onFireEvent(const int3&);
 		void onSoundEvent();
 		void onPickupEvent();
-
+		
 	private:
+		virtual void saveContentsToXML(XMLNode&) const;
+
 		virtual bool shrinkRenderedBBox() const { return true; }
 		// orders
 		bool m_issue_next_order;

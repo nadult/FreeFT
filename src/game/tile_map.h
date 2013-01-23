@@ -38,7 +38,6 @@ namespace game {
 		
 		int pixelIntersect(const int2 &pos, int flags = collider_flags) const;
 
-		void serialize(Serializer&);
 		void loadFromXML(const XMLDocument&);
 		void saveToXML(XMLDocument&) const;
 		void swap(const TileMap&);

@@ -576,7 +576,7 @@ namespace ui {
 
 		if(m_new_tile)
 			font->drawShadowed(int2(0, clippedRect().height() - 50), Color::white, Color::black,
-					"Tile: %s\n", m_new_tile->name());
+					"Tile: %s\n", m_new_tile->resourceName());
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid.height(), s_mode_strings[m_mode]);

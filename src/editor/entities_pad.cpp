@@ -70,6 +70,9 @@ namespace ui {
 			m_container_sprite->selectEntry(0);
 
 			m_item_type = new ComboBox(second_rect, 200, "Item: ");
+			for(int n = 0; n < game::ItemDesc::count(); n++)
+				m_item_type->addEntry(game::ItemDesc::get(n)->name.c_str());
+			m_item_type->selectEntry(0);
 		}
 
 		{
@@ -154,8 +157,9 @@ namespace ui {
 
 			m_proto = (PEntity)new game::Door(sprite_name, pos, type);
 		}
-		else if(type == EntityId::item)
-			;
+		else if(type == EntityId::item) {
+			m_proto = (PEntity)new game::ItemEntity(game::ItemDesc::get(m_item_type->selectedId()), pos);
+		}
 
 		m_editor->setProto(m_proto.get());
 	}

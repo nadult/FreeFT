@@ -22,6 +22,7 @@
 #include "gfx/font.h"
 #include "game/tile_map.h"
 #include "game/entity_map.h"
+#include "game/item.h"
 #include "sys/profiler.h"
 #include "ui/window.h"
 #include "ui/button.h"
@@ -99,7 +100,7 @@ public:
 		attach(m_left_window.get());
 		attach(m_group_editor.get());
 
-		loadTileMap("data/maps/mission05_mod.xml");
+		loadMap("data/maps/mission05_mod.xml");
 
 		recreateEditors();
 	}
@@ -151,6 +152,8 @@ public:
 	virtual bool onEvent(const Event &ev) {
 		if(ev.source == m_tiles_editor.get())
 			m_tiles_pad->onEvent(ev);
+		else if(ev.source == m_entities_editor.get())
+			m_entities_pad->onEvent(ev);
 		else if(ev.type == Event::element_selected && m_mode_box.get() == ev.source) {
 			m_mode = (EditorMode)(ev.value);
 			updateVisibility();
@@ -170,13 +173,13 @@ public:
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
 				if(m_mode == editing_tiles || m_mode == editing_entities)
-					saveTileMap(m_file_dialog->path().c_str());
+					saveMap(m_file_dialog->path().c_str());
 				else
 					saveTileGroup(m_file_dialog->path().c_str());
 			}
 			else if(ev.value && m_file_dialog->mode() == FileDialogMode::opening_file) {
 				if(m_mode == editing_tiles || m_mode == editing_entities)
-					loadTileMap(m_file_dialog->path().c_str());
+					loadMap(m_file_dialog->path().c_str());
 				else
 					loadTileGroup(m_file_dialog->path().c_str());
 
@@ -190,12 +193,13 @@ public:
 		return true;
 	}
 
-	void loadTileMap(const char *file_name) {
-		printf("Loading TileMap: %s\n", file_name);
+	void loadMap(const char *file_name) {
+		printf("Loading Map: %s\n", file_name);
 		if(access(file_name, R_OK) == 0) {
 			XMLDocument doc;
 			doc.load(file_name);
 			m_tile_map.loadFromXML(doc);
+			m_entity_map.loadFromXML(doc);
 			recreateEditors();
 		}
 	}
@@ -210,10 +214,11 @@ public:
 		}
 	}
 
-	void saveTileMap(const char *file_name) const {
-		printf("Saving TileMap: %s\n", file_name);
+	void saveMap(const char *file_name) const {
+		printf("Saving Map: %s\n", file_name);
 		XMLDocument doc;
 		m_tile_map.saveToXML(doc);
+		m_entity_map.saveToXML(doc);
 		doc.save(file_name);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
@@ -253,6 +258,8 @@ public:
 int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("editor");
+	game::ItemDesc::loadItems();
+
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
@@ -279,7 +286,6 @@ int safe_main(int argc, char **argv)
 			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
 				mem_size += tile->memorySize();
-				tile->setName(tile_name.c_str());
 			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());

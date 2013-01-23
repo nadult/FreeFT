@@ -131,7 +131,7 @@ namespace game {
 			const auto &obj1 = (*this)[a];
 			const auto &obj2 = (*this)[b];
 
-			int cmp = strcmp(obj1.ptr->name(), obj2.ptr->name());
+			int cmp = strcmp(obj1.ptr->resourceName(), obj2.ptr->resourceName());
 			if(cmp == 0) {
 				const float3 p1 = obj1.bbox.min, p2 = obj2.bbox.min;
 				return p1.x == p2.x? p1.y == p2.y? p1.z < p2.z : p1.y < p2.y : p1.x < p2.x;
@@ -154,8 +154,7 @@ namespace game {
 
 			if(object.ptr != prev) {
 				tile_node = main_node.addChild("tile");
-				ASSERT(object.ptr->name());
-				tile_node.addAttrib("name", doc.own(object.ptr->name()));
+				tile_node.addAttrib("name", doc.own(object.ptr->resourceName()));
 				prev = object.ptr;
 			}
 
@@ -164,15 +163,6 @@ namespace game {
 		}
 
 		m_occluder_map.saveToXML(tile_ids, doc);
-	}
-
-	void TileMap::serialize(Serializer &sr) {
-		XMLDocument doc;
-		if(sr.isSaving())
-			saveToXML(doc);
-		sr & doc;
-		if(sr.isLoading())
-			loadFromXML(doc);
 	}
 
 }

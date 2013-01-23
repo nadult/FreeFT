@@ -64,12 +64,12 @@ namespace game
 	}
 		
 	int Tile::memorySize() const {
-		return (int)(m_texture.memorySize() - sizeof(PackedTexture) + sizeof(Tile) + m_name.size());
+		return (int)(m_texture.memorySize() - sizeof(PackedTexture) + sizeof(Tile));
 	}
 
 	void Tile::printInfo() const {
 		printf("Tile %s:\n  Dimensions: %dx%d\nMemory: %.2f KB\nPalette: %d entries\n",
-				m_name.c_str(), width(), height(), memorySize()/1024.0, m_texture.palette().size());
+				resourceName(), width(), height(), memorySize()/1024.0, m_texture.palette().size());
 	}
 
 	void Tile::legacyLoad(Serializer &sr) {

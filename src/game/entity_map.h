@@ -53,6 +53,9 @@ namespace game
 		
 		int pixelIntersect(const int2 &pos, int flags = collider_flags) const;
 		void updateVisibility();
+		
+		void loadFromXML(const XMLDocument&);
+		void saveToXML(XMLDocument&) const;
 
 	protected:
 		void updateOccluderId(int object_id);

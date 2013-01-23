@@ -48,14 +48,17 @@ namespace game
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
 		virtual EntityId::Type entityType() const { return EntityId::door; }
 		virtual Entity *clone() const;
-
+		
 		virtual void interact(const Entity*);
 
 		bool isOpened() const { return m_state == state_opened_in || m_state == state_opened_out; }
 		Type type() const { return m_type; }
 		void setKey(const Item&);
+		virtual void setDirAngle(float angle);
 		
 	private:
+		virtual void saveContentsToXML(XMLNode&) const;
+
 		virtual void think();
 		virtual void onAnimFinished();
 		FBox computeBBox(State) const;

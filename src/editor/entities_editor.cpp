@@ -40,12 +40,17 @@ namespace ui {
 		m_view_pos = int2(0, 0);
 		m_is_selecting = false;
 		m_mode = mode_selecting;
-		m_selection = IBox::empty();
+		m_selection = IRect::empty();
+		m_cursor_pos = float3(0, 0, 0);
 		m_proto_angle = 0;
+	}
+		
+	void EntitiesEditor::setProto(game::Entity *proto) {
+		m_proto = proto;
 	}
 
 	void EntitiesEditor::onInput(int2 mouse_pos) {
-		m_selection = computeCursor(mouse_pos, mouse_pos);
+		computeCursor(mouse_pos, mouse_pos);
 
 		//TODO: make proper accelerators
 		if(isKeyDown('S')) {
@@ -61,15 +66,11 @@ namespace ui {
 			int inc = 0;
 			if(isKeyDown(Key_left)) inc = -1;
 			if(isKeyDown(Key_right)) inc = 1;
+			int dir_count = m_proto->sprite()->dirCount(0);
 
-			if(inc) {
-				float2 old_dir = m_proto->actualDir();
-
-				do {
-					m_proto_angle = (m_proto_angle + inc + 16) % 16;
-					m_proto->setDirAngle(constant::pi * 2.0f * (float)m_proto_angle / 16.0f);
-				} while(m_proto->actualDir() == old_dir);
-			}
+			if(inc && dir_count)
+				m_proto_angle = (m_proto_angle + inc + dir_count) % dir_count;
+			m_proto->setDirAngle(constant::pi * 2.0f * (float)m_proto_angle / float(dir_count));
 		}
 
 		if(isKeyPressed(Key_del)) {
@@ -81,29 +82,23 @@ namespace ui {
 		m_grid.update();
 	}
 
-	IBox EntitiesEditor::computeCursor(int2 start, int2 end) const {
+	void EntitiesEditor::computeCursor(int2 start, int2 end) {
 		float2 height_off = worldToScreen(int3(0, 0, 0));
 
 		start += m_view_pos;
 		  end += m_view_pos;
 
-		Ray start_ray = screenRay(start);
-		Ray   end_ray = screenRay(end);
+		Ray ray = screenRay(start);
 
 		int flags = collider_all;
 		if(isKeyPressed(Key_lshift))
 			flags &= ~(collider_tile_walls | collider_tile_objects);
 
-		auto start_isect = m_tile_map.trace(start_ray, -1, flags|visibility_flag);
-		auto   end_isect = m_tile_map.trace(  end_ray, -1, flags|visibility_flag);
+		auto isect = m_tile_map.trace(ray, -1, flags|visibility_flag);
+		float3 pos = isect.first == -1? (float3)asXZ(screenToWorld(start)) : ray.at(isect.second);
 
-		int3 start_pos = start_isect.first == -1? asXZ(screenToWorld(start)) : (int3)start_ray.at(start_isect.second);
-		int3   end_pos =   end_isect.first == -1? asXZ(screenToWorld(  end)) : (int3)  end_ray.at(start_isect.second);
-
-		if(end_pos == start_pos)
-			end_pos = start_pos + int3(1, 0, 1);
-
-		return IBox(start_pos, end_pos);
+		m_cursor_pos = (float3)round(pos);
+		m_selection = IRect(min(start, end), max(start, end));
 	}
 
 	bool EntitiesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
@@ -114,13 +109,23 @@ namespace ui {
 			return true;
 		}
 		else if(key == 0) {
-			m_selection = computeCursor(start, current);
+			computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(m_mode == mode_selecting && is_final && is_final != -1) {
 				m_selected_ids.clear();
-				m_entity_map.findAll(m_selected_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
+
+				m_entity_map.findAll(m_selected_ids, m_selection, collider_all|visibility_flag);
+				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
+					auto &object = m_entity_map[m_selected_ids[n]];
+					//TODO: FIX: you can select invisible (on lower level, for example) entities
+					//TODO: remove hack with grid height
+					if(object.bbox.max.y < m_grid.height() || !areOverlapping(m_selection, object.ptr->currentScreenRect())) {
+						m_selected_ids[n--] = m_selected_ids.back();
+						m_selected_ids.pop_back();
+					}
+				}
 				std::sort(m_selected_ids.begin(), m_selected_ids.end());
-				m_selection = computeCursor(current, current);
+				computeCursor(current, current);
 			}
 			else if(m_mode == mode_placing && is_final)
 				m_entity_map.add(m_proto->clone());
@@ -200,12 +205,14 @@ namespace ui {
 		}
 
 		if(m_proto && m_mode == mode_placing) {
-			m_proto->setPos(m_selection.min);
+			m_proto->setPos(m_cursor_pos);
 			m_proto->addToRender(renderer);
 			FBox bbox = m_proto->boundingBox();
 
 			bool is_colliding = m_tile_map.findAny(bbox) != -1;
 			renderer.addBox(bbox, is_colliding? Color::red : Color::white);
+			if(bbox.max.y == bbox.min.y)
+				bbox.max.y += 1.0f;
 
 			int over_ground = 0;
 			while(over_ground < 16 && m_tile_map.findAny(bbox - float3(0, 1 + over_ground, 0)) == -1)
@@ -215,11 +222,10 @@ namespace ui {
 				renderer.addBox(FBox(asXZY(bbox.min.xz(), bbox.min.y - over_ground), asXZY(bbox.max.xz(), bbox.min.y)),
 						Color::yellow);
 		}
-		else {
-			renderer.addBox(m_selection, Color::white);
-		}
 
 		renderer.render();
+		if(m_mode == mode_selecting && m_is_selecting)
+			drawRect(m_selection, Color::white);
 
 
 		setScissorRect(clippedRect());
@@ -229,15 +235,14 @@ namespace ui {
 		
 		m_grid.draw(m_view_pos, view_rect.size(), m_tile_map.dimensions());
 
-	//	m_tile_map.drawBoxHelpers(m_selection);
 		DTexture::bind0();
 		
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[s_font_names[1]];
 
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
-				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_grid.height(), s_mode_strings[m_mode]);
+				"Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
+				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_grid.height(), s_mode_strings[m_mode]);
 	}
 
 	void EntitiesEditor::clampViewPos() {

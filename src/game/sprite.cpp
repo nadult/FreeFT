@@ -116,8 +116,6 @@ namespace game
 
 	void Sprite::serialize(Serializer &sr) {
 		sr.signature("SPRITE", 6);
-		if(sr.isLoading())
-			m_name = Path(sr.name()).fileName();
 		sr & m_sequences & m_frames & m_palettes & m_images;
 		sr(m_offset, m_bbox);
 	}
@@ -127,8 +125,6 @@ namespace game
 		m_frames.clear();
 		m_palettes.clear();
 		m_images.clear();
-
-		m_name.clear();
 
 		m_offset = int2(0, 0);
 		m_bbox = int3(0, 0, 0);
@@ -225,7 +221,7 @@ namespace game
 			pal_bytes += (int)m_palettes[p].colors.size() * sizeof(Color);
 
 		printf("%30s: %6d KB (images: %6d KB, palettes: %4dKB)\n",
-			m_name.c_str(), bytes/1024, img_bytes/1024, pal_bytes/1024);
+			resourceName(), bytes/1024, img_bytes/1024, pal_bytes/1024);
 	}
 
 	void Sprite::printSequencesInfo() const {

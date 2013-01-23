@@ -30,6 +30,7 @@ namespace game {
 
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each subtype of Entity class
+	// TODO: check for exception safety everywhere, where Entity* is used
 	class Entity {
 	public:
 		Entity(const char *sprite_name, const float3 &pos);
@@ -51,21 +52,26 @@ namespace game {
 		void roundPos();
 		void setPos(const float3&);
 		const float3 &pos() const { return m_pos; }
-		FBox boundingBox() const;
-		IRect screenRect() const;
+		const FBox boundingBox() const;
+		const IRect screenRect() const;
+		const IRect currentScreenRect() const;
 		const float3 bboxSize() const { return m_bbox.size(); }
 
 		float dirAngle() const { return m_dir_angle; }
 		const float2 dir() const;
 		const float2 actualDir() const;
+		PSprite sprite() const { return m_sprite; }
 
 		void setDir(const float2 &vector);
-		void setDirAngle(float radians);
+		virtual void setDirAngle(float radians);
 
 		void remove();
 
 		bool testPixel(const int2 &screen_pos) const;
-
+		
+		static Entity *constructFromXML(const XMLNode &node);
+		void saveToXML(XMLNode &parent) const;
+		
 	protected:
 		friend class World;
 		friend class EntityMap;
@@ -74,6 +80,8 @@ namespace game {
 		mutable int m_grid_index;
 
 	protected:
+		virtual void saveContentsToXML(XMLNode&) const { }
+
 		virtual void think() { DASSERT(m_world); }
 		virtual void nextFrame();
 		virtual void handleFrameEvent(int sprite_event_id) { }
@@ -109,7 +117,7 @@ namespace game {
 		int m_seq_id, m_frame_id;
 		bool m_is_looped, m_is_finished;
 		int m_dir_idx;
-		float m_dir_angle;
+		float m_dir_angle; //TODO: initially its equal to -nan
 
 	private:
 		EntityRef *m_first_ref;

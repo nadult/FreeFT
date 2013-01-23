@@ -75,7 +75,10 @@ namespace game {
 		m_state = state_closed;
 		playSequence(m_seq_ids[m_state]);
 		setDir(dir);
-
+	}
+		
+	void Door::setDirAngle(float angle) {
+		Entity::setDirAngle(angle);
 		setBBox(computeBBox(m_state));
 	}
 	
@@ -143,8 +146,10 @@ namespace game {
 			box = FBox(0, 0, 0, size.z, size.y, size.x);
 		else if(state == state_opened_in)
 			box = FBox(-size.z + 1, 0, 0, 1, size.y, size.x);
-		
-		return rotateY(box, size * 0.5f, dirAngle());
+
+		FBox out = rotateY(box, size * 0.5f, dirAngle());
+		DASSERT(m_type == DoorTypeId::sliding || !out.isEmpty());
+		return out;
 	}
 
 	void Door::think() {

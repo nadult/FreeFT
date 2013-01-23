@@ -14,7 +14,8 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "entity_map.h"
-
+#include "sys/xml.h"
+#include <algorithm>
 
 namespace game
 {
@@ -125,5 +126,50 @@ namespace game
 		}
 	}
 
+	void EntityMap::loadFromXML(const XMLDocument &doc) {
+		//TODO: exception safety when loading...
+		XMLNode main_node = doc.child("entity_map");
+	
+		clear();
+		
+		if(!main_node) {
+			resize(m_tile_map.dimensions());
+			return;
+		}
+
+		int2 size = main_node.int2Attrib("size");
+		int tile_count = main_node.intAttrib("entity_count");
+
+		//TODO: duplicated code here and in TileMap
+		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
+		resize(size);
+
+		XMLNode node = main_node.child();
+		while(node) {
+			Entity *entity = Entity::constructFromXML(node);
+			add(entity);
+			node = node.sibling();
+		}
+	}
+
+	void EntityMap::saveToXML(XMLDocument &doc) const {
+		XMLNode main_node = doc.addChild("entity_map");
+		main_node.addAttrib("size", dimensions());
+
+		std::vector<int> indices;
+		indices.reserve(size());
+		for(int n = 0; n < size(); n++)
+			if((*this)[n].ptr)
+				indices.push_back(n);
+		main_node.addAttrib("entity_count", (int)indices.size());
+
+		std::sort(indices.begin(), indices.end(), [this](int a, int b) {
+			const float3 p1 = (*this)[a].bbox.min, p2 = (*this)[b].bbox.min;
+			return p1.x == p2.x? p1.y == p2.y? p1.z < p2.z : p1.y < p2.y : p1.x < p2.x;
+		} );
+
+		for(int n = 0; n < (int)indices.size(); n++)
+			(*this)[indices[n]].ptr->saveToXML(main_node);
+	}
 }
 
