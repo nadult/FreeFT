@@ -79,7 +79,6 @@ namespace ui {
 
 		m_view.update();
 
-		//TODO: make proper accelerators
 		if(isKeyDown('S'))
 			setMode(isSelecting() && m_mode != mode_selecting_difference? (Mode)(m_mode + 1) : mode_selecting_normal);
 		if(isKeyDown('P'))
@@ -90,8 +89,6 @@ namespace ui {
 			setMode(mode_filling);
 		if(isKeyDown('O'))
 			setMode(mode_occluders);
-
-	
 
 		OccluderMap &occmap = m_tile_map.occluderMap();
 		int2 screen_pos = mouse_pos + m_view.pos();
@@ -414,22 +411,7 @@ namespace ui {
 	}
 	
 	void TilesEditor::drawContents() const {
-		{
-			OccluderMap &occmap = m_tile_map.occluderMap();
-			float max_pos = m_view.gridHeight() + m_cursor_height;
-			bool has_changed = false;
-
-			for(int n = 0; n < occmap.size(); n++) {
-				bool is_visible =occmap[n].bbox.min.y <= max_pos;
-				has_changed |= is_visible != occmap[n].is_visible;
-				occmap[n].is_visible = is_visible;
-			}
-
-			if(has_changed) {
-				m_tile_map.updateVisibility();
-			}
-		}
-
+		m_view.updateVisibility(m_cursor_height);
 		SceneRenderer renderer(clippedRect(), m_view.pos());
 
 		{

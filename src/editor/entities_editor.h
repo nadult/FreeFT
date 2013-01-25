@@ -24,7 +24,6 @@ namespace ui {
 
 	class View;
 
-	// TODO: remove duplicated code (here and in tiles_editor)
 	class EntitiesEditor: public ui::Window
 	{
 	public:

@@ -67,6 +67,7 @@ namespace game
 		const Type m_type;
 		bool m_update_anim;
 		Item m_key;
+		double m_close_time;
 
 		int m_seq_ids[state_count];
 	};

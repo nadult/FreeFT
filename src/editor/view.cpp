@@ -16,6 +16,7 @@
 #include "editor/view.h"
 #include "game/tile_map.h"
 #include "editor/tile_group.h"
+#include "occluder_map.h"
 #include "gfx/device.h"
 
 using namespace gfx;
@@ -76,7 +77,7 @@ namespace ui {
 							(isKeyDownAuto(Key_pagedown)? -1 : 0) +
 							(isKeyDownAuto(Key_pageup)? 1 : 0);
 		if(height_change)
-			m_height = clamp(m_height + height_change, 0, 256); //TODO: magic number
+			m_height = clamp(m_height + height_change, 0, Grid::max_height);
 		
 		{
 			KeyId actions[TileGroup::Group::side_count] = {
@@ -100,6 +101,22 @@ namespace ui {
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));
 		m_view_pos = clamp(m_view_pos, rect.min, rect.max - m_view_size);
+	}
+
+	void View::updateVisibility(int cursor_height) {
+		OccluderMap &occmap = m_tile_map.occluderMap();
+		float max_pos = m_height + cursor_height;
+		bool has_changed = false;
+
+		for(int n = 0; n < occmap.size(); n++) {
+			bool is_visible =occmap[n].bbox.min.y <= max_pos;
+			has_changed |= is_visible != occmap[n].is_visible;
+			occmap[n].is_visible = is_visible;
+		}
+
+		if(has_changed) {
+			m_tile_map.updateVisibility();
+		}
 	}
 
 }

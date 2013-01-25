@@ -94,14 +94,11 @@ namespace ui {
 		void drawBoxHelpers(const IBox &box) const;
 		IBox computeCursor(int2 start, int2 end) const;
 		
-		int m_cursor_height;
 		IBox m_selection;
-
-		bool m_is_selecting;
-
-		//TODO: make sure that this occluder wont be saved
+		int m_cursor_height;
 		int m_current_occluder;
 		int m_mouseover_tile_id;
+		bool m_is_selecting;
 	};
 
 	typedef Ptr<TilesEditor> PTilesEditor;

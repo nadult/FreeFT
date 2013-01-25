@@ -65,7 +65,7 @@ namespace game {
 	}
 
 	Door::Door(const char *sprite_name, const float3 &pos, Door::Type type, const float2 &dir)
-		:Entity(sprite_name, pos), m_type(type) {
+		:Entity(sprite_name, pos), m_type(type), m_close_time(-1.0) {
 		m_update_anim = false;
 		
 		for(int n = 0; n < state_count; n++)
@@ -159,6 +159,17 @@ namespace game {
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}
+		if(m_type == DoorTypeId::sliding && m_state == state_opened_in && m_world->currentTime() > m_close_time) {
+			FBox bbox = computeBBox(state_closed);
+			if(m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
+				m_close_time = m_world->currentTime() + 1.5;
+			}
+			else {
+				setBBox(bbox);
+				m_state = state_closing_in;
+				m_update_anim = true;
+			}
+		}
 	}
 
 	void Door::onAnimFinished() {
@@ -167,6 +178,8 @@ namespace game {
 				m_state = s_transitions[n].target;
 				setBBox(computeBBox(m_state));
 				m_update_anim = true;
+				if(m_state == state_opened_in && m_type == DoorTypeId::sliding)
+					m_close_time = m_world->currentTime() + 3.0;
 				break;
 			}
 	}

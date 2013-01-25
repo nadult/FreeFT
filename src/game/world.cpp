@@ -146,6 +146,8 @@ namespace game {
 	}
 
 	void World::simulate(double time_diff) {
+		PROFILE("World::simulate");
+
 		DASSERT(time_diff > 0.0);
 		double max_time_diff = 1.0; //TODO: add warning?
 		time_diff = min(time_diff, max_time_diff);

@@ -34,6 +34,7 @@ namespace ui {
 		bool isGridVisible() const { return m_is_visible; }
 
 		const int2 &pos() const { return m_view_pos; }
+		void updateVisibility(int cursor_height = 0);
 
 	private:
 		game::TileMap &m_tile_map;

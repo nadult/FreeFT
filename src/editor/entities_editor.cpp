@@ -51,7 +51,6 @@ namespace ui {
 	void EntitiesEditor::onInput(int2 mouse_pos) {
 		computeCursor(mouse_pos, mouse_pos);
 
-		//TODO: make proper accelerators
 		if(isKeyDown('S')) {
 			m_mode = mode_selecting;
 			sendEvent(this, Event::button_clicked, m_mode);
@@ -152,24 +151,8 @@ namespace ui {
 	}
 	
 	void EntitiesEditor::drawContents() const {
+		m_view.updateVisibility();
 		SceneRenderer renderer(clippedRect(), m_view.pos());
-
-		{			
-			OccluderMap &occmap = m_tile_map.occluderMap();
-			float max_pos = m_view.gridHeight();
-			bool has_changed = false;
-
-			for(int n = 0; n < occmap.size(); n++) {
-				bool is_visible =occmap[n].bbox.min.y <= max_pos;
-				has_changed |= is_visible != occmap[n].is_visible;
-				occmap[n].is_visible = is_visible;
-			}
-
-			if(has_changed) {
-				m_tile_map.updateVisibility();
-			}
-		}
-
 
 		{
 			vector<int> visible_ids;

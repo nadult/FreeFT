@@ -29,6 +29,7 @@ class Grid {
 public:
 	enum {
 		node_size = 24,
+		max_height = 256,
 
 		collider_flags		= 0x00ffffff, // at least one type flag have to be set
 		functional_flags	= 0xff000000, // all functional flags have to be set
