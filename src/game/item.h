@@ -40,6 +40,7 @@ namespace game {
 		virtual void initialize(ItemParameter*) const;
 
 		float weight;
+		string id;
 		string description;
 		string name;
 		string sprite_name;

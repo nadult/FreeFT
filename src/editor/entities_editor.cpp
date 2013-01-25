@@ -163,8 +163,8 @@ namespace ui {
 				auto &object = m_tile_map[visible_ids[i]];
 				int3 pos(object.bbox.min);
 				
-				IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
 				object.ptr->addToRender(renderer, pos, Color::white);
+			
 			}
 
 			visible_ids.clear();
@@ -172,6 +172,9 @@ namespace ui {
 			for(int n = 0; n < (int)visible_ids.size(); n++) {
 				auto &object = m_entity_map[visible_ids[n]];
 				object.ptr->addToRender(renderer);
+				
+				if(m_tile_map.findAny(object.bbox) != -1 || m_entity_map.findAny(object.bbox, visible_ids[n]) != -1)
+					renderer.addBox(object.bbox, Color::red);
 			}
 
 			for(int n = 0; n < (int)m_selected_ids.size(); n++) {
@@ -185,7 +188,7 @@ namespace ui {
 			m_proto->addToRender(renderer);
 			FBox bbox = m_proto->boundingBox();
 
-			bool is_colliding = m_tile_map.findAny(bbox) != -1;
+			bool is_colliding = m_tile_map.findAny(bbox) != -1 || m_entity_map.findAny(bbox) != -1;
 			renderer.addBox(bbox, is_colliding? Color::red : Color::white);
 			if(bbox.max.y == bbox.min.y)
 				bbox.max.y += 1.0f;

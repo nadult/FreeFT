@@ -44,7 +44,10 @@ namespace game {
 			out = new Container(sprite_name, pos);
 		}
 		else if(entity_type == EntityId::item) {
-			out = new ItemEntity(ItemDesc::find(node.attrib("item_desc")), pos);
+			const ItemDesc *desc = ItemDesc::find(node.attrib("item_desc"));
+			if(!desc)
+				THROW("Unknown item id: %s\n", node.attrib("item_desc"));
+			out = new ItemEntity(desc, pos);
 		}
 
 		out->setDirAngle(angle);
@@ -76,7 +79,7 @@ namespace game {
 	}
 	
 	void ItemEntity::saveContentsToXML(XMLNode &node) const {
-		node.addAttrib("item_desc", node.own(m_item.desc()->name.c_str()));
+		node.addAttrib("item_desc", node.own(m_item.desc()->id.c_str()));
 	}
 
 }

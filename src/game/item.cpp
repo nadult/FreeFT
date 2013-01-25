@@ -75,6 +75,7 @@ namespace game {
 
 			try {
 				id = node.attrib("id");
+				item->id = id;
 				item->name = node.attrib("name");
 				item->sprite_name = node.attrib("sprite_name");
 				item->description = node.attrib("description");

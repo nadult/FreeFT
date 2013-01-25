@@ -60,6 +60,8 @@ namespace game {
 			return false;
 		if((type == DoorTypeId::rotating || type == DoorTypeId::rotating_out) && !can_open_out)
 			return false;
+		if(type == DoorTypeId::sliding && can_open_out)
+			return false;
 
 		return true;
 	}

@@ -34,10 +34,11 @@ namespace ui {
 	bool ComboBox::onEvent(const Event &ev) {
 		if(ev.type == Event::window_closed && ev.source == m_popup.get()) {
 			m_dummy->selectEntry(m_popup->selectedId());
-			if(ev.value)
-				sendEvent(this, Event::element_selected, m_dummy->selectedId());
 			m_popup = nullptr;
 			updateButton();
+			
+			if(ev.value)
+				sendEvent(this, Event::element_selected, m_dummy->selectedId());
 		}
 		else if(ev.type == Event::button_clicked && ev.source == m_button.get()) {
 			DASSERT(!m_popup);

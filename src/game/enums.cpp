@@ -116,8 +116,8 @@ namespace game {
 	);
 
 	DEFINE_STRINGS(DoorTypeId,
-		"sliding",
 		"rotating",
+		"sliding",
 		"rotating_in",
 		"rotating_out"
 	);

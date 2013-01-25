@@ -77,7 +77,7 @@ namespace ui {
 							(isKeyDownAuto(Key_pagedown)? -1 : 0) +
 							(isKeyDownAuto(Key_pageup)? 1 : 0);
 		if(height_change)
-			m_height = clamp(m_height + height_change, 0, Grid::max_height);
+			m_height = clamp(m_height + height_change, 0, (int)Grid::max_height);
 		
 		{
 			KeyId actions[TileGroup::Group::side_count] = {

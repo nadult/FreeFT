@@ -102,8 +102,8 @@ namespace game {
 	);
 
 	DECLARE_ENUM(DoorTypeId,
-		sliding,
 		rotating,
+		sliding,
 		rotating_in,
 		rotating_out
 	);

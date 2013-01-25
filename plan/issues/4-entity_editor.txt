@@ -2,30 +2,27 @@ Pomysły:
 - Rozstawianie encji i edycja ich parametrów
 - Przerobienie TileMap-y na interfejs który używa Grida  DONE
 - Sensowniejsza serializacja TileMap-y do/z XML  DONE
-- Po lewej stronie katalogowa przeglądarka tile-ów, oprócz katalogu z tile-ami można
-  też załadować tile-groupę
 - Albo: po lewej stronie wyświetlane są wszystkie dostępne tile, ale są ładowane na żądanie i 
   można sobie ustawić filtry  DONE
-- Podczas rozstawiania tile-i, jeśli koliduje, to znaleźć najbliższą pozycję na której można go wstawić
-  bez kolizji i tam go wyświetlać
 - Rozwiązać problem ładowania tekstur tile-i w edytorze (dodać TextureCache)  DONE
 - Podobnie z ładowanie sprite-ów, trzeba też cos poradzić na zajmowaną przez nie pamięć,
   zrobić cache tekstur dla sprite-ów  DONE
-- W Tile-ach zary trzymać w formie skompresowanej, ale tak żeby dało się zrobić pixelTest
+- W Tile-ach zary trzymać w formie skompresowanej, ale tak żeby dało się zrobić pixelTest  DONE
 - ComboBox się przyda do filtrów  DONE
 - Dodać tryb zastępowania w którym kasowane są wszystkie tile które kolidują  DONE
-- Posprzątać SYF! jaki się naprobił w Spritach, Tileach, texturkach i paletach (zrobić pełne)
+- Posprzątać SYF! jaki się naprobił w Spritach, Tileach, texturkach i paletach (zrobić pełne)  DONE
 - Dodano porządne cache-owanie tekstur, połączone z automatycznym pakowaniem ich do atlasu
   (modyfikowanego w kawałkach)  DONE
 - Ładowanie tile-i z formatu .mis  DONE
-- przyspieszenie renderingu mapy dla oryginalnych map z FT
+- Podczas rozstawiania tile-i, jeśli koliduje, to znaleźć najbliższą pozycję na której można go wstawić
+  bez kolizji i tam go wyświetlać
 
 +REQUIREMENTS:
 issues/5-entities
 issues/10-ui_improvements
 
 +ESTIMATED_TIME: 20h (VERY ROUGH)
-+TIME_SPENT: 28h 20min
++TIME_SPENT: 28h 20min (+ some time spent on issue #13)
 
 +WORK_LOG:
 28.12.12: 20:00 - 21:50 (1h 50min)
