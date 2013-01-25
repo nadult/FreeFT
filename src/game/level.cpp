@@ -15,12 +15,85 @@
 
 #include "game/level.h"
 #include "sys/xml.h"
+#include <algorithm>
 
 namespace game {
 
-	static vector<char> applyPatch(const vector<char> &orig, const vector<char> &patch) {
-		//TODO: write me
-		return orig;
+	struct Line {
+		const char *ptr;
+		int size;
+	};
+
+	static vector<Line> divideIntoLines(vector<char> &data) {
+		vector<Line> lines;
+		Line line{data.data(), 0};
+
+		for(int n = 0; n < (int)data.size(); n++) {
+			if(data[n] == '\n') {
+				data[n] = 0;
+				lines.push_back(line);
+				line = Line{data.data() + n + 1, 0};
+			}
+			else
+				line.size++;
+		}
+		if(line.size != 0)
+			lines.push_back(line);
+
+		return lines;
+	}
+
+	static vector<char> applyPatch(vector<char> &orig, vector<char> &patch) {
+		vector<Line> orig_lines = divideIntoLines(orig);
+		vector<Line> patch_lines = divideIntoLines(patch);
+		vector<Line> out_lines;
+
+		int optr = (int)orig_lines.size() - 1;
+		for(int n = 0; n < (int)patch_lines.size(); n++) {
+			int line = -1, end_line = -1;
+			char command = 0;
+
+			sscanf(patch_lines[n].ptr, "%d%c", &line, &command);
+			if(command == ',')
+				sscanf(strchr(patch_lines[n].ptr, ',') + 1, "%d%c", &end_line, &command);
+
+			if(end_line == -1)
+				end_line = line;
+			line--;
+			end_line--;
+
+			ASSERT(line >= 0 && end_line >= line);
+			ASSERT(command == 'c' || command == 'a' || command == 'd');
+
+			while(optr > end_line)
+				out_lines.push_back(orig_lines[optr--]);
+
+			if(command == 'c' || command == 'a') {
+				int first_line = ++n;
+				while(n < (int)patch_lines.size() && strcmp(patch_lines[n].ptr, ".") != 0)
+					n++;
+				for(int i = n - 1; i >= first_line; i--)
+					out_lines.push_back(patch_lines[i]);
+			}
+
+			if(command == 'a')
+				while(optr >= line)
+					out_lines.push_back(orig_lines[optr--]);
+			else
+				optr = line - 1;
+		}
+
+		while(optr >= 0)
+			out_lines.push_back(orig_lines[optr--]);
+
+		vector<char> out;
+		std::reverse(out_lines.begin(), out_lines.end());
+		for(int n = 0; n < (int)out_lines.size(); n++) {
+			out.insert(out.end(), out_lines[n].ptr, out_lines[n].ptr + out_lines[n].size);
+			out.push_back('\n');
+		}
+		
+		return out;
 	}
 
 	Level::Level() :entity_map(tile_map) {

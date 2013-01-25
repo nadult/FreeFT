@@ -23,6 +23,7 @@
 - Use Open Sourced fonts  DONE
 - add license for baselib also  DONE
 - find better name: FreeFT  DONE
+- mod file format: patch on original xml map file, loading&saving in editor  DONE
 - basic (working) entity editor
 - ethereal tiles
 - fixed crouching animation
@@ -30,7 +31,6 @@
 - write basic readme with acknowledgements
 - some enemies with basic AI (scorpions)
 - convert should be able to take FOT path, and extract and convert all necessary resources
-- mod file format: patch on original xml map file, loading&saving in editor
 - Tile animations
 - pack tiles into single file, so they will load faster?
 - put up on github, announce on nma-fallout
@@ -54,4 +54,4 @@ issues/10-ui_improvements
 20.01.12: 16:45 - 17:30, 20:00 - 22:00 (2h 45min)
 21.01.12: 17:45 - 19:00, 20:15 - 21:30 (2h 30min)
 23.01.12: 21:00 - 00:00 (3h)
-24.01.12: 10:00 - 12:30, 18:30 -
+24.01.12: 10:00 - 12:30, 18:30 - 01:00 (9h)

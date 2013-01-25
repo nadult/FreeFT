@@ -27,6 +27,8 @@ namespace game
 	public:
 		Level();
 
+		// Loads maps from .xml and .mod files; .mod maps are essentially
+		// ed scripts that are applied to .xml map with the same base name
 		void load(const char *file_name);
 		void save(const char *file_name) const;
 
