@@ -37,7 +37,7 @@
 #include "editor/entities_pad.h"
 #include "editor/group_pad.h"
 
-#include "editor/snapping_grid.h"
+#include "editor/view.h"
 #include "ui/file_dialog.h"
 #include "sys/platform.h"
 #include "sys/config.h"
@@ -124,8 +124,9 @@ public:
 		freeEditors();
 
 		IRect rect(m_left_width, 0, width(), height());
-		m_tiles_editor = new TilesEditor(m_tile_map, m_snapping_grid, rect);
-		m_entities_editor = new EntitiesEditor(m_tile_map, m_entity_map, m_snapping_grid, rect);
+		m_view = PView(new View(m_tile_map, rect.size()));
+		m_tiles_editor = new TilesEditor(m_tile_map, *m_view.get(), rect);
+		m_entities_editor = new EntitiesEditor(m_tile_map, m_entity_map, *m_view.get(), rect);
 		m_tiles_editor->setTileGroup(&m_group);
 
 		m_tiles_pad = new TilesPad(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
@@ -247,7 +248,7 @@ public:
 	PTilesPad		m_tiles_pad;
 	PEntitiesPad	m_entities_pad;
 
-	SnappingGrid	m_snapping_grid;
+	PView			m_view;
 	PTilesEditor	m_tiles_editor;
 	PEntitiesEditor	m_entities_editor;
 	PGroupEditor	m_group_editor;

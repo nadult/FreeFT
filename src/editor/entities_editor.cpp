@@ -14,7 +14,7 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "editor/entities_editor.h"
-#include "editor/snapping_grid.h"
+#include "editor/view.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"
@@ -35,9 +35,8 @@ namespace ui {
 	};
 	const char **EntitiesEditor::modeStrings() { return s_mode_strings; }
 
-	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, SnappingGrid &grid, IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_grid(grid), m_tile_map(tile_map), m_entity_map(entity_map), m_proto(nullptr) {
-		m_view_pos = int2(0, 0);
+	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, View &view, IRect rect)
+		:ui::Window(rect, Color(0, 0, 0)), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map), m_proto(nullptr) {
 		m_is_selecting = false;
 		m_mode = mode_selecting;
 		m_selection = IRect::empty();
@@ -79,14 +78,14 @@ namespace ui {
 			m_selected_ids.clear();
 		}
 
-		m_grid.update();
+		m_view.update();
 	}
 
 	void EntitiesEditor::computeCursor(int2 start, int2 end) {
 		float2 height_off = worldToScreen(int3(0, 0, 0));
 
-		start += m_view_pos;
-		  end += m_view_pos;
+		start += m_view.pos();
+		  end += m_view.pos();
 
 		Ray ray = screenRay(start);
 
@@ -102,13 +101,7 @@ namespace ui {
 	}
 
 	bool EntitiesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
-
-		if((isKeyPressed(Key_lctrl) && key == 0) || key == 2) {
-			m_view_pos -= getMouseMove();
-			clampViewPos();
-			return true;
-		}
-		else if(key == 0) {
+		if(key == 0 && !isKeyPressed(Key_lctrl)) {
 			computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(m_mode == mode_selecting && is_final && is_final != -1) {
@@ -119,7 +112,7 @@ namespace ui {
 					auto &object = m_entity_map[m_selected_ids[n]];
 					//TODO: FIX: you can select invisible (on lower level, for example) entities
 					//TODO: remove hack with grid height
-					if(object.bbox.max.y < m_grid.height() || !areOverlapping(m_selection, object.ptr->currentScreenRect())) {
+					if(object.bbox.max.y < m_view.gridHeight() || !areOverlapping(m_selection, object.ptr->currentScreenRect())) {
 						m_selected_ids[n--] = m_selected_ids.back();
 						m_selected_ids.pop_back();
 					}
@@ -159,11 +152,11 @@ namespace ui {
 	}
 	
 	void EntitiesEditor::drawContents() const {
-		SceneRenderer renderer(clippedRect(), m_view_pos);
+		SceneRenderer renderer(clippedRect(), m_view.pos());
 
 		{			
 			OccluderMap &occmap = m_tile_map.occluderMap();
-			float max_pos = m_grid.height();
+			float max_pos = m_view.gridHeight();
 			bool has_changed = false;
 
 			for(int n = 0; n < occmap.size(); n++) {
@@ -230,10 +223,8 @@ namespace ui {
 
 		setScissorRect(clippedRect());
 		setScissorTest(true);
-		IRect view_rect = clippedRect() - m_view_pos;
-		lookAt(-view_rect.min);
-		
-		m_grid.draw(m_view_pos, view_rect.size(), m_tile_map.dimensions());
+		lookAt(-clippedRect().min + m_view.pos());
+		m_view.drawGrid();
 
 		DTexture::bind0();
 		
@@ -242,13 +233,7 @@ namespace ui {
 
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
-				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_grid.height(), s_mode_strings[m_mode]);
-	}
-
-	void EntitiesEditor::clampViewPos() {
-		int2 rsize = rect().size();
-		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));
-		m_view_pos = clamp(m_view_pos, rect.min, rect.max - rsize);
+				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_strings[m_mode]);
 	}
 
 }

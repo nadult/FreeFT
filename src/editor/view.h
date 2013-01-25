@@ -14,33 +14,37 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 
-
-#ifndef EDITOR_SNAPPING_GRID_H
-#define EDITOR_SNAPPING_GRID_H
+#ifndef EDITOR_VIEW_H
+#define EDITOR_VIEW_H
 
 #include "base.h"
 
+namespace ui {
 
-// TODO: Change this class to EditorView or something, it should also contain m_view_pos, and
-// code responsible for changing view_pos
-//
-class SnappingGrid {
-public:
-	SnappingGrid();
+	class View {
+	public:
+		View(game::TileMap&, const int2 &view_size);
 
-	void draw(const int2 &view_pos, const int2 &view_size, const int2 &tile_map_size) const;
-	void update();
+		void drawGrid() const;
+		void update();
 
-	void setHeight(int new_height) { m_height = new_height; }
-	int height() const { return m_height; }
-	int cellSize() const { return m_cell_size; }
-	bool isVisible() const { return m_is_visible; }
+		void setGridHeight(int new_height) { m_height = new_height; }
+		int gridHeight() const { return m_height; }
+		int cellSize() const { return m_cell_size; }
+		bool isGridVisible() const { return m_is_visible; }
 
-private:
-	int m_height, m_cell_size;
-	bool m_is_visible;
-};
+		const int2 &pos() const { return m_view_pos; }
 
+	private:
+		game::TileMap &m_tile_map;
+		int m_height, m_cell_size;
+		bool m_is_visible;
+		int2 m_view_pos;
+		const int2 m_view_size;
+	};
 
+	typedef unique_ptr<View> PView;
+
+}
 
 #endif

@@ -158,9 +158,9 @@ namespace ui
 
 					if(wheel)
 						vector.y += wheel * rect().height() / 8;
-					if(isKeyDown(Key_pageup))
+					if(isKeyDownAuto(Key_pageup, 2))
 						vector.y += rect().height();
-					if(isKeyDown(Key_pagedown))
+					if(isKeyDownAuto(Key_pagedown, 2))
 						vector.y -= rect().height();
 
 					setInnerRect(m_inner_rect + vector);
@@ -199,6 +199,7 @@ namespace ui
 			col1 = Color(int(col1.r) * 4 / 5, int(col1.g) * 4 / 5, int(col1.b) * 4 / 5, 128);
 			col2 = Color(int(col2.r) * 4 / 3, int(col2.g) * 4 / 3, int(col2.b) * 4 / 3, 128);
 
+			// TODO: minimum size of progress bar, coz sometimes its almost invisible
 			DTexture::bind0();
 			if(isize.x > rsize.x) {
 				float divisor = 1.0f / float(isize.x);

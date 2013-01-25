@@ -19,14 +19,15 @@
 #include "ui/window.h"
 
 class TileGroup;
-class SnappingGrid;
 
 namespace ui {
+
+	class View;
 
 	class TilesEditor: public ui::Window
 	{
 	public:
-		TilesEditor(game::TileMap&, SnappingGrid&, IRect rect);
+		TilesEditor(game::TileMap&, View&, IRect rect);
 
 		void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
 		void setNewTile(const game::Tile *tile) { m_new_tile = tile; }
@@ -77,7 +78,7 @@ namespace ui {
 	private:
 		Mode m_mode;
 
-		SnappingGrid &m_grid;
+		View &m_view;
 		game::TileMap &m_tile_map;
 		const TileGroup *m_tile_group;
 
@@ -92,11 +93,9 @@ namespace ui {
 
 		void drawBoxHelpers(const IBox &box) const;
 		IBox computeCursor(int2 start, int2 end) const;
-		void clampViewPos();
 		
 		int m_cursor_height;
 		IBox m_selection;
-		int2 m_view_pos;
 
 		bool m_is_selecting;
 

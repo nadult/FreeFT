@@ -29,6 +29,7 @@ const char *XMLNode::own(const char *str) {
 	return m_doc->allocate_string(str);
 }
 
+//TODO: snprintf / snscanf everywhere?
 void XMLNode::addAttrib(const char *name, float value) {
 	char str_value[64];
 	snprintf(str_value, sizeof(str_value), "%f", value);

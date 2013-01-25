@@ -82,6 +82,7 @@ namespace ui {
 				onKey(key);
 			}
 
+			//TODO: use isKeyDownauto
 			if(key == m_last_key && time > m_key_down_time + 0.4f && time > m_on_key_time + 0.025f)
 				onKey(key);
 		
