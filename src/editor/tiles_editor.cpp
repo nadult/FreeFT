@@ -220,7 +220,7 @@ namespace ui {
 				if(is_randomized) {
 					const vector<int> &source = rand() % 1000 < 1000 * m_dirty_percent? dirty_entries : entries;
 					int random_id = rand() % source.size();
-					m_tile_group->entryTile(source[random_id]);
+					tile = m_tile_group->entryTile(source[random_id]);
 				}
 
 				try { m_tile_map.add(tile, int3(x, fill_box.min.y, z)); }

@@ -16,7 +16,7 @@
 #include "occluder_map.h"
 #include "sys/xml.h"
 #include <map>
-
+#include <algorithm>
 
 OccluderMap::OccluderMap(Grid &grid) :m_grid(grid) { }
 
@@ -90,7 +90,125 @@ void OccluderMap::clear() {
 	while(size() > 0)
 		removeOccluder(size() - 1);
 }
-	
+
+static bool bboxOrderYXZ(const FBox &a, const FBox &b) {
+	return a.min.y == b.min.y? a.min.x == b.min.x?
+		a.min.z < b.min.z : a.min.x < b.min.x : a.min.y < b.min.y;
+}
+
+static bool bboxOrderYZX(const FBox &a, const FBox &b) {
+	return a.min.y == b.min.y? a.min.z == b.min.z?
+		a.min.x < b.min.x : a.min.z < b.min.z : a.min.y < b.min.y;
+}
+
+vector<FBox> OccluderMap::computeBBoxes(int occluder_id, bool minimize) const {
+	DASSERT(occluder_id >= 0 && occluder_id < size());
+
+	const Occluder &occluder = m_occluders[occluder_id];
+	PodArray<FBox> bboxes(occluder.objects.size());
+	PodArray<FBox> temp(occluder.objects.size());
+	int count = (int)occluder.objects.size(), tcount = 0;
+
+	for(int n = 0; n < count; n++)
+		bboxes[n] = m_grid[occluder.objects[n]].bbox;
+
+	std::sort(bboxes.data(), bboxes.end(), bboxOrderYXZ);
+	FBox current = bboxes[0];
+	for(int n = 1; n < count; n++) {
+		FBox next = bboxes[n];
+		if(current.min.y == next.min.y && current.max.y == next.max.y &&
+			current.min.x == next.min.x && current.max.x == next.max.x && current.max.z == next.min.z)
+			current.max.z = next.max.z;
+		else {
+			temp[tcount++] = current;
+			current = next;
+		}
+	}
+	temp[tcount++] = current;
+	bboxes.swap(temp);
+	count = tcount;
+	std::sort(bboxes.data(), bboxes.data() + count, bboxOrderYZX);
+
+	tcount = 0;
+	current = bboxes[0];
+	for(int n = 1; n < count; n++) {
+		FBox next = bboxes[n];
+		if(current.min.y == next.min.y && current.max.y == next.max.y &&
+			current.min.z == next.min.z && current.max.z == next.max.z && current.max.x == next.min.x)
+			current.max.x = next.max.x;
+		else {
+			temp[tcount++] = current;
+			current = next;
+		}
+	}
+	temp[tcount++] = current;
+	bboxes.swap(temp);
+	count = tcount;
+	int normal_count = count;
+
+	// if minimize is true, then bboxes might overlap objects belonging to
+	// occluders with index greater than occluder_id
+	if(minimize) {
+		vector<int> inds;
+		inds.reserve(1024);
+
+		for(int iters = 0; iters < 16; iters++) {
+			tcount = 0;
+			current = bboxes[0];
+
+			for(int n = 0; n < count - 1; n += 2) {
+				FBox merged = sum(bboxes[n], bboxes[n + 1]);
+
+				inds.clear();
+				m_grid.findAll(inds, merged);
+				bool can_merge = true;
+
+				for(int i = 0; i < (int)inds.size(); i++)
+					if(m_grid[inds[i]].occluder_id < occluder_id) {
+						can_merge = false;
+						break;
+					}
+
+				if(can_merge)
+					temp[tcount++] = merged;
+				else {
+					temp[tcount++] = bboxes[n];
+					temp[tcount++] = bboxes[n + 1];
+				}
+			}
+			if(count & 1)
+				temp[tcount++] = bboxes[count - 1];
+			bboxes.swap(temp);
+			if(tcount == count)
+				break;
+			count = tcount;
+		}
+	}
+
+	//printf("%5d -> %5d [%5d]\n", (int)occluder.objects.size(), count, normal_count);
+	return vector<FBox>(bboxes.data(), bboxes.data() + count);
+}
+
+bool OccluderMap::verifyBBoxes(int occluder_id, const vector<FBox> &bboxes) const {
+	DASSERT(occluder_id >= 0 && occluder_id < size());
+
+	vector<int> objects = m_occluders[occluder_id].objects;
+	std::sort(objects.begin(), objects.end());
+
+	vector<int> bobjects;
+	for(int n = 0; n < (int)bboxes.size(); n++)
+		m_grid.findAll(bobjects, bboxes[n]);
+	for(int n = 0; n < (int)bobjects.size(); n++)
+		if(m_grid[bobjects[n]].occluder_id > occluder_id) {
+			bobjects[n--] = bobjects.back();
+			bobjects.pop_back();
+		}
+	std::sort(bobjects.begin(), bobjects.end());
+	bobjects.resize(std::unique(bobjects.begin(), bobjects.end()) - bobjects.begin());
+
+	return bobjects == objects;
+}
+
 void OccluderMap::loadFromXML(const XMLDocument &doc) {
 	clear();
 
@@ -102,47 +220,74 @@ void OccluderMap::loadFromXML(const XMLDocument &doc) {
 
 	if(main_node) {
 		XMLNode occluder_node = main_node.child("occluder");
+		vector<int> temp;
+		temp.reserve(m_grid.size());
 
 		while(occluder_node) {
-			XMLNode object_node = occluder_node.child("o");
 			int occluder_id = size();
 			m_occluders.push_back(Occluder());
 			Occluder &occluder = m_occluders.back();
 			
 			int object_count = occluder_node.intAttrib("object_count");
 			ASSERT(object_count < m_grid.size() && object_count > 0);
-			int idx = 0;
-			occluder.objects.resize(object_count);
+			occluder.objects.resize(object_count, -1);
 
-			while(object_node) {
-				int object_id = atoi(object_node.value());
-				auto &object = m_grid[object_id];
-				ASSERT(object.occluder_id == -1);
-				object.occluder_id = occluder_id;
-				occluder.bbox = idx == 0? object.bbox : sum(occluder.bbox, object.bbox);
-				occluder.objects[idx++] = object_id;
-				object_node = object_node.sibling("o");
+			XMLNode box_node = occluder_node.child("box");
+			while(box_node) {
+				FBox bbox(box_node.float3Attrib("min"), box_node.float3Attrib("max"));
+
+				temp.clear();
+				m_grid.findAll(temp, bbox);
+				for(int n = 0; n < (int)temp.size(); n++)
+					m_grid[temp[n]].occluder_id = occluder_id;
+				box_node = box_node.sibling("box");
 			}
 			
 			occluder_node = occluder_node.sibling("occluder");
 		}
+
+		vector<int> counts(m_occluders.size(), 0);
+		for(int n = 0; n < m_grid.size(); n++) {
+			int occ_id = m_grid[n].occluder_id;
+			if(occ_id != -1 && m_grid[n].ptr) {
+				Occluder &occluder = m_occluders[occ_id];
+				int count = counts[occ_id];
+				ASSERT(count < (int)occluder.objects.size());
+				const FBox &bbox = m_grid[n].bbox;
+				occluder.bbox = count == 0? bbox : sum(occluder.bbox, bbox);
+				occluder.objects[count++] = n;
+				counts[occ_id] = count;
+			}
+		}
+		for(int n = 0; n < (int)counts.size(); n++)
+			ASSERT(counts[n] == (int)m_occluders[n].objects.size());
 	}
 }
 
 void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) const {
-	//TODO: there are invalid objects in the grid, adjust object id accordingly
-	//TODO: minimal changes in the grid produce drastic changes in outputted XML
 	XMLNode main_node = doc.addChild("occluders");
 	for(int n = 0; n < (int)m_occluders.size(); n++) {
 		const Occluder &occluder = m_occluders[n];
+		const auto &bboxes = computeBBoxes(n, true);
+		DASSERT(verifyBBoxes(n, bboxes));
 
 		XMLNode occluder_node = main_node.addChild("occluder");
 		occluder_node.addAttrib("object_count", (int)occluder.objects.size());
 
-		for(int o = 0; o < (int)occluder.objects.size(); o++) {
-			char text[100];
-			sprintf(text, "%d", tile_ids[occluder.objects[o]]);
-			occluder_node.addChild("o", doc.own(text));
+		for(int b = 0; b < (int)bboxes.size(); b++) {
+			FBox fbbox = bboxes[b];
+			IBox ibbox = (IBox)fbbox;
+			XMLNode box_node = occluder_node.addChild("box");
+
+			if((float3)ibbox.min == fbbox.min)
+				box_node.addAttrib("min", ibbox.min);
+			else
+				box_node.addAttrib("min", fbbox.min);
+
+			if((float3)ibbox.max == fbbox.max)
+				box_node.addAttrib("max", ibbox.max);
+			else
+				box_node.addAttrib("max", fbbox.max);
 		}
 	}
 }

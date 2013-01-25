@@ -49,6 +49,9 @@ public:
 	bool updateVisibility(const FBox &main_bbox);
 
 	bool isUnder(int lower_id, int upper_id) const;
+
+	vector<FBox> computeBBoxes(int occluder_id, bool minimize) const;
+	bool verifyBBoxes(int occluder_id, const vector<FBox>&) const;
 	
 private:
 	vector<Occluder> m_occluders;

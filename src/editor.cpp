@@ -100,7 +100,7 @@ public:
 		attach(m_left_window.get());
 		attach(m_group_editor.get());
 
-		loadMap("data/maps/mission05_mod.xml");
+		loadMap("data/maps/mission06_mod.xml");
 
 		recreateEditors();
 	}
@@ -195,7 +195,9 @@ public:
 	}
 
 	void loadMap(const char *file_name) {
-		printf("Loading Map: %s\n", file_name);
+		printf("Loading Map: %s ", file_name); fflush(stdout);
+		double time = getTime();
+
 		if(access(file_name, R_OK) == 0) {
 			XMLDocument doc;
 			doc.load(file_name);
@@ -203,6 +205,7 @@ public:
 			m_entity_map.loadFromXML(doc);
 			recreateEditors();
 		}
+		printf("(%.2f sec)\n", getTime() - time);
 	}
 
 
@@ -216,11 +219,16 @@ public:
 	}
 
 	void saveMap(const char *file_name) const {
-		printf("Saving Map: %s\n", file_name);
+		printf("Saving Map: %s ", file_name);
+		fflush(stdout);
+		double time = getTime();
+
 		XMLDocument doc;
 		m_tile_map.saveToXML(doc);
 		m_entity_map.saveToXML(doc);
 		doc.save(file_name);
+
+		printf(" (%.2f sec)\n", getTime() - time);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
