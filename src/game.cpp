@@ -54,12 +54,13 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	World world("data/maps/mission05_mod.xml");
+	World world("data/maps/mission05.mod");
 
 	int height = 128;
 
 	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(245, height, 335)));
-	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
+
+/*	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(260, height, 350)));
 	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(250, height, 340)));
 //	actor = world.addEntity(new Actor(ActorTypeId::mutant, float3(260, height, 335)));
@@ -81,7 +82,7 @@ int safe_main(int argc, char **argv)
 	chest->inventory().add(ItemDesc::find("fusion_cell"), 100);
 	chest->inventory().add(ItemDesc::find("prison_key"), 1);
 	fridge->inventory().add(ItemDesc::find("power_armour"), 1);
-	fridge->inventory().add(ItemDesc::find("m60"), 1);
+	fridge->inventory().add(ItemDesc::find("m60"), 1); */
 
 //	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
 
@@ -106,9 +107,6 @@ int safe_main(int argc, char **argv)
 	int inventory_sel = -1, container_sel = -1;
 	string prof_stats;
 	double stat_update_time = getTime();
-
-//	while(true)
-//		path = world.findPath(int3(50, 128, 50), int3(858, 144, 730));
 
 	while(pollEvents()) {
 		double loop_start = profiler::getTime();

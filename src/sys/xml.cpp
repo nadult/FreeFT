@@ -31,6 +31,12 @@ const char *XMLNode::own(const char *str) {
 
 //TODO: snprintf / snscanf everywhere?
 void XMLNode::addAttrib(const char *name, float value) {
+	int ivalue = (int)value;
+	if(value == (float)ivalue) {
+		addAttrib(name, ivalue);
+		return;
+	}
+
 	char str_value[64];
 	snprintf(str_value, sizeof(str_value), "%f", value);
 	addAttrib(name, own(str_value));
@@ -118,12 +124,24 @@ void XMLNode::addAttrib(const char *name, const int3 &value) {
 }
 
 void XMLNode::addAttrib(const char *name, const float2 &value) {
+	int2 ivalue = (int2)value;
+	if(value == (float2)ivalue) {
+		addAttrib(name, ivalue);
+		return;
+	}
+
 	char str_value[129];
 	sprintf(str_value, "%f %f", value.x, value.y);
 	addAttrib(name, own(str_value));
 }
 
 void XMLNode::addAttrib(const char *name, const float3 &value) {
+	int3 ivalue = (int3)value;
+	if(value == (float3)ivalue) {
+		addAttrib(name, ivalue);
+		return;
+	}
+
 	char str_value[194];
 	sprintf(str_value, "%f %f %f", value.x, value.y, value.z);
 	addAttrib(name, own(str_value));

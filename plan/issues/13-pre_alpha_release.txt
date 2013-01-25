@@ -24,6 +24,8 @@
 - add license for baselib also  DONE
 - find better name: FreeFT  DONE
 - basic (working) entity editor
+- ethereal tiles
+- fixed crouching animation
 
 - write basic readme with acknowledgements
 - some enemies with basic AI (scorpions)

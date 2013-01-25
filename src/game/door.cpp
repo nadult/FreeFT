@@ -150,6 +150,8 @@ namespace game {
 			box = FBox(-size.z + 1, 0, 0, 1, size.y, size.x);
 
 		FBox out = rotateY(box, size * 0.5f, dirAngle());
+		out.min = (int3)out.min;
+		out.max = (int3)out.max;
 		DASSERT(m_type == DoorTypeId::sliding || !out.isEmpty());
 		return out;
 	}

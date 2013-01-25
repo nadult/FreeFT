@@ -22,6 +22,7 @@
 #include "gfx/font.h"
 #include "game/tile_map.h"
 #include "game/entity_map.h"
+#include "game/level.h"
 #include "game/item.h"
 #include "sys/profiler.h"
 #include "ui/window.h"
@@ -73,7 +74,7 @@ static const char *s_load_dialog_names[] = {
 class EditorWindow: public Window
 {
 public:
-	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent), m_entity_map(m_tile_map) {
+	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
 		m_left_width = width() / 5;
 
 		m_mode = editing_tiles;
@@ -100,7 +101,7 @@ public:
 		attach(m_left_window.get());
 		attach(m_group_editor.get());
 
-		loadMap("data/maps/mission06_mod.xml");
+		loadMap("data/maps/mission05_mod.xml");
 
 		recreateEditors();
 	}
@@ -195,14 +196,12 @@ public:
 	}
 
 	void loadMap(const char *file_name) {
-		printf("Loading Map: %s ", file_name); fflush(stdout);
+		printf("Loading Map: %s ", file_name);
+		fflush(stdout);
 		double time = getTime();
 
 		if(access(file_name, R_OK) == 0) {
-			XMLDocument doc;
-			doc.load(file_name);
-			m_tile_map.loadFromXML(doc);
-			m_entity_map.loadFromXML(doc);
+			m_level.load(file_name);
 			recreateEditors();
 		}
 		printf("(%.2f sec)\n", getTime() - time);
@@ -222,12 +221,7 @@ public:
 		printf("Saving Map: %s ", file_name);
 		fflush(stdout);
 		double time = getTime();
-
-		XMLDocument doc;
-		m_tile_map.saveToXML(doc);
-		m_entity_map.saveToXML(doc);
-		doc.save(file_name);
-
+		m_level.save(file_name);
 		printf(" (%.2f sec)\n", getTime() - time);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
@@ -242,8 +236,9 @@ public:
 
 	EditorMode	m_mode;
 
-	TileMap		m_tile_map;
-	EntityMap	m_entity_map;
+	Level		m_level;
+	TileMap		&m_tile_map;
+	EntityMap	&m_entity_map;
 	TileGroup	m_group;
 	
 	PComboBox	m_mode_box;

@@ -276,19 +276,9 @@ void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) con
 		occluder_node.addAttrib("object_count", (int)occluder.objects.size());
 
 		for(int b = 0; b < (int)bboxes.size(); b++) {
-			FBox fbbox = bboxes[b];
-			IBox ibbox = (IBox)fbbox;
 			XMLNode box_node = occluder_node.addChild("box");
-
-			if((float3)ibbox.min == fbbox.min)
-				box_node.addAttrib("min", ibbox.min);
-			else
-				box_node.addAttrib("min", fbbox.min);
-
-			if((float3)ibbox.max == fbbox.max)
-				box_node.addAttrib("max", ibbox.max);
-			else
-				box_node.addAttrib("max", fbbox.max);
+			box_node.addAttrib("min", bboxes[b].min);
+			box_node.addAttrib("max", bboxes[b].max);
 		}
 	}
 }

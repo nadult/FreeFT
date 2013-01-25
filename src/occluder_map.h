@@ -35,7 +35,7 @@ public:
 	struct Occluder {
 		Occluder() :is_visible(true), is_overlapping(false) { }
 
-		FBox bbox; //TODO: updating
+		FBox bbox;
 		vector<int> objects;
 		bool is_visible;
 		bool is_overlapping;
