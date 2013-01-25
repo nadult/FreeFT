@@ -54,7 +54,7 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	World world("data/test.xml");
+	World world("data/maps/mission05_mod.xml");
 
 	int height = 128;
 
