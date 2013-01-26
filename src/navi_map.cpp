@@ -274,8 +274,8 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 }
 
 void NaviMap::addCollider(int parent_id, const IRect &rect) {
-	Quad &parent = m_quads[parent_id];
-	IRect prect = parent.rect;
+	Quad *parent = &m_quads[parent_id];
+	IRect prect = parent->rect;
 	IRect crect(max(rect.min, prect.min), min(rect.max, prect.max));
 	if(crect.isEmpty())
 		return;
@@ -285,17 +285,21 @@ void NaviMap::addCollider(int parent_id, const IRect &rect) {
 	rects[1] = IRect(int2(crect.max.x, prect.min.y), int2(prect.max.x, crect.max.y));
 	rects[2] = IRect(int2(prect.min.x, crect.min.y), int2(crect.min.x, prect.max.y));
 	rects[3] = IRect(int2(crect.min.x, crect.max.y), prect.max);
-	parent.is_disabled = true;
+	parent->is_disabled = true;
 
 	int first_id = (int)m_quads.size();
+	int min_height = parent->min_height;
+	int max_height = parent->max_height;
+
 	for(int n = 0; n < COUNTOF(rects); n++)
 		if(!rects[n].isEmpty())
-			m_quads.push_back(Quad(rects[n], parent.min_height, parent.max_height));
+			m_quads.push_back(Quad(rects[n], min_height, max_height));
+	parent = &m_quads[parent_id];
 
 	int count = 0;
 	for(int n = first_id; n < (int)m_quads.size(); n++) {
-		for(int i = 0; i < (int)parent.neighbours.size(); i++)
-			addAdjacencyInfo(n, parent.neighbours[i]);
+		for(int i = 0; i < (int)parent->neighbours.size(); i++)
+			addAdjacencyInfo(n, parent->neighbours[i]);
 		for(int i = first_id; i < n; i++)
 			addAdjacencyInfo(n, i);
 	}
