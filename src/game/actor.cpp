@@ -396,6 +396,10 @@ namespace game {
 			}
 			m_issue_next_order = true;
 		}
+		else if(m_order.id == OrderId::move && m_stance_id == StanceId::crouching) { //fix for broken anims
+			int seq_id = m_anim_map.sequenceId(m_stance_id, m_action_id, m_weapon_class_id);
+			playSequence(seq_id);
+		}
 	}
 
 	void Actor::onPickupEvent() {

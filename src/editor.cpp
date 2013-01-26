@@ -64,12 +64,14 @@ static const char *s_mode_names[editing_modes_count] = {
 };
 
 static const char *s_save_dialog_names[] = {
-	"Saving tile map",
-	"Saving tile group",
+	"Saving map",
+	"Saving map",
+	"Saving tile groups",
 };
 static const char *s_load_dialog_names[] = {
-	"Loading tile map",
-	"Loading tile group",
+	"Loading map",
+	"Loading map",
+	"Loading tile groups",
 };
 
 class EditorWindow: public Window

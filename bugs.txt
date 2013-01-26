@@ -1,4 +1,3 @@
-- Podczas zamykania drzwi przesuwanych gracz może się zacząć kręcić w kółko
-- jak się kliknie na schody to gracz może się zaklinować
-- aniamcja poruszania się w przykucnięciu zacina się po jednym odtworzeniu
-- bug w wyswietlaniu fontow w edytorze w wersji windowsowej
+- after teleport player is sometimes stuck
+- Player can start rotating in a circle after interaction with an object with empty bbox (like opened sliding door)
+- Player can sometimes stuck on the stairs

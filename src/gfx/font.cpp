@@ -242,7 +242,11 @@ namespace gfx
 			glTexCoord2f( uv_buf[n].x,  uv_buf[n].y);
 			glVertex2f  (pos_buf[n].x + pos.x, pos_buf[n].y + pos.y);
 		}
+		glEnd();
 
+		//TODO: problems with too much text on windows, that's why we have two
+		// glBegins instead of just one; investigate!
+		glBegin(GL_QUADS);
 		pos -= int2(1, 1);
 		glColor4ub(color.r, color.g, color.b, color.a);
 		for(int n = 0, count = quad_count * 4; n < count; n++) {
