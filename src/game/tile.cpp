@@ -25,6 +25,12 @@ using namespace gfx;
 namespace game
 {
 
+	static int s_frame_counter = 0;
+
+	void Tile::setFrameCounter(int counter) {
+		s_frame_counter = counter;
+	}
+
 	struct TypeName { TileId::Type type; const char *name; } s_type_names[] = {
 		{ TileId::floor,	"_floor_" },
 		{ TileId::wall,		"_wall_" },
@@ -35,43 +41,45 @@ namespace game
 		{ TileId::floor,	"_step_" },
 	};
 
-	Tile::Tile() :m_type(TileId::unknown) { }
+	const IRect TileFrame::rect() const {
+		return IRect(m_offset, m_texture.dimensions() + m_offset);
+	}
 
-	Texture Tile::texture() const {
+	TileFrame::TileFrame(const TileFrame &rhs) :m_palette_ref(nullptr) {
+		*this = rhs;
+	}
+
+	void TileFrame::operator=(const TileFrame &rhs) {
+		m_texture = rhs.m_texture;
+		m_offset = rhs.m_offset;
+	}
+
+	void TileFrame::serialize(Serializer &sr) {
+		sr & m_offset & m_texture;
+	}
+
+	int2 TileFrame::textureSize() const {
+		return m_texture.dimensions();
+	}
+
+	void TileFrame::cacheUpload(Texture &tex) const {
+		m_texture.toTexture(tex, m_palette_ref->data(), m_palette_ref->size());
+	}
+
+	Texture TileFrame::texture() const {
 		Texture out;
-		m_texture.toTexture(out);
+		m_texture.toTexture(out, m_palette_ref->data(), m_palette_ref->size());
 		return out;
-	}
+	}		
 
-	static PTexture loadTileTexture(const void *ptr) {
-		const Tile *tile = (const Tile*)ptr;
-		DASSERT(tile);
-
-		PTexture new_texture = new DTexture;
-		Texture tex = tile->texture();
-		new_texture->set(tex);
-		return new_texture;
-	}
-
-	void Tile::cacheUpload(Texture &tex) const {
-		m_texture.toTexture(tex);
-	}
-
-	PTexture Tile::deviceTexture(FRect &tex_rect) const {
+	PTexture TileFrame::deviceTexture(FRect &tex_rect) const {
 		if(!getCache())
 			bindToCache(TextureCache::main_cache);
 		return accessTexture(tex_rect);
 	}
-		
-	int Tile::memorySize() const {
-		return (int)(m_texture.memorySize() - sizeof(PackedTexture) + sizeof(Tile));
-	}
-
-	void Tile::printInfo() const {
-		printf("Tile %s:\n  Dimensions: %dx%d\nMemory: %.2f KB\nPalette: %d entries\n",
-				resourceName(), width(), height(), memorySize()/1024.0, m_texture.palette().size());
-	}
-
+	
+	Tile::Tile() :m_type(TileId::unknown), m_first_frame(&m_palette) { }
+			
 	void Tile::legacyLoad(Serializer &sr) {
 		ASSERT(sr.isLoading());
 
@@ -115,10 +123,34 @@ namespace game
 		u8 dummy2;
 		i32 zar_count;
 		sr(dummy2, zar_count);
-		//TODO: animation support in tiles (some tiles have more than one zar)
 
-		m_texture.legacyLoad(sr);
+		Palette first_pal;
+
+		for(int n = 0; n < zar_count; n++) {
+			TileFrame TileFrame(&m_palette);
+			Palette palette;
+			TileFrame.m_texture.legacyLoad(sr, palette);
+			i32 off_x, off_y;
+			sr(off_x, off_y);
+			TileFrame.m_offset = int2(off_x, off_y);
+
+			if(n == 0) {
+				first_pal = palette;
+				m_first_frame = TileFrame;
+			}
+			else {
+				ASSERT(palette == first_pal);
+				m_frames.push_back(TileFrame);
+			}
+		}
+
+		m_palette.legacyLoad(sr);
+		ASSERT(first_pal == m_palette);
+
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
+		updateMaxRect();
+		
+		ASSERT(sr.pos() == sr.size());
 	}
 
 	void Tile::serialize(Serializer &sr) {
@@ -126,28 +158,54 @@ namespace game
 		sr(m_type, m_bbox, m_offset);
 		if(sr.isLoading())
 			ASSERT(TileId::isValid(m_type));
-		sr & m_texture;
-	}
+		sr & m_first_frame & m_frames & m_palette;
 
-	const IRect Tile::rect() const {
-		return IRect(-m_offset, dimensions() - m_offset);
+		if(sr.isLoading()) {
+			for(int n = 0; n < (int)m_frames.size(); n++)
+				m_frames[n].m_palette_ref = &m_palette;
+			updateMaxRect();
+		}
 	}
 
 	void Tile::draw(const int2 &pos, Color col) const {
+		const TileFrame &TileFrame = accessFrame(s_frame_counter);
 		FRect tex_coords;
-		PTexture tex = deviceTexture(tex_coords);
+
+		PTexture tex = TileFrame.deviceTexture(tex_coords);
 		tex->bind();
-		drawQuad(pos - m_offset, dimensions(), tex_coords.min, tex_coords.max, col);
+		IRect rect = TileFrame.rect();
+		drawQuad(pos + rect.min - m_offset, rect.size(), tex_coords.min, tex_coords.max, col);
 	}
 
 	void Tile::addToRender(SceneRenderer &renderer, const int3 &pos, Color color) const {
+		const TileFrame &TileFrame = accessFrame(s_frame_counter);
+
 		FRect tex_coords;
-		PTexture tex = deviceTexture(tex_coords);
-		renderer.add(tex, rect(), pos, bboxSize(), color, tex_coords);
+		PTexture tex = TileFrame.deviceTexture(tex_coords);
+		renderer.add(tex, TileFrame.rect() - m_offset, pos, bboxSize(), color, tex_coords);
 	}
 
 	bool Tile::testPixel(const int2 &pos) const {
-		return m_texture.testPixel(pos + m_offset);
+		return accessFrame(s_frame_counter).m_texture.testPixel(pos + m_offset);
+	}
+
+	const TileFrame &Tile::accessFrame(int frame_counter) const {
+		if(!m_frames.empty()) {
+			frame_counter = frame_counter % frameCount();
+			return frame_counter == 0? m_first_frame : m_frames[frame_counter - 1];
+		}
+		return m_first_frame;
+	}
+		
+	const IRect Tile::rect(int frame_id) const {
+		return accessFrame(frame_id).rect() - m_offset;
+	}
+
+	void Tile::updateMaxRect() {
+		m_max_rect = m_first_frame.rect();
+		for(int n = 0; n < (int)m_frames.size(); n++)
+			m_max_rect = sum(m_max_rect, m_frames[n].rect());
+		m_max_rect -= m_offset;
 	}
 
 	ResourceMgr<Tile> Tile::mgr("data/tiles/", ".tile");

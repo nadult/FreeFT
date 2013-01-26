@@ -112,9 +112,12 @@ namespace gfx
 	class Palette {
 	public:
 		void serialize(Serializer&);
+		void legacyLoad(Serializer&);
 
 		void resize(int size);
+		void clear();
 		int size() const { return m_data.size(); }
+		bool isEmpty() const { return m_data.isEmpty(); }
 		bool operator==(const Palette&) const;
 
 		void set(int idx, Color col) { m_data[idx] = Color(col, 255); }
@@ -130,22 +133,19 @@ namespace gfx
 	public:
 		PackedTexture();
 		
-		void legacyLoad(Serializer&);
+		void legacyLoad(Serializer&, Palette&);
 		void serialize(Serializer&);
-
-		const Palette &palette() const { return m_palette; }
 
 		int width() const { return m_width; }
 		int height() const { return m_height; }
 		const int2 dimensions() const { return int2(m_width, m_height); }
 		int memorySize() const;
 
-		void toTexture(Texture&, const Color *pal = nullptr, int size = 0) const;
+		void toTexture(Texture&, const Color *pal, int pal_size) const;
 		void blit(Texture&, const int2 &offset, const Color *palette, int size) const;
 		bool testPixel(const int2 &pixel) const;
 
 	protected:
-		Palette m_palette;
 		PodArray<u8> m_data;
 		int m_width, m_height;
 		u8 m_default_idx, m_max_idx;

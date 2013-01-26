@@ -94,7 +94,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 					resource.setResourceName((Path(name).fileName()).c_str());
 
 					if(detailed)
-						printf("%55s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
+						printf("%40s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
 								(int)(source.size()/1024), (int)(target.size()/1024), (getTime() - time) * 1024.0);
 
 #pragma omp atomic

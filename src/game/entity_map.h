@@ -63,8 +63,6 @@ namespace game
 		const TileMap &m_tile_map;
 	};
 
-	void loadMap(TileMap&, EntityMap&, const char *file_name);
-
 }
 
 #endif

@@ -29,11 +29,11 @@ namespace game {
 	enum { agent_size = 3 };
 
 	World::World()
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size)
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_current_frame(0), m_navi_map(agent_size)
 		 ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) { } 
 
 	World::World(const char *file_name)
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_navi_map(agent_size)
+		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_current_frame(0), m_navi_map(agent_size)
 			,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map)  {
 		m_level.load(file_name);
 		for(int n = 0; n < m_entity_map.size(); n++)
@@ -159,6 +159,10 @@ namespace game {
 			frame_skip = (int)(frame_diff * fps);
 			m_last_frame_time += (double)frame_skip * frame_time;
 		}
+		m_current_frame += frame_skip;
+		if(m_current_frame < 0)
+			m_current_frame = 0;
+		Tile::setFrameCounter(m_current_frame);
 
 		for(int n = 0; n < m_entity_map.size(); n++) {
 			auto &object = m_entity_map[n];

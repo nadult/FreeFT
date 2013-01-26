@@ -116,7 +116,8 @@ namespace game {
 			}
 		if(result == m_state)
 			return;
-		
+
+		//TODO: open direction should depend on interactor's position		
 		FBox bbox = computeBBox(result);
 		bool is_colliding = m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 
@@ -149,6 +150,7 @@ namespace game {
 		else if(state == state_opened_in)
 			box = FBox(-size.z + 1, 0, 0, 1, size.y, size.x);
 
+		//TODO: this is still wrong
 		FBox out = rotateY(box, size * 0.5f, dirAngle());
 		out.min = (int3)out.min;
 		out.max = (int3)out.max;

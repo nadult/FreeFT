@@ -242,9 +242,10 @@ namespace game
 				char type; imgSr & type;
 
 				if(type == 1) {
+					gfx::Palette palette;
 					i32 x, y; imgSr(x, y);
 					collection.points[n] = int2(x, y);
-					collection.images[n].legacyLoad(imgSr);
+					collection.images[n].legacyLoad(imgSr, palette);
 				}
 				else if(type == 0) { // empty image
 				}

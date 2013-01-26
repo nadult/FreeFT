@@ -21,6 +21,7 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "game/tile_map.h"
+#include "game/tile.h"
 #include "game/entity_map.h"
 #include "game/level.h"
 #include "game/item.h"
@@ -274,8 +275,6 @@ int safe_main(int argc, char **argv)
 	vector<FileEntry> file_names;
 	findFiles(file_names, "data/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
-	int mem_size = 0;
-
 	printf("Loading tiles");
 	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
 	for(uint n = 0; n < file_names.size(); n++) {
@@ -287,28 +286,27 @@ int safe_main(int argc, char **argv)
 		try {
 			Path tile_path = file_names[n].path.relative(tiles_path);
 			string tile_name = tile_path;
-			if(removeSuffix(tile_name, Tile::mgr.suffix())) {
+			if(removeSuffix(tile_name, Tile::mgr.suffix()))
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
-				mem_size += tile->memorySize();
-			}
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());
 		}
 	}
 	printf("\n");
 
-	printf("Tiles memory: %d KB\n",	mem_size/1024);
-
 	EditorWindow main_window(config.resolution);
 	clear(Color(0, 0, 0));
 	string prof_stats;
 	double stat_update_time = getTime();
+	double start_time = getTime();
 
 	while(pollEvents()) {
 		double loop_start = profiler::getTime();
 		if(isKeyPressed(Key_lalt) && isKeyDown(Key_f4))
 			break;
 		
+		Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
+
 		main_window.process();
 		main_window.draw();
 		lookAt({0, 0});

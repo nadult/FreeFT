@@ -48,7 +48,7 @@ public:
 	Resource(PTile res, int id) :m_type(ResType::tile), m_id(id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = res->dimensions() + int2(8, 8);
+		m_rect_size = res->rect().size() + int2(8, 8);
 	}
 
 	Resource(PTexture res, int id) :m_type(ResType::texture), m_id(id) {
@@ -354,7 +354,10 @@ int safe_main(int argc, char **argv)
 	ResViewerWindow main_window(config.resolution);
 	clear(Color(0, 0, 0));
 
+	double start_time = getTime();
 	while(pollEvents()) {
+		Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
+
 		main_window.process();
 		main_window.draw();
 

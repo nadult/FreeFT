@@ -27,10 +27,26 @@ namespace gfx {
 		for(int n = 0; n < size; n++)
 			m_data[n] = Color(0, 0, 0, 255);
 	}
+
+	void Palette::clear() {
+		m_data.clear();
+	}
+
+	void Palette::legacyLoad(Serializer &sr) {
+		i32 pal_size; sr & pal_size;
+		ASSERT(pal_size <= 256);
+		resize(pal_size);
+
+		Color buf[256];
+		sr.data(buf, pal_size * sizeof(Color));
+
+		for(int n = 0; n < pal_size; n++)
+			set(n, swapBR(buf[n]));
+	}
+
 	void Palette::serialize(Serializer &sr) {
 		u8 rgb[256 * 3], *ptr = rgb;
-
-		i32 size = m_data.size();
+		u16 size = m_data.size();
 		sr & size;
 
 		if(sr.isLoading())
@@ -54,7 +70,7 @@ namespace gfx {
 	PackedTexture::PackedTexture()
 		:m_width(0), m_height(0), m_default_idx(0), m_max_idx(0) { }
 
-	void PackedTexture::legacyLoad(Serializer &sr) {
+	void PackedTexture::legacyLoad(Serializer &sr, Palette &palette) {
 		DASSERT(sr.isLoading());
 		sr.signature("<zar>", 6);
 
@@ -65,17 +81,10 @@ namespace gfx {
 		if(zar_type != 0x33 && zar_type != 0x34)
 			THROW("Wrong zar type: %d", (int)zar_type);
 
-		if(has_palette) {
-			u32 pal_size; sr & pal_size;
-			ASSERT(pal_size <= 256);
-			m_palette.resize(pal_size);
-
-			Color buf[256];
-			sr.data(buf, pal_size * sizeof(Color));
-
-			for(int n = 0; n < m_palette.size(); n++)
-				m_palette.set(n, swapBR(buf[n]));
-		}
+		if(has_palette)
+			palette.legacyLoad(sr);
+		else
+			palette.clear();
 
 		u32 value;
 		sr & value;
@@ -120,11 +129,11 @@ namespace gfx {
 		
 	void PackedTexture::serialize(Serializer &sr) {
 		sr(m_width, m_height, m_default_idx, m_max_idx);
-		sr & m_palette & m_data;
+		sr & m_data;
 	}
 
 	int PackedTexture::memorySize() const {
-		return sizeof(PackedTexture) + m_data.size() + m_palette.size() * 4;
+		return sizeof(PackedTexture) + m_data.size();
 	}
 
 	static const Color blend(Color dst, Color src) __attribute((always_inline));
@@ -146,11 +155,7 @@ namespace gfx {
 		Color *dst = out.line(pos.y) + pos.x;
 		int pixels = m_width * m_height, stride = out.width() - m_width;
 
-		if(!pal) {
-			pal = m_palette.data();
-			pal_size = m_palette.size();
-		}
-		DASSERT(m_max_idx < pal_size);
+		DASSERT(pal && m_max_idx < pal_size);
 		const u8 *data = m_data.data();
 		Color default_col = pal[m_default_idx];
 
@@ -207,11 +212,7 @@ namespace gfx {
 		out.resize(m_width, m_height);
 		Color *__restrict dst = out.line(0);
 
-		if(!pal) {
-			pal = m_palette.data();
-			pal_size = m_palette.size();
-		}
-		DASSERT(m_max_idx < pal_size);
+		DASSERT(pal && m_max_idx < pal_size);
 		const u8 *data = m_data.data();
 		Color default_col = pal[m_default_idx];
 
