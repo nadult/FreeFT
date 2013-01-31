@@ -27,9 +27,9 @@
 - Tile animations  DONE
 - basic (working) entity editor  DONE
 - fixed crouching animation  DONE
+- write basic readme with acknowledgements  DONE
 
 - some enemies with basic AI (scorpions)
-- write basic readme with acknowledgements
 - convert should be able to take FOT path, and extract and convert all necessary resources
 - put up on github, announce on nma-fallout
 - SECONDARY: pack tiles into single file, so they will load faster?
