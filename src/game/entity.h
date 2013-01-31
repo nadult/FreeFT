@@ -45,6 +45,7 @@ namespace game {
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
+		virtual void onImpact(ProjectileTypeId::Type projectile_type, float damage) { }
 
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially

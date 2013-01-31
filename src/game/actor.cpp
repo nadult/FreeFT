@@ -81,124 +81,39 @@ namespace game {
 		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
 	};
 
-	static const char *s_wep_names[WeaponClassId::count] = {
-		"",
-		"Club",
-		"Heavy",
-		"Knife",
-		"Minigun",
-		"Pistol",
-		"Rifle",
-		"Rocket",
-		"SMG",
-		"Spear",
-	};
-
-	static const char *s_attack_names[WeaponClassId::count * 2] = {
-		"UnarmedOne",
-		"UnarmedTwo",
-
-		"ClubSwing",
-		nullptr,
-
-		"HeavySingle",
-		"HeavyBurst",
-
-		"KnifeSlash",
-		nullptr,
-
-		"MinigunBurst",
-		nullptr,
-
-		"PistolSingle",
-		nullptr,
-
-		"RifleSingle", 
-		"RifleBurst",
-
-		"RocketSingle",
-		nullptr,
-
-		"SMGSingle",
-		"SMGBurst",
-
-		"SpearThrow",
-		nullptr,
-	};
-
-	// W konstruktorze wyszukac wszystkie animacje i trzymac id-ki zamiast nazw
-	static const char *s_seq_names[ActionId::count][StanceId::count] = {
-		// standing, 		crouching,			prone,
-		{ "Stand%s",		"Crouch%s",			"Prone%s" },			// standing
-		{ "StandWalk%s",	"CrouchWalk",		"ProneWalk" },			// walking
-		{ "StandRun",		nullptr,			nullptr },				// running
-
-		{ nullptr,			"CrouchStand", 		"ProneCrouch" },		// stance up
-		{ "StandCrouch",	"CrouchProne", 		nullptr },				// stance down
-
-		{ "StandAttack%s",	"CrouchAttack%s",	"ProneAttack%s" },		// attack 1
-		{ "StandAttack%s",	"CrouchAttack%s",	"ProneAttack%s" },		// attack 2
-
-		{ "StandPickup", 	"CrouchPickup", 	"PronePickup" },		// pickup
-		{ "StandMagichigh", "CrouchMagic",	 	"ProneMagic" },			// magic 1
-		{ "StandMagiclow", 	"CrouchMagic", 		"ProneMagic" },			// magic 2
-	};
-
-	ActorAnimMap::ActorAnimMap(PSprite sprite) {
-		DASSERT(sprite);
-		m_seq_ids.resize(ActionId::count * WeaponClassId::count * StanceId::count, -1);
-
-		for(int a = 0; a < ActionId::count; a++)
-			for(int w = 0; w < WeaponClassId::count; w++)
-				for(int s = 0; s < StanceId::count; s++) {
-					const string &name = sequenceName((StanceId::Type)s, (ActionId::Type)a, (WeaponClassId::Type)w);
-					if(!name.empty()) {
-						int seq_idx = s + (a * WeaponClassId::count + w) * StanceId::count;
-						m_seq_ids[seq_idx] = sprite->findSequence(name.c_str());
-//						if(m_seq_ids[seq_idx] == -1)
-//							printf("missing seq: %s\n", name.c_str());
-					}
-
-				}
-	}
-
-	string ActorAnimMap::sequenceName(StanceId::Type stance, ActionId::Type action, WeaponClassId::Type weapon) const {
-		char seq_name[64] = "";
-
-		if(action == ActionId::attack1 || action == ActionId::attack2) {
-			int attack_id = weapon * 2 + (action == ActionId::attack1? 0 : 1);
-			if(s_attack_names[attack_id])
-				snprintf(seq_name, sizeof(seq_name), s_seq_names[action][stance], s_attack_names[attack_id]);
-		}
-		else if(s_seq_names[action][stance])
-			snprintf(seq_name, sizeof(seq_name), s_seq_names[action][stance], s_wep_names[weapon]);
-
-		return seq_name;
-	}
-
-	int ActorAnimMap::sequenceId(StanceId::Type stance, ActionId::Type action, WeaponClassId::Type weapon) const {
-		if(m_seq_ids.empty())
-			return -1;
-		return m_seq_ids[stance + (action * WeaponClassId::count + weapon) * StanceId::count];
-	}
-
 	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos)
 		:Entity(s_sprite_names[type_id][ArmourClassId::none], pos), m_type_id(type_id) {
 		//m_sprite->printSequencesInfo();
-		m_anim_map = ActorAnimMap(m_sprite);
+		m_anims = ActorAnims(m_sprite);
 
 		m_issue_next_order = false;
 		m_stance_id = StanceId::standing;
 
 		m_armour_class_id = ArmourClassId::none;
 		m_weapon_class_id = WeaponClassId::unarmed;
-		setSequence(ActionId::standing);
+		animate(ActionId::idle);
 		lookAt(float3(0, 0, 0), true);
 		m_order = m_next_order = doNothingOrder();
+	}
+
+	bool Actor::isDead() const {
+		return m_order.id == OrderId::die;
 	}
 		
 	Entity *Actor::clone() const {
 		return new Actor(*this);
+	}
+		
+	void Actor::onImpact(ProjectileTypeId::Type projectile_type, float damage) {
+		if(m_order.id == OrderId::die)
+			return;
+
+		DeathTypeId::Type death_id =
+			projectile_type == ProjectileTypeId::plasma? DeathTypeId::melt :
+			projectile_type == ProjectileTypeId::laser? DeathTypeId::melt :
+			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal;
+		setNextOrder(dieOrder(death_id));
+		issueNextOrder();
 	}
 
 	void Actor::updateArmour() {
@@ -210,7 +125,7 @@ namespace game {
 			m_armour_class_id = class_id;
 			//TODO: może nie byc miejsca na postać w nowym rozmiarze
 			changeSprite(s_sprite_names[m_type_id][class_id], true);
-			m_anim_map = ActorAnimMap(m_sprite);
+			m_anims = ActorAnims(m_sprite);
 
 			if(!canEquipWeapon(m_weapon_class_id)) {
 				m_inventory.unequip(InventorySlotId::weapon);
@@ -227,7 +142,7 @@ namespace game {
 
 		if(class_id != m_weapon_class_id) {
 			m_weapon_class_id = class_id;
-			setSequence(m_action_id);
+			animate(m_action_id);
 		}
 	}
 
@@ -246,10 +161,14 @@ namespace game {
 		DASSERT(WeaponClassId::isValid(class_id));
 
 		for(int s = 0; s < StanceId::count; s++) {
-			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::standing, class_id) == -1)
+			if(m_anims.animId(ActionId::idle, (StanceId::Type)s, class_id) == -1) {
+				printf("no idle anim: %d %d\n", s, class_id);
 				return false;
-			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::walking, class_id) == -1)
+			}
+			if(m_anims.animId(ActionId::walking, (StanceId::Type)s, class_id) == -1) {
+				printf("no walk anim: %d %d\n", s, class_id);
 				return false;
+			}
 		}
 
 		return true;
@@ -261,17 +180,13 @@ namespace game {
 	}
 
 	bool Actor::canChangeStance() const {
-		for(int s = 0; s < StanceId::count; s++) {
-			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::standing, WeaponClassId::unarmed) == -1)
-				return false;
-			if(m_anim_map.sequenceId((StanceId::Type)s, ActionId::walking, WeaponClassId::unarmed) == -1)
-				return false;
-		}
-
-		return true;
+		return m_anims.canChangeStance();
 	}
 
 	void Actor::think() {
+		if(isDead())
+			return;
+
 		DASSERT(m_world);
 		double time_delta = m_world->timeDelta();
 
@@ -337,21 +252,6 @@ namespace game {
 		}
 	}
 
-	// sets seq_id, frame_id and seq_name
-	void Actor::setSequence(ActionId::Type action_id) {
-		DASSERT(action_id < ActionId::count && m_stance_id < StanceId::count);
-		
-		int seq_id = m_anim_map.sequenceId(m_stance_id, action_id, m_weapon_class_id);
-		if(seq_id == -1) {
-			printf("Sequence: %s not found!\n",
-					m_anim_map.sequenceName(m_stance_id, action_id, m_weapon_class_id).c_str());
-			ASSERT(seq_id != -1);
-		}
-
-		playSequence(seq_id);
-		m_action_id = action_id;
-	}
-
 	// sets direction
 	void Actor::lookAt(const float3 &pos, bool at_once) { //TODO: rounding
 		float3 cur_pos = this->pos();
@@ -397,7 +297,7 @@ namespace game {
 			m_issue_next_order = true;
 		}
 		else if(m_order.id == OrderId::move && m_stance_id == StanceId::crouching) { //fix for broken anims
-			int seq_id = m_anim_map.sequenceId(m_stance_id, m_action_id, m_weapon_class_id);
+			int seq_id = m_anims.animId(m_action_id, m_stance_id, m_weapon_class_id);
 			playSequence(seq_id);
 		}
 	}

@@ -54,7 +54,6 @@ namespace constant {
 // Very simple and efficent vector for POD Types; Use with care:
 // - user is responsible for initializing the data
 // - when resizing, data is destroyed
-// - assigning PodArray to itself is illegal
 // TODO: derive from PodArrayBase, resize, and serialize can be shared (modulo sizeof(T) multiplier)
 template <class T>
 class PodArray {
@@ -74,12 +73,14 @@ public:
 	}
 
 	void operator=(const PodArray &rhs) {
-		DASSERT(&rhs != this);
+		if(&rhs == this)
+			return;
 		resize(rhs.m_size);
 		memcpy(m_data, rhs.m_data, rhs.m_size);
 	}
 	void operator=(PodArray &&rhs) {
-		DASSERT(&rhs != this);
+		if(&rhs == this)
+			return;
 		clear();
 		m_data = rhs.m_data;
 		m_size = rhs.m_size;

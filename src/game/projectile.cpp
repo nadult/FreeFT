@@ -59,6 +59,11 @@ namespace game {
 			if(s_impact_names[m_type]) {
 				PProjectileImpact impact(new ProjectileImpact(s_impact_names[m_type], new_pos));
 				m_world->spawnProjectileImpact(std::move(impact));
+
+				if(isect.isEntity()) {
+					float damage = 100.0f;
+					isect.entity()->onImpact(type(), damage);
+				}
 			}
 			remove();
 		}

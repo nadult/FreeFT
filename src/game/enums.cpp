@@ -98,6 +98,17 @@ namespace game {
 		"rocket"
 	)
 
+	DEFINE_STRINGS(DeathTypeId,
+		"normal",
+		"big_hole",
+		"cut_in_half",
+		"electrify",
+		"explode",
+		"fire",
+		"melt",
+		"riddled"
+	)
+
 	DEFINE_STRINGS(EntityId,
 		"container",
 		"door",
@@ -105,7 +116,7 @@ namespace game {
 		"item",
 		"projectile",
 		"impact"
-	);
+	)
 
 	DEFINE_STRINGS(TileId,
 		"floor",
@@ -113,14 +124,20 @@ namespace game {
 		"roof",
 		"object",
 		"unknown"
-	);
+	)
 
 	DEFINE_STRINGS(DoorTypeId,
 		"rotating",
 		"sliding",
 		"rotating_in",
 		"rotating_out"
-	);
+	)
+
+	DEFINE_STRINGS(StanceId,
+		"standing",
+		"crouching",
+		"prone"
+	)
 
 #undef DEFINE_STRINGS
 }

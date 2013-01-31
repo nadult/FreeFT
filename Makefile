@@ -17,7 +17,7 @@ SHARED_SRC=\
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
-	game/world game/actor game/actor_orders game/entity game/container game/door game/projectile \
+	game/world game/actor game/actor_anims game/actor_orders game/entity game/container game/door game/projectile \
 	game/item game/inventory game/enums game/entities game/level \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box \
@@ -44,14 +44,16 @@ MINGW_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD)/%_.o) $(LIBS_SRC:%=$(BUILD)/%_.o)
 LINUX_PROGRAMS:=$(PROGRAM_SRC:%=%)
 MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
-LIBS=-lglfw -lbaselib -lpng -lz
-LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp
-MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
+LIBS=-lglfw -lbaselib -lz
+LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp -lpng
+MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpng15
+
+LIBS_convert=-lzip 
 
 INCLUDES=-Isrc/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
-		   -Wno-unused-but-set-variable -Wno-unused-variable
+		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses -Werror
 
 FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LIB_FLAGS=-O2
@@ -88,10 +90,10 @@ $(MINGW_OBJECTS): $(BUILD)/%_.o: src/%.cpp
 	$(MGW_CXX) $(MINGW_FLAGS) -c src/$*.cpp -o $@
 
 $(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD)/%.o  $(BUILD)/sys/platform_linux.o
-	    $(CXX) -o $@ $^ -rdynamic $(LINUX_LIBS)
+	    $(CXX) -o $@ $^ -rdynamic $(LINUX_LIBS) $(LIBS_$@)
 
 $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD)/%_.o $(BUILD)/sys/platform_windows_.o
-	$(MGW_CXX) -o $@ $^ $(MINGW_LIBS)
+	$(MGW_CXX) -o $@ $^ $(MINGW_LIBS) $(LIBS_$@)
 
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \

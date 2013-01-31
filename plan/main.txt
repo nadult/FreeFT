@@ -88,7 +88,13 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF
  - pomysł na poprawienie renderingu overlapujących się obiektów: od bboxów odjąć część wspólną i dopiero
   wtedy je porównać
  - zrobić porządek ze Screen-rectami które są na intach choć wyliczane są z bbox-ów opartych o float-y
-
+ - navigation map should be updated as soon the door starts to open, if player
+   is standing near the door he should wait until the door opens completely and
+   coninue moving
+ - add checksum to .mod file (computed from original xml) and check it before applying
+ - setting positions & bounding boxes in some Entity should be controlled by World: Entity calls function
+   like wantChangePos(), and World changes position at the end/beginning of the frame and utomaticly updates
+   NaviMap if needed
 
 4. Interesting / Innovative ideas, not crucial, but nice to have
  - możliwość rozmawiania z wrogo nastawionymi NPC-ami (podczas walki) np. możliwość poddania się lub
@@ -103,3 +109,4 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF
    zmniejszenia czasu ładowania
  - we can generate mini-maps from NaviHeightmaps
  - rendering occluders to texture, so that we can nicely blend them in/out
+

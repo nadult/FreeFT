@@ -6,8 +6,7 @@ Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych
 - rozwalanie Dummy.spr		3h
 - testowanie widoczności (bez dodatkowej struktury przyspieszającej)  4h DONE
 - rozwiązać problemy z przeskakującymi animacjami  DONE
-
-- kolizje z projectile-ami robimy za pomocą ray-tracingu (ew. później dla rakiet będzie można to zrobić lepiej)
+- kolizje z projectile-ami robimy za pomocą ray-tracingu (ew. później dla rakiet będzie można to zrobić lepiej)  DONE
 
 +REQUIREMENTS:
 issues/5-entities

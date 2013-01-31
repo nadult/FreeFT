@@ -28,13 +28,14 @@
 - basic (working) entity editor  DONE
 - fixed crouching animation  DONE
 
-- write basic readme with acknowledgements
 - some enemies with basic AI (scorpions)
+- write basic readme with acknowledgements
 - convert should be able to take FOT path, and extract and convert all necessary resources
-- pack tiles into single file, so they will load faster?
 - put up on github, announce on nma-fallout
+- SECONDARY: pack tiles into single file, so they will load faster?
 - SECONDARY: in the game use shift to select surface on a level relative somehow to the players position
 - SECONDARY: ethereal tiles
+- SECONDARY: rendering overlays
 
 +REQUIREMENTS:
 issues/5-entities
@@ -44,15 +45,16 @@ issues/10-ui_improvements
 +TIME_SPENT: 
 
 +WORK_LOG:
-10.01.12: 21:00 - 24:30 (3h 30min)
-11.01.12: 18:30 - 23:00 (4h 30min)
-12.01.12: 13:00 - 15:00, 16:00 - 20:30, 21:00 - 21:30 (6h)
-13.01.12: 14:15 - 15:15, 17:00 - 01:00 (9h)
-14.01.12: 16:00 - 23:00 (7h)
-15.01.12: 13:00 - 17:15, 19:30 - 21:00 (6h 15min)
-19.01.12: 22:00 - 00:30 (2h 30min)
-20.01.12: 16:45 - 17:30, 20:00 - 22:00 (2h 45min)
-21.01.12: 17:45 - 19:00, 20:15 - 21:30 (2h 30min)
-23.01.12: 21:00 - 00:00 (3h)
-24.01.12: 10:00 - 12:30, 18:30 - 01:00 (9h)
-25.01.12: 12:00 - 16:00 (4h)
+10.01.13: 21:00 - 24:30 (3h 30min)
+11.01.13: 18:30 - 23:00 (4h 30min)
+12.01.13: 13:00 - 15:00, 16:00 - 20:30, 21:00 - 21:30 (6h)
+13.01.13: 14:15 - 15:15, 17:00 - 01:00 (9h)
+14.01.13: 16:00 - 23:00 (7h)
+15.01.13: 13:00 - 17:15, 19:30 - 21:00 (6h 15min)
+19.01.13: 22:00 - 00:30 (2h 30min)
+20.01.13: 16:45 - 17:30, 20:00 - 22:00 (2h 45min)
+21.01.13: 17:45 - 19:00, 20:15 - 21:30 (2h 30min)
+23.01.13: 21:00 - 00:00 (3h)
+24.01.13: 10:00 - 12:30, 18:30 - 01:00 (9h)
+25.01.13: 12:00 - 16:00 (4h)
+31.01.13: 13:45 - 16:45 

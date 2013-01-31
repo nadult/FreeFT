@@ -108,17 +108,22 @@
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="35">
+<entity_map size="1056 936" entity_count="50">
 	<container pos="162 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<actor pos="163 115 228" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
 	<container pos="165 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<container pos="168 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<actor pos="170 115 221" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
 	<container pos="171 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<container pos="174 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<container pos="177 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<actor pos="180 115 225" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
 	<container pos="180 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<container pos="183 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<actor pos="183 115 407" sprite="critters/SDC" angle="4.712389" actor_type="sdc"/>
 	<container pos="186 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<container pos="189 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<actor pos="195 115 404" sprite="critters/SDC" angle="3.926991" actor_type="sdc"/>
 	<door pos="198 115 222" sprite="doors/Generic DOORS/MetalDoor1" angle="3.141593" door_type="rotating"/>
 	<door pos="198 115 252" sprite="doors/Generic DOORS/MetalDoor1" angle="3.141593" door_type="rotating"/>
 	<door pos="198 115 294" sprite="doors/Generic DOORS/MetalDoor1" angle="3.141593" door_type="rotating"/>
@@ -133,13 +138,23 @@
 	<door pos="270 115 210" sprite="doors/Generic DOORS/MetalDoor1" angle="3.141593" door_type="rotating"/>
 	<container pos="272 115 279" sprite="containers/Safe" angle="0"/>
 	<container pos="276 115 306" sprite="containers/Table N" angle="3.141593"/>
+	<actor pos="296 115 313" sprite="critters/RadScorpion" angle="5.497787" actor_type="rad_scorpion"/>
 	<item pos="298 115 262" sprite="weapons/Rifles/Plasma Rifle" angle="1.570796" item_desc="plasma_rifle"/>
+	<item pos="300 115 276" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60"/>
 	<item pos="301 115 261" sprite="weapons/Rifles/Laser Rifle" angle="1.570796" item_desc="laser_rifle"/>
+	<actor pos="308 115 329" sprite="critters/RadScorpion" angle="0" actor_type="rad_scorpion"/>
 	<item pos="311 119 262" sprite="armour/Power Armour" angle="1.570796" item_desc="power_armour"/>
+	<item pos="314 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
+	<item pos="316 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
 	<item pos="316 119 262" sprite="armour/Leather Armour" angle="1.570796" item_desc="leather_armour"/>
+	<item pos="318 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
+	<item pos="320 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
 	<door pos="380 115 219" sprite="doors/Generic DOORS/MetalDoor1" angle="1.570796" door_type="rotating"/>
 	<door pos="398 115 229" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
 	<door pos="399 115 239" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
+	<actor pos="405 115 268" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
+	<actor pos="407 115 318" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
+	<actor pos="414 115 316" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
 	<door pos="441 115 219" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
 	<door pos="441 115 231" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
 	<door pos="639 115 219" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>

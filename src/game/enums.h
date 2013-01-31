@@ -36,7 +36,7 @@ namespace game {
 		rocket,
 		smg,
 		spear
-	);
+	)
 
 	DECLARE_ENUM(ArmourClassId,
 		none,
@@ -44,7 +44,7 @@ namespace game {
 		metal,
 		environmental,
 		power
-	);
+	)
 
 	DECLARE_ENUM(ItemTypeId,
 		invalid = -1,
@@ -52,14 +52,14 @@ namespace game {
 		armour,
 		ammo,
 		other
-	);
+	)
 
 	DECLARE_ENUM(InventorySlotId,
 		invalid = -1,
 		weapon = 0,
 		armour,
 		ammo
-	);
+	)
 
 	DECLARE_ENUM(ActorTypeId,
 		male,
@@ -75,14 +75,25 @@ namespace game {
 		brahmin,
 		mdc,
 		sdc
-	);
+	)
 
 	DECLARE_ENUM(ProjectileTypeId,
 		bullet,
 		plasma,
 		laser,
 		rocket
-	);
+	)
+
+	DECLARE_ENUM(DeathTypeId,
+		normal,
+		big_hole,
+		cut_in_half,
+		electrify,
+		explode,
+		fire,
+		melt,
+		riddled
+	)
 
 	DECLARE_ENUM(EntityId,
 		container,
@@ -91,7 +102,7 @@ namespace game {
 		item,
 		projectile,
 		impact
-	);
+	)
 
 	DECLARE_ENUM(TileId,
 		floor,
@@ -99,13 +110,19 @@ namespace game {
 		roof,
 		object,
 		unknown
-	);
+	)
 
 	DECLARE_ENUM(DoorTypeId,
 		rotating,
 		sliding,
 		rotating_in,
 		rotating_out
+	)
+
+	DECLARE_ENUM(StanceId,
+		standing,
+		crouching,
+		prone
 	);
 
 #undef DECLARE_ENUM

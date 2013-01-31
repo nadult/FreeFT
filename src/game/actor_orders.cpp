@@ -20,6 +20,11 @@
 
 namespace game {
 
+	Order dieOrder(DeathTypeId::Type death_id) {
+		Order new_order(OrderId::die);
+		new_order.die = Order::Die{death_id};
+		return new_order;
+	}
 	Order moveOrder(int3 target_pos, bool run)	{
 		Order new_order(OrderId::move);
 		new_order.move = Order::Move{target_pos, run};
@@ -103,7 +108,7 @@ namespace game {
 				m_next_order = doNothingOrder();
 				ActionId::Type action = m_order.interact.mode == interact_pickup? ActionId::pickup :
 					other_box.max.y < my_box.max.y * 2 / 3? ActionId::magic2 : ActionId::magic1;
-				setSequence(action);
+				animate(action);
 				lookAt(other_box.center());
 			}
 			else {
@@ -137,21 +142,21 @@ namespace game {
 				int next_stance = m_next_order.change_stance.next_stance;
 
 				if(next_stance > 0 && m_stance_id != StanceId::standing)
-					setSequence(ActionId::stance_up);
+					animate(ActionId::stance_up);
 				else if(next_stance < 0 && m_stance_id != StanceId::prone)
-					setSequence(ActionId::stance_down);
+					animate(ActionId::stance_down);
 				else
 					m_next_order = doNothingOrder();
 			}
 			else if(m_next_order.id == OrderId::attack) {
 				roundPos();
 				lookAt(m_next_order.attack.target_pos);
-				setSequence(ActionId::attack1);
+				animate(ActionId::attack1);
 			}
 			else if(m_next_order.id == OrderId::drop_item) {
 				int item_id = m_next_order.drop_item.item_id;
 				if(m_inventory.isValidId(item_id))
-					setSequence(ActionId::pickup);
+					animate(ActionId::pickup);
 				else
 					m_next_order = doNothingOrder();
 			}
@@ -193,14 +198,16 @@ namespace game {
 				else if(changed_slot == InventorySlotId::weapon)
 					updateWeapon();
 			}
-
+			else if(m_next_order.id == OrderId::die) {
+				animateDeath(m_next_order.die.death_type);
+			}
 
 			m_order = m_next_order;
 			m_next_order = doNothingOrder();
 		}
 		
 		if(m_order.id == OrderId::do_nothing)	
-			setSequence(ActionId::standing);
+			animate(ActionId::idle);
 
 		m_issue_next_order = false;
 	}
@@ -256,7 +263,7 @@ namespace game {
 			
 		if(m_path.size() <= 1 || m_stance_id != StanceId::standing)
 			m_order.move.run = 0;
-		setSequence(m_order.move.run? ActionId::running : ActionId::walking);
+		animate(m_order.move.run? ActionId::running : ActionId::walking);
 
 		DASSERT(!m_path.empty());
 	}

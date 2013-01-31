@@ -21,34 +21,36 @@
 
 namespace game {
 
-	namespace StanceId {
-		enum Type {
-			standing,
-			crouching,
-			prone,
-
-			count,
-		};
-	}
+	// Two types of actions:
+	// normal which have different animations for different weapon types
+	// simple which have same animations for different weapon types
+	//
+	// TODO: additional actions: breathe, fall, dodge, getup, recoil?
 	namespace ActionId {
 		enum Type {
-			standing,
+			first_normal,
+			idle = first_normal,
 			walking,
-			running,
-
-			stance_up,
-			stance_down,
-
 			attack1,
 			attack2,
 
+			first_simple,
+			running = first_simple,
+			stance_up,
+			stance_down,
 			pickup,
 			magic1,
 			magic2,
 
+			first_special,
+			death = first_special,
+
 			count,
 		};
 
+		bool isNormal(Type);
+		bool isSimple(Type);
+		bool isSpecial(Type);
 	}
 
 	namespace OrderId {
@@ -62,6 +64,7 @@ namespace game {
 			equip_item,
 			unequip_item,
 			transfer_item,
+			die,
 
 			count,
 		};
@@ -81,6 +84,7 @@ namespace game {
 	struct Order {
 		Order(OrderId::Type id = OrderId::do_nothing) :id(id) { }
 		
+		struct Die			{ DeathTypeId::Type death_type; };
 		struct Move			{ int3 target_pos; bool run; };
 		struct ChangeStance	{ int next_stance; };
 		struct Attack		{ int3 target_pos; int mode; };
@@ -96,6 +100,7 @@ namespace game {
 		OrderId::Type id;
 		EntityRef target;
 		union {
+			Die die;
 			Move move;
 			Attack attack;
 			ChangeStance change_stance;
@@ -106,7 +111,8 @@ namespace game {
 			TransferItem transfer_item;
 		};
 	};
-		
+	
+	Order dieOrder(DeathTypeId::Type);	
 	Order moveOrder(int3 target_pos, bool run);
 	Order doNothingOrder();
 	Order changeStanceOrder(int next_stance);
@@ -121,17 +127,32 @@ namespace game {
 	Order equipItemOrder(int item_id);
 	Order unequipItemOrder(InventorySlotId::Type item_id);
 
-	class ActorAnimMap {
+	//TODO: this should be shared among actors with the same sprites
+	class ActorAnims {
 	public:
-		ActorAnimMap(PSprite);
-		ActorAnimMap() = default;
+		ActorAnims(PSprite);
+		ActorAnims() = default;
 
-		int sequenceId(StanceId::Type, ActionId::Type, WeaponClassId::Type) const;
-		string sequenceName(StanceId::Type, ActionId::Type, WeaponClassId::Type) const;
-		//TODO: verification that some basic sequences are available?
+		const string deathAnimName(DeathTypeId::Type) const;
+		const string simpleAnimName(ActionId::Type, StanceId::Type) const;
+		const string animName(ActionId::Type, StanceId::Type, WeaponClassId::Type) const;
+
+		//TODO: methods for additional checking
+		//TODO: checking if animation is valid in these methods:
+		int deathAnimId(DeathTypeId::Type) const;
+		int simpleAnimId(ActionId::Type, StanceId::Type) const;
+		int animId(ActionId::Type, StanceId::Type, WeaponClassId::Type) const;
+
+		bool canChangeStance() const;
+
+		// When some animation is not-available, it will be changed
+		// to default
+		void setFallbackAnims();
 
 	private:
-		vector<int> m_seq_ids;
+		short m_death_ids[DeathTypeId::count];
+		short m_simple_ids[ActionId::first_special - ActionId::first_simple][StanceId::count];
+		short m_normal_ids[ActionId::first_simple  - ActionId::first_normal][StanceId::count][WeaponClassId::count];
 	};
 
 	class Actor: public Entity {
@@ -143,6 +164,9 @@ namespace game {
 
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }
+		void onImpact(ProjectileTypeId::Type projectile_type, float damage);
+
+		bool isDead() const;
 
 	protected:
 		void think();
@@ -163,7 +187,8 @@ namespace game {
 		bool canEquipArmour(ArmourClassId::Type) const;
 		bool canChangeStance() const;
 
-		void setSequence(ActionId::Type);
+		void animate(ActionId::Type);
+		void animateDeath(DeathTypeId::Type);
 		void lookAt(const float3 &pos, bool at_once = false);
 
 		void nextFrame();
@@ -198,7 +223,7 @@ namespace game {
 
 		ActorInventory m_inventory;
 
-		ActorAnimMap m_anim_map;
+		ActorAnims m_anims;
 	};
 
 }
