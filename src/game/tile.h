@@ -54,7 +54,7 @@ namespace game
 	public:
 		Tile();
 
-		void legacyLoad(Serializer &sr);
+		void legacyLoad(Serializer &sr, const char *alternate_name = nullptr);
 		void serialize(Serializer &sr);
 		
 		static ResourceMgr<Tile> mgr;

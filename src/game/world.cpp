@@ -59,7 +59,7 @@ namespace game {
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes);
-			heightmap.saveLevels();
+		//	heightmap.saveLevels();
 		//	heightmap.printInfo();
 
 			m_navi_map.update(heightmap);

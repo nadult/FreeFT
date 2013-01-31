@@ -19,6 +19,7 @@
 
 #include "base.h"
 
+//TODO: verify that it works on windows when working on different drives
 class Path {
 public:
 	Path(const char*);
@@ -93,9 +94,6 @@ namespace FindFiles {
 		absolute		= 16,		// all paths absolute
 	};
 };
-
-typedef bool (*FindFilesFilter)(const char *path, const char* name, bool is_dir);
-
 
 void findFiles(vector<FileEntry> &out, const Path &path, int flags = FindFiles::regular_file);
 bool removeSuffix(string &str, const string &suffix);

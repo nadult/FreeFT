@@ -80,11 +80,11 @@ namespace game
 	
 	Tile::Tile() :m_type(TileId::unknown), m_first_frame(&m_palette) { }
 			
-	void Tile::legacyLoad(Serializer &sr) {
+	void Tile::legacyLoad(Serializer &sr, const char *name) {
 		ASSERT(sr.isLoading());
 
 		{
-			string lowercase = sr.name();
+			string lowercase = name? name : sr.name();
 			std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(), ::tolower);
 			int slash = lowercase.rfind('/');
 

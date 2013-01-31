@@ -16,21 +16,24 @@
 #include "tile_map.h"
 #include "gfx/texture.h"
 #include "game/tile.h"
+#include "sys/xml.h"
 #include <climits>
 
+//#define LOGGING
+
+#ifndef LOGGING
+#define printf(...)	
+#endif
 
 using namespace gfx;
 
 void zlibInflate(Serializer &sr, vector<char> &dest, int inSize);
 
-static bool filterName(const string &name) {
-	return name != "Generic tiles/Invisible Tile";
-}
-
 namespace game {
 
-	void TileMap::legacyLoad(Serializer &sr) {
+	void TileMap::legacyConvert(Serializer &sr, Serializer &out) {
 		ASSERT(sr.isLoading());
+
 		sr.signature("<world>", 8);
 		u16 type;
 		char dummy;
@@ -49,6 +52,8 @@ namespace game {
 				map_manager = n;
 				break;
 			}
+	
+		vector<Tile> tiles;
 
 		{
 			ASSERT(map_manager != -1);
@@ -97,16 +102,9 @@ namespace game {
 			}
 			printf("Proto count: %d\n", proto_count);
 
-			vector<PTile> tiles;
-			for(int n = 0; n < (int)names.size(); n++) {
-				if(!filterName(names[n])) {
-					tiles.push_back(nullptr);
-					continue;
-				}
-
-				tiles.push_back(Tile::mgr[names[n]]);
-				ASSERT(int3(tile_params[n].bbox_x, tile_params[n].bbox_y, tile_params[n].bbox_z) == tiles.back()->bboxSize());
-			}
+			tiles.resize(names.size());
+			for(int n = 0; n < (int)names.size(); n++)
+				tiles[n].setResourceName(names[n].c_str());
 			
 			char temp2[28];
 			dsr.data(temp2, sizeof(temp2));
@@ -156,7 +154,7 @@ namespace game {
 					TInstance instance;
 					dsr.data(&instance, sizeof(instance));
 					int tile_id = (int)instance.tile_id - 1;
-					if(tile_id < 0 || tiles[tile_id] == nullptr)
+					if(tile_id < 0)
 						continue;
 					ASSERT(tile_id < (int)tiles.size());
 
@@ -171,10 +169,10 @@ namespace game {
 
 					TileParams &params = tile_params[tile_id];
 					int3 tile_psize = int3(params.bbox_x, params.bbox_y, params.bbox_z);
-					int3 tile_size = tiles[tile_id]->bboxSize();
-					if(size != tile_size || size != tile_psize)
-						printf("%d %d %d | %d %d %d | %d %d %d\n", size.x, size.y, size.z, tile_size.x, tile_size.y, tile_size.z, tile_psize.x, tile_psize.y, tile_psize.z);
-					ASSERT(tile_size == size && size == tile_psize);
+				//	int3 tile_size = tiles[tile_id]->bboxSize();
+				//	if(size != tile_size || size != tile_psize)
+				//		printf("%d %d %d | %d %d %d | %d %d %d\n", size.x, size.y, size.z, tile_size.x, tile_size.y, tile_size.z, tile_psize.x, tile_psize.y, tile_psize.z);
+				//	ASSERT(tile_size == size && size == tile_psize);
 
 					box.min = min(box.min, pos);
 					box.max = max(box.max, pos + size);
@@ -193,10 +191,21 @@ namespace game {
 			for(int n = 0; n < (int)instances.size(); n++) {
 				Instance &inst = instances[n];
 				try {
-					add(tiles[inst.tile_id].get(), inst.pos - box.min);
-				} catch(const Exception &ex) { printf("%s\n", ex.what()); }
+					float3 pos = inst.pos - box.min;
+					TileParams &params = tile_params[inst.tile_id];
+					FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
+					ASSERT(findAny(bbox) == -1);
+					Grid::add(Grid::ObjectDef(&tiles[inst.tile_id], bbox, IRect(0, 0, 32, 32), 0xffffffff));
+				} catch(const Exception &ex) {
+					printf("%s\n", ex.what());
+				}
 			}
 		}
+
+		XMLDocument doc;
+		saveToXML(doc);
+		out & doc;
+		clear();
 
 	//	Saver("mission.dec") & bytes;
 

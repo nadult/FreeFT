@@ -1,4 +1,5 @@
-47598c
+CRC32 d1c72fa9
+47630c
 <occluders>
 	<occluder object_count="20">
 		<box min="177 138 388" max="217 142 423"/>
@@ -160,4 +161,23 @@
 	<door pos="639 115 219" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
 	<door pos="639 115 231" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
 </entity_map>
+.
+40167a
+	<tile name="Ruined City/Ruined city walls/Type4/CAPS/City_Cap_Stone_T4_B_1_SW">
+		<i pos="151 127 353"/>
+	</tile>
+.
+40148a
+		<i pos="144 127 348"/>
+		<i pos="155 127 348"/>
+.
+40137a
+		<i pos="155 127 342"/>
+.
+40136a
+		<i pos="144 127 342"/>
+.
+23933,23971d
+1c
+<tile_map size="1056 936" tile_count="44109">
 .

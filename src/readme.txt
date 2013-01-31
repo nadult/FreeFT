@@ -5,7 +5,7 @@ combat game from 2001 created by Micro Forte.
 2. Building
 For compilation G++ in version 4.7 is required (lots of C++11 features are used), and
 following libraries:
-- GLFW, libpng,  zlib, 
+- GLFW, libpng,  zlib, baselib (should be included)
 
 3. Running
 To run this program, resources from original Fallout Tactics are required.

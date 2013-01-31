@@ -28,10 +28,11 @@
 - basic (working) entity editor  DONE
 - fixed crouching animation  DONE
 - write basic readme with acknowledgements  DONE
+- convert should be able to take FOT path, and extract and convert all necessary resources  DONE
 
-- some enemies with basic AI (scorpions)
-- convert should be able to take FOT path, and extract and convert all necessary resources
+- include baselib as git submodule?
 - put up on github, announce on nma-fallout
+- SECONDARY: some enemies with basic AI (scorpions)
 - SECONDARY: pack tiles into single file, so they will load faster?
 - SECONDARY: in the game use shift to select surface on a level relative somehow to the players position
 - SECONDARY: ethereal tiles
@@ -57,4 +58,4 @@ issues/10-ui_improvements
 23.01.13: 21:00 - 00:00 (3h)
 24.01.13: 10:00 - 12:30, 18:30 - 01:00 (9h)
 25.01.13: 12:00 - 16:00 (4h)
-31.01.13: 13:45 - 16:45 
+31.01.13: 13:45 - 16:45, 18:00 - 23:45 (8h 45min)

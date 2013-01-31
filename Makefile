@@ -53,13 +53,13 @@ LIBS_convert=-lzip
 INCLUDES=-Isrc/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
-		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses -Werror
+		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses #-Werror
 
 FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LIB_FLAGS=-O2
 
 LINUX_FLAGS=$(FLAGS) -rdynamic -fopenmp
-MINGW_FLAGS=$(FLAGS)
+MINGW_FLAGS=$(FLAGS) -mno-ms-bitfields #mms-bitfields triggers attribute packed bug on gcc4.7
 
 CXX=g++
 CC =gcc
@@ -90,10 +90,10 @@ $(MINGW_OBJECTS): $(BUILD)/%_.o: src/%.cpp
 	$(MGW_CXX) $(MINGW_FLAGS) -c src/$*.cpp -o $@
 
 $(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD)/%.o  $(BUILD)/sys/platform_linux.o
-	    $(CXX) -o $@ $^ -rdynamic $(LINUX_LIBS) $(LIBS_$@)
+	    $(CXX) -o $@ $^ -rdynamic $(LIBS_$@) $(LINUX_LIBS)
 
 $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD)/%_.o $(BUILD)/sys/platform_windows_.o
-	$(MGW_CXX) -o $@ $^ $(MINGW_LIBS) $(LIBS_$@)
+	$(MGW_CXX) -o $@ $^  $(LIBS_$*) $(MINGW_LIBS)
 
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \

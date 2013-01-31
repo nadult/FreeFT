@@ -42,7 +42,7 @@ namespace game {
 		void saveToXML(XMLDocument&) const;
 		void swap(const TileMap&);
 
-		void legacyLoad(Serializer&);
+		void legacyConvert(Serializer &in, Serializer &out);
 
 		OccluderMap &occluderMap() { return m_occluder_map; }
 		const OccluderMap &occluderMap() const { return m_occluder_map; }

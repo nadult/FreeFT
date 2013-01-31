@@ -45,6 +45,7 @@ int safe_main(int argc, char **argv)
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
+
 	printDeviceInfo();
 	grabMouse(false);
 
@@ -54,7 +55,10 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	World world("data/maps/mission05.mod");
+	string map_name = "data/maps/mission05.mod";
+	if(argc > 1)
+		map_name = string("data/maps/") + argv[1];
+	World world(map_name.c_str());
 
 	int height = 128;
 

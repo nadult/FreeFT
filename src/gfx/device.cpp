@@ -168,6 +168,8 @@ namespace gfx
 		initDevice();
 		initViewport(size);
 		//TODO: initial mouse pos (until user moves it) is always 0,0
+			
+		glfwPollEvents();
 
 		s_is_created = 1;
 	}
@@ -240,7 +242,10 @@ namespace gfx
 		return int2(x, y);
 	}
 
-	void setWindowTitle(const char *title) { glfwSetWindowTitle(title); }
+	void setWindowTitle(const char *title) {
+		glfwSetWindowTitle(title);
+		glfwPollEvents(); //TODO: remove, set window on creation
+	}
 
 	void grabMouse(bool grab)
 	{

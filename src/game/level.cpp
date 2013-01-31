@@ -16,6 +16,7 @@
 #include "game/level.h"
 #include "sys/xml.h"
 #include <algorithm>
+#include <zlib.h>
 
 namespace game {
 
@@ -44,9 +45,28 @@ namespace game {
 	}
 
 	static vector<char> applyPatch(vector<char> &orig, vector<char> &patch) {
-		vector<Line> orig_lines = divideIntoLines(orig);
 		vector<Line> patch_lines = divideIntoLines(patch);
 		vector<Line> out_lines;
+
+		Line checksum_line = patch_lines.front();
+		patch_lines.erase(patch_lines.begin());
+
+		{
+			char func_name[32] = "";
+			unsigned int target_checksum = -1;
+			sscanf(checksum_line.ptr, "%32s %x", func_name, &target_checksum);
+
+			ASSERT(strcmp(func_name, "CRC32") == 0);
+			unsigned int checksum = crc32(0, (const unsigned char*)orig.data(), orig.size());
+
+			if((int)checksum != target_checksum)
+				THROW("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is correct.",
+						target_checksum, checksum);
+		}
+		
+		vector<Line> orig_lines = divideIntoLines(orig);
+		if(orig_lines.empty())
+			orig_lines.push_back(Line{"", 0});
 
 		int optr = (int)orig_lines.size() - 1;
 		for(int n = 0; n < (int)patch_lines.size(); n++) {
@@ -59,8 +79,10 @@ namespace game {
 
 			if(end_line == -1)
 				end_line = line;
-			line--;
-			end_line--;
+			if(line != 0)
+				line--;
+			if(end_line != 0)
+				end_line--;
 
 			ASSERT(line >= 0 && end_line >= line);
 			ASSERT(command == 'c' || command == 'a' || command == 'd');
