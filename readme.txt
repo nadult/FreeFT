@@ -1,16 +1,19 @@
 1. Introduction
-FreeFT is an open source isometric RPG engine, inspired by Fallout Tactics, a tactical
-combat game from 2001 created by Micro Forte.
+FreeFT is an open source isometric RPG engine, inspired by Fallout Tactics,
+a tactical combat game from 2001 created by MicroForte.
 
 2. Building
-For compilation G++ in version 4.7 is required (lots of C++11 features are used), and
-following libraries:
-- GLFW, libpng,  zlib, baselib (should be included)
+For compilation G++ in version 4.7 is required (lots of C++11 features are
+used), and following libraries:
+- GLFW, libpng, zlib
+	these should be available in your distro's package repositories
+- baselib
+	https://github.com/nadult/baselib
 
 3. Running
 To run this program, resources from original Fallout Tactics are required.
-You can obtain a copy from GOG or Steam. FT have to be installed and resources
-converted with a convert program.
+You can obtain a copy from GOG or Steam. FT have to be installed and
+resources converted with a convert program.
 
 4. Used libraries / resources:
 - Liberation fonts (licensed under SIL Open Font License)

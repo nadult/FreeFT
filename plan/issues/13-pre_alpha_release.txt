@@ -30,7 +30,6 @@
 - write basic readme with acknowledgements  DONE
 - convert should be able to take FOT path, and extract and convert all necessary resources  DONE
 
-- include baselib as git submodule?
 - put up on github, announce on nma-fallout
 - SECONDARY: some enemies with basic AI (scorpions)
 - SECONDARY: pack tiles into single file, so they will load faster?

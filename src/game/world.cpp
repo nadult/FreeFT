@@ -198,7 +198,7 @@ namespace game {
 
 		if(flags & collider_entities) {
 			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->m_grid_index : -1, flags);
-			if(isect.first != -1)
+			if(isect.first != -1 && isect.second < out.distance())
 				out = Intersection(&m_entity_map[isect.first], isect.second);
 		}
 

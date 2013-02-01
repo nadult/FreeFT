@@ -123,11 +123,16 @@ int safe_main(int argc, char **argv)
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
-		if(isect.distance() == constant::inf)
+		if(isect.isEmpty())
 			isect = world.trace(ray, actor,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 		
-		if(isKeyDown('T') && isect.distance() != constant::inf)
+		Intersection full_isect = world.pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
+		if(full_isect.isEmpty())
+			full_isect = world.trace(ray, actor, collider_all|visibility_flag);
+
+		
+		if(isKeyDown('T') && !isect.isEmpty())
 			actor->setPos(ray.at(isect.distance()));
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
@@ -183,8 +188,8 @@ int safe_main(int argc, char **argv)
 		if((entity_debug && isect.isEntity()) || 1)
 			renderer.addBox(isect.boundingBox(), Color::yellow);
 
-		if(!isect.isEmpty() && shooting_debug) {
-			float3 target = ray.at(isect.distance());
+		if(!full_isect.isEmpty() && shooting_debug) {
+			float3 target = ray.at(full_isect.distance());
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
 
