@@ -10,6 +10,9 @@ used), and following libraries:
 - baselib
 	https://github.com/nadult/baselib
 
+Compiled binaries are available at SourceForge:
+https://sourceforge.net/projects/freeft/files/?source=navbar
+
 3. Running
 To run this program, resources from original Fallout Tactics are required.
 You can obtain a copy from GOG or Steam. FT have to be installed and
