@@ -1,7 +1,7 @@
 DEADLINE: Pre-alpha release (31st January, 12 days (96h) from 10th):
 ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF, THAT YOU'RE UNSURE IS NECESSARY
  - Pre-alpha release
-   issues/13-pre_alpha_release.txt
+   issues/13-pre_alpha_release.txt DONE  (68h 45min)
 
  - Not planned stuff
    issues/0-not_planned.txt (10.25)

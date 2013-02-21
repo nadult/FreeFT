@@ -52,12 +52,14 @@ namespace game {
 		//TODO: speed up somehow?
 		if((*this)[idx].ptr) {
 			int occluder_id = (*this)[idx].occluder_id;
-			OccluderMap::Occluder &occluder = m_occluder_map[occluder_id];
-			for(int n = 0; n < (int)occluder.objects.size(); n++)
-				if(occluder.objects[n] == idx) {
-					occluder.objects[n] = occluder.objects.back();
-					occluder.objects.pop_back();
-				}
+			if(occluder_id != -1) {
+				OccluderMap::Occluder &occluder = m_occluder_map[occluder_id];
+				for(int n = 0; n < (int)occluder.objects.size(); n++)
+					if(occluder.objects[n] == idx) {
+						occluder.objects[n] = occluder.objects.back();
+						occluder.objects.pop_back();
+					}
+			}
 		}
 		Grid::remove(idx);
 	}

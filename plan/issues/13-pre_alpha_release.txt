@@ -29,8 +29,8 @@
 - fixed crouching animation  DONE
 - write basic readme with acknowledgements  DONE
 - convert should be able to take FOT path, and extract and convert all necessary resources  DONE
+- put up on github, announce on nma-fallout  DONE
 
-- put up on github, announce on nma-fallout
 - SECONDARY: some enemies with basic AI (scorpions)
 - SECONDARY: pack tiles into single file, so they will load faster?
 - SECONDARY: in the game use shift to select surface on a level relative somehow to the players position
@@ -41,8 +41,9 @@
 issues/5-entities
 issues/10-ui_improvements
 
++FINISHED
 +ESTIMATED_TIME: dunno, new tasks keep coming in..
-+TIME_SPENT: 
++TIME_SPENT: 68h 45min
 
 +WORK_LOG:
 10.01.13: 21:00 - 24:30 (3h 30min)
