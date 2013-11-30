@@ -1,11 +1,26 @@
+/* Copyright (C) 2013-2014 Krzysztof Jakubowski <nadult@fastmail.fm>
+
+   This file is part of FreeFT.
+ */
+
+#include "sys/network.h"
+#include <cstdlib>
+#include <unistd.h>
+
+#ifdef _WIN32
+
+typedef int socklen_t;
+
+#else
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include "sys/network.h"
-#include <cstdlib>
+
+#endif
+
 
 namespace net {
 
@@ -40,7 +55,12 @@ namespace net {
 			close(fd);
 			THROW("Error while binding address to socket");
 		}
+
+#ifdef _WIN32
+		THROW("use ioctlsocket");
+#else
 		fcntl(fd, F_SETFL, O_NONBLOCK);
+#endif
 	}
 	Socket::~Socket() {
 		close(fd);

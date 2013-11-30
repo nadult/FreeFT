@@ -1,5 +1,5 @@
 1. Introduction
-FreeFT is an open source isometric RPG engine, inspired by Fallout Tactics,
+FreeFT is an isometric game engine, inspired by Fallout Tactics,
 a tactical combat game from 2001 created by MicroForte.
 
 2. Building

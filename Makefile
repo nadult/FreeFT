@@ -46,7 +46,7 @@ MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
 LIBS=-lglfw -lbaselib -lpng -lz
 LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp
-MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
+MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lws2_32
 
 LIBS_convert=-lzip 
 
@@ -55,7 +55,7 @@ INCLUDES=-Isrc/
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
 		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses #-Werror
 
-FLAGS=-std=gnu++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
+FLAGS=-std=c++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LIB_FLAGS=-O2
 
 LINUX_FLAGS=$(FLAGS) -rdynamic -fopenmp
