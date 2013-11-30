@@ -1,5 +1,4 @@
-DEADLINE: Pre-alpha release (31st January, 12 days (96h) from 10th):
-ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF, THAT YOU'RE UNSURE IS NECESSARY
+0. Random stuff
  - Pre-alpha release
    issues/13-pre_alpha_release.txt DONE  (68h 45min)
 
@@ -23,22 +22,22 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF
    issues/10-ui_improvements.txt DONE  (20 / 31)
 
 2. Simple game
- - poruszanie się postacią
+ - character movement
    issues/3-simple_character_movement.txt DONE  (26 / 15)
 
- - encje, interakcja z otoczeniem
+ - entities, interaction with environment
    issues/5-entities.txt  DONE (64 / 18.5)
 
- - strzelanie i niszczenie obiektów
+ - shooting and destroying objects
    issues/6-basic_shooting.txt
 
- - poprawiona nawigacja
+ - correct navigation
    issues/7-improve_navigation.txt DONE (13 / 15)
 
- - proste udźwiękowienie
+ - simple sound system
    issues/9-simple_audio.txt
 
- - system skryptów
+ - scripting
    - LUA; skrypty mają być małe, nie wymagające debugowania; każdy bardziej skomplikowany kawałek
      kodu przenieść do C++; nie robić AI na skryptach! tzn. co najwyżej umożliwić sterowanie, ale
      cały rdzeń jest w C++; domyślnie AI powinno działać wogóle bez użycia jakichkolwiek skryptów,
@@ -46,22 +45,42 @@ ONLY MOST IMPORTANT FEATURES, REFRAIN FROM POLISHING, OPTIMIZING, OR DOING STUFF
      Skrypty mają być prostymi funkcjami, nie należy używać zaawansowanych ficzerów z LUY, unikać
      słowników i innych rzeczy które mają niejasną charakterystykę wydajnościowo pamięciową
 
- - system dialogów
-   - taki jak w 2drpg? ale w XML
+ - dialogue system
+   - something like in 2drpg, only using XML
 
- - prosty system walki i proste AI (dra crittersów)
-   - reakcja na obrażenia
-   - AI dla crittersów
-   - HPki, proste skille
+ - simple combat and simple AI (for critters like rad-scorpions)
+   - reaction to damage
+   - AI for critters
+   - Is it supposed to be RPG-like?
+   - aiming
+   - different firing modes (single / burst)
+   - Hit Points, simple skills?
 
-3. Random, useful things
+- palettized sprite rendering (secondary)
+   - game should support multiple sprites of the same kind with different palettes being rendered
+     all at once without big memory requirements;
+
+- UI: HUD + menus
+  - HUD: selected weapon, selected armor, bullets in mag.
+  - Menu: view inventory, transfer items inventory <-> container
+  - Menu: creating game sessions, joining game sessions
+
+3. Multiplayer mode
+
+- simple protocol with full replication of orders every frame
+
+- simple game modes:
+  - deathmatch
+  - capture the flag (one team defending, the other attacking
+
+4. Random, useful things
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt
  
- - dokończenie refactoringu nazewnictwa
+ - finish refactoring of names
    issues/12-code_cleanup.txt DONE (3 / 7)
 
- - ulepszanie wydajności tylko w razie potrzeby
+ - improve performance only if there is a real need
 
  - UI jest opóźniony o klatkę w stosunku do ruchu myszy
  - pozmieniać konstruktory IRect i IBox, tak żeby jako drugi argument dawało się wielkość a nie koniec obiektu

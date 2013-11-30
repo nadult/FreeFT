@@ -14,7 +14,7 @@ _dummy := $(shell [ -d $(BUILD)/lz4 ] || mkdir -p $(BUILD)/lz4)
 SHARED_SRC=\
 	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/scene_renderer gfx/packed_texture \
-	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config \
+	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/network \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/actor game/actor_anims game/actor_orders game/entity game/container game/door game/projectile \
@@ -44,9 +44,9 @@ MINGW_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD)/%_.o) $(LIBS_SRC:%=$(BUILD)/%_.o)
 LINUX_PROGRAMS:=$(PROGRAM_SRC:%=%)
 MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
-LIBS=-lglfw -lbaselib -lz
-LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp -lpng
-MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lpng15
+LIBS=-lglfw -lbaselib -lpng -lz
+LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp
+MINGW_LIBS=$(LIBS) -lglu32 -lopengl32
 
 LIBS_convert=-lzip 
 
@@ -64,8 +64,8 @@ MINGW_FLAGS=$(FLAGS) -mno-ms-bitfields #mms-bitfields triggers attribute packed 
 CXX=g++
 CC =gcc
 
-MGW_CXX=i686-mingw32-g++
-MGW_CC =i686-mingw32-gcc
+MGW_CXX=i686-pc-mingw32-g++
+MGW_CC =i686-pc-mingw32-gcc
 
 
 -include Makefile.local
