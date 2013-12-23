@@ -148,7 +148,9 @@ namespace game {
 	class Actor: public Entity {
 	public:
 		Actor(Stream&);
-		Actor(ActorTypeId::Type type, const float3 &pos) { initialize(type, pos); }
+		Actor(const XMLNode&);
+		Actor(ActorTypeId::Type type, const float3 &pos);
+
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 		virtual EntityId::Type entityType() const { return EntityId::actor; }
 		virtual Entity *clone() const;
@@ -160,7 +162,7 @@ namespace game {
 		bool isDead() const;
 
 	private:
-		void initialize(ActorTypeId::Type, const float3 &pos);
+		void initialize(ActorTypeId::Type);
 
 		void think();
 
@@ -192,8 +194,8 @@ namespace game {
 		void onPickupEvent();
 		
 	private:
-		virtual void saveContentsToXML(XMLNode&) const;
-		virtual void saveToBinary(Stream&);
+		virtual void save(XMLNode&) const;
+		virtual void save(Stream&) const;
 
 		virtual bool shrinkRenderedBBox() const { return true; }
 		// orders

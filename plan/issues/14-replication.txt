@@ -8,3 +8,4 @@
 20.12.13: 10:00 - 18:00
 21.12.13: 11:00 - 12:00
 22.12.13: 11:00 - 20:00 (fixing serializer)
+23.12.13: 16:00 - 18:00, 19 - 22:00 (cleanup in entity serialization and construction)

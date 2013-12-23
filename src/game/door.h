@@ -36,8 +36,8 @@ namespace game
 
 	public:
 		Door(Stream&);
-		Door(const char *sprite_name, const float3 &pos, Type type, const float2 &dir = float2(1, 0))
-			{ initialize(sprite_name, pos, type, dir); }
+		Door(const XMLNode&);
+		Door(const char *sprite_name, Type type, const float3 &pos);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
 		virtual EntityId::Type entityType() const { return EntityId::door; }
@@ -51,10 +51,10 @@ namespace game
 		virtual void setDirAngle(float angle);
 		
 	private:
-		void initialize(const char *sprite_name, const float3 &pos, Type type, const float2 &dir);
+		void initialize(Type type);
 
-		virtual void saveContentsToXML(XMLNode&) const;
-		virtual void saveToBinary(Stream&);
+		virtual void save(XMLNode&) const;
+		virtual void save(Stream&) const;
 
 		virtual void think();
 		virtual void onAnimFinished();

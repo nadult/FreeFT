@@ -15,27 +15,39 @@ static const char *s_seq_names[3] = {
 
 namespace game {
 
+	ItemEntity::ItemEntity(const Item &item, const float3 &pos) :Entity(item.spriteName()) {
+		initialize(item);
+		setPos(pos);
+	}
+
+	ItemEntity::ItemEntity(const XMLNode &node) :Entity(node) {
+		const ItemDesc *desc = ItemDesc::find(node.attrib("item_desc"));
+		if(!desc)
+			THROW("Unknown item id: %s\n", node.attrib("item_desc"));
+		initialize(Item(desc));
+	}
+
 	ItemEntity::ItemEntity(Stream &sr) :Entity(sr) {
-		float3 pos;
-		float angle;
 		char item_name[256];
-		sr.unpack(pos, angle);
 		sr.loadString(item_name, sizeof(item_name));
 
 		const ItemDesc *desc = ItemDesc::find(item_name);
 		if(!desc)
 			THROW("Unknown item id: %s\n", item_name);
-		initialize(Item(desc), pos);
-		setDirAngle(angle); //TODO: unsafe calling virtual from constructor
+		initialize(Item(desc));
 	}
 
-	void ItemEntity::saveToBinary(Stream &sr) {
-		sr.pack(m_pos, m_dir_angle);
+	void ItemEntity::save(Stream &sr) const {
+		Entity::save(sr);
 		sr << m_item.desc()->name;
 	}
-
-	void ItemEntity::initialize(const Item &item, const float3 &pos) {
-		Entity::initialize(item.spriteName(), pos);
+	
+	void ItemEntity::save(XMLNode &node) const {
+		Entity::save(node);
+		node.addAttrib("item_desc", node.own(m_item.desc()->id.c_str()));
+	}
+			
+	void ItemEntity::initialize(const Item &item) {
 		m_item = item;
 		DASSERT(item.isValid());
 

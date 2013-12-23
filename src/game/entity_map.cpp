@@ -136,7 +136,7 @@ namespace game
 
 		XMLNode node = main_node.child();
 		while(node) {
-			Entity *entity = Entity::constructFromXML(node);
+			Entity *entity = Entity::construct(node);
 			add(entity);
 			node = node.sibling();
 		}
@@ -159,7 +159,7 @@ namespace game
 		} );
 
 		for(int n = 0; n < (int)indices.size(); n++)
-			(*this)[indices[n]].ptr->saveToXML(main_node);
+			(*this)[indices[n]].ptr->save(main_node);
 	}
 }
 

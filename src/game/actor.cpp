@@ -6,6 +6,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/sprite.h"
+#include "sys/xml.h"
 #include <cmath>
 #include <cstdio>
 
@@ -71,22 +72,23 @@ namespace game {
 		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
 	};
 
-	Actor::Actor(Stream &sr) {
-		float3 pos;
-		float angle;
+	Actor::Actor(Stream &sr) :Entity(sr) {
+		//TODO: possible space optimization: no need to send sprite name
 		ActorTypeId::Type type_id;
-		sr.unpack(pos, angle, type_id);
-		initialize(type_id, pos);
-		setDirAngle(angle); //TODO: unsafe calling virtual from constructor
+		sr >> type_id;
+		initialize(type_id);
 	}
 
-	void Actor::saveToBinary(Stream &sr) {
-		sr.pack(m_pos, m_dir_angle, m_type_id);
-		//TODO: other parameters
+	Actor::Actor(const XMLNode &node) :Entity(node) {
+		initialize(ActorTypeId::fromString(node.attrib("actor_type")));
 	}
 
-	void Actor::initialize(ActorTypeId::Type type_id, const float3 &pos) {
-		Entity::initialize(s_sprite_names[type_id][ArmourClassId::none], pos);
+	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos) :Entity(s_sprite_names[type_id][ArmourClassId::none]) {
+		initialize(type_id);
+		setPos(pos);
+	}
+
+	void Actor::initialize(ActorTypeId::Type type_id) {
 		m_type_id = type_id;
 
 		//m_sprite->printSequencesInfo();
@@ -98,8 +100,18 @@ namespace game {
 		m_armour_class_id = ArmourClassId::none;
 		m_weapon_class_id = WeaponClassId::unarmed;
 		animate(ActionId::idle);
-		lookAt(float3(0, 0, 0), true);
+		m_target_angle = dirAngle();
 		m_order = m_next_order = doNothingOrder();
+	}
+
+	void Actor::save(XMLNode &node) const {
+		Entity::save(node);
+		node.addAttrib("actor_type", ActorTypeId::toString(m_type_id));
+	}
+
+	void Actor::save(Stream &sr) const {
+		Entity::save(sr);
+		sr << m_type_id;
 	}
 
 	bool Actor::isDead() const {

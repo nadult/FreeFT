@@ -7,6 +7,7 @@
 #include "game/world.h"
 #include "game/actor.h"
 #include "game/sprite.h"
+#include "sys/xml.h"
 #include <cstdio>
 
 namespace game {
@@ -57,26 +58,42 @@ namespace game {
 	}
 
 	Door::Door(Stream &sr) :Entity(sr) {
-
+		Type type_id;
+		sr >> type_id;
+		initialize(type_id);
 	}
 
-	void Door::saveToBinary(Stream &sr) {
-		Entity::saveToBinary(sr);
+	Door::Door(const XMLNode &node) :Entity(node) {
+		initialize(DoorTypeId::fromString(node.attrib("door_type")));
+	}
+		
+	Door::Door(const char *sprite_name, Type type_id, const float3 &pos) :Entity(sprite_name) {
+		initialize(type_id);
+		setPos(pos);
+	}
+	
+	void Door::save(XMLNode &node) const {
+		Entity::save(node);
+		node.addAttrib("door_type", DoorTypeId::toString(m_type_id));
 	}
 
-	void Door::initialize(const char *sprite_name, const float3 &pos, Door::Type type, const float2 &dir) {
-		Entity::initialize(sprite_name, pos);
-		m_type_id = type;
+	void Door::save(Stream &sr) const {
+		Entity::save(sr);
+		sr << m_type_id;
+	}
+
+	void Door::initialize(Door::Type type_id) {
+		m_type_id = type_id;
 		m_close_time = -1.0;
 		m_update_anim = false;
 		
 		for(int n = 0; n < state_count; n++)
 			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
-		DASSERT(testSpriteType(m_sprite, type));
+		DASSERT(testSpriteType(m_sprite, type_id));
 
 		m_state = state_closed;
 		playSequence(m_seq_ids[m_state]);
-		setDir(dir);
+		setBBox(computeBBox(m_state));
 	}
 		
 	void Door::setDirAngle(float angle) {

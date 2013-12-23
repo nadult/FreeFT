@@ -14,7 +14,7 @@ namespace game
 
 	class Container: public Entity
 	{
-		void initialize(const char *sprite_name, const float3 &pos);
+		void initialize();
 
 	public:
 		enum State {
@@ -27,7 +27,8 @@ namespace game
 		};
 
 		Container(Stream&);
-		Container(const char *sprite_name, const float3 &pos) { initialize(sprite_name, pos); }
+		Container(const XMLNode&);
+		Container(const char *sprite_name, const float3 &pos);
 
 		virtual ColliderFlags colliderType() const { return collider_static; }
 		virtual EntityId::Type entityType() const { return EntityId::container; }
@@ -46,8 +47,8 @@ namespace game
 		Inventory &inventory() { return m_inventory; }
 		
 	private:
-		virtual void saveContentsToXML(XMLNode&) const;
-		virtual void saveToBinary(Stream&);
+		virtual void save(XMLNode&) const;
+		virtual void save(Stream&) const;
 
 		virtual void think();
 		virtual void onAnimFinished();

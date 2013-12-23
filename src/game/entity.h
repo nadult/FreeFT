@@ -22,15 +22,21 @@ namespace game {
 	// array for each subtype of Entity class
 	// TODO: check for exception safety everywhere, where Entity* is used
 	class Entity {
-	protected:
-		Entity() { } // When calling this constructor, you have to make sure that initialize is called afterwards
-		void initialize(const char *sprite_name, const float3 &pos);
+		void initialize(const char *sprite_name);
 
 	public:
-		Entity(const char *sprite_name, const float3 &pos);
+		Entity(const char *sprite_name);
+		Entity(const XMLNode&);
+		Entity(Stream&);
 		Entity(const Entity&);
 		void operator=(const Entity&);
 		virtual ~Entity();
+		
+		virtual void save(Stream&) const;
+		virtual void save(XMLNode&) const;
+		
+		static Entity *construct(const XMLNode &node);
+		static Entity *construct(Stream&);
 
 		virtual Entity *clone() const = 0;
 
@@ -63,15 +69,6 @@ namespace game {
 		void remove();
 
 		bool testPixel(const int2 &screen_pos) const;
-	
-		//TODO: not every attribute is stored in XML, maybe they should?
-		static Entity *constructFromXML(const XMLNode &node);
-		void saveToXML(XMLNode &parent) const;
-
-		Entity(Stream&);
-		static Entity *constructFromBinary(Stream&);
-		virtual void saveToBinary(Stream&);
-		
 	protected:
 		friend class World;
 		friend class EntityMap;
@@ -80,8 +77,6 @@ namespace game {
 		mutable int m_grid_index;
 
 	protected:
-		virtual void saveContentsToXML(XMLNode&) const { }
-
 		virtual void think() { DASSERT(m_world); }
 		virtual void nextFrame();
 		virtual void handleFrameEvent(int sprite_event_id) { }

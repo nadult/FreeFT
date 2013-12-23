@@ -24,8 +24,9 @@ namespace game {
 
 	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos, const float3 &target,
 			Entity *spawner)
-		:Entity(s_projectile_names[type], pos), m_dir(target - pos), m_spawner(spawner), m_type(type) {
+		:Entity(s_projectile_names[type]), m_dir(target - pos), m_spawner(spawner), m_type(type) {
 			m_dir *= 1.0f / length(m_dir);
+			setPos(pos);
 			setDir(m_dir.xz());
 			m_speed = speed;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
@@ -60,7 +61,9 @@ namespace game {
 	}
 
 	ProjectileImpact::ProjectileImpact(const char *sprite_name, const float3 &pos)
-		:Entity(sprite_name, pos) { }
+		:Entity(sprite_name) {
+		setPos(pos);
+	}
 	
 	Entity *ProjectileImpact::clone() const {
 		return new ProjectileImpact(*this);

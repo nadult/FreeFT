@@ -9,13 +9,14 @@
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
 #include "sys/profiler.h"
+#include "sys/xml.h"
 
 using namespace gfx;
 
 
 namespace game {
 
-	void Entity::initialize(const char *sprite_name, const float3 &pos) {
+	void Entity::initialize(const char *sprite_name) {
 		m_world = nullptr;
 		m_to_be_removed = false;
 		m_grid_index = -1;
@@ -26,18 +27,45 @@ namespace game {
 		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
 		m_dir_idx = 0;
 		m_dir_angle = 0.0f;
-		m_pos = (float3)pos;
+		m_pos = float3(0.0f, 0.0f, 0.0f);
 		m_seq_id = -1;
 		playSequence(0);
 	}
 
-	Entity::Entity(const char *sprite_name, const float3 &pos) {
-		initialize(sprite_name, pos);
+
+	Entity::Entity(const char *sprite_name) {
+		initialize(sprite_name);
 	}
 
 	Entity::Entity(const Entity &rhs)
 		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) {
 		operator=(rhs);
+	}
+
+	Entity::Entity(Stream &sr) {
+		char sprite_name[256];
+		sr.unpack(m_pos, m_dir_angle);
+		sr.loadString(sprite_name, sizeof(sprite_name));
+		initialize(sprite_name);
+	}
+	
+	Entity::Entity(const XMLNode &node) {
+		initialize(node.attrib("sprite"));
+		m_pos = node.float3Attrib("pos");
+		m_dir_angle = node.floatAttrib("angle");
+	}
+
+	void Entity::save(XMLNode &parent) const {
+		XMLNode node = parent.addChild(EntityId::toString(entityType()));
+		node.addAttrib("pos", m_pos);
+		node.addAttrib("sprite", node.own(m_sprite->resourceName()));
+		node.addAttrib("angle", m_dir_angle);
+	}
+
+	void Entity::save(Stream &sr) const {
+		ASSERT(sr.isSaving());
+		sr.pack(entityType(), m_pos, m_dir_angle);
+		sr.saveString(m_sprite->resourceName());
 	}
 
 	void Entity::operator=(const Entity &rhs) {

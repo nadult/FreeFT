@@ -6,6 +6,7 @@
 #include "game/container.h"
 #include "game/actor.h"
 #include "game/sprite.h"
+#include "sys/xml.h"
 #include <cstdio>
 
 namespace game {
@@ -18,15 +19,25 @@ namespace game {
 	};
 
 	Container::Container(Stream &sr) :Entity(sr) {
-
+		initialize();
+	}
+	Container::Container(const XMLNode &node) :Entity(node) {
+		initialize();
+	}
+	Container::Container(const char *sprite_name, const float3 &pos) :Entity(sprite_name) {
+		initialize();
+		setPos(pos);
 	}
 
-	void Container::saveToBinary(Stream &sr) {
-		Entity::saveToBinary(sr);
+	void Container::save(Stream &sr) const {
+		Entity::save(sr);
 	}
 
-	void Container::initialize(const char *sprite_name, const float3 &pos) {
-		Entity::initialize(sprite_name, pos);
+	void Container::save(XMLNode &node) const {
+		Entity::save(node);
+	}
+
+	void Container::initialize() {
 		m_update_anim = false;
 
 		m_is_always_opened = false;

@@ -96,8 +96,6 @@ int safe_main(int argc, char **argv)
 	unique_ptr<Host> host = 0;
 	string map_name = "data/maps/mission05.mod";
 
-	printf("%d\n%d\n", sizeof(EntityId::Type), sizeof(ActorTypeId::Type));
-
 	for(int n = 1; n < argc; n++) {
 		if(strcmp(argv[n], "-h") == 0) {
 			ASSERT(n + 1 < argc);

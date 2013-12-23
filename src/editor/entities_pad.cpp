@@ -145,7 +145,7 @@ namespace ui {
 				m_door_type->selectEntry(type);
 			}
 
-			m_proto = (PEntity)new game::Door(sprite_name, pos, type);
+			m_proto = (PEntity)new game::Door(sprite_name, type, pos);
 		}
 		else if(type == EntityId::item) {
 			m_proto = (PEntity)new game::ItemEntity(game::ItemDesc::get(m_item_type->selectedId()), pos);
