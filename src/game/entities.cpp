@@ -42,7 +42,7 @@ namespace game {
 	//TODO: endianess
 	Entity* Entity::construct(Stream &sr) {
 		EntityId::Type entity_type;
-		sr << entity_type;
+		sr >> entity_type;
 
 		Entity *out = nullptr;
 

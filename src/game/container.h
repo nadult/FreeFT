@@ -46,10 +46,10 @@ namespace game
 		const Inventory &inventory() const { return m_inventory; }
 		Inventory &inventory() { return m_inventory; }
 		
-	private:
 		virtual void save(XMLNode&) const;
 		virtual void save(Stream&) const;
-
+		
+	private:
 		virtual void think();
 		virtual void onAnimFinished();
 

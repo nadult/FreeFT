@@ -154,12 +154,16 @@ namespace game {
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 		virtual EntityId::Type entityType() const { return EntityId::actor; }
 		virtual Entity *clone() const;
+		ActorTypeId::Type actorType() const { return m_type_id; }
 
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }
 		void onImpact(ProjectileTypeId::Type projectile_type, float damage);
 
 		bool isDead() const;
+		
+		virtual void save(XMLNode&) const;
+		virtual void save(Stream&) const;
 
 	private:
 		void initialize(ActorTypeId::Type);
@@ -194,9 +198,6 @@ namespace game {
 		void onPickupEvent();
 		
 	private:
-		virtual void save(XMLNode&) const;
-		virtual void save(Stream&) const;
-
 		virtual bool shrinkRenderedBBox() const { return true; }
 		// orders
 		bool m_issue_next_order;

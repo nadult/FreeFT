@@ -66,6 +66,10 @@ namespace net {
 		return std::move(string(buf));
 	}
 
+	bool Address::operator==(const Address &addr) const {
+		return memcmp(&m_data, &addr.m_data, sizeof(m_data)) == 0;
+	}
+
 	Socket::Socket(const Address &address) {
 		m_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if(m_fd < 0)

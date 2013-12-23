@@ -49,12 +49,12 @@ namespace game
 		Type type() const { return m_type_id; }
 		void setKey(const Item&);
 		virtual void setDirAngle(float angle);
-		
-	private:
-		void initialize(Type type);
 
 		virtual void save(XMLNode&) const;
 		virtual void save(Stream&) const;
+		
+	private:
+		void initialize(Type type);
 
 		virtual void think();
 		virtual void onAnimFinished();

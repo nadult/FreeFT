@@ -76,7 +76,23 @@ namespace game {
 		//TODO: possible space optimization: no need to send sprite name
 		ActorTypeId::Type type_id;
 		sr >> type_id;
-		initialize(type_id);
+		
+		m_type_id = type_id;
+
+		//m_sprite->printSequencesInfo();
+		m_anims = ActorAnims(m_sprite);
+
+		m_issue_next_order = false;
+		m_stance_id = StanceId::standing;
+
+		m_armour_class_id = ArmourClassId::none;
+		m_weapon_class_id = WeaponClassId::unarmed;
+
+	//	animate(ActionId::idle);
+		m_target_angle = dirAngle();
+		m_order = m_next_order = doNothingOrder();
+
+	//	initialize(type_id);
 	}
 
 	Actor::Actor(const XMLNode &node) :Entity(node) {

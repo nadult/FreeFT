@@ -26,9 +26,11 @@ namespace net {
 		int getPort() const;
 		const string toString() const;
 
+		bool operator==(const Address&) const;
+
 	protected:
 		friend class Socket;
-		struct sockaddr_in m_data;
+		struct sockaddr_in m_data; //TODO: store it in different way (portable)
 	};
 
 	class Socket {

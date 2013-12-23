@@ -74,6 +74,7 @@ namespace game {
 
 		const TileMap &tileMap() const { return m_level.tile_map; }
 		const NaviMap &naviMap() const { return m_navi_map; }
+		EntityMap &entityMap() { return m_entity_map; }
 		NaviMap &naviMap() { return m_navi_map; }
 	
 		bool isColliding(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;

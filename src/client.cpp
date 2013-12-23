@@ -38,13 +38,16 @@ namespace PacketType {
 
 class Host {
 public:
-	Host(const net::Address &address) :socket(address) { }
+	Host(const net::Address &address) :m_socket(address), m_world(nullptr) { }
+
+	void setWorld(World *world) { m_world = world; }
 
 	virtual ~Host() { }
 	virtual void action() = 0;
 
 protected:
-	net::Socket socket;
+	World *m_world;
+	net::Socket m_socket;
 };
 
 class Server: public Host {
@@ -56,13 +59,36 @@ public:
 
 		while(true) {
 			net::Address source;
-			int ret = socket.receive(buffer, sizeof(buffer) - 1, source);
+			int ret = m_socket.receive(buffer, sizeof(buffer) - 1, source);
 			if(ret > 0) {
 				buffer[ret] = 0;
 				printf("Received: %s from: %s\n", buffer, source.toString().c_str());
+				m_clients.push_back(Client{source});
 			}
 			if(!ret)
 				break;
+		}
+
+		if(m_world) {
+			EntityMap &emap = m_world->entityMap();
+			int packet_size = 0;
+
+			for(int n = 0; n < emap.size(); n++) {
+				Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
+				if(actor && actor->actorType() == ActorTypeId::male) {
+					DataStream stream(buffer, sizeof(buffer), false);
+					actor->save(stream);
+					packet_size = stream.pos();
+					break;
+				}
+			}
+
+			if(packet_size) {
+				for(int n = 0; n < (int)m_clients.size(); n++) {
+					printf("Sending data packet (%d bytes) to: %s\n", packet_size, m_clients[n].address.toString().c_str());
+					m_socket.send(buffer, packet_size, m_clients[n].address);
+				}
+			}
 		}
 	}
 
@@ -81,10 +107,36 @@ public:
 
 		char data[256];
 		sprintf(data, "Hi from client\n");
-		socket.send(data, 256, m_server_address);
+		m_socket.send(data, 256, m_server_address);
 	}
 
 	void action() {
+		char buffer[2048];
+
+		while(true) {
+			net::Address source;
+			int ret = m_socket.receive(buffer, sizeof(buffer), source);
+
+			if(ret > 0 && m_world) {
+				printf("Received: packet (%d bytes) from: %s\n", ret, source.toString().c_str());
+				EntityMap &emap = m_world->entityMap();
+
+				for(int n = 0; n < emap.size(); n++) {
+					Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
+					if(actor && actor->actorType() == ActorTypeId::male) {
+						emap.remove(actor);
+						break;
+					}
+				}
+
+				DataStream stream(buffer, ret, true);
+				Entity *new_actor = Entity::construct(stream);
+				m_world->addEntity(new_actor);
+			}
+
+			if(!ret)
+				break;
+		}
 	}
 
 private:
@@ -141,6 +193,7 @@ int safe_main(int argc, char **argv)
 
 	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
 	world.updateNaviMap(true);
+	host->setWorld(&world);
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
@@ -162,7 +215,8 @@ int safe_main(int argc, char **argv)
 		if(isKeyDown(Key_esc))
 			break;
 
-		if(host)
+		static int counter = 0; counter++;
+		if(host)// && counter % 4 == 0)
 			host->action();
 
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
@@ -334,6 +388,8 @@ int safe_main(int argc, char **argv)
 		}
 		profiler::nextFrame();
 	}
+
+	host->setWorld(nullptr);
 
 /*	PTexture atlas = TextureCache::main_cache.atlas();
 	Texture tex;

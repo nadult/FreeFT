@@ -44,9 +44,9 @@ namespace game {
 
 	Entity::Entity(Stream &sr) {
 		char sprite_name[256];
-		sr.unpack(m_pos, m_dir_angle);
 		sr.loadString(sprite_name, sizeof(sprite_name));
 		initialize(sprite_name);
+		sr.unpack(m_seq_id, m_frame_id, m_dir_idx, m_dir_angle, m_pos);
 	}
 	
 	Entity::Entity(const XMLNode &node) {
@@ -64,8 +64,9 @@ namespace game {
 
 	void Entity::save(Stream &sr) const {
 		ASSERT(sr.isSaving());
-		sr.pack(entityType(), m_pos, m_dir_angle);
+		sr << entityType();
 		sr.saveString(m_sprite->resourceName());
+		sr.pack(m_seq_id, m_frame_id, m_dir_idx, m_dir_angle, m_pos);
 	}
 
 	void Entity::operator=(const Entity &rhs) {
