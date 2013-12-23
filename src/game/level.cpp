@@ -124,14 +124,12 @@ namespace game {
 				Loader mod_sr(file_name);
 				orig.resize(orig_sr.size());
 				mod.resize(mod_sr.size());
-				orig_sr.data(orig.data(), orig.size());
-				mod_sr.data(mod.data(), mod.size());
+				orig_sr.load(orig.data(), orig.size());
+				mod_sr.load(mod.data(), mod.size());
 			}
 
 			vector<char> patched = applyPatch(orig, mod);
-
-			Serializer sr(PStream(new DataStream(patched)), true);
-			sr & doc;
+			DataStream(patched, true) >> doc;
 		}
 		else
 			doc.load(file_name);

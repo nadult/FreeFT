@@ -101,8 +101,9 @@ namespace gfx
 	// Alpha component is always 255
 	class Palette {
 	public:
-		void serialize(Serializer&);
-		void legacyLoad(Serializer&);
+		void load(Stream&);
+		void save(Stream&) const;
+		void legacyLoad(Stream&);
 
 		void resize(int size);
 		void clear();
@@ -123,8 +124,9 @@ namespace gfx
 	public:
 		PackedTexture();
 		
-		void legacyLoad(Serializer&, Palette&);
-		void serialize(Serializer&);
+		void legacyLoad(Stream&, Palette&);
+		void load(Stream&);
+		void save(Stream&) const;
 
 		int width() const { return m_width; }
 		int height() const { return m_height; }
@@ -165,7 +167,8 @@ namespace gfx
 		TextureFormat format() const { return TextureFormat(TI_A8B8G8R8); }
 
 		// Loading from TGA, BMP, PNG, DDS
-		void serialize(Serializer&);
+		void load(Stream&);
+		void save(Stream&) const;
 		void swap(Texture&);
 
 		Color *data() { return m_data.data(); }
@@ -180,12 +183,12 @@ namespace gfx
 		Color &operator[](int idx) { return m_data[idx]; }
 		const Color operator[](int idx) const { return m_data[idx]; }
 		
-		void loadTGA(Serializer&);
-		void loadBMP(Serializer&);
-		void loadPNG(Serializer&);
-		void loadZAR(Serializer&);
+		void loadTGA(Stream&);
+		void loadBMP(Stream&);
+		void loadPNG(Stream&);
+		void loadZAR(Stream&);
 
-		void saveTGA(Serializer&);
+		void saveTGA(Stream&) const;
 
 private:
 		PodArray<Color> m_data;

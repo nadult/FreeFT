@@ -1,3 +1,6 @@
+TODO:
+ - new name
+
 0. Random stuff
  - Pre-alpha release
    issues/13-pre_alpha_release.txt DONE  (68h 45min)
@@ -68,6 +71,7 @@
 3. Multiplayer mode
 
 - simple protocol with full replication of orders every frame
+	issues/14-replication.txt
 
 - simple game modes:
   - deathmatch

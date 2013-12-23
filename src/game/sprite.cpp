@@ -36,21 +36,38 @@ namespace game
 
 	Sprite::Sprite() :m_bbox(0, 0, 0), m_offset(0, 0) { }
 
-	void Sprite::Sequence::serialize(Serializer &sr) {
-		sr & name;
-		sr(frame_count, dir_count, first_frame, palette_id);
+	void Sprite::Sequence::load(Stream &sr) {
+		sr >> name;
+		sr.unpack(frame_count, dir_count, first_frame, palette_id);
 	}
 
-	void Sprite::MultiPalette::serialize(Serializer &sr) {
-		sr & colors;
-		sr.data(offset, sizeof(offset));
+	void Sprite::Sequence::save(Stream &sr) const {
+		sr << name;
+		sr.pack(frame_count, dir_count, first_frame, palette_id);
 	}
 
-	void Sprite::MultiImage::serialize(Serializer &sr) {
+	void Sprite::MultiPalette::load(Stream &sr) {
+		sr >> colors;
+		sr.load(offset, sizeof(offset));
+	}
+
+	void Sprite::MultiPalette::save(Stream &sr) const {
+		sr << colors;
+		sr.save(offset, sizeof(offset));
+	}
+
+	void Sprite::MultiImage::load(Stream &sr) {
 		for(int l = 0; l < 4; l++)
-			sr & images[l];
-		sr.data(points, sizeof(points));
-		sr & rect;
+			sr >> images[l];
+		sr.load(points, sizeof(points));
+		sr >> rect;
+	}
+
+	void Sprite::MultiImage::save(Stream &sr) const {
+		for(int l = 0; l < 4; l++)
+			sr << images[l];
+		sr.save(points, sizeof(points));
+		sr << rect;
 	}
 
 	Sprite::MultiImage::MultiImage() :prev_palette(nullptr) { }
@@ -104,11 +121,18 @@ namespace game
 	}
 
 
-	void Sprite::serialize(Serializer &sr) {
+	void Sprite::load(Stream &sr) {
 		sr.signature("SPRITE", 6);
-		sr & m_sequences & m_frames & m_palettes & m_images;
-		sr(m_offset, m_bbox);
+		sr >> m_sequences >> m_frames >> m_palettes >> m_images;
+		sr.unpack(m_offset, m_bbox);
 	}
+
+	void Sprite::save(Stream &sr) const {
+		sr.signature("SPRITE", 6);
+		sr << m_sequences << m_frames << m_palettes << m_images;
+		sr.pack(m_offset, m_bbox);
+	}
+	
 
 	void Sprite::clear() {
 		m_sequences.clear();

@@ -23,7 +23,7 @@ namespace gfx
 		void operator=(DTexture&&);
 		~DTexture();
 
-		void serialize(Serializer&);
+		void load(Stream&);
 
 		void bind() const;
 		static void bind0();

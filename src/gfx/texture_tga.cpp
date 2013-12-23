@@ -25,7 +25,7 @@ namespace gfx
 	} __attribute__((packed));
 
 
-	void Texture::saveTGA(Serializer &sr) {
+	void Texture::saveTGA(Stream &sr) const {
 		Header header;
 		memset(&header, 0, sizeof(header));
 
@@ -36,21 +36,21 @@ namespace gfx
 		header.bitsperpixel = 32;
 		header.imagedescriptor = 8;
 
-		sr & header;
+		sr << header;
 		vector<Color> line(m_width);
 		for(int y = m_height - 1; y >= 0; y--) {
 			memcpy(&line[0], this->line(y), m_width * sizeof(Color));
 			for(int x = 0; x < m_width; x++)
 				line[x] = Color(line[x].b, line[x].g, line[x].r, line[x].a);
-			sr.data(&line[0], m_width * sizeof(Color));
+			sr.save(&line[0], m_width * sizeof(Color));
 		}
 	}
 
-	void Texture::loadTGA(Serializer &sr) {
+	void Texture::loadTGA(Stream &sr) {
 		Header hdr;
 		enum { max_width = 2048 };
 
-		sr.data(&hdr, sizeof(hdr));
+		sr.load(&hdr, sizeof(hdr));
 
 		if(hdr.datatypecode != 2)
 			THROW("Only uncompressed RGB data type is supported (id:%d)", (int)hdr.datatypecode);
@@ -71,7 +71,7 @@ namespace gfx
 		if(bpp == 3) {
 			for(int y = m_height - 1; y >= 0; y--) {
 				char line[max_width * 3];
-				sr.data(line, m_width * 3);
+				sr.load(line, m_width * 3);
 				Color *dst = this->line(y);
 				for(int x = 0; x < m_width; x++)
 					dst[x] = Color(line[x * 3 + 0], line[x * 3 + 1], line[x * 3 + 2]);
@@ -79,7 +79,7 @@ namespace gfx
 		}
 		else if(bpp == 4) {
 			for(int y = m_height - 1; y >= 0; y--)
-				sr.data(this->line(y), m_width * 4);
+				sr.load(this->line(y), m_width * 4);
 		}
 	}
 

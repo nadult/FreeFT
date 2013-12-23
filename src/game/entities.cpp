@@ -65,11 +65,54 @@ namespace game {
 	}
 	
 	void Door::saveContentsToXML(XMLNode &node) const {
-		node.addAttrib("door_type", DoorTypeId::toString(m_type));
+		node.addAttrib("door_type", DoorTypeId::toString(m_type_id));
 	}
 	
 	void ItemEntity::saveContentsToXML(XMLNode &node) const {
 		node.addAttrib("item_desc", node.own(m_item.desc()->id.c_str()));
+	}
+	
+	Entity::Entity(Stream &sr) {
+		float3 pos;
+		float angle;
+		char sprite_name[256];
+
+		sr.unpack(pos, angle);
+		sr.loadString(sprite_name, sizeof(sprite_name));
+		initialize(sprite_name, pos);
+		m_dir_angle = angle;
+	}
+
+	//TODO: properly saving enums (so that they take less space)
+	//TODO: endianess
+	Entity *Entity::constructFromBinary(Stream &sr) {
+		EntityId::Type entity_type;
+		sr << entity_type;
+
+		Entity *out = nullptr;
+
+		if(entity_type == EntityId::actor)
+			out = new Actor(sr);
+		else if(entity_type == EntityId::door)
+			out = new Door(sr);
+		else if(entity_type == EntityId::container)
+			out = new Container(sr);
+		else if(entity_type == EntityId::item)
+			out = new ItemEntity(sr);
+
+		if(!out)
+			THROW("Unknown entity type: %d\n", (int)entity_type);
+
+		return out;
+	}
+
+	void Entity::saveToBinary(Stream &sr) {
+		ASSERT(sr.isSaving());
+
+		EntityId::Type entity_type = entityType();
+		sr << entity_type;
+		sr.pack(m_pos, m_dir_angle);
+		sr.saveString(m_sprite->resourceName());
 	}
 
 }

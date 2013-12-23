@@ -15,8 +15,12 @@ using namespace gfx;
 
 namespace game {
 
-	Entity::Entity(const char *sprite_name, const float3 &pos)
-		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) {
+	void Entity::initialize(const char *sprite_name, const float3 &pos) {
+		m_world = nullptr;
+		m_to_be_removed = false;
+		m_grid_index = -1;
+		m_first_ref = nullptr;
+
 		m_sprite = Sprite::mgr[sprite_name];
 		m_max_screen_rect = m_sprite->getMaxRect();
 		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
@@ -25,6 +29,10 @@ namespace game {
 		m_pos = (float3)pos;
 		m_seq_id = -1;
 		playSequence(0);
+	}
+
+	Entity::Entity(const char *sprite_name, const float3 &pos) {
+		initialize(sprite_name, pos);
 	}
 
 	Entity::Entity(const Entity &rhs)

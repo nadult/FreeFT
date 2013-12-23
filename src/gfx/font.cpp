@@ -14,11 +14,11 @@
 
 namespace gfx
 {
-	void Font::serialize(Serializer &sr) {
+	void Font::load(Stream &sr) {
 		ASSERT(sr.isLoading());
 
 		XMLDocument doc;
-		sr & doc;
+		sr >> doc;
 		loadFromXML(doc);
 	}
 

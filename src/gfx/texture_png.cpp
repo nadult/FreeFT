@@ -198,14 +198,14 @@ namespace
 namespace gfx
 {
 
-	void Texture::loadPNG(Serializer &sr) {
+	void Texture::loadPNG(Stream &sr) {
 		Image image;
 
 		try {
 			PngInfo png;
 
 			fileData.resize(sr.size());
-			sr.data(&fileData[0], fileData.size());
+			sr.load(&fileData[0], fileData.size());
 			filePos = 0;
 
 			InitPngInfo(png);

@@ -17,8 +17,16 @@ namespace game {
 		"Closing",
 	};
 
-	Container::Container(const char *sprite_name, const float3 &pos)
-		:Entity(sprite_name, pos) {
+	Container::Container(Stream &sr) :Entity(sr) {
+
+	}
+
+	void Container::saveToBinary(Stream &sr) {
+		Entity::saveToBinary(sr);
+	}
+
+	void Container::initialize(const char *sprite_name, const float3 &pos) {
+		Entity::initialize(sprite_name, pos);
 		m_update_anim = false;
 
 		m_is_always_opened = false;

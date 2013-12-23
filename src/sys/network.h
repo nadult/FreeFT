@@ -22,9 +22,13 @@ namespace net {
 		Address();
 		Address(const char *name, int port);
 
+		void getIp(unsigned char elems[4]) const;
+		int getPort() const;
+		const string toString() const;
+
 	protected:
 		friend class Socket;
-		struct sockaddr_in data;
+		struct sockaddr_in m_data;
 	};
 
 	class Socket {
@@ -35,12 +39,15 @@ namespace net {
 		void operator=(const Socket&) = delete;
 		Socket(const Socket&) = delete;
 
+		void operator=(Socket&&);
+		Socket(Socket&&);
+
 		int receive(char *buffer, int buffer_size, Address &source);
 		void send(const char *data, int size, const Address &target);
-		
+		void close();	
 
 	protected:
-		int fd;
+		int m_fd;
 	};
 
 

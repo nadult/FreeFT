@@ -114,7 +114,9 @@ namespace game {
 
 	class ItemEntity: public Entity {
 	public:
-		ItemEntity(const Item &item, const float3 &pos);
+		ItemEntity(Stream&);
+		ItemEntity(const Item &item, const float3 &pos) { initialize(item, pos); }
+
 		ColliderFlags colliderType() const { return collider_item; }
 		virtual EntityId::Type entityType() const { return EntityId::item; }
 		virtual Entity *clone() const;
@@ -124,7 +126,10 @@ namespace game {
 		Item &item() { return m_item; }
 		
 	private:
+		void initialize(const Item &item, const float3 &pos);
+
 		virtual void saveContentsToXML(XMLNode&) const;
+		virtual void saveToBinary(Stream&);
 
 		int m_seq_ids[3];
 		Item m_item;

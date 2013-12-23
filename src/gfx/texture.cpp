@@ -46,12 +46,7 @@ namespace gfx
 		return (*this)(pos.x, pos.y).a > 0;
 	}
 
-	void Texture::serialize(Serializer &sr) {
-		if(sr.isSaving()) {
-			saveTGA(sr);
-			return;
-		}
-
+	void Texture::load(Stream &sr) {
 		string fileName = sr.name(), ext;
 		{
 			ext = fileName.substr(std::max(size_t(0), fileName.length() - 4));
@@ -71,6 +66,10 @@ namespace gfx
 			}
 			else THROW("%s format is not supported (Only BMP, TGA and PNG for now)", ext.c_str());
 		}
+	}
+
+	void Texture::save(Stream &sr) const {
+		saveTGA(sr);
 	}
 
 }

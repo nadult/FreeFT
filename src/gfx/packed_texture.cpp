@@ -22,51 +22,57 @@ namespace gfx {
 		m_data.clear();
 	}
 
-	void Palette::legacyLoad(Serializer &sr) {
-		i32 pal_size; sr & pal_size;
+	void Palette::legacyLoad(Stream &sr) {
+		i32 pal_size;
+		sr >> pal_size;
 		ASSERT(pal_size <= 256);
 		resize(pal_size);
 
 		Color buf[256];
-		sr.data(buf, pal_size * sizeof(Color));
+		sr.load(buf, pal_size * sizeof(Color));
 
 		for(int n = 0; n < pal_size; n++)
 			set(n, swapBR(buf[n]));
 	}
 
-	void Palette::serialize(Serializer &sr) {
+	void Palette::load(Stream &sr) {
 		u8 rgb[256 * 3], *ptr = rgb;
-		u16 size = m_data.size();
-		sr & size;
+		u16 size;
+		sr >> size;
 
-		if(sr.isLoading())
-			m_data.resize(size);
-		else for(int n = 0; n < size; n++) {
+		m_data.resize(size);
+		sr.load(rgb, size * 3);
+
+		for(int n = 0; n < size; n++) {
+			m_data[n] = Color(ptr[0], ptr[1], ptr[2]);
+			ptr += 3;
+		}
+	}
+
+	void Palette::save(Stream &sr) const {
+		u8 rgb[256 * 3], *ptr = rgb;
+		sr << u16(m_data.size());
+
+		for(int n = 0; n < m_data.size(); n++) {
 			ptr[0] = m_data[n].r;
 			ptr[1] = m_data[n].g;
 			ptr[2] = m_data[n].b;
 			ptr += 3;
 		}
 
-		sr.data(rgb, size * 3);
-
-		if(sr.isLoading())
-			for(int n = 0; n < size; n++) {
-				m_data[n] = Color(ptr[0], ptr[1], ptr[2]);
-				ptr += 3;
-			}
+		sr.save(rgb, m_data.size() * 3);
 	}
 
 	PackedTexture::PackedTexture()
 		:m_width(0), m_height(0), m_default_idx(0), m_max_idx(0) { }
 
-	void PackedTexture::legacyLoad(Serializer &sr, Palette &palette) {
+	void PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 		DASSERT(sr.isLoading());
 		sr.signature("<zar>", 6);
 
 		char zar_type, dummy1, has_palette;
 
-		sr(zar_type, dummy1, m_width, m_height, has_palette);
+		sr.unpack(zar_type, dummy1, m_width, m_height, has_palette);
 
 		if(zar_type != 0x33 && zar_type != 0x34)
 			THROW("Wrong zar type: %d", (int)zar_type);
@@ -77,7 +83,7 @@ namespace gfx {
 			palette.clear();
 
 		u32 value;
-		sr & value;
+		sr >> value;
 
 		m_default_idx = 0;
 		if((zar_type == 0x34 || zar_type == 0x33) && has_palette)
@@ -89,25 +95,25 @@ namespace gfx {
 
 		while(offset < total_pixels) {
 			u8 buf[128];
-			u8 cmd; sr & cmd;
+			u8 cmd; sr >> cmd;
 			int n_pixels = cmd >> 2;
 			int command = cmd & 3;
 			tdata.push_back(cmd);
 
 			if(command == 1) {
-				sr.data(buf, n_pixels);
+				sr.load(buf, n_pixels);
 				tdata.insert(tdata.end(), buf, buf + n_pixels);
 				for(int n = 0; n < n_pixels; n++)
 					m_max_idx = max(m_max_idx, buf[n]);
 			}
 			else if(command == 2) {
-				sr.data(buf, n_pixels * 2);
+				sr.load(buf, n_pixels * 2);
 				tdata.insert(tdata.end(), buf, buf + n_pixels * 2);
 				for(int n = 0; n < n_pixels; n++)
 					m_max_idx = max(m_max_idx, buf[n * 2 + 0]);
 			}
 			else if(command == 3) {
-				sr.data(buf, n_pixels);
+				sr.load(buf, n_pixels);
 				tdata.insert(tdata.end(), buf, buf + n_pixels);
 			}
 			offset += n_pixels;
@@ -116,10 +122,15 @@ namespace gfx {
 		m_data.resize(tdata.size());
 		memcpy(m_data.data(), tdata.data(), m_data.size());
 	}
-		
-	void PackedTexture::serialize(Serializer &sr) {
-		sr(m_width, m_height, m_default_idx, m_max_idx);
-		sr & m_data;
+	
+	void PackedTexture::load(Stream &sr) {
+		sr.unpack(m_width, m_height, m_default_idx, m_max_idx);
+		sr >> m_data;
+	}
+	
+	void PackedTexture::save(Stream &sr) const {
+		sr.pack(m_width, m_height, m_default_idx, m_max_idx);
+		sr << m_data;
 	}
 
 	int PackedTexture::memorySize() const {

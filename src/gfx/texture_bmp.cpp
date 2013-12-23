@@ -8,7 +8,7 @@
 namespace gfx
 {
 
-	void Texture::loadBMP(Serializer &sr)
+	void Texture::loadBMP(Stream &sr)
 	{
 		enum {
 			maxwidth = 2048
@@ -16,7 +16,7 @@ namespace gfx
 
 		{
 			char sig[2];
-			sr.data(sig, 2);
+			sr >> sig;
 			if(sig[0] != 'B' || sig[1] != 'M')
 				THROW("Wrong BMP file signature");
 		}
@@ -24,16 +24,16 @@ namespace gfx
 		int offset;
 		{
 			i32 size, reserved, toffset;
-			sr& size & reserved & toffset;
+			sr.unpack(size, reserved, toffset);
 			offset = toffset;
 		}
 		int width, height, bpp;
 		{
 			i32 hSize;
-			sr& hSize;
+			sr >> hSize;
 			if(hSize == 12) {
 				u16 hwidth, hheight, planes, hbpp;
-				sr& hwidth&hheight&planes&hbpp;
+				sr.unpack(hwidth, hheight, planes, hbpp);
 
 				width  = hwidth;
 				height = hheight;
@@ -44,9 +44,9 @@ namespace gfx
 				i16 planes, hbpp;
 				i32 compr, temp[5];
 
-				sr&hwidth&hheight&planes&hbpp;
-				sr&compr;
-				sr.data(temp, 4 * 5);
+				sr.unpack(hwidth, hheight, planes, hbpp);
+				sr >> compr;
+				sr.load(temp, 4 * 5);
 				width  = hwidth;
 				height = hheight;
 				bpp    = hbpp;
@@ -70,7 +70,7 @@ namespace gfx
 
 		if(bytesPerPixel == 1) {
 			Color palette[256];
-			sr.data(palette, sizeof(palette)); //TODO: check if palette is ok
+			sr.load(palette, sizeof(palette)); //TODO: check if palette is ok
 			sr.seek(offset);
 
 			for(uint n = 0; n < COUNTOF(palette); n++)
@@ -79,7 +79,7 @@ namespace gfx
 			for(int y = height - 1; y >= 0; y--) {
 				Color *dst = this->line(y);
 				u8 line[maxwidth];
-				sr.data(line, width);
+				sr.load(line, width);
 				sr.seek(sr.pos() + lineAlignment);
 
 				for(int x = 0; x < width; x++)
@@ -90,7 +90,7 @@ namespace gfx
 			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
 				u8 line[maxwidth * 3];
-				sr.data(line, width * 3);
+				sr.load(line, width * 3);
 
 				Color *dst = this->line(y);
 				for(int x = 0; x < width; x++)
@@ -101,7 +101,7 @@ namespace gfx
 		else if(bytesPerPixel == 4) {
 			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
-				sr.data(this->line(y), width * 4);
+				sr.load(this->line(y), width * 4);
 				sr.seek(sr.pos() + lineAlignment);
 			}
 		}

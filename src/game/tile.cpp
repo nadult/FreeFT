@@ -44,8 +44,11 @@ namespace game
 		m_offset = rhs.m_offset;
 	}
 
-	void TileFrame::serialize(Serializer &sr) {
-		sr & m_offset & m_texture;
+	void TileFrame::load(Stream &sr) {
+		sr >> m_offset >> m_texture;
+	}
+	void TileFrame::save(Stream &sr) const {
+		sr << m_offset << m_texture;
 	}
 
 	int2 TileFrame::textureSize() const {
@@ -70,7 +73,7 @@ namespace game
 	
 	Tile::Tile() :m_type(TileId::unknown), m_first_frame(&m_palette) { }
 			
-	void Tile::legacyLoad(Serializer &sr, const char *name) {
+	void Tile::legacyLoad(Stream &sr, const char *name) {
 		ASSERT(sr.isLoading());
 
 		{
@@ -87,32 +90,34 @@ namespace game
 		}
 
 		sr.signature("<tile>", 7);
-		i16 type; sr & type;
+		i16 type; sr >> type;
 
 		if(type == 0x3031) {
 			char dummy;
-			sr & dummy;
+			sr >> dummy;
 		}
 
 		u8 size_x, size_y, size_z;
-		sr(size_z, size_y, size_x);
+		sr.unpack(size_z, size_y, size_x);
 		m_bbox.x = size_x;
 		m_bbox.y = size_y;
 		m_bbox.z = size_z;
 		
-		i32 posX, posY; sr(posX, posY);
+		i32 posX, posY;
+		sr.unpack(posX, posY);
+
 		m_offset = int2(posX, posY);
 		i32 width, height;
-		sr(width, height);
+		sr.unpack(width, height);
 
 		char unknown[5];
 		int unk_size = type == '9'? 3 : type == '7'? 5 : type == '6'? 6 : 4;
-		sr.data(unknown, unk_size);
+		sr >> unknown >> unk_size;
 
 		sr.signature("<tiledata>\0001", 12);
 		u8 dummy2;
 		i32 zar_count;
-		sr(dummy2, zar_count);
+		sr.unpack(dummy2, zar_count);
 
 		Palette first_pal;
 
@@ -121,7 +126,7 @@ namespace game
 			Palette palette;
 			TileFrame.m_texture.legacyLoad(sr, palette);
 			i32 off_x, off_y;
-			sr(off_x, off_y);
+			sr.unpack(off_x, off_y);
 			TileFrame.m_offset = int2(off_x, off_y);
 
 			if(n == 0) {
@@ -143,18 +148,21 @@ namespace game
 		ASSERT(sr.pos() == sr.size());
 	}
 
-	void Tile::serialize(Serializer &sr) {
+	void Tile::load(Stream &sr) {
 		sr.signature("TILE", 4);
-		sr(m_type, m_bbox, m_offset);
-		if(sr.isLoading())
-			ASSERT(TileId::isValid(m_type));
-		sr & m_first_frame & m_frames & m_palette;
+		sr.unpack(m_type, m_bbox, m_offset);
+		ASSERT(TileId::isValid(m_type));
+		sr >> m_first_frame >> m_frames >> m_palette;
 
-		if(sr.isLoading()) {
-			for(int n = 0; n < (int)m_frames.size(); n++)
-				m_frames[n].m_palette_ref = &m_palette;
-			updateMaxRect();
-		}
+		for(int n = 0; n < (int)m_frames.size(); n++)
+			m_frames[n].m_palette_ref = &m_palette;
+		updateMaxRect();
+	}
+
+	void Tile::save(Stream &sr) const {
+		sr.signature("TILE", 4);
+		sr.pack(m_type, m_bbox, m_offset);
+		sr << m_first_frame << m_frames << m_palette;
 	}
 
 	void Tile::draw(const int2 &pos, Color col) const {

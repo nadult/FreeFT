@@ -16,8 +16,9 @@ namespace game {
 	class Sprite: public Resource {
 	public:
 		Sprite();
-		void legacyLoad(Serializer &sr);
-		void serialize(Serializer &sr);
+		void legacyLoad(Stream &sr);
+		void load(Stream &sr);
+		void save(Stream &sr) const;
 
 		enum EventId {
 			ev_stop_anim		= -2,
@@ -48,7 +49,8 @@ namespace game {
 		static_assert(sizeof(Frame) == 12, "Wrong size of Sprite::Frame");
 
 		struct Sequence {
-			void serialize(Serializer&);
+			void load(Stream&);
+			void save(Stream&) const;
 
 			string name;
 			int frame_count, dir_count;
@@ -57,7 +59,9 @@ namespace game {
 		};
 
 		struct MultiPalette {
-			void serialize(Serializer&);
+			void load(Stream&);
+			void save(Stream&) const;
+
 			int size(int layer) const;
 			const Color *access(int layer) const;
 			bool operator==(const MultiPalette&) const;
@@ -74,7 +78,9 @@ namespace game {
 			virtual void cacheUpload(gfx::Texture&) const;
 			virtual int2 textureSize() const { return rect.size(); }
 
-			void serialize(Serializer&);
+			void load(Stream&);
+			void save(Stream&) const;
+
 			gfx::PTexture toTexture(const MultiPalette&, FRect&) const;
 			bool testPixel(const int2&) const;
 			int memorySize() const;

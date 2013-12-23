@@ -19,7 +19,8 @@ namespace game
 		TileFrame(const gfx::Palette *palette = nullptr) :m_palette_ref(palette) { }
 		TileFrame(const TileFrame&);
 		void operator=(const TileFrame&);
-		void serialize(Serializer&);
+		void load(Stream&);
+		void save(Stream&) const;
 
 		virtual void cacheUpload(gfx::Texture&) const;
 		virtual int2 textureSize() const;
@@ -44,8 +45,9 @@ namespace game
 	public:
 		Tile();
 
-		void legacyLoad(Serializer &sr, const char *alternate_name = nullptr);
-		void serialize(Serializer &sr);
+		void legacyLoad(Stream &sr, const char *alternate_name = nullptr);
+		void load(Stream &sr);
+		void save(Stream &sr) const;
 		
 		static ResourceMgr<Tile> mgr;
 

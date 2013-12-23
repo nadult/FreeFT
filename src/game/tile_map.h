@@ -32,7 +32,7 @@ namespace game {
 		void saveToXML(XMLDocument&) const;
 		void swap(const TileMap&);
 
-		void legacyConvert(Serializer &in, Serializer &out);
+		void legacyConvert(Stream &in, Stream &out);
 
 		OccluderMap &occluderMap() { return m_occluder_map; }
 		const OccluderMap &occluderMap() const { return m_occluder_map; }

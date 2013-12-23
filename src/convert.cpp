@@ -26,12 +26,10 @@ using namespace game;
 
 
 struct TileMapProxy: public TileMap {
-	void serialize(Serializer &sr) {
-		ASSERT(sr.isSaving());
-		
+	void save(Stream &sr) const {
 		XMLDocument doc;
 		saveToXML(doc);
-		sr & doc;
+		sr << doc;
 	}
 	void setResourceName(const char*) { }
 };
@@ -68,19 +66,19 @@ namespace ResTypeId {
 	};
 };
 
-void convert(ResTypeId::Type type, Serializer &ldr, Serializer &svr) {
+void convert(ResTypeId::Type type, Stream &ldr, Stream &svr) {
 	ASSERT(type != ResTypeId::archive);
 
 	try {
 		if(type == ResTypeId::sprite) {
 			Sprite res;
 			res.legacyLoad(ldr);
-			res.serialize(svr);
+			res.save(svr);
 		}
 		else if(type == ResTypeId::tile) {
 			Tile res;
 			res.legacyLoad(ldr, svr.name());
-			res.serialize(svr);
+			res.save(svr);
 		}
 		else if(type == ResTypeId::map) {
 			TileMapProxy res;
@@ -141,7 +139,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 					double time = getTime();
 					resource.legacyLoad(source);
 					Saver target(new_path);
-					resource.serialize(target);
+					resource.save(target);
 					resource.setResourceName((Path(name).fileName()).c_str()); // TODO: this isprobably not needed
 
 					if(detailed)
@@ -328,7 +326,7 @@ void convertAll(const char *fot_path) {
 				if(access(dir.c_str(), R_OK) != 0)
 					mkdirRecursive(dir.c_str());
 
-				Loader ldr(new DataStream(data));
+				DataStream ldr(data, true);
 				Saver svr(dst_path);
 
 				if(type != ResTypeId::tile || bytes > 1024 * 1024) {

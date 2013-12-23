@@ -7,7 +7,7 @@
 #include <zlib.h>
 
 // source: http://www.zlib.net/zlib_how.html
-void zlibInflate(Serializer &sr, vector<char> &dest, int inSize) {
+void zlibInflate(Stream &sr, vector<char> &dest, int inSize) {
 	enum { CHUNK = 16 * 1024 };
 
 	int ret;
@@ -30,7 +30,7 @@ void zlibInflate(Serializer &sr, vector<char> &dest, int inSize) {
 	/* decompress until deflate stream ends or end of file */
 	do {
 		strm.avail_in = inSize < CHUNK? inSize : CHUNK;
-		sr.data(in, strm.avail_in);
+		sr.load(in, strm.avail_in);
 		strm.next_in = in;
 		inSize -= strm.avail_in;
 
@@ -92,27 +92,27 @@ namespace game
 
 	}
 
-	void Sprite::legacyLoad(Serializer &sr) {
+	void Sprite::legacyLoad(Stream &sr) {
 		ASSERT(sr.isLoading());
 		sr.signature("<sprite>", 9);
 		
 		clear();
 
-		i16 type; sr & type;
-		u8 sizeX, sizeY, sizeZ; sr(sizeZ, sizeY, sizeX);
+		i16 type; sr >> type;
+		u8 sizeX, sizeY, sizeZ; sr.unpack(sizeZ, sizeY, sizeX);
 		m_bbox.x = sizeX;
 		m_bbox.y = sizeY;
 		m_bbox.z = sizeZ;
 
-		i32 posX, posY; sr(posX, posY);
+		i32 posX, posY; sr.unpack(posX, posY);
 		m_offset = int2(posX, posY);
 		
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 
 		char header[3];
-		sr.data(header, sizeof(header));
+		sr.load(header, sizeof(header));
 
-		i32 seq_count; sr & seq_count;
+		i32 seq_count; sr >> seq_count;
 		m_sequences.resize(seq_count);
 
 		vector<int> seq2col(seq_count);
@@ -120,9 +120,9 @@ namespace game
 		for(int n = 0; n < seq_count; n++) {
 			Sequence &sequence = m_sequences[n];
 
-			i16 frame_count, dummy1; sr(frame_count, dummy1);
+			i16 frame_count, dummy1; sr.unpack(frame_count, dummy1);
 			i16 frame_data[frame_count];
-			sr.data(frame_data, frame_count * sizeof(i16));
+			sr.load(frame_data, frame_count * sizeof(i16));
 			sequence.frame_count = frame_count;
 			sequence.first_frame = (int)m_frames.size();
 
@@ -142,35 +142,35 @@ namespace game
 
 
 			i32 frame_data2[frame_count];
-			sr.data(frame_data2, frame_count * 4);
+			sr.load(frame_data2, frame_count * 4);
 
-			i32 nameLen; sr & nameLen;
+			i32 nameLen; sr >> nameLen;
 			ASSERT(nameLen >= 0 && nameLen <= 256);
 
 			sequence.name.resize(nameLen);
-			sr.data(&sequence.name[0], nameLen);
+			sr.load(&sequence.name[0], nameLen);
 			
-			i16 collection_id; sr & collection_id;
+			i16 collection_id; sr >> collection_id;
 			seq2col[n] = collection_id;
 		}
 
-		i32 collection_count; sr & collection_count;
+		i32 collection_count; sr >> collection_count;
 		vector<Collection> collections(collection_count);
 
 		for(int n = 0; n < collection_count; n++) {
 			Collection &collection = collections[n];
 
 			sr.signature("<spranim>\0001", 12);
-			i32 offset; sr & offset;
+			i32 offset; sr >> offset;
 			collection.offset = offset;
 
-			i32 nameLen; sr & nameLen;
+			i32 nameLen; sr >> nameLen;
 			ASSERT(nameLen >= 0 && nameLen <= 256);
 			collection.name.resize(nameLen);
-			sr.data(&collection.name[0], nameLen);
+			sr.load(&collection.name[0], nameLen);
 			
 			i32 frame_count, dir_count;
-			sr(frame_count, dir_count);
+			sr.unpack(frame_count, dir_count);
 
 			int rect_count = frame_count * dir_count;
 			collection.frame_count = frame_count;
@@ -179,7 +179,7 @@ namespace game
 
 			for(int i = 0; i < rect_count; i++) {
 				i32 l, t, r, b;
-				sr(l, t, r, b);
+				sr.unpack(l, t, r, b);
 				collection.rects[i] = IRect(l, t, r, b);
 			}
 		}
@@ -190,7 +190,7 @@ namespace game
 			sr.seek(collection.offset);
 
 			sr.signature("<spranim_img>", 14);
-			i16 type; sr & type;
+			i16 type; sr >> type;
 
 			if(type != '1' && type != '2')
 				THROW("Unknown spranim_img type: %d", (int)type);
@@ -203,22 +203,21 @@ namespace game
 
 			if(plainType) {
 				data.resize(size);
-				sr.data(&data[0], size);
+				sr.load(&data[0], size);
 			}
 			else {
 				i32 plainSize = 0;
-				sr & plainSize;
+				sr >> plainSize;
 				zlibInflate(sr, data, size - 4);
 				DASSERT((int)data.size() == plainSize);
 			}
 
-			PStream imgStream(new DataStream(data));
-			Loader imgSr(imgStream);
+			DataStream imgSr(data, true);
 
 			for(int l = 0; l < 4; l++) {
-				i32 palSize; imgSr & palSize;
+				i32 palSize; imgSr >> palSize;
 				collection.palettes[l].resize(palSize);
-				imgSr.data(&collection.palettes[l][0], palSize * 4);
+				imgSr.load(&collection.palettes[l][0], palSize * 4);
 				for(int i = 0; i < palSize; i++)
 					collection.palettes[l][i] = swapBR(collection.palettes[l][i]);
 			}
@@ -229,11 +228,11 @@ namespace game
 			
 			for(int n = 0; n < image_count; n++) {
 				DASSERT(imgSr.pos() < imgSr.size());
-				char type; imgSr & type;
+				char type; imgSr >> type;
 
 				if(type == 1) {
 					gfx::Palette palette;
-					i32 x, y; imgSr(x, y);
+					i32 x, y; imgSr.unpack(x, y);
 					collection.points[n] = int2(x, y);
 					collection.images[n].legacyLoad(imgSr, palette);
 				}

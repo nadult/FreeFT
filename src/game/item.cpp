@@ -15,8 +15,28 @@ static const char *s_seq_names[3] = {
 
 namespace game {
 
-	ItemEntity::ItemEntity(const Item &item, const float3 &pos)
-		:Entity(item.spriteName(), pos), m_item(item) {
+	ItemEntity::ItemEntity(Stream &sr) :Entity(sr) {
+		float3 pos;
+		float angle;
+		char item_name[256];
+		sr.unpack(pos, angle);
+		sr.loadString(item_name, sizeof(item_name));
+
+		const ItemDesc *desc = ItemDesc::find(item_name);
+		if(!desc)
+			THROW("Unknown item id: %s\n", item_name);
+		initialize(Item(desc), pos);
+		setDirAngle(angle); //TODO: unsafe calling virtual from constructor
+	}
+
+	void ItemEntity::saveToBinary(Stream &sr) {
+		sr.pack(m_pos, m_dir_angle);
+		sr << m_item.desc()->name;
+	}
+
+	void ItemEntity::initialize(const Item &item, const float3 &pos) {
+		Entity::initialize(item.spriteName(), pos);
+		m_item = item;
 		DASSERT(item.isValid());
 
 		setBBox(FBox(float3(0.0f, 0.0f, 0.0f), asXZY(bboxSize().xz(), 0.0f)));

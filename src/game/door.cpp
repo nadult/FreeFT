@@ -56,8 +56,18 @@ namespace game {
 		return true;
 	}
 
-	Door::Door(const char *sprite_name, const float3 &pos, Door::Type type, const float2 &dir)
-		:Entity(sprite_name, pos), m_type(type), m_close_time(-1.0) {
+	Door::Door(Stream &sr) :Entity(sr) {
+
+	}
+
+	void Door::saveToBinary(Stream &sr) {
+		Entity::saveToBinary(sr);
+	}
+
+	void Door::initialize(const char *sprite_name, const float3 &pos, Door::Type type, const float2 &dir) {
+		Entity::initialize(sprite_name, pos);
+		m_type_id = type;
+		m_close_time = -1.0;
 		m_update_anim = false;
 		
 		for(int n = 0; n < state_count; n++)
@@ -96,7 +106,7 @@ namespace game {
 				}
 			}
 
-			target = m_type == DoorTypeId::rotating_out? state_opened_out : state_opened_in;
+			target = m_type_id == DoorTypeId::rotating_out? state_opened_out : state_opened_in;
 		}
 
 		for(int n = 0; n < COUNTOF(s_transitions); n++)
@@ -111,7 +121,7 @@ namespace game {
 		FBox bbox = computeBBox(result);
 		bool is_colliding = m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 
-		if(is_colliding && m_type == DoorTypeId::rotating && m_state == state_closed && target == state_opened_in) {
+		if(is_colliding && m_type_id == DoorTypeId::rotating && m_state == state_closed && target == state_opened_in) {
 			target = state_opened_out;
 			result = state_opening_out;
 			bbox = computeBBox(result);
@@ -129,7 +139,7 @@ namespace game {
 		float maxs = max(size.x, size.z);
 		
 		FBox box;
-		if(m_type == DoorTypeId::sliding || state == state_closed)
+		if(m_type_id == DoorTypeId::sliding || state == state_closed)
 			box = FBox(float3(0, 0, 0), state == state_opened_in? float3(0, 0, 0) : size);
 		else if(state == state_closing_in || state == state_opening_in)
 			box = FBox(-maxs + 1, 0, 0, 1, size.y, maxs);
@@ -144,7 +154,7 @@ namespace game {
 		FBox out = rotateY(box, size * 0.5f, dirAngle());
 		out.min = (int3)out.min;
 		out.max = (int3)out.max;
-		DASSERT(m_type == DoorTypeId::sliding || !out.isEmpty());
+		DASSERT(m_type_id == DoorTypeId::sliding || !out.isEmpty());
 		return out;
 	}
 
@@ -155,7 +165,7 @@ namespace game {
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}
-		if(m_type == DoorTypeId::sliding && m_state == state_opened_in && m_world->currentTime() > m_close_time) {
+		if(m_type_id == DoorTypeId::sliding && m_state == state_opened_in && m_world->currentTime() > m_close_time) {
 			FBox bbox = computeBBox(state_closed);
 			if(m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				m_close_time = m_world->currentTime() + 1.5;
@@ -174,7 +184,7 @@ namespace game {
 				m_state = s_transitions[n].target;
 				setBBox(computeBBox(m_state));
 				m_update_anim = true;
-				if(m_state == state_opened_in && m_type == DoorTypeId::sliding)
+				if(m_state == state_opened_in && m_type_id == DoorTypeId::sliding)
 					m_close_time = m_world->currentTime() + 3.0;
 				break;
 			}

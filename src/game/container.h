@@ -14,6 +14,8 @@ namespace game
 
 	class Container: public Entity
 	{
+		void initialize(const char *sprite_name, const float3 &pos);
+
 	public:
 		enum State {
 			state_closed,
@@ -24,7 +26,9 @@ namespace game
 			state_count
 		};
 
-		Container(const char *sprite_name, const float3 &pos);
+		Container(Stream&);
+		Container(const char *sprite_name, const float3 &pos) { initialize(sprite_name, pos); }
+
 		virtual ColliderFlags colliderType() const { return collider_static; }
 		virtual EntityId::Type entityType() const { return EntityId::container; }
 		virtual Entity *clone() const;
@@ -43,6 +47,7 @@ namespace game
 		
 	private:
 		virtual void saveContentsToXML(XMLNode&) const;
+		virtual void saveToBinary(Stream&);
 
 		virtual void think();
 		virtual void onAnimFinished();

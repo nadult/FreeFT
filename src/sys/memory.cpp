@@ -27,7 +27,7 @@ namespace sys {
 
 		if(!out) {
 			//TODO: backtrace
-			printf("Allocation error (requested bytes: %lu)!\nTODO: write proper out of memory handler.\n",
+			printf("Allocation error (requested bytes: %lu)!\nTODO: save proper out of memory handler.\n",
 					(unsigned long)size);
 			exit(0);
 		}

@@ -20,7 +20,7 @@ namespace gfx
 public:
 		Font() { }
 
-		void serialize(Serializer&);
+		void load(Stream&);
 		void loadFromXML(const XMLDocument&);
 
 		IRect evalExtents(const char *str) const;

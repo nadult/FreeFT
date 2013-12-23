@@ -78,7 +78,7 @@ void NaviHeightmap::saveLevels() const {
 		gfx::Texture tex = toTexture(n);
 		char name[100];
 		sprintf(name, "level%d.tga", n);
-		Saver(name) & tex;
+		Saver(name) << tex;
 	}
 }
 

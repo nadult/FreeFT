@@ -36,11 +36,9 @@ namespace gfx
 		clear();
 	}
 
-	void DTexture::serialize(Serializer &sr) {
-		//TODO: saving
-		ASSERT(sr.isLoading());
+	void DTexture::load(Stream &sr) {
 		Texture temp;
-		sr & temp;
+		sr >> temp;
 		set(temp);
 	}
 

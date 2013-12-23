@@ -77,7 +77,8 @@ public:
 		rhs.m_data = nullptr;
 		rhs.m_size = 0;
 	}
-	void serialize(Serializer &sr) __attribute__((noinline));
+	void load(Stream &sr) __attribute__((noinline));
+	void save(Stream &sr) const __attribute__((noinline));
 	void resize(int new_size) __attribute__((noinline));
 
 	void swap(PodArray &rhs) {
@@ -112,15 +113,21 @@ private:
 };
 
 template <class T>
-void PodArray<T>::serialize(Serializer &sr) {
-	i32 size = m_size;
-	sr & size;
-	if(sr.isLoading()) {
-		ASSERT(size >= 0);
-		resize(size);
-	}
+void PodArray<T>::load(Stream &sr) {
+	i32 size;
+	sr >> size;
+	ASSERT(size >= 0);
+
+	resize(size);
 	if(m_data)
-		sr.data(m_data, sizeof(T) * m_size);
+		sr.load(m_data, sizeof(T) * m_size);
+}
+
+template <class T>
+void PodArray<T>::save(Stream &sr) const {
+	sr << m_size;
+	if(m_data)
+		sr.save(m_data, sizeof(T) * m_size);
 }
 
 template <class T>

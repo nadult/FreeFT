@@ -79,8 +79,10 @@ public:
 	void operator=(const XMLDocument&) = delete;
 	
 	void load(const char *file_name);
-	void save(const char *file_name);
-	void serialize(Serializer&);
+	void save(const char *file_name) const;
+
+	void load(Stream&);
+	void save(Stream&) const;
 
 	XMLNode addChild(const char *name, const char *value = nullptr) const;
 	XMLNode child(const char *name = nullptr) const;

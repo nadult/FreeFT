@@ -71,8 +71,24 @@ namespace game {
 		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
 	};
 
-	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos)
-		:Entity(s_sprite_names[type_id][ArmourClassId::none], pos), m_type_id(type_id) {
+	Actor::Actor(Stream &sr) {
+		float3 pos;
+		float angle;
+		ActorTypeId::Type type_id;
+		sr.unpack(pos, angle, type_id);
+		initialize(type_id, pos);
+		setDirAngle(angle); //TODO: unsafe calling virtual from constructor
+	}
+
+	void Actor::saveToBinary(Stream &sr) {
+		sr.pack(m_pos, m_dir_angle, m_type_id);
+		//TODO: other parameters
+	}
+
+	void Actor::initialize(ActorTypeId::Type type_id, const float3 &pos) {
+		Entity::initialize(s_sprite_names[type_id][ArmourClassId::none], pos);
+		m_type_id = type_id;
+
 		//m_sprite->printSequencesInfo();
 		m_anims = ActorAnims(m_sprite);
 

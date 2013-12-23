@@ -147,7 +147,8 @@ namespace game {
 
 	class Actor: public Entity {
 	public:
-		Actor(ActorTypeId::Type, const float3 &pos);
+		Actor(Stream&);
+		Actor(ActorTypeId::Type type, const float3 &pos) { initialize(type, pos); }
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 		virtual EntityId::Type entityType() const { return EntityId::actor; }
 		virtual Entity *clone() const;
@@ -158,7 +159,9 @@ namespace game {
 
 		bool isDead() const;
 
-	protected:
+	private:
+		void initialize(ActorTypeId::Type, const float3 &pos);
+
 		void think();
 
 		//TODO: orders are getting too complicated, refactor them
@@ -190,6 +193,7 @@ namespace game {
 		
 	private:
 		virtual void saveContentsToXML(XMLNode&) const;
+		virtual void saveToBinary(Stream&);
 
 		virtual bool shrinkRenderedBBox() const { return true; }
 		// orders
@@ -204,7 +208,7 @@ namespace game {
 		int m_path_pos;
 		vector<int3> m_path;
 
-		const ActorTypeId::Type m_type_id;
+		ActorTypeId::Type m_type_id;
 		WeaponClassId::Type m_weapon_class_id;
 		ArmourClassId::Type m_armour_class_id;
 

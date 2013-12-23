@@ -17,11 +17,11 @@
 
 using namespace gfx;
 
-void zlibInflate(Serializer &sr, vector<char> &dest, int inSize);
+void zlibInflate(Stream &sr, vector<char> &dest, int inSize);
 
 namespace game {
 
-	void TileMap::legacyConvert(Serializer &sr, Serializer &out) {
+	void TileMap::legacyConvert(Stream &sr, Stream &out) {
 		ASSERT(sr.isLoading());
 
 		sr.signature("<world>", 8);
@@ -29,7 +29,7 @@ namespace game {
 		char dummy;
 
 		i32 size1, size2;
-		sr(type, dummy, size1, size2);
+		sr.unpack(type, dummy, size1, size2);
 
 		printf("unc size: %d type: %x\n", size1, (int)type);
 
@@ -47,9 +47,8 @@ namespace game {
 
 		{
 			ASSERT(map_manager != -1);
-			PStream data_str = new DataStream(bytes);
-			data_str->seek(map_manager + 13);
-			Serializer dsr(data_str, true);
+			int offset = map_manager + 13;
+			DataStream dsr(bytes.data() + offset, bytes.size() - offset, true);
 
 			clear();
 
@@ -59,19 +58,19 @@ namespace game {
 				int something[3];
 			} __attribute__((packed));
 			Header header;
-			dsr.data(&header, sizeof(header));
+			dsr.load(&header, sizeof(header));
 
 			int proto_count = 0, zero;
-			dsr & proto_count & zero;
+			dsr >> proto_count >> zero;
 			proto_count--;
 
 			vector<string> names;
 			for(int n = 0; n < proto_count; n++) {
 				int len = 0;
 				char name[1024];
-				dsr & len;
+				dsr >> len;
 				ASSERT(len < (int)sizeof(name));
-				dsr.data(name, len);
+				dsr.load(name, len);
 				ASSERT(strncmp(name, "tiles/", 6) == 0 && strncmp(name + len - 4, ".til", 4) == 0);
 				names.push_back(string(name + 6, name + len - 4));
 			//	printf("name: %s\n", names.back().c_str());
@@ -86,7 +85,7 @@ namespace game {
 			for(int n = 0; n < proto_count; n++) {
 				dsr.signature("<tile>\00010", 10);
 				TileParams tile;
-				dsr & tile;
+				dsr >> tile;
 				tile_params.push_back(tile);
 			//	printf("TileParams [%d/%d]: %d %d %d\n", (int)tile_params.size(), proto_count, (int)tile.bbox_x, (int)tile.bbox_y, (int)tile.bbox_z);
 			}
@@ -97,10 +96,10 @@ namespace game {
 				tiles[n].setResourceName(names[n].c_str());
 			
 			char temp2[28];
-			dsr.data(temp2, sizeof(temp2));
+			dsr.load(temp2, sizeof(temp2));
 
 			int region_count = 0;
-			dsr & region_count;
+			dsr >> region_count;
 
 			struct Instance {
 				int3 pos, size;
@@ -114,7 +113,7 @@ namespace game {
 				dsr.signature("<region>\0008", 11);
 				int elem_count;
 
-				dsr & elem_count;
+				dsr >> elem_count;
 				for(int n = 0; n < elem_count; n++) {
 					struct TInstance {
 						short tile_id;
@@ -142,7 +141,7 @@ namespace game {
 					static_assert(sizeof(TInstance) == 56, "Wrong instance size");
 
 					TInstance instance;
-					dsr.data(&instance, sizeof(instance));
+					dsr.load(&instance, sizeof(instance));
 					int tile_id = (int)instance.tile_id - 1;
 					if(tile_id < 0)
 						continue;
@@ -194,7 +193,7 @@ namespace game {
 
 		XMLDocument doc;
 		saveToXML(doc);
-		out & doc;
+		out << doc;
 		clear();
 
 	//	Saver("mission.dec") & bytes;

@@ -186,34 +186,33 @@ XMLNode XMLDocument::child(const char *name) const {
 void XMLDocument::load(const char *file_name) {
 	DASSERT(file_name);
 	Loader ldr(file_name);
-	ldr & *this;
+	ldr >> *this;
 
 }
 
-void XMLDocument::save(const char *file_name) {
+void XMLDocument::save(const char *file_name) const {
 	DASSERT(file_name);
 	Saver svr(file_name);
-	svr & *this;
+	svr << *this;
 }
 
-void XMLDocument::serialize(Serializer &sr) {
-	if(sr.isLoading()) {
-		m_ptr->clear();
+void XMLDocument::load(Stream &sr) {
+	m_ptr->clear();
 
-		char *xml_string = m_ptr->allocate_string(0, sr.size() + 1);
-		sr.data(xml_string, sr.size());
-		xml_string[sr.size()] = 0;
-		
-		try {
-			m_ptr->parse<0>(xml_string); 
-		} catch(const parse_error &ex) {
-			THROW("rapidxml exception caught: %s at: %d", ex.what(), ex.where<char>() - xml_string);
-		}
+	char *xml_string = m_ptr->allocate_string(0, sr.size() + 1);
+	sr.load(xml_string, sr.size());
+	xml_string[sr.size()] = 0;
+	
+	try {
+		m_ptr->parse<0>(xml_string); 
+	} catch(const parse_error &ex) {
+		THROW("rapidxml exception caught: %s at: %d", ex.what(), ex.where<char>() - xml_string);
 	}
-	else {
-		vector<char> buffer;
-		print(std::back_inserter(buffer), *m_ptr);
-		sr.data(&buffer[0], buffer.size());
-	}
+}
+
+void XMLDocument::save(Stream &sr) const {
+	vector<char> buffer;
+	print(std::back_inserter(buffer), *m_ptr);
+	sr.save(&buffer[0], buffer.size());
 }
 
