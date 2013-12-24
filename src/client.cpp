@@ -21,6 +21,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "sys/network.h"
+#include <list>
 
 using namespace gfx;
 using namespace game;
@@ -44,6 +45,11 @@ public:
 
 	virtual ~Host() { }
 	virtual void action() = 0;
+	virtual bool isConnected() const = 0;
+
+	struct PacketHeader {
+		int packet_id;
+	};
 
 protected:
 	World *m_world;
@@ -54,16 +60,28 @@ class Server: public Host {
 public:
 	Server(int port) :Host(net::Address(0, port)) { }
 
+	bool isConnected() const { return !m_clients.empty(); }
+
+	void sendPacket(char *data, int size, int client_id) {
+		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
+		DASSERT(data && size >= (int)sizeof(PacketHeader));
+
+		Client &client = m_clients[client_id];
+		PacketHeader header;
+		header.packet_id = client.packet_id++;
+		memcpy(data, &header, sizeof(header));
+		m_socket.send(data, size, client.address);
+	}
+
 	void action() {
-		char buffer[2048 + 1];
+		char buffer[2048 + sizeof(PacketHeader)];
 
 		while(true) {
 			net::Address source;
-			int ret = m_socket.receive(buffer, sizeof(buffer) - 1, source);
+			int ret = m_socket.receive(buffer, sizeof(buffer), source);
 			if(ret > 0) {
-				buffer[ret] = 0;
-				printf("Received: %s from: %s\n", buffer, source.toString().c_str());
-				m_clients.push_back(Client{source});
+				printf("Client connected: %s\n", source.toString().c_str());
+				m_clients.push_back(Client(source));
 			}
 			if(!ret)
 				break;
@@ -76,71 +94,105 @@ public:
 			for(int n = 0; n < emap.size(); n++) {
 				Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
 				if(actor && actor->actorType() == ActorTypeId::male) {
-					DataStream stream(buffer, sizeof(buffer), false);
+					DataStream stream(buffer + sizeof(PacketHeader), sizeof(buffer) - sizeof(PacketHeader), false);
 					actor->save(stream);
-					packet_size = stream.pos();
+					packet_size = stream.pos() + sizeof(PacketHeader);
 					break;
 				}
 			}
 
 			if(packet_size) {
 				for(int n = 0; n < (int)m_clients.size(); n++) {
-					printf("Sending data packet (%d bytes) to: %s\n", packet_size, m_clients[n].address.toString().c_str());
-					m_socket.send(buffer, packet_size, m_clients[n].address);
+				//	printf("Sending data packet (%d bytes) to: %s\n", packet_size, m_clients[n].address.toString().c_str());
+					sendPacket(buffer, packet_size, n);
 				}
 			}
 		}
 	}
 
 	struct Client {
+		Client(net::Address addr) :address(addr), packet_id(0) { }
+
 		net::Address address;
+		int packet_id;
 	};
 
 private:
 	vector<Client> m_clients;
 };
 
+struct Packet {
+	vector<char> data;
+};
+
 class Client: public Host {
 public:
 	Client(int port, const char *server_name, int server_port)
-		:Host(net::Address(0, port)), m_server_address(server_name, server_port) {
+		:Host(net::Address(0, port)), m_server_address(server_name, server_port), m_last_packet_id(-1) {
 
 		char data[256];
 		sprintf(data, "Hi from client\n");
 		m_socket.send(data, 256, m_server_address);
 	}
+	
+	bool isConnected() const { return true; }
 
 	void action() {
-		char buffer[2048];
-
 		while(true) {
+			char buffer[2048];
 			net::Address source;
 			int ret = m_socket.receive(buffer, sizeof(buffer), source);
-
-			if(ret > 0 && m_world) {
-				printf("Received: packet (%d bytes) from: %s\n", ret, source.toString().c_str());
-				EntityMap &emap = m_world->entityMap();
-
-				for(int n = 0; n < emap.size(); n++) {
-					Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
-					if(actor && actor->actorType() == ActorTypeId::male) {
-						emap.remove(actor);
-						break;
-					}
-				}
-
-				DataStream stream(buffer, ret, true);
-				Entity *new_actor = Entity::construct(stream);
-				m_world->addEntity(new_actor);
-			}
-
 			if(!ret)
 				break;
+
+			Packet packet;
+			packet.data.resize(ret);
+			memcpy(packet.data.data(), buffer, ret);
+			m_packets.push_back(packet);
+		}
+
+		int list_size = m_packets.size();
+		if(list_size > 2) {
+			printf("Dropping %d packets\n", list_size - 2);
+		}
+
+		while(list_size > 2) {
+			m_packets.pop_front();
+			list_size--;
+		}
+
+		if(!m_packets.empty() && m_world) {
+			vector<char> packet = m_packets.front().data;
+			m_packets.pop_front();
+
+			PacketHeader header;
+			memcpy(&header, packet.data(), sizeof(header));
+
+			if(m_last_packet_id != -1 && header.packet_id != m_last_packet_id + 1)
+				printf("Packet dropped! (got: %d last: %d)\n", header.packet_id, m_last_packet_id);
+			m_last_packet_id = header.packet_id;
+
+		//	printf("Received: packet %d (%d bytes) from: %s\n", header.packet_id, ret, source.toString().c_str());
+			EntityMap &emap = m_world->entityMap();
+
+			for(int n = 0; n < emap.size(); n++) {
+				Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
+				if(actor && actor->actorType() == ActorTypeId::male) {
+					emap.remove(actor);
+					break;
+				}
+			}
+
+			DataStream stream(packet.data() + sizeof(header), packet.size() - sizeof(header), true);
+			Entity *new_actor = Entity::construct(stream);
+			m_world->addEntity(new_actor);
 		}
 	}
 
 private:
+	std::list<Packet> m_packets;
 	net::Address m_server_address;
+	int m_last_packet_id;
 };
 
 int safe_main(int argc, char **argv)
@@ -210,14 +262,15 @@ int safe_main(int argc, char **argv)
 	string prof_stats;
 	double stat_update_time = getTime();
 
+	while(!host->isConnected()) {
+		host->action();
+		sleep(0.01);
+	}
+
 	while(pollEvents()) {
 		double loop_start = profiler::getTime();
 		if(isKeyDown(Key_esc))
 			break;
-
-		static int counter = 0; counter++;
-		if(host)// && counter % 4 == 0)
-			host->action();
 
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
@@ -279,6 +332,11 @@ int safe_main(int argc, char **argv)
 
 		world.simulate((time - last_time) * config.time_multiplier);
 		last_time = time;
+
+		static int counter = 0;
+		if(host)// && counter % 4 == 0)
+			host->action();
+		counter++;
 
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);

@@ -50,7 +50,7 @@ namespace game
 		void setKey(const Item&);
 		virtual void setDirAngle(float angle);
 
-		virtual void save(XMLNode&) const;
+		virtual XMLNode save(XMLNode&) const;
 		virtual void save(Stream&) const;
 		
 	private:

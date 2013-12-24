@@ -75,21 +75,11 @@ namespace game {
 	Actor::Actor(Stream &sr) :Entity(sr) {
 		//TODO: possible space optimization: no need to send sprite name
 		ActorTypeId::Type type_id;
-		sr >> type_id;
-		
-		m_type_id = type_id;
+		sr.unpack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
 
-		//m_sprite->printSequencesInfo();
 		m_anims = ActorAnims(m_sprite);
 
 		m_issue_next_order = false;
-		m_stance_id = StanceId::standing;
-
-		m_armour_class_id = ArmourClassId::none;
-		m_weapon_class_id = WeaponClassId::unarmed;
-
-	//	animate(ActionId::idle);
-		m_target_angle = dirAngle();
 		m_order = m_next_order = doNothingOrder();
 
 	//	initialize(type_id);
@@ -102,6 +92,17 @@ namespace game {
 	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos) :Entity(s_sprite_names[type_id][ArmourClassId::none]) {
 		initialize(type_id);
 		setPos(pos);
+	}
+
+	XMLNode Actor::save(XMLNode &parent) const {
+		XMLNode node = Entity::save(parent);
+		node.addAttrib("actor_type", ActorTypeId::toString(m_type_id));
+		return node;
+	}
+
+	void Actor::save(Stream &sr) const {
+		Entity::save(sr);
+		sr.pack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
 	}
 
 	void Actor::initialize(ActorTypeId::Type type_id) {
@@ -118,16 +119,6 @@ namespace game {
 		animate(ActionId::idle);
 		m_target_angle = dirAngle();
 		m_order = m_next_order = doNothingOrder();
-	}
-
-	void Actor::save(XMLNode &node) const {
-		Entity::save(node);
-		node.addAttrib("actor_type", ActorTypeId::toString(m_type_id));
-	}
-
-	void Actor::save(Stream &sr) const {
-		Entity::save(sr);
-		sr << m_type_id;
 	}
 
 	bool Actor::isDead() const {

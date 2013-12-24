@@ -109,7 +109,7 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="50">
+<entity_map size="1056 936" entity_count="55">
 	<container pos="162 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="163 115 228" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
 	<container pos="165 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
@@ -136,10 +136,15 @@ CRC32 d1c72fa9
 	<door pos="248 115 220" sprite="doors/Generic DOORS/MetalDoor1" angle="4.712389" door_type="rotating"/>
 	<door pos="246 115 303" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="0" door_type="sliding"/>
 	<door pos="249 115 250" sprite="doors/Generic DOORS/MetalDoor1" angle="4.712389" door_type="rotating"/>
+	<door pos="250 128 423" sprite="doors/Village DOORS/Fence" angle="0" door_type="rotating"/>
+	<container pos="269 128 363" sprite="containers/Pot" angle="0"/>
 	<door pos="270 115 210" sprite="doors/Generic DOORS/MetalDoor1" angle="3.141593" door_type="rotating"/>
+	<container pos="270 128 360" sprite="containers/Pot" angle="0"/>
 	<container pos="272 115 279" sprite="containers/Safe" angle="0"/>
+	<container pos="272 128 363" sprite="containers/Pot" angle="0"/>
 	<container pos="276 115 306" sprite="containers/Table N" angle="3.141593"/>
 	<actor pos="296 115 313" sprite="critters/RadScorpion" angle="5.497787" actor_type="rad_scorpion"/>
+	<door pos="296 128 432" sprite="doors/Village DOORS/Fence" angle="0" door_type="rotating"/>
 	<item pos="298 115 262" sprite="weapons/Rifles/Plasma Rifle" angle="1.570796" item_desc="plasma_rifle"/>
 	<item pos="300 115 276" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60"/>
 	<item pos="301 115 261" sprite="weapons/Rifles/Laser Rifle" angle="1.570796" item_desc="laser_rifle"/>

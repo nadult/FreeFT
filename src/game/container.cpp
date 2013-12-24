@@ -33,8 +33,8 @@ namespace game {
 		Entity::save(sr);
 	}
 
-	void Container::save(XMLNode &node) const {
-		Entity::save(node);
+	XMLNode Container::save(XMLNode &parent) const {
+		return Entity::save(parent);
 	}
 
 	void Container::initialize() {

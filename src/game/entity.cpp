@@ -55,11 +55,12 @@ namespace game {
 		m_dir_angle = node.floatAttrib("angle");
 	}
 
-	void Entity::save(XMLNode &parent) const {
+	XMLNode Entity::save(XMLNode &parent) const {
 		XMLNode node = parent.addChild(EntityId::toString(entityType()));
 		node.addAttrib("pos", m_pos);
 		node.addAttrib("sprite", node.own(m_sprite->resourceName()));
 		node.addAttrib("angle", m_dir_angle);
+		return node;
 	}
 
 	void Entity::save(Stream &sr) const {

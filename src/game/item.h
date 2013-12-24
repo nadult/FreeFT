@@ -126,7 +126,7 @@ namespace game {
 		const Item &item() const { return m_item; }
 		Item &item() { return m_item; }
 
-		virtual void save(XMLNode&) const;
+		virtual XMLNode save(XMLNode&) const;
 		virtual void save(Stream&) const;
 		
 	private:

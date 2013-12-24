@@ -33,7 +33,7 @@ namespace game {
 		virtual ~Entity();
 		
 		virtual void save(Stream&) const;
-		virtual void save(XMLNode&) const;
+		virtual XMLNode save(XMLNode& parent) const;
 		
 		static Entity *construct(const XMLNode &node);
 		static Entity *construct(Stream&);

@@ -42,9 +42,10 @@ namespace game {
 		sr << m_item.desc()->name;
 	}
 	
-	void ItemEntity::save(XMLNode &node) const {
-		Entity::save(node);
+	XMLNode ItemEntity::save(XMLNode &parent) const {
+		XMLNode node = Entity::save(parent);
 		node.addAttrib("item_desc", node.own(m_item.desc()->id.c_str()));
+		return node;
 	}
 			
 	void ItemEntity::initialize(const Item &item) {

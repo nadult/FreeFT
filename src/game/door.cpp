@@ -72,9 +72,10 @@ namespace game {
 		setPos(pos);
 	}
 	
-	void Door::save(XMLNode &node) const {
-		Entity::save(node);
+	XMLNode Door::save(XMLNode &parent) const {
+		XMLNode node = Entity::save(parent);
 		node.addAttrib("door_type", DoorTypeId::toString(m_type_id));
+		return node;
 	}
 
 	void Door::save(Stream &sr) const {
