@@ -67,7 +67,6 @@ namespace gfx {
 		:m_width(0), m_height(0), m_default_idx(0), m_max_idx(0) { }
 
 	void PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
-		DASSERT(sr.isLoading());
 		sr.signature("<zar>", 6);
 
 		char zar_type, dummy1, has_palette;

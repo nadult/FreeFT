@@ -31,10 +31,18 @@ float frand() {
 }
 
 namespace PacketType {
-	enum Type {
+	enum Type: char {
 		host_info = 0,
 	};
 };
+
+struct PacketHeader {
+	int packet_id;
+	int timestamp;
+	int packet_type;
+};
+
+
 
 
 class Host {
@@ -47,9 +55,6 @@ public:
 	virtual void action() = 0;
 	virtual bool isConnected() const = 0;
 
-	struct PacketHeader {
-		int packet_id;
-	};
 
 protected:
 	World *m_world;

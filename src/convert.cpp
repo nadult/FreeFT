@@ -151,7 +151,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 #pragma omp atomic
 						total_after += target.size();
 				} catch(const Exception &ex) {
-					printf("Error while converting: %s:\n%s\n\n", full_path.c_str(), ex.what());
+					printf("Error while converting: %s:\n%s\n%s\n\n", full_path.c_str(), ex.what(), ex.backtrace());
 				}
 			}
 		}

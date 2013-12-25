@@ -112,7 +112,7 @@ namespace game
 
 		char unknown[5];
 		int unk_size = type == '9'? 3 : type == '7'? 5 : type == '6'? 6 : 4;
-		sr >> unknown >> unk_size;
+		sr.load(unknown, unk_size);
 
 		sr.signature("<tiledata>\0001", 12);
 		u8 dummy2;

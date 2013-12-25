@@ -9,7 +9,7 @@
 namespace game {
 
 	#define DECLARE_ENUM(type, ...) \
-		namespace type { enum Type { __VA_ARGS__, count }; \
+		namespace type { enum Type: char { __VA_ARGS__, count }; \
 			const char *toString(Type); \
 			Type fromString(const char*); \
 			inline bool isValid(Type val) { return val >= 0 && val < count; } \
