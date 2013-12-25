@@ -212,7 +212,7 @@ namespace game
 				DASSERT((int)data.size() == plainSize);
 			}
 
-			DataStream imgSr(data, true);
+			MemoryLoader imgSr(data);
 
 			for(int l = 0; l < 4; l++) {
 				i32 palSize; imgSr >> palSize;

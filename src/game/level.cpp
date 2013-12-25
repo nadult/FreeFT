@@ -129,7 +129,7 @@ namespace game {
 			}
 
 			vector<char> patched = applyPatch(orig, mod);
-			DataStream(patched, true) >> doc;
+			MemoryLoader(patched) >> doc;
 		}
 		else
 			doc.load(file_name);

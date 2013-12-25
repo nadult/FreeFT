@@ -48,7 +48,7 @@ namespace game {
 		{
 			ASSERT(map_manager != -1);
 			int offset = map_manager + 13;
-			DataStream dsr(bytes.data() + offset, bytes.size() - offset, true);
+			MemoryLoader dsr(bytes.data() + offset, bytes.size() - offset);
 
 			clear();
 

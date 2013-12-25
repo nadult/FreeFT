@@ -21,6 +21,7 @@ typedef int socklen_t;
 
 #endif
 
+//#define LOG_PACKETS
 
 namespace net {
 
@@ -44,6 +45,13 @@ namespace net {
 		else {
 			m_data.sin_addr.s_addr = htonl(INADDR_ANY);
 		}
+	}
+
+	bool Address::isValid() const {
+		for(int c = 0; c < (int)sizeof(Address); c++)
+			if(((char*)this)[c])
+				return true;
+		return false;
 	}
 
 	void Address::getIp(unsigned char elems[4]) const {
@@ -119,6 +127,49 @@ namespace net {
 		if(ret < 0) {
 			//TODO: handle errors
 		}
+	}
+
+	void InPacket::v_load(void *ptr, int count) {
+		memcpy(ptr, m_data + m_pos, count);
+		m_pos += count;
+	}
+
+	void InPacket::reset(int new_size) {
+		m_size = new_size;
+		m_pos = 0;
+		m_exception_thrown = false;
+	}
+
+	void OutPacket::v_save(const void *ptr, int count) {
+		if(m_pos + count > (int)sizeof(m_data))
+			THROW("not enough space in buffer (%d space left, %d needed)", spaceLeft(), (int)count);
+
+		memcpy(m_data + m_pos, ptr, count);
+		m_pos += count;
+		if(m_pos > m_size)
+			m_size = m_pos;
+	}
+
+		
+	bool Host::receive(InPacket &packet, Address &address) {
+		packet.reset(m_socket.receive(packet.m_data, sizeof(packet.m_data), address));
+#ifdef LOG_PACKETS
+		if(packet.size()) {
+			printf("IN(%d) ", packet.size());
+			fflush(stdout);
+		}
+#endif
+		return packet.size() > 0;
+	}
+
+	void Host::send(const OutPacket &packet, const Address &address) {
+		m_socket.send(packet.m_data, packet.size(), address);
+#ifdef LOG_PACKETS
+		if(packet.size()) {
+			printf("OUT(%d) ", packet.size());
+			fflush(stdout);
+		}
+#endif
 	}
 
 }
