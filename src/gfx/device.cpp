@@ -232,6 +232,10 @@ namespace gfx
 		return int2(x, y);
 	}
 
+	void setWindowPos(int2 pos) {
+		glfwSetWindowPos(pos.x, pos.y);
+	}
+
 	void setWindowTitle(const char *title) {
 		glfwSetWindowTitle(title);
 		glfwPollEvents(); //TODO: remove, set window on creation

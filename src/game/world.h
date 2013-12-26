@@ -50,6 +50,8 @@ namespace game {
 		World(const char *file_name);
 		~World();
 
+		const char *mapName() const { return m_map_name.c_str(); }
+
 		template <class T>
 		T *addEntity(T *entity) {
 			static_assert(std::is_base_of<Entity, T>::value, "T should be Entity-based");
@@ -91,6 +93,8 @@ namespace game {
 		template <class T>
 		void handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip);
 		
+		string m_map_name;
+
 		double m_time_delta;
 		double m_current_time;
 		double m_last_time;

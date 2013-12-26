@@ -121,6 +121,7 @@ namespace gfx
 
 	void setWindowSize(int2 size);
 	int2 getWindowSize();
+	void setWindowPos(int2 pos);
 
 	void setWindowTitle(const char *title);
 

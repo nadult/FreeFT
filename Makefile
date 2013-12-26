@@ -26,7 +26,7 @@ SHARED_SRC=\
 
 LIBS_SRC=lz4/lz4 lz4/lz4hc
 
-PROGRAM_SRC=editor game res_viewer convert client
+PROGRAM_SRC=editor game res_viewer convert client server
 
 ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC) sys/platform_linux sys/platform_windows
 

@@ -32,199 +32,171 @@ float frand() {
 	
 using namespace net;
 
-static unique_ptr<World> world;
+void makeEntityPacket(PodArray<char> &out, const Entity *entity, int entity_id) {
+	char buffer[net::PacketInfo::max_size];
+	MemorySaver stream(buffer, sizeof(buffer));
 
-class Client: public net::Host {
+	stream << entity_id;
+	stream << *entity;
+
+	out.resize(stream.pos());
+	memcpy(out.data(), buffer, out.size());
+}
+
+class Server: public net::Host {
 public:
-	enum class Mode {
-		disconnected,
-		connecting,
-		connected,
+	Server(int port) :Host(Address(port)), m_world(0), m_timestamp(0), m_client_count(0) { }
+
+	bool isConnected() const { return !m_clients.empty(); }
+
+	enum {
+		max_clients = 32
 	};
 
-	Client(int port)
-		:Host(Address(port)), m_last_packet_id(-1), m_mode(Mode::disconnected), m_client_id(-1) {
-	}
-		
-	bool receiveFromServer(InPacket &packet) {
-		DASSERT(m_server_address.isValid());
-
-		while(true) {
-			Address source;
-			if(!Host::receive(packet, source))
-				return false;
-			if(source == m_server_address)
-				return true;
-		}
-	}
-
-	void connect(const char *server_name, int server_port) {
-		if(m_mode != Mode::disconnected)
-			disconnect();
-
-		m_server_address = Address(resolveName(server_name), server_port);
-		m_mode = Mode::connecting;
-		m_connection_timeout = -1;
-	}
-
-	void disconnect() {
-		if(m_mode == Mode::connected || m_mode == Mode::connecting) {
-			OutPacket packet(0, 0, m_client_id, 0);
-		   	packet << SubPacketType::leave;
-			send(packet, m_server_address);
-			m_mode = Mode::disconnected;
-			m_client_id = -1;
-		}
-	}
-
-	~Client() {
-		disconnect();
-	}
-	
-	Mode mode() const { return m_mode; }
-
 	void action() {
-		if(m_mode == Mode::connecting)
-			actionConnecting();
-		else if(m_mode == Mode::connected)
-			actionInGame();
-	}
-
-protected:
-	void actionConnecting() {
-		double current_time = getTime();
-
-		if(m_connection_timeout < 0 || m_connection_timeout > current_time) {
-			m_connection_timeout = current_time + 0.5;
-
-			OutPacket packet(0, 0, 0, 0);
-			packet << SubPacketType::join;
-			send(packet, m_server_address);
-		}
-
 		InPacket packet;
-		while(receiveFromServer(packet)) {
-			SubPacketType type;
-			packet >> type;
+		Address source;
 
-			if(type == SubPacketType::join_ack) {
-				string map_name;
-				packet >> map_name;
-				if(world)
-					delete world.release();
-				world = unique_ptr<World>(new World(map_name.c_str()));
-				m_client_id = packet.clientId();
-				m_mode = Mode::connected;
-				break;	
-			}	
-		}
-	}
-
-	double m_connection_timeout;
-
-protected:
-	void actionInGame() {
-		DASSERT(world);
-
-		while(true) {
-			InPacket packet;
-			Address source;
-			if(!receive(packet, source))
-				break;
-
-			m_packets.push_back(packet);
-		}
-
-		int list_size = m_packets.size();
-		if(list_size > 2) {
-			printf("Dropping %d packets\n", list_size - 2);
-		}
-
-		while(list_size > 2) {
-			m_packets.pop_front();
-			list_size--;
-		}
-
-		if(!m_packets.empty() && world) {
-			InPacket packet = m_packets.front();
-			m_packets.pop_front();
-
-			if(m_last_packet_id != -1 && packet.packetId() != m_last_packet_id + 1)
-				printf("Packet dropped! (got: %d last: %d)\n", packet.packetId(), m_last_packet_id);
-			m_last_packet_id = packet.packetId();
-			//printf("Received: packet %d (%d bytes)\n", packet.packetId(), packet.size());
+		while(receive(packet, source)) {
+			//printf("Packet: %d bytes\n", packet.size());
+			//TODO: dealing with fucked-up packets
+			//TODO: reporting fucked-up data ?
 
 			while(!packet.end()) {
 				SubPacketType type;
 				packet >> type;
 
-				if(type == SubPacketType::entity_full) {
-					EntityMap &emap = world->entityMap();
-
-					for(int n = 0; n < emap.size(); n++) {
-						Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
-						if(actor && actor->actorType() == ActorTypeId::male) {
-							emap.remove(actor);
-							break;
+				if(type == SubPacketType::join) {
+					bool add_client = m_client_count < max_clients;
+					int client_id = -1;
+					for(int c = 0; c < (int)m_clients.size(); c++)
+						if(m_clients[c].address == source) {
+							client_id = c;
+							add_client = false;
 						}
+
+					if(add_client) {
+						for(int c = 0; c < (int)m_clients.size(); c++)
+							if(!m_clients[c].isValid()) {
+								client_id = c;
+								break;
+							}
+						if(client_id == -1) {
+							m_clients.push_back(Client());
+							client_id = (int)m_clients.size() - 1;
+						}
+
+						m_clients[client_id] = Client(source);
+						printf("Client connected (cid:%d): %s\n", (int)client_id, source.toString().c_str());
+
+						m_client_count++;
 					}
 
-					int entity_id;
-					packet >> entity_id;
-					Entity *new_actor = Entity::construct(packet);
-					world->addEntity(new_actor);
-					//IGNORE
+					if(client_id != -1) {
+						OutPacket ack(0, 0, client_id, 0);
+						ack << SubPacketType::join_ack;
+						ack << string(m_world->mapName());
+						send(ack, source);
+					}
+				}
+				else if(type == SubPacketType::leave) {
+					printf("got leave packet (cid:%d)\n", packet.clientId());
+					if(packet.clientId() >= 0 && packet.clientId() < (int)m_clients.size()) {
+						if(m_clients[packet.clientId()].address == source) {
+							m_clients[packet.clientId()].address = Address();
+							m_client_count--;
+							printf("Client disconnected: %s\n", source.toString().c_str());
+						}
+					}
+				}
+				else if(type == SubPacketType::ack) {
+
 				}
 				else {
+					// Ignore
 				}
-			}
 
-			if(packet.flags() & PacketInfo::flag_need_ack) {
-				OutPacket ack(packet.packetId(), packet.timeStamp(), m_client_id, 0);
-			   	ack << SubPacketType::ack;
-				send(ack, m_server_address);
+				break;
 			}
 
 		}
+
+		if(m_world) {
+			EntityMap &emap = m_world->entityMap();
+
+
+			PodArray<char> actor_packet;
+
+			for(int n = 0; n < emap.size(); n++) {
+				Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
+				if(actor && actor->actorType() == ActorTypeId::male) {
+					makeEntityPacket(actor_packet, actor, 0);
+					break;
+				}
+			}
+
+			if(!actor_packet.isEmpty()) {
+				for(int n = 0; n < (int)m_clients.size(); n++) {
+					Client &client = m_clients[n];
+
+					OutPacket packet(client.packet_id++, m_timestamp, n + 1, PacketInfo::flag_need_ack);
+					packet << SubPacketType::entity_full;
+					packet.save(actor_packet.data(), actor_packet.size());
+					send(packet, client.address);
+				}
+			}
+		}
+
+		m_timestamp++;
 	}
-	
+
+	struct Client {
+		Client() { }
+		Client(Address addr) :address(addr), packet_id(0) { }
+
+		bool isValid() const { return address.isValid(); }
+
+		Address address;
+		int packet_id;
+	};
+
+	void setWorld(World *world) { m_world = world; }
 
 private:
-	std::list<InPacket> m_packets;
-	net::Address m_server_address;
-	int m_last_packet_id, m_client_id;
-	Mode m_mode;
+	vector<Client> m_clients;
+	World *m_world;
+	int m_timestamp;
+	int m_client_count;
 };
 
 int safe_main(int argc, char **argv)
 {
-	int port = 0, server_port = 0;;
-	const char *server_name = NULL;
+	int port = 0;
+	string map_name = "data/maps/mission05.mod";
 
 	for(int n = 1; n < argc; n++) {
 		if(strcmp(argv[n], "-p") == 0) {
 			ASSERT(n + 1 < argc);
 			port = atoi(argv[++n]);
 		}
-		else if(strcmp(argv[n], "-s") == 0) {
-			ASSERT(n + 2 < argc);
-			server_name = argv[++n];
-			server_port = atoi(argv[++n]);
+		else if(strcmp(argv[n], "-m") == 0) {
+			ASSERT(n + 1 < argc);
+			map_name = string("data/maps/") + argv[++n];
 		}
 	}
-	
-	if(!port || !server_port || !server_name) {
-		printf("Port, server port or server name not specified!\n");
+	if(!port) {
+		printf("Port unspecified\n");
 		return 0;
 	}
 
-	unique_ptr<Client> host(new Client(port));
+	unique_ptr<Server> host(new Server(port));
 	
 	Config config = loadConfig("game");
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
+	setWindowPos(int2(1920 / 2, 0));
 
 	printDeviceInfo();
 	grabMouse(false);
@@ -235,15 +207,11 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	host->connect(server_name, server_port);
-	
-	while(host->mode() != Client::Mode::connected) {
-		host->action();
-		sleep(0.01);
-	}
+	World world(map_name.c_str());
 
-	Actor *actor = world->addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
-	world->updateNaviMap(true);
+	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
+	world.updateNaviMap(true);
+	host->setWorld(&world);
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
@@ -260,7 +228,7 @@ int safe_main(int argc, char **argv)
 	string prof_stats;
 	double stat_update_time = getTime();
 
-	while(host->mode() != Client::Mode::connected) {
+	while(!host->isConnected()) {
 		host->action();
 		sleep(0.01);
 	}
@@ -274,15 +242,15 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world->pixelIntersect(getMousePos() + view_pos,
+		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 		if(isect.isEmpty())
-			isect = world->trace(ray, actor,
+			isect = world.trace(ray, actor,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 		
-		Intersection full_isect = world->pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
+		Intersection full_isect = world.pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
 		if(full_isect.isEmpty())
-			full_isect = world->trace(ray, actor, collider_all|visibility_flag);
+			full_isect = world.trace(ray, actor, collider_all|visibility_flag);
 
 		
 		if(isKeyDown('T') && !isect.isEmpty())
@@ -298,7 +266,7 @@ int safe_main(int argc, char **argv)
 			else if(navi_debug) {
 				//TODO: do this on floats, in actor and navi code too
 				int3 wpos = (int3)(ray.at(isect.distance()));
-				world->naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
+				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
 
 			}
 			else if(isect.isTile()) {
@@ -312,7 +280,7 @@ int safe_main(int argc, char **argv)
 		}
 		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
 			int3 wpos = (int3)ray.at(isect.distance());
-			path = world->findPath(last_pos, wpos);
+			path = world.findPath(last_pos, wpos);
 			last_pos = wpos;
 		}
 		if(isKeyDown(Key_kp_add))
@@ -321,14 +289,14 @@ int safe_main(int argc, char **argv)
 			actor->setNextOrder(changeStanceOrder(-1));
 
 		if(isKeyDown('R') && navi_debug) {
-			world->naviMap().removeColliders();
+			world.naviMap().removeColliders();
 		}
 
 		double time = getTime();
 		if(!navi_debug)
-			world->updateNaviMap(false);
+			world.updateNaviMap(false);
 
-		world->simulate((time - last_time) * config.time_multiplier);
+		world.simulate((time - last_time) * config.time_multiplier);
 		last_time = time;
 
 		static int counter = 0;
@@ -339,9 +307,9 @@ int safe_main(int argc, char **argv)
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 
-		world->updateVisibility(actor->boundingBox());
+		world.updateVisibility(actor->boundingBox());
 
-		world->addToRender(renderer);
+		world.addToRender(renderer);
 
 		if((entity_debug && isect.isEntity()) || 1)
 			renderer.addBox(isect.boundingBox(), Color::yellow);
@@ -352,7 +320,7 @@ int safe_main(int argc, char **argv)
 			float3 dir = target - origin;
 
 			Ray shoot_ray(origin, dir / length(dir));
-			Intersection shoot_isect = world->trace(Segment(shoot_ray, 0.0f), actor);
+			Intersection shoot_isect = world.trace(Segment(shoot_ray, 0.0f), actor);
 
 			if(!shoot_isect.isEmpty()) {
 				FBox box = shoot_isect.boundingBox();
@@ -362,8 +330,8 @@ int safe_main(int argc, char **argv)
 		}
 
 		if(navi_debug || navi_show) {
-			world->naviMap().visualize(renderer, true);
-			world->naviMap().visualizePath(path, 3, renderer);
+			world.naviMap().visualize(renderer, true);
+			world.naviMap().visualizePath(path, 3, renderer);
 		}
 
 		renderer.render();

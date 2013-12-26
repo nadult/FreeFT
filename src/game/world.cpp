@@ -27,6 +27,7 @@ namespace game {
 		for(int n = 0; n < m_entity_map.size(); n++)
 			m_entity_map[n].ptr->m_world = this;
 		m_tile_map.printInfo();
+		m_map_name = file_name;
 
 //		updateNaviMap(true);
 	}

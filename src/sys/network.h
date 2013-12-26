@@ -17,22 +17,24 @@
 
 namespace net {
 
-	class Address {
-	public:
-		Address();
-		Address(const char *name, int port);
+	u32 resolveName(const char *name);
+	void decomposeIp(u32 ip, u8 elems[4]);
 
-		bool isValid() const;
-		void getIp(unsigned char elems[4]) const;
-		int getPort() const;
+	struct Address {
+	public:
+		Address() :ip(0), port(0) { }
+		Address(u32 ip, u16 port) :ip(ip), port(port) { }
+		Address(u16 port); // any interface
+
+		bool isValid() const { return ip != 0 || port != 0; }
+		bool operator==(const Address &rhs) const { return ip == rhs.ip && port == rhs.port; }
+
 		const string toString() const;
 
-		bool operator==(const Address&) const;
-
-	protected:
-		friend class Socket;
-		struct sockaddr_in m_data; //TODO: store it in different way (portable)
+		u32 ip;
+		u16 port;
 	};
+
 
 	class Socket {
 	public:
@@ -55,27 +57,24 @@ namespace net {
 
 	struct PacketInfo {
 		PacketInfo() { }
-		PacketInfo(int packet_id, int time_stamp, int client_id_, int flags_) :packet_id(packet_id), time_stamp(time_stamp) {
-			DASSERT(client_id_ >= 0 && client_id < 256);
-			DASSERT((flags_ & ~0xff) == 0);
+		PacketInfo(int packet_id, int time_stamp, int client_id_, int flags_);
 
-			client_id = client_id_;
-			flags = flags_;
-		}
-
-		enum { max_size = 1400 };
-
+		i32 protocol_id;
 		i32 packet_id;
 		i32 time_stamp;
 		i8 client_id;
 		i8 flags;
 
 		enum {
+			max_size = 1400,
+			min_size = sizeof(protocol_id) + sizeof(packet_id) + sizeof(time_stamp) + sizeof(client_id) + sizeof(flags),
+			valid_protocol_id = 0x12345678,
+
 			flag_need_ack = 1,
 		};
 
-		void save(Stream &sr) const { sr.pack(packet_id, time_stamp, client_id, flags); }
-		void load(Stream &sr) { sr.unpack(packet_id, time_stamp, client_id, flags); }
+		void save(Stream &sr) const;
+		void load(Stream &sr);
 	};
 
 	class InPacket: public Stream {
@@ -83,18 +82,25 @@ namespace net {
 		InPacket() :Stream(true) { }
 
 		bool end() const { return m_pos == m_size; }
+		const PacketInfo &info() const { return m_info; }
+		int packetId() const { return m_info.packet_id; }
+		int timeStamp() const { return m_info.time_stamp; }
+		int clientId() const { return m_info.client_id; }
+		int flags() const { return m_info.flags; }
 
 	protected:
 		virtual void v_load(void *ptr, int size);
-		void reset(int new_size);
+		void ready(int new_size);
 		friend class Host;
 		
 		char m_data[PacketInfo::max_size];
+		PacketInfo m_info;
 	};
 
 	class OutPacket: public Stream {
 	public:
 		OutPacket() :Stream(false) { m_size = 0; }
+		OutPacket(int packet_id, int time_stamp, int client_id, int flags);
 
 		int spaceLeft() const { return sizeof(m_data) - m_pos; }
 
@@ -104,7 +110,9 @@ namespace net {
 		friend class Host;
 		char m_data[PacketInfo::max_size];
 	};
-	
+
+	//TODO: network data verification (so that the game won't crash under any circumstances)
+
 	class Host {
 	public:
 		Host(const net::Address &address) :m_socket(address) { }
@@ -112,15 +120,21 @@ namespace net {
 		bool receive(InPacket &packet, Address &source);
 		void send(const OutPacket &packet, const Address &target);
 
-		virtual ~Host() { }
-		virtual void action() = 0;
-		virtual bool isConnected() const = 0;
-
-
 	protected:
 		net::Socket m_socket;
 	};
 
+	enum class SubPacketType: char {
+		join,
+		join_ack,
+
+		leave,
+		ack,
+
+		entity_full,
+		entity_update,
+		order,
+	};
 
 }
 
