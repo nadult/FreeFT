@@ -18,17 +18,16 @@ namespace game {
 	// TODO: multiple navigation maps (2, 3, 4 at least)
 	enum { agent_size = 3 };
 
-	World::World()
-		:m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0), m_current_frame(0), m_navi_map(agent_size)
-		 ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) { } 
+	World::World(Mode mode)
+		:m_mode(mode), m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
+		m_current_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) { } 
 
-	World::World(const char *file_name) :World() {
+	World::World(Mode mode, const char *file_name) :World(mode) {
 		m_level.load(file_name);
 		for(int n = 0; n < m_entity_map.size(); n++)
 			m_entity_map[n].ptr->m_world = this;
 		m_tile_map.printInfo();
 		m_map_name = file_name;
-
 //		updateNaviMap(true);
 	}
 	World::~World() {
@@ -79,6 +78,12 @@ namespace game {
 		}
 	}
 
+	void World::addEntity(int index, Entity *entity) {
+		DASSERT(entity);
+		entity->m_world = this;
+		m_entity_map.add(index, entity);
+	}
+
 	void World::addEntity(Entity *entity) {
 		DASSERT(entity);
 		entity->m_world = this;
@@ -117,6 +122,8 @@ namespace game {
 			T *object = objects[n].get();
 			object->think();
 			if(object->m_to_be_removed) {
+				needUpdate(object);
+
 				if(object->m_grid_index != -1)
 					m_entity_map.remove(object);
 				objects[n--] = std::move(objects.back());
@@ -160,6 +167,7 @@ namespace game {
 
 			object.ptr->think();
 			if(object.ptr->m_to_be_removed) {
+				needUpdate(object.ptr);
 				m_entity_map.remove(object.ptr);
 				continue;
 			}
@@ -250,6 +258,15 @@ namespace game {
 	void World::spawnProjectileImpact(PProjectileImpact impact) {
 		impact->m_world = this;
 		m_impacts.push_back(std::move(impact));
+	}
+		
+	void World::needUpdate(const Entity *entity) {
+		if(m_mode != Mode::server)
+			return;
+
+		DASSERT(entity);
+		if(entity->m_grid_index != -1)
+			m_update_list.push_back(entity->m_grid_index);
 	}
 
 }

@@ -34,6 +34,7 @@ namespace game
 		void resize(const int2 &new_dims);
 	
 		void add(Entity*);
+		void add(int, Entity*);
 
 		void update(Entity*);
 		void update(int entity_id);

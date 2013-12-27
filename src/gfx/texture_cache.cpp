@@ -70,34 +70,8 @@ namespace gfx {
 				m_resources[n].res_ptr->onCacheDestroy();
 	}
 		
-	template<TextureCache::ListNode TextureCache::Resource::* node_ptr>
-	void TextureCache::listInsert(TextureCache::List &list, int id) {
-		ListNode &node = m_resources[id].*node_ptr;
-		DASSERT(node.prev == -1 && node.next == -1);
-		node.next = list.head;
-		if(list.head != -1)
-			(m_resources[list.head].*node_ptr).prev = id;
-		list.head = id;
-		if(list.tail == -1)
-			list.tail = id;
-	}
-
-	template<TextureCache::ListNode TextureCache::Resource::* node_ptr>
-	void TextureCache::listRemove(TextureCache::List &list, int id) {
-		ListNode &node = m_resources[id].*node_ptr;
-		if(node.prev != -1)
-			(m_resources[node.prev].*node_ptr).next = node.next;
-		if(node.next != -1)
-			(m_resources[node.next].*node_ptr).prev = node.prev;
-		if(list.head == id)
-			list.head = node.next;
-		if(list.tail == id)
-			list.tail = node.prev;
-		node.next = node.prev = -1;
-	}
-
-#define INSERT(list, list_name, id) listInsert<&Resource::list_name ## _node>(list, id)
-#define REMOVE(list, list_name, id) listRemove<&Resource::list_name ## _node>(list, id)
+#define INSERT(list, list_name, id) listInsert<Resource, &Resource::list_name ## _node>(m_resources, list, id)
+#define REMOVE(list, list_name, id) listRemove<Resource, &Resource::list_name ## _node>(m_resources, list, id)
 
 	void TextureCache::nextFrame() {
 		PROFILE("TextureCache::nextFrame");

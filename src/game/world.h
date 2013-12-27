@@ -46,8 +46,14 @@ namespace game {
 
 	class World {
 	public:
-		World();
-		World(const char *file_name);
+		enum class Mode {
+			client,
+			server,
+			single_player,
+		};
+
+		World(Mode mode = Mode::single_player);
+		World(Mode mode, const char *file_name);
 		~World();
 
 		const char *mapName() const { return m_map_name.c_str(); }
@@ -60,6 +66,7 @@ namespace game {
 		}
 
 		void addEntity(Entity*);
+		void addEntity(int, Entity*);
 		void simulate(double time_diff);
 
 		void updateNaviMap(bool full_recompute);
@@ -88,11 +95,17 @@ namespace game {
 		bool isInside(const FBox&) const;
 		void updateVisibility(const FBox &main_bbox);
 
+		Mode mode() const { return m_mode; }
+
+		void needUpdate(const Entity*);
+		vector<int> &updateList() { return m_update_list; }
+
 		//TODO: remove m_projectiles, m_impacts containers and keep all the entities in the grid only
 	private:
 		template <class T>
 		void handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip);
 		
+		const Mode m_mode;
 		string m_map_name;
 
 		double m_time_delta;
@@ -108,6 +121,7 @@ namespace game {
 
 		vector<PProjectile> m_projectiles;
 		vector<PProjectileImpact> m_impacts;
+		vector<int> m_update_list;
 	};
 
 }

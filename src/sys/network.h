@@ -132,6 +132,7 @@ namespace net {
 		ack,
 
 		entity_full,
+		entity_delete,
 		entity_update,
 		order,
 	};

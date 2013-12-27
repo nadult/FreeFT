@@ -39,7 +39,7 @@ namespace game {
 
 	void ItemEntity::save(Stream &sr) const {
 		Entity::save(sr);
-		sr << m_item.desc()->name;
+		sr << m_item.desc()->id;
 	}
 	
 	XMLNode ItemEntity::save(XMLNode &parent) const {

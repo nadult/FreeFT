@@ -15,12 +15,6 @@ namespace game {
 
 	Entity* Entity::construct(const XMLNode &node) {
 		EntityId::Type entity_type = EntityId::fromString(node.name());
-
-		float3 pos = node.float3Attrib("pos");
-		float angle = node.floatAttrib("angle");
-		const char *sprite_name = node.attrib("sprite");
-
-		//TODO: exception safety
 		Entity *out = nullptr;
 
 		if(entity_type == EntityId::actor)

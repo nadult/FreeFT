@@ -275,6 +275,8 @@ namespace game {
 			else
 				setPos(new_pos);
 		}
+		
+		m_world->needUpdate(this);
 	}
 
 	// sets direction

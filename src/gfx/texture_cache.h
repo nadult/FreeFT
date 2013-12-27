@@ -71,18 +71,6 @@ namespace gfx {
 		friend class CachedTexture;
 
 	protected:
-		struct ListNode {
-			ListNode() :next(-1), prev(-1) { }
-
-			int next, prev;
-		};
-		struct List {
-			List() :head(-1), tail(-1) { }
-			bool isEmpty() const { return head == -1; }
-
-			int head, tail;
-		};
-
 		struct Resource {
 			CachedTexture *res_ptr;
 			PTexture device_texture;
@@ -95,12 +83,6 @@ namespace gfx {
 			ListNode atlas_node; // shared by two lists: AtlasNode::list, m_atlas_queue
 		};
 		
-		template<ListNode Resource::*>
-		void listInsert(List &list, int id);
-
-		template<ListNode Resource::*>
-		void listRemove(List &list, int id);
-
 		enum { node_size = 256 };
 
 		struct AtlasNode {

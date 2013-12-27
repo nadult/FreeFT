@@ -22,6 +22,7 @@
 #include "sys/xml.h"
 #include "sys/network.h"
 #include <list>
+#include <algorithm>
 
 using namespace gfx;
 using namespace game;
@@ -32,16 +33,6 @@ float frand() {
 	
 using namespace net;
 
-void makeEntityPacket(PodArray<char> &out, const Entity *entity, int entity_id) {
-	char buffer[net::PacketInfo::max_size];
-	MemorySaver stream(buffer, sizeof(buffer));
-
-	stream << entity_id;
-	stream << *entity;
-
-	out.resize(stream.pos());
-	memcpy(out.data(), buffer, out.size());
-}
 
 class Server: public net::Host {
 public:
@@ -86,8 +77,16 @@ public:
 							client_id = (int)m_clients.size() - 1;
 						}
 
-						m_clients[client_id] = Client(source);
+						const EntityMap &map = m_world->entityMap();
+						
+						Client &client = m_clients[client_id];
+						client = Client(source);
 						printf("Client connected (cid:%d): %s\n", (int)client_id, source.toString().c_str());
+
+						client.updates.reserve(map.size());
+						for(int n = 0; n < map.size(); n++)
+							if(map[n].ptr)
+								client.updates.push_back(n);
 
 						m_client_count++;
 					}
@@ -124,24 +123,47 @@ public:
 		if(m_world) {
 			EntityMap &emap = m_world->entityMap();
 
-
-			PodArray<char> actor_packet;
-
-			for(int n = 0; n < emap.size(); n++) {
-				Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
-				if(actor && actor->actorType() == ActorTypeId::male) {
-					makeEntityPacket(actor_packet, actor, 0);
-					break;
-				}
+			vector<int> &new_updates = m_world->updateList();
+			for(int n = 0; n < (int)m_clients.size(); n++) {
+				vector<int> &updates = m_clients[n].updates;
+				updates.insert(updates.end(), new_updates.begin(), new_updates.end());
+				std::sort(updates.begin(), updates.end());
+				updates.resize(std::unique(updates.begin(), updates.end()) - updates.begin());
 			}
+			new_updates.clear();
 
-			if(!actor_packet.isEmpty()) {
-				for(int n = 0; n < (int)m_clients.size(); n++) {
-					Client &client = m_clients[n];
+			for(int n = 0; n < (int)m_clients.size(); n++) {
+				Client &client = m_clients[n];
 
+				for(int p = 0; p < 4 && !client.updates.empty(); p++) {
 					OutPacket packet(client.packet_id++, m_timestamp, n + 1, PacketInfo::flag_need_ack);
-					packet << SubPacketType::entity_full;
-					packet.save(actor_packet.data(), actor_packet.size());
+
+					PodArray<char> sub_packet(PacketInfo::max_size);
+					int idx = 0;
+
+					//TODO: prioritization is needed
+					while(idx < (int)client.updates.size()) {
+						int entity_id = client.updates[idx];
+						const Entity *entity = emap[entity_id].ptr;
+
+						MemorySaver substream(sub_packet.data(), sub_packet.size());
+						if(entity) {
+							substream << SubPacketType::entity_full << i32(entity_id);
+							substream << *entity;
+						}
+						else {
+							substream << SubPacketType::entity_delete << i32(entity_id);
+						}
+
+						int subpacket_size = substream.pos();
+						if(packet.spaceLeft() < subpacket_size)
+							break;
+
+						packet.save(sub_packet.data(), subpacket_size);
+						idx++;
+					}
+					client.updates.erase(client.updates.begin(), client.updates.begin() + idx);
+
 					send(packet, client.address);
 				}
 			}
@@ -156,6 +178,13 @@ public:
 
 		bool isValid() const { return address.isValid(); }
 
+		struct PacketUpdates {
+			vector<int> updates;
+			int packet_id;
+		};
+
+		vector<PacketUpdates> acks;
+		vector<int> updates;
 		Address address;
 		int packet_id;
 	};
@@ -207,7 +236,7 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	World world(map_name.c_str());
+	World world(World::Mode::server, map_name.c_str());
 
 	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
 	world.updateNaviMap(true);

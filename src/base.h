@@ -41,6 +41,61 @@ namespace constant {
 }
 
 
+struct ListNode {
+	ListNode() :next(-1), prev(-1) { }
+	int next, prev;
+};
+
+struct List {
+	List() :head(-1), tail(-1) { }
+	bool isEmpty() const { return head == -1; }
+
+	int head, tail;
+};
+
+template <class Container, class Object, ListNode Object::*member>
+void listInsert(Container container, List &list, int id) __attribute__((noinline));
+
+template <class Container, class Object, ListNode Object::*member>
+void listRemove(Container container, List &list, int id) __attribute__((noinline));
+
+// Assumes that node is disconnected
+template <class Object, ListNode Object::*member, class Container>
+void listInsert(Container &container, List &list, int id) {
+	ListNode &node = container[id].*member;
+	DASSERT(node.prev == -1 && node.next == -1);
+
+	node.next = list.head;
+	if(list.head == -1)
+		list.tail = id;
+	else
+		(container[list.head].*member).prev = id;
+	list.head = id;
+}
+
+// Assumes that node is on this list
+template <class Object, ListNode Object::*member, class Container>
+void listRemove(Container &container, List &list, int id) {
+	ListNode &node = container[id].*member;
+	int prev = node.prev, next = node.next;
+
+	if(prev == -1) {
+		list.head = next;
+	}
+	else {
+		(container[node.prev].*member).next = next;
+		node.prev = -1;
+	}
+
+	if(next == -1) {
+		list.tail = prev;
+	}
+	else {
+		(container[next].*member).prev = prev;
+		node.next = -1;
+	}
+}
+
 // Very simple and efficent vector for POD Types; Use with care:
 // - user is responsible for initializing the data
 // - when resizing, data is destroyed

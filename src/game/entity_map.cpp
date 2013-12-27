@@ -24,7 +24,7 @@ namespace game
 		for(int n = 0; n < size(); n++) {
 			const Grid::ObjectDef &obj = Grid::operator[](n);
 			if(obj.ptr && new_map.isInside(obj.bbox))
-				new_map.Grid::add(obj);
+				new_map.Grid::add(n, obj);
 		}
 		Grid::swap(new_map);
 	}
@@ -33,14 +33,18 @@ namespace game
 		return Grid::pixelIntersect(pos, [](const Grid::ObjectDef &object, const int2 &pos)
 			{ return ((const Entity*)object.ptr)->testPixel(pos); },  flags);
 	}
-		
+
 	void EntityMap::add(Entity *entity) {
+		add(findFreeObject(), entity);
+	}	
+
+	void EntityMap::add(int index, Entity *entity) {
 		DASSERT(entity);
 
-		int id = Grid::add(Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
+		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
 					entity->colliderType() | visibility_flag));
-		entity->m_grid_index = id;
-		updateOccluderId(id);
+		entity->m_grid_index = index;
+		updateOccluderId(index);
 	}
 
 	void EntityMap::updateOccluderId(int object_id) {

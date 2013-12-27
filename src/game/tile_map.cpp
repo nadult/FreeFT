@@ -22,7 +22,7 @@ namespace game {
 		for(int n = 0; n < size(); n++) {
 			const Grid::ObjectDef &obj = Grid::operator[](n);
 			if(obj.ptr && new_map.isInside(obj.bbox))
-				new_map.Grid::add(obj);
+				new_map.Grid::add(new_map.findFreeObject(), obj);
 		}
 		Grid::swap(new_map);
 	}
@@ -33,7 +33,9 @@ namespace game {
 		FBox bbox(pos, pos + tile->bboxSize());
 		IRect rect = tile->rect() + worldToScreen(pos);
 		ASSERT(findAny(bbox) == -1);
-		return Grid::add(Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())|visibility_flag));
+		int index = findFreeObject();
+		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())|visibility_flag));
+		return index;
 	}
 
 	void TileMap::remove(int idx) {

@@ -112,9 +112,14 @@ protected:
 				packet >> map_name;
 				if(world)
 					delete world.release();
-				world = unique_ptr<World>(new World(map_name.c_str()));
+				world = unique_ptr<World>(new World(World::Mode::client, map_name.c_str()));
 				m_client_id = packet.clientId();
+				EntityMap &emap = world->entityMap();
+				for(int n =0; n < emap.size(); n++)
+					if(emap[n].ptr)
+						emap.remove(n);
 				m_mode = Mode::connected;
+				printf("Joined to: %s\n", m_server_address.toString().c_str());
 				break;	
 			}	
 		}
@@ -135,45 +140,45 @@ protected:
 			m_packets.push_back(packet);
 		}
 
-		int list_size = m_packets.size();
-		if(list_size > 2) {
-			printf("Dropping %d packets\n", list_size - 2);
+		int count = 0, pcount = 0, bcount = 0;
+		int first_timestamp = -1, last_timestamp = -1;
+		if(!m_packets.empty()) {
+			first_timestamp = m_packets.front().timeStamp();
+			last_timestamp = m_packets.back().timeStamp();
 		}
 
-		while(list_size > 2) {
-			m_packets.pop_front();
-			list_size--;
-		}
-
-		if(!m_packets.empty() && world) {
-			InPacket packet = m_packets.front();
-			m_packets.pop_front();
+		while(!m_packets.empty() && world) {
+			InPacket &packet = m_packets.front();
+			
+			if(first_timestamp != last_timestamp && packet.timeStamp() == last_timestamp)
+				break;
+			
+			pcount++;
+			bcount += packet.size();
 
 			if(m_last_packet_id != -1 && packet.packetId() != m_last_packet_id + 1)
 				printf("Packet dropped! (got: %d last: %d)\n", packet.packetId(), m_last_packet_id);
 			m_last_packet_id = packet.packetId();
-			//printf("Received: packet %d (%d bytes)\n", packet.packetId(), packet.size());
-
+			
 			while(!packet.end()) {
 				SubPacketType type;
 				packet >> type;
 
-				if(type == SubPacketType::entity_full) {
+				if(type == SubPacketType::entity_full || type == SubPacketType::entity_delete) {
 					EntityMap &emap = world->entityMap();
+					i32 entity_id;
+					packet >> entity_id;
 
-					for(int n = 0; n < emap.size(); n++) {
-						Actor *actor = dynamic_cast<Actor*>(emap[n].ptr);
-						if(actor && actor->actorType() == ActorTypeId::male) {
-							emap.remove(actor);
-							break;
+					if(entity_id >= 0) {
+						if(entity_id < emap.size() && emap[entity_id].ptr)
+							emap.remove(entity_id);
+
+						if(type == SubPacketType::entity_full) {
+							Entity *new_entity = Entity::construct(packet);
+							world->addEntity(entity_id, new_entity);
 						}
 					}
-
-					int entity_id;
-					packet >> entity_id;
-					Entity *new_actor = Entity::construct(packet);
-					world->addEntity(new_actor);
-					//IGNORE
+					count++;
 				}
 				else {
 				}
@@ -184,8 +189,12 @@ protected:
 			   	ack << SubPacketType::ack;
 				send(ack, m_server_address);
 			}
-
+			
+			m_packets.pop_front();
 		}
+
+		if(count)
+			printf("Updated: %d objects (%d packets, %d bytes total)\n", count, pcount, bcount);
 	}
 	
 
@@ -242,7 +251,7 @@ int safe_main(int argc, char **argv)
 		sleep(0.01);
 	}
 
-	Actor *actor = world->addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
+//	Actor *actor = world->addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
 	world->updateNaviMap(true);
 
 	bool navi_show = 0;
@@ -273,7 +282,7 @@ int safe_main(int argc, char **argv)
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
 		
-		Ray ray = screenRay(getMousePos() + view_pos);
+	/*	Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world->pixelIntersect(getMousePos() + view_pos,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 		if(isect.isEmpty())
@@ -322,7 +331,7 @@ int safe_main(int argc, char **argv)
 
 		if(isKeyDown('R') && navi_debug) {
 			world->naviMap().removeColliders();
-		}
+		}*/
 
 		double time = getTime();
 		if(!navi_debug)
@@ -339,11 +348,11 @@ int safe_main(int argc, char **argv)
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 
-		world->updateVisibility(actor->boundingBox());
+	//	world->updateVisibility(actor->boundingBox());
 
 		world->addToRender(renderer);
 
-		if((entity_debug && isect.isEntity()) || 1)
+	/*	if((entity_debug && isect.isEntity()) || 1)
 			renderer.addBox(isect.boundingBox(), Color::yellow);
 
 		if(!full_isect.isEmpty() && shooting_debug) {
@@ -364,7 +373,7 @@ int safe_main(int argc, char **argv)
 		if(navi_debug || navi_show) {
 			world->naviMap().visualize(renderer, true);
 			world->naviMap().visualizePath(path, 3, renderer);
-		}
+		}*/
 
 		renderer.render();
 		lookAt(view_pos);
@@ -377,15 +386,15 @@ int safe_main(int argc, char **argv)
 		drawQuad(0, 0, 250, config.profiler_enabled? 300 : 50, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
-		float3 isect_pos = ray.at(isect.distance());
+	/*	float3 isect_pos = ray.at(isect.distance());
 		float3 actor_pos = actor->pos();
 		font->drawShadowed(int2(0, 0), Color::white, Color::black,
 				"View:(%d %d)\nRay:(%.2f %.2f %.2f)\nActor:(%.2f %.2f %.2f)",
-				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, actor_pos.x, actor_pos.y, actor_pos.z);
+				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, actor_pos.x, actor_pos.y, actor_pos.z);*/
 		if(config.profiler_enabled)
 			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", prof_stats.c_str());
 
-		if(item_debug) {
+	/*	if(item_debug) {
 			if(isKeyPressed(Key_lctrl)) {
 				if(isKeyDown(Key_up))
 					container_sel--;
@@ -432,7 +441,7 @@ int safe_main(int argc, char **argv)
 			extents = font->evalExtents(cont_info.c_str());
 			font->drawShadowed(int2(config.resolution.x - extents.width(), config.resolution.y - extents.height()),
 							Color::white, Color::black, "%s", cont_info.c_str());
-		}
+		}*/
 
 		swapBuffers();
 		TextureCache::main_cache.nextFrame();

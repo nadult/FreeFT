@@ -184,7 +184,7 @@ namespace game {
 					TileParams &params = tile_params[inst.tile_id];
 					FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
 					ASSERT(findAny(bbox) == -1);
-					Grid::add(Grid::ObjectDef(&tiles[inst.tile_id], bbox, IRect(0, 0, 32, 32), 0xffffffff));
+					Grid::add(findFreeObject(), Grid::ObjectDef(&tiles[inst.tile_id], bbox, IRect(0, 0, 32, 32), 0xffffffff));
 				} catch(const Exception &ex) {
 					printf("%s\n", ex.what());
 				}

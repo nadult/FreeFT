@@ -56,7 +56,10 @@ public:
 
 	Grid(const int2 &dimensions = int2(0, 0));
 
-	int add(const ObjectDef&);
+	int findFreeObject();
+	int findFreeOverlap();
+
+	void add(int index, const ObjectDef&);
 	void remove(int idx);
 	void update(int idx, const ObjectDef&);
 	void updateNodes();
@@ -93,21 +96,23 @@ protected:
 		mutable IRect rect; // screen space
 		mutable int obj_flags;
 
-		int first_id, first_overlap_id;
-		int size;
-		mutable bool is_dirty;
+		List object_list;
+		List overlap_list;
+		int size :31;
+		mutable int is_dirty :1;
 	} __attribute__((aligned(64)));
 
 	struct Overlap {
 		int object_id;
-		int next_id;
+		ListNode node;
 	};
 
 	struct Object: public ObjectDef {
-		int node_id; // -1 means that its overlapping more than one node
-		int next_id;
-		int prev_id :31;
+		Object() :node_id(-1), is_disabled(0) { }
+
+		int node_id :31; // -1 means that its overlapping more than one node
 		mutable int is_disabled :1;
+		ListNode node;
 	} __attribute__((aligned(64)));
 
 	//TODO: wrong for negative values
@@ -116,7 +121,6 @@ protected:
 	bool isInsideGrid(const int2 &p) const { return p.x >= 0 && p.y >= 0 && p.x < m_size.x && p.y < m_size.y; }
 
 	int nodeAt(const int2 &grid_pos) const { return grid_pos.x + grid_pos.y * m_size.x; }
-	void link(int cur_id, int next_id);
 	void updateNode(int node_id) const __attribute((noinline));
 	void updateNode(int node_id, const ObjectDef&) const __attribute((noinline));
 	int extractObjects(int node_id, const Object **out, int ignored_id = -1, int flags = 0) const;
@@ -128,11 +132,12 @@ protected:
 	FBox m_bounding_box;
 	int2 m_size;
 	vector<int2> m_row_rects;
-	vector<int> m_free_list;
-	vector<int> m_free_overlaps; // TODO: do as in TextureCache
 	vector<Overlap> m_overlaps;
 	vector<Node> m_nodes;
 	vector<Object> m_objects;
+	
+	List m_free_objects;
+	List m_free_overlaps;
 
 	mutable vector<int> m_disabled_overlaps;
 };

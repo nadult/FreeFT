@@ -58,9 +58,11 @@ namespace game {
 	}
 
 	Door::Door(Stream &sr) :Entity(sr) {
-		Type type_id;
-		sr >> type_id;
-		initialize(type_id);
+		sr.unpack(m_type_id, m_close_time, m_update_anim, m_state);
+	
+		for(int n = 0; n < state_count; n++)
+			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
+		setBBox(computeBBox(m_state));
 	}
 
 	Door::Door(const XMLNode &node) :Entity(node) {
@@ -80,7 +82,7 @@ namespace game {
 
 	void Door::save(Stream &sr) const {
 		Entity::save(sr);
-		sr << m_type_id;
+		sr.pack(m_type_id, m_close_time, m_update_anim, m_state);
 	}
 
 	void Door::initialize(Door::Type type_id) {
@@ -180,6 +182,7 @@ namespace game {
 		const float2 dir = actualDir();
 		
 		if(m_update_anim) {
+			m_world->needUpdate(this);
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}

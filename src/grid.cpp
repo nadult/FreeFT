@@ -6,11 +6,16 @@
 #include "grid.h"
 #include "sys/profiler.h"
 
+#define INSERT(list, id) listInsert<Object, &Object::node>(m_objects, list, id)
+#define REMOVE(list, id) listRemove<Object, &Object::node>(m_objects, list, id)
+
+#define OV_INSERT(list, id) listInsert<Overlap, &Overlap::node>(m_overlaps, list, id)
+#define OV_REMOVE(list, id) listRemove<Overlap, &Overlap::node>(m_overlaps, list, id)
+
+
 //TODO: better names, refactoring, remove copy&pasted code in intersection functions 
 Grid::Node::Node()
-	:size(0), first_id(-1), first_overlap_id(-1), is_dirty(false),
-	bbox(FBox::empty()), rect(IRect::empty()), obj_flags(0) { }
-	
+	:size(0), is_dirty(false), bbox(FBox::empty()), rect(IRect::empty()), obj_flags(0) { }
 	
 bool Grid::flagTest(int object, int test) {
 	int func_test = test & functional_flags;
@@ -26,14 +31,40 @@ Grid::Grid(const int2 &size) {
 		//TODO: row_rects not updated when removing objects, this will degrade performance
 		// when drawing entitiy grids
 
-		m_free_list.reserve(1024);
-		m_free_overlaps.reserve(1024);
 		m_overlaps.reserve(1024 * 16);
 		m_disabled_overlaps.reserve(256);
 	}
 }
+
+int Grid::findFreeObject() {
+	if(m_free_objects.isEmpty()) {
+		m_objects.push_back(Object());
+		INSERT(m_free_objects, (int)m_objects.size() - 1);
+	}
+
+	return m_free_objects.head;
+}
 	
-int Grid::add(const ObjectDef &def) {
+int Grid::findFreeOverlap() {
+	if(m_free_overlaps.isEmpty()) {
+		m_overlaps.push_back(Overlap());
+		OV_INSERT(m_free_overlaps, (int)m_overlaps.size() - 1);
+	}
+
+	return m_free_overlaps.head;
+}
+
+void Grid::add(int object_id, const ObjectDef &def) {
+	DASSERT(object_id >= 0);
+	if(object_id >= (int)m_objects.size()) {
+		int old_size = (int)m_objects.size();
+		m_objects.resize(object_id + 1);
+		for(int n = old_size; n < (int)m_objects.size(); n++)
+			INSERT(m_free_objects, n);
+	}
+
+	REMOVE(m_free_objects, object_id);
+
 	m_bounding_box = m_bounding_box.isEmpty()? def.bbox : sum(m_bounding_box, def.bbox);
 	IRect grid_box = nodeCoords(def.bbox);
 
@@ -44,17 +75,6 @@ int Grid::add(const ObjectDef &def) {
 				int2(min(min_max.x, def.rect_pos.y), max(min_max.y, def.rect_pos.y + def.rect_size.y));
 	}
 
-	int object_id;
-	if(m_free_list.empty()) {
-		m_objects.push_back(Object());
-		object_id = (int)m_objects.size() - 1;
-		m_objects.back().is_disabled = 0;
-	}
-	else {
-		object_id = m_free_list.back();
-		m_free_list.pop_back();
-	}
-	
 	Object &object = m_objects[object_id];
 	((ObjectDef&)object) = def;
 
@@ -62,16 +82,13 @@ int Grid::add(const ObjectDef &def) {
 		int node_id = nodeAt(grid_box.min);
 		Node &node = m_nodes[node_id];
 
-		object.prev_id = -1;
+		INSERT(node.object_list, object_id);
 		object.node_id = node_id;
-		link(object_id, node.first_id);
 
 		updateNode(node_id, def);
 		node.size++;
-		node.first_id = object_id;
 	}
 	else {
-		object.node_id = object.prev_id = object.next_id = -1;
 		for(int y = grid_box.min.y; y <= grid_box.max.y; y++)
 			for(int x = grid_box.min.x; x <= grid_box.max.x; x++) {
 				int node_id = nodeAt(int2(x, y));
@@ -79,22 +96,14 @@ int Grid::add(const ObjectDef &def) {
 				updateNode(node_id, def);
 				node.size++;
 
-				Overlap overlap;
-				overlap.next_id = node.first_overlap_id;
-				overlap.object_id = object_id;
+				int overlap_id = findFreeOverlap();
 
-				if(m_free_overlaps.empty()) {
-					node.first_overlap_id = (int)m_overlaps.size();
-					m_overlaps.push_back(overlap);
-				}
-				else {
-					m_overlaps[node.first_overlap_id = m_free_overlaps.back()] = overlap;
-					m_free_overlaps.pop_back();
-				}
+				Overlap &overlap = m_overlaps[overlap_id];
+				overlap.object_id = object_id;
+				OV_REMOVE(m_free_overlaps, overlap_id);
+				OV_INSERT(node.overlap_list, overlap_id);
 			}
 	}
-
-	return object_id;
 }
 
 void Grid::remove(int idx) {
@@ -105,48 +114,41 @@ void Grid::remove(int idx) {
 		IRect grid_box = nodeCoords(object.bbox);
 		for(int y = grid_box.min.y; y <= grid_box.max.y; y++)
 			for(int x = grid_box.min.x; x <= grid_box.max.x; x++) {
-				int node_id = nodeAt(int2(x, y));
-				Node &node = m_nodes[node_id];
+				Node &node = m_nodes[nodeAt(int2(x, y))];
 				node.size--;
 				node.is_dirty = true;
-				int overlap_id = node.first_overlap_id;
-				int prev_id = -1;
+				int overlap_id = node.overlap_list.head;
 
 				while(true) {
 					DASSERT(overlap_id != -1);
 					Overlap &overlap = m_overlaps[overlap_id];
+
 					if(overlap.object_id == idx) {
-						m_free_overlaps.push_back(overlap_id);
-						if(prev_id != -1)
-							m_overlaps[prev_id].next_id = overlap.next_id;
-						if(node.first_overlap_id == overlap_id)
-							node.first_overlap_id = overlap.next_id;
+						OV_REMOVE(node.overlap_list, overlap_id);
+						OV_INSERT(m_free_overlaps, overlap_id);
 						break;
 					}
-					prev_id = overlap_id;
-					overlap_id = m_overlaps[overlap_id].next_id;
+
+					overlap_id = overlap.node.next;
 				}
 			}
 	}
 	else {
 		Node &node = m_nodes[object.node_id];
-		if(node.first_id == idx)
-			node.first_id = object.next_id;
+		REMOVE(node.object_list, idx);
+		object.node_id = -1;
 		node.size--;
 		node.is_dirty = true;
-		link(object.prev_id, object.next_id);
-		object.node_id = -1;
 	}
 
 	object.ptr = nullptr;
-	m_free_list.push_back(idx);	
+	INSERT(m_free_objects, idx);
 }
 
 void Grid::update(int id, const ObjectDef &object) {
 	//TODO: speed up; in most cases it can be done fast, coz we have a pointer to node
 	remove(id);
-	int new_id = add(object);
-	DASSERT(new_id == id);
+	add(id, object);
 }
 
 void Grid::updateNodes() {
@@ -173,17 +175,17 @@ void Grid::updateNode(int id) const {
 	const Node &node = m_nodes[id];
 
 	if(node.size != 0) {
-		int cur_id = node.first_id;
+		int cur_id = node.object_list.head;
 		while(cur_id != -1) {
 			const Object &obj = m_objects[cur_id];
 			updateNode(id, obj);
-			cur_id = obj.next_id;
+			cur_id = obj.node.next;
 		}
-		int overlap_id = node.first_overlap_id;
+		int overlap_id = node.overlap_list.head;
 		while(overlap_id != -1) {
 			const Overlap &overlap = m_overlaps[overlap_id];
 			updateNode(id, m_objects[overlap.object_id]);
-			overlap_id = overlap.next_id;
+			overlap_id = overlap.node.next;
 		}
 	}
 	else {
@@ -193,13 +195,6 @@ void Grid::updateNode(int id) const {
 	}
 
 	node.is_dirty = false;
-}
-
-void Grid::link(int cur_id, int next_id) {
-	if(cur_id != -1)
-		m_objects[cur_id ].next_id = next_id;
-	if(next_id != -1)
-		m_objects[next_id].prev_id = cur_id;
 }
 
 const IRect Grid::nodeCoords(const FBox &box) const {
@@ -220,21 +215,21 @@ int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int fl
 	const Object **start = out;
 
 	const Node &node = m_nodes[node_id];
-	int object_id = node.first_id;
+	int object_id = node.object_list.head;
 	while(object_id != -1) {
 		const Object &object = m_objects[object_id];
 		if(flagTest(object.flags, flags) && object_id != ignored_id)
 			*out++ = &object;
-		object_id = object.next_id;
+		object_id = object.node.next;
 	}
 
-	int overlap_id = node.first_overlap_id;
+	int overlap_id = node.overlap_list.head;
 	while(overlap_id != -1) {
 		object_id = m_overlaps[overlap_id].object_id;
 		const Object &object = m_objects[object_id];
 		if(flagTest(object.flags, flags) && object_id != ignored_id && !object.is_disabled)
 			*out++ = &object;
-		overlap_id = m_overlaps[overlap_id].next_id;
+		overlap_id = m_overlaps[overlap_id].node.next;
 	}
 
 	return out - start;
@@ -245,8 +240,6 @@ void Grid::printInfo() const {
 	printf("       nodes(%d): %.2f KB\n", (int)m_nodes.size(), (float)m_nodes.size() * sizeof(Node) / 1024.0);
 	printf("     objects(%d): %.2f KB\n", (int)m_objects.size(), (float)m_objects.size() * sizeof(Object) / 1024.0);
 	printf("    overlaps(%d): %.2f KB\n", (int)m_overlaps.size(), (float)m_overlaps.size() * sizeof(Overlap) / 1024.0);
-	printf("  free_lists(%d): %.2f KB\n", (int)m_free_list.size() + (int)m_free_overlaps.size(),
-										(float)(m_free_list.size() + m_free_overlaps.size()) * sizeof(int) / 1024.0);
 	printf("  sizeof(Node): %d\n", (int)sizeof(Node));
 	printf("  sizeof(Object): %d\n", (int)sizeof(Object));
 }
@@ -254,12 +247,16 @@ void Grid::printInfo() const {
 void Grid::swap(Grid &rhs) {
 	std::swap(m_bounding_box, rhs.m_bounding_box);
 	std::swap(m_size, rhs.m_size);
+
 	m_row_rects.swap(rhs.m_row_rects);
-	m_free_list.swap(rhs.m_free_list);
-	m_free_overlaps.swap(rhs.m_free_overlaps);
 	m_overlaps.swap(rhs.m_overlaps);
 	m_nodes.swap(rhs.m_nodes);
 	m_objects.swap(rhs.m_objects);
+	
+	std::swap(m_free_objects, rhs.m_free_objects);
+	std::swap(m_free_overlaps, rhs.m_free_overlaps);
+
+	m_disabled_overlaps.swap(rhs.m_disabled_overlaps);
 }
 
 void Grid::clear() {

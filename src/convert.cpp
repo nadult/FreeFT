@@ -326,7 +326,7 @@ void convertAll(const char *fot_path) {
 				if(access(dir.c_str(), R_OK) != 0)
 					mkdirRecursive(dir.c_str());
 
-				DataStream ldr(data, true);
+				MemoryLoader ldr(data);
 				Saver svr(dst_path);
 
 				if(type != ResTypeId::tile || bytes > 1024 * 1024) {

@@ -45,6 +45,7 @@ namespace game {
 	Entity::Entity(Stream &sr) {
 		char sprite_name[256];
 		sr.loadString(sprite_name, sizeof(sprite_name));
+
 		initialize(sprite_name);
 		sr.unpack(m_seq_id, m_frame_id, m_dir_idx, m_dir_angle, m_pos);
 	}
