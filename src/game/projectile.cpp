@@ -5,6 +5,7 @@
 
 #include "game/projectile.h"
 #include "game/world.h"
+#include "sys/xml.h"
 
 namespace game {
 
@@ -22,8 +23,7 @@ namespace game {
 		nullptr,				// rocket impact is handled differently
 	};
 
-	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos, const float3 &target,
-			Entity *spawner)
+	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos, const float3 &target, Entity *spawner)
 		:Entity(s_projectile_names[type]), m_dir(target - pos), m_spawner(spawner), m_type(type) {
 			m_dir *= 1.0f / length(m_dir);
 			setPos(pos);
@@ -31,6 +31,21 @@ namespace game {
 			m_speed = speed;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
+	}
+
+	Projectile::Projectile(Stream &sr) {
+		sr.unpack(m_type, m_dir, m_speed);
+		Entity::initialize(s_projectile_names[m_type]);
+		loadEntityParams(sr);
+	}
+
+	void Projectile::save(Stream &sr) const {
+		sr.pack(m_type, m_dir, m_speed);
+		saveEntityParams(sr);
+	}
+		
+	XMLNode Projectile::save(XMLNode& parent) const {
+		return Entity::save(parent);
 	}
 	
 	Entity *Projectile::clone() const {
@@ -48,8 +63,7 @@ namespace game {
 
 		if(isect.distance() < ray_pos) {
 			if(s_impact_names[m_type]) {
-				PProjectileImpact impact(new ProjectileImpact(s_impact_names[m_type], new_pos));
-				m_world->spawnProjectileImpact(std::move(impact));
+				m_world->addEntity(new Impact(s_impact_names[m_type], new_pos));
 
 				if(isect.isEntity()) {
 					float damage = 100.0f;
@@ -60,16 +74,27 @@ namespace game {
 		}
 	}
 
-	ProjectileImpact::ProjectileImpact(const char *sprite_name, const float3 &pos)
+	Impact::Impact(const char *sprite_name, const float3 &pos)
 		:Entity(sprite_name) {
 		setPos(pos);
 	}
 	
-	Entity *ProjectileImpact::clone() const {
-		return new ProjectileImpact(*this);
+	Impact::Impact(Stream &sr) :Entity(sr) {
 	}
 
-	void ProjectileImpact::onAnimFinished() {
+	void Impact::save(Stream &sr) const {
+		Entity::save(sr);
+	}
+	
+	XMLNode Impact::save(XMLNode& parent) const {
+		return Entity::save(parent);
+	}
+
+	Entity *Impact::clone() const {
+		return new Impact(*this);
+	}
+
+	void Impact::onAnimFinished() {
 		remove();
 	}
 

@@ -6,6 +6,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/sprite.h"
+#include "game/projectile.h"
 #include "sys/xml.h"
 #include <cmath>
 #include <cstdio>
@@ -72,17 +73,14 @@ namespace game {
 		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
 	};
 
-	Actor::Actor(Stream &sr) :Entity(sr) {
-		//TODO: possible space optimization: no need to send sprite name
-		ActorTypeId::Type type_id;
+	Actor::Actor(Stream &sr) {
 		sr.unpack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
+		Entity::initialize(s_sprite_names[m_type_id][m_armour_class_id]);
+		loadEntityParams(sr);
 
 		m_anims = ActorAnims(m_sprite);
-
 		m_issue_next_order = false;
 		m_order = m_next_order = doNothingOrder();
-
-	//	initialize(type_id);
 	}
 
 	Actor::Actor(const XMLNode &node) :Entity(node) {
@@ -101,8 +99,8 @@ namespace game {
 	}
 
 	void Actor::save(Stream &sr) const {
-		Entity::save(sr);
 		sr.pack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
+		saveEntityParams(sr);
 	}
 
 	void Actor::initialize(ActorTypeId::Type type_id) {
@@ -276,7 +274,7 @@ namespace game {
 				setPos(new_pos);
 		}
 		
-		m_world->needUpdate(this);
+		m_world->replicate(this);
 	}
 
 	// sets direction
@@ -356,9 +354,9 @@ namespace game {
 		float3 pos = boundingBox().center();
 		pos.y = this->pos().y;
 		float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
-		PProjectile projectile(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
+		
+		m_world->addEntity(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
 												pos + offset, m_order.attack.target_pos, this));
-		m_world->spawnProjectile(std::move(projectile));
 	}
 
 	void Actor::onSoundEvent() {

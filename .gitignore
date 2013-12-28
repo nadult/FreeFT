@@ -4,6 +4,8 @@
 /Makefile.local
 /editor
 /game
+/client
+/server
 /build
 /refs
 /res_viewer

@@ -22,7 +22,11 @@ namespace game {
 	// array for each subtype of Entity class
 	// TODO: check for exception safety everywhere, where Entity* is used
 	class Entity {
+	protected:
+		Entity();
 		void initialize(const char *sprite_name);
+		void saveEntityParams(Stream&) const;
+		void loadEntityParams(Stream&);
 
 	public:
 		Entity(const char *sprite_name);
@@ -128,7 +132,8 @@ namespace game {
 		EntityRef(EntityRef&& rhs);
 		void operator=(const EntityRef& rhs);
 		~EntityRef();
-	
+
+		//TODO: serialization of entity_ref	
 		// TODO: add verification (!=null) code everywhere, where EntityRef is used	
 		Entity* get() const { return m_node; }
 		Entity *operator->() const { return m_node; }

@@ -7,7 +7,6 @@
 #define GAME_WORLD_H
 
 #include "game/entity.h"
-#include "game/projectile.h"
 #include "game/tile_map.h"
 #include "game/entity_map.h"
 #include "game/level.h"
@@ -65,15 +64,14 @@ namespace game {
 			return entity;
 		}
 
+		void removeEntity(Entity*);
+		void removeEntity(int entity_id);
 		void addEntity(Entity*);
-		void addEntity(int, Entity*);
+		void addEntity(int entity_id, Entity*);
 		void simulate(double time_diff);
 
 		void updateNaviMap(bool full_recompute);
 	
-		void spawnProjectile(PProjectile);
-		void spawnProjectileImpact(PProjectileImpact);
-
 		void addToRender(gfx::SceneRenderer&);
 
 		double timeDelta() const { return m_time_delta; }
@@ -97,14 +95,11 @@ namespace game {
 
 		Mode mode() const { return m_mode; }
 
-		void needUpdate(const Entity*);
-		vector<int> &updateList() { return m_update_list; }
+		void replicate(int entity_id);
+		void replicate(const Entity*);
+		vector<int> &replicationList() { return m_replication_list; }
 
-		//TODO: remove m_projectiles, m_impacts containers and keep all the entities in the grid only
 	private:
-		template <class T>
-		void handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip);
-		
 		const Mode m_mode;
 		string m_map_name;
 
@@ -119,9 +114,7 @@ namespace game {
 		EntityMap	&m_entity_map;
 		NaviMap		m_navi_map;
 
-		vector<PProjectile> m_projectiles;
-		vector<PProjectileImpact> m_impacts;
-		vector<int> m_update_list;
+		vector<int> m_replication_list;
 	};
 
 }

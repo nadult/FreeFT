@@ -182,7 +182,7 @@ namespace game {
 		const float2 dir = actualDir();
 		
 		if(m_update_anim) {
-			m_world->needUpdate(this);
+			m_world->replicate(this);
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}

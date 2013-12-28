@@ -126,7 +126,10 @@ namespace game {
 		collider_static			= 0x0002, // updates NavigationMap when its being fully recomputed
 		collider_dynamic_nv		= 0x0004, // updates NavigationMap every frame
 		collider_dynamic		= 0x0008, // does not update NavigationMap
-		collider_item			= 0x0010,
+
+		collider_item			= 0x0100,
+		collider_projectile		= 0x0200,
+
 		collider_entities		= 0x00ffff,
 
 		collider_tile_floors	= tileIdToFlag(TileId::floor),
@@ -135,6 +138,7 @@ namespace game {
 		collider_tile_objects	= tileIdToFlag(TileId::object),
 		collider_tiles			= 0xff0000,
 
+		collider_solid			= 0xff00ff,
 		collider_all			= 0xffffff,
 	};
 	

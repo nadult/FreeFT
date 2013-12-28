@@ -92,7 +92,8 @@ public:
 					}
 
 					if(client_id != -1) {
-						OutPacket ack(0, 0, client_id, 0);
+						Client &client = m_clients[client_id];
+						OutPacket ack(client.packet_id++, m_timestamp, client_id, 0);
 						ack << SubPacketType::join_ack;
 						ack << string(m_world->mapName());
 						send(ack, source);
@@ -123,7 +124,7 @@ public:
 		if(m_world) {
 			EntityMap &emap = m_world->entityMap();
 
-			vector<int> &new_updates = m_world->updateList();
+			vector<int> &new_updates = m_world->replicationList();
 			for(int n = 0; n < (int)m_clients.size(); n++) {
 				vector<int> &updates = m_clients[n].updates;
 				updates.insert(updates.end(), new_updates.begin(), new_updates.end());
@@ -149,7 +150,7 @@ public:
 						MemorySaver substream(sub_packet.data(), sub_packet.size());
 						if(entity) {
 							substream << SubPacketType::entity_full << i32(entity_id);
-							substream << *entity;
+							substream << entity->entityType() << *entity;
 						}
 						else {
 							substream << SubPacketType::entity_delete << i32(entity_id);

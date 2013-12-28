@@ -17,14 +17,10 @@ using namespace gfx;
 namespace game {
 
 	void Entity::initialize(const char *sprite_name) {
-		m_world = nullptr;
-		m_to_be_removed = false;
-		m_grid_index = -1;
-		m_first_ref = nullptr;
-
 		m_sprite = Sprite::mgr[sprite_name];
 		m_max_screen_rect = m_sprite->getMaxRect();
 		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
+
 		m_dir_idx = 0;
 		m_dir_angle = 0.0f;
 		m_pos = float3(0.0f, 0.0f, 0.0f);
@@ -32,28 +28,67 @@ namespace game {
 		playSequence(0);
 	}
 
+	enum {
+		flag_compressed = 1,
+		flag_is_looped = 2,
+		flag_is_finished = 4,
+	};
 
-	Entity::Entity(const char *sprite_name) {
+	void Entity::saveEntityParams(Stream &sr) const {
+		bool can_compress =
+			m_seq_id >= 0 && m_seq_id <= 255 &&
+			m_frame_id >= 0 && m_frame_id <= 255 &&
+			m_dir_idx >= 0 && m_dir_idx <= 255;
+
+		u8 flags = (can_compress? flag_compressed : 0) | (m_is_looped? flag_is_looped : 0) | (m_is_finished? flag_is_finished : 0);
+
+		sr.pack(flags, m_pos, m_dir_angle);
+		if(can_compress)
+			sr.pack(u8(m_seq_id), u8(m_frame_id), u8(m_dir_idx));
+		else
+			sr.pack(m_seq_id, m_frame_id, m_dir_idx);
+	}
+
+	void Entity::loadEntityParams(Stream &sr) {
+		u8 flags;
+		sr.unpack(flags, m_pos, m_dir_angle);
+		m_is_finished = flags & flag_is_finished;
+		m_is_looped = flags & flag_is_looped;
+
+		if(flags & flag_compressed) {
+			u8 frame_id, seq_id, dir_idx;
+			sr.unpack(seq_id, frame_id, dir_idx);
+			m_frame_id = frame_id;
+			m_seq_id = seq_id;
+			m_dir_idx = dir_idx;
+		}
+		else
+			sr.unpack(m_seq_id, m_frame_id, m_dir_idx);
+	}
+
+	Entity::Entity() :m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) { }
+
+	Entity::Entity(const char *sprite_name) :Entity() {
 		initialize(sprite_name);
 	}
 
-	Entity::Entity(const Entity &rhs)
-		:m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) {
+	Entity::Entity(const Entity &rhs) :Entity() {
 		operator=(rhs);
 	}
 
-	Entity::Entity(Stream &sr) {
+	Entity::Entity(Stream &sr) :Entity() {
 		char sprite_name[256];
 		sr.loadString(sprite_name, sizeof(sprite_name));
 
 		initialize(sprite_name);
-		sr.unpack(m_seq_id, m_frame_id, m_dir_idx, m_dir_angle, m_pos);
+		loadEntityParams(sr);
 	}
 	
-	Entity::Entity(const XMLNode &node) {
+	Entity::Entity(const XMLNode &node) :Entity() {
 		initialize(node.attrib("sprite"));
 		m_pos = node.float3Attrib("pos");
 		m_dir_angle = node.floatAttrib("angle");
+		m_dir_idx = m_sprite->findDir(m_seq_id, m_dir_angle);
 	}
 
 	XMLNode Entity::save(XMLNode &parent) const {
@@ -66,9 +101,8 @@ namespace game {
 
 	void Entity::save(Stream &sr) const {
 		ASSERT(sr.isSaving());
-		sr << entityType();
 		sr.saveString(m_sprite->resourceName());
-		sr.pack(m_seq_id, m_frame_id, m_dir_idx, m_dir_angle, m_pos);
+		saveEntityParams(sr);
 	}
 
 	void Entity::operator=(const Entity &rhs) {

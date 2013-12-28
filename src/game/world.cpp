@@ -20,7 +20,10 @@ namespace game {
 
 	World::World(Mode mode)
 		:m_mode(mode), m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
-		m_current_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) { } 
+		m_current_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
+		if(m_mode == Mode::server)
+			m_replication_list.reserve(1024);
+	} 
 
 	World::World(Mode mode, const char *file_name) :World(mode) {
 		m_level.load(file_name);
@@ -78,16 +81,23 @@ namespace game {
 		}
 	}
 
+	void World::removeEntity(int entity_id) {
+		DASSERT(entity_id >= 0 && entity_id < m_entity_map.size());
+		m_entity_map.remove(entity_id);
+	}
+
 	void World::addEntity(int index, Entity *entity) {
 		DASSERT(entity);
 		entity->m_world = this;
 		m_entity_map.add(index, entity);
+		replicate(entity);
 	}
 
 	void World::addEntity(Entity *entity) {
 		DASSERT(entity);
 		entity->m_world = this;
 		m_entity_map.add(entity);
+		replicate(entity);
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {
@@ -106,34 +116,6 @@ namespace game {
 		for(int n = 0; n < (int)inds.size(); n++) {
 			const auto &obj = m_entity_map[inds[n]];
 			obj.ptr->addToRender(renderer);
-		}
-
-		//TODO: projectiles will have to be (probably) stored in a grid also, because
-		// when hiding occluders, everything that overlaps with the occluder should be hidden also
-		for(int n = 0; n < (int)m_projectiles.size(); n++)
-			m_projectiles[n]->addToRender(renderer);
-		for(int n = 0; n < (int)m_impacts.size(); n++)
-			m_impacts[n]->addToRender(renderer);
-	}
-
-	template <class T>
-	void World::handleContainer(vector<std::unique_ptr<T> > &objects, int frame_skip) {
-		for(int n = 0; n < (int)objects.size(); n++) {
-			T *object = objects[n].get();
-			object->think();
-			if(object->m_to_be_removed) {
-				needUpdate(object);
-
-				if(object->m_grid_index != -1)
-					m_entity_map.remove(object);
-				objects[n--] = std::move(objects.back());
-				objects.pop_back();
-				continue;
-			}
-
-			for(int f = 0; f < frame_skip; f++)
-				object->nextFrame();
-			//DASSERT(!isColliding(object->boundingBox(), object));
 		}
 	}
 
@@ -167,7 +149,7 @@ namespace game {
 
 			object.ptr->think();
 			if(object.ptr->m_to_be_removed) {
-				needUpdate(object.ptr);
+				replicate(object.ptr);
 				m_entity_map.remove(object.ptr);
 				continue;
 			}
@@ -177,10 +159,6 @@ namespace game {
 			for(int f = 0; f < frame_skip; f++)
 				object.ptr->nextFrame();
 		}
-
-
-		handleContainer(m_projectiles, frame_skip);
-		handleContainer(m_impacts, frame_skip);
 
 		m_last_time = current_time;
 	}
@@ -250,23 +228,14 @@ namespace game {
 		return m_navi_map.findPath(start, end);
 	}
 	
-	void World::spawnProjectile(PProjectile projectile) {
-		projectile->m_world = this;
-		m_projectiles.push_back(std::move(projectile));
+	void World::replicate(const Entity *entity) {
+		DASSERT(entity && entity->m_grid_index != -1);
+		replicate(entity->m_grid_index);
 	}
-	
-	void World::spawnProjectileImpact(PProjectileImpact impact) {
-		impact->m_world = this;
-		m_impacts.push_back(std::move(impact));
-	}
-		
-	void World::needUpdate(const Entity *entity) {
-		if(m_mode != Mode::server)
-			return;
 
-		DASSERT(entity);
-		if(entity->m_grid_index != -1)
-			m_update_list.push_back(entity->m_grid_index);
+	void World::replicate(int entity_id) {
+		if(m_mode == Mode::server)
+			m_replication_list.push_back(entity_id);
 	}
 
 }

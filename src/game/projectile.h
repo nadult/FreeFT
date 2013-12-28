@@ -10,13 +10,16 @@
 
 namespace game {
 
-   	//TODO: derived from Entity mainly for sprite animation handling,
-	//maybe this class should be more lightweight
 	class Projectile: public Entity {
 	public:
 		Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos,
 					const float3 &target, Entity *spawner);
-		virtual ColliderFlags colliderType() const { return collider_none; }
+		Projectile(Stream&);
+		
+		void save(Stream&) const;
+		XMLNode save(XMLNode& parent) const;
+
+		virtual ColliderFlags colliderType() const { return collider_projectile; }
 		virtual EntityId::Type entityType() const { return EntityId::projectile; }
 		virtual Entity *clone() const;
 
@@ -33,19 +36,21 @@ namespace game {
 		float m_speed;
 	};
 
-	class ProjectileImpact: public Entity {
+	class Impact: public Entity {
 	public:
-		ProjectileImpact(const char *sprite_name, const float3 &pos);
-		virtual ColliderFlags colliderType() const { return collider_none; }
+		Impact(const char *sprite_name, const float3 &pos);
+		Impact(Stream&);
+
+		void save(Stream&) const;
+		XMLNode save(XMLNode& parent) const;
+
+		virtual ColliderFlags colliderType() const { return collider_projectile; }
 		virtual EntityId::Type entityType() const { return EntityId::impact; }
 		virtual Entity *clone() const;
 	
 	protected:
 		virtual void onAnimFinished();
 	};
-
-	typedef std::unique_ptr<Projectile> PProjectile;
-	typedef std::unique_ptr<ProjectileImpact> PProjectileImpact;
 
 }
 

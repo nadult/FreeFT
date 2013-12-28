@@ -9,6 +9,7 @@
 #include "game/item.h"
 #include "game/door.h"
 #include "game/container.h"
+#include "game/projectile.h"
 #include <sys/xml.h>
 
 namespace game {
@@ -27,7 +28,7 @@ namespace game {
 			out = new ItemEntity(node);
 			
 		if(!out)
-			THROW("Unknown entity type: %d\n", (int)entity_type);
+			THROW("Unknown entity id: %s\n", (int)entity_type);
 
 		return out;
 	}
@@ -48,9 +49,13 @@ namespace game {
 			out = new Container(sr);
 		else if(entity_type == EntityId::item)
 			out = new ItemEntity(sr);
+		else if(entity_type == EntityId::projectile)
+			out = new Projectile(sr);
+		else if(entity_type == EntityId::impact)
+			out = new Impact(sr);
 
 		if(!out)
-			THROW("Unknown entity type: %d\n", (int)entity_type);
+			THROW("Unknown entity id: %d\n", (int)entity_type);
 
 		return out;
 	}
