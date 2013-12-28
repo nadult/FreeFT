@@ -10,6 +10,17 @@
 
 namespace game {
 
+	void Order::save(Stream &sr) const {
+		sr << id << target;
+		sr.save(data, sizeof(data));
+	}
+
+	void Order::load(Stream &sr, World *world) {
+		sr >> id;
+		target.load(sr, world);
+		sr.load(data, sizeof(data));
+	}
+
 	Order dieOrder(DeathTypeId::Type death_id) {
 		Order new_order(OrderId::die);
 		new_order.die = Order::Die{death_id};
@@ -203,7 +214,7 @@ namespace game {
 	}
 
 	void Actor::issueMoveOrder() {
-		OrderId::Type order_id = m_next_order.id;
+		OrderId order_id = m_next_order.id;
 		int3 new_pos = m_next_order.move.target_pos;
 		DASSERT(order_id == OrderId::move);
 

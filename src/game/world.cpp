@@ -93,11 +93,12 @@ namespace game {
 		replicate(entity);
 	}
 
-	void World::addEntity(Entity *entity) {
+	int World::addEntity(Entity *entity) {
 		DASSERT(entity);
 		entity->m_world = this;
 		m_entity_map.add(entity);
 		replicate(entity);
+		return entity->m_grid_index;
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {

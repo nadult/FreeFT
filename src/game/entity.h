@@ -62,6 +62,7 @@ namespace game {
 		const IRect currentScreenRect() const;
 		const float3 bboxSize() const { return m_bbox.size(); }
 
+		int id() const { return m_grid_index; }
 		float dirAngle() const { return m_dir_angle; }
 		const float2 dir() const;
 		const float2 actualDir() const;
@@ -73,6 +74,7 @@ namespace game {
 		void remove();
 
 		bool testPixel(const int2 &screen_pos) const;
+
 	protected:
 		friend class World;
 		friend class EntityMap;
@@ -138,6 +140,9 @@ namespace game {
 		Entity* get() const { return m_node; }
 		Entity *operator->() const { return m_node; }
 		Entity &operator*() const { DASSERT(m_node); return *m_node; }
+
+		void save(Stream&) const;
+		void load(Stream&, World*);
 		
 	private:
 		void zero();

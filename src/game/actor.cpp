@@ -216,7 +216,7 @@ namespace game {
 		if(m_issue_next_order)
 			issueNextOrder();
 
-		OrderId::Type order_id = m_order.id;
+		OrderId order_id = m_order.id;
 		if(order_id == OrderId::do_nothing) {
 			roundPos();
 			m_issue_next_order = true;

@@ -42,9 +42,9 @@ public:
 		connected,
 	};
 
+	//TODO: separate packet sequencing for in/out packets
 	Client(int port)
-		:Host(Address(port)), m_last_packet_id(-1), m_mode(Mode::disconnected), m_client_id(-1) {
-	}
+		:Host(Address(port)), m_last_packet_id(-1), m_timestamp(0), m_mode(Mode::disconnected), m_client_id(-1), m_actor_id(-1) { }
 		
 	bool receiveFromServer(InPacket &packet) {
 		DASSERT(m_server_address.isValid());
@@ -77,6 +77,14 @@ public:
 		}
 	}
 
+	void sendOrder(Order order) {
+		if(m_mode == Mode::connected) {
+			OutPacket packet(0, 0, m_client_id, 0); //TODO: ack
+			packet << SubPacketType::actor_order << order;
+			send(packet, m_server_address);
+		}
+	}
+
 	~Client() {
 		disconnect();
 	}
@@ -90,6 +98,8 @@ public:
 			actionInGame();
 	}
 
+	int actorId() const { return m_actor_id; }	
+
 protected:
 	void actionConnecting() {
 		double current_time = getTime();
@@ -97,7 +107,7 @@ protected:
 		if(m_connection_timeout < 0 || m_connection_timeout > current_time) {
 			m_connection_timeout = current_time + 0.5;
 
-			OutPacket packet(0, 0, 0, 0);
+			OutPacket packet(0, 0, -1, 0);
 			packet << SubPacketType::join;
 			send(packet, m_server_address);
 		}
@@ -110,6 +120,7 @@ protected:
 			if(type == SubPacketType::join_ack) {
 				string map_name;
 				packet >> map_name;
+				packet >> m_actor_id;
 				if(world)
 					delete world.release();
 				world = unique_ptr<World>(new World(World::Mode::client, map_name.c_str()));
@@ -159,49 +170,51 @@ protected:
 			if(m_last_packet_id != -1 && packet.packetId() != m_last_packet_id + 1)
 				printf("Packet dropped! (got: %d last: %d)\n", packet.packetId(), m_last_packet_id);
 			m_last_packet_id = packet.packetId();
-			
-			while(!packet.end()) {
-				SubPacketType type;
-				packet >> type;
+		
+			if(packet.timeStamp() >= m_timestamp) {	
+				while(!packet.end()) {
+					SubPacketType type;
+					packet >> type;
 
-				if(type == SubPacketType::entity_full || type == SubPacketType::entity_delete) {
-					EntityMap &emap = world->entityMap();
-					i32 entity_id;
-					packet >> entity_id;
+					if(type == SubPacketType::entity_full || type == SubPacketType::entity_delete) {
+						EntityMap &emap = world->entityMap();
+						i32 entity_id;
+						packet >> entity_id;
 
-					if(entity_id >= 0) {
-						if(entity_id < emap.size() && emap[entity_id].ptr)
-							emap.remove(entity_id);
+						if(entity_id >= 0) {
+							if(entity_id < emap.size() && emap[entity_id].ptr)
+								emap.remove(entity_id);
 
-						if(type == SubPacketType::entity_full) {
-							Entity *new_entity = Entity::construct(packet);
-							world->addEntity(entity_id, new_entity);
+							if(type == SubPacketType::entity_full) {
+								Entity *new_entity = Entity::construct(packet);
+								world->addEntity(entity_id, new_entity);
+							}
 						}
+						count++;
 					}
-					count++;
+					else {
+					}
 				}
-				else {
-				}
-			}
 
-			if(packet.flags() & PacketInfo::flag_need_ack) {
-				OutPacket ack(packet.packetId(), packet.timeStamp(), m_client_id, 0);
-			   	ack << SubPacketType::ack;
-				send(ack, m_server_address);
+				if(packet.flags() & PacketInfo::flag_need_ack) {
+					OutPacket ack(packet.packetId(), packet.timeStamp(), m_client_id, 0);
+					ack << SubPacketType::ack;
+					send(ack, m_server_address);
+				}
 			}
 			
+			m_timestamp = packet.timeStamp();
 			m_packets.pop_front();
 		}
 
 		if(count)
 			printf("Updated: %d objects (%d packets, %d bytes total)\n", count, pcount, bcount);
 	}
-	
 
 private:
 	std::list<InPacket> m_packets;
 	net::Address m_server_address;
-	int m_last_packet_id, m_client_id;
+	int m_last_packet_id, m_timestamp, m_client_id, m_actor_id;
 	Mode m_mode;
 };
 
@@ -229,11 +242,13 @@ int safe_main(int argc, char **argv)
 
 	unique_ptr<Client> host(new Client(port));
 	
-	Config config = loadConfig("game");
+	Config config = loadConfig("client");
 	ItemDesc::loadItems();
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
+	setWindowPos(config.window_pos);
+	pollEvents();
 
 	printDeviceInfo();
 	grabMouse(false);
@@ -251,7 +266,6 @@ int safe_main(int argc, char **argv)
 		sleep(0.01);
 	}
 
-//	Actor *actor = world->addEntity(new Actor(ActorTypeId::male, float3(245, 128, 335)));
 	world->updateNaviMap(true);
 
 	bool navi_show = 0;
@@ -282,9 +296,15 @@ int safe_main(int argc, char **argv)
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
 		
-	/*	Ray ray = screenRay(getMousePos() + view_pos);
+		int actor_id = host->actorId();
+		const Actor *actor = nullptr;
+		if(actor_id >= 0 && actor_id < world->entityCount())
+			actor = dynamic_cast<Actor*>(world->getEntity(actor_id));	
+
+		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world->pixelIntersect(getMousePos() + view_pos,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
+
 		if(isect.isEmpty())
 			isect = world->trace(ray, actor,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
@@ -294,44 +314,36 @@ int safe_main(int argc, char **argv)
 			full_isect = world->trace(ray, actor, collider_all|visibility_flag);
 
 		
-		if(isKeyDown('T') && !isect.isEmpty())
-			actor->setPos(ray.at(isect.distance()));
+	//	if(isKeyDown('T') && !isect.isEmpty())
+	//		actor->setPos(ray.at(isect.distance()));
 
-		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
-			if(isect.entity() && entity_debug) {
-				//isect.entity->interact(nullptr);
-				InteractionMode mode = isect.entity()->entityType() == EntityId::item?
-					interact_pickup : interact_normal;
-				actor->setNextOrder(interactOrder(isect.entity(), mode));
+		if(actor) {
+			if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
+				if(isect.entity() && entity_debug) {
+					//isect.entity->interact(nullptr);
+					InteractionMode mode = isect.entity()->entityType() == EntityId::item?
+						interact_pickup : interact_normal;
+					host->sendOrder(interactOrder(isect.entity(), mode));
+				}
+				else if(isect.isTile()) {
+					//TODO: pixel intersect always returns distance == 0
+					int3 wpos = int3(ray.at(isect.distance()) + float3(0, 0.5f, 0));
+					host->sendOrder(moveOrder(wpos, !isKeyPressed(Key_lshift)));
+				}
 			}
-			else if(navi_debug) {
-				//TODO: do this on floats, in actor and navi code too
-				int3 wpos = (int3)(ray.at(isect.distance()));
-				world->naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
-
+			if(isMouseKeyDown(1) && shooting_debug) {
+				host->sendOrder(attackOrder(0, (int3)target_pos));
 			}
-			else if(isect.isTile()) {
-				//TODO: pixel intersect always returns distance == 0
-				int3 wpos = int3(ray.at(isect.distance()) + float3(0, 0.5f, 0));
-				actor->setNextOrder(moveOrder(wpos, !isKeyPressed(Key_lshift)));
+			if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
+				int3 wpos = (int3)ray.at(isect.distance());
+				path = world->findPath(last_pos, wpos);
+				last_pos = wpos;
 			}
+			if(isKeyDown(Key_kp_add))
+				host->sendOrder(changeStanceOrder(1));
+			if(isKeyDown(Key_kp_subtract))
+				host->sendOrder(changeStanceOrder(-1));
 		}
-		if(isMouseKeyDown(1) && shooting_debug) {
-			actor->setNextOrder(attackOrder(0, (int3)target_pos));
-		}
-		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
-			int3 wpos = (int3)ray.at(isect.distance());
-			path = world->findPath(last_pos, wpos);
-			last_pos = wpos;
-		}
-		if(isKeyDown(Key_kp_add))
-			actor->setNextOrder(changeStanceOrder(1));
-		if(isKeyDown(Key_kp_subtract))
-			actor->setNextOrder(changeStanceOrder(-1));
-
-		if(isKeyDown('R') && navi_debug) {
-			world->naviMap().removeColliders();
-		}*/
 
 		double time = getTime();
 		if(!navi_debug)
@@ -348,14 +360,13 @@ int safe_main(int argc, char **argv)
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 
-	//	world->updateVisibility(actor->boundingBox());
-
+		if(actor)
+			world->updateVisibility(actor->boundingBox());
 		world->addToRender(renderer);
 
-	/*	if((entity_debug && isect.isEntity()) || 1)
-			renderer.addBox(isect.boundingBox(), Color::yellow);
+		renderer.addBox(isect.boundingBox(), Color::yellow);
 
-		if(!full_isect.isEmpty() && shooting_debug) {
+	/*	if(!full_isect.isEmpty() && shooting_debug) {
 			float3 target = ray.at(full_isect.distance());
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
@@ -386,11 +397,11 @@ int safe_main(int argc, char **argv)
 		drawQuad(0, 0, 250, config.profiler_enabled? 300 : 50, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
-	/*	float3 isect_pos = ray.at(isect.distance());
-		float3 actor_pos = actor->pos();
+		float3 isect_pos = ray.at(isect.distance());
+		float3 actor_pos = actor? actor->pos() : float3(0, 0, 0);
 		font->drawShadowed(int2(0, 0), Color::white, Color::black,
 				"View:(%d %d)\nRay:(%.2f %.2f %.2f)\nActor:(%.2f %.2f %.2f)",
-				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, actor_pos.x, actor_pos.y, actor_pos.z);*/
+				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, actor_pos.x, actor_pos.y, actor_pos.z);
 		if(config.profiler_enabled)
 			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", prof_stats.c_str());
 

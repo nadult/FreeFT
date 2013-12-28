@@ -370,5 +370,22 @@ namespace game {
 	EntityRef::~EntityRef() {
 		unlink();
 	}
+		
+	void EntityRef::save(Stream &sr) const {
+		sr << i32(m_node? m_node->m_grid_index : -1);
+	}
+
+	void EntityRef::load(Stream &sr, World *world) {
+		DASSERT(world);
+		i32 index;
+		sr >> index;
+		unlink();
+
+		if(index >= 0 && index < world->entityCount()) {
+			Entity *entity = world->getEntity(index);
+			if(entity)
+				link(entity);
+		}
+	}
 
 }

@@ -125,7 +125,7 @@ namespace net {
 		
 	PacketInfo::PacketInfo(int packet_id, int time_stamp, int client_id_, int flags_)
 		:protocol_id(valid_protocol_id), packet_id(packet_id), time_stamp(time_stamp) {
-		DASSERT(client_id_ >= 0 && client_id < 256);
+		DASSERT(client_id_ >= -1 && client_id <= 127);
 		DASSERT((flags_ & ~0xff) == 0);
 
 		client_id = client_id_;

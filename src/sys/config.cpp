@@ -18,8 +18,8 @@ Config loadConfig(const char *name) {
 			node = doc.child("default");
 
 		if(node) {
-			config.resolution.x = node.intAttrib("res_x");
-			config.resolution.y = node.intAttrib("res_y");
+			config.resolution = node.int2Attrib("res");
+			config.window_pos = node.int2Attrib("window_pos");
 			config.fullscreen = node.intAttrib("fullscreen") != 0;	
 			config.profiler_enabled = node.intAttrib("profiler") != 0;
 			config.time_multiplier = node.floatAttrib("time_multiplier");

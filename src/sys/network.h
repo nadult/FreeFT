@@ -66,7 +66,7 @@ namespace net {
 		i8 flags;
 
 		enum {
-			max_size = 1400,
+			max_size = 1470,
 			min_size = sizeof(protocol_id) + sizeof(packet_id) + sizeof(time_stamp) + sizeof(client_id) + sizeof(flags),
 			valid_protocol_id = 0x12345678,
 
@@ -134,7 +134,8 @@ namespace net {
 		entity_full,
 		entity_delete,
 		entity_update,
-		order,
+
+		actor_order,
 	};
 
 }

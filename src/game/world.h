@@ -57,16 +57,13 @@ namespace game {
 
 		const char *mapName() const { return m_map_name.c_str(); }
 
-		template <class T>
-		T *addEntity(T *entity) {
-			static_assert(std::is_base_of<Entity, T>::value, "T should be Entity-based");
-			addEntity(static_cast<Entity*>(entity));
-			return entity;
-		}
+		int entityCount() const { return m_entity_map.size(); }
+		const Entity *getEntity(int id) const { return m_entity_map[id].ptr; }
+		Entity *getEntity(int id) { return m_entity_map[id].ptr; }
 
 		void removeEntity(Entity*);
 		void removeEntity(int entity_id);
-		void addEntity(Entity*);
+		int addEntity(Entity*);
 		void addEntity(int entity_id, Entity*);
 		void simulate(double time_diff);
 

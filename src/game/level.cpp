@@ -43,13 +43,13 @@ namespace game {
 
 		{
 			char func_name[32] = "";
-			unsigned int target_checksum = -1;
+			unsigned int target_checksum = ~0u;
 			sscanf(checksum_line.ptr, "%32s %x", func_name, &target_checksum);
 
 			ASSERT(strcmp(func_name, "CRC32") == 0);
 			unsigned int checksum = crc32(0, (const unsigned char*)orig.data(), orig.size());
 
-			if((int)checksum != target_checksum)
+			if(checksum != target_checksum)
 				THROW("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is correct.",
 						target_checksum, checksum);
 		}

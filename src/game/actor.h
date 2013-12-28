@@ -17,7 +17,7 @@ namespace game {
 	//
 	// TODO: additional actions: breathe, fall, dodge, getup, recoil?
 	namespace ActionId {
-		enum Type {
+		enum Type: char {
 			first_normal,
 			idle = first_normal,
 			walking,
@@ -43,36 +43,35 @@ namespace game {
 		bool isSpecial(Type);
 	}
 
-	namespace OrderId {
-		enum Type {
-			do_nothing,
-			move,
-			attack,
-			change_stance,
-			interact,
-			drop_item,
-			equip_item,
-			unequip_item,
-			transfer_item,
-			die,
 
-			count,
-		};
-	}
+	enum class OrderId: char {
+		do_nothing,
+		move,
+		attack,
+		change_stance,
+		interact,
+		drop_item,
+		equip_item,
+		unequip_item,
+		transfer_item,
+		die,
 
-	enum InteractionMode {
+		count,
+	};
+
+	enum InteractionMode: char {
 		interact_normal,
 		interact_pickup,
 		interact_use_item,
 	};
 
-	enum TransferMode {
+	enum TransferMode: char {
 		transfer_to,
 		transfer_from,
 	};
 
 	struct Order {
-		Order(OrderId::Type id = OrderId::do_nothing) :id(id) { }
+		Order(OrderId id = OrderId::do_nothing) :id(id) { }
 		
 		struct Die			{ DeathTypeId::Type death_type; };
 		struct Move			{ int3 target_pos; bool run; };
@@ -87,7 +86,7 @@ namespace game {
 		struct UnequipItem { InventorySlotId::Type slot_id; };
 		struct TransferItem { int item_id, count; TransferMode mode; };
 
-		OrderId::Type id;
+		OrderId id;
 		EntityRef target;
 		union {
 			Die die;
@@ -99,7 +98,11 @@ namespace game {
 			EquipItem equip_item;
 			UnequipItem unequip_item;
 			TransferItem transfer_item;
+			int data[4];
 		};
+
+		void save(Stream&) const;
+		void load(Stream&, World*);
 	};
 	
 	Order dieOrder(DeathTypeId::Type);	
