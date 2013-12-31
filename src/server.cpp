@@ -233,7 +233,7 @@ DROP_PACKET:;
 
 	struct Client {
 		Client() { }
-		Client(Address addr) :address(addr), packet_id(0), actor_id(-1), last_packet_time(-1.0) { }
+		Client(Address addr) :address(addr), in_packet_id(-1), packet_id(0), actor_id(-1), last_packet_time(-1.0) { }
 
 		bool isValid() const { return address.isValid(); }
 		void clear() { *this = Client(); }
@@ -246,7 +246,7 @@ DROP_PACKET:;
 		vector<PacketUpdates> acks;
 		vector<int> updates;
 		Address address;
-		int packet_id, actor_id;
+		int in_packet_id, packet_id, actor_id;
 		double last_packet_time;
 	};
 
@@ -304,12 +304,6 @@ int safe_main(int argc, char **argv)
 	world.updateNaviMap(true);
 	host->setWorld(&world);
 
-	bool navi_show = 0;
-	bool navi_debug = 0;
-	bool shooting_debug = 1;
-	bool entity_debug = 1;
-	bool item_debug = 1;
-	
 	double last_time = getTime();
 	vector<int3> path;
 	int3 last_pos(0, 0, 0);
@@ -333,9 +327,8 @@ int safe_main(int argc, char **argv)
 			isect = world.trace(ray, nullptr, collider_all|visibility_flag);
 
 		double time = getTime();
-		if(!navi_debug)
-			world.updateNaviMap(false);
 
+		world.updateNaviMap(false);
 		world.simulate((time - last_time) * config.time_multiplier);
 		last_time = time;
 
@@ -354,7 +347,6 @@ int safe_main(int argc, char **argv)
 		}
 
 	//	world.updateVisibility(actor->boundingBox());
-
 		world.addToRender(renderer);
 
 		renderer.render();

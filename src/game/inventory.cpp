@@ -66,6 +66,43 @@ namespace game {
 
 		return string(buf);
 	}
+		
+	
+	static void saveInteger(Stream &sr, int value) {
+		if(value >= 255 || value < 0)
+			sr.pack(u8(255), value);
+		else
+			sr << u8(value);
+	}
+
+	static int loadInteger(Stream &sr) {
+		u8 val;
+		int value;
+		sr >> val;
+		if(val == 255)
+			sr >> value;
+		else
+			value = val;
+		return value;
+	}
+
+	void Inventory::save(Stream &sr) const {
+		saveInteger(sr, size());
+		for(int n = 0; n < size(); n++)
+			saveInteger(sr, m_entries[n].count);
+		for(int n = 0; n < size(); n++)
+			sr << m_entries[n].item;
+	}
+
+	void Inventory::load(Stream &sr) {
+		int count = loadInteger(sr);
+		DASSERT(count >= 0);
+		m_entries.resize(count);
+		for(int n = 0; n < size(); n++)
+			m_entries[n].count = loadInteger(sr);
+		for(int n = 0; n < size(); n++)
+			sr >> m_entries[n].item;
+	}
 
 
 	InventorySlotId::Type ActorInventory::equip(int id) {
@@ -115,5 +152,35 @@ namespace game {
 				weapon().isValid()? weapon().name() : "none");
 		return string(buf) + Inventory::printMenu(select);
 	}
+	
+	static_assert(InventorySlotId::count < 32, "");
 
+	void ActorInventory::save(Stream &sr) const {
+		Inventory::save(sr);
+		int flags = 0;
+		for(int s = 0; s < InventorySlotId::count; s++)
+			if(m_slots[s].item.isValid())
+				flags |= (1 << s);
+		saveInteger(sr, flags);
+		for(int s = 0; s < InventorySlotId::count; s++)
+			if(m_slots[s].item.isValid())
+				sr << m_slots[s].item;
+
+	}
+
+	void ActorInventory::load(Stream &sr) {
+		Inventory::load(sr);
+		int flags = loadInteger(sr);
+		for(int s = 0; s < InventorySlotId::count; s++) {
+			bool is_valid = flags & (1 << s);
+			if(is_valid) {
+				sr >> m_slots[s].item;
+				m_slots[s].count = 1;
+			}
+			else {
+				m_slots[s].item = Item();
+				m_slots[s].count = 0;
+			}
+		}
+	}
 }

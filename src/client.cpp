@@ -366,7 +366,7 @@ int safe_main(int argc, char **argv)
 
 		renderer.addBox(isect.boundingBox(), Color::yellow);
 
-	/*	if(!full_isect.isEmpty() && shooting_debug) {
+		if(!full_isect.isEmpty() && shooting_debug && actor) {
 			float3 target = ray.at(full_isect.distance());
 			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
 			float3 dir = target - origin;
@@ -384,7 +384,7 @@ int safe_main(int argc, char **argv)
 		if(navi_debug || navi_show) {
 			world->naviMap().visualize(renderer, true);
 			world->naviMap().visualizePath(path, 3, renderer);
-		}*/
+		}
 
 		renderer.render();
 		lookAt(view_pos);
@@ -405,7 +405,7 @@ int safe_main(int argc, char **argv)
 		if(config.profiler_enabled)
 			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", prof_stats.c_str());
 
-	/*	if(item_debug) {
+		if(item_debug && actor) {
 			if(isKeyPressed(Key_lctrl)) {
 				if(isKeyDown(Key_up))
 					container_sel--;
@@ -427,19 +427,19 @@ int safe_main(int argc, char **argv)
 			container_sel = clamp(container_sel, 0, container? container->inventory().size() - 1 : 0);
 
 			if(isKeyDown('D') && inventory_sel >= 0)
-				actor->setNextOrder(dropItemOrder(inventory_sel));
+				host->sendOrder(dropItemOrder(inventory_sel));
 			else if(isKeyDown('E') && inventory_sel >= 0)
-				actor->setNextOrder(equipItemOrder(inventory_sel));
+				host->sendOrder(equipItemOrder(inventory_sel));
 			else if(isKeyDown('E') && inventory_sel < 0) {
 				InventorySlotId::Type slot_id = InventorySlotId::Type(-inventory_sel - 1);
-				actor->setNextOrder(unequipItemOrder(slot_id));
+				host->sendOrder(unequipItemOrder(slot_id));
 			}
 
 			if(container) {
 				if(isKeyDown(Key_right) && inventory_sel >= 0)
-					actor->setNextOrder(transferItemOrder(container, transfer_to, inventory_sel, 1));
+					host->sendOrder(transferItemOrder(container, transfer_to, inventory_sel, 1));
 				if(isKeyDown(Key_left))
-					actor->setNextOrder(transferItemOrder(container, transfer_from, container_sel, 1));
+					host->sendOrder(transferItemOrder(container, transfer_from, container_sel, 1));
 			}
 
 			string inv_info = actor->inventory().printMenu(inventory_sel);
@@ -452,7 +452,7 @@ int safe_main(int argc, char **argv)
 			extents = font->evalExtents(cont_info.c_str());
 			font->drawShadowed(int2(config.resolution.x - extents.width(), config.resolution.y - extents.height()),
 							Color::white, Color::black, "%s", cont_info.c_str());
-		}*/
+		}
 
 		swapBuffers();
 		TextureCache::main_cache.nextFrame();

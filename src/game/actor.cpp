@@ -77,6 +77,7 @@ namespace game {
 		sr.unpack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
 		Entity::initialize(s_sprite_names[m_type_id][m_armour_class_id]);
 		loadEntityParams(sr);
+		m_inventory.load(sr);
 
 		m_anims = ActorAnims(m_sprite);
 		m_issue_next_order = false;
@@ -101,6 +102,7 @@ namespace game {
 	void Actor::save(Stream &sr) const {
 		sr.pack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
 		saveEntityParams(sr);
+		m_inventory.save(sr);
 	}
 
 	void Actor::initialize(ActorTypeId::Type type_id) {

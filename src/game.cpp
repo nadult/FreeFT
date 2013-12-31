@@ -52,7 +52,8 @@ int safe_main(int argc, char **argv)
 
 	int height = 128;
 
-	Actor *actor = world.addEntity(new Actor(ActorTypeId::male, float3(245, height, 335)));
+	Actor *actor = new Actor(ActorTypeId::male, float3(245, height, 335));
+	int actor_id = world.addEntity(actor);
 
 /*	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
 	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(260, height, 350)));

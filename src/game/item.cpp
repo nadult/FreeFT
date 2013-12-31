@@ -28,18 +28,14 @@ namespace game {
 	}
 
 	ItemEntity::ItemEntity(Stream &sr) :Entity(sr) {
-		char item_name[256];
-		sr.loadString(item_name, sizeof(item_name));
-
-		const ItemDesc *desc = ItemDesc::find(item_name);
-		if(!desc)
-			THROW("Unknown item id: %s\n", item_name);
-		initialize(Item(desc));
+		Item item;
+		sr >> item;
+		initialize(item);
 	}
 
 	void ItemEntity::save(Stream &sr) const {
 		Entity::save(sr);
-		sr << m_item.desc()->id;
+		sr << m_item;
 	}
 	
 	XMLNode ItemEntity::save(XMLNode &parent) const {
@@ -50,7 +46,7 @@ namespace game {
 			
 	void ItemEntity::initialize(const Item &item) {
 		m_item = item;
-		DASSERT(item.isValid());
+		ASSERT(item.isValid());
 
 		setBBox(FBox(float3(0.0f, 0.0f, 0.0f), asXZY(bboxSize().xz(), 0.0f)));
 
@@ -159,7 +155,7 @@ namespace game {
 		
 	Item::Item(const ItemDesc *desc) :m_desc(desc) {
 		if(m_desc)
-			m_desc->initialize(params);
+			m_desc->initialize(m_params);
 	}
 		
 	float Item::weight() const {
@@ -184,8 +180,53 @@ namespace game {
 	bool Item::operator==(const Item &rhs) const {
 		if(m_desc != rhs.m_desc)
 			return false;
-		return memcmp(params, rhs.params, sizeof(params)) == 0;
+		return memcmp(m_params, rhs.m_params, sizeof(m_params)) == 0;
 	}
+
+	static_assert(ItemDesc::param_count <= 8, "");
+
+	void Item::load(Stream &sr) {
+		char item_name[256];
+		sr.loadString(item_name, sizeof(item_name));
+
+		if(item_name[0] == 0) {
+			memset(m_params, 0, sizeof(m_params));
+		}
+		else {
+			m_desc = ItemDesc::find(item_name);
+			if(!m_desc)
+				THROW("Unknown item id: %s\n", item_name);
+
+			u8 param_bits = 0;
+			sr >> param_bits;
+
+			for(int n = 0; n < ItemDesc::param_count; n++)
+				if(param_bits & (1 << n))
+					sr >> m_params[n].i;
+				else
+					m_params[n].i = 0;
+		}
+	}
+
+	void Item::save(Stream &sr) const {
+		if(desc()) {
+			sr.saveString(desc()->id.c_str());
+
+			u8 param_bits = 0;
+			for(int n = 0; n < ItemDesc::param_count; n++)
+				if(m_params[n].i)
+					param_bits |= (1 << n);
+			sr << param_bits;
+			for(int n = 0; n < ItemDesc::param_count; n++)
+				if(m_params[n].i)
+					sr << m_params[n].i;
+
+		}
+		else {
+			sr.saveString("");
+		}
+	}
+
 
 	Weapon::Weapon(const Item &item) :Item(item) {
 		if(isValid())

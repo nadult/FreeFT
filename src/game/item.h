@@ -77,6 +77,9 @@ namespace game {
 
 		const ItemDesc *desc() const { return m_desc; }
 
+		void save(Stream&) const;
+		void load(Stream&);
+
 	protected:
 		enum { param_count = ItemDesc::param_count };
 
@@ -84,7 +87,7 @@ namespace game {
 
 		// These params should be used as arguments to
 		// specific methods in ItemDesc
-		ItemParameter params[ItemDesc::param_count];
+		ItemParameter m_params[ItemDesc::param_count];
 	};
 
 	struct Weapon: public Item

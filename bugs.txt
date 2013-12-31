@@ -1,3 +1,4 @@
 - after teleport player is sometimes stuck
 - Player can start rotating in a circle after interaction with an object with empty bbox (like opened sliding door)
 - Player can sometimes stuck on the stairs
+- When projectile is spawned out-of screen, then its invisible

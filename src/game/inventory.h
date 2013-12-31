@@ -31,6 +31,9 @@ namespace game {
 		int size() const { return (int)m_entries.size(); }
 		const Entry &operator[](int idx) const { return m_entries[idx]; }
 
+		void save(Stream&) const;
+		void load(Stream&);
+
 	protected:
 		vector<Entry> m_entries;
 	};
@@ -51,6 +54,9 @@ namespace game {
 			{ return m_slots[InventorySlotId::ammo].item; }
 
 		const Entry &slot(InventorySlotId::Type id) const { return m_slots[id]; }
+		
+		void save(Stream&) const;
+		void load(Stream&);
 
 	protected:
 		Entry m_slots[InventorySlotId::count];
