@@ -25,8 +25,6 @@ typedef int socklen_t;
 
 namespace net {
 
-
-
 	static void toSockAddr(const Address &in, sockaddr_in *out) {
 		memset(out, 0, sizeof(sockaddr_in));
 		out->sin_addr.s_addr = htonl(in.ip);
@@ -36,6 +34,20 @@ namespace net {
 	static void fromSockAddr(const sockaddr_in *in, Address &out) {
 		out.ip = ntohl(in->sin_addr.s_addr);
 		out.port = ntohs(in->sin_port);
+	}
+	
+	void encodeInt3(Stream &sr, const int3 &value) {
+		sr.encodeInt(value.x);
+		sr.encodeInt(value.y);
+		sr.encodeInt(value.z);
+	}
+
+	const int3 decodeInt3(Stream &sr) {
+		int3 out;
+		out.x = sr.decodeInt();
+		out.y = sr.decodeInt();
+		out.z = sr.decodeInt();
+		return out;
 	}
 
 	u32 resolveName(const char *name) {
@@ -123,8 +135,8 @@ namespace net {
 		}
 	}
 		
-	PacketInfo::PacketInfo(int packet_id, int time_stamp, int client_id_, int flags_)
-		:protocol_id(valid_protocol_id), packet_id(packet_id), time_stamp(time_stamp) {
+	PacketInfo::PacketInfo(SeqNumber packet_id, SeqNumber timestamp, int client_id_, int flags_)
+		:protocol_id(valid_protocol_id), packet_id(packet_id), timestamp(timestamp) {
 		DASSERT(client_id_ >= -1 && client_id <= 127);
 		DASSERT((flags_ & ~0xff) == 0);
 
@@ -134,10 +146,10 @@ namespace net {
 
 	
 	void PacketInfo::save(Stream &sr) const {
-		sr.pack(protocol_id, packet_id, time_stamp, client_id, flags);
+		sr.pack(protocol_id, packet_id, timestamp, client_id, flags);
 	}
 	void PacketInfo::load(Stream &sr) {
-		sr.unpack(protocol_id, packet_id, time_stamp, client_id, flags);
+		sr.unpack(protocol_id, packet_id, timestamp, client_id, flags);
 	}
 
 	void InPacket::v_load(void *ptr, int count) {
@@ -152,8 +164,8 @@ namespace net {
 		*this >> m_info;
 	}
 		
-	OutPacket::OutPacket(int packet_id, int time_stamp, int client_id, int flags) :OutPacket() {
-		*this << PacketInfo(packet_id, time_stamp, client_id, flags);
+	OutPacket::OutPacket(SeqNumber packet_id, SeqNumber timestamp, int client_id, int flags) :OutPacket() {
+		*this << PacketInfo(packet_id, timestamp, client_id, flags);
 	}
 
 	void OutPacket::v_save(const void *ptr, int count) {
@@ -172,7 +184,7 @@ namespace net {
 			if(new_size == 0)
 				return false;
 
-			if(new_size >= PacketInfo::min_size) {
+			if(new_size >= PacketInfo::header_size) {
 				packet.ready(new_size);
 				if(packet.info().protocol_id == PacketInfo::valid_protocol_id)
 					return true;
@@ -182,6 +194,16 @@ namespace net {
 
 	void Host::send(const OutPacket &packet, const Address &address) {
 		m_socket.send(packet.m_data, packet.size(), address);
+	}
+		
+	void JoinAcceptPacket::save(Stream &sr) const {
+		sr << map_name;
+		sr.encodeInt(actor_id);
+	}
+
+	void JoinAcceptPacket::load(Stream &sr) {
+		sr >> map_name;
+		actor_id = sr.decodeInt();
 	}
 
 }

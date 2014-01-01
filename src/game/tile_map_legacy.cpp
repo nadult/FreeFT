@@ -58,7 +58,7 @@ namespace game {
 				int something[3];
 			} __attribute__((packed));
 			Header header;
-			dsr.load(&header, sizeof(header));
+			dsr.loadData(&header, sizeof(header));
 
 			int proto_count = 0, zero;
 			dsr >> proto_count >> zero;
@@ -70,7 +70,7 @@ namespace game {
 				char name[1024];
 				dsr >> len;
 				ASSERT(len < (int)sizeof(name));
-				dsr.load(name, len);
+				dsr.loadData(name, len);
 				ASSERT(strncmp(name, "tiles/", 6) == 0 && strncmp(name + len - 4, ".til", 4) == 0);
 				names.push_back(string(name + 6, name + len - 4));
 			//	printf("name: %s\n", names.back().c_str());
@@ -96,7 +96,7 @@ namespace game {
 				tiles[n].setResourceName(names[n].c_str());
 			
 			char temp2[28];
-			dsr.load(temp2, sizeof(temp2));
+			dsr.loadData(temp2, sizeof(temp2));
 
 			int region_count = 0;
 			dsr >> region_count;
@@ -141,7 +141,7 @@ namespace game {
 					static_assert(sizeof(TInstance) == 56, "Wrong instance size");
 
 					TInstance instance;
-					dsr.load(&instance, sizeof(instance));
+					dsr.loadData(&instance, sizeof(instance));
 					int tile_id = (int)instance.tile_id - 1;
 					if(tile_id < 0)
 						continue;

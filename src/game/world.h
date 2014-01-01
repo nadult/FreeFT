@@ -91,6 +91,8 @@ namespace game {
 		void updateVisibility(const FBox &main_bbox);
 
 		Mode mode() const { return m_mode; }
+		bool isClient() const { return m_mode == Mode::client; }
+		bool isServer() const { return m_mode == Mode::server; }
 
 		void replicate(int entity_id);
 		void replicate(const Entity*);

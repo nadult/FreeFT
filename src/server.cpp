@@ -34,6 +34,8 @@ float frand() {
 using namespace net;
 
 
+
+
 class Server: public net::Host {
 public:
 	Server(int port) :Host(Address(port)), m_world(0), m_timestamp(0), m_client_count(0) { }
@@ -50,21 +52,25 @@ public:
 		return m_world->addEntity(new Actor(ActorTypeId::male, pos));
 	}
 
-	void onJoin(InPacket &packet, const Address &source, int client_id) {
-		if(client_id == -1) {
-			bool add_client = m_client_count < max_clients;
+	void onJoin(InPacket &packet, const Address &source) {
+		int client_id = -1;
 
-			for(int c = 0; c < (int)m_clients.size(); c++)
-				if(m_clients[c].address == source) {
-					client_id = c;
-					add_client = false;
-				}
+		if(m_client_count == max_clients) {
+			OutPacket packet(0, m_timestamp, 0, 0);
+			packet << SubPacketType::join_refuse << RefuseReason::too_many_clients;
+			send(packet, source);
+			return;
+		}
 
-			if(!add_client) {
-				//TODO: send refuse
-				return;
+		bool is_added = false;
+		for(int c = 0; c < (int)m_clients.size(); c++)
+			if(m_clients[c].address == source) {
+				client_id = c;
+				is_added = true;
+				break;
 			}
 
+		if(!is_added) {
 			for(int c = 0; c < (int)m_clients.size(); c++)
 				if(!m_clients[c].isValid()) {
 					client_id = c;
@@ -83,20 +89,19 @@ public:
 			client.last_packet_time = m_current_time;
 			printf("Client connected (cid:%d): %s\n", (int)client_id, source.toString().c_str());
 
-			client.updates.reserve(map.size());
+			client.update_map.resize(map.size() * 2);
 			for(int n = 0; n < map.size(); n++)
 				if(map[n].ptr)
-					client.updates.push_back(n);
-
+					client.update_map[n] = true;
 			m_client_count++;
 		}
 
+		printf("Sending accept\n");
 		Client &client = m_clients[client_id];
-		OutPacket ack(client.packet_id++, m_timestamp, client_id, 0);
-		ack << SubPacketType::join_ack;
-		ack << string(m_world->mapName());
-		ack << client.actor_id;
-		send(ack, source);
+		OutPacket opacket(client.packet_id++, m_timestamp, client_id, 0);
+		opacket << SubPacketType::join_accept;
+		opacket << JoinAcceptPacket{string(m_world->mapName()), client.actor_id};
+		send(opacket, source);
 	}
 
 	void disconnectClient(int client_id) {
@@ -108,51 +113,75 @@ public:
 		m_client_count--;
 	}
 
+	// Assuming that there is enough space in the packet
+	void appendAcks(vector<SeqNumber> &acks, OutPacket &packet) {
+		int num_acks = min(16, (int)acks.size());
+		//TODO: send ack range
+
+		packet << SubPacketType::ack;
+		packet.encodeInt(num_acks);
+		packet.saveData(&acks[0], sizeof(acks[0]) * num_acks);
+		acks.erase(acks.begin(), acks.begin() + num_acks);
+	}
+
 	void replicateWorld() {
 		EntityMap &emap = m_world->entityMap();
 
 		vector<int> &new_updates = m_world->replicationList();
 		for(int n = 0; n < (int)m_clients.size(); n++) {
-			vector<int> &updates = m_clients[n].updates;
-			updates.insert(updates.end(), new_updates.begin(), new_updates.end());
-			std::sort(updates.begin(), updates.end());
-			updates.resize(std::unique(updates.begin(), updates.end()) - updates.begin());
+			Client &client = m_clients[n];
+			if(emap.size() > client.update_map.size())
+				client.update_map.resize(emap.size() * 2);
+
+			for(int n = 0; n < (int)new_updates.size(); n++)
+				client.update_map[new_updates[n]] = true;
 		}
 		new_updates.clear();
 
 		for(int n = 0; n < (int)m_clients.size(); n++) {
 			Client &client = m_clients[n];
+			int idx = 0;
 
-			for(int p = 0; p < 4 && !client.updates.empty(); p++) {
-				OutPacket packet(client.packet_id++, m_timestamp, n + 1, PacketInfo::flag_need_ack);
+			//TODO: priority for objects visible by client
+			for(int p = 0; p < client.max_packets; p++) {
+				OutPacket packet(client.packet_id++, m_timestamp, n, PacketInfo::flag_need_ack);
 
-				PodArray<char> sub_packet(PacketInfo::max_size);
-				int idx = 0;
+				if(p == 0)
+					appendAcks(client.in_acks, packet);
 
-				//TODO: prioritization is needed
-				while(idx < (int)client.updates.size()) {
-					int entity_id = client.updates[idx];
-					const Entity *entity = emap[entity_id].ptr;
-
-					MemorySaver substream(sub_packet.data(), sub_packet.size());
-					if(entity) {
-						substream << SubPacketType::entity_full << i32(entity_id);
-						substream << entity->entityType() << *entity;
+				BitVector &map = client.update_map;
+				while(idx < emap.size()) {
+					if(!map.any(idx >> BitVector::base_shift)) {
+						idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
+						continue;
 					}
-					else {
-						substream << SubPacketType::entity_delete << i32(entity_id);
+					if(map[idx]) {
+						const Entity *entity = emap[idx].ptr;
+	
+						char sub_packet[PacketInfo::max_size];
+						MemorySaver substream(sub_packet, sizeof(sub_packet));
+
+						substream << (entity? SubPacketType::entity_full : SubPacketType::entity_delete);
+						substream.encodeInt(idx);
+						if(entity)
+							substream << entity->entityType() << *entity;
+
+						if(packet.spaceLeft() < substream.pos())
+							break;
+
+						packet.saveData(sub_packet, substream.pos());
+						map[idx] = false;
+						//TODO: update non_acked list
 					}
 
-					int subpacket_size = substream.pos();
-					if(packet.spaceLeft() < subpacket_size)
-						break;
-
-					packet.save(sub_packet.data(), subpacket_size);
 					idx++;
 				}
-				client.updates.erase(client.updates.begin(), client.updates.begin() + idx);
+
+				if(packet.size() == PacketInfo::header_size)
+					break; // Nothing more to send
 
 				send(packet, client.address);
+				client.packet_id++;
 			}
 		}
 	}
@@ -176,38 +205,47 @@ public:
 #define VERIFY(...)	{ if(!(__VA_ARGS__)) { dropMsg(packet, source, #__VA_ARGS__); goto DROP_PACKET; } }
 
 			int client_id = packet.clientId();
+			Client *client = nullptr;
 
-			VERIFY(client_id >= -1 && client_id < (int)m_clients.size());
-			if(client_id != -1) {
-				//TODO: make client verification more secure
-				Client &client = m_clients[client_id];
-				VERIFY(client.isValid() && source == client.address);
-				client.last_packet_time = time;
+			if(client_id == -1 && !packet.end()) {
+				SubPacketType sub_type;
+				packet >> sub_type;
+				VERIFY(sub_type == SubPacketType::join);
+				onJoin(packet, source);
+				continue;
 			}
 
-			while(!packet.end()) {
-				SubPacketType type;
-				packet >> type;
+			VERIFY(client_id >= 0 && client_id < (int)m_clients.size());
 
-				if(type == SubPacketType::join)
-					onJoin(packet, source, client_id);
-				else if(type == SubPacketType::leave) {
-					VERIFY(client_id != -1);
+			//TODO: make client verification more secure
+			client = &m_clients[client_id];
+			VERIFY(client->isValid() && source == client->address);
+			client->last_packet_time = time;
+			client->in_acks.push_back(packet.packetId());
+
+			while(!packet.end()) {
+				SubPacketType sub_type;
+				packet >> sub_type;
+
+				if(sub_type == SubPacketType::leave) {
 					disconnectClient(client_id);
 				}
-				else if(type == SubPacketType::ack) {
-
+				else if(sub_type == SubPacketType::ack) {
+					int count = packet.decodeInt();
+					for(int n =0; n < count; n++) {
+						SeqNumber seq;
+						packet >> seq;
+					}
+					//TODO: finish
 				}
-				else if(type == SubPacketType::actor_order) {
-					VERIFY(client_id != -1);
-					Client &client = m_clients[client_id];
-					Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(client.actor_id));
+				else if(sub_type == SubPacketType::actor_order) {
+					Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(client->actor_id));
 					Order order;
-					order.load(packet, m_world);
+					packet >> order;
 					actor->setNextOrder(order);
 				}
 				else {
-					VERIFY(0);
+					VERIFY(0 && "Unknown sub-packet type");
 				}
 
 				break;
@@ -233,20 +271,27 @@ DROP_PACKET:;
 
 	struct Client {
 		Client() { }
-		Client(Address addr) :address(addr), in_packet_id(-1), packet_id(0), actor_id(-1), last_packet_time(-1.0) { }
+		Client(Address addr) :address(addr), in_packet_id(-1), packet_id(0), actor_id(-1), last_packet_time(-1.0) {
+			in_acks.reserve(256);
+			max_packets = 4;
+		}
 
 		bool isValid() const { return address.isValid(); }
 		void clear() { *this = Client(); }
 
-		struct PacketUpdates {
-			vector<int> updates;
-			int packet_id;
+
+		struct NotAckedUpdates {
+			vector<int> entity_ids;
+			SeqNumber seq_num;
 		};
 
-		vector<PacketUpdates> acks;
-		vector<int> updates;
+		vector<SeqNumber> in_acks;
+		vector<NotAckedUpdates> not_acked_updates;
+		BitVector update_map;
+
 		Address address;
 		int in_packet_id, packet_id, actor_id;
+		int max_packets;
 		double last_packet_time;
 	};
 
@@ -255,7 +300,7 @@ DROP_PACKET:;
 private:
 	vector<Client> m_clients;
 	World *m_world;
-	int m_timestamp;
+	SeqNumber m_timestamp;
 	int m_client_count;
 	double m_current_time;
 };

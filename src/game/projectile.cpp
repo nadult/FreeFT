@@ -53,17 +53,19 @@ namespace game {
 	}
 
 	void Projectile::think() {
-		float time_delta = m_world->timeDelta();
+		World *world = Entity::world();
+
+		float time_delta = world->timeDelta();
 		Ray ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
-		Intersection isect = m_world->trace(Segment(ray, 0.0f, ray_pos));
+		Intersection isect = world->trace(Segment(ray, 0.0f, ray_pos));
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		setPos(new_pos);
 
 		if(isect.distance() < ray_pos) {
 			if(s_impact_names[m_type]) {
-				m_world->addEntity(new Impact(s_impact_names[m_type], new_pos));
+				world->addEntity(new Impact(s_impact_names[m_type], new_pos));
 
 				if(isect.isEntity()) {
 					float damage = 100.0f;

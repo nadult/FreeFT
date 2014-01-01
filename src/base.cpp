@@ -7,6 +7,20 @@
 #include <cmath>
 #include <cstdlib>
 
+BitVector::BitVector(int size) :m_data((size + base_size - 1) / base_size), m_size(size) { }
+
+void BitVector::resize(int new_size, bool clear_value) {
+	PodArray<u32> new_data(new_size);
+	memcpy(new_data.data(), m_data.data(), sizeof(base_type) * min(new_size, m_data.size()));
+	if(new_data.size() > m_data.size())
+		memset(new_data.data() + m_data.size(), clear_value? 0xff : 0, (new_data.size() - m_data.size()) * sizeof(base_type));
+	m_data.swap(new_data);
+}
+	
+void BitVector::clear(bool value) {
+	memset(m_data.data(), value? 0xff : 0, m_data.size() * sizeof(base_type));
+}
+
 #ifdef _WIN32
 void sincosf(float rad, float *s, float *c) {
 	DASSERT(s && c);

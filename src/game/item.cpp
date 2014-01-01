@@ -200,6 +200,7 @@ namespace game {
 			u8 param_bits = 0;
 			sr >> param_bits;
 
+			//TODO: portability
 			for(int n = 0; n < ItemDesc::param_count; n++)
 				if(param_bits & (1 << n))
 					sr >> m_params[n].i;

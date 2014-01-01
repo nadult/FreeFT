@@ -75,15 +75,16 @@ namespace game {
 
 		bool testPixel(const int2 &screen_pos) const;
 
+		static World *world();
+
 	protected:
 		friend class World;
 		friend class EntityMap;
-		World *m_world;
 		bool m_to_be_removed;
 		mutable int m_grid_index;
 
 	protected:
-		virtual void think() { DASSERT(m_world); }
+		virtual void think() { }
 		virtual void nextFrame();
 		virtual void handleFrameEvent(int sprite_event_id) { }
 
@@ -142,7 +143,7 @@ namespace game {
 		Entity &operator*() const { DASSERT(m_node); return *m_node; }
 
 		void save(Stream&) const;
-		void load(Stream&, World*);
+		void load(Stream&);
 		
 	private:
 		void zero();

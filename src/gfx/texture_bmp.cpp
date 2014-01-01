@@ -46,7 +46,7 @@ namespace gfx
 
 				sr.unpack(hwidth, hheight, planes, hbpp);
 				sr >> compr;
-				sr.load(temp, 4 * 5);
+				sr.loadData(temp, 4 * 5);
 				width  = hwidth;
 				height = hheight;
 				bpp    = hbpp;
@@ -70,7 +70,7 @@ namespace gfx
 
 		if(bytesPerPixel == 1) {
 			Color palette[256];
-			sr.load(palette, sizeof(palette)); //TODO: check if palette is ok
+			sr.loadData(palette, sizeof(palette)); //TODO: check if palette is ok
 			sr.seek(offset);
 
 			for(uint n = 0; n < COUNTOF(palette); n++)
@@ -79,7 +79,7 @@ namespace gfx
 			for(int y = height - 1; y >= 0; y--) {
 				Color *dst = this->line(y);
 				u8 line[maxwidth];
-				sr.load(line, width);
+				sr.loadData(line, width);
 				sr.seek(sr.pos() + lineAlignment);
 
 				for(int x = 0; x < width; x++)
@@ -90,7 +90,7 @@ namespace gfx
 			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
 				u8 line[maxwidth * 3];
-				sr.load(line, width * 3);
+				sr.loadData(line, width * 3);
 
 				Color *dst = this->line(y);
 				for(int x = 0; x < width; x++)
@@ -101,7 +101,7 @@ namespace gfx
 		else if(bytesPerPixel == 4) {
 			sr.seek(offset);
 			for(int y = height - 1; y >= 0; y--) {
-				sr.load(this->line(y), width * 4);
+				sr.loadData(this->line(y), width * 4);
 				sr.seek(sr.pos() + lineAlignment);
 			}
 		}

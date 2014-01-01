@@ -18,22 +18,28 @@ namespace game {
 	// TODO: multiple navigation maps (2, 3, 4 at least)
 	enum { agent_size = 3 };
 
+	static World *m_instance = nullptr;
+
+	World *Entity::world() { return m_instance; }
+
 	World::World(Mode mode)
 		:m_mode(mode), m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
 		m_current_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
 		if(m_mode == Mode::server)
 			m_replication_list.reserve(1024);
+
+		ASSERT(m_instance == nullptr);
+		m_instance = this;
 	} 
 
 	World::World(Mode mode, const char *file_name) :World(mode) {
 		m_level.load(file_name);
-		for(int n = 0; n < m_entity_map.size(); n++)
-			m_entity_map[n].ptr->m_world = this;
 		m_tile_map.printInfo();
 		m_map_name = file_name;
 //		updateNaviMap(true);
 	}
 	World::~World() {
+		m_instance = nullptr;
 	}
 
 	void World::updateNaviMap(bool full_recompute) {
@@ -88,14 +94,12 @@ namespace game {
 
 	void World::addEntity(int index, Entity *entity) {
 		DASSERT(entity);
-		entity->m_world = this;
 		m_entity_map.add(index, entity);
 		replicate(entity);
 	}
 
 	int World::addEntity(Entity *entity) {
 		DASSERT(entity);
-		entity->m_world = this;
 		m_entity_map.add(entity);
 		replicate(entity);
 		return entity->m_grid_index;
@@ -154,7 +158,7 @@ namespace game {
 				m_entity_map.remove(object.ptr);
 				continue;
 			}
-			if(object.flags & (collider_dynamic | collider_dynamic_nv))
+			if(object.flags & (collider_dynamic | collider_dynamic_nv | collider_projectile))
 				m_entity_map.update(object.ptr);
 
 			for(int f = 0; f < frame_skip; f++)

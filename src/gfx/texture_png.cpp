@@ -205,7 +205,7 @@ namespace gfx
 			PngInfo png;
 
 			fileData.resize(sr.size());
-			sr.load(&fileData[0], fileData.size());
+			sr.loadData(&fileData[0], fileData.size());
 			filePos = 0;
 
 			InitPngInfo(png);

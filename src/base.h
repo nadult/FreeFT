@@ -40,7 +40,7 @@ namespace constant {
 	static const float epsilon	= 0.0001f;
 }
 
-
+//TODO: XOR Lists?
 struct ListNode {
 	ListNode() :next(-1), prev(-1) { }
 	int next, prev;
@@ -175,14 +175,14 @@ void PodArray<T>::load(Stream &sr) {
 
 	resize(size);
 	if(m_data)
-		sr.load(m_data, sizeof(T) * m_size);
+		sr.loadData(m_data, sizeof(T) * m_size);
 }
 
 template <class T>
 void PodArray<T>::save(Stream &sr) const {
 	sr << m_size;
 	if(m_data)
-		sr.save(m_data, sizeof(T) * m_size);
+		sr.saveData(m_data, sizeof(T) * m_size);
 }
 
 template <class T>
@@ -196,6 +196,61 @@ void PodArray<T>::resize(int new_size) {
 	if(new_size)
 		m_data = (T*)sys::alloc(new_size * sizeof(T));
 }
+
+class BitVector
+{
+public:
+	typedef u32 base_type;
+	enum {
+		base_shift = 5,
+		base_size = 32,
+	};
+
+	struct Bit {
+		Bit(base_type &base, int bit_index) :base(base), bit_index(bit_index) { }
+		operator bool() const { return base & (base_type(1) << bit_index); }
+
+		void operator=(bool value) {
+			base = (base & ~(base_type(1) << bit_index)) | ((base_type)value << bit_index);
+		}
+
+	protected:
+		base_type &base;
+		int bit_index;
+	};
+
+	BitVector(int size = 0);
+	void resize(int new_size, bool clear_value = false);
+
+	int size() const { return m_size; }
+	int baseSize() const { return m_data.size(); }
+
+	void clear(bool value);
+
+	const PodArray<base_type> &data() const { return m_data; }
+	PodArray<base_type> &data() { return m_data; }
+
+	bool operator[](int idx) const {
+		return m_data[idx >> base_shift] & (1 << (idx & (base_size - 1)));
+	}
+
+	Bit operator[](int idx) {
+		return Bit(m_data[idx >> base_shift], idx & (base_size - 1));
+	}
+
+	bool any(int base_idx) const {
+		return m_data[base_idx] != base_type(0);
+	}
+
+	bool all(int base_idx) const {
+		return m_data[base_idx] == ~base_type(0);
+	}
+
+protected:
+	PodArray<base_type> m_data;
+	int m_size;
+};
+
 
 struct int2
 {
@@ -215,6 +270,7 @@ struct int2
 	int x, y;
 };
 
+//TODO: make operations on ints, only store in shorts
 struct short2
 {
 	short2(short x, short y) : x(x), y(y) { }
@@ -658,6 +714,7 @@ inline Color swapBR(Color col) {
 void compress(const PodArray<char> &in, PodArray<char> &out, bool hc);
 void decompress(const PodArray<char> &in, PodArray<char> &out);
 
+SERIALIZE_AS_POD(short2)
 SERIALIZE_AS_POD(int2)
 SERIALIZE_AS_POD(int3)
 SERIALIZE_AS_POD(int4)

@@ -139,13 +139,13 @@ namespace game {
 
 		//TODO: open direction should depend on interactor's position		
 		FBox bbox = computeBBox(result);
-		bool is_colliding = m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+		bool is_colliding = world()->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 
 		if(is_colliding && m_type_id == DoorTypeId::rotating && m_state == state_closed && target == state_opened_in) {
 			target = state_opened_out;
 			result = state_opening_out;
 			bbox = computeBBox(result);
-			is_colliding = m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+			is_colliding = world()->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 		}
 		if(!is_colliding) {
 			setBBox(bbox);
@@ -180,16 +180,17 @@ namespace game {
 
 	void Door::think() {
 		const float2 dir = actualDir();
+		World *world = this->world();
 		
 		if(m_update_anim) {
-			m_world->replicate(this);
+			world->replicate(this);
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}
-		if(m_type_id == DoorTypeId::sliding && m_state == state_opened_in && m_world->currentTime() > m_close_time) {
+		if(m_type_id == DoorTypeId::sliding && m_state == state_opened_in && world->currentTime() > m_close_time) {
 			FBox bbox = computeBBox(state_closed);
-			if(m_world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
-				m_close_time = m_world->currentTime() + 1.5;
+			if(world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
+				m_close_time = world->currentTime() + 1.5;
 			}
 			else {
 				setBBox(bbox);
@@ -206,7 +207,7 @@ namespace game {
 				setBBox(computeBBox(m_state));
 				m_update_anim = true;
 				if(m_state == state_opened_in && m_type_id == DoorTypeId::sliding)
-					m_close_time = m_world->currentTime() + 3.0;
+					m_close_time = world()->currentTime() + 3.0;
 				break;
 			}
 	}

@@ -48,25 +48,25 @@ namespace game
 
 	void Sprite::MultiPalette::load(Stream &sr) {
 		sr >> colors;
-		sr.load(offset, sizeof(offset));
+		sr.loadData(offset, sizeof(offset));
 	}
 
 	void Sprite::MultiPalette::save(Stream &sr) const {
 		sr << colors;
-		sr.save(offset, sizeof(offset));
+		sr.saveData(offset, sizeof(offset));
 	}
 
 	void Sprite::MultiImage::load(Stream &sr) {
 		for(int l = 0; l < 4; l++)
 			sr >> images[l];
-		sr.load(points, sizeof(points));
+		sr.loadData(points, sizeof(points));
 		sr >> rect;
 	}
 
 	void Sprite::MultiImage::save(Stream &sr) const {
 		for(int l = 0; l < 4; l++)
 			sr << images[l];
-		sr.save(points, sizeof(points));
+		sr.saveData(points, sizeof(points));
 		sr << rect;
 	}
 

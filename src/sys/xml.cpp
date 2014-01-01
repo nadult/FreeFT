@@ -200,7 +200,7 @@ void XMLDocument::load(Stream &sr) {
 	m_ptr->clear();
 
 	char *xml_string = m_ptr->allocate_string(0, sr.size() + 1);
-	sr.load(xml_string, sr.size());
+	sr.loadData(xml_string, sr.size());
 	xml_string[sr.size()] = 0;
 	
 	try {
@@ -213,6 +213,6 @@ void XMLDocument::load(Stream &sr) {
 void XMLDocument::save(Stream &sr) const {
 	vector<char> buffer;
 	print(std::back_inserter(buffer), *m_ptr);
-	sr.save(&buffer[0], buffer.size());
+	sr.saveData(&buffer[0], buffer.size());
 }
 

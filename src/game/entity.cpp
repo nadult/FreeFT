@@ -66,7 +66,7 @@ namespace game {
 			sr.unpack(m_seq_id, m_frame_id, m_dir_idx);
 	}
 
-	Entity::Entity() :m_world(nullptr), m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) { }
+	Entity::Entity() :m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) { }
 
 	Entity::Entity(const char *sprite_name) :Entity() {
 		initialize(sprite_name);
@@ -169,7 +169,7 @@ namespace game {
 		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
 
 		bbox += pos();
-		if(m_world && m_world->isColliding(bbox, this))
+		if(world()->isColliding(bbox, this))
 			out.addBox(bbox, Color::red);
 	}
 		
@@ -372,13 +372,12 @@ namespace game {
 	}
 		
 	void EntityRef::save(Stream &sr) const {
-		sr << i32(m_node? m_node->m_grid_index : -1);
+		sr.encodeInt(m_node? m_node->m_grid_index : -1);
 	}
 
-	void EntityRef::load(Stream &sr, World *world) {
-		DASSERT(world);
-		i32 index;
-		sr >> index;
+	void EntityRef::load(Stream &sr) {
+		World *world = Entity::world();
+		i32 index = sr.decodeInt();
 		unlink();
 
 		if(index >= 0 && index < world->entityCount()) {

@@ -124,8 +124,8 @@ namespace game {
 				Loader mod_sr(file_name);
 				orig.resize(orig_sr.size());
 				mod.resize(mod_sr.size());
-				orig_sr.load(orig.data(), orig.size());
-				mod_sr.load(mod.data(), mod.size());
+				orig_sr.loadData(orig.data(), orig.size());
+				mod_sr.loadData(mod.data(), mod.size());
 			}
 
 			vector<char> patched = applyPatch(orig, mod);

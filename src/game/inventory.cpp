@@ -67,39 +67,20 @@ namespace game {
 		return string(buf);
 	}
 		
-	
-	static void saveInteger(Stream &sr, int value) {
-		if(value >= 255 || value < 0)
-			sr.pack(u8(255), value);
-		else
-			sr << u8(value);
-	}
-
-	static int loadInteger(Stream &sr) {
-		u8 val;
-		int value;
-		sr >> val;
-		if(val == 255)
-			sr >> value;
-		else
-			value = val;
-		return value;
-	}
-
 	void Inventory::save(Stream &sr) const {
-		saveInteger(sr, size());
+		sr.encodeInt(size());
 		for(int n = 0; n < size(); n++)
-			saveInteger(sr, m_entries[n].count);
+			sr.encodeInt(m_entries[n].count);
 		for(int n = 0; n < size(); n++)
 			sr << m_entries[n].item;
 	}
 
 	void Inventory::load(Stream &sr) {
-		int count = loadInteger(sr);
+		int count = sr.decodeInt();
 		DASSERT(count >= 0);
 		m_entries.resize(count);
 		for(int n = 0; n < size(); n++)
-			m_entries[n].count = loadInteger(sr);
+			m_entries[n].count = sr.decodeInt();
 		for(int n = 0; n < size(); n++)
 			sr >> m_entries[n].item;
 	}
@@ -161,7 +142,7 @@ namespace game {
 		for(int s = 0; s < InventorySlotId::count; s++)
 			if(m_slots[s].item.isValid())
 				flags |= (1 << s);
-		saveInteger(sr, flags);
+		sr.encodeInt(flags);
 		for(int s = 0; s < InventorySlotId::count; s++)
 			if(m_slots[s].item.isValid())
 				sr << m_slots[s].item;
@@ -170,7 +151,7 @@ namespace game {
 
 	void ActorInventory::load(Stream &sr) {
 		Inventory::load(sr);
-		int flags = loadInteger(sr);
+		int flags = sr.decodeInt();
 		for(int s = 0; s < InventorySlotId::count; s++) {
 			bool is_valid = flags & (1 << s);
 			if(is_valid) {

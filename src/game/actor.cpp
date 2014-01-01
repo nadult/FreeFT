@@ -8,6 +8,7 @@
 #include "game/sprite.h"
 #include "game/projectile.h"
 #include "sys/xml.h"
+#include "sys/network.h"
 #include <cmath>
 #include <cstdio>
 
@@ -74,14 +75,25 @@ namespace game {
 	};
 
 	Actor::Actor(Stream &sr) {
-		sr.unpack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
+	   	sr.unpack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
+		sr >> m_order >> m_next_order;
+
+		sr >> m_path_t;
+		m_path_pos = sr.decodeInt();
+		m_last_pos = net::decodeInt3(sr);
+		int3 prev = m_last_pos;
+		int path_size = sr.decodeInt();
+		m_path.resize(path_size);
+		for(int i = 0; i < path_size; i++) {
+			m_path[i] = net::decodeInt3(sr) + prev;
+			prev = m_path[i];
+		}
+
 		Entity::initialize(s_sprite_names[m_type_id][m_armour_class_id]);
 		loadEntityParams(sr);
 		m_inventory.load(sr);
 
 		m_anims = ActorAnims(m_sprite);
-		m_issue_next_order = false;
-		m_order = m_next_order = doNothingOrder();
 	}
 
 	Actor::Actor(const XMLNode &node) :Entity(node) {
@@ -99,8 +111,23 @@ namespace game {
 		return node;
 	}
 
+
 	void Actor::save(Stream &sr) const {
-		sr.pack(m_type_id, m_stance_id, m_armour_class_id, m_weapon_class_id, m_target_angle);
+	   	sr.pack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
+		sr << m_order << m_next_order;
+
+		int ppos = sr.pos();
+		sr << m_path_t;
+		sr.encodeInt(m_path_pos);
+		net::encodeInt3(sr, m_last_pos);
+		sr.encodeInt(m_path.size());
+		int3 prev = m_last_pos;
+		for(int i = 0; i < (int)m_path.size(); i++) {
+			net::encodeInt3(sr, m_path[i] - prev);
+			prev = m_path[i];
+		}
+		printf("path: %d nodes (%d bytes)\n", (int)m_path.size(), (int)sr.pos() - ppos);
+
 		saveEntityParams(sr);
 		m_inventory.save(sr);
 	}
@@ -212,8 +239,8 @@ namespace game {
 		if(isDead())
 			return;
 
-		DASSERT(m_world);
-		double time_delta = m_world->timeDelta();
+		World *world = this->world();
+		double time_delta = world->timeDelta();
 
 		if(m_issue_next_order)
 			issueNextOrder();
@@ -233,7 +260,7 @@ namespace game {
 
 			while(dist > 0.0001f) {
 				int3 target = m_path[m_path_pos];
-				if(m_world->isColliding(boundingBox() - pos() + float3(target), this, collider_tiles))
+				if(world->isColliding(boundingBox() - pos() + float3(target), this, collider_tiles))
 					target.y += 1;
 
 				int3 diff = target - m_last_pos;
@@ -267,7 +294,7 @@ namespace game {
 				}
 			}
 
-			if(m_world->isColliding(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
+			if(world->isColliding(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				//TODO: response to collision
 				m_issue_next_order = true;
 				m_path.clear();
@@ -275,8 +302,6 @@ namespace game {
 			else
 				setPos(new_pos);
 		}
-		
-		m_world->replicate(this);
 	}
 
 	// sets direction
@@ -343,7 +368,7 @@ namespace game {
 			DASSERT(item_id >= 0 && item_id < m_inventory.size());
 			Item item = m_inventory[item_id].item;
 			m_inventory.remove(item_id, 1);
-			m_world->addEntity(new ItemEntity(item, pos())); 
+			world()->addEntity(new ItemEntity(item, pos())); 
 		}
 	}
 		
@@ -357,7 +382,7 @@ namespace game {
 		pos.y = this->pos().y;
 		float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
 		
-		m_world->addEntity(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
+		world()->addEntity(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
 												pos + offset, m_order.attack.target_pos, this));
 	}
 

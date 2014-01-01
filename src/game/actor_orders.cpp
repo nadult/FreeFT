@@ -11,14 +11,19 @@
 namespace game {
 
 	void Order::save(Stream &sr) const {
-		sr << id << target;
-		sr.save(data, sizeof(data));
+		sr << id;
+		if(id != OrderId::do_nothing) {
+			sr << target;
+			sr.saveData(data, sizeof(data));
+		}
 	}
 
-	void Order::load(Stream &sr, World *world) {
+	void Order::load(Stream &sr) {
 		sr >> id;
-		target.load(sr, world);
-		sr.load(data, sizeof(data));
+		if(id != OrderId::do_nothing) {
+			target.load(sr);
+			sr.loadData(data, sizeof(data));
+		}
 	}
 
 	Order dieOrder(DeathTypeId::Type death_id) {
@@ -83,6 +88,13 @@ namespace game {
 	void Actor::issueNextOrder() {
 		if(m_order.id == OrderId::do_nothing && m_next_order.id == OrderId::do_nothing)
 			return;
+
+		World *world = this->world();
+		if(world->isClient()) {
+			m_next_order = doNothingOrder();
+		}
+		else if(world->isServer())
+			world->replicate(this);
 		
 		if(m_order.id == OrderId::change_stance) {
 			m_stance_id = (StanceId::Type)(m_stance_id - m_order.change_stance.next_stance);
@@ -128,7 +140,7 @@ namespace game {
 					else if(my_box.min.z > other_box.max.z)
 						target_pos.z = other_box.max.z;
 					
-					target_pos = m_world->naviMap().findClosestCorrectPos(target_pos, other_box);
+					target_pos = world->naviMap().findClosestCorrectPos(target_pos, other_box);
 					Order order = m_next_order;
 					order.interact.waiting_for_move = true;
 					m_next_order = moveOrder(target_pos, true);
@@ -221,7 +233,7 @@ namespace game {
 		new_pos = max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
 		int3 cur_pos = (int3)pos();
-		vector<int3> tmp_path = m_world->findPath(cur_pos, new_pos);
+		vector<int3> tmp_path = world()->findPath(cur_pos, new_pos);
 
 		if(cur_pos == new_pos || tmp_path.empty()) {
 			m_order = doNothingOrder();

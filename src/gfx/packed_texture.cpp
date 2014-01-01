@@ -29,7 +29,7 @@ namespace gfx {
 		resize(pal_size);
 
 		Color buf[256];
-		sr.load(buf, pal_size * sizeof(Color));
+		sr.loadData(buf, pal_size * sizeof(Color));
 
 		for(int n = 0; n < pal_size; n++)
 			set(n, swapBR(buf[n]));
@@ -41,7 +41,7 @@ namespace gfx {
 		sr >> size;
 
 		m_data.resize(size);
-		sr.load(rgb, size * 3);
+		sr.loadData(rgb, size * 3);
 
 		for(int n = 0; n < size; n++) {
 			m_data[n] = Color(ptr[0], ptr[1], ptr[2]);
@@ -60,7 +60,7 @@ namespace gfx {
 			ptr += 3;
 		}
 
-		sr.save(rgb, m_data.size() * 3);
+		sr.saveData(rgb, m_data.size() * 3);
 	}
 
 	PackedTexture::PackedTexture()
@@ -100,19 +100,19 @@ namespace gfx {
 			tdata.push_back(cmd);
 
 			if(command == 1) {
-				sr.load(buf, n_pixels);
+				sr.loadData(buf, n_pixels);
 				tdata.insert(tdata.end(), buf, buf + n_pixels);
 				for(int n = 0; n < n_pixels; n++)
 					m_max_idx = max(m_max_idx, buf[n]);
 			}
 			else if(command == 2) {
-				sr.load(buf, n_pixels * 2);
+				sr.loadData(buf, n_pixels * 2);
 				tdata.insert(tdata.end(), buf, buf + n_pixels * 2);
 				for(int n = 0; n < n_pixels; n++)
 					m_max_idx = max(m_max_idx, buf[n * 2 + 0]);
 			}
 			else if(command == 3) {
-				sr.load(buf, n_pixels);
+				sr.loadData(buf, n_pixels);
 				tdata.insert(tdata.end(), buf, buf + n_pixels);
 			}
 			offset += n_pixels;

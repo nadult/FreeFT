@@ -102,7 +102,7 @@ namespace game {
 		};
 
 		void save(Stream&) const;
-		void load(Stream&, World*);
+		void load(Stream&);
 	};
 	
 	Order dieOrder(DeathTypeId::Type);	
@@ -167,6 +167,7 @@ namespace game {
 		
 		virtual XMLNode save(XMLNode&) const;
 		virtual void save(Stream&) const;
+
 
 	private:
 		void initialize(ActorTypeId::Type);

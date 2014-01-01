@@ -30,7 +30,7 @@ void zlibInflate(Stream &sr, vector<char> &dest, int inSize) {
 	/* decompress until deflate stream ends or end of file */
 	do {
 		strm.avail_in = inSize < CHUNK? inSize : CHUNK;
-		sr.load(in, strm.avail_in);
+		sr.loadData(in, strm.avail_in);
 		strm.next_in = in;
 		inSize -= strm.avail_in;
 
@@ -110,7 +110,7 @@ namespace game
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 
 		char header[3];
-		sr.load(header, sizeof(header));
+		sr.loadData(header, sizeof(header));
 
 		i32 seq_count; sr >> seq_count;
 		m_sequences.resize(seq_count);
@@ -122,7 +122,7 @@ namespace game
 
 			i16 frame_count, dummy1; sr.unpack(frame_count, dummy1);
 			i16 frame_data[frame_count];
-			sr.load(frame_data, frame_count * sizeof(i16));
+			sr.loadData(frame_data, frame_count * sizeof(i16));
 			sequence.frame_count = frame_count;
 			sequence.first_frame = (int)m_frames.size();
 
@@ -142,13 +142,13 @@ namespace game
 
 
 			i32 frame_data2[frame_count];
-			sr.load(frame_data2, frame_count * 4);
+			sr.loadData(frame_data2, frame_count * 4);
 
 			i32 nameLen; sr >> nameLen;
 			ASSERT(nameLen >= 0 && nameLen <= 256);
 
 			sequence.name.resize(nameLen);
-			sr.load(&sequence.name[0], nameLen);
+			sr.loadData(&sequence.name[0], nameLen);
 			
 			i16 collection_id; sr >> collection_id;
 			seq2col[n] = collection_id;
@@ -167,7 +167,7 @@ namespace game
 			i32 nameLen; sr >> nameLen;
 			ASSERT(nameLen >= 0 && nameLen <= 256);
 			collection.name.resize(nameLen);
-			sr.load(&collection.name[0], nameLen);
+			sr.loadData(&collection.name[0], nameLen);
 			
 			i32 frame_count, dir_count;
 			sr.unpack(frame_count, dir_count);
@@ -203,7 +203,7 @@ namespace game
 
 			if(plainType) {
 				data.resize(size);
-				sr.load(&data[0], size);
+				sr.loadData(&data[0], size);
 			}
 			else {
 				i32 plainSize = 0;
@@ -217,7 +217,7 @@ namespace game
 			for(int l = 0; l < 4; l++) {
 				i32 palSize; imgSr >> palSize;
 				collection.palettes[l].resize(palSize);
-				imgSr.load(&collection.palettes[l][0], palSize * 4);
+				imgSr.loadData(&collection.palettes[l][0], palSize * 4);
 				for(int i = 0; i < palSize; i++)
 					collection.palettes[l][i] = swapBR(collection.palettes[l][i]);
 			}
