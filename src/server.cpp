@@ -116,6 +116,8 @@ public:
 	// Assuming that there is enough space in the packet
 	void appendAcks(vector<SeqNumber> &acks, OutPacket &packet) {
 		int num_acks = min(16, (int)acks.size());
+		if(!num_acks)
+			return;
 		//TODO: send ack range
 
 		packet << SubPacketType::ack;
@@ -144,7 +146,9 @@ public:
 
 			//TODO: priority for objects visible by client
 			for(int p = 0; p < client.max_packets; p++) {
-				OutPacket packet(client.packet_id++, m_timestamp, n, PacketInfo::flag_need_ack);
+				OutPacket packet(client.packet_id, m_timestamp, n, PacketInfo::flag_need_ack);
+				Client::NotAckedUpdates not_acked;
+				not_acked.seq_num = client.packet_id;
 
 				if(p == 0)
 					appendAcks(client.in_acks, packet);
@@ -171,15 +175,17 @@ public:
 
 						packet.saveData(sub_packet, substream.pos());
 						map[idx] = false;
-						//TODO: update non_acked list
+						not_acked.entity_ids.push_back(idx);
 					}
 
 					idx++;
 				}
 
-				if(packet.size() == PacketInfo::header_size)
+				if(packet.size() == PacketInfo::header_size && p != 0)
 					break; // Nothing more to send
 
+				if(!not_acked.entity_ids.empty())
+					client.not_acked_updates.push_back(not_acked);
 				send(packet, client.address);
 				client.packet_id++;
 			}
@@ -221,7 +227,8 @@ public:
 			client = &m_clients[client_id];
 			VERIFY(client->isValid() && source == client->address);
 			client->last_packet_time = time;
-			client->in_acks.push_back(packet.packetId());
+			if(packet.flags() & PacketInfo::flag_need_ack)
+				client->in_acks.push_back(packet.packetId());
 
 			while(!packet.end()) {
 				SubPacketType sub_type;
@@ -232,11 +239,39 @@ public:
 				}
 				else if(sub_type == SubPacketType::ack) {
 					int count = packet.decodeInt();
-					for(int n =0; n < count; n++) {
-						SeqNumber seq;
-						packet >> seq;
-					}
-					//TODO: finish
+					SeqNumber acks[count];
+
+					for(int n = 0; n < count; n++)
+						packet >> acks[n];
+
+					vector<Client::NotAckedUpdates> &nau = client->not_acked_updates;
+
+					for(int i = 0; i < (int)nau.size(); i++)
+						for(int j = 0; j < count; j++)
+							if(nau[i].seq_num == acks[j]) {
+								nau[i--] = nau.back();
+								nau.pop_back();
+								break;
+							}
+					
+					SeqNumber max_ack = acks[0];
+					for(int n = 1; n < count; n++)
+						if(acks[n] > max_ack)
+							max_ack = acks[n];
+
+					for(int i = 0; i < (int)nau.size(); i++)
+						if(nau[i].seq_num < max_ack) {
+							printf("Resending (max: %d): %d\n", (int)max_ack, (int)nau[i].seq_num);
+							vector<int> &entity_ids = nau[i].entity_ids;
+							BitVector &update_map = client->update_map;
+
+							for(int j = 0; j < (int)entity_ids.size(); j++)
+								update_map[entity_ids[j]] = true;
+							nau[i--] = nau.back();
+							nau.pop_back();
+							break;
+						}
+					//TODO: resend also on timeout?
 				}
 				else if(sub_type == SubPacketType::actor_order) {
 					Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(client->actor_id));

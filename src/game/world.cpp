@@ -18,9 +18,7 @@ namespace game {
 	// TODO: multiple navigation maps (2, 3, 4 at least)
 	enum { agent_size = 3 };
 
-	static World *m_instance = nullptr;
-
-	World *Entity::world() { return m_instance; }
+	World *World::s_instance = nullptr;
 
 	World::World(Mode mode)
 		:m_mode(mode), m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
@@ -28,8 +26,8 @@ namespace game {
 		if(m_mode == Mode::server)
 			m_replication_list.reserve(1024);
 
-		ASSERT(m_instance == nullptr);
-		m_instance = this;
+		ASSERT(s_instance == nullptr);
+		s_instance = this;
 	} 
 
 	World::World(Mode mode, const char *file_name) :World(mode) {
@@ -39,7 +37,7 @@ namespace game {
 //		updateNaviMap(true);
 	}
 	World::~World() {
-		m_instance = nullptr;
+		s_instance = nullptr;
 	}
 
 	void World::updateNaviMap(bool full_recompute) {
@@ -169,7 +167,7 @@ namespace game {
 	}
 	
 	Intersection World::trace(const Segment &segment, const Entity *ignore, int flags) const {
-		PROFILE("world::trace");
+		PROFILE("World::trace");
 		Intersection out;
 
 		if(flags & collider_tiles) {

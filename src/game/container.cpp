@@ -6,6 +6,7 @@
 #include "game/container.h"
 #include "game/actor.h"
 #include "game/sprite.h"
+#include "game/world.h"
 #include "sys/xml.h"
 #include <cstdio>
 
@@ -19,8 +20,17 @@ namespace game {
 	};
 
 	Container::Container(Stream &sr) :Entity(sr) {
-		initialize();
+		sr.unpack(m_state, m_target_state);
+		
+		m_update_anim = false;
+		m_is_always_opened = false;
+		for(int n = 0; n < state_count; n++) {
+			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
+			if(m_seq_ids[n] == -1)
+				m_is_always_opened = true;
+		}
 	}
+
 	Container::Container(const XMLNode &node) :Entity(node) {
 		initialize();
 	}
@@ -31,6 +41,7 @@ namespace game {
 
 	void Container::save(Stream &sr) const {
 		Entity::save(sr);
+		sr.pack(m_state, m_target_state);
 	}
 
 	XMLNode Container::save(XMLNode &parent) const {
@@ -101,6 +112,8 @@ namespace game {
 			}
 		}
 		if(m_update_anim) {
+			world()->replicate(this);
+
 			playSequence(m_seq_ids[m_state]);
 			m_update_anim = false;
 		}

@@ -116,7 +116,6 @@ namespace game {
 	   	sr.pack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
 		sr << m_order << m_next_order;
 
-		int ppos = sr.pos();
 		sr << m_path_t;
 		sr.encodeInt(m_path_pos);
 		net::encodeInt3(sr, m_last_pos);
@@ -126,7 +125,6 @@ namespace game {
 			net::encodeInt3(sr, m_path[i] - prev);
 			prev = m_path[i];
 		}
-		printf("path: %d nodes (%d bytes)\n", (int)m_path.size(), (int)sr.pos() - ppos);
 
 		saveEntityParams(sr);
 		m_inventory.save(sr);
@@ -343,7 +341,7 @@ namespace game {
 		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack || m_order.id == OrderId::drop_item)
 			m_issue_next_order = true;
 		else if(m_order.id == OrderId::interact) {
-			if(m_order.interact.mode == interact_normal) {
+			if(m_order.interact.mode == interact_normal && !world()->isClient()) {
 				m_order.target->interact(this);
 			}
 			m_issue_next_order = true;
@@ -355,6 +353,9 @@ namespace game {
 	}
 
 	void Actor::onPickupEvent() {
+		if(world()->isClient())
+			return;
+
 		//TODO: magic_hi animation when object to be picked up is high enough
 		if(m_order.id == OrderId::interact) {
 			DASSERT(m_order.target->entityType() == EntityId::item);
@@ -374,7 +375,7 @@ namespace game {
 		
 	void Actor::onFireEvent(const int3 &off) {
 		const Weapon &weapon = m_inventory.weapon();
-		if(!weapon.isValid() || m_order.id != OrderId::attack)
+		if(!weapon.isValid() || m_order.id != OrderId::attack || world()->isClient())
 			return;
 
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
@@ -387,8 +388,11 @@ namespace game {
 	}
 
 	void Actor::onSoundEvent() {
-	//	if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
-	//		printf("Playing sound: plasma!\n");
+		if(world()->isServer())
+			return;
+
+		if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
+			printf("Playing sound: plasma!\n");
 	}
 
 }

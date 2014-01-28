@@ -21,7 +21,7 @@ namespace game {
 	void Order::load(Stream &sr) {
 		sr >> id;
 		if(id != OrderId::do_nothing) {
-			target.load(sr);
+			sr >> target;
 			sr.loadData(data, sizeof(data));
 		}
 	}

@@ -179,6 +179,7 @@ namespace game {
 
 	void Entity::handleEventFrame(const Sprite::Frame &frame) {
 		DASSERT(frame.id <= Sprite::ev_first_specific);
+
 		if(frame.id == Sprite::ev_fire)
 			onFireEvent(int3(frame.params[0], frame.params[1], frame.params[2]));
 		else if(frame.id == Sprite::ev_hit)

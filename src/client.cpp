@@ -174,7 +174,7 @@ protected:
 			m_packets.push_back(packet);
 		}
 
-		int count = 0, pcount = 0, bcount = 0;
+		int ucount = 0, pcount = 0, bcount = 0;
 		SeqNumber first_timestamp = 0, last_timestamp = 0;
 		if(!m_packets.empty()) {
 			first_timestamp = m_packets.front().timestamp();
@@ -201,7 +201,7 @@ protected:
 
 					if(type == SubPacketType::entity_full || type == SubPacketType::entity_delete) {
 						entityUpdate(packet, type);
-						count++;
+						ucount++;
 					}
 					else if(type == SubPacketType::ack) {
 						int ack_count = packet.decodeInt();
@@ -233,12 +233,17 @@ protected:
 			m_packets.pop_front();
 		}
 
-		if(count)
-			printf("Updated: %d objects (%d packets, %d bytes total)\n", count, pcount, bcount);
+		//TODO: when to send orders?
+		//jesli zapiszemy je na liste i wyslemy przy nastepnym ticku, to swiat
+		//sie zmieni po odebraniu pakietow i moze juz klient nie chce wykonywac rozkazu?
+
+		if(ucount)
+			printf("Updated: %d objects (%d packets, %d bytes total)\n", ucount, pcount, bcount);
 	}
 
 private:
 	std::list<InPacket> m_packets;
+
 	net::Address m_server_address;
 	net::SeqNumber m_timestamp, m_last_timestamp, m_last_packet_id;
 	int m_client_id, m_actor_id;
@@ -332,14 +337,13 @@ int safe_main(int argc, char **argv)
 		Intersection isect = world->pixelIntersect(getMousePos() + view_pos,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 
-		if(isect.isEmpty())
+		if(isect.isEmpty() || isect.isTile())
 			isect = world->trace(ray, actor,
 				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
 		
 		Intersection full_isect = world->pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
 		if(full_isect.isEmpty())
 			full_isect = world->trace(ray, actor, collider_all|visibility_flag);
-
 		
 	//	if(isKeyDown('T') && !isect.isEmpty())
 	//		actor->setPos(ray.at(isect.distance()));

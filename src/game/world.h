@@ -114,7 +114,14 @@ namespace game {
 		NaviMap		m_navi_map;
 
 		vector<int> m_replication_list;
+
+		static World *s_instance;
+		friend World* Entity::world();
 	};
+
+	inline World *Entity::world() {
+		return World::s_instance;
+	}
 
 }
 
