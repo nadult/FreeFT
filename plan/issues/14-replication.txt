@@ -1,13 +1,14 @@
-- replicate whole game state
+- replicate whole game state  DONE
 - server should keep information about which entities should be sent to which client
-  (because it didn't get an ack)
+  (because it didn't get an ack)  DONE
 - problem with entity_id: when some id is being sent over the network (from client to server)
-  the object might be deleted and a new object with the same id might be created
-- replicate orders from client to server
-- replicate entities only when they receive an order
-- packet ordering?
+  the object might be deleted and a new object with the same id might be created  
+- replicate orders from client to server  DONE
+- replicate entities only when they receive an order  DONE
+- packet ordering?  
+- proper acking
 
-+ESTIMATED_TIME: 
++ESTIMATED_TIME: (already spent) + 6h
 +TIME_SPENT:
 
 +WORK_LOG:
@@ -21,4 +22,6 @@
 27.12.13: 11:30 - 13:00, 16:30 - 18:00, 22:00 - 00:00
 28.12.13: 13:00 - 16:30, 17:15 - 18:40, 20:00 - 21:50
 31.12.13: 11:00 - 11:40
-01.01.14: 10:45 - 15:45, 16:00 - 16:30, 17:30 - 18:00
+01.01.14: 10:45 - 15:45, 16:00 - 16:30, 17:45 - 18:30
+
+28.01.14: 17:10 - 

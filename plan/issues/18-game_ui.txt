@@ -1,0 +1,10 @@
+- HUD: selected weapon, selected armor, bullets in mag., HP?    3h
+- Menu: view inventory, transfer items inventory <-> container  4h
+- Menu: creating game sessions, joining game sessions, single player mode?   4h   
+- InGame Menu: quit, vote for map change?   2h
+- InGame Chat: team chat, global chat   2h
+
++ESTIMATED_TIME: 15h
++TIME_SPENT
+
++WORK_LOG:

@@ -1,0 +1,15 @@
+- figure out what game modes are best for FreeFT
+- deathmatch
+  - gameplay    6h
+  - status board  4h
+- trench war
+  - add new entity types in game & editor 6h
+  - gameplay 4h
+  - testing ? 
+
+
++FINISHED
++ESTIMATED_TIME:  20h
++TIME_SPENT:
+
++WORK_LOG:

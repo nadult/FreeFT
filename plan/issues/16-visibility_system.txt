@@ -1,0 +1,13 @@
+- Visibility tests (what our character can see)
+  - done on the client side, throws 8-16 rays toward the target  (2h)
+  - vis tests done only for dynamic targets (characters, projectiles, etc.)  (1h)
+  - blending in/out when visiblity status changes  (4h)
+- More control over occlusion system  (6h)
+  - if he's under occluder, then it should be disabled
+  - using shift key to look inside?
+
+
++ESTIMATED_TIME: 13h
++TIME_SPENT:
+
++WORK_LOG:

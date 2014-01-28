@@ -1,0 +1,16 @@
+   - LUA; skrypty mają być małe, nie wymagające debugowania; każdy bardziej skomplikowany kawałek
+     kodu przenieść do C++; nie robić AI na skrypitach! tzn. co najwyżej umożliwić sterowanie, ale
+     cały rdzeń jest w C++; domyślnie AI powinno działać wogóle bez użycia jakichkolwiek skryptów,
+     jedynie bardziej zaawansowana interakcja z userem może wymagać skryptowania;
+     Skrypty mają być prostymi funkcjami, nie należy używać zaawansowanych ficzerów z LUY, unikać
+     słowników i innych rzeczy które mają niejasną charakterystykę wydajnościowo pamięciową
+
+
+
+
+
++FINISHED
++ESTIMATED_TIME:
++TIME_SPENT:
+
++WORK_LOG:

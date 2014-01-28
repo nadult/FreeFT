@@ -2,11 +2,15 @@ TODO:
  - new name
 
 0. Random stuff
+ - Alpha release
+   issues/15-alpha_release.txt
+
  - Pre-alpha release
    issues/13-pre_alpha_release.txt DONE  (68h 45min)
 
  - Not planned stuff
    issues/0-not_planned.txt (10.25)
+
 
 1. Map editor
  - prosty edytor tile-ów:
@@ -40,42 +44,32 @@ TODO:
  - simple sound system
    issues/9-simple_audio.txt
 
- - scripting
-   - LUA; skrypty mają być małe, nie wymagające debugowania; każdy bardziej skomplikowany kawałek
-     kodu przenieść do C++; nie robić AI na skryptach! tzn. co najwyżej umożliwić sterowanie, ale
-     cały rdzeń jest w C++; domyślnie AI powinno działać wogóle bez użycia jakichkolwiek skryptów,
-     jedynie bardziej zaawansowana interakcja z userem może wymagać skryptowania;
-     Skrypty mają być prostymi funkcjami, nie należy używać zaawansowanych ficzerów z LUY, unikać
-     słowników i innych rzeczy które mają niejasną charakterystykę wydajnościowo pamięciową
+ - scripting  SECONDARY
+   issues/19-scripting.txt
 
- - dialogue system
+ - dialogue system  SECONDARY
    - something like in 2drpg, only using XML
 
- - simple combat and simple AI (for critters like rad-scorpions)
-   - reaction to damage
-   - AI for critters
-   - Is it supposed to be RPG-like?
-   - aiming
-   - different firing modes (single / burst)
-   - Hit Points, simple skills?
-
-- palettized sprite rendering (secondary)
+- palettized sprite rendering  SECONDARY
    - game should support multiple sprites of the same kind with different palettes being rendered
      all at once without big memory requirements;
 
+- Visibility system:
+   issues/16-visibility_system.txt
+ 
+- combat and simple AI (for critters like rad-scorpions)
+   issues/17-combat_and_simple_ai.txt
+
 - UI: HUD + menus
-  - HUD: selected weapon, selected armor, bullets in mag.
-  - Menu: view inventory, transfer items inventory <-> container
-  - Menu: creating game sessions, joining game sessions
+   issues/18-game_ui.txt
 
 3. Multiplayer mode
 
 - simple protocol with full replication of orders every frame
-	issues/14-replication.txt
+   issues/14-replication.txt
 
 - simple game modes:
-  - deathmatch
-  - capture the flag (one team defending, the other attacking
+   issues/20-multiplayer_game_modes.txt
 
 4. Random, useful things
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów

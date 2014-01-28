@@ -1,0 +1,33 @@
+- reaction to damage  3h
+  - if its a hard hit, it will force player to stop current action
+  - projectiles can inflict critical damage
+
+- possibility to shoot on target (when it's moving, there should be some compenstation)
+  and off target (in the specific direction, where player thinks the enemy will be,
+  or as a support fire  6h
+
+- AI for critters
+  - moving to a random close location from time to time (in idle mode)  4h
+  - when seeing enemy, turn to attack mode: move towards enemy, attack  4h
+  - when close to death, may turn to coward mode  ?  2h
+  - for human-like critters: hiding behind occluders, etc.  SECONDARY
+
+- Is it supposed to be RPG-like?  NO!!
+
+- different firing modes (single / burst)  2h
+
+- Hit Points, simple skills?  2h
+  - simple HP system, simple armor system
+  - no skills for now
+
+- respawning when dead  4h
+
+- explosions?  SECONDARY
+
++REQUIREMENTS:
+issues/6-basic_shooting
+
++ESTIMATED_TIME: 27h
++TIME_SPENT:
+
++WORK_LOG:
