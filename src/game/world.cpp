@@ -88,6 +88,7 @@ namespace game {
 	void World::removeEntity(int entity_id) {
 		DASSERT(entity_id >= 0 && entity_id < m_entity_map.size());
 		m_entity_map.remove(entity_id);
+		replicate(entity_id);
 	}
 
 	void World::addEntity(int index, Entity *entity) {

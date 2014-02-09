@@ -43,9 +43,22 @@ public:
 		client_timeout = 10,
 	};
 
-	struct ClientInfo {
+	enum class ClientMode {
+		invalid,
+		connecting,
+		connected,
+		to_be_removed,
+	};
+
+	struct Client {
+		Client() :mode(ClientMode::invalid), actor_id(-1), host_id(-1) { }
+
+		bool isValid() const { return host_id != -1 && mode != ClientMode::invalid; }
+
+		ClientMode mode;
 		BitVector update_map;
 		int actor_id;
+		int host_id;
 	};
 
 
@@ -54,58 +67,46 @@ public:
 		return m_world->addEntity(new Actor(ActorTypeId::male, pos));
 	}
 
-/*	void disconnectClient(int client_id) {
-		Client &client = m_clients[client_id];
-		m_world->removeEntity(client.actor_id);
-		printf("Client disconnected: %s\n", client.address.toString().c_str());
+	void disconnectClient(int client_id) {
+		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
+		m_clients[client_id].mode = ClientMode::to_be_removed;
+	}
 
-		client.clear();
-		m_client_count--;
-	}*/
+	void handleHost(RemoteHost &host, Client &client) {
+		DASSERT(client.isValid());
+		beginSending(client.host_id);
 
-	void handleUnverifiedHost(RemoteHost &host, ClientInfo &info) {
-		DASSERT(!host.isVerified());
-
-		const Chunk *chunk = nullptr;
 		EntityMap &emap = m_world->entityMap();
+		const Chunk *chunk = nullptr;
 
 		while( const Chunk *chunk_ptr = host.getIChunk() ) {
 			InChunk chunk(*chunk_ptr);
 
 			if(chunk.type() == ChunkType::join) {
-				info.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
+				client.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
 //				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
-				info.update_map.resize(emap.size() * 2);
+				client.update_map.resize(emap.size() * 2);
 				for(int n = 0; n < emap.size(); n++)
 					if(emap[n].ptr)
-						info.update_map[n] = true;
+						client.update_map[n] = true;
 
 				TempPacket temp;
-				temp << JoinAcceptPacket{string(m_world->mapName()), info.actor_id};
+				temp << JoinAcceptPacket{string(m_world->mapName()), client.actor_id};
 				host.enqueChunk(temp, ChunkType::join_accept, 0);
 			}
 			if(chunk.type() == ChunkType::join_complete) {
+				client.mode = ClientMode::connected;
 				m_client_count++;
 				host.verify(true);
 				break;
 			}
-		}
-	}
-
-	void handleHost(RemoteHost &host, ClientInfo &info) {
-		DASSERT(host.isVerified());
-		const Chunk *chunk = nullptr;
-
-		while( const Chunk *chunk_ptr = host.getIChunk() ) {
-			InChunk chunk(*chunk_ptr);
-
-			if(chunk.type() == ChunkType::leave) {
-				//TODO: removeHost
+			else if(chunk.type() == ChunkType::leave) {	
+				disconnectClient(host.currentId());
 				break;
 			}
-			else if(chunk.type() == ChunkType::actor_order) {
-				Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(info.actor_id));
+			else if(client.mode == ClientMode::connected && chunk.type() == ChunkType::actor_order) {
+				Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(client.actor_id));
 				Order order;
 				chunk >> order;
 				if(order.isValid())
@@ -115,44 +116,48 @@ public:
 			}
 		}
 		
-		EntityMap &emap = m_world->entityMap();
-		const vector<int> &new_updates = m_world->replicationList();
-			
-		for(int n = 0; n < (int)new_updates.size(); n++)
-			info.update_map[new_updates[n]] = true;
-		vector<int> &lost = host.lostUChunks();
-		for(int n = 0; n < (int)lost.size(); n++)
-			info.update_map[lost[n]] = true;
-		lost.clear();
+		if(client.mode == ClientMode::connected) {
+			EntityMap &emap = m_world->entityMap();
+			const vector<int> &new_updates = m_world->replicationList();
+				
+			for(int n = 0; n < (int)new_updates.size(); n++)
+				client.update_map[new_updates[n]] = true;
+			vector<int> &lost = host.lostUChunks();
+			for(int n = 0; n < (int)lost.size(); n++)
+				client.update_map[lost[n]] = true;
+			lost.clear();
 
-		//TODO: apply priorities to entities
-		//TODO: priority for objects visible by client
-			
-		int idx = 0;
-		BitVector &map = info.update_map;
-		while(idx < emap.size()) {
-			if(!map.any(idx >> BitVector::base_shift)) {
-				idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
-				continue;
-			}
-
-			if(map[idx]) {
-				const Entity *entity = emap[idx].ptr;
-
-				TempPacket temp;
-
-				if(entity) {
-					temp << entity->entityType() << *entity;
+			//TODO: apply priorities to entities
+			//TODO: priority for objects visible by client
+				
+			int idx = 0;
+			BitVector &map = client.update_map;
+			while(idx < emap.size()) {
+				if(!map.any(idx >> BitVector::base_shift)) {
+					idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
+					continue;
 				}
 
-				if(host.enqueUChunk(temp, entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))
-					map[idx] = false;
-				else
-					break;
-			}
+				if(map[idx]) {
+					const Entity *entity = emap[idx].ptr;
 
-			idx++;
+					TempPacket temp;
+
+					if(entity) {
+						temp << entity->entityType() << *entity;
+					}
+
+					if(host.enqueUChunk(temp, entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))
+						map[idx] = false;
+					else
+						break;
+				}
+
+				idx++;
+			}
 		}
+			
+		finishSending();
 	}
 
 	void action() {
@@ -166,30 +171,41 @@ public:
 
 		LocalHost::beginFrame();
 
-		for(int r = 0; r < numRemoteHosts(); r++) {
-			RemoteHost *host = getRemoteHost(r);
-			const Chunk *chunk = nullptr;
+		for(int h = 0; h < numRemoteHosts(); h++) {
+			RemoteHost *host = getRemoteHost(h);
 
 			if(!host)
 				continue;
 				
-			if((int)m_client_infos.size() <= r)
-				m_client_infos.resize(r + 1);
-			ClientInfo &info = m_client_infos[r];
-			if(emap.size() > info.update_map.size())
-				info.update_map.resize(emap.size() * 2);
+			if((int)m_clients.size() <= h)
+				m_clients.resize(h + 1);
+			Client &client = m_clients[h];
+			if(!client.isValid()) {
+				client.mode = ClientMode::connecting;
+				client.host_id = h;
+			}
+			if(emap.size() > client.update_map.size())
+				client.update_map.resize(emap.size() * 2);
 
-			beginSending(r);
-
-			if(host->isVerified())
-				handleHost(*host, info);
-			else
-				handleUnverifiedHost(*host, info);
-
-			finishSending();
+			handleHost(*host, client);
 		}
 		
 		LocalHost::finishFrame();
+
+		for(int h = 0; h < (int)m_clients.size(); h++) {
+			Client &client = m_clients[h];
+			if(client.mode == ClientMode::to_be_removed) {
+				if(client.actor_id != -1) {
+					m_world->removeEntity(client.actor_id);
+					client.actor_id = -1;
+				}
+				
+				printf("Client disconnected: %s\n", getRemoteHost(h)->address().toString().c_str());
+				removeRemoteHost(h);
+				m_client_count--;
+				client.mode = ClientMode::invalid;
+			}
+		}
 		
 		m_world->replicationList().clear();
 
@@ -200,7 +216,7 @@ public:
 	void setWorld(World *world) { m_world = world; }
 
 private:
-	vector<ClientInfo> m_client_infos;
+	vector<Client> m_clients;
 	World *m_world;
 	int m_timestamp;
 	int m_client_count;

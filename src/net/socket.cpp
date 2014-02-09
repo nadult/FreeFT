@@ -18,7 +18,7 @@ typedef int socklen_t;
 
 #endif
 
-#include "net/packets.h"
+#include "net/socket.h"
 #include <cstdlib>
 #include <unistd.h>
 
@@ -39,6 +39,9 @@ namespace net {
 
 	static void toSockAddr(const Address &in, sockaddr_in *out) {
 		memset(out, 0, sizeof(sockaddr_in));
+#ifdef _WIN32
+		out->sin_family = AF_INET;
+#endif
 		out->sin_addr.s_addr = htonl(in.ip);
 		out->sin_port = htons(in.port);
 	}
@@ -91,6 +94,14 @@ namespace net {
 	}
 
 	Socket::Socket(const Address &address) {
+#ifdef _WIN32
+		static bool wsock_initialized = false;
+		if(!wsock_initialized) {
+			WSAData data;
+			WSAStartup(0x2020, &data);
+			wsock_initialized = true;
+		}
+#endif
 		m_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if(m_fd < 0)
 			THROW("Error while creating socket");
@@ -103,7 +114,8 @@ namespace net {
 		}
 
 #ifdef _WIN32
-		THROW("use ioctlsocket");
+		unsigned long int non_blocking = 1;
+		ioctlsocket(m_fd, FIONBIO, &non_blocking);
 #else
 		fcntl(m_fd, F_SETFL, O_NONBLOCK);
 #endif

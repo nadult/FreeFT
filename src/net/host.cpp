@@ -218,7 +218,6 @@ namespace net {
 		for(int n = 0; n < num_acks; n++)
 			logAck(m_out_acks[n]);
 
-		//TODO: send ack range
 		m_out_packet.encodeInt(num_acks);
 		if(num_acks) {
 			m_out_packet << m_out_acks[0];

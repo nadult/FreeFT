@@ -6,7 +6,7 @@
 #ifndef NET_CHUNK_H
 #define NET_CHUNK_H
 
-#include "net/packets.h"
+#include "net/socket.h"
 
 namespace net {
 

@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef NET_PACKETS_H
-#define NET_PACKETS_H
+#ifndef NET_SOCKET_H
+#define NET_SOCKET_H
 #include "base.h"
 
 
@@ -92,6 +92,7 @@ namespace net {
 			flag_first = 1,		// first packet for given frame, contains ack's
 			flag_encrypted = 2,
 			flag_compressed = 4,
+			flag_connecting = 8,
 		};
 
 		void save(Stream &sr) const;

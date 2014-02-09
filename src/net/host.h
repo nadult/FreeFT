@@ -6,7 +6,7 @@
 #ifndef NET_HOST_H
 #define NET_HOST_H
 
-#include "net/packets.h"
+#include "net/socket.h"
 #include "net/chunk.h"
 #include "sys/aligned_allocator.h"
 
@@ -68,6 +68,7 @@ namespace net {
 		int lastTimestamp() const { return m_last_timestamp; }
 
 		int memorySize() const;
+		int currentId() const { return m_current_id; }
 
 	protected:
 		void sendChunks(int max_channel);

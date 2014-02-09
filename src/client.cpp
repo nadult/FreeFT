@@ -419,6 +419,8 @@ int safe_main(int argc, char **argv)
 		profiler::nextFrame();
 	}
 
+	host->disconnect();
+
 	delete host.release();
 
 	destroyWindow();

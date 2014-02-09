@@ -8,7 +8,7 @@
 #include "game/sprite.h"
 #include "game/projectile.h"
 #include "sys/xml.h"
-#include "net/packets.h"
+#include "net/socket.h"
 #include <cmath>
 #include <cstdio>
 
