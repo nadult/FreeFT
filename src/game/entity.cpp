@@ -16,6 +16,8 @@ using namespace gfx;
 
 namespace game {
 
+	static int s_unique_id = 0;
+
 	void Entity::initialize(const char *sprite_name) {
 		m_sprite = Sprite::mgr[sprite_name];
 		m_max_screen_rect = m_sprite->getMaxRect();
@@ -43,6 +45,8 @@ namespace game {
 		u8 flags = (can_compress? flag_compressed : 0) | (m_is_looped? flag_is_looped : 0) | (m_is_finished? flag_is_finished : 0);
 
 		sr.pack(flags, m_pos, m_dir_angle);
+		sr.encodeInt(m_unique_id);
+
 		if(can_compress)
 			sr.pack(u8(m_seq_id), u8(m_frame_id), u8(m_dir_idx));
 		else
@@ -52,6 +56,8 @@ namespace game {
 	void Entity::loadEntityParams(Stream &sr) {
 		u8 flags;
 		sr.unpack(flags, m_pos, m_dir_angle);
+		m_unique_id = sr.decodeInt();
+
 		m_is_finished = flags & flag_is_finished;
 		m_is_looped = flags & flag_is_looped;
 
@@ -66,7 +72,7 @@ namespace game {
 			sr.unpack(m_seq_id, m_frame_id, m_dir_idx);
 	}
 
-	Entity::Entity() :m_to_be_removed(false), m_grid_index(-1), m_first_ref(nullptr) { }
+	Entity::Entity() :m_to_be_removed(false), m_grid_index(-1), m_unique_id(s_unique_id++), m_first_ref(nullptr) { }
 
 	Entity::Entity(const char *sprite_name) :Entity() {
 		initialize(sprite_name);
@@ -373,7 +379,14 @@ namespace game {
 	}
 		
 	void EntityRef::save(Stream &sr) const {
-		sr.encodeInt(m_node? m_node->m_grid_index : -1);
+		if(m_node) {
+			sr.encodeInt(m_node->m_grid_index);
+			sr.encodeInt(m_node->m_unique_id);
+		}
+		else {
+			sr.encodeInt(-1);
+		}
+
 	}
 
 	void EntityRef::load(Stream &sr) {
@@ -382,8 +395,9 @@ namespace game {
 		unlink();
 
 		if(index >= 0 && index < world->entityCount()) {
+			int unique_id = sr.decodeInt();
 			Entity *entity = world->getEntity(index);
-			if(entity)
+			if(entity && entity->m_unique_id == unique_id)
 				link(entity);
 		}
 	}

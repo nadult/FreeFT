@@ -21,7 +21,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "sys/network.h"
-#include <list>
+#include "sys/host.h"
 
 using namespace gfx;
 using namespace game;
@@ -34,7 +34,7 @@ using namespace net;
 
 static unique_ptr<World> world;
 
-class Client: public net::Host {
+class Client: public net::LocalHost {
 public:
 	enum class Mode {
 		disconnected,
@@ -42,219 +42,143 @@ public:
 		connected,
 	};
 
-	//TODO: separate packet sequencing for in/out packets
 	Client(int port)
-		:Host(Address(port)), m_last_packet_id(-1), m_timestamp(0), m_mode(Mode::disconnected), m_client_id(-1), m_actor_id(-1) { }
-		
-	bool receiveFromServer(InPacket &packet) {
-		DASSERT(m_server_address.isValid());
-
-		while(true) {
-			Address source;
-			if(!Host::receive(packet, source))
-				return false;
-			if(source == m_server_address)
-				return true;
+		:LocalHost(Address(port)), m_mode(Mode::disconnected), m_actor_id(-1) {
+			m_order.id = OrderId::invalid;
 		}
-	}
-
+		
 	void connect(const char *server_name, int server_port) {
 		if(m_mode != Mode::disconnected)
 			disconnect();
 
 		m_server_address = Address(resolveName(server_name), server_port);
-		m_mode = Mode::connecting;
-		m_connection_timeout = -1;
+		m_server_id = addRemoteHost(m_server_address, -1);
+		if(m_server_id != -1) {
+			RemoteHost *host = getRemoteHost(m_server_id);
+			host->enqueChunk("", 0, ChunkType::join, 0);
+			m_mode = Mode::connecting;
+		}
 	}
 
 	void disconnect() {
 		if(m_mode == Mode::connected || m_mode == Mode::connecting) {
-			OutPacket packet(0, 0, m_client_id, 0);
-		   	packet << SubPacketType::leave;
-			send(packet, m_server_address);
+			RemoteHost *host = getRemoteHost(m_server_id);
+			if(host) {
+				beginSending(m_server_id);
+				host->enqueUChunk("", 0, ChunkType::leave, 0, 0);
+				finishSending();
+				removeRemoteHost(m_server_id);
+				m_server_id = -1;
+			}
+
 			m_mode = Mode::disconnected;
-			m_client_id = -1;
 		}
 	}
 
-	void sendOrder(Order order) {
-		if(m_mode == Mode::connected) {
-			OutPacket packet(0, 0, m_client_id, 0); //TODO: ack
-			packet << SubPacketType::actor_order << order;
-			send(packet, m_server_address);
-		}
+	void sendOrder(const Order &order) {
+		m_order = order;
 	}
 
 	~Client() {
-		disconnect();
 	}
 	
 	Mode mode() const { return m_mode; }
 
 	void action() {
-		if(m_mode == Mode::connecting)
-			actionConnecting();
-		else if(m_mode == Mode::connected)
-			actionInGame();
+		if(m_server_id == -1)
+			return;
+		RemoteHost *host = getRemoteHost(m_server_id);
+
+		beginFrame();
+		beginSending(m_server_id);
+
+		if(m_mode == Mode::connecting) {
+			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
+				InChunk chunk(chunk_ptr);
+
+				if(chunk.type() == ChunkType::join_accept) {
+					//TODO: handle timeout
+					
+					host->verify(true);
+					JoinAcceptPacket data;
+					chunk >> data;
+
+					m_actor_id = data.actor_id;
+
+					if(world)
+						delete world.release();
+					world = unique_ptr<World>(new World(World::Mode::client, data.map_name.c_str()));
+					EntityMap &emap = world->entityMap();
+					for(int n =0; n < emap.size(); n++)
+						if(emap[n].ptr)
+							emap.remove(n);
+					m_mode = Mode::connected;
+
+					host->enqueChunk("", 0, ChunkType::join_complete, 0);
+					printf("Joined to: %s (map: %s)\n", m_server_address.toString().c_str(), data.map_name.c_str());
+
+				}
+				else if(chunk.type() == ChunkType::join_refuse) {
+					printf("Connection refused\n");
+					exit(0);
+				}
+			}
+		}
+		else if(m_mode == Mode::connected) {
+			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
+				InChunk chunk(chunk_ptr);
+
+				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
+					entityUpdate(chunk);
+			}
+
+			if(m_order.id != OrderId::invalid) {
+				TempPacket temp;
+				temp << m_order;
+				host->enqueChunk(temp, ChunkType::actor_order, 0);
+				m_order.id = OrderId::invalid;
+			}
+		}
+
+		finishSending();
+		finishFrame();
 	}
 
 	int actorId() const { return m_actor_id; }	
 
 protected:
-	void actionConnecting() {
-		double current_time = getTime();
-
-		if(m_connection_timeout < 0 || current_time > m_connection_timeout) {
-			m_connection_timeout = current_time + 0.5;
-
-			printf("Sending join\n");
-			OutPacket packet(0, 0, -1, 0);
-			packet << SubPacketType::join;
-			send(packet, m_server_address);
-		}
-
-		InPacket packet;
-		while(receiveFromServer(packet)) {
-			SubPacketType type;
-			packet >> type;
-
-			if(type == SubPacketType::join_accept) {
-				JoinAcceptPacket data;
-				packet >> data;
-				m_actor_id = data.actor_id;
-
-				if(world)
-					delete world.release();
-				world = unique_ptr<World>(new World(World::Mode::client, data.map_name.c_str()));
-				m_client_id = packet.clientId();
-				EntityMap &emap = world->entityMap();
-				for(int n =0; n < emap.size(); n++)
-					if(emap[n].ptr)
-						emap.remove(n);
-				m_mode = Mode::connected;
-				printf("Joined to: %s (map: %s)\n", m_server_address.toString().c_str(), data.map_name.c_str());
-				break;	
-			}
-			else if(type == SubPacketType::join_refuse) {
-				printf("Connection refused :(\n");
-				exit(0);
-			}
-		}
-	}
-
-	double m_connection_timeout;
-
-protected:
-	void entityUpdate(InPacket &packet, SubPacketType sub_packet) {
-		DASSERT(sub_packet == SubPacketType::entity_full || sub_packet == SubPacketType::entity_delete);
+	void entityUpdate(InChunk &chunk) {
+		DASSERT(chunk.type() == ChunkType::entity_full || chunk.type() == ChunkType::entity_delete);
 
 		EntityMap &emap = world->entityMap();
-		int entity_id = packet.decodeInt();
+		int entity_id = chunk.chunkId();
 
 		if(entity_id >= 0) {
 			if(entity_id < emap.size() && emap[entity_id].ptr)
 				emap.remove(entity_id);
 
-			if(sub_packet == SubPacketType::entity_full) {
-				Entity *new_entity = Entity::construct(packet);
+			if(chunk.type() == ChunkType::entity_full) {
+				Entity *new_entity = Entity::construct(chunk);
 				world->addEntity(entity_id, new_entity);
 			}
 		}
 	}
 
-	void actionInGame() {
-		DASSERT(world);
-
-		while(true) {
-			InPacket packet;
-			Address source;
-			if(!receive(packet, source))
-				break;
-
-			m_packets.push_back(packet);
-		}
-
-		int ucount = 0, pcount = 0, bcount = 0;
-		SeqNumber first_timestamp = 0, last_timestamp = 0;
-		if(!m_packets.empty()) {
-			first_timestamp = m_packets.front().timestamp();
-			last_timestamp = m_packets.back().timestamp();
-		}
-
-		while(!m_packets.empty() && world) {
-			InPacket &packet = m_packets.front();
-			
-			if(first_timestamp != last_timestamp && packet.timestamp() == last_timestamp)
-				break;
-			
-			pcount++;
-			bcount += packet.size();
-
-//			if(m_last_packet_id != -1 && packet.packetId() != m_last_packet_id + 1)
-//				printf("Packet dropped! (got: %d last: %d)\n", (int)packet.packetId(), (int)m_last_packet_id);
-			m_last_packet_id = packet.packetId();
-		
-			if(packet.timestamp() >= m_timestamp) {	
-				while(!packet.end()) {
-					SubPacketType type;
-					packet >> type;
-
-					if(type == SubPacketType::entity_full || type == SubPacketType::entity_delete) {
-						entityUpdate(packet, type);
-						ucount++;
-					}
-					else if(type == SubPacketType::ack) {
-						int ack_count = packet.decodeInt();
-						for(int n = 0; n < ack_count; n++) {
-							SeqNumber seq;
-							packet >> seq;
-							//TODO: finish me
-						}
-					}
-					else if(type == SubPacketType::join_accept)
-						packet.skip<JoinAcceptPacket>();
-					else {
-						printf("Unknown subpacket type: %d\n", (int)type);
-						break;
-					}
-				}
-
-				if(packet.flags() & PacketInfo::flag_need_ack) {
-					//TODO: fixme
-					OutPacket ack(packet.packetId(), packet.timestamp(), m_client_id, 0);
-					ack << SubPacketType::ack;
-					ack.encodeInt(1);
-					ack << packet.packetId();
-					send(ack, m_server_address);
-				}
-			}
-			
-			m_timestamp = packet.timestamp();
-			m_packets.pop_front();
-		}
-
-		//TODO: when to send orders?
-		//jesli zapiszemy je na liste i wyslemy przy nastepnym ticku, to swiat
-		//sie zmieni po odebraniu pakietow i moze juz klient nie chce wykonywac rozkazu?
-
-		if(ucount)
-			printf("Updated: %d objects (%d packets, %d bytes total)\n", ucount, pcount, bcount);
-	}
-
 private:
-	std::list<InPacket> m_packets;
-
-	net::Address m_server_address;
-	net::SeqNumber m_timestamp, m_last_timestamp, m_last_packet_id;
-	int m_client_id, m_actor_id;
+	int m_actor_id, m_server_id;
 	Mode m_mode;
+
+	Order m_order;
+	Address m_server_address;
 };
 
 int safe_main(int argc, char **argv)
 {
 	int port = 0, server_port = 0;;
 	const char *server_name = NULL;
-	
+
+	srand((int)getTime());
+
 	for(int n = 1; n < argc; n++) {
 		if(strcmp(argv[n], "-p") == 0) {
 			ASSERT(n + 1 < argc);
@@ -384,7 +308,7 @@ int safe_main(int argc, char **argv)
 		last_time = time;
 
 		static int counter = 0;
-		if(host)// && counter % 4 == 0)
+		if(host)// && counter % 30 == 0)
 			host->action();
 		counter++;
 

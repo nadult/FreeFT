@@ -14,7 +14,7 @@ _dummy := $(shell [ -d $(BUILD)/lz4 ] || mkdir -p $(BUILD)/lz4)
 SHARED_SRC=\
 	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/scene_renderer gfx/packed_texture \
-	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/network \
+	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/network sys/host \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/actor game/actor_anims game/actor_orders game/entity game/container game/door game/projectile \

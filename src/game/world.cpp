@@ -21,8 +21,8 @@ namespace game {
 	World *World::s_instance = nullptr;
 
 	World::World(Mode mode)
-		:m_mode(mode), m_last_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
-		m_current_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
+		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
+		m_anim_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
 		if(m_mode == Mode::server)
 			m_replication_list.reserve(1024);
 
@@ -124,13 +124,14 @@ namespace game {
 
 	void World::simulate(double time_diff) {
 		PROFILE("World::simulate");
+		//TODO: synchronizing time between client/server
 
 		DASSERT(time_diff > 0.0);
 		double max_time_diff = 1.0; //TODO: add warning?
 		time_diff = min(time_diff, max_time_diff);
 
 		double current_time = m_last_time + time_diff; //TODO: rozjedzie sie z getTime(), ale czy to jest problem?
-		double frame_diff = current_time - m_last_frame_time;
+		double frame_diff = current_time - m_last_anim_frame_time;
 		double frame_time = 1.0 / 15.0, fps = 15.0;
 		m_current_time = current_time;
 		m_time_delta = time_diff;
@@ -138,12 +139,12 @@ namespace game {
 		int frame_skip = 0;
 		if(frame_diff > frame_time) {
 			frame_skip = (int)(frame_diff * fps);
-			m_last_frame_time += (double)frame_skip * frame_time;
+			m_last_anim_frame_time += (double)frame_skip * frame_time;
 		}
-		m_current_frame += frame_skip;
-		if(m_current_frame < 0)
-			m_current_frame = 0;
-		Tile::setFrameCounter(m_current_frame);
+		m_anim_frame += frame_skip;
+		if(m_anim_frame < 0)
+			m_anim_frame = 0;
+		Tile::setFrameCounter(m_anim_frame);
 
 		for(int n = 0; n < m_entity_map.size(); n++) {
 			auto &object = m_entity_map[n];

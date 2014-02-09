@@ -82,6 +82,7 @@ namespace game {
 		friend class EntityMap;
 		bool m_to_be_removed;
 		mutable int m_grid_index;
+		int m_unique_id;
 
 	protected:
 		virtual void think() { }

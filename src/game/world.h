@@ -105,8 +105,9 @@ namespace game {
 		double m_time_delta;
 		double m_current_time;
 		double m_last_time;
-		double m_last_frame_time;
-		int m_current_frame;
+
+		double m_last_anim_frame_time;
+		int m_anim_frame;
 
 		Level		m_level;
 		TileMap		&m_tile_map;

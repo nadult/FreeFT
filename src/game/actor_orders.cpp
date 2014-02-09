@@ -26,6 +26,14 @@ namespace game {
 		}
 	}
 
+	bool Order::isValid() const {
+		if(id == OrderId::invalid)
+			return false;
+		if((id == OrderId::transfer_item || id == OrderId::interact) && !target.get())
+			return false;
+		return true;
+	}
+
 	Order dieOrder(DeathTypeId::Type death_id) {
 		Order new_order(OrderId::die);
 		new_order.die = Order::Die{death_id};

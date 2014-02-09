@@ -2,26 +2,43 @@
 - server should keep information about which entities should be sent to which client
   (because it didn't get an ack)  DONE
 - problem with entity_id: when some id is being sent over the network (from client to server)
-  the object might be deleted and a new object with the same id might be created  
+  the object might be deleted and a new object with the same id might be created DONE
+  - each entity has unique id assigned during creation. This id is verified when referencing
 - replicate orders from client to server  DONE
 - replicate entities only when they receive an order  DONE
-- packet ordering?  
-- proper acking
+- packet ordering? no 
+- proper acking  DONE
 
-+ESTIMATED_TIME: (already spent) + 6h
-+TIME_SPENT:
+Option 1: Use ENET:
+- automatic flow control & reliability
+- multiple reliable channels + unreliable channel
+- tested in many? different projects
+- connection management
+
+Option 2: Not:
+- Crash in small program for android
+- Not requiring that much power
+- Unknown code with crashes reported on the internet, which means
+  that its not really well designed and/or tested
+
+Selected option: 2 (NOT!)
+
+
++ESTIMATED_TIME: ~80h
++TIME_SPENT: 100h
 
 +WORK_LOG:
 20.12.13: 10:00 - 18:00
 21.12.13: 11:00 - 12:00
 22.12.13: 11:00 - 20:00 (fixing serializer)
 23.12.13: 16:00 - 18:00, 19:00 - 22:50
-24.12.13: 12:00 - 15:00
-25.12.13: 12:30 - 16:00, 20:00 - 00:20
+24.12.13: 12:00 - 15:00 
+25.12.13: 12:30 - 16:00, 20:00 - 00:20    | 44h 10min
 26.12.13: 12:30 - 19:00
 27.12.13: 11:30 - 13:00, 16:30 - 18:00, 22:00 - 00:00
 28.12.13: 13:00 - 16:30, 17:15 - 18:40, 20:00 - 21:50
 31.12.13: 11:00 - 11:40
 01.01.14: 10:45 - 15:45, 16:00 - 16:30, 17:45 - 18:30
+28.01.14: 17:10 - 18:00
 
-28.01.14: 17:10 - 
+29.01.14 - 00.02.14: Uhh lost track really

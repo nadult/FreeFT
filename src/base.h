@@ -43,6 +43,7 @@ namespace constant {
 //TODO: XOR Lists?
 struct ListNode {
 	ListNode() :next(-1), prev(-1) { }
+
 	int next, prev;
 };
 
@@ -53,30 +54,37 @@ struct List {
 	int head, tail;
 };
 
-template <class Container, class Object, ListNode Object::*member>
-void listInsert(Container container, List &list, int id) __attribute__((noinline));
+//TODO: add functions to remove head / tail
 
-template <class Container, class Object, ListNode Object::*member>
-void listRemove(Container container, List &list, int id) __attribute__((noinline));
+template <class Object, ListNode Object::*member, class Container>
+void listInsert(Container &container, List &list, int idx) __attribute__((noinline));
+
+template <class Object, ListNode Object::*member, class Container>
+void listRemove(Container &container, List &list, int idx) __attribute__((noinline));
+
+template <class Object, ListNode Object::*member, class Container>
+int freeListAlloc(Container &container, List &free_list) __attribute__((noinline));
 
 // Assumes that node is disconnected
 template <class Object, ListNode Object::*member, class Container>
-void listInsert(Container &container, List &list, int id) {
-	ListNode &node = container[id].*member;
+void listInsert(Container &container, List &list, int idx) {
+	DASSERT(idx >= 0 && idx < (int)container.size());
+	ListNode &node = container[idx].*member;
 	DASSERT(node.prev == -1 && node.next == -1);
 
 	node.next = list.head;
 	if(list.head == -1)
-		list.tail = id;
+		list.tail = idx;
 	else
-		(container[list.head].*member).prev = id;
-	list.head = id;
+		(container[list.head].*member).prev = idx;
+	list.head = idx;
 }
 
 // Assumes that node is on this list
 template <class Object, ListNode Object::*member, class Container>
-void listRemove(Container &container, List &list, int id) {
-	ListNode &node = container[id].*member;
+void listRemove(Container &container, List &list, int idx) {
+	DASSERT(idx >= 0 && idx < (int)container.size());
+	ListNode &node = container[idx].*member;
 	int prev = node.prev, next = node.next;
 
 	if(prev == -1) {
@@ -96,6 +104,63 @@ void listRemove(Container &container, List &list, int id) {
 	}
 }
 
+// Assumes that node is disconnected
+template <class Object, ListNode Object::*member, class Container>
+int freeListAlloc(Container &container, List &free_list) {
+	int idx;
+
+	if(free_list.isEmpty()) {
+		container.emplace_back();
+		idx = (int)container.size() - 1;
+	}
+	else {
+		idx = free_list.head;
+		listRemove<Object, member>(container, free_list, idx);
+	}
+
+	return idx;
+}
+
+template <class Object>
+class LinkedVector
+{
+	typedef pair<ListNode, Object> Elem;
+
+public:
+	LinkedVector() :m_list_size(0) { }
+
+	Object &operator[](int idx) { return m_objects[idx].second; }
+	const Object &operator[](int idx) const { return m_objects[idx].second; }
+	int size() const { return m_objects.size(); }
+	int listSize() const { return m_list_size; }
+
+	int alloc() {
+		int idx = freeListAlloc<Elem, &Elem::first>(m_objects, m_free);
+		listInsert<Elem, &Elem::first>(m_objects, m_active, idx);
+		m_list_size++;
+		return idx;
+	}
+	
+	void free(int idx) {
+		DASSERT(idx >= 0 && idx < m_objects.size());
+		listRemove<Elem, &Elem::first>(m_objects, m_active, idx);
+		listInsert<Elem, &Elem::first>(m_objects, m_free, idx);
+		m_list_size--;
+	}
+
+	int next(int idx) const { return m_objects[idx].first.next; }
+	int prev(int idx) const { return m_objects[idx].first.prev; }
+
+	int head() const { return m_active.head; }
+	int tail() const { return m_active.tail; }
+
+protected:
+	vector<Elem> m_objects;
+	List m_active, m_free;
+	int m_list_size;
+};
+
+
 // Very simple and efficent vector for POD Types; Use with care:
 // - user is responsible for initializing the data
 // - when resizing, data is destroyed
@@ -108,6 +173,10 @@ public:
 	PodArray(const PodArray &rhs) :m_size(rhs.m_size) {
 		m_data = (T*)sys::alloc(m_size * sizeof(T));
 		memcpy(m_data, rhs.m_data, sizeof(T) * m_size);
+	}
+	PodArray(const T *data, int data_size) :m_size(data_size) {
+		m_data = (T*)sys::alloc(m_size * sizeof(T));
+		memcpy(m_data, data, data_size * sizeof(T));
 	}
 	PodArray(PodArray &&rhs) :m_size(rhs.m_size), m_data(rhs.m_data) {
 		rhs.m_data = nullptr;

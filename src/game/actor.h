@@ -45,6 +45,7 @@ namespace game {
 
 
 	enum class OrderId: char {
+		invalid,
 		do_nothing,
 		move,
 		attack,
@@ -103,6 +104,7 @@ namespace game {
 
 		void save(Stream&) const;
 		void load(Stream&);
+		bool isValid() const;
 	};
 	
 	Order dieOrder(DeathTypeId::Type);	

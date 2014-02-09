@@ -2,17 +2,14 @@
 
    This file is part of FreeFT.
  */
-
-#include "sys/network.h"
-#include <cstdlib>
-#include <unistd.h>
-
 #ifdef _WIN32
 
 typedef int socklen_t;
+#include <winsock2.h>
 
 #else
 
+#include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -20,6 +17,21 @@ typedef int socklen_t;
 #include <fcntl.h>
 
 #endif
+
+#include "sys/network.h"
+#include <cstdlib>
+#include <unistd.h>
+
+//#define RELIABILITY_TEST
+
+#ifdef RELIABILITY_TEST
+
+static bool isDropped() {
+	return rand() % 1024 < 500;
+}
+
+#endif
+
 
 //#define LOG_PACKETS
 
@@ -122,6 +134,12 @@ namespace net {
 		socklen_t addr_len = sizeof(addr);
 		int len = recvfrom(m_fd, buffer, buffer_size, 0, (struct sockaddr*)&addr, &addr_len);
 		fromSockAddr(&addr, source);
+
+#ifdef RELIABILITY_TEST
+		if(isDropped())
+			return 0;
+#endif
+
 		//TODO: handle errors
 		return len < 0? 0 : len;
 	}
@@ -135,21 +153,22 @@ namespace net {
 		}
 	}
 		
-	PacketInfo::PacketInfo(SeqNumber packet_id, SeqNumber timestamp, int client_id_, int flags_)
-		:protocol_id(valid_protocol_id), packet_id(packet_id), timestamp(timestamp) {
-		DASSERT(client_id_ >= -1 && client_id <= 127);
+	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, int flags_)
+		:protocol_id(valid_protocol_id), packet_id(packet_id) {
+		DASSERT(current_id_ >= -1 && current_id <= max_host_id);
+		DASSERT(remote_id_ >= -1 && remote_id <= max_host_id);
 		DASSERT((flags_ & ~0xff) == 0);
 
-		client_id = client_id_;
+		current_id = current_id_;
+		remote_id = remote_id_;
 		flags = flags_;
 	}
-
 	
 	void PacketInfo::save(Stream &sr) const {
-		sr.pack(protocol_id, packet_id, timestamp, client_id, flags);
+		sr.pack(protocol_id, packet_id, current_id, remote_id, flags);
 	}
 	void PacketInfo::load(Stream &sr) {
-		sr.unpack(protocol_id, packet_id, timestamp, client_id, flags);
+		sr.unpack(protocol_id, packet_id, current_id, remote_id, flags);
 	}
 
 	void InPacket::v_load(void *ptr, int count) {
@@ -164,11 +183,7 @@ namespace net {
 		*this >> m_info;
 	}
 		
-	OutPacket::OutPacket(SeqNumber packet_id, SeqNumber timestamp, int client_id, int flags) :OutPacket() {
-		*this << PacketInfo(packet_id, timestamp, client_id, flags);
-	}
-
-	void OutPacket::v_save(const void *ptr, int count) {
+	void TempPacket::v_save(const void *ptr, int count) {
 		if(m_pos + count > (int)sizeof(m_data))
 			THROW("not enough space in buffer (%d space left, %d needed)", spaceLeft(), (int)count);
 
@@ -178,24 +193,10 @@ namespace net {
 			m_size = m_pos;
 	}
 
-	bool Host::receive(InPacket &packet, Address &address) {
-		while(true) {
-			int new_size = m_socket.receive(packet.m_data, sizeof(packet.m_data), address);
-			if(new_size == 0)
-				return false;
-
-			if(new_size >= PacketInfo::header_size) {
-				packet.ready(new_size);
-				if(packet.info().protocol_id == PacketInfo::valid_protocol_id)
-					return true;
-			}
-		}
+	OutPacket::OutPacket(SeqNumber packet_id, int current_id, int remote_id, int flags) :OutPacket() {
+		*this << PacketInfo(packet_id, current_id, remote_id, flags);
 	}
 
-	void Host::send(const OutPacket &packet, const Address &address) {
-		m_socket.send(packet.m_data, packet.size(), address);
-	}
-		
 	void JoinAcceptPacket::save(Stream &sr) const {
 		sr << map_name;
 		sr.encodeInt(actor_id);
@@ -205,5 +206,5 @@ namespace net {
 		sr >> map_name;
 		actor_id = sr.decodeInt();
 	}
-
+		
 }

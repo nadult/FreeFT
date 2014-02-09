@@ -21,6 +21,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "sys/network.h"
+#include "sys/host.h"
 #include <list>
 #include <algorithm>
 
@@ -34,308 +35,173 @@ float frand() {
 using namespace net;
 
 
-
-
-class Server: public net::Host {
+class Server: public net::LocalHost {
 public:
-	Server(int port) :Host(Address(port)), m_world(0), m_timestamp(0), m_client_count(0) { }
-
-	bool isConnected() const { return !m_clients.empty(); }
+	Server(int port) :LocalHost(Address(port)), m_world(0), m_timestamp(0), m_client_count(0) { }
 
 	enum {
 		max_clients = 32,
 		client_timeout = 10,
 	};
 
+	struct ClientInfo {
+		BitVector update_map;
+		int actor_id;
+	};
+
+
 	int spawnActor(const float3 &pos) {
 		DASSERT(m_world);
 		return m_world->addEntity(new Actor(ActorTypeId::male, pos));
 	}
 
-	void onJoin(InPacket &packet, const Address &source) {
-		int client_id = -1;
-
-		if(m_client_count == max_clients) {
-			OutPacket packet(0, m_timestamp, 0, 0);
-			packet << SubPacketType::join_refuse << RefuseReason::too_many_clients;
-			send(packet, source);
-			return;
-		}
-
-		bool is_added = false;
-		for(int c = 0; c < (int)m_clients.size(); c++)
-			if(m_clients[c].address == source) {
-				client_id = c;
-				is_added = true;
-				break;
-			}
-
-		if(!is_added) {
-			for(int c = 0; c < (int)m_clients.size(); c++)
-				if(!m_clients[c].isValid()) {
-					client_id = c;
-					break;
-				}
-			if(client_id == -1) {
-				m_clients.push_back(Client());
-				client_id = (int)m_clients.size() - 1;
-			}
-
-			const EntityMap &map = m_world->entityMap();
-			
-			Client &client = m_clients[client_id];
-			client = Client(source);
-			client.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
-			client.last_packet_time = m_current_time;
-			printf("Client connected (cid:%d): %s\n", (int)client_id, source.toString().c_str());
-
-			client.update_map.resize(map.size() * 2);
-			for(int n = 0; n < map.size(); n++)
-				if(map[n].ptr)
-					client.update_map[n] = true;
-			m_client_count++;
-		}
-
-		printf("Sending accept\n");
-		Client &client = m_clients[client_id];
-		OutPacket opacket(client.packet_id++, m_timestamp, client_id, 0);
-		opacket << SubPacketType::join_accept;
-		opacket << JoinAcceptPacket{string(m_world->mapName()), client.actor_id};
-		send(opacket, source);
-	}
-
-	void disconnectClient(int client_id) {
+/*	void disconnectClient(int client_id) {
 		Client &client = m_clients[client_id];
 		m_world->removeEntity(client.actor_id);
 		printf("Client disconnected: %s\n", client.address.toString().c_str());
 
 		client.clear();
 		m_client_count--;
-	}
+	}*/
 
-	// Assuming that there is enough space in the packet
-	void appendAcks(vector<SeqNumber> &acks, OutPacket &packet) {
-		int num_acks = min(16, (int)acks.size());
-		if(!num_acks)
-			return;
-		//TODO: send ack range
+	void handleUnverifiedHost(RemoteHost &host, ClientInfo &info) {
+		DASSERT(!host.isVerified());
 
-		packet << SubPacketType::ack;
-		packet.encodeInt(num_acks);
-		packet.saveData(&acks[0], sizeof(acks[0]) * num_acks);
-		acks.erase(acks.begin(), acks.begin() + num_acks);
-	}
-
-	void replicateWorld() {
+		const Chunk *chunk = nullptr;
 		EntityMap &emap = m_world->entityMap();
 
-		vector<int> &new_updates = m_world->replicationList();
-		for(int n = 0; n < (int)m_clients.size(); n++) {
-			Client &client = m_clients[n];
-			if(emap.size() > client.update_map.size())
-				client.update_map.resize(emap.size() * 2);
+		while( (chunk = host.getIChunk()) ) {
+			if(chunk->type == ChunkType::join) {
+				info.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
+//				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
-			for(int n = 0; n < (int)new_updates.size(); n++)
-				client.update_map[new_updates[n]] = true;
-		}
-		new_updates.clear();
+				info.update_map.resize(emap.size() * 2);
+				for(int n = 0; n < emap.size(); n++)
+					if(emap[n].ptr)
+						info.update_map[n] = true;
 
-		for(int n = 0; n < (int)m_clients.size(); n++) {
-			Client &client = m_clients[n];
-			int idx = 0;
-
-			//TODO: priority for objects visible by client
-			for(int p = 0; p < client.max_packets; p++) {
-				OutPacket packet(client.packet_id, m_timestamp, n, PacketInfo::flag_need_ack);
-				Client::NotAckedUpdates not_acked;
-				not_acked.seq_num = client.packet_id;
-
-				if(p == 0)
-					appendAcks(client.in_acks, packet);
-
-				BitVector &map = client.update_map;
-				while(idx < emap.size()) {
-					if(!map.any(idx >> BitVector::base_shift)) {
-						idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
-						continue;
-					}
-					if(map[idx]) {
-						const Entity *entity = emap[idx].ptr;
-	
-						char sub_packet[PacketInfo::max_size];
-						MemorySaver substream(sub_packet, sizeof(sub_packet));
-
-						substream << (entity? SubPacketType::entity_full : SubPacketType::entity_delete);
-						substream.encodeInt(idx);
-						if(entity)
-							substream << entity->entityType() << *entity;
-
-						if(packet.spaceLeft() < substream.pos())
-							break;
-
-						packet.saveData(sub_packet, substream.pos());
-						map[idx] = false;
-						not_acked.entity_ids.push_back(idx);
-					}
-
-					idx++;
-				}
-
-				if(packet.size() == PacketInfo::header_size && p != 0)
-					break; // Nothing more to send
-
-				if(!not_acked.entity_ids.empty())
-					client.not_acked_updates.push_back(not_acked);
-				send(packet, client.address);
-				client.packet_id++;
+				TempPacket temp;
+				temp << JoinAcceptPacket{string(m_world->mapName()), info.actor_id};
+				host.enqueChunk(temp, ChunkType::join_accept, 0);
+			}
+			if(chunk->type == ChunkType::join_complete) {
+				m_client_count++;
+				host.verify(true);
+				break;
 			}
 		}
 	}
 
-	static void dropMsg(InPacket &packet, Address &source, const char *assert) {
-		printf("Dropping packet (%d bytes) from: %s (%s failed)\n", (int)packet.size(), source.toString().c_str(), assert);
+	void handleHost(RemoteHost &host, ClientInfo &info) {
+		DASSERT(host.isVerified());
+		const Chunk *chunk = nullptr;
+
+		while( (chunk = host.getIChunk()) ) {
+			if(chunk->type == ChunkType::leave) {
+				//TODO: removeHost
+				break;
+			}
+			else if(chunk->type == ChunkType::actor_order) {
+				MemoryLoader ldr(chunk->data.data(), chunk->data.size());
+
+				Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(info.actor_id));
+				Order order;
+				ldr >> order;
+				if(order.isValid())
+					actor->setNextOrder(order);
+				else
+					printf("Invalid order!\n");
+			}
+		}
+		
+		EntityMap &emap = m_world->entityMap();
+		const vector<int> &new_updates = m_world->replicationList();
+			
+		for(int n = 0; n < (int)new_updates.size(); n++)
+			info.update_map[new_updates[n]] = true;
+		vector<int> &lost = host.lostUChunks();
+		for(int n = 0; n < (int)lost.size(); n++)
+			info.update_map[lost[n]] = true;
+		lost.clear();
+
+		//TODO: apply priorities to entities
+		//TODO: priority for objects visible by client
+			
+		int idx = 0;
+		BitVector &map = info.update_map;
+		while(idx < emap.size()) {
+			if(!map.any(idx >> BitVector::base_shift)) {
+				idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
+				continue;
+			}
+
+			if(map[idx]) {
+				const Entity *entity = emap[idx].ptr;
+
+				TempPacket temp;
+
+				if(entity) {
+					temp << entity->entityType() << *entity;
+				}
+
+				if(host.enqueUChunk(temp, entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))
+					map[idx] = false;
+				else
+					break;
+			}
+
+			idx++;
+		}
 	}
 
 	void action() {
 		InPacket packet;
 		Address source;
 
+		EntityMap &emap = m_world->entityMap();
+
 		double time = getTime();
 		m_current_time = time;
 
-		while(receive(packet, source)) {
-			//printf("Packet: %d bytes\n", packet.size());
-			//TODO: dealing with fucked-up packets
-			//TODO: reporting fucked-up data ?
+		LocalHost::beginFrame();
 
-#define VERIFY(...)	{ if(!(__VA_ARGS__)) { dropMsg(packet, source, #__VA_ARGS__); goto DROP_PACKET; } }
+		for(int r = 0; r < numRemoteHosts(); r++) {
+			RemoteHost *host = getRemoteHost(r);
+			const Chunk *chunk = nullptr;
 
-			int client_id = packet.clientId();
-			Client *client = nullptr;
-
-			if(client_id == -1 && !packet.end()) {
-				SubPacketType sub_type;
-				packet >> sub_type;
-				VERIFY(sub_type == SubPacketType::join);
-				onJoin(packet, source);
+			if(!host)
 				continue;
-			}
+				
+			if((int)m_client_infos.size() <= r)
+				m_client_infos.resize(r + 1);
+			ClientInfo &info = m_client_infos[r];
+			if(emap.size() > info.update_map.size())
+				info.update_map.resize(emap.size() * 2);
 
-			VERIFY(client_id >= 0 && client_id < (int)m_clients.size());
+			beginSending(r);
 
-			//TODO: make client verification more secure
-			client = &m_clients[client_id];
-			VERIFY(client->isValid() && source == client->address);
-			client->last_packet_time = time;
-			if(packet.flags() & PacketInfo::flag_need_ack)
-				client->in_acks.push_back(packet.packetId());
+			if(host->isVerified())
+				handleHost(*host, info);
+			else
+				handleUnverifiedHost(*host, info);
 
-			while(!packet.end()) {
-				SubPacketType sub_type;
-				packet >> sub_type;
-
-				if(sub_type == SubPacketType::leave) {
-					disconnectClient(client_id);
-				}
-				else if(sub_type == SubPacketType::ack) {
-					int count = packet.decodeInt();
-					SeqNumber acks[count];
-
-					for(int n = 0; n < count; n++)
-						packet >> acks[n];
-
-					vector<Client::NotAckedUpdates> &nau = client->not_acked_updates;
-
-					for(int i = 0; i < (int)nau.size(); i++)
-						for(int j = 0; j < count; j++)
-							if(nau[i].seq_num == acks[j]) {
-								nau[i--] = nau.back();
-								nau.pop_back();
-								break;
-							}
-					
-					SeqNumber max_ack = acks[0];
-					for(int n = 1; n < count; n++)
-						if(acks[n] > max_ack)
-							max_ack = acks[n];
-
-					for(int i = 0; i < (int)nau.size(); i++)
-						if(nau[i].seq_num < max_ack) {
-							printf("Resending (max: %d): %d\n", (int)max_ack, (int)nau[i].seq_num);
-							vector<int> &entity_ids = nau[i].entity_ids;
-							BitVector &update_map = client->update_map;
-
-							for(int j = 0; j < (int)entity_ids.size(); j++)
-								update_map[entity_ids[j]] = true;
-							nau[i--] = nau.back();
-							nau.pop_back();
-							break;
-						}
-					//TODO: resend also on timeout?
-				}
-				else if(sub_type == SubPacketType::actor_order) {
-					Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(client->actor_id));
-					Order order;
-					packet >> order;
-					actor->setNextOrder(order);
-				}
-				else {
-					VERIFY(0 && "Unknown sub-packet type");
-				}
-
-				break;
-			}
-
-			continue;
-DROP_PACKET:;
-#undef VERIFY
+			finishSending();
 		}
+		
+		LocalHost::finishFrame();
+		
+		m_world->replicationList().clear();
 
-		if(m_world)
-			replicateWorld();
-
-		for(int n = 0; n < (int)m_clients.size(); n++) {
-			Client &client = m_clients[n];
-			if(client.isValid() && time - client.last_packet_time > (double)client_timeout)
-				disconnectClient(n);
-		}
-
-
+		//TODO: check timeouts
 		m_timestamp++;
 	}
-
-	struct Client {
-		Client() { }
-		Client(Address addr) :address(addr), in_packet_id(-1), packet_id(0), actor_id(-1), last_packet_time(-1.0) {
-			in_acks.reserve(256);
-			max_packets = 4;
-		}
-
-		bool isValid() const { return address.isValid(); }
-		void clear() { *this = Client(); }
-
-
-		struct NotAckedUpdates {
-			vector<int> entity_ids;
-			SeqNumber seq_num;
-		};
-
-		vector<SeqNumber> in_acks;
-		vector<NotAckedUpdates> not_acked_updates;
-		BitVector update_map;
-
-		Address address;
-		int in_packet_id, packet_id, actor_id;
-		int max_packets;
-		double last_packet_time;
-	};
 
 	void setWorld(World *world) { m_world = world; }
 
 private:
-	vector<Client> m_clients;
+	vector<ClientInfo> m_client_infos;
 	World *m_world;
-	SeqNumber m_timestamp;
+	int m_timestamp;
 	int m_client_count;
 	double m_current_time;
 };
@@ -344,6 +210,8 @@ int safe_main(int argc, char **argv)
 {
 	int port = 0;
 	string map_name = "data/maps/mission05.mod";
+	
+	srand((int)getTime());
 
 	for(int n = 1; n < argc; n++) {
 		if(strcmp(argv[n], "-p") == 0) {
@@ -403,7 +271,7 @@ int safe_main(int argc, char **argv)
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
-		if(isect.isEmpty())
+		if(isect.isEmpty() || isect.isTile())
 			isect = world.trace(ray, nullptr, collider_all|visibility_flag);
 
 		double time = getTime();
@@ -413,7 +281,7 @@ int safe_main(int argc, char **argv)
 		last_time = time;
 
 		static int counter = 0;
-		if(host)// && counter % 4 == 0)
+		if(host)// && counter % 30 == 0)
 			host->action();
 		counter++;
 		

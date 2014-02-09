@@ -5,13 +5,6 @@
 
 #ifndef SYS_NETWORK_H
 #define SYS_NETWORK_H
-
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#include <netinet/in.h>
-#endif
-
 #include "base.h"
 
 
@@ -83,20 +76,22 @@ namespace net {
 
 	struct PacketInfo {
 		PacketInfo() { }
-		PacketInfo(SeqNumber packet_id, SeqNumber timestamp, int client_id_, int flags_);
+		PacketInfo(SeqNumber packet_id, int current_id, int remote_id, int flags);
 
 		i16 protocol_id;
-		SeqNumber packet_id;
-		SeqNumber timestamp;
-		i8 client_id;
+		SeqNumber packet_id; //TODO: should we really save space here?
+		i8 current_id, remote_id;
 		i8 flags;
 
 		enum {
 			max_size = 1400,
-			header_size = sizeof(protocol_id) + sizeof(packet_id) + sizeof(timestamp) + sizeof(client_id) + sizeof(flags),
+			max_host_id = 127,
+			header_size = sizeof(protocol_id) + sizeof(packet_id) + sizeof(current_id) + sizeof(remote_id) + sizeof(flags),
 			valid_protocol_id = 0x1234,
 
-			flag_need_ack = 1,
+			flag_first = 1,		// first packet for given frame, contains ack's
+			flag_encrypted = 2,
+			flag_compressed = 4,
 		};
 
 		void save(Stream &sr) const;
@@ -110,8 +105,8 @@ namespace net {
 		bool end() const { return m_pos == m_size; }
 		const PacketInfo &info() const { return m_info; }
 		SeqNumber packetId() const { return m_info.packet_id; }
-		SeqNumber timestamp() const { return m_info.timestamp; }
-		int clientId() const { return m_info.client_id; }
+		int currentId() const { return m_info.current_id; }
+		int remoteId() const { return m_info.remote_id; }
 		int flags() const { return m_info.flags; }
 
 		template <class T>
@@ -123,37 +118,32 @@ namespace net {
 	protected:
 		virtual void v_load(void *ptr, int size) final;
 		void ready(int new_size);
-		friend class Host;
+		friend class LocalHost;
+		friend class RemoteHost;
 		
 		char m_data[PacketInfo::max_size];
 		PacketInfo m_info;
 	};
 
-	class OutPacket: public Stream {
+	class TempPacket: public Stream {
 	public:
-		OutPacket() :Stream(false) { m_size = 0; }
-		OutPacket(SeqNumber packet_id, SeqNumber timestamp, int client_id, int flags);
+		TempPacket() :Stream(false) { m_size = 0; }
 
+		const char *data() const { return m_data; }
 		int spaceLeft() const { return sizeof(m_data) - m_pos; }
 
 	protected:
 		virtual void v_save(const void *ptr, int size) final;
 
-		friend class Host;
+		friend class RemoteHost;
+		friend class LocalHost;
 		char m_data[PacketInfo::max_size];
 	};
 
-	//TODO: network data verification (so that the game won't crash under any circumstances)
-
-	class Host {
+	class OutPacket: public TempPacket {
 	public:
-		Host(const net::Address &address) :m_socket(address) { }
-
-		bool receive(InPacket &packet, Address &source);
-		void send(const OutPacket &packet, const Address &target);
-
-	protected:
-		net::Socket m_socket;
+		OutPacket() { }
+		OutPacket(SeqNumber packet_id, int current_id, int remote_id, int flags);
 	};
 
 	struct JoinAcceptPacket {
@@ -164,14 +154,20 @@ namespace net {
 		i32 actor_id;
 	};
 
-	enum class SubPacketType: char {
+	//TODO: change name
+	enum class ChunkType: char {
+		// These are reserved for internal use in RemoteHost, it's illegal to use them
+		invalid,
+		multiple_chunks,
+		ack,
+
 		join,
 		join_accept,
 		join_refuse,
-
+		join_complete,
 		leave,
-		ack,
 
+		timestamp,
 		entity_full,
 		entity_delete,
 		entity_update,
