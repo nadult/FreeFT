@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "sys/host.h"
+#include "net/host.h"
 #include <algorithm>
 
 #define LOGGING
@@ -32,7 +32,7 @@ namespace net {
 #endif
 		}
 
-		void logChunk(ChunkType chunk_type, int id) {
+		void logChunk(ChunkType chunk_type, int id, int size) {
 #ifdef LOGGING
 			s_log_info.chunks.push_back(make_pair(id, (int)chunk_type));
 #endif
@@ -64,28 +64,8 @@ namespace net {
 
 	}
 
-
-	Chunk::Chunk(const char *data, int data_size, ChunkType type, int chunk_id, int channel_id_)
-		:data(data, data_size), chunk_id(chunk_id), type(type) {
-			DASSERT(channel_id_ >= 0 && channel_id_ <= 255);
-			channel_id = channel_id_;
-		}
-
-	InChunk::InChunk(const Chunk *chunk) :Stream(true), m_chunk(chunk) {
-		if(chunk) {
-			m_size = chunk->data.size();
-			m_pos = 0;
-		}
-	}
-
-	void InChunk::v_load(void *ptr, int count) {
-		DASSERT(ptr && count <= m_size - m_pos && m_chunk);
-		memcpy(ptr, m_chunk->data.data() + m_pos, count);
-		m_pos += count;
-	}
-
-#define INSERT(list, id) listInsert<Chunk, &Chunk::node>(m_chunks, list, id)
-#define REMOVE(list, id) listRemove<Chunk, &Chunk::node>(m_chunks, list, id)
+#define INSERT(list, id) listInsert<Chunk, &Chunk::m_node>(m_chunks, list, id)
+#define REMOVE(list, id) listRemove<Chunk, &Chunk::m_node>(m_chunks, list, id)
 
 	RemoteHost::RemoteHost(const Address &address, int max_bytes_per_frame, int current_id, int remote_id)
 		:m_address(address), m_max_bpf(max_bytes_per_frame), m_out_packet_id(-1), m_in_packet_id(-1),
@@ -122,7 +102,8 @@ namespace net {
 		Channel &channel = m_channels[channel_id];
 
 		int chunk_idx = allocChunk();
-		m_chunks[chunk_idx] = std::move(Chunk(data, data_size, type, channel.last_chunk_id++, channel_id));
+		m_chunks[chunk_idx].setData(data, data_size);
+		m_chunks[chunk_idx].setParams(type, channel.last_chunk_id++, channel_id);
 		INSERT(channel.chunks, chunk_idx);
 	}
 
@@ -159,7 +140,7 @@ namespace net {
 			int chunk_idx = channel.chunks.head;
 			while(chunk_idx != -1) {
 				Chunk &chunk = m_chunks[chunk_idx];
-				int next_idx = chunk.node.next;
+				int next_idx = chunk.m_node.next;
 
 				if(!sendChunk(chunk_idx)) {
 					finished = true;
@@ -175,29 +156,56 @@ namespace net {
 		DASSERT(chunk_idx >= 0 && chunk_idx < (int)m_chunks.size());
 		Chunk &chunk = m_chunks[chunk_idx];
 
-		if(sendChunk(chunk.data.data(), chunk.data.size(), chunk.type, chunk.chunk_id, chunk.channel_id, true)) {
-			REMOVE(m_channels[chunk.channel_id].chunks, chunk_idx);
-			INSERT(m_packets[m_packet_idx].chunks, chunk_idx);
-			chunk.packet_id = m_packets[m_packet_idx].packet_id;
-			return true;
+		if(!canFit(chunk.size()))
+			return false;
+
+		if(m_out_packet.spaceLeft() < estimateSize(chunk.size())) {
+			sendPacket();
+			newPacket(false);
 		}
 
-		return false;
+		logChunk(chunk.m_type, chunk.m_chunk_id, chunk.size());
+
+		int prev_pos = m_out_packet.pos();
+		m_out_packet << chunk.m_type;
+		m_out_packet.encodeInt(chunk.m_chunk_id);
+		m_out_packet.encodeInt(2 * chunk.m_channel_id + 1);
+		m_out_packet.encodeInt(chunk.size());
+		chunk.saveData(m_out_packet);
+		m_bytes_left -= m_out_packet.pos() - prev_pos;
+
+		REMOVE(m_channels[chunk.m_channel_id].chunks, chunk_idx);
+		INSERT(m_packets[m_packet_idx].chunks, chunk_idx);
+
+		return true;
 	}
 
 	bool RemoteHost::sendUChunk(int chunk_idx, const char *data, int data_size, ChunkType type) {
 		DASSERT(chunk_idx >= 0 && chunk_idx < (int)m_uchunks.size());
 		DASSERT(type != ChunkType::ack && type != ChunkType::invalid && type != ChunkType::multiple_chunks);
 
-		UChunk &chunk = m_uchunks[chunk_idx];
 
-		if(sendChunk(data, data_size, type, chunk.chunk_id, chunk.channel_id, false)) {
-			listInsert<UChunk, &UChunk::node>(m_uchunks, m_packets[m_packet_idx].uchunks, chunk_idx);
-			chunk.packet_id = m_packets[m_packet_idx].packet_id;
-			return true;
+		if(!canFit(data_size))
+			return false;
+
+		if(m_out_packet.spaceLeft() < estimateSize(data_size)) {
+			sendPacket();
+			newPacket(false);
 		}
 
-		return false;
+		UChunk &chunk = m_uchunks[chunk_idx];
+		logChunk(type, chunk.chunk_id, data_size);
+
+		int prev_pos = m_out_packet.pos();
+		m_out_packet << type;
+		m_out_packet.encodeInt(chunk.chunk_id);
+		m_out_packet.encodeInt(2 * chunk.channel_id);
+		m_out_packet.encodeInt(data_size);
+		m_out_packet.saveData(data, data_size);
+		m_bytes_left -= m_out_packet.pos() - prev_pos;
+		listInsert<UChunk, &UChunk::node>(m_uchunks, m_packets[m_packet_idx].uchunks, chunk_idx);
+
+		return true;
 	}
 
 	void RemoteHost::beginSending(Socket *socket) {
@@ -235,28 +243,6 @@ namespace net {
 		m_bytes_left = m_max_bpf - m_out_packet.pos();
 	}
 	
-	bool RemoteHost::sendChunk(const char *data, int data_size, ChunkType type, int chunk_id, int channel_id, bool is_reliable) {
-		if(!canFit(data_size))
-			return false;
-
-		if(m_out_packet.spaceLeft() < estimateSize(data_size)) {
-			sendPacket();
-			newPacket(false);
-		}
-
-		logChunk(type, chunk_id);
-
-		int prev_pos = m_out_packet.pos();
-		m_out_packet << type;
-		m_out_packet.encodeInt(chunk_id);
-		m_out_packet.encodeInt(is_reliable? 2 * channel_id + 1 : 2 * channel_id);
-		m_out_packet.encodeInt(data_size);
-		m_out_packet.saveData(data, data_size);
-		m_bytes_left -= m_out_packet.pos() - prev_pos;
-
-		return true;
-	}
-
 	void RemoteHost::finishSending() {
 		DASSERT(isSending());
 		sendChunks((int)m_channels.size() - 1);
@@ -271,18 +257,18 @@ namespace net {
 	}
 
 	struct OrderIChunks {
-		OrderIChunks(const vector<Chunk> &chunks) :chunks(chunks) { }
+		OrderIChunks(const Chunk *chunks) :chunks(chunks) { }
 
 		bool operator()(int c1, int c2) {
 			const Chunk &chunk1 = chunks[c1];
 			const Chunk &chunk2 = chunks[c2];
 
-			return chunk1.channel_id == chunk2.channel_id?
-				chunk1.chunk_id < chunk2.chunk_id :
-				chunk1.channel_id < chunk2.channel_id;
+			return  chunk1.m_channel_id == chunk2.m_channel_id?
+					chunk1.m_chunk_id   <  chunk2.m_chunk_id :
+					chunk1.m_channel_id <  chunk2.m_channel_id;
 		}
 
-		const vector<Chunk> &chunks;
+		const Chunk *chunks;
 	};
 
 	void RemoteHost::receive(InPacket &packet, int timestamp) {
@@ -343,9 +329,8 @@ namespace net {
 			bool is_reliable = channel_id & 1;
 			channel_id >>= 1;
 			
-			logChunk(type, chunk_id);
-
 			int data_size = packet.decodeInt();
+			logChunk(type, chunk_id, data_size);
 
 			if(data_size < 0 || data_size > PacketInfo::max_size ||
 				channel_id < 0 || channel_id >= (int)m_channels.size())
@@ -353,10 +338,13 @@ namespace net {
 
 			char data[PacketInfo::max_size];
 			packet.loadData(data, data_size);
+			//TODO: load directly into chunk
 
 			int chunk_idx = allocChunk();
 			Chunk &new_chunk = m_chunks[chunk_idx];
-			new_chunk = std::move(Chunk(data, data_size, type, chunk_id, channel_id));
+			new_chunk.setData(data, data_size);
+		   	new_chunk.setParams(type, chunk_id, channel_id);
+			DASSERT(type != ChunkType::invalid);
 
 			if(is_reliable) {
 				m_current_ichunk_indices.push_back(chunk_idx);
@@ -390,7 +378,7 @@ ERROR:;
 
 		vector<int> temp(m_ichunk_indices.size() + m_current_ichunk_indices.size());
 
-		std::sort(m_current_ichunk_indices.begin(), m_current_ichunk_indices.end(), OrderIChunks(m_chunks));
+		std::sort(m_current_ichunk_indices.begin(), m_current_ichunk_indices.end(), OrderIChunks(m_chunks.data()));
 		std::merge(m_ichunk_indices.begin(), m_ichunk_indices.end(),
 					m_current_ichunk_indices.begin(), m_current_ichunk_indices.end(), temp.begin());
 		temp.swap(m_ichunk_indices);
@@ -399,9 +387,9 @@ ERROR:;
 		for(int n = 0; n < (int)m_ichunk_indices.size(); n++) {
 			int idx = m_ichunk_indices[n];
 			Chunk &chunk = m_chunks[idx];
-			Channel &channel = m_channels[chunk.channel_id];
+			Channel &channel = m_channels[chunk.m_channel_id];
 
-			if(channel.last_ichunk_id == chunk.chunk_id) {
+			if(channel.last_ichunk_id == chunk.m_chunk_id) {
 				channel.last_ichunk_id++;
 				INSERT(m_out_ichunks, idx);
 				m_ichunk_indices[n] = -1;
@@ -448,8 +436,8 @@ ERROR:;
 		int chunk_idx = packet.chunks.head;
 		while(chunk_idx != -1) {
 			Chunk &chunk = m_chunks[chunk_idx];
-			int next_idx = chunk.node.next;
-			chunk.node = ListNode();
+			int next_idx = chunk.m_node.next;
+			chunk.m_node = ListNode();
 			INSERT(m_free_chunks, chunk_idx);
 			chunk_idx = next_idx;
 		}
@@ -472,9 +460,9 @@ ERROR:;
 		int chunk_idx = packet.chunks.head;
 		while(chunk_idx != -1) {
 			Chunk &chunk = m_chunks[chunk_idx];
-			int next_idx = chunk.node.next;
-			chunk.node = ListNode();
-			INSERT(m_channels[chunk.channel_id].chunks, chunk_idx);
+			int next_idx = chunk.m_node.next;
+			chunk.m_node = ListNode();
+			INSERT(m_channels[chunk.m_channel_id].chunks, chunk_idx);
 			chunk_idx = next_idx;
 		}
 		chunk_idx = packet.uchunks.head;
@@ -496,8 +484,12 @@ ERROR:;
 		if(m_out_ichunks.isEmpty())
 			return nullptr;
 
-		Chunk *out = &m_chunks[m_out_ichunks.head];
-		REMOVE(m_out_ichunks, m_out_ichunks.head);
+		int idx = m_out_ichunks.tail;
+		Chunk *out = &m_chunks[idx];
+		DASSERT(out->m_type != ChunkType::invalid);
+		REMOVE(m_out_ichunks, idx);
+		freeChunk(idx);
+
 		return out;
 	}
 
@@ -615,6 +607,17 @@ ERROR:;
 		return m_remote_hosts[id].get();
 	}
 
+	int RemoteHost::memorySize() const {
+		int sum = sizeof(*this);
+		sum += sizeof(Chunk) * m_chunks.size();
+		sum += sizeof(UChunk) * m_uchunks.size();
+		sum += (sizeof(Packet) + sizeof(ListNode)) * m_packets.size();
+		sum += (sizeof(InPacket) + sizeof(ListNode)) * m_in_packets.size();
+		sum += sizeof(int) * (m_ichunk_indices.size() + m_lost_uchunk_indices.size());
+		sum += sizeof(SeqNumber) * (m_out_acks.size() + m_in_acks.size());
+		return sum;
+	}
+
 #undef INSERT
 #undef REMOVE
 		
@@ -647,6 +650,23 @@ ERROR:;
 		DASSERT(m_current_id != -1);
 		m_remote_hosts[m_current_id]->finishSending();
 		m_current_id = -1;
+	}
+
+	void LocalHost::printStats() const {
+		int nchunks = 0, data_size = 0;
+
+		for(int n = 0; n < (int)m_remote_hosts.size(); n++) {
+			const RemoteHost *host = m_remote_hosts[n].get();
+			if(!host)
+				continue;
+
+			nchunks += (int)host->m_chunks.size();
+			data_size += host->memorySize();
+		}
+
+		printf("Network memory info:\n");
+		printf("  chunks(%d): %d KB\n", nchunks, (nchunks * (int)sizeof(Chunk)) / 1024);
+		printf("  total memory: %d KB\n", data_size / 1024);
 	}
 
 /*	bool LocalHost::receiveChunk(PodArray<char> &data, ChunkInfo &info) {

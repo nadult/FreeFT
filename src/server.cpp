@@ -20,8 +20,7 @@
 #include "game/item.h"
 #include "sys/config.h"
 #include "sys/xml.h"
-#include "sys/network.h"
-#include "sys/host.h"
+#include "net/host.h"
 #include <list>
 #include <algorithm>
 
@@ -70,8 +69,10 @@ public:
 		const Chunk *chunk = nullptr;
 		EntityMap &emap = m_world->entityMap();
 
-		while( (chunk = host.getIChunk()) ) {
-			if(chunk->type == ChunkType::join) {
+		while( const Chunk *chunk_ptr = host.getIChunk() ) {
+			InChunk chunk(*chunk_ptr);
+
+			if(chunk.type() == ChunkType::join) {
 				info.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
 //				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
@@ -84,7 +85,7 @@ public:
 				temp << JoinAcceptPacket{string(m_world->mapName()), info.actor_id};
 				host.enqueChunk(temp, ChunkType::join_accept, 0);
 			}
-			if(chunk->type == ChunkType::join_complete) {
+			if(chunk.type() == ChunkType::join_complete) {
 				m_client_count++;
 				host.verify(true);
 				break;
@@ -96,17 +97,17 @@ public:
 		DASSERT(host.isVerified());
 		const Chunk *chunk = nullptr;
 
-		while( (chunk = host.getIChunk()) ) {
-			if(chunk->type == ChunkType::leave) {
+		while( const Chunk *chunk_ptr = host.getIChunk() ) {
+			InChunk chunk(*chunk_ptr);
+
+			if(chunk.type() == ChunkType::leave) {
 				//TODO: removeHost
 				break;
 			}
-			else if(chunk->type == ChunkType::actor_order) {
-				MemoryLoader ldr(chunk->data.data(), chunk->data.size());
-
+			else if(chunk.type() == ChunkType::actor_order) {
 				Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(info.actor_id));
 				Order order;
-				ldr >> order;
+				chunk >> order;
 				if(order.isValid())
 					actor->setNextOrder(order);
 				else
@@ -284,7 +285,6 @@ int safe_main(int argc, char **argv)
 		if(host)// && counter % 30 == 0)
 			host->action();
 		counter++;
-		
 
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);

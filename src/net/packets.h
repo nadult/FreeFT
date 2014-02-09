@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef SYS_NETWORK_H
-#define SYS_NETWORK_H
+#ifndef NET_PACKETS_H
+#define NET_PACKETS_H
 #include "base.h"
 
 
@@ -152,27 +152,6 @@ namespace net {
 
 		string map_name;
 		i32 actor_id;
-	};
-
-	//TODO: change name
-	enum class ChunkType: char {
-		// These are reserved for internal use in RemoteHost, it's illegal to use them
-		invalid,
-		multiple_chunks,
-		ack,
-
-		join,
-		join_accept,
-		join_refuse,
-		join_complete,
-		leave,
-
-		timestamp,
-		entity_full,
-		entity_delete,
-		entity_update,
-
-		actor_order,
 	};
 
 	enum class RefuseReason: char {

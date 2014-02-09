@@ -124,9 +124,8 @@ int freeListAlloc(Container &container, List &free_list) {
 template <class Object>
 class LinkedVector
 {
-	typedef pair<ListNode, Object> Elem;
-
 public:
+	typedef pair<ListNode, Object> Elem;
 	LinkedVector() :m_list_size(0) { }
 
 	Object &operator[](int idx) { return m_objects[idx].second; }

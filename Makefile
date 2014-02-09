@@ -6,6 +6,7 @@ _dummy := $(shell [ -d $(BUILD) ] || mkdir -p $(BUILD))
 _dummy := $(shell [ -d $(BUILD)/gfx ] || mkdir -p $(BUILD)/gfx)
 _dummy := $(shell [ -d $(BUILD)/ui ] || mkdir -p $(BUILD)/ui)
 _dummy := $(shell [ -d $(BUILD)/sys ] || mkdir -p $(BUILD)/sys)
+_dummy := $(shell [ -d $(BUILD)/net ] || mkdir -p $(BUILD)/net)
 _dummy := $(shell [ -d $(BUILD)/game ] || mkdir -p $(BUILD)/game)
 _dummy := $(shell [ -d $(BUILD)/gameui ] || mkdir -p $(BUILD)/gameui)
 _dummy := $(shell [ -d $(BUILD)/editor ] || mkdir -p $(BUILD)/editor)
@@ -14,7 +15,8 @@ _dummy := $(shell [ -d $(BUILD)/lz4 ] || mkdir -p $(BUILD)/lz4)
 SHARED_SRC=\
 	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/scene_renderer gfx/packed_texture \
-	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/network sys/host \
+	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config \
+	net/packets net/chunk net/host \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/actor game/actor_anims game/actor_orders game/entity game/container game/door game/projectile \
@@ -98,7 +100,7 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD)/%_.o $(BUILD)/sys/pla
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
 			$(MINGW_PROGRAMS) $(DEPS) $(BUILD)/.depend
-	-rmdir $(BUILD)/gfx $(BUILD)/sys $(BUILD)/ui $(BUILD)/game $(BUILD)/gameui $(BUILD)/editor $(BUILD)/lz4
+	-rmdir $(BUILD)/gfx $(BUILD)/sys $(BUILD)/ui $(BUILD)/game $(BUILD)/gameui $(BUILD)/editor $(BUILD)/lz4 $(BUILD)/net
 	-rmdir $(BUILD)
 
 $(BUILD)/.depend: $(DEPS)

@@ -20,8 +20,7 @@
 #include "game/item.h"
 #include "sys/config.h"
 #include "sys/xml.h"
-#include "sys/network.h"
-#include "sys/host.h"
+#include "net/host.h"
 
 using namespace gfx;
 using namespace game;
@@ -94,7 +93,7 @@ public:
 
 		if(m_mode == Mode::connecting) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
-				InChunk chunk(chunk_ptr);
+				InChunk chunk(*chunk_ptr);
 
 				if(chunk.type() == ChunkType::join_accept) {
 					//TODO: handle timeout
@@ -126,7 +125,7 @@ public:
 		}
 		else if(m_mode == Mode::connected) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
-				InChunk chunk(chunk_ptr);
+				InChunk chunk(*chunk_ptr);
 
 				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
 					entityUpdate(chunk);

@@ -18,7 +18,7 @@ typedef int socklen_t;
 
 #endif
 
-#include "sys/network.h"
+#include "net/packets.h"
 #include <cstdlib>
 #include <unistd.h>
 

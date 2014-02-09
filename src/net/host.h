@@ -3,55 +3,19 @@
    This file is part of FreeFT.
  */
 
-#ifndef SYS_HOST_H
-#define SYS_HOST_H
+#ifndef NET_HOST_H
+#define NET_HOST_H
 
-#include "sys/network.h"
+#include "net/packets.h"
+#include "net/chunk.h"
+#include "sys/aligned_allocator.h"
 
 namespace net {
-
-	struct Chunk {
-		Chunk() { }
-		Chunk(const char *data, int data_size, ChunkType type, int chunk_id, int channel_id);
-
-		PodArray<char> data;
-
-		// It can be on one of 3 lists:
-		// packet list:  waiting for an ack with specified packet_id
-		// channel list: waiting to be sent
-		// free list: unused chunk
-		ListNode node;
-		int chunk_id;
-		SeqNumber packet_id;
-		ChunkType type;
-		u8 channel_id;
-
-		//TODO: inline data (fill up to 64 bytes)
-	};
-
-	class InChunk :public Stream {
-	public:
-		InChunk(const Chunk *immutable_chunk);
-		operator bool() const { return m_chunk != nullptr; }
-
-		bool end() const { return m_pos == m_size; }
-
-		int size() const { return m_size; }
-		int chunkId() const { return m_chunk? m_chunk->chunk_id : 0; }
-		int channelId() const { return m_chunk? m_chunk->channel_id : 0; }
-		ChunkType type() const { return m_chunk? m_chunk->type : ChunkType::invalid; }
-
-	protected:
-		virtual void v_load(void *ptr, int count) final;
-
-		const Chunk *m_chunk;
-	};
 
 	struct UChunk {
 		int chunk_id;
 		int channel_id;
 		ListNode node;
-		SeqNumber packet_id;
 	};
 
 	class RemoteHost {
@@ -103,21 +67,22 @@ namespace net {
 		vector<int> &lostUChunks() { return m_lost_uchunk_indices; }
 		int lastTimestamp() const { return m_last_timestamp; }
 
+		int memorySize() const;
+
 	protected:
 		void sendChunks(int max_channel);
 
 		bool sendChunk(int chunk_idx);
 		bool sendUChunk(int chunk_idx, const char *data, int data_size, ChunkType type);
-		bool sendChunk(const char *data, int data_size, ChunkType type, int chunk_id, int channel_id, bool is_reliable);
 
 		int estimateSize(int data_size) const;
 		bool canFit(int data_size) const;
 		bool isSending() const { return m_socket != nullptr; }
 
-		int allocChunk() { return freeListAlloc<Chunk, &Chunk::node>(m_chunks, m_free_chunks); }
+		int allocChunk() { return freeListAlloc<Chunk, &Chunk::m_node>(m_chunks, m_free_chunks); }
 		int allocUChunk() { return freeListAlloc<UChunk, &UChunk::node>(m_uchunks, m_free_uchunks); }
 
-		void freeChunk(int idx) { listInsert<Chunk, &Chunk::node>(m_chunks, m_free_chunks, idx); }
+		void freeChunk(int idx) { listInsert<Chunk, &Chunk::m_node>(m_chunks, m_free_chunks, idx); }
 		void freeUChunk(int idx) { listInsert<UChunk, &UChunk::node>(m_uchunks, m_free_uchunks, idx); }
 
 		void newPacket(bool is_first);
@@ -127,7 +92,7 @@ namespace net {
 		void acceptPacket(int packet_idx);
 
 		Address m_address;
-		vector<Chunk> m_chunks;
+		vector<Chunk, AlignedAllocator<Chunk, 128>> m_chunks;
 		vector<UChunk> m_uchunks;
 		vector<Channel> m_channels;
 		vector<int> m_ichunk_indices;
@@ -158,6 +123,8 @@ namespace net {
 
 		// Receiving context
 		vector<int> m_current_ichunk_indices;
+
+		friend class LocalHost;
 	};
 
 	//TODO: network data verification (so that the game won't crash under any circumstances)
@@ -196,6 +163,7 @@ namespace net {
 		void finishSending();
 		int timestamp() const { return m_timestamp; }
 
+		void printStats() const;
 
 	protected:
 		net::Socket m_socket;
