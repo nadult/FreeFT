@@ -1,0 +1,11 @@
+- Receive packets at the beginning of the frame, send them at the end (after world update)
+- Add encryption 
+- secondary: Don't send strings, only identifiers
+- secondary: Add compression
+- secondary: BitStream class with nice, tight bit-packing
+
+
++ESTIMATED_TIME:
++TIME_SPENT:
+
++WORK_LOG:

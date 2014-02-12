@@ -26,6 +26,7 @@ Selected option: 2 (NOT!)
 
 +ESTIMATED_TIME: ~80h
 +TIME_SPENT: >100h
++DONE
 
 +WORK_LOG:
 20.12.13: 10:00 - 18:00

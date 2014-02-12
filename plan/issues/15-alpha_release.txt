@@ -16,7 +16,7 @@ Secondary:
 - Different coloring for sprites (so that players could differentiate their characters)
 - ? Mines
 
-+REQUIREMENTS:  (97h)
++REQUIREMENTS:  (97h + ?)
 issues/6-basic_shooting
 issues/9-simple_audio
 issues/14-replication
@@ -24,9 +24,10 @@ issues/16-visibility_system
 issues/17-combat_and_simple_ai
 issues/18-game_ui
 issues/20-multiplayer_game_modes
+issues/21-improved_replication (?)
 
 +FINISHED
-+ESTIMATED_TIME:  163h
++ESTIMATED_TIME:  163h + ?
 +TIME_SPENT:
 
 +WORK_LOG:

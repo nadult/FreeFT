@@ -71,6 +71,9 @@ TODO:
 - simple game modes:
    issues/20-multiplayer_game_modes.txt
 
+- improved replication
+   issues/21-improved_replication.txt
+
 4. Random, useful things
  - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
    issues/11-console.txt

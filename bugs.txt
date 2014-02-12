@@ -1,3 +1,6 @@
 - after teleport player is sometimes stuck
 - Player can start rotating in a circle after interaction with an object with empty bbox (like opened sliding door)
 - Player can sometimes stuck on the stairs
+
+- In res_viewer when popup is visible, you can still select objects behind it by
+  clicking on screen (outside of popup area)

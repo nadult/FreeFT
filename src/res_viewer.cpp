@@ -33,27 +33,44 @@ namespace ResType {
 };
 
 class Resource {
+	Resource(ResType::Type type, int id) :m_type(type), m_id(id) {
+		m_font = gfx::Font::mgr[ui::Window::s_font_names[0]];
+	}
 public:
-	Resource() :m_type(ResType::empty), m_id(-1) { }
-	Resource(PTile res, int id) :m_type(ResType::tile), m_id(id) {
+	Resource() :Resource(ResType::empty, -1) { }
+	Resource(PTile res, int id) :Resource(ResType::tile, id) {
 		DASSERT(res);
 		m_resource = res.get();
 		m_rect_size = res->rect().size() + int2(8, 8);
 	}
 
-	Resource(PTexture res, int id) :m_type(ResType::texture), m_id(id) {
+	Resource(PTexture res, int id) :Resource(ResType::texture, id) {
 		DASSERT(res);
 		m_resource = res.get();
 		m_rect_size = res->dimensions();
 	}
 
-	Resource(PSprite res, int id) :m_type(ResType::sprite), m_id(id) {
+	Resource(PSprite res, int id) :Resource(ResType::sprite, id) {
 		DASSERT(res);
 		m_resource = res.get();
 		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->boundingBox() + int3{4,4,4})).size();
 
 		m_last_time = getTime();
 		m_frame_id = m_dir_id = m_seq_id = 0;
+	}
+
+	void printStats(int2 pos) const {
+		char buffer[1024] = "";
+		if(m_type == ResType::sprite) {
+			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
+			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
+
+			auto &seq = (*sprite)[m_seq_id];
+			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\n",
+					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count);
+		}
+
+		m_font->drawShadowed(pos, Color::white, Color::black, buffer);
 	}
 
 	void draw(int2 pos, bool is_selected) const {
@@ -105,7 +122,7 @@ public:
 			}
 			lookAt(brect.min - pos);
 			drawQuad(rect.min, rect.size(), tex_rect.min, tex_rect.max);
-		
+	
 			DTexture::bind0();
 			if(is_gui_image)
 				drawRect(rect, outline_col);
@@ -129,7 +146,6 @@ public:
 			m_seq_id = (m_seq_id + (int)sprite->size()) % (int)sprite->size();
 			int dir_count = sprite->dirCount(m_seq_id);
 			m_dir_id = (m_dir_id + dir_count) % dir_count;
-
 			m_frame_id %= sprite->frameCount(m_seq_id);
 		}
 	}
@@ -141,6 +157,7 @@ public:
 private:
 	int2 m_rect_size;
 	Ptr<RefCounter> m_resource;
+	PFont m_font;
 	ResType::Type m_type;
 	int m_id;
 	
@@ -200,6 +217,15 @@ public:
 				pos.y += cur_height + spacing;
 				cur_height = 0;
 			}
+		}
+
+		if(m_selected_id != -1) {
+			lookAt(-clippedRect().min);
+			for(int n = 0; n < (int)m_resources.size(); n++)
+				if(m_resources[n].id() == m_selected_id) {
+					m_resources[n].printStats(int2(0, 0));
+					break;
+				}
 		}
 
 		if(m_show_selected) {
