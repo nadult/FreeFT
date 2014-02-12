@@ -36,6 +36,8 @@ namespace game {
 			ev_pickup			= -45,
 		};
 
+		static const char *eventIdToString(EventId id);
+
 		enum { layer_count = 4 };
 
 		struct Frame {

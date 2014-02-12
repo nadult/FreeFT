@@ -64,13 +64,27 @@ public:
 		if(m_type == ResType::sprite) {
 			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
-
 			auto &seq = (*sprite)[m_seq_id];
+
 			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\n",
 					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count);
-		}
 
-		m_font->drawShadowed(pos, Color::white, Color::black, buffer);
+			m_font->drawShadowed(pos, Color::white, Color::black, buffer);
+			pos.y += m_font->evalExtents(buffer).height();
+
+			double time = getTime();
+			vector<pair<const char*, double>> tevents;
+			for(int n = 0; n < (int)m_events.size(); n++)
+				if(m_events[n].second > time - 1.0)
+					tevents.push_back(m_events[n]);
+			m_events.swap(tevents);
+
+			for(int n = 0; n < (int)m_events.size(); n++) {
+				Color col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
+				m_font->drawShadowed(pos, col, Color::black, m_events[n].first);
+				pos.y += m_font->textBase();
+			}
+		}
 	}
 
 	void draw(int2 pos, bool is_selected) const {
@@ -103,7 +117,12 @@ public:
 
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 
-			while(sprite->frame(m_seq_id, m_frame_id).id < 0) {
+			int id;
+			while((id = sprite->frame(m_seq_id, m_frame_id).id) < 0) {
+				const char *event_name = Sprite::eventIdToString((Sprite::EventId)id);
+				if(event_name)
+					m_events.push_back(make_pair(event_name, getTime()));
+
 				m_frame_id++;
 				if(m_frame_id == sprite->frameCount(m_seq_id))
 					m_frame_id = 0;
@@ -161,6 +180,7 @@ private:
 	ResType::Type m_type;
 	int m_id;
 	
+	mutable vector<pair<const char *, double> > m_events;
 	mutable double m_last_time;
 	mutable int m_frame_id, m_seq_id, m_dir_id;
 };

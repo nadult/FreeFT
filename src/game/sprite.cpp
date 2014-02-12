@@ -12,7 +12,19 @@ using namespace gfx;
 
 namespace game
 {
-			
+	static const char *s_event_names[6] = {
+		"step_left",
+		"step_right",
+		"hit",
+		"fire",
+		"sound",
+		"pickup",
+	};
+
+	const char *Sprite::eventIdToString(EventId id) {
+		return id >= ev_pickup && id <= ev_step_left? s_event_names[-40 - id] : nullptr;
+	}
+
 	int Sprite::MultiPalette::size(int layer) const {
 		int next = layer == layer_count - 1? (int)colors.size() : offset[layer + 1];
 		return next - offset[layer];
