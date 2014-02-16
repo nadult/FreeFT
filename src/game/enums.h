@@ -91,12 +91,23 @@ namespace game {
 	)
 
 	DECLARE_ENUM(TileId,
-		floor,
 		wall,
-		roof,
+		floor,
 		object,
+		stairs,
+		roof,
 		unknown
 	)
+
+	DECLARE_ENUM(SurfaceId,
+		stone,
+		gravel,
+		metal,
+		wood,
+		water,
+		snow,
+		unknown
+	);
 
 	DECLARE_ENUM(DoorTypeId,
 		rotating,

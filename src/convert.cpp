@@ -8,7 +8,7 @@
 #include "game/tile_map.h"
 #include "sys/platform.h"
 #include "sys/xml.h"
-#include "audio.h"
+#include "audio/sound.h"
 #include <unistd.h>
 #include <algorithm>
 #include <set>

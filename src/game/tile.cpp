@@ -71,22 +71,10 @@ namespace game
 		return accessTexture(tex_rect);
 	}
 	
-	Tile::Tile() :m_type(TileId::unknown), m_first_frame(&m_palette) { }
+	Tile::Tile() :m_type_id(TileId::unknown), m_surface_id(SurfaceId::unknown), m_first_frame(&m_palette) { }
 			
 	void Tile::legacyLoad(Stream &sr, const char *name) {
 		ASSERT(sr.isLoading());
-
-		{
-			string lowercase = toLower(name? name : sr.name());
-			int slash = lowercase.rfind('/');
-
-			m_type = TileId::unknown;
-			for(int n = 0; n < COUNTOF(s_type_names); n++)
-				if(lowercase.find(s_type_names[n].name, slash) != string::npos) {
-					m_type = s_type_names[n].type;
-					break;
-				}
-		}
 
 		sr.signature("<tile>", 7);
 		i16 type; sr >> type;
@@ -109,8 +97,13 @@ namespace game
 		i32 width, height;
 		sr.unpack(width, height);
 
-		char unknown[5];
-		int unk_size = type == '9'? 3 : type == '7'? 5 : type == '6'? 6 : 4;
+		u8 ttype, material;
+		sr.unpack(ttype, material);
+		m_type_id = ttype >= TileId::count? TileId::unknown : (TileId::Type)ttype;
+		m_surface_id = material >= SurfaceId::count? SurfaceId::unknown : (SurfaceId::Type)material;
+
+		char unknown[4];
+		int unk_size = type == '9'? 1 : type == '7'? 3 : type == '6'? 4 : 2;
 		sr.loadData(unknown, unk_size);
 
 		sr.signature("<tiledata>\0001", 12);
@@ -149,8 +142,8 @@ namespace game
 
 	void Tile::load(Stream &sr) {
 		sr.signature("TILE", 4);
-		sr.unpack(m_type, m_bbox, m_offset);
-		ASSERT(TileId::isValid(m_type));
+		sr.unpack(m_type_id, m_surface_id, m_bbox, m_offset);
+		ASSERT(TileId::isValid(m_type_id));
 		sr >> m_first_frame >> m_frames >> m_palette;
 
 		for(int n = 0; n < (int)m_frames.size(); n++)
@@ -160,7 +153,7 @@ namespace game
 
 	void Tile::save(Stream &sr) const {
 		sr.signature("TILE", 4);
-		sr.pack(m_type, m_bbox, m_offset);
+		sr.pack(m_type_id, m_surface_id, m_bbox, m_offset);
 		sr << m_first_frame << m_frames << m_palette;
 	}
 
