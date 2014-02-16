@@ -44,6 +44,7 @@ namespace game
 		virtual Entity *clone() const;
 		
 		virtual void interact(const Entity*);
+		virtual void onSoundEvent();
 
 		bool isOpened() const { return m_state == state_opened_in || m_state == state_opened_out; }
 		Type type() const { return m_type_id; }

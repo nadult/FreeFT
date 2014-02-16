@@ -113,10 +113,10 @@ int safe_main(int argc, char **argv)
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
-				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
-		if(isect.isEmpty())
+				collider_tile_floors|collider_tile_roofs|collider_tile_stairs|collider_entities|visibility_flag);
+		if(isect.isEmpty() || isect.isTile())
 			isect = world.trace(ray, actor,
-				collider_tile_floors|collider_tile_roofs|collider_entities|visibility_flag);
+				collider_tile_floors|collider_tile_roofs|collider_tile_stairs|collider_entities|visibility_flag);
 		
 		Intersection full_isect = world.pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
 		if(full_isect.isEmpty())

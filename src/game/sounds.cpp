@@ -23,4 +23,25 @@ namespace game {
 		return SoundId(name);
 	}
 
+	static const char *s_step_stance[StanceId::count] = {
+		"stand",
+		"stand",
+		"prone"
+	};
+
+	static const char *s_step_armour[ArmourClassId::count] = {
+		"",
+		"leath",
+		"metal",
+		"metal",
+		"pow",
+	};
+	
+	const SoundId getStepSoundId(StanceId::Type stance, ArmourClassId::Type armour, SurfaceId::Type surf, bool is_heavy) {
+		char name[256];
+		snprintf(name, sizeof(name), "%s%s%s%s", s_step_stance[stance],is_heavy? "heavy" : "normal",
+				s_step_armour[armour], SurfaceId::toString(surf));
+		return SoundId(name);
+	}
+
 }

@@ -170,6 +170,7 @@ namespace game {
 		virtual XMLNode save(XMLNode&) const;
 		virtual void save(Stream&) const;
 
+		SurfaceId::Type surfaceUnder() const;
 
 	private:
 		void initialize(ActorTypeId::Type);
@@ -201,6 +202,7 @@ namespace game {
 
 		void onFireEvent(const int3&);
 		void onSoundEvent();
+		void onStepEvent(bool left_foot);
 		void onPickupEvent();
 
 		void fireProjectile(const int3 &offset, const float3 &target, const Weapon &weapon,

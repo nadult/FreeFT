@@ -153,6 +153,9 @@ namespace game {
 			m_update_anim = true;
 		}
 	}
+		
+	void Door::onSoundEvent() {
+	}
 	
 	FBox Door::computeBBox(State state) const {	
 		float3 size = m_sprite->boundingBox();

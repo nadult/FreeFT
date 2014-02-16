@@ -7,6 +7,7 @@
 #include "game/world.h"
 #include "game/sprite.h"
 #include "game/projectile.h"
+#include "game/tile.h"
 #include "sys/xml.h"
 #include "net/socket.h"
 #include <cmath>
@@ -149,6 +150,16 @@ namespace game {
 		m_target_angle = dirAngle();
 		m_order = m_next_order = doNothingOrder();
 		m_burst_mode = false; //TODO: proper serialize
+	}
+
+	SurfaceId::Type Actor::surfaceUnder() const {
+		const TileMap &map = world()->tileMap();
+		FBox box_under = boundingBox();
+		box_under.max.y = box_under.min.y;
+		box_under.min.y -= 2.0f;
+		int id = map.findAny(box_under);
+		//TODO: make it more robust
+		return id == -1? SurfaceId::unknown : map[id].ptr->surfaceId();
 	}
 
 	bool Actor::isDead() const {
@@ -402,6 +413,15 @@ namespace game {
 										pos + offset, actualDirAngle(), pos + dir * len, this));
 	}
 
+	void Actor::onStepEvent(bool left_foot) {
+		if(world()->isServer())
+			return;
+
+		SurfaceId::Type standing_surface = surfaceUnder();
+		SoundId sound_id =  getStepSoundId(m_stance_id, m_armour_class_id, standing_surface, false);
+		world()->playSound(sound_id, pos());
+	}
+
 	void Actor::onSoundEvent() {
 		if(world()->isServer())
 			return;
@@ -413,7 +433,7 @@ namespace game {
 			//TODO: select firing mode in attack order
 			world()->playSound(m_weapon_class_id == WeaponClassId::minigun?
 					weapon_desc->sound_ids[WeaponSoundId::fire_burst] :
-					weapon_desc->sound_ids[WeaponSoundId::fire_single], float3(0, 0, 0));
+					weapon_desc->sound_ids[WeaponSoundId::fire_single], pos());
 		}
 	}
 

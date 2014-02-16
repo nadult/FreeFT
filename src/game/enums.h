@@ -137,10 +137,11 @@ namespace game {
 
 		collider_entities		= 0x00ffff,
 
-		collider_tile_floors	= tileIdToFlag(TileId::floor),
 		collider_tile_walls		= tileIdToFlag(TileId::wall),
-		collider_tile_roofs		= tileIdToFlag(TileId::roof),
+		collider_tile_floors	= tileIdToFlag(TileId::floor),
 		collider_tile_objects	= tileIdToFlag(TileId::object),
+		collider_tile_stairs	= tileIdToFlag(TileId::stairs),
+		collider_tile_roofs		= tileIdToFlag(TileId::roof),
 		collider_tiles			= 0xff0000,
 
 		collider_solid			= 0xff00ff,

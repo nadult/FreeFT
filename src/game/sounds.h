@@ -20,8 +20,7 @@ namespace game {
 		int m_id;
 	};
 
-	//TODO: punches
-	const SoundId stepSoundId(StanceId::Type, bool is_heavy);
+	const SoundId getStepSoundId(StanceId::Type, ArmourClassId::Type, SurfaceId::Type, bool is_heavy);
 
 	DECLARE_ENUM(WeaponSoundId,
 		fire_single,
@@ -30,6 +29,7 @@ namespace game {
 		out_of_ammo
 	);
 
+	//TODO: punches
 	const SoundId getWeaponSoundId(const char *prefix, WeaponSoundId::Type);
 
 }

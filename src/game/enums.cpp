@@ -89,10 +89,21 @@ namespace game {
 	)
 
 	DEFINE_STRINGS(TileId,
-		"floor",
 		"wall",
-		"roof",
+		"floor",
 		"object",
+		"stairs",
+		"roof",
+		"unknown"
+	)
+
+	DEFINE_STRINGS(SurfaceId,
+		"stone",
+		"gravel",
+		"metal",
+		"wood",
+		"water",
+		"snow",
 		"unknown"
 	)
 
