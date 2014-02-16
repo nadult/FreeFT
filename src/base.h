@@ -28,6 +28,27 @@ typedef unsigned int uint;
 
 #define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
 
+int fromString(const char *str, const char **strings, int count) __attribute((noinline));
+
+#define DECLARE_ENUM(type, ...) \
+	namespace type { enum Type: char { __VA_ARGS__, count }; \
+		const char *toString(Type); \
+		Type fromString(const char*); \
+		inline bool isValid(Type val) { return val >= 0 && val < count; } \
+	}
+
+#define DEFINE_STRINGS(type, ...) \
+	namespace type { \
+		static const char *s_strings[count] = { __VA_ARGS__ }; \
+		const char *toString(Type value) { \
+			DASSERT(value >= 0 && value < count); \
+			return s_strings[value]; \
+		} \
+		Type fromString(const char *str) { \
+			return (Type)::fromString(str, s_strings, count); \
+		} }
+
+
 extern float g_FloatParam[16];
 
 template <class T> inline T max(T a, T b) { return a < b? b : a; }

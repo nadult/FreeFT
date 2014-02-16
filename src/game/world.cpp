@@ -13,6 +13,7 @@
 #include "navi_heightmap.h"
 #include <cstdio>
 #include "audio/device.h"
+#include "game/sounds.h"
 
 namespace game {
 
@@ -33,7 +34,7 @@ namespace game {
 
 	World::World(Mode mode, const char *file_name) :World(mode) {
 		m_level.load(file_name);
-		m_tile_map.printInfo();
+//		m_tile_map.printInfo();
 		m_map_name = file_name;
 //		updateNaviMap(true);
 	}
@@ -61,7 +62,7 @@ namespace game {
 		//	heightmap.printInfo();
 
 			m_navi_map.update(heightmap);
-			m_navi_map.printInfo();
+		//	m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();
@@ -248,6 +249,12 @@ namespace game {
 		if(isServer())
 			return;
 		audio::playSound(name, pos);
+	}
+
+	void World::playSound(SoundId sound_id, const float3 &pos) {
+		if(isServer())
+			return;
+		audio::playSound(sound_id, pos);
 	}
 
 }

@@ -7,6 +7,16 @@
 #include <cmath>
 #include <cstdlib>
 
+int fromString(const char *str, const char **strings, int count) {
+	DASSERT(str);
+	for(int n = 0; n < count; n++)
+		if(strcmp(str, strings[n]) == 0)
+			return n;
+	
+	THROW("Can't find string: \"%s\" in string array", str);
+	return -1;
+}
+
 BitVector::BitVector(int size) :m_data((size + base_size - 1) / base_size), m_size(size) { }
 
 void BitVector::resize(int new_size, bool clear_value) {

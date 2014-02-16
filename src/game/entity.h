@@ -17,6 +17,7 @@ namespace game {
 	class World;
 	class Actor;
 	class EntityRef;
+	class SoundId;
 
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each subtype of Entity class

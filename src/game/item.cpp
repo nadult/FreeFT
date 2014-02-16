@@ -4,16 +4,41 @@
  */
 
 #include "game/item.h"
+#include "game/sounds.h"
 #include "sys/xml.h"
 #include <map>
 
-static const char *s_seq_names[3] = {
-	"default",
-	"guibig",
-	"guismall",
-};
+namespace {
+
+	const char *s_seq_names[3] = {
+		"default",
+		"guibig",
+		"guismall",
+	};
+
+}
 
 namespace game {
+		
+	void WeaponDesc::loadParams(XMLNode &node) {
+		projectile_type_id = ProjectileTypeId::fromString(node.attrib("projectile_type"));
+		damage = node.floatAttrib("damage");
+		projectile_speed = node.floatAttrib("projectile_speed");
+		class_id = WeaponClassId::fromString(node.attrib("class"));
+
+		const char *sound_prefix = node.attrib("sound_prefix");
+		for(int n = 0; n < WeaponSoundId::count; n++)
+			sound_ids[n] = getWeaponSoundId(sound_prefix, (WeaponSoundId::Type)n);
+	}
+
+	void AmmoDesc::loadParams(XMLNode &node) {
+		damage_modifier = node.floatAttrib("damage_modifier");
+	}
+	
+	void ArmourDesc::loadParams(XMLNode &node) {
+		damage_resistance = node.floatAttrib("damage_resistance");
+		class_id = ArmourClassId::fromString(node.attrib("class"));
+	}
 
 	ItemEntity::ItemEntity(const Item &item, const float3 &pos) :Entity(item.spriteName()) {
 		initialize(item);
@@ -102,19 +127,15 @@ namespace game {
 
 				if(type == ItemTypeId::weapon) {
 					WeaponDesc *weapon = static_cast<WeaponDesc*>(item.get());
-					weapon->projectile_type_id = ProjectileTypeId::fromString(node.attrib("projectile_type"));
-					weapon->damage = node.floatAttrib("damage");
-					weapon->projectile_speed = node.floatAttrib("projectile_speed");
-					weapon->class_id = WeaponClassId::fromString(node.attrib("class"));
+					weapon->loadParams(node);
 				}
 				else if(type == ItemTypeId::ammo) {
 					AmmoDesc *ammo = static_cast<AmmoDesc*>(item.get());
-					ammo->damage_modifier = node.floatAttrib("damage_modifier");
+					ammo->loadParams(node);
 				}
 				else if(type == ItemTypeId::armour) {
 					ArmourDesc *armour = static_cast<ArmourDesc*>(item.get());
-					armour->damage_resistance = node.floatAttrib("damage_resistance");
-					armour->class_id = ArmourClassId::fromString(node.attrib("class"));
+					armour->loadParams(node);
 				}
 
 				s_items.push_back(std::move(item));

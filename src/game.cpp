@@ -28,13 +28,13 @@ using namespace game;
 
 int safe_main(int argc, char **argv)
 {
+	audio::initSoundMap();
+
 	Config config = loadConfig("game");
 	ItemDesc::loadItems();
 
 	audio::initDevice();
-	atexit(audio::freeDevice);
 
-	printf("AL vendor: %s\n", audio::vendorName().c_str());
 	audio::setListenerPos(float3(0, 0, 0));
 	audio::setListenerVelocity(float3(0, 0, 0));
 	audio::setUnits(16.66666666);
@@ -42,7 +42,6 @@ int safe_main(int argc, char **argv)
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
 
-	printDeviceInfo();
 	grabMouse(false);
 
 	setBlendingMode(bmNormal);
@@ -88,11 +87,6 @@ int safe_main(int argc, char **argv)
 //	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
 
 	world.updateNaviMap(true);
-
-	printf("Actor size: %.0f %.0f %.0f\n",
-			actor->boundingBox().width(),
-			actor->boundingBox().height(),
-			actor->boundingBox().depth());
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
@@ -172,7 +166,9 @@ int safe_main(int argc, char **argv)
 		if(!navi_debug)
 			world.updateNaviMap(false);
 
+		audio::tick();
 		world.simulate((time - last_time) * config.time_multiplier);
+
 		last_time = time;
 
 		clear(Color(128, 64, 0));

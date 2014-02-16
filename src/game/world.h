@@ -98,6 +98,7 @@ namespace game {
 		void replicate(const Entity*);
 		vector<int> &replicationList() { return m_replication_list; }
 
+		void playSound(SoundId, const float3 &pos);
 		void playSound(const char*, const float3 &pos);
 
 	private:

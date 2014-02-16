@@ -6,14 +6,9 @@
 #ifndef GAME_ENUMS_H
 #define GAME_ENUMS_H
 
-namespace game {
+#include "base.h"
 
-	#define DECLARE_ENUM(type, ...) \
-		namespace type { enum Type: char { __VA_ARGS__, count }; \
-			const char *toString(Type); \
-			Type fromString(const char*); \
-			inline bool isValid(Type val) { return val >= 0 && val < count; } \
-		}
+namespace game {
 
 	DECLARE_ENUM(WeaponClassId,
 		unarmed,
@@ -116,8 +111,6 @@ namespace game {
 		prone
 	);
 
-#undef DECLARE_ENUM
-
 	inline constexpr int tileIdToFlag(TileId::Type id) { return 1 << (16 + id); }
 
 	//TODO: better name
@@ -148,6 +141,13 @@ namespace game {
 	};
 	
 	inline ColliderFlags operator|(ColliderFlags a, ColliderFlags b) { return (ColliderFlags)((int)a | (int)b); }
+
+	enum class FiringMode {
+		single,
+		burst,
+	};
+
+
 
 }
 

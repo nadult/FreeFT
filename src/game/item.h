@@ -8,6 +8,7 @@
 
 #include "game/entity.h"
 #include "gfx/device.h"
+#include "game/sounds.h"
 
 namespace game {
 
@@ -40,21 +41,26 @@ namespace game {
 
 	struct WeaponDesc: public ItemDesc {
 		ItemTypeId::Type type() const { return ItemTypeId::weapon; }
+		void loadParams(XMLNode&);
 
 		ProjectileTypeId::Type projectile_type_id;
 		WeaponClassId::Type class_id;
 		float projectile_speed;
 		float damage;
+
+		SoundId sound_ids[WeaponSoundId::count];
 	};
 
 	struct AmmoDesc: public ItemDesc {
 		ItemTypeId::Type type() const { return ItemTypeId::ammo; }
+		void loadParams(XMLNode&);
 
 		float damage_modifier;
 	};
 
 	struct ArmourDesc: public ItemDesc {
 		ItemTypeId::Type type() const { return ItemTypeId::armour; }
+		void loadParams(XMLNode&);
 
 		ArmourClassId::Type class_id;
 		float damage_resistance;

@@ -23,6 +23,7 @@ namespace game {
 		3.5f,
 	};
 
+	//TODO: load all the tables from scripts?
 	static const char *s_sprite_names[ActorTypeId::count][ArmourClassId::count] = {
 		{	// Male
 			"characters/TribalMale",
@@ -327,7 +328,7 @@ namespace game {
 		if(m_burst_mode && m_order.id == OrderId::attack) {
 			m_burst_mode++;
 			fireProjectile(m_burst_off, (float3)m_order.attack.target_pos, m_inventory.weapon(), 0.05f);
-			if(m_burst_mode > 20)
+			if(m_burst_mode > 15)
 				m_burst_mode = 0;
 		}
 	}
@@ -405,8 +406,15 @@ namespace game {
 		if(world()->isServer())
 			return;
 
-		if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
-			world()->playSound("PlasmaSingle1", pos());
+		if(m_order.id == OrderId::attack) {
+			const WeaponDesc *weapon_desc = m_inventory.weapon().desc();
+			ASSERT(weapon_desc);
+
+			//TODO: select firing mode in attack order
+			world()->playSound(m_weapon_class_id == WeaponClassId::minigun?
+					weapon_desc->sound_ids[WeaponSoundId::fire_burst] :
+					weapon_desc->sound_ids[WeaponSoundId::fire_single], float3(0, 0, 0));
+		}
 	}
 
 }
