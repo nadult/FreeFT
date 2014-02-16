@@ -109,7 +109,7 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="57">
+<entity_map size="1056 936" entity_count="58">
 	<container pos="162 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="163 115 228" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
 	<container pos="165 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
@@ -144,6 +144,7 @@ CRC32 d1c72fa9
 	<container pos="272 128 363" sprite="containers/Pot" angle="0"/>
 	<container pos="276 115 306" sprite="containers/Table N" angle="3.141593"/>
 	<item pos="277 128 361" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle"/>
+	<item pos="279 128 370" sprite="weapons/Miniguns/Gatling Laser" angle="0" item_desc="gatling_laser"/>
 	<item pos="287 128 367" sprite="armour/Power Armour" angle="0" item_desc="power_armour"/>
 	<actor pos="296 115 313" sprite="critters/RadScorpion" angle="5.497787" actor_type="rad_scorpion"/>
 	<door pos="296 128 432" sprite="doors/Village DOORS/Fence" angle="0" door_type="rotating"/>

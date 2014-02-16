@@ -64,6 +64,7 @@ namespace game {
 
 		int id() const { return m_grid_index; }
 		float dirAngle() const { return m_dir_angle; }
+		float actualDirAngle() const;
 		const float2 dir() const;
 		const float2 actualDir() const;
 		PSprite sprite() const { return m_sprite; }

@@ -11,6 +11,8 @@
 - Playability!
   - think about it in spare time
 
+- When player is hit while shooting, he might fire in random direction
+
 Secondary:
 - Lighting
 - Different coloring for sprites (so that players could differentiate their characters)

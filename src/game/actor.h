@@ -202,6 +202,9 @@ namespace game {
 		void onFireEvent(const int3&);
 		void onSoundEvent();
 		void onPickupEvent();
+
+		void fireProjectile(const int3 &offset, const float3 &target, const Weapon &weapon,
+								float random_val = 0.0f);
 		
 	private:
 		virtual bool shrinkRenderedBBox() const { return true; }
@@ -225,6 +228,8 @@ namespace game {
 		StanceId::Type m_stance_id;
 
 		ActorInventory m_inventory;
+		int m_burst_mode;
+		int3 m_burst_off;
 
 		ActorAnims m_anims;
 	};

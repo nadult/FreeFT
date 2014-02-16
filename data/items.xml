@@ -19,7 +19,7 @@
 	sprite_name="weapons/Rifles/Laser Rifle"
 	description="Standard issue Wattz-650 laser rifle"
 	projectile_type="laser"
-	projectile_speed="300.0"
+	projectile_speed="200.0"
 	damage="40.0" />
 
 <item
@@ -31,6 +31,20 @@
 	sprite_name="weapons/Rifles/Plasma Rifle"
 	description="Standard issue Wattz-400 plasma rifle"
 	projectile_type="plasma"
+	projectile_speed="100.0"
+	damage="50.0" />
+
+<item
+	type="weapon"
+	id="gatling_laser"
+	name="Gatling laser"
+	class="minigun"
+	weight="5.0"
+	sprite_name="weapons/Miniguns/Gatling Laser"
+	description="Standard issue Wattz-400 plasma rifle"
+	burst_count="30"
+	burst_length="1.5"
+	projectile_type="laser"
 	projectile_speed="200.0"
 	damage="50.0" />
 

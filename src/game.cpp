@@ -24,9 +24,6 @@
 using namespace gfx;
 using namespace game;
 
-float frand() {
-	return float(rand()) / float(RAND_MAX);
-}
 
 int safe_main(int argc, char **argv)
 {

@@ -33,6 +33,10 @@ extern float g_FloatParam[16];
 template <class T> inline T max(T a, T b) { return a < b? b : a; }
 template <class T> inline T min(T a, T b) { return a > b? b : a; }
 
+inline float frand() {
+	return float(rand()) / float(RAND_MAX);
+}
+
 namespace constant {
 	static const float pi		= 3.14159265358979f;
 	static const float e		= 2.71828182845905f;
@@ -674,10 +678,12 @@ template <class T, class T1> inline const T& operator-=(T &a, const T1 &b) { a =
 inline int3 asXZ(const int2 &pos) { return int3(pos.x, 0, pos.y); }
 inline int3 asXY(const int2 &pos) { return int3(pos.x, pos.y, 0); }
 inline int3 asXZY(const int2 &pos, int y) { return int3(pos.x, y, pos.y); }
+inline int3 asXYZ(const int2 &pos, int z) { return int3(pos.x, pos.y, z); }
 
 inline float3 asXZ(const float2 &pos) { return float3(pos.x, 0, pos.y); }
 inline float3 asXY(const float2 &pos) { return float3(pos.x, pos.y, 0); }
 inline float3 asXZY(const float2 &pos, float y) { return float3(pos.x, y, pos.y); }
+inline float3 asXYZ(const float2 &pos, float z) { return float3(pos.x, pos.y, z); }
 
 float dot(const float2 &a, const float2 &b);
 float dot(const float3 &a, const float3 &b);
@@ -693,6 +699,9 @@ float length(const float2&);
 float length(const float3&);
 float distance(const float3&, const float3&);
 float distance(const float2&, const float2&);
+
+float angleDistance(float ang1, float ang2);
+float blendAngles(float initial, float target, float step);
 
 const float2 worldToScreen(const float3 &pos);
 const int2 worldToScreen(const int3 &pos);
@@ -723,8 +732,6 @@ struct MoveVector {
 	int2 vec;
 	int dx, dy, ddiag;
 };
-
-
 
 struct Color
 {

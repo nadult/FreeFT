@@ -144,6 +144,7 @@ namespace game {
 		animate(ActionId::idle);
 		m_target_angle = dirAngle();
 		m_order = m_next_order = doNothingOrder();
+		m_burst_mode = false; //TODO: proper serialize
 	}
 
 	bool Actor::isDead() const {
@@ -210,15 +211,17 @@ namespace game {
 	bool Actor::canEquipWeapon(WeaponClassId::Type class_id) const {
 		DASSERT(WeaponClassId::isValid(class_id));
 
-		for(int s = 0; s < StanceId::count; s++) {
-			if(m_anims.animId(ActionId::idle, (StanceId::Type)s, class_id) == -1) {
-				printf("no idle anim: %d %d\n", s, class_id);
-				return false;
-			}
-			if(m_anims.animId(ActionId::walking, (StanceId::Type)s, class_id) == -1) {
-				printf("no walk anim: %d %d\n", s, class_id);
-				return false;
-			}
+		//TODO: fix this completely:
+		//- when changing stance and cannot equip item in new stance: unequip
+
+		if(m_anims.animId(ActionId::idle, m_stance_id, class_id) == -1) {
+			printf("no idle anim: s:%s c:%s\n",
+					StanceId::toString(m_stance_id), WeaponClassId::toString(class_id));
+			return false;
+		}
+		if(m_anims.animId(ActionId::walking, m_stance_id, class_id) == -1) {
+			printf("no walk anim: %d %d\n", m_stance_id, class_id);
+			return false;
 		}
 
 		return true;
@@ -300,6 +303,7 @@ namespace game {
 			else
 				setPos(new_pos);
 		}
+
 	}
 
 	// sets direction
@@ -312,32 +316,22 @@ namespace game {
 			setDirAngle(m_target_angle);
 	}
 
-	static float angleDist(float a, float b) {
-		float diff = fabs(a - b);
-		return min(diff, constant::pi * 2.0f - diff);
-	}
-
 	void Actor::nextFrame() {
 		Entity::nextFrame();
 
-		float dir_angle = dirAngle();
-		if(dir_angle != m_target_angle) {
-			float step = constant::pi / 4.0f;
-			float new_ang1 = dir_angle + step, new_ang2 = dir_angle - step;
-			if(new_ang1 < 0.0f)
-				new_ang1 += constant::pi * 2.0f;
-			if(new_ang2 < 0.0f)
-				new_ang2 += constant::pi * 2.0f;
-			float new_angle = angleDist(new_ang1, m_target_angle) < angleDist(new_ang2, m_target_angle)?
-					new_ang1 : new_ang2;
-			if(angleDist(dir_angle, m_target_angle) < step)
-				new_angle = m_target_angle;
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi / 4.0f));
 
-			setDirAngle(new_angle);
+		if(m_burst_mode && m_order.id == OrderId::attack) {
+			m_burst_mode++;
+			fireProjectile(m_burst_off, (float3)m_order.attack.target_pos, m_inventory.weapon(), 0.05f);
+			if(m_burst_mode > 20)
+				m_burst_mode = 0;
 		}
 	}
 
 	void Actor::onAnimFinished() {
+		m_burst_mode = false;
+		
 		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack || m_order.id == OrderId::drop_item)
 			m_issue_next_order = true;
 		else if(m_order.id == OrderId::interact) {
@@ -378,13 +372,30 @@ namespace game {
 		if(!weapon.isValid() || m_order.id != OrderId::attack || world()->isClient())
 			return;
 
+		if(m_weapon_class_id == WeaponClassId::minigun) {
+			m_burst_mode = 1;
+			m_burst_off = off;
+		}
+		else
+			fireProjectile(off, m_order.attack.target_pos, weapon, 0.0f);
+	}
+		
+	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
 		float3 pos = boundingBox().center();
 		pos.y = this->pos().y;
-		float3 offset = asXZY(rotateVector(float2(off.x, off.z), dirAngle() - constant::pi * 0.5f), off.y);
-		
+		float3 offset = asXZY(rotateVector(float2(off.x, off.z), actualDirAngle() - constant::pi * 0.5f), off.y);
+
+		float3 dir = float3(target) - pos;
+		float len = length(dir);
+		dir *= 1.0f / len;
+		float2 horiz = angleToVector(vectorToAngle(float2(dir.x, dir.z)) + frand() * constant::pi * random_val);
+		dir.x = horiz.x; dir.z = horiz.y;
+		dir.y += frand() * random_val;
+		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
+	
 		world()->addEntity(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
-												pos + offset, m_order.attack.target_pos, this));
+										pos + offset, actualDirAngle(), pos + dir * len, this));
 	}
 
 	void Actor::onSoundEvent() {

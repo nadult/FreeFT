@@ -221,6 +221,28 @@ float length(const float3 &v) { return sqrt(lengthSq(v)); }
 float distance(const float3 &a, const float3 &b) { return sqrt(distanceSq(a, b)); }
 float distance(const float2 &a, const float2 &b) { return sqrt(distanceSq(a, b)); }
 
+float angleDistance(float a, float b) {
+	float diff = fabs(a - b);
+	return min(diff, constant::pi * 2.0f - diff);
+}
+
+float blendAngles(float initial, float target, float step) {
+	if(initial != target) {
+		float new_ang1 = initial + step, new_ang2 = initial - step;
+		if(new_ang1 < 0.0f)
+			new_ang1 += constant::pi * 2.0f;
+		if(new_ang2 < 0.0f)
+			new_ang2 += constant::pi * 2.0f;
+		float new_angle = angleDistance(new_ang1, target) < angleDistance(new_ang2, target)?
+				new_ang1 : new_ang2;
+		if(angleDistance(initial, target) < step)
+			new_angle = target;
+		return new_angle;
+	}
+
+	return initial;
+}
+
 bool areAdjacent(const IRect &a, const IRect &b) {
 	if(b.min.x < a.max.x && a.min.x < b.max.x)
 		return a.max.y == b.min.y || a.min.y == b.max.y;

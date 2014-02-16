@@ -23,24 +23,28 @@ namespace game {
 		nullptr,				// rocket impact is handled differently
 	};
 
-	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos, const float3 &target, Entity *spawner)
+	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos,
+							float initial_angle, const float3 &target, Entity *spawner)
 		:Entity(s_projectile_names[type]), m_dir(target - pos), m_spawner(spawner), m_type(type) {
 			m_dir *= 1.0f / length(m_dir);
 			setPos(pos);
-			setDir(m_dir.xz());
+			setDirAngle(initial_angle);
+			m_target_angle = vectorToAngle(m_dir.xz());
+//			setDirAngle(m_target_angle);
 			m_speed = speed;
+			m_frame_count = 0;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}
 
 	Projectile::Projectile(Stream &sr) {
-		sr.unpack(m_type, m_dir, m_speed);
+		sr.unpack(m_type, m_dir, m_speed, m_frame_count);
 		Entity::initialize(s_projectile_names[m_type]);
 		loadEntityParams(sr);
 	}
 
 	void Projectile::save(Stream &sr) const {
-		sr.pack(m_type, m_dir, m_speed);
+		sr.pack(m_type, m_dir, m_speed, m_frame_count);
 		saveEntityParams(sr);
 	}
 		
@@ -52,6 +56,11 @@ namespace game {
 		return new Projectile(*this);
 	}
 
+	void Projectile::nextFrame() {
+		Entity::nextFrame();
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi * 0.01f));
+	}
+
 	void Projectile::think() {
 		World *world = Entity::world();
 
@@ -59,7 +68,10 @@ namespace game {
 		Ray ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
-		Intersection isect = world->trace(Segment(ray, 0.0f, ray_pos));
+		if(m_frame_count++ < 6)
+			return;
+
+		Intersection isect = world->trace(Segment(ray, 0.0f, ray_pos), m_spawner.get(), collider_solid);
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		setPos(new_pos);
 

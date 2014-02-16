@@ -175,7 +175,7 @@ namespace game {
 		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
 
 		bbox += pos();
-		if(world()->isColliding(bbox, this))
+		if(world() && world()->isColliding(bbox, this))
 			out.addBox(bbox, Color::red);
 	}
 		
@@ -279,10 +279,13 @@ namespace game {
 		return angleToVector(dirAngle());
 	}
 
-	const float2 Entity::actualDir() const {
+	float Entity::actualDirAngle() const {
 		int dir_count = m_sprite->dirCount(m_seq_id);
-		float angle = float(m_dir_idx) * (constant::pi * 2.0f) / float(dir_count);
-		return angleToVector(angle);
+		return float(m_dir_idx) * (constant::pi * 2.0f) / float(dir_count) + constant::pi;
+	}
+
+	const float2 Entity::actualDir() const {
+		return angleToVector(actualDirAngle());
 	}
 
 	bool areAdjacent(const Entity &a, const Entity &b) {

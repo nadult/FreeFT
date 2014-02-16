@@ -4,3 +4,5 @@
 
 - In res_viewer when popup is visible, you can still select objects behind it by
   clicking on screen (outside of popup area)
+
+- Occusion doesn't work for entities
