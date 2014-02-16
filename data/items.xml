@@ -36,6 +36,19 @@
 
 <item
 	type="weapon"
+	id="pulse_rifle"
+	name="Pulse Rifle"
+	class="rifle"
+	weight="5.0"
+	sprite_name="weapons/Rifles/Pulse Rifle"
+	description="Standard issue Wattz-500 pulse rifle"
+	projectile_type="electric"
+	projectile_speed="120.0"
+	damage="70.0" />
+
+
+<item
+	type="weapon"
 	id="gatling_laser"
 	name="Gatling laser"
 	class="minigun"

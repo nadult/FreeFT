@@ -12,6 +12,7 @@ namespace game {
 	static const char *s_projectile_names[ProjectileTypeId::count] = {
 		"impactfx/Projectile Invisi",
 		"impactfx/Projectile Plasma",
+		"impactfx/Projectile Electric",
 		"impactfx/Projectile Laser",
 		"impactfx/Projectile Rocket",
 	};
@@ -19,8 +20,17 @@ namespace game {
 	static const char *s_impact_names[ProjectileTypeId::count] = {
 		"impactfx/RobotSparks",
 		"impactfx/Impact Plasma",
+		"impactfx/Impact Electric",
 		"impactfx/Impact Laser",
 		nullptr,				// rocket impact is handled differently
+	};
+
+	static bool s_blend_angles[ProjectileTypeId::count] = {
+		false,
+		true,
+		true,
+		false,
+		false,
 	};
 
 	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos,
@@ -30,7 +40,8 @@ namespace game {
 			setPos(pos);
 			setDirAngle(initial_angle);
 			m_target_angle = vectorToAngle(m_dir.xz());
-//			setDirAngle(m_target_angle);
+			if(!s_blend_angles[type])
+				setDirAngle(m_target_angle);
 			m_speed = speed;
 			m_frame_count = 0;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
@@ -38,13 +49,15 @@ namespace game {
 	}
 
 	Projectile::Projectile(Stream &sr) {
-		sr.unpack(m_type, m_dir, m_speed, m_frame_count);
+		sr.unpack(m_type, m_dir, m_speed, m_frame_count, m_target_angle);
+		sr >> m_spawner;
 		Entity::initialize(s_projectile_names[m_type]);
 		loadEntityParams(sr);
 	}
 
 	void Projectile::save(Stream &sr) const {
-		sr.pack(m_type, m_dir, m_speed, m_frame_count);
+		sr.pack(m_type, m_dir, m_speed, m_frame_count, m_target_angle);
+		sr << m_spawner;
 		saveEntityParams(sr);
 	}
 		

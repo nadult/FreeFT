@@ -84,6 +84,7 @@ namespace game {
 	DEFINE_STRINGS( ProjectileTypeId,
 		"bullet",
 		"plasma",
+		"electric",
 		"laser",
 		"rocket"
 	)

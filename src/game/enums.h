@@ -70,6 +70,7 @@ namespace game {
 	DECLARE_ENUM(ProjectileTypeId,
 		bullet,
 		plasma,
+		electric,
 		laser,
 		rocket
 	)

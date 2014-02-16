@@ -24,11 +24,6 @@
 
 using namespace gfx;
 using namespace game;
-
-float frand() {
-	return float(rand()) / float(RAND_MAX);
-}
-	
 using namespace net;
 
 static unique_ptr<World> world;

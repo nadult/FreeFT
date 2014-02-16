@@ -77,6 +77,8 @@ namespace game {
 	Actor::Actor(Stream &sr) {
 	   	sr.unpack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
 		sr >> m_order >> m_next_order;
+		m_burst_mode = sr.decodeInt();
+		m_burst_off = net::decodeInt3(sr);
 
 		sr >> m_path_t;
 		m_path_pos = sr.decodeInt();
@@ -111,10 +113,11 @@ namespace game {
 		return node;
 	}
 
-
 	void Actor::save(Stream &sr) const {
 	   	sr.pack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
 		sr << m_order << m_next_order;
+		sr.encodeInt(m_burst_mode);
+		net::encodeInt3(sr, m_burst_off);
 
 		sr << m_path_t;
 		sr.encodeInt(m_path_pos);
