@@ -12,6 +12,7 @@
 #include "gfx/scene_renderer.h"
 #include "navi_heightmap.h"
 #include <cstdio>
+#include "audio/device.h"
 
 namespace game {
 
@@ -241,6 +242,12 @@ namespace game {
 	void World::replicate(int entity_id) {
 		if(m_mode == Mode::server)
 			m_replication_list.push_back(entity_id);
+	}
+
+	void World::playSound(const char *name, const float3 &pos) {
+		if(isServer())
+			return;
+		audio::playSound(name, pos);
 	}
 
 }

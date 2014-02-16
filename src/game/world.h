@@ -98,6 +98,8 @@ namespace game {
 		void replicate(const Entity*);
 		vector<int> &replicationList() { return m_replication_list; }
 
+		void playSound(const char*, const float3 &pos);
+
 	private:
 		const Mode m_mode;
 		string m_map_name;

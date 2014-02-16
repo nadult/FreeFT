@@ -6,7 +6,7 @@
 #include "game/tile.h"
 #include "gfx/device.h"
 #include "gfx/scene_renderer.h"
-#include <cstring>
+#include "sys/platform.h"
 #include <GL/gl.h>
 #include <algorithm>
 
@@ -77,8 +77,7 @@ namespace game
 		ASSERT(sr.isLoading());
 
 		{
-			string lowercase = name? name : sr.name();
-			std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(), ::tolower);
+			string lowercase = toLower(name? name : sr.name());
 			int slash = lowercase.rfind('/');
 
 			m_type = TileId::unknown;

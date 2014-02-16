@@ -88,6 +88,7 @@ namespace FindFiles {
 void findFiles(vector<FileEntry> &out, const Path &path, int flags = FindFiles::regular_file);
 bool removeSuffix(string &str, const string &suffix);
 bool removePrefix(string &str, const string &prefix);
+const string toLower(const string &str);
 void mkdirRecursive(const Path &path);
 
 

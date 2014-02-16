@@ -20,6 +20,7 @@
 #include "game/item.h"
 #include "sys/config.h"
 #include "sys/xml.h"
+#include "audio/device.h"
 
 using namespace gfx;
 using namespace game;
@@ -29,6 +30,14 @@ int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("game");
 	ItemDesc::loadItems();
+
+	audio::initDevice();
+	atexit(audio::freeDevice);
+
+	printf("AL vendor: %s\n", audio::vendorName().c_str());
+	audio::setListenerPos(float3(0, 0, 0));
+	audio::setListenerVelocity(float3(0, 0, 0));
+	audio::setUnits(16.66666666);
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
@@ -280,6 +289,7 @@ int safe_main(int argc, char **argv)
 	atlas->download(tex);
 	Saver("atlas.tga") & tex; */
 
+	audio::freeDevice();
 	destroyWindow();
 
 	return 0;
@@ -291,6 +301,8 @@ int main(int argc, char **argv) {
 	}
 	catch(const Exception &ex) {
 		destroyWindow();
+		audio::freeDevice();
+
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}

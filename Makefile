@@ -7,6 +7,7 @@ _dummy := $(shell [ -d $(BUILD)/gfx ] || mkdir -p $(BUILD)/gfx)
 _dummy := $(shell [ -d $(BUILD)/ui ] || mkdir -p $(BUILD)/ui)
 _dummy := $(shell [ -d $(BUILD)/sys ] || mkdir -p $(BUILD)/sys)
 _dummy := $(shell [ -d $(BUILD)/net ] || mkdir -p $(BUILD)/net)
+_dummy := $(shell [ -d $(BUILD)/audio ] || mkdir -p $(BUILD)/audio)
 _dummy := $(shell [ -d $(BUILD)/game ] || mkdir -p $(BUILD)/game)
 _dummy := $(shell [ -d $(BUILD)/gameui ] || mkdir -p $(BUILD)/gameui)
 _dummy := $(shell [ -d $(BUILD)/editor ] || mkdir -p $(BUILD)/editor)
@@ -24,7 +25,8 @@ SHARED_SRC=\
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor \
-	editor/tiles_pad editor/entities_pad editor/group_pad editor/tile_group editor/view
+	editor/tiles_pad editor/entities_pad editor/group_pad editor/tile_group editor/view \
+	audio/buffer audio/device audio/source
 
 LIBS_SRC=lz4/lz4 lz4/lz4hc
 
@@ -47,8 +49,8 @@ LINUX_PROGRAMS:=$(PROGRAM_SRC:%=%)
 MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
 LIBS=-lglfw -lbaselib -lpng -lz
-LINUX_LIBS=$(LIBS) -lGL -lGLU -lrt -fopenmp
-MINGW_LIBS=$(LIBS) -lglu32 -lopengl32 -lws2_32
+LINUX_LIBS=$(LIBS) -lopenal -lGL -lGLU -lrt -fopenmp 
+MINGW_LIBS=$(LIBS) -lOpenAL32 -ldsound -lole32 -lwinmm -lglu32 -lopengl32 -lws2_32
 
 LIBS_convert=-lzip 
 

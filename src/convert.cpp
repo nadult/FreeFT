@@ -8,6 +8,7 @@
 #include "game/tile_map.h"
 #include "sys/platform.h"
 #include "sys/xml.h"
+#include "audio.h"
 #include <unistd.h>
 #include <algorithm>
 #include <set>
@@ -34,11 +35,17 @@ struct TileMapProxy: public TileMap {
 	void setResourceName(const char*) { }
 };
 
+struct SoundProxy: public audio::Sound {
+	void legacyLoad(Stream &sr) { load(sr); }
+	void setResourceName(const char*) { }
+};
+
 namespace ResTypeId {
 	enum Type {
 		sprite,
 		tile,
 		map,
+		sound,
 		archive,
 
 		count
@@ -48,6 +55,7 @@ namespace ResTypeId {
 		".spr",
 		".til",
 		".mis",
+		".wav",
 		".bos"
 	};
 
@@ -55,6 +63,7 @@ namespace ResTypeId {
 		".sprite",
 		".tile",
 		".xml",
+		".wav",
 		nullptr
 	};
 
@@ -62,6 +71,7 @@ namespace ResTypeId {
 		"data/sprites/",
 		"data/tiles/",
 		"data/maps/",
+		"data/sounds/",
 		nullptr,
 	};
 };
@@ -83,6 +93,17 @@ void convert(ResTypeId::Type type, Stream &ldr, Stream &svr) {
 		else if(type == ResTypeId::map) {
 			TileMapProxy res;
 			res.legacyConvert(ldr, svr);
+		}
+		else if(type == ResTypeId::sound) {
+			SoundProxy res;
+			ldr >> res;
+			svr << res;
+			/*char buffer[1024 * 16];
+			while(svr.pos() < ldr.size()) {
+				int to_copy = min((int)sizeof(buffer), (int)(ldr.size() - ldr.pos()));
+				ldr.loadData(buffer, to_copy);
+				svr.saveData(buffer, to_copy);
+			}*/
 		}
 	}
 	catch(const Exception &ex) {
@@ -128,8 +149,11 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 		{	
 			Path path = full_path.relative(main_path);
 			string name = path.fileName();
+			string lo_name = toLower(name);
 
-			if(removeSuffix(name, old_ext)) {
+			if(removeSuffix(lo_name, old_ext)) {
+				name.resize(lo_name.size());
+
 				Path new_path = Path(dst_dir) / path.parent() / (name + new_ext);
 				Path parent = new_path.parent();
 
@@ -173,6 +197,7 @@ static ResPath s_paths[] = {
 		{ "sprites/", ResTypeId::sprite },
 		{ "campaigns/missions/core/", ResTypeId::map },
 		{ "campaigns/missions/tutorials/", ResTypeId::map },
+		{ "sound/game/", ResTypeId::sound },
 		{ "", ResTypeId::archive }
 };
 
@@ -224,7 +249,7 @@ private:
 	int m_file_count;
 };
 
-void convertAll(const char *fot_path) {
+void convertAll(const char *fot_path, const string &filter) {
 	Path core_path = (Path(fot_path) / "core").absolute();
 
 	printf("FOT core: %s\n", core_path.c_str());
@@ -235,7 +260,7 @@ void convertAll(const char *fot_path) {
 	std::sort(all_files.begin(), all_files.end());
 	printf("Found: %d files\n", (int)all_files.size());
 
-	std::set<string> files[COUNTOF(s_paths)];
+	std::map<string, string> files[COUNTOF(s_paths)];
 	bool only_archives = 0;
 	unsigned long long bytes = 0;
 	
@@ -245,9 +270,18 @@ void convertAll(const char *fot_path) {
 				continue;
 
 			string name = all_files[n].path.relative(core_path);
-			if(removePrefix(name, s_paths[t].prefix) && removeSuffix(name, ResTypeId::s_old_suffix[s_paths[t].type])) {
-				files[t].insert(name);
-				break;
+			string orig_name = name;
+
+			if(name.find(filter) == string::npos)
+				continue;
+
+			if(removePrefix(name, s_paths[t].prefix)) {
+				string lo_name = toLower(name);
+				if(removeSuffix(lo_name, ResTypeId::s_old_suffix[s_paths[t].type])) {
+					name.resize(lo_name.size());
+					files[t][name] = orig_name;
+					break;
+				}
 			}
 		}
 	}
@@ -260,23 +294,25 @@ void convertAll(const char *fot_path) {
 
 		Path target_dir = ResTypeId::s_new_path[type];
 		Path src_main_path = core_path / s_paths[t].prefix;
+
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
-			Path dir = target_dir / Path(*it).parent();
+			Path dir = target_dir / Path(it->first).parent();
 			if(access(dir.c_str(), R_OK) != 0)
 				mkdirRecursive(dir.c_str());
 		}
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			char src_path[512], dst_path[512];
-			snprintf(src_path, sizeof(src_path), "%s/%s%s", src_main_path.c_str(), it->c_str(), ResTypeId::s_old_suffix[type]);
-			snprintf(dst_path, sizeof(src_path), "%s/%s%s", ResTypeId::s_new_path[type], it->c_str(), ResTypeId::s_new_suffix[type]);
+			snprintf(src_path, sizeof(src_path), "%s/%s", core_path.c_str(), it->second.c_str());
+			snprintf(dst_path, sizeof(dst_path), "%s/%s%s",
+					ResTypeId::s_new_path[type], it->first.c_str(), ResTypeId::s_new_suffix[type]);
 
 			Loader ldr(src_path);
 			Saver svr(dst_path);
 
 			if(type != ResTypeId::tile || bytes > 1024 * 1024) {
 				if(type == ResTypeId::tile) { printf("."); fflush(stdout); }
-				else printf("%s\n", it->c_str());
+				else printf("%s\n", it->first.c_str());
 				bytes = 0;
 			}
 			else 
@@ -294,10 +330,11 @@ void convertAll(const char *fot_path) {
 		Path src_path = core_path / s_paths[t].prefix;
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			char archive_path[512];
-			snprintf(archive_path, sizeof(archive_path), "%s/%s%s", src_path.c_str(), it->c_str(), ResTypeId::s_old_suffix[type]);
+			snprintf(archive_path, sizeof(archive_path), "%s/%s%s",
+					src_path.c_str(), it->first.c_str(), ResTypeId::s_old_suffix[type]);
 
 			Archive archive(archive_path);
-	//		printf("Archive %s: %d\n", archive_path, archive.fileCount());
+			printf("Archive %s: %d\n", it->first.c_str(), archive.fileCount());
 
 			vector<string> names = archive.getNames();
 			for(int n = 0; n < (int)names.size(); n++) {
@@ -306,9 +343,15 @@ void convertAll(const char *fot_path) {
 
 				for(int t = 0; t < COUNTOF(s_paths); t++) {
 					name = names[n];
-					if(removePrefix(name, s_paths[t].prefix) && removeSuffix(name, ResTypeId::s_old_suffix[s_paths[t].type])) {
-						tindex = t;
-						break;
+					string lo_name = toLower(name);
+					if(removePrefix(lo_name, s_paths[t].prefix)) {
+						name = name.substr(name.size() - lo_name.size());
+						lo_name = toLower(name);
+					   	if(removeSuffix(lo_name, ResTypeId::s_old_suffix[s_paths[t].type])) {
+							name.resize(lo_name.size());
+							tindex = t;
+							break;
+						}
 					}
 				}
 
@@ -329,15 +372,21 @@ void convertAll(const char *fot_path) {
 				MemoryLoader ldr(data);
 				Saver svr(dst_path);
 
-				if(type != ResTypeId::tile || bytes > 1024 * 1024) {
-					if(type == ResTypeId::tile) { printf("."); fflush(stdout); }
-					else printf("%s\n", name.c_str());
+				if((type != ResTypeId::tile && type != ResTypeId::sound) || bytes > 1024 * 1024) {
+					if(type == ResTypeId::tile || type == ResTypeId::sound) {
+						printf(".");
+						fflush(stdout);
+					}
+					else
+						printf("%s\n", name.c_str());
 					bytes = 0;
 				}
 				else 
 					bytes += ldr.size();
 				convert(type, ldr, svr);
 			}
+				
+			printf("\n");
 		}
 	}
 
@@ -392,9 +441,15 @@ int safe_main(int argc, char **argv) {
 			path = "refs/sprites/";
 		convert<Sprite>(path.c_str(), "data/sprites/", ".spr", ".sprite", 1, filter);
 	}
+	else if(command == "sounds") {
+		if(path.empty())
+			path = "refs/sound/game/";
+		convert<SoundProxy>(path.c_str(), "data/sounds/", ".wav", ".wav", 1, filter);
+	}
+
 	else if(command == "all") {
 		ASSERT(!path.empty());
-		convertAll(path.c_str());
+		convertAll(path.c_str(), filter);
 	}
 	else {
 		if(!command.empty())
@@ -404,6 +459,7 @@ int safe_main(int argc, char **argv) {
 				"tiles:       converting tiles in .til format from refs/tiles/ directory\n"
 				"sprites:     converting sprites in .spr format from refs/sprites/ directory\n"
 				"maps:        converting maps in .mis format from refs/maps directory\n"
+				"sounds:      copying    sounds in .wav format from refs/sound/game directory\n"
 				"all:         converting everyting (also from .bos files), path has to be specified\n\n"
 				"Options:\n"
 				"-f filter    Converting only those files that match given filter\n"

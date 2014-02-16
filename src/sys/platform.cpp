@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <algorithm>
 
 bool Path::Element::isDot() const {
 	return size == 1 && ptr[0] == '.';
@@ -206,6 +207,11 @@ bool removePrefix(string &str, const string &prefix) {
 	return false;
 }
 
+const string toLower(const string &str) {
+	string out(str);
+	std::transform(out.begin(), out.end(), out.begin(), ::tolower);
+	return std::move(out);
+}
 
 void mkdirRecursive(const Path &path) {
 	Path parent = path.parent();

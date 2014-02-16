@@ -406,7 +406,7 @@ namespace game {
 			return;
 
 		if(m_weapon_class_id == WeaponClassId::rifle && m_order.id == OrderId::attack)
-			printf("Playing sound: plasma!\n");
+			world()->playSound("PlasmaSingle1", pos());
 	}
 
 }
