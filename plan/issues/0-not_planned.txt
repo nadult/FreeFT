@@ -39,3 +39,6 @@
 - Sprzątanie jaki się narobił w Spritach, Tileach, texturkach i paletach (zrobić pełne)
   02.01.13: 23:30 - 01:00 (1h 30min)
   03.01.13: 19:30 - 00:30 (5h)
+
+- Loading data from .fods data sheets
+  20.02.14 - 22.02.14     (2 days)

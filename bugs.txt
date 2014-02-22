@@ -8,3 +8,7 @@
 - Occusion doesn't work for entities
 
 - In release build some bugs (no sound file, etc.) should be handled silently or, logged to a text file
+
+- When standing near a wall, you can fire through it (projectiles spawn too far away)
+
+- When serializing items to XML save not only item desc_id, but also type_id

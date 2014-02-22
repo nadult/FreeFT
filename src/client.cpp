@@ -21,6 +21,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/host.h"
+#include "audio/device.h"
 
 using namespace gfx;
 using namespace game;
@@ -192,8 +193,15 @@ int safe_main(int argc, char **argv)
 
 	unique_ptr<Client> host(new Client(port));
 	
+	audio::initSoundMap();
 	Config config = loadConfig("client");
-	ItemDesc::loadItems();
+	game::loadPools();
+
+	audio::initDevice();
+
+	audio::setListenerPos(float3(0, 0, 0));
+	audio::setListenerVelocity(float3(0, 0, 0));
+	audio::setUnits(16.66666666);
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
@@ -281,7 +289,7 @@ int safe_main(int argc, char **argv)
 				}
 			}
 			if(isMouseKeyDown(1) && shooting_debug) {
-				host->sendOrder(attackOrder(0, (int3)target_pos));
+				host->sendOrder(attackOrder(AttackMode::undefined, (int3)target_pos));
 			}
 			if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
 				int3 wpos = (int3)ray.at(isect.distance());
@@ -298,6 +306,7 @@ int safe_main(int argc, char **argv)
 		if(!navi_debug)
 			world->updateNaviMap(false);
 
+		audio::tick();
 		world->simulate((time - last_time) * config.time_multiplier);
 		last_time = time;
 
@@ -372,7 +381,7 @@ int safe_main(int argc, char **argv)
 			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
 				container = nullptr;
 
-			inventory_sel = clamp(inventory_sel, -2, actor->inventory().size() - 1);
+			inventory_sel = clamp(inventory_sel, -3, actor->inventory().size() - 1);
 			container_sel = clamp(container_sel, 0, container? container->inventory().size() - 1 : 0);
 
 			if(isKeyDown('D') && inventory_sel >= 0)
@@ -380,7 +389,7 @@ int safe_main(int argc, char **argv)
 			else if(isKeyDown('E') && inventory_sel >= 0)
 				host->sendOrder(equipItemOrder(inventory_sel));
 			else if(isKeyDown('E') && inventory_sel < 0) {
-				InventorySlotId::Type slot_id = InventorySlotId::Type(-inventory_sel - 1);
+				ItemType::Type slot_id = ItemType::Type(inventory_sel + 3);
 				host->sendOrder(unequipItemOrder(slot_id));
 			}
 
@@ -418,6 +427,7 @@ int safe_main(int argc, char **argv)
 
 	delete host.release();
 
+	audio::freeDevice();
 	destroyWindow();
 
 	return 0;
@@ -428,6 +438,7 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
+		audio::freeDevice();
 		destroyWindow();
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;

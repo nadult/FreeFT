@@ -15,6 +15,28 @@
 
 namespace game {
 
+	static const char *s_step_stance[StanceId::count] = {
+		"stand",
+		"stand",
+		"prone"
+	};
+
+	static const char *s_step_armour[ArmourClassId::count] = {
+		"",
+		"leath",
+		"metal",
+		"metal",
+		"pow",
+	};
+
+	const SoundId getStepSoundId(StanceId::Type stance, ArmourClassId::Type armour, SurfaceId::Type surf, bool is_heavy) {
+		char name[256];
+		snprintf(name, sizeof(name), "%s%s%s%s", s_step_stance[stance],is_heavy? "heavy" : "normal",
+				s_step_armour[armour], SurfaceId::toString(surf));
+		return SoundId(name);
+	}
+
+
 	//TODO: different speeds for different actors
 	//TODO: load speeds, sprite names, etc. from XML
 	static const float s_speeds[StanceId::count + 1] = {
@@ -170,21 +192,23 @@ namespace game {
 		return new Actor(*this);
 	}
 		
-	void Actor::onImpact(ProjectileTypeId::Type projectile_type, float damage) {
+	void Actor::onImpact(int projectile_type, float damage) {
 		if(m_order.id == OrderId::die)
 			return;
 
+		DeathTypeId::Type death_id = DeathTypeId::normal;
+		/*
 		DeathTypeId::Type death_id =
 			projectile_type == ProjectileTypeId::plasma? DeathTypeId::melt :
 			projectile_type == ProjectileTypeId::laser? DeathTypeId::melt :
-			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal;
+			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal;*/
 		setNextOrder(dieOrder(death_id));
 		issueNextOrder();
 	}
 
 	void Actor::updateArmour() {
-		const ArmourDesc *desc = m_inventory.armour().desc();
-		ArmourClassId::Type class_id = desc? desc->class_id : ArmourClassId::none;
+		const Armour &armour = m_inventory.armour();
+		ArmourClassId::Type class_id = armour.classId();
 		DASSERT(canEquipArmour(class_id));
 
 		if(class_id != m_armour_class_id) {
@@ -194,7 +218,7 @@ namespace game {
 			m_anims = ActorAnims(m_sprite);
 
 			if(!canEquipWeapon(m_weapon_class_id)) {
-				m_inventory.unequip(InventorySlotId::weapon);
+				m_inventory.unequip(ItemType::weapon);
 				updateWeapon();
 				DASSERT(canEquipWeapon(m_weapon_class_id));
 			}
@@ -202,8 +226,8 @@ namespace game {
 	}
 
 	void Actor::updateWeapon() {
-		const WeaponDesc *weapon_desc = m_inventory.weapon().desc();
-		WeaponClassId::Type class_id = weapon_desc? weapon_desc->class_id : WeaponClassId::unarmed;
+		const Weapon &weapon = m_inventory.weapon();
+		WeaponClassId::Type class_id = weapon.classId();
 		DASSERT(canEquipWeapon(class_id));
 
 		if(class_id != m_weapon_class_id) {
@@ -215,9 +239,9 @@ namespace game {
 	bool Actor::canEquipItem(int item_id) const {
 		DASSERT(item_id >= 0 && item_id < m_inventory.size());
 		const Item &item = m_inventory[item_id].item;
-		if(item.typeId() == ItemTypeId::weapon)
+		if(item.type() == ItemType::weapon)
 			return canEquipWeapon(Weapon(item).classId());
-		else if(item.typeId() == ItemTypeId::armour)
+		else if(item.type() == ItemType::armour)
 			return canEquipArmour(Armour(item).classId());
 
 		return true;
@@ -370,24 +394,34 @@ namespace game {
 			DASSERT(m_order.target->entityType() == EntityId::item);
 			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.target.get());
 			Item item = item_entity->item();
+			int count = item_entity->count();
+
 			item_entity->remove();
-			m_inventory.add(item, 1);
+			m_inventory.add(item, count);
 		}
 		else if(m_order.id == OrderId::drop_item) {
 			int item_id = m_order.drop_item.item_id;
 			DASSERT(item_id >= 0 && item_id < m_inventory.size());
 			Item item = m_inventory[item_id].item;
-			m_inventory.remove(item_id, 1);
-			world()->addEntity(new ItemEntity(item, pos())); 
+			int count = m_inventory[item_id].count;
+			if(item.type() != ItemType::ammo)
+				count = 1;
+
+			m_inventory.remove(item_id, count);
+			world()->addEntity(new ItemEntity(item, count, pos())); 
 		}
 	}
 		
 	void Actor::onFireEvent(const int3 &off) {
 		const Weapon &weapon = m_inventory.weapon();
-		if(!weapon.isValid() || m_order.id != OrderId::attack || world()->isClient())
+		if(m_order.id != OrderId::attack || world()->isClient())
+			return;
+		AttackMode::Type mode = m_order.attack.mode;
+
+		if(mode != AttackMode::single && mode != AttackMode::burst)
 			return;
 
-		if(m_weapon_class_id == WeaponClassId::minigun) {
+		if(mode == AttackMode::burst) {
 			m_burst_mode = 1;
 			m_burst_off = off;
 		}
@@ -408,9 +442,12 @@ namespace game {
 		dir.x = horiz.x; dir.z = horiz.y;
 		dir.y += frand() * random_val;
 		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
-	
-		world()->addEntity(new Projectile(weapon.projectileTypeId(), weapon.projectileSpeed(),
-										pos + offset, actualDirAngle(), pos + dir * len, this));
+
+		const ProjectileDesc *proj_desc = weapon.projectileDesc();
+		//TODO: proj_desc should be always valid here
+
+		if(proj_desc)	
+			world()->addEntity(new Projectile(*proj_desc, pos + offset, actualDirAngle(), pos + dir * len, this));
 	}
 
 	void Actor::onStepEvent(bool left_foot) {
@@ -418,7 +455,7 @@ namespace game {
 			return;
 
 		SurfaceId::Type standing_surface = surfaceUnder();
-		SoundId sound_id =  getStepSoundId(m_stance_id, m_armour_class_id, standing_surface, false);
+		SoundId sound_id = getStepSoundId(m_stance_id, m_armour_class_id, standing_surface, false);
 		world()->playSound(sound_id, pos());
 	}
 
@@ -427,13 +464,12 @@ namespace game {
 			return;
 
 		if(m_order.id == OrderId::attack) {
-			const WeaponDesc *weapon_desc = m_inventory.weapon().desc();
-			ASSERT(weapon_desc);
+			const Weapon &weapon = m_inventory.weapon();
 
 			//TODO: select firing mode in attack order
 			world()->playSound(m_weapon_class_id == WeaponClassId::minigun?
-					weapon_desc->sound_ids[WeaponSoundId::fire_burst] :
-					weapon_desc->sound_ids[WeaponSoundId::fire_single], pos());
+					weapon.soundId(WeaponSoundType::fire_burst) :
+					weapon.soundId(WeaponSoundType::fire_single), pos());
 		}
 	}
 

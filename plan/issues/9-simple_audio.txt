@@ -1,12 +1,13 @@
 Prosty system dźwiękowy, tak żeby można było usłyszeć strzały:
 - oparty o OpenAL (skopiować z newborn-a)  4h DONE
 - dźwięki do strzałów   2h DONE
-- dźwięki kroków?  2h
+- dźwięki kroków?  2h  DONE
 - dźwięki od zniszczeń  SECONDARY
 
 
 +ESTIMATED_TIME:  8h
-+TIME_SPENT: 9h
++TIME_SPENT: 10h 30min
++DONE
 
 +WORK_LOG:
-16.02.14: 13:00 - 17:00, 17:30 - 22:30
+16.02.14: 13:00 - 17:00, 17:30 - 24:00

@@ -8,13 +8,17 @@
 
 #include "base.h"
 #include "game/item.h"
+#include "game/weapon.h"
+#include "game/armour.h"
 
 namespace game {
 
 	class Inventory {
 	public:
+		enum { max_entries = 1024 };
+
 		struct Entry {
-			Entry() :count(0) { }
+			float weight() const { return item.weight() * float(count); }
 
 			Item item;
 			int count;
@@ -40,26 +44,30 @@ namespace game {
 
 	class ActorInventory: public Inventory {
 	public:
-		InventorySlotId::Type equip(int id);
-		int unequip(InventorySlotId::Type);
+		ActorInventory();
+
+		bool equip(int id, int count = 1);
+		int unequip(ItemType::Type);
 
 		const string printMenu(int select) const;
 		float weight() const;
 
-		const Weapon &weapon() const
-			{ return reinterpret_cast<const Weapon&>(m_slots[InventorySlotId::weapon].item); }
-		const Armour &armour() const
-			{ return reinterpret_cast<const Armour&>(m_slots[InventorySlotId::armour].item); }
-		const Item &ammo() const
-			{ return m_slots[InventorySlotId::ammo].item; }
+		static const Weapon dummyWeapon();
+		static const Armour dummyArmour();
+		static const Item   dummyAmmo();
 
-		const Entry &slot(InventorySlotId::Type id) const { return m_slots[id]; }
-		
+		const Weapon &weapon() const { return m_weapon; }
+		const Armour &armour() const { return m_armour; }
+		const Entry  &ammo  () const { return m_ammo; }
+		void useAmmo(int count);
+
 		void save(Stream&) const;
 		void load(Stream&);
 
 	protected:
-		Entry m_slots[InventorySlotId::count];
+		Weapon m_weapon;
+		Armour m_armour;
+		Entry  m_ammo;
 	};
 
 

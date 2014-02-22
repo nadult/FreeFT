@@ -109,7 +109,7 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="59">
+<entity_map size="1056 936" entity_count="62">
 	<container pos="162 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="163 115 228" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
 	<container pos="165 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
@@ -137,28 +137,31 @@ CRC32 d1c72fa9
 	<door pos="246 115 303" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="0" door_type="sliding"/>
 	<door pos="249 115 250" sprite="doors/Generic DOORS/MetalDoor1" angle="4.712389" door_type="rotating"/>
 	<door pos="250 128 423" sprite="doors/Village DOORS/Fence" angle="0" door_type="rotating"/>
+	<item pos="269 128 352" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1000"/>
 	<container pos="269 128 363" sprite="containers/Pot" angle="0"/>
 	<door pos="270 115 210" sprite="doors/Generic DOORS/MetalDoor1" angle="3.141593" door_type="rotating"/>
+	<item pos="270 128 355" sprite="items/ammo/762mm" angle="0" item_desc="762mm" item_type="ammo" count="1000"/>
 	<container pos="270 128 360" sprite="containers/Pot" angle="0"/>
 	<container pos="272 115 279" sprite="containers/Safe" angle="0"/>
 	<container pos="272 128 363" sprite="containers/Pot" angle="0"/>
-	<item pos="275 128 356" sprite="weapons/Rifles/Pulse Rifle" angle="0" item_desc="pulse_rifle"/>
+	<item pos="275 128 356" sprite="weapons/Rifles/Pulse Rifle" angle="0" item_desc="pulse_rifle" item_type="weapon" count="1"/>
 	<container pos="276 115 306" sprite="containers/Table N" angle="3.141593"/>
-	<item pos="277 128 361" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle"/>
-	<item pos="279 128 370" sprite="weapons/Miniguns/Gatling Laser" angle="0" item_desc="gatling_laser"/>
-	<item pos="287 128 367" sprite="armour/Power Armour" angle="0" item_desc="power_armour"/>
+	<item pos="277 128 361" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle" item_type="weapon" count="1"/>
+	<item pos="279 128 370" sprite="weapons/Miniguns/Gatling Laser" angle="0" item_desc="gatling_laser" item_type="weapon" count="1"/>
+	<item pos="280 128 358" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60" item_type="weapon" count="1"/>
+	<item pos="287 128 367" sprite="armour/Power Armour" angle="0" item_desc="power_armour" item_type="armour" count="1"/>
 	<actor pos="296 115 313" sprite="critters/RadScorpion" angle="5.497787" actor_type="rad_scorpion"/>
 	<door pos="296 128 432" sprite="doors/Village DOORS/Fence" angle="0" door_type="rotating"/>
-	<item pos="298 115 262" sprite="weapons/Rifles/Plasma Rifle" angle="1.570796" item_desc="plasma_rifle"/>
-	<item pos="300 115 276" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60"/>
-	<item pos="301 115 261" sprite="weapons/Rifles/Laser Rifle" angle="1.570796" item_desc="laser_rifle"/>
+	<item pos="298 115 262" sprite="weapons/Rifles/Plasma Rifle" angle="1.570796" item_desc="plasma_rifle" item_type="weapon" count="1"/>
+	<item pos="300 115 276" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60" item_type="weapon" count="1"/>
+	<item pos="301 115 261" sprite="weapons/Rifles/Laser Rifle" angle="1.570796" item_desc="laser_rifle" item_type="weapon" count="1"/>
 	<actor pos="308 115 329" sprite="critters/RadScorpion" angle="0" actor_type="rad_scorpion"/>
-	<item pos="311 119 262" sprite="armour/Power Armour" angle="1.570796" item_desc="power_armour"/>
-	<item pos="314 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
-	<item pos="316 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
-	<item pos="316 119 262" sprite="armour/Leather Armour" angle="1.570796" item_desc="leather_armour"/>
-	<item pos="318 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
-	<item pos="320 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell"/>
+	<item pos="311 119 262" sprite="armour/Power Armour" angle="1.570796" item_desc="power_armour" item_type="armour" count="1"/>
+	<item pos="314 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
+	<item pos="316 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
+	<item pos="316 119 262" sprite="armour/Leather Armour" angle="1.570796" item_desc="leather_armour" item_type="armour" count="1"/>
+	<item pos="318 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
+	<item pos="320 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
 	<door pos="380 115 219" sprite="doors/Generic DOORS/MetalDoor1" angle="1.570796" door_type="rotating"/>
 	<door pos="398 115 229" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>
 	<door pos="399 115 239" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_type="sliding"/>

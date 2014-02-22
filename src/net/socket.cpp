@@ -137,6 +137,8 @@ namespace net {
 	}
 
 	void Socket::operator=(Socket &&rhs) {
+		if(&rhs == this)
+			return;
 		swap(m_fd, rhs.m_fd);
 		rhs.close();
 	}

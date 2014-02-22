@@ -243,7 +243,7 @@ int safe_main(int argc, char **argv)
 	unique_ptr<Server> host(new Server(port));
 	
 	Config config = loadConfig("server");
-	ItemDesc::loadItems();
+	game::loadPools();
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);

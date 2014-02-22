@@ -6,10 +6,9 @@
 #ifndef GAME_ENTITY_H
 #define GAME_ENTITY_H
 
-#include "base.h"
-#include <memory>
 #include "game/sprite.h"
-#include "game/enums.h"
+#include "game/base.h"
+#include <memory>
 
 
 namespace game {
@@ -17,7 +16,6 @@ namespace game {
 	class World;
 	class Actor;
 	class EntityRef;
-	class SoundId;
 
 	//TODO: static polimorphism where its possible, or maybe even
 	// array for each subtype of Entity class
@@ -25,12 +23,12 @@ namespace game {
 	class Entity {
 	protected:
 		Entity();
-		void initialize(const char *sprite_name);
+		void initialize(const string &sprite_name);
 		void saveEntityParams(Stream&) const;
 		void loadEntityParams(Stream&);
 
 	public:
-		Entity(const char *sprite_name);
+		Entity(const string &sprite_name);
 		Entity(const XMLNode&);
 		Entity(Stream&);
 		Entity(const Entity&);
@@ -50,7 +48,7 @@ namespace game {
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
-		virtual void onImpact(ProjectileTypeId::Type projectile_type, float damage) { }
+		virtual void onImpact(int type, float damage) { }
 
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially
@@ -97,7 +95,7 @@ namespace game {
 		virtual void onStepEvent(bool left_foot) { }
 		virtual void onPickupEvent() { }
 
-		void changeSprite(const char *new_name, bool update_bbox);
+		void changeSprite(const string &new_name, bool update_bbox);
 		void playSequence(int seq_id);
 	
 		// you shouldn't call playAnimation from this method	

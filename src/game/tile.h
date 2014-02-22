@@ -9,7 +9,7 @@
 #include "gfx/texture.h"
 #include "gfx/device.h"
 #include "gfx/texture_cache.h"
-#include "game/enums.h"
+#include "game/base.h"
 
 namespace game
 {

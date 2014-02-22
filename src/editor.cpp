@@ -255,7 +255,7 @@ public:
 int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("editor");
-	game::ItemDesc::loadItems();
+	game::loadPools();
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::editor; built " __DATE__ " " __TIME__);

@@ -340,9 +340,13 @@ CRC32 201bbbc2
 		<box min="517 128 584" max="534 151 660"/>
 	</occluder>
 </occluders>
-<entity_map size="1896 1896" entity_count="5">
+<entity_map size="1896 1896" entity_count="9">
 	<container pos="241 131 333" sprite="containers/Toolboard N" angle="0"/>
 	<container pos="244 128 365" sprite="containers/Toolbench N" angle="0"/>
+	<item pos="252 128 393" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1000"/>
+	<item pos="253 128 397" sprite="weapons/Rifles/Laser Rifle" angle="0" item_desc="laser_rifle" item_type="weapon" count="1"/>
+	<item pos="253 128 402" sprite="weapons/Rifles/Pulse Rifle" angle="0" item_desc="pulse_rifle" item_type="weapon" count="1"/>
+	<item pos="254 128 406" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle" item_type="weapon" count="1"/>
 	<door pos="342 129 423" sprite="doors/Jail DOORS/JailCellDoor" angle="0" door_type="rotating"/>
 	<door pos="342 129 447" sprite="doors/Jail DOORS/JailCellDoor" angle="0" door_type="rotating"/>
 	<door pos="342 129 471" sprite="doors/Jail DOORS/JailCellDoor" angle="0" door_type="rotating"/>

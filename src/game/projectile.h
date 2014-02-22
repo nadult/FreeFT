@@ -7,12 +7,29 @@
 #define GAME_PROJECTILE_H
 
 #include "game/entity.h"
+#include "sys/data_sheet.h"
 
 namespace game {
+	
+	struct ImpactDesc: public Tuple, TupleImpl<ImpactDesc> {
+		ImpactDesc(const TupleParser &parser);
+
+		string sprite_name;
+	};
+
+	struct ProjectileDesc: public Tuple, TupleImpl<ProjectileDesc> {
+		ProjectileDesc(const TupleParser &parser);
+		void connect();
+
+		string sprite_name;
+		TupleRef<ImpactDesc> impact_ref;
+		float speed;
+		bool blend_angles;
+	};
 
 	class Projectile: public Entity {
 	public:
-		Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos, float initial_ang,
+		Projectile(const ProjectileDesc &desc, const float3 &pos, float initial_ang,
 					const float3 &target, Entity *spawner);
 		Projectile(Stream&);
 		
@@ -23,15 +40,13 @@ namespace game {
 		virtual EntityId::Type entityType() const { return EntityId::projectile; }
 		virtual Entity *clone() const;
 
-		ProjectileTypeId::Type type() const { return m_type; }
-
 	protected:
 		virtual void think();
 		void nextFrame();
 		friend class World;
 
 	private:
-		ProjectileTypeId::Type m_type;
+		const ProjectileDesc *m_desc;
 		EntityRef m_spawner;
 		float3 m_dir;
 		float m_speed, m_target_angle;
@@ -40,7 +55,7 @@ namespace game {
 
 	class Impact: public Entity {
 	public:
-		Impact(const char *sprite_name, const float3 &pos);
+		Impact(const ImpactDesc&, const float3 &pos);
 		Impact(Stream&);
 
 		void save(Stream&) const;
@@ -52,6 +67,7 @@ namespace game {
 	
 	protected:
 		virtual void onAnimFinished();
+		const ImpactDesc *m_desc;
 	};
 
 }

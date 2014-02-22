@@ -7,6 +7,87 @@
 #include <cmath>
 #include <cstdlib>
 
+const char* strcasestr(const char *a, const char *b) {
+	DASSERT(a && b);
+
+	while(*a) {
+		if(strcasecmp(a, b) == 0)
+			return a;
+		a++;
+	}
+
+	return nullptr;
+}
+
+int strcasecmp(const char *a, const char *b) {
+	DASSERT(a && b);
+	while(*a && tolower(*a) == tolower(*b)) {
+		a++;
+		b++;
+	}
+
+	return *a < *b? -1 : *a == *b? 0 : 1;
+}
+
+bool toBool(const char *input) {
+	CString str(input);
+	if(caseEqual(str, "true"))
+		return true;
+	if(caseEqual(str, "false"))
+		return false;
+	return toInt(input) != 0;
+}
+
+int toInt(const char *str) {
+	DASSERT(str);
+	int out;
+	if(sscanf(str, "%d", &out) != 1)
+		THROW("Error while converting string \"%s\" to int", str);
+	return out;
+}
+
+float toFloat(const char *str) {
+	DASSERT(str);
+	float out;
+	if(sscanf(str, "%f", &out) != 1)
+		THROW("Error while converting string \"%s\" to float", str);
+	return out;
+}
+
+uint toFlags(const char *input, const char **strings, int num_strings, uint first_flag) {
+	const char *iptr = input;
+
+	uint out_value = 0;
+	while(*iptr) {
+		const char *next_space = strchr(iptr, ' ');
+		int len = next_space? next_space - iptr : strlen(iptr);
+
+		bool found = false;
+		for(int e = 0; e < num_strings; e++)
+			if(strncmp(iptr, strings[e], len) == 0 && strings[e][len] == 0) {
+				out_value |= first_flag << e;
+				found = true;
+				break;
+			}
+
+		if(!found) {
+			char flags[1024], *ptr = flags;
+			for(int i = 0; i < num_strings; i++)
+				ptr += snprintf(ptr, sizeof(flags) - (ptr - flags), "%s ", strings[i]);
+			if(num_strings)
+				ptr[-1] = 0;
+
+			THROW("Error while converting string \"%s\" to flags (%s)", input, flags);
+		}
+
+		if(!next_space)
+			break;
+		iptr = next_space + 1;
+	}
+
+	return out_value;
+}
+
 int fromString(const char *str, const char **strings, int count) {
 	DASSERT(str);
 	for(int n = 0; n < count; n++)
@@ -279,6 +360,7 @@ MoveVector::MoveVector(const int2 &start, const int2 &end) {
 }
 MoveVector::MoveVector() :vec(0, 0), dx(0), dy(0), ddiag(0) { }
 
+/*
 
 #include "../libs/lz4/lz4.h"
 #include "../libs/lz4/lz4hc.h"
@@ -311,3 +393,4 @@ void decompress(const PodArray<char> &in, PodArray<char> &out) {
 	ASSERT(decompressed_bytes == size);
 }
 
+*/

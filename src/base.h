@@ -24,23 +24,84 @@ class XMLDocument;
 
 typedef unsigned int uint;
 
+#ifdef _WIN32
+
+const char* strcasestr(const char *a, const char *b);
+int strcasecmp(const char *a, const char *b);
+
+#endif
+
+// TODO: finish me
+class CString {
+public:
+	CString(const string &str) :m_str(str.c_str()), m_len((int)str.size()) { }
+	CString(const char *str, int len = -1) :m_str(str), m_len(len == -1? strlen(str) : len) { }
+	CString() :m_str(nullptr), m_len(0) { }
+	explicit operator const char*() const { return m_str; }
+	const char *c_str() const { return m_str; }
+	bool isValid() const { return m_str != nullptr; }
+	int size() const { return m_len; }
+	bool isEmpty() const { return m_len == 0; }
+
+	CString operator+(int offset) const {
+		DASSERT(offset <= m_len);
+		return CString(m_str + offset, m_len - offset);
+	}
+
+private:
+	const char *m_str;
+	int m_len;
+};
+
+
+inline bool operator==(const CString a, const CString b) {
+	DASSERT(a.isValid() && b.isValid());
+	return a.size() == b.size() && strcmp(a.c_str(), b.c_str()) == 0;
+}
+
+inline bool operator!=(const CString a, const CString b) {
+	DASSERT(a.isValid() && b.isValid());
+	return strcmp(a.c_str(), b.c_str()) != 0;
+}
+
+inline bool operator<(const CString a, const CString b) {
+	DASSERT(a.isValid() && b.isValid());
+	return strcmp(a.c_str(), b.c_str()) < 0;
+}
+
+inline bool caseEqual(const CString a, const CString b) {
+	DASSERT(a.isValid() && b.isValid());
+	return a.size() == b.size() && strcasecmp(a.c_str(), b.c_str()) == 0;
+}
+
+inline bool caseNEqual(const CString a, const CString b) {
+	DASSERT(a.isValid() && b.isValid());
+	return strcasecmp(a.c_str(), b.c_str()) != 0;
+}
+
+inline bool caseLess(const CString a, const CString b) {
+	DASSERT(a.isValid() && b.isValid());
+	return strcasecmp(a.c_str(), b.c_str()) < 0;
+}
+
+
 #include "sys/memory.h"
 
 #define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
 
-int fromString(const char *str, const char **strings, int count) __attribute((noinline));
+int fromString(const char *str, const char **strings, int count);
 
 #define DECLARE_ENUM(type, ...) \
 	namespace type { enum Type: char { __VA_ARGS__, count }; \
-		const char *toString(Type); \
+		const char *toString(int); \
 		Type fromString(const char*); \
 		inline bool isValid(Type val) { return val >= 0 && val < count; } \
 	}
 
-#define DEFINE_STRINGS(type, ...) \
+#define DEFINE_ENUM(type, ...) \
 	namespace type { \
 		static const char *s_strings[count] = { __VA_ARGS__ }; \
-		const char *toString(Type value) { \
+		const char *toString(int value) { \
 			DASSERT(value >= 0 && value < count); \
 			return s_strings[value]; \
 		} \
@@ -843,5 +904,12 @@ namespace game {
 	typedef Ptr<Sprite> PSprite;
 	typedef std::unique_ptr<Entity> PEntity;
 }
+
+// These functions expect valid strings and throw on error
+
+bool  toBool(const char *input);
+int   toInt(const char *input);
+float toFloat(const char *input);
+uint  toFlags(const char *input, const char **flags, int num_flags, uint first_flag);
 
 #endif

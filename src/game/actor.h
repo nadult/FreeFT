@@ -8,6 +8,7 @@
 
 #include "game/entity.h"
 #include "game/inventory.h"
+#include "game/weapon.h"
 
 namespace game {
 
@@ -77,14 +78,14 @@ namespace game {
 		struct Die			{ DeathTypeId::Type death_type; };
 		struct Move			{ int3 target_pos; bool run; };
 		struct ChangeStance	{ int next_stance; };
-		struct Attack		{ int3 target_pos; int mode; };
+		struct Attack		{ int3 target_pos; AttackMode::Type mode; };
 		struct Interact {
 			InteractionMode mode;
 			bool waiting_for_move;
 		};
 		struct DropItem { int item_id; };
 		struct EquipItem { int item_id; };
-		struct UnequipItem { InventorySlotId::Type slot_id; };
+		struct UnequipItem { ItemType::Type item_type; };
 		struct TransferItem { int item_id, count; TransferMode mode; };
 
 		OrderId id;
@@ -111,7 +112,7 @@ namespace game {
 	Order moveOrder(int3 target_pos, bool run);
 	Order doNothingOrder();
 	Order changeStanceOrder(int next_stance);
-	Order attackOrder(int attack_mode, const int3 &target_pos);
+	Order attackOrder(AttackMode::Type, const int3 &target_pos);
 	Order interactOrder(Entity *target, InteractionMode mode);
 
 	//TODO: zamiast idkow, w rozkazach przekazywac cale obiekty? jesli, np.
@@ -120,7 +121,7 @@ namespace game {
 	Order dropItemOrder(int item_id);
 	Order transferItemOrder(Entity *target, TransferMode mode, int item_id, int count);
 	Order equipItemOrder(int item_id);
-	Order unequipItemOrder(InventorySlotId::Type item_id);
+	Order unequipItemOrder(ItemType::Type type);
 
 	//TODO: this should be shared among actors with the same sprites
 	class ActorAnims {
@@ -163,7 +164,7 @@ namespace game {
 
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }
-		void onImpact(ProjectileTypeId::Type projectile_type, float damage);
+		void onImpact(int projectile_type, float damage);
 
 		bool isDead() const;
 		

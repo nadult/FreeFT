@@ -29,9 +29,8 @@ using namespace game;
 int safe_main(int argc, char **argv)
 {
 	audio::initSoundMap();
-
 	Config config = loadConfig("game");
-	ItemDesc::loadItems();
+	game::loadPools();
 
 	audio::initDevice();
 
@@ -146,7 +145,8 @@ int safe_main(int argc, char **argv)
 			}
 		}
 		if(isMouseKeyDown(1) && shooting_debug) {
-			actor->setNextOrder(attackOrder(0, (int3)target_pos));
+			AttackMode::Type mode = isKeyPressed(Key_lshift)? AttackMode::burst : AttackMode::undefined;
+			actor->setNextOrder(attackOrder(mode, (int3)target_pos));
 		}
 		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
 			int3 wpos = (int3)ray.at(isect.distance());
@@ -238,7 +238,7 @@ int safe_main(int argc, char **argv)
 			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
 				container = nullptr;
 
-			inventory_sel = clamp(inventory_sel, -2, actor->inventory().size() - 1);
+			inventory_sel = clamp(inventory_sel, -3, actor->inventory().size() - 1);
 			container_sel = clamp(container_sel, 0, container? container->inventory().size() - 1 : 0);
 
 			if(isKeyDown('D') && inventory_sel >= 0)
@@ -246,8 +246,8 @@ int safe_main(int argc, char **argv)
 			else if(isKeyDown('E') && inventory_sel >= 0)
 				actor->setNextOrder(equipItemOrder(inventory_sel));
 			else if(isKeyDown('E') && inventory_sel < 0) {
-				InventorySlotId::Type slot_id = InventorySlotId::Type(-inventory_sel - 1);
-				actor->setNextOrder(unequipItemOrder(slot_id));
+				ItemType::Type type = ItemType::Type(inventory_sel + 3);
+				actor->setNextOrder(unequipItemOrder(type));
 			}
 
 			if(container) {
@@ -296,8 +296,8 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		destroyWindow();
 		audio::freeDevice();
+		destroyWindow();
 
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;

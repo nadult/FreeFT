@@ -8,6 +8,7 @@
 
 #include "editor/entities_editor.h"
 #include "ui/combo_box.h"
+#include "ui/edit_box.h"
 #include "ui/progress_bar.h"
 
 namespace ui {
@@ -19,8 +20,10 @@ namespace ui {
 		virtual bool onEvent(const Event &ev);
 
 	protected:
+		void updateItemIds();
 		void updateEntity();
 		void updateVisibility();
+
 		void findSprites(vector<string> &out, const char *path);
 
 		PEntitiesEditor	m_editor;
@@ -31,7 +34,11 @@ namespace ui {
 		PComboBox		m_actor_type;
 		PComboBox		m_door_sprite;
 		PComboBox		m_container_sprite;
+
 		PComboBox		m_item_type;
+		PComboBox		m_item_id;
+		PEditBox		m_item_count;
+		int				m_item_count_val;
 
 		PComboBox		m_door_type;
 

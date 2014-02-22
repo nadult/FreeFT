@@ -9,54 +9,49 @@
 
 namespace game {
 
-	static const char *s_projectile_names[ProjectileTypeId::count] = {
-		"impactfx/Projectile Invisi",
-		"impactfx/Projectile Plasma",
-		"impactfx/Projectile Electric",
-		"impactfx/Projectile Laser",
-		"impactfx/Projectile Rocket",
-	};
+	ImpactDesc::ImpactDesc(const TupleParser &parser) :Tuple(parser) {
+		sprite_name = parser("sprite_name");
+	}
 
-	static const char *s_impact_names[ProjectileTypeId::count] = {
-		"impactfx/RobotSparks",
-		"impactfx/Impact Plasma",
-		"impactfx/Impact Electric",
-		"impactfx/Impact Laser",
-		nullptr,				// rocket impact is handled differently
-	};
+	ProjectileDesc::ProjectileDesc(const TupleParser &parser) :Tuple(parser) {
+		sprite_name = parser("sprite_name");
+		impact_ref = parser("impact_id");
+		blend_angles = toBool(parser("blend_angles"));
+		speed = toFloat(parser("speed"));
+	}
 
-	static bool s_blend_angles[ProjectileTypeId::count] = {
-		false,
-		true,
-		true,
-		false,
-		false,
-	};
+	void ProjectileDesc::connect() {
+		if(!impact_ref.id().empty())
+			impact_ref.connect();
+	}
 
-	Projectile::Projectile(ProjectileTypeId::Type type, float speed, const float3 &pos,
+	Projectile::Projectile(const ProjectileDesc &desc, const float3 &pos,
 							float initial_angle, const float3 &target, Entity *spawner)
-		:Entity(s_projectile_names[type]), m_dir(target - pos), m_spawner(spawner), m_type(type) {
+		:Entity(desc.sprite_name.c_str()), m_dir(target - pos), m_spawner(spawner), m_desc(&desc) {
 			m_dir *= 1.0f / length(m_dir);
 			setPos(pos);
 			setDirAngle(initial_angle);
 			m_target_angle = vectorToAngle(m_dir.xz());
-			if(!s_blend_angles[type])
+			if(!desc.blend_angles)
 				setDirAngle(m_target_angle);
-			m_speed = speed;
+			m_speed = desc.speed;
 			m_frame_count = 0;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}
 
 	Projectile::Projectile(Stream &sr) {
-		sr.unpack(m_type, m_dir, m_speed, m_frame_count, m_target_angle);
+		//TODO: wrong id may cause a crash, should we do smth about it?
+		m_desc = &ProjectileDesc::get(sr.decodeInt());
+		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle);
 		sr >> m_spawner;
-		Entity::initialize(s_projectile_names[m_type]);
+		Entity::initialize(m_desc->sprite_name.c_str());
 		loadEntityParams(sr);
 	}
 
 	void Projectile::save(Stream &sr) const {
-		sr.pack(m_type, m_dir, m_speed, m_frame_count, m_target_angle);
+		sr.encodeInt(m_desc->idx);
+		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle);
 		sr << m_spawner;
 		saveEntityParams(sr);
 	}
@@ -89,28 +84,33 @@ namespace game {
 		setPos(new_pos);
 
 		if(isect.distance() < ray_pos) {
-			if(s_impact_names[m_type]) {
-				world->addEntity(new Impact(s_impact_names[m_type], new_pos));
+			if(m_desc->impact_ref.isValid()) {
+				world->addEntity(new Impact(*(const ImpactDesc*)m_desc->impact_ref, new_pos));
 
 				if(isect.isEntity()) {
 					float damage = 100.0f;
-					isect.entity()->onImpact(type(), damage);
+					isect.entity()->onImpact(0, damage);
 				}
 			}
 			remove();
 		}
 	}
 
-	Impact::Impact(const char *sprite_name, const float3 &pos)
-		:Entity(sprite_name) {
+	Impact::Impact(const ImpactDesc &desc, const float3 &pos)
+		:Entity(desc.sprite_name.c_str()), m_desc(&desc) {
 		setPos(pos);
 	}
 	
-	Impact::Impact(Stream &sr) :Entity(sr) {
+	Impact::Impact(Stream &sr) {
+		//TODO: wrong id may cause a crash, should we do smth about it?
+		m_desc = &ImpactDesc::get(sr.decodeInt());
+		Entity::initialize(m_desc->sprite_name.c_str());
+		loadEntityParams(sr);
 	}
 
 	void Impact::save(Stream &sr) const {
-		Entity::save(sr);
+		sr.encodeInt(m_desc->idx);
+		saveEntityParams(sr);
 	}
 	
 	XMLNode Impact::save(XMLNode& parent) const {

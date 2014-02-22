@@ -24,7 +24,10 @@ public:
 	XMLNode() :m_ptr(nullptr), m_doc(nullptr) { }
 
 	//TODO: add function hasAttrib, use it in sys::config
-	
+
+	// Returns nullptr if not found
+	const char *hasAttrib(const char *name) const;
+
 	// If an attribute cannot be found or properly parsed,
 	// then exception is thrown
 	const char *attrib(const char *name) const;
@@ -36,6 +39,8 @@ public:
 
 	const float2 float2Attrib(const char *name) const;
 	const float3 float3Attrib(const char *name) const;
+
+	//TODO: make toInt, toFloat2 functions so that they can be used not only on attribs
 
 
 	// When adding new nodes, you have to make sure that strings given as

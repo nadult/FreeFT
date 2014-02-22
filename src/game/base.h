@@ -3,10 +3,10 @@
    This file is part of FreeFT.
  */
 
-#ifndef GAME_ENUMS_H
-#define GAME_ENUMS_H
+#ifndef GAME_BASE_H
+#define GAME_BASE_H
 
-#include "base.h"
+#include "../base.h"
 
 namespace game {
 
@@ -29,21 +29,6 @@ namespace game {
 		metal,
 		environmental,
 		power
-	)
-
-	DECLARE_ENUM(ItemTypeId,
-		invalid = -1,
-		weapon = 0,
-		armour,
-		ammo,
-		other
-	)
-
-	DECLARE_ENUM(InventorySlotId,
-		invalid = -1,
-		weapon = 0,
-		armour,
-		ammo
 	)
 
 	DECLARE_ENUM(ActorTypeId,
@@ -122,6 +107,38 @@ namespace game {
 		prone
 	);
 
+	DECLARE_ENUM(AttackMode,
+		single,
+		burst,
+		thrust,
+		slash,
+		throwing,
+		punch,
+		kick,
+
+		undefined
+	);
+	
+	namespace AttackMode {
+		inline constexpr uint toFlags(Type t) { return t == undefined? 0 : 1 << t; }
+		inline int actionId(Type t) { return t == burst || t == kick? 2 : 1; }
+	};
+
+	namespace AttackModeFlags {
+		enum Type {
+			single		= toFlags(AttackMode::single),
+			burst		= toFlags(AttackMode::burst),
+			thrust		= toFlags(AttackMode::thrust),
+			slash		= toFlags(AttackMode::slash),
+			throwing	= toFlags(AttackMode::throwing),
+		};
+
+		uint fromString(const char*);
+
+		AttackMode::Type getFirst(uint flags);
+	};
+	
+
 	inline constexpr int tileIdToFlag(TileId::Type id) { return 1 << (16 + id); }
 
 	//TODO: better name
@@ -152,14 +169,20 @@ namespace game {
 		visibility_flag			= 0x80000000,
 	};
 	
-	inline ColliderFlags operator|(ColliderFlags a, ColliderFlags b) { return (ColliderFlags)((int)a | (int)b); }
+	inline constexpr ColliderFlags operator|(ColliderFlags a, ColliderFlags b)
+			{ return (ColliderFlags)((int)a | (int)b); }
 
-	enum class FiringMode {
-		single,
-		burst,
+	class SoundId {
+	public:
+		SoundId() :m_id(-1) { }
+		SoundId(const char *sound_name);
+		operator int() const { return m_id; }
+
+	protected:
+		int m_id;
 	};
 
-
+	void loadPools();
 
 }
 

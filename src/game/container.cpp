@@ -67,7 +67,7 @@ namespace game {
 	}
 
 	void Container::setKey(const Item &key) {
-		DASSERT(!key.isValid() || key.typeId() == ItemTypeId::other);
+		DASSERT(key.type() == ItemType::other);
 		m_key = key;
 	}
 
@@ -78,7 +78,7 @@ namespace game {
 		if(isOpened())
 			close();
 		else {
-			if(m_key.isValid()) {
+			if(!m_key.isDummy()) {
 				const Actor *actor = dynamic_cast<const Actor*>(interactor);
 				if(!actor || actor->inventory().find(m_key) == -1) {
 					printf("Key required!\n");

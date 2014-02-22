@@ -53,7 +53,7 @@ namespace game {
 		new_order.change_stance = Order::ChangeStance{next_stance};
 		return new_order;
 	}
-	Order attackOrder(int attack_mode, const int3 &target_pos) {
+	Order attackOrder(AttackMode::Type attack_mode, const int3 &target_pos) {
 		Order new_order(OrderId::attack);
 		new_order.attack = Order::Attack{target_pos, attack_mode};
 		return new_order;
@@ -75,10 +75,10 @@ namespace game {
 		new_order.equip_item = Order::EquipItem{item_id};
 		return new_order;
 	}
-	Order unequipItemOrder(InventorySlotId::Type slot_id) {
+	Order unequipItemOrder(ItemType::Type type) {
 		Order new_order(OrderId::unequip_item);
-		DASSERT(slot_id >= 0 && slot_id < InventorySlotId::count);
-		new_order.unequip_item = Order::UnequipItem{slot_id};
+		DASSERT(ItemType::isValid(type));
+		new_order.unequip_item = Order::UnequipItem{type};
 		return new_order;
 	}
 	Order transferItemOrder(Entity *target, TransferMode mode, int item_id, int count) {
@@ -172,7 +172,17 @@ namespace game {
 			else if(m_next_order.id == OrderId::attack) {
 				roundPos();
 				lookAt(m_next_order.attack.target_pos);
-				animate(ActionId::attack1);
+		
+				AttackMode::Type mode = m_order.attack.mode;
+				uint modes = m_inventory.weapon().attackModes();
+				modes &= AttackMode::toFlags(mode);
+				m_next_order.attack.mode = mode = AttackModeFlags::getFirst(modes);
+				
+				//TODO: fix actionId from attack_mode
+				if(mode != AttackMode::undefined)
+					animate(AttackMode::actionId(mode) == 2? ActionId::attack2 : ActionId::attack1);
+				else
+					m_next_order = doNothingOrder();
 			}
 			else if(m_next_order.id == OrderId::drop_item) {
 				int item_id = m_next_order.drop_item.item_id;
@@ -199,24 +209,29 @@ namespace game {
 				m_next_order = doNothingOrder();
 			}
 			else if(m_next_order.id == OrderId::equip_item || m_next_order.id == OrderId::unequip_item) {
-				InventorySlotId::Type changed_slot = InventorySlotId::invalid;
+				ItemType::Type changed_item = ItemType::invalid;
 
 				if(m_next_order.id == OrderId::equip_item) {
 					int item_id = m_next_order.equip_item.item_id;
-					if(item_id >= 0 && item_id < m_inventory.size() && canEquipItem(item_id))
-						changed_slot = m_inventory.equip(item_id);
+
+					if(m_inventory.isValidId(item_id) && canEquipItem(item_id)) {
+						//TODO: reloading ammo
+						changed_item = m_inventory[item_id].item.type();
+						if(!m_inventory.equip(item_id))
+							changed_item = ItemType::invalid;
+					}
 				}
 				else {
-					InventorySlotId::Type slot_id = m_next_order.unequip_item.slot_id;
-					if(m_inventory.unequip(slot_id) != -1)
-						changed_slot = slot_id;
+					ItemType::Type type = m_next_order.unequip_item.item_type;
+					if(m_inventory.unequip(type) != -1)
+						changed_item = type;
 				}
 
 				m_next_order = doNothingOrder();
 
-				if(changed_slot == InventorySlotId::armour)
+				if(changed_item == ItemType::armour)
 					updateArmour();
-				else if(changed_slot == InventorySlotId::weapon)
+				else if(changed_item == ItemType::weapon)
 					updateWeapon();
 			}
 			else if(m_next_order.id == OrderId::die) {

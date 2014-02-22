@@ -4,7 +4,7 @@
  */
 
 #include "editor/entities_pad.h"
-#include "game/enums.h"
+#include "game/base.h"
 #include "game/entity.h"
 #include "game/sprite.h"
 
@@ -59,10 +59,17 @@ namespace ui {
 				m_container_sprite->addEntry(m_container_sprite_names[n].c_str() + 11);
 			m_container_sprite->selectEntry(0);
 
-			m_item_type = new ComboBox(second_rect, 200, "Item: ");
-			for(int n = 0; n < game::ItemDesc::count(); n++)
-				m_item_type->addEntry(game::ItemDesc::get(n)->name.c_str());
+			m_item_type = new ComboBox(second_rect, 200, "Item type: ");
+			for(int n = 0; n < game::ItemType::count; n++)
+				m_item_type->addEntry(game::ItemType::toString(n));
 			m_item_type->selectEntry(0);
+
+			m_item_id = new ComboBox(IRect(0, 66, width, 88), 200, "Item: ");
+			updateItemIds();
+			
+			m_item_count = new EditBox(IRect(0, 88, width, 110), 200);
+			m_item_count->setText("1");
+			m_item_count_val = 1;
 		}
 
 		{
@@ -81,11 +88,27 @@ namespace ui {
 		attach(m_door_sprite.get());
 		attach(m_container_sprite.get());
 		attach(m_item_type.get());
+		attach(m_item_id.get());
+		attach(m_item_count.get());
 		
 		attach(m_door_type.get());
 
 		updateEntity();
 		updateVisibility();
+	}
+
+	void EntitiesPad::updateItemIds() {
+		ItemType::Type type = (ItemType::Type)m_item_type->selectedId();
+		DASSERT(ItemType::isValid(type));
+
+		m_item_id->clear();
+		for(int n = 0; n < game::Item::count(type); n++) {
+			const game::ItemDesc &desc = game::Item::get(game::ItemIndex(n, type));
+
+			if(!desc.is_dummy)
+				m_item_id->addEntry(desc.id.c_str());
+		}
+		m_item_id->selectEntry(0);
 	}
 
 	void EntitiesPad::findSprites(vector<string> &out, const char *path) {
@@ -109,6 +132,22 @@ namespace ui {
 		else if(ev.type == Event::element_selected && m_entity_type.get() == ev.source) {
 			updateEntity();
 			updateVisibility();
+		}
+		else if(ev.type == Event::element_selected && m_item_type.get() == ev.source) {
+			updateItemIds();
+			updateEntity();
+		}
+		else if(ev.type == Event::text_modified && m_item_count.get() == ev.source) {
+			const char *text = m_item_count->text();
+			int tcount = atoi(text);
+			tcount = max(1, tcount);
+			
+			char ttext[64];
+			snprintf(ttext, sizeof(ttext), "%d", tcount);
+			if(strcmp(ttext, text) != 0)
+				m_item_count->setText(ttext);
+			m_item_count_val = tcount;
+			updateEntity();
 		}
 		else if(ev.source && ev.source->parent() == this) {
 			updateEntity();
@@ -148,7 +187,10 @@ namespace ui {
 			m_proto = (PEntity)new game::Door(sprite_name, type, pos);
 		}
 		else if(type == EntityId::item) {
-			m_proto = (PEntity)new game::ItemEntity(game::ItemDesc::get(m_item_type->selectedId()), pos);
+			ItemType::Type type = (ItemType::Type)m_item_type->selectedId();
+			int idx = m_item_id->selectedId();
+
+			m_proto = (PEntity)new game::ItemEntity(game::Item(idx, type), m_item_count_val, pos);
 		}
 
 		m_editor->setProto(m_proto.get());
@@ -161,6 +203,8 @@ namespace ui {
 		m_door_type->setVisible(type == EntityId::door);
 		m_container_sprite->setVisible(type == EntityId::container);
 		m_item_type->setVisible(type == EntityId::item);
+		m_item_id->setVisible(type == EntityId::item);
+		m_item_count->setVisible(type == EntityId::item);
 	}
 
 }

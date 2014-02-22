@@ -46,6 +46,11 @@ void XMLNode::parsingError(const char *attrib_name) const {
 	THROW("Error while parsing attribute value: %s in node: %s\n", attrib_name, name());
 }
 
+const char *XMLNode::hasAttrib(const char *name) const {
+	XMLAttrib *attrib = m_ptr->first_attribute(name);
+	return attrib? attrib->value() : nullptr;
+}
+
 const char *XMLNode::attrib(const char *name) const {
 	XMLAttrib *attrib = m_ptr->first_attribute(name);
 	if(!attrib || !attrib->value())

@@ -18,7 +18,7 @@ namespace game {
 
 	static int s_unique_id = 0;
 
-	void Entity::initialize(const char *sprite_name) {
+	void Entity::initialize(const string &sprite_name) {
 		m_sprite = Sprite::mgr[sprite_name];
 		m_max_screen_rect = m_sprite->getMaxRect();
 		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
@@ -74,7 +74,7 @@ namespace game {
 
 	Entity::Entity() :m_to_be_removed(false), m_grid_index(-1), m_unique_id(s_unique_id++), m_first_ref(nullptr) { }
 
-	Entity::Entity(const char *sprite_name) :Entity() {
+	Entity::Entity(const string &sprite_name) :Entity() {
 		initialize(sprite_name);
 	}
 
@@ -198,7 +198,7 @@ namespace game {
 			onPickupEvent();
 	}
 
-	void Entity::changeSprite(const char *new_name, bool update_bbox) {
+	void Entity::changeSprite(const string &new_name, bool update_bbox) {
 		string sequence_name = (*m_sprite)[m_seq_id].name;
 		m_sprite = Sprite::mgr[new_name];
 		int new_seq_id = m_sprite->findSequence(sequence_name.c_str());
