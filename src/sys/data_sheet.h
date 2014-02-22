@@ -82,6 +82,12 @@ struct TupleImpl
 		DASSERT(idx >= 0 && idx < (int)pool.size());
 		return pool[idx];
 	}
+	static const T &get(const string &name) {
+		int idx = find(name);
+		if(idx == -1)
+			THROW("Can't find tuple with id: %s (pool: %s)", name.c_str(), pool.name());
+		return get(idx);
+	}
 
 	static void connectRefs() { pool.connectRefs(); }
 
@@ -108,11 +114,7 @@ public:
 	void connect() {
 		if(m_id.empty())
 			return;
-
-		int idx = RT::pool.findTuple(m_id);
-		if(idx == -1)
-			THROW("Can't find tuple with id: %s (pool: %s)", m_id.c_str(), RT::pool.name());
-		m_idx = idx;
+		m_idx = RT::get(m_id).idx;
 	}
 
 	explicit operator const RT*() const {

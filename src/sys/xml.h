@@ -63,6 +63,7 @@ public:
 	const char *name() const;
 	
 	const char *own(const char *str);
+	const char *own(const string &str) { return own(str.c_str()); }
 	explicit operator bool() const { return m_ptr != nullptr; }
 	
 protected:

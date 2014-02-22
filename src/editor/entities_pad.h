@@ -32,7 +32,7 @@ namespace ui {
 		PComboBox		m_entity_type;
 
 		PComboBox		m_actor_type;
-		PComboBox		m_door_sprite;
+		PComboBox		m_door_id;
 		PComboBox		m_container_sprite;
 
 		PComboBox		m_item_type;
@@ -40,11 +40,8 @@ namespace ui {
 		PEditBox		m_item_count;
 		int				m_item_count_val;
 
-		PComboBox		m_door_type;
-
 		game::PEntity	m_proto;
 
-		vector<string>	m_door_sprite_names;
 		vector<string>	m_container_sprite_names;
 	};
 	

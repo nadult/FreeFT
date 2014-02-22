@@ -27,6 +27,9 @@ namespace game {
 		m_dir_angle = 0.0f;
 		m_pos = float3(0.0f, 0.0f, 0.0f);
 		m_seq_id = -1;
+
+		//TODO: this function calls virtual functions (handle something)
+		// DONT DO IT!
 		playSequence(0);
 	}
 
@@ -206,7 +209,8 @@ namespace game {
 			new_seq_id = 0;
 		m_seq_id = -1;
 		m_is_looped = false;
-		m_dir_idx = m_sprite->findDir(new_seq_id, m_dir_angle);
+	
+		// DONT call this function here, do it in a better way	
 		playSequence(new_seq_id);
 
 		if(update_bbox)

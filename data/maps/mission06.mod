@@ -347,9 +347,9 @@ CRC32 201bbbc2
 	<item pos="253 128 397" sprite="weapons/Rifles/Laser Rifle" angle="0" item_desc="laser_rifle" item_type="weapon" count="1"/>
 	<item pos="253 128 402" sprite="weapons/Rifles/Pulse Rifle" angle="0" item_desc="pulse_rifle" item_type="weapon" count="1"/>
 	<item pos="254 128 406" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle" item_type="weapon" count="1"/>
-	<door pos="342 129 423" sprite="doors/Jail DOORS/JailCellDoor" angle="0" door_type="rotating"/>
-	<door pos="342 129 447" sprite="doors/Jail DOORS/JailCellDoor" angle="0" door_type="rotating"/>
-	<door pos="342 129 471" sprite="doors/Jail DOORS/JailCellDoor" angle="0" door_type="rotating"/>
+	<door pos="342 129 423" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="0" door_id="bos_interior"/>
+	<door pos="342 129 447" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="0" door_id="bos_interior"/>
+	<door pos="342 129 471" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="0" door_id="bos_interior"/>
 </entity_map>
 .
 61684,61685d

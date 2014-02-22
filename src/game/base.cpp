@@ -12,6 +12,8 @@
 #include "game/weapon.h"
 #include "game/armour.h"
 #include "game/projectile.h"
+#include "game/door.h"
+#include "game/container.h"
 
 namespace game {
 
@@ -99,13 +101,6 @@ namespace game {
 		"unknown"
 	)
 
-	DEFINE_ENUM(DoorTypeId,
-		"rotating",
-		"sliding",
-		"rotating_in",
-		"rotating_out"
-	)
-
 	DEFINE_ENUM(StanceId,
 		"standing",
 		"crouching",
@@ -147,8 +142,10 @@ namespace game {
 		AmmoDesc::load(tables, "ammo");
 		ArmourDesc::load(tables, "armours");
 		OtherItemDesc::load(tables, "otheritems");
+
 		ProjectileDesc::load(tables, "projectiles");
 		ImpactDesc::load(tables, "impacts");
+		DoorDesc::load(tables, "doors");
 
 		WeaponDesc::connectRefs();
 		AmmoDesc::connectRefs();
@@ -156,6 +153,7 @@ namespace game {
 		OtherItemDesc::connectRefs();
 		ProjectileDesc::connectRefs();
 		ImpactDesc::connectRefs();
+		DoorDesc::connectRefs();
 	}
 
 }

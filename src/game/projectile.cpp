@@ -67,6 +67,7 @@ namespace game {
 	void Projectile::nextFrame() {
 		Entity::nextFrame();
 		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi * 0.01f));
+		m_frame_count++;
 	}
 
 	void Projectile::think() {
@@ -76,7 +77,7 @@ namespace game {
 		Ray ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
-		if(m_frame_count++ < 6)
+		if(m_frame_count < 2)
 			return;
 
 		Intersection isect = world->trace(Segment(ray, 0.0f, ray_pos), m_spawner.get(), collider_solid);

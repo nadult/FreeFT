@@ -94,13 +94,6 @@ namespace game {
 		unknown
 	);
 
-	DECLARE_ENUM(DoorTypeId,
-		rotating,
-		sliding,
-		rotating_in,
-		rotating_out
-	)
-
 	DECLARE_ENUM(StanceId,
 		standing,
 		crouching,

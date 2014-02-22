@@ -12,3 +12,7 @@
 - When standing near a wall, you can fire through it (projectiles spawn too far away)
 
 - When serializing items to XML save not only item desc_id, but also type_id
+
+- Verify if sprite_name is valid in ***Desc
+
+- Duplicated sprites: Robot turrets

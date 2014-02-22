@@ -46,13 +46,12 @@ namespace ui {
 				m_actor_type->addEntry(ActorTypeId::toString((ActorTypeId::Type)n));
 			m_actor_type->selectEntry(0);
 
-			findSprites(m_door_sprite_names, "doors");
 			findSprites(m_container_sprite_names, "containers");
 
-			m_door_sprite = new ComboBox(second_rect, 200, "Door sprite: ");
-			for(int n = 0; n < (int)m_door_sprite_names.size(); n++)
-				m_door_sprite->addEntry(m_door_sprite_names[n].c_str() + 6);
-			m_door_sprite->selectEntry(0);
+			m_door_id = new ComboBox(second_rect, 200, "Door: ");
+			for(int n = 0; n < (int)DoorDesc::count(); n++)
+				m_door_id->addEntry(DoorDesc::get(n).id.c_str());
+			m_door_id->selectEntry(0);
 			
 			m_container_sprite = new ComboBox(second_rect, 200, "Container sprite: ");
 			for(int n = 0; n < (int)m_container_sprite_names.size(); n++)
@@ -64,34 +63,33 @@ namespace ui {
 				m_item_type->addEntry(game::ItemType::toString(n));
 			m_item_type->selectEntry(0);
 
-			m_item_id = new ComboBox(IRect(0, 66, width, 88), 200, "Item: ");
-			updateItemIds();
 			
-			m_item_count = new EditBox(IRect(0, 88, width, 110), 200);
-			m_item_count->setText("1");
-			m_item_count_val = 1;
 		}
 
 		{
 			IRect third_rect(0, 66, width, 88);
 
-			m_door_type = new ComboBox(third_rect, 200, "Door type: ");
-			for(int n = 0; n < DoorTypeId::count; n++)
-				m_door_type->addEntry(DoorTypeId::toString((DoorTypeId::Type)n));
-			m_door_type->selectEntry(0);
+			m_item_id = new ComboBox(third_rect, 200, "Item: ");
+			updateItemIds();
+		}
+
+		{
+			IRect fourth_rect(0, 88, width, 110);
+
+			m_item_count = new EditBox(fourth_rect, 200);
+			m_item_count->setText("1");
+			m_item_count_val = 1;
 		}
 		
 		attach(m_editor_mode_box.get());
 		attach(m_entity_type.get());
 
 		attach(m_actor_type.get());
-		attach(m_door_sprite.get());
+		attach(m_door_id.get());
 		attach(m_container_sprite.get());
 		attach(m_item_type.get());
 		attach(m_item_id.get());
 		attach(m_item_count.get());
-		
-		attach(m_door_type.get());
 
 		updateEntity();
 		updateVisibility();
@@ -172,8 +170,12 @@ namespace ui {
 			m_proto = (PEntity)new game::Container(sprite_name, pos);
 		}
 		else if(type == EntityId::door) {
-			const char *sprite_name = m_door_sprite_names[m_door_sprite->selectedId()].c_str();
-			DoorTypeId::Type type = (DoorTypeId::Type)m_door_type->selectedId();
+			int desc_id = m_door_id->selectedId();
+			DASSERT(desc_id >= 0 && desc_id < DoorDesc::count());
+			const DoorDesc &desc = DoorDesc::get(desc_id);
+
+			/*
+			//TODO: verification of anims?
 			PSprite sprite = Sprite::mgr[sprite_name];
 			if(!Door::testSpriteType(sprite, type)) {
 				for(int n = 0; n < DoorTypeId::count; n++) {
@@ -182,9 +184,9 @@ namespace ui {
 						break;
 				}
 				m_door_type->selectEntry(type);
-			}
+			}*/
 
-			m_proto = (PEntity)new game::Door(sprite_name, type, pos);
+			m_proto = (PEntity)new game::Door(desc, pos);
 		}
 		else if(type == EntityId::item) {
 			ItemType::Type type = (ItemType::Type)m_item_type->selectedId();
@@ -199,8 +201,7 @@ namespace ui {
 	void EntitiesPad::updateVisibility() {
 		EntityId::Type type = s_types[m_entity_type->selectedId()];
 		m_actor_type->setVisible(type == EntityId::actor);
-		m_door_sprite->setVisible(type == EntityId::door);
-		m_door_type->setVisible(type == EntityId::door);
+		m_door_id->setVisible(type == EntityId::door);
 		m_container_sprite->setVisible(type == EntityId::container);
 		m_item_type->setVisible(type == EntityId::item);
 		m_item_id->setVisible(type == EntityId::item);
