@@ -8,9 +8,24 @@
 
 #include "game/entity.h"
 #include "game/inventory.h"
+#include "sys/data_sheet.h"
 
 namespace game
 {
+	
+	DECLARE_ENUM(ContainerSoundType,
+		opening,
+		closing
+	)
+
+	struct ContainerDesc: public Tuple, TupleImpl<ContainerDesc> {
+		ContainerDesc(const TupleParser&);
+
+		string sprite_name;
+		string name;
+		SoundId sound_ids[ContainerSoundType::count];
+	};
+
 
 	class Container: public Entity
 	{
@@ -28,7 +43,7 @@ namespace game
 
 		Container(Stream&);
 		Container(const XMLNode&);
-		Container(const char *sprite_name, const float3 &pos);
+		Container(const ContainerDesc&, const float3 &pos);
 
 		virtual ColliderFlags colliderType() const { return collider_static; }
 		virtual EntityId::Type entityType() const { return EntityId::container; }
@@ -39,6 +54,7 @@ namespace game
 		void setKey(const Item&);
 
 		virtual void interact(const Entity*);
+		virtual void onSoundEvent();
 
 		bool isOpened() const { return m_state == state_opened; }
 		bool isAlwaysOpened() const { return m_is_always_opened; }
@@ -53,6 +69,7 @@ namespace game
 		virtual void think();
 		virtual void onAnimFinished();
 
+		const ContainerDesc *m_desc;
 		State m_state, m_target_state;
 		bool m_is_always_opened;
 		bool m_update_anim;

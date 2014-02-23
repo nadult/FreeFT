@@ -16,3 +16,5 @@
 - Verify if sprite_name is valid in ***Desc
 
 - Duplicated sprites: Robot turrets
+
+- Fix problem with mixed upper/lower case of paths to resources

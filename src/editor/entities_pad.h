@@ -24,8 +24,6 @@ namespace ui {
 		void updateEntity();
 		void updateVisibility();
 
-		void findSprites(vector<string> &out, const char *path);
-
 		PEntitiesEditor	m_editor;
 		PComboBox		m_editor_mode_box;
 
@@ -33,7 +31,7 @@ namespace ui {
 
 		PComboBox		m_actor_type;
 		PComboBox		m_door_id;
-		PComboBox		m_container_sprite;
+		PComboBox		m_container_id;
 
 		PComboBox		m_item_type;
 		PComboBox		m_item_id;
@@ -41,8 +39,6 @@ namespace ui {
 		int				m_item_count_val;
 
 		game::PEntity	m_proto;
-
-		vector<string>	m_container_sprite_names;
 	};
 	
 	typedef Ptr<EntitiesPad> PEntitiesPad;

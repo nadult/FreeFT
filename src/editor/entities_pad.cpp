@@ -46,17 +46,15 @@ namespace ui {
 				m_actor_type->addEntry(ActorTypeId::toString((ActorTypeId::Type)n));
 			m_actor_type->selectEntry(0);
 
-			findSprites(m_container_sprite_names, "containers");
-
 			m_door_id = new ComboBox(second_rect, 200, "Door: ");
 			for(int n = 0; n < (int)DoorDesc::count(); n++)
 				m_door_id->addEntry(DoorDesc::get(n).id.c_str());
 			m_door_id->selectEntry(0);
 			
-			m_container_sprite = new ComboBox(second_rect, 200, "Container sprite: ");
-			for(int n = 0; n < (int)m_container_sprite_names.size(); n++)
-				m_container_sprite->addEntry(m_container_sprite_names[n].c_str() + 11);
-			m_container_sprite->selectEntry(0);
+			m_container_id = new ComboBox(second_rect, 200, "Container: ");
+			for(int n = 0; n < ContainerDesc::count(); n++)
+				m_container_id->addEntry(ContainerDesc::get(n).id.c_str());
+			m_container_id->selectEntry(0);
 
 			m_item_type = new ComboBox(second_rect, 200, "Item type: ");
 			for(int n = 0; n < game::ItemType::count; n++)
@@ -86,7 +84,7 @@ namespace ui {
 
 		attach(m_actor_type.get());
 		attach(m_door_id.get());
-		attach(m_container_sprite.get());
+		attach(m_container_id.get());
 		attach(m_item_type.get());
 		attach(m_item_id.get());
 		attach(m_item_count.get());
@@ -109,17 +107,6 @@ namespace ui {
 		m_item_id->selectEntry(0);
 	}
 
-	void EntitiesPad::findSprites(vector<string> &out, const char *path) {
-		vector<FileEntry> entries;
-		findFiles(entries, Sprite::mgr.prefix() + "/" + path, FindFiles::regular_file|FindFiles::recursive);
-		for(int n = 0; n < (int)entries.size(); n++) {
-			string name = entries[n].path;
-			if(removePrefix(name, Sprite::mgr.prefix()) && removeSuffix(name, Sprite::mgr.suffix()))
-				out.push_back(name);
-		}
-		std::sort(out.begin(), out.end());
-	}
-	
 	bool EntitiesPad::onEvent(const Event &ev) {
 		if(ev.type == Event::button_clicked && m_editor.get() == ev.source) {
 			if(m_editor_mode_box->selectedId() != m_editor->mode())
@@ -166,8 +153,11 @@ namespace ui {
 		if(type == EntityId::actor)
 			m_proto = (PEntity)new game::Actor((ActorTypeId::Type)m_actor_type->selectedId(), pos);
 		else if(type == EntityId::container) {
-			const char *sprite_name = m_container_sprite_names[m_container_sprite->selectedId()].c_str();
-			m_proto = (PEntity)new game::Container(sprite_name, pos);
+			int desc_id = m_container_id->selectedId();
+			DASSERT(desc_id >= 0 && desc_id < ContainerDesc::count());
+			const ContainerDesc &desc = ContainerDesc::get(desc_id);
+
+			m_proto = (PEntity)new game::Container(desc, pos);
 		}
 		else if(type == EntityId::door) {
 			int desc_id = m_door_id->selectedId();
@@ -202,7 +192,7 @@ namespace ui {
 		EntityId::Type type = s_types[m_entity_type->selectedId()];
 		m_actor_type->setVisible(type == EntityId::actor);
 		m_door_id->setVisible(type == EntityId::door);
-		m_container_sprite->setVisible(type == EntityId::container);
+		m_container_id->setVisible(type == EntityId::container);
 		m_item_type->setVisible(type == EntityId::item);
 		m_item_id->setVisible(type == EntityId::item);
 		m_item_count->setVisible(type == EntityId::item);

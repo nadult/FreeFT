@@ -146,6 +146,7 @@ namespace game {
 		ProjectileDesc::load(tables, "projectiles");
 		ImpactDesc::load(tables, "impacts");
 		DoorDesc::load(tables, "doors");
+		ContainerDesc::load(tables, "containers");
 
 		WeaponDesc::connectRefs();
 		AmmoDesc::connectRefs();
@@ -154,6 +155,7 @@ namespace game {
 		ProjectileDesc::connectRefs();
 		ImpactDesc::connectRefs();
 		DoorDesc::connectRefs();
+		ContainerDesc::connectRefs();
 	}
 
 }

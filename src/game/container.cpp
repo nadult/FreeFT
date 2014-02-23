@@ -12,6 +12,24 @@
 
 namespace game {
 
+	DEFINE_ENUM(ContainerSoundType,
+		"open",
+		"close"
+	)
+
+	ContainerDesc::ContainerDesc(const TupleParser &parser) :Tuple(parser) {
+		sprite_name = parser("sprite_name");
+		ASSERT(!sprite_name.empty());
+		name = parser("name");
+
+		const char *sound_prefix = parser("sound_prefix");
+		for(int n = 0; n < ContainerSoundType::count; n++) {
+			char name[256];
+			snprintf(name, sizeof(name), "%s%s", sound_prefix, ContainerSoundType::toString(n));
+			sound_ids[n] = SoundId(name);
+		}
+	}
+
 	static const char *s_seq_names[Container::state_count] = {
 		"Closed",
 		"Opened",
@@ -19,7 +37,13 @@ namespace game {
 		"Closing",
 	};
 
-	Container::Container(Stream &sr) :Entity(sr) {
+	Container::Container(Stream &sr) {
+		int desc_id = sr.decodeInt();
+		ASSERT(desc_id >= 0 && desc_id < ContainerDesc::count());
+		m_desc = &ContainerDesc::get(desc_id);
+
+		Entity::initialize(m_desc->sprite_name.c_str());
+		loadEntityParams(sr);
 		sr.unpack(m_state, m_target_state);
 		
 		m_update_anim = false;
@@ -32,20 +56,24 @@ namespace game {
 	}
 
 	Container::Container(const XMLNode &node) :Entity(node) {
+		m_desc = &ContainerDesc::get(node.attrib("container_id"));
 		initialize();
 	}
-	Container::Container(const char *sprite_name, const float3 &pos) :Entity(sprite_name) {
+	Container::Container(const ContainerDesc &desc, const float3 &pos) :Entity(desc.sprite_name), m_desc(&desc) {
 		initialize();
 		setPos(pos);
 	}
 
 	void Container::save(Stream &sr) const {
-		Entity::save(sr);
+		sr.encodeInt(m_desc->idx);
+		saveEntityParams(sr);
 		sr.pack(m_state, m_target_state);
 	}
 
 	XMLNode Container::save(XMLNode &parent) const {
-		return Entity::save(parent);
+		XMLNode node = Entity::save(parent);
+		node.addAttrib("container_id", node.own(m_desc->id));
+		return node;
 	}
 
 	void Container::initialize() {
@@ -88,7 +116,13 @@ namespace game {
 			open();
 		}
 	}
-
+	
+	void Container::onSoundEvent() {
+		bool is_opening = m_state == state_opening;
+		ContainerSoundType::Type sound_type = is_opening? ContainerSoundType::opening : ContainerSoundType::closing;
+		world()->playSound(m_desc->sound_ids[sound_type], pos());
+	}
+	
 	void Container::open() {
 		m_target_state = state_opened;
 	}

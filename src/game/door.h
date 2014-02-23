@@ -82,14 +82,14 @@ namespace game
 		virtual void onAnimFinished();
 		FBox computeBBox(State) const;
 
+		const DoorDesc *m_desc;
+
 		State m_state;
 		Item m_key;
 		double m_close_time;
 
 		int m_seq_ids[state_count];
 		bool m_update_anim;
-
-		const DoorDesc *m_desc;
 	};
 };
 

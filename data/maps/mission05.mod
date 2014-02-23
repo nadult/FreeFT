@@ -110,42 +110,38 @@ CRC32 d1c72fa9
 	</occluder>
 </occluders>
 <entity_map size="1056 936" entity_count="62">
-	<container pos="162 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="162 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="163 115 228" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
-	<container pos="165 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="168 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="165 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="168 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="170 115 221" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
-	<container pos="171 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="174 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="177 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="171 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="174 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="177 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="180 115 225" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
-	<container pos="180 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="183 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="180 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="183 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="183 115 407" sprite="critters/SDC" angle="4.712389" actor_type="sdc"/>
-	<container pos="186 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="189 115 320" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="186 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
+	<container pos="189 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
 	<actor pos="195 115 404" sprite="critters/SDC" angle="3.926991" actor_type="sdc"/>
 	<door pos="198 115 222" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
 	<door pos="198 115 252" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
 	<door pos="198 115 294" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
 	<door pos="228 115 270" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
 	<door pos="228 115 324" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<container pos="229 115 279" sprite="containers/Bookcase N" angle="3.141593"/>
-	<container pos="234 115 171" sprite="containers/Ice Chest S" angle="3.141593"/>
-	<container pos="243 115 170" sprite="containers/Fridge S" angle="3.141593"/>
 	<door pos="248 115 220" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="4.712389" door_id="bos_interior"/>
 	<door pos="246 115 303" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="0" door_id="vault_interior"/>
 	<door pos="249 115 250" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="4.712389" door_id="bos_interior"/>
 	<door pos="250 128 423" sprite="doors/Village DOORS/Fence" angle="0" door_id="fence"/>
 	<item pos="269 128 352" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1000"/>
-	<container pos="269 128 363" sprite="containers/Pot" angle="0"/>
+	<container pos="269 128 363" container_id="pot" sprite="containers/Pot" angle="0"/>
 	<door pos="270 115 210" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
 	<item pos="270 128 355" sprite="items/ammo/762mm" angle="0" item_desc="762mm" item_type="ammo" count="1000"/>
-	<container pos="270 128 360" sprite="containers/Pot" angle="0"/>
-	<container pos="272 115 279" sprite="containers/Safe" angle="0"/>
-	<container pos="272 128 363" sprite="containers/Pot" angle="0"/>
+	<container pos="270 128 360" container_id="pot" sprite="containers/Pot" angle="0"/>
+	<container pos="272 115 279" container_id="safe" sprite="containers/Safe" angle="0"/>
+	<container pos="272 128 363" container_id="pot" sprite="containers/Pot" angle="0"/>
 	<item pos="275 128 356" sprite="weapons/Rifles/Pulse Rifle" angle="0" item_desc="pulse_rifle" item_type="weapon" count="1"/>
-	<container pos="276 115 306" sprite="containers/Table N" angle="3.141593"/>
 	<item pos="277 128 361" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle" item_type="weapon" count="1"/>
 	<item pos="279 128 370" sprite="weapons/Miniguns/Gatling Laser" angle="0" item_desc="gatling_laser" item_type="weapon" count="1"/>
 	<item pos="280 128 358" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60" item_type="weapon" count="1"/>
