@@ -95,7 +95,7 @@ int fromString(const char *str, const char **strings, int count);
 	namespace type { enum Type: char { __VA_ARGS__, count }; \
 		const char *toString(int); \
 		Type fromString(const char*); \
-		inline bool isValid(Type val) { return val >= 0 && val < count; } \
+		inline constexpr bool isValid(int val) { return val >= 0 && val < count; } \
 	}
 
 #define DEFINE_ENUM(type, ...) \
@@ -904,6 +904,8 @@ namespace game {
 	typedef Ptr<Sprite> PSprite;
 	typedef std::unique_ptr<Entity> PEntity;
 }
+
+class TupleParser;
 
 // These functions expect valid strings and throw on error
 

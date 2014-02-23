@@ -9,11 +9,41 @@
 #include "game/projectile.h"
 #include "game/tile.h"
 #include "sys/xml.h"
+#include "sys/data_sheet.h"
 #include "net/socket.h"
 #include <cmath>
 #include <cstdio>
 
 namespace game {
+
+	ActorArmourProto::ActorArmourProto(const TupleParser &parser, bool is_actor)
+		:ProtoImpl(parser), is_actor(is_actor) {
+		if(is_actor) {
+			class_id = ArmourClassId::none;
+			armour = "_dummy_armour";
+		}
+		else {
+			class_id = ArmourClassId::fromString(parser("class_id"));
+			actor = parser("actor_id");
+			armour = parser("armour_id");
+		}
+
+		initAnims();
+	}
+
+	void ActorArmourProto::connect() {
+		if(is_actor) {
+			actor = index();
+		}
+		else {
+			actor.connect();
+			armour.connect();
+		}
+	}
+
+	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
+
+	}
 
 	static const char *s_step_stance[StanceId::count] = {
 		"stand",
@@ -98,8 +128,9 @@ namespace game {
 		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
 	};
 
-	Actor::Actor(Stream &sr) {
+	Actor::Actor(Stream &sr) :EntityImpl(sr) {
 	   	sr.unpack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
+
 		sr >> m_order >> m_next_order;
 		m_burst_mode = sr.decodeInt();
 		m_burst_off = net::decodeInt3(sr);
@@ -115,29 +146,27 @@ namespace game {
 			prev = m_path[i];
 		}
 
-		Entity::initialize(s_sprite_names[m_type_id][m_armour_class_id]);
-		loadEntityParams(sr);
 		m_inventory.load(sr);
-
-		m_anims = ActorAnims(m_sprite);
 	}
 
-	Actor::Actor(const XMLNode &node) :Entity(node) {
+	Actor::Actor(const XMLNode &node) :EntityImpl(node) {
 		initialize(ActorTypeId::fromString(node.attrib("actor_type")));
 	}
 
-	Actor::Actor(ActorTypeId::Type type_id, const float3 &pos) :Entity(s_sprite_names[type_id][ArmourClassId::none]) {
+	Actor::Actor(const Proto &proto, ActorTypeId::Type type_id, const float3 &pos)
+		:EntityImpl(proto) {
 		initialize(type_id);
 		setPos(pos);
 	}
 
 	XMLNode Actor::save(XMLNode &parent) const {
-		XMLNode node = Entity::save(parent);
+		XMLNode node = EntityImpl::save(parent);
 		node.addAttrib("actor_type", ActorTypeId::toString(m_type_id));
 		return node;
 	}
 
 	void Actor::save(Stream &sr) const {
+		EntityImpl::save(sr);
 	   	sr.pack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
 		sr << m_order << m_next_order;
 		sr.encodeInt(m_burst_mode);
@@ -153,15 +182,11 @@ namespace game {
 			prev = m_path[i];
 		}
 
-		saveEntityParams(sr);
 		m_inventory.save(sr);
 	}
 
 	void Actor::initialize(ActorTypeId::Type type_id) {
 		m_type_id = type_id;
-
-		//m_sprite->printSequencesInfo();
-		m_anims = ActorAnims(m_sprite);
 
 		m_issue_next_order = false;
 		m_stance_id = StanceId::standing;
@@ -188,10 +213,6 @@ namespace game {
 		return m_order.id == OrderId::die;
 	}
 		
-	Entity *Actor::clone() const {
-		return new Actor(*this);
-	}
-		
 	void Actor::onImpact(int projectile_type, float damage) {
 		if(m_order.id == OrderId::die)
 			return;
@@ -207,7 +228,10 @@ namespace game {
 	}
 
 	void Actor::updateArmour() {
-		const Armour &armour = m_inventory.armour();
+		printf("WRITE ME\n");
+		exit(0);
+
+	/*	const Armour &armour = m_inventory.armour();
 		ArmourClassId::Type class_id = armour.classId();
 		DASSERT(canEquipArmour(class_id));
 
@@ -215,14 +239,13 @@ namespace game {
 			m_armour_class_id = class_id;
 			//TODO: może nie byc miejsca na postać w nowym rozmiarze
 			changeSprite(s_sprite_names[m_type_id][class_id], true);
-			m_anims = ActorAnims(m_sprite);
 
 			if(!canEquipWeapon(m_weapon_class_id)) {
 				m_inventory.unequip(ItemType::weapon);
 				updateWeapon();
 				DASSERT(canEquipWeapon(m_weapon_class_id));
 			}
-		}
+		}*/
 	}
 
 	void Actor::updateWeapon() {
@@ -253,12 +276,12 @@ namespace game {
 		//TODO: fix this completely:
 		//- when changing stance and cannot equip item in new stance: unequip
 
-		if(m_anims.animId(ActionId::idle, m_stance_id, class_id) == -1) {
+		if(m_proto.animId(ActionId::idle, m_stance_id, class_id) == -1) {
 			printf("no idle anim: s:%s c:%s\n",
 					StanceId::toString(m_stance_id), WeaponClassId::toString(class_id));
 			return false;
 		}
-		if(m_anims.animId(ActionId::walking, m_stance_id, class_id) == -1) {
+		if(m_proto.animId(ActionId::walking, m_stance_id, class_id) == -1) {
 			printf("no walk anim: %d %d\n", m_stance_id, class_id);
 			return false;
 		}
@@ -272,7 +295,7 @@ namespace game {
 	}
 
 	bool Actor::canChangeStance() const {
-		return m_anims.canChangeStance();
+		return m_proto.canChangeStance();
 	}
 
 	void Actor::think() {
@@ -380,7 +403,7 @@ namespace game {
 			m_issue_next_order = true;
 		}
 		else if(m_order.id == OrderId::move && m_stance_id == StanceId::crouching) { //fix for broken anims
-			int seq_id = m_anims.animId(m_action_id, m_stance_id, m_weapon_class_id);
+			int seq_id = m_proto.animId(m_action_id, m_stance_id, m_weapon_class_id);
 			playSequence(seq_id);
 		}
 	}
@@ -443,11 +466,8 @@ namespace game {
 		dir.y += frand() * random_val;
 		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
 
-		const ProjectileDesc *proj_desc = weapon.projectileDesc();
-		//TODO: proj_desc should be always valid here
-
-		if(proj_desc)	
-			world()->addEntity(new Projectile(*proj_desc, pos + offset, actualDirAngle(), pos + dir * len, this));
+		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
+			world()->addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, this));
 	}
 
 	void Actor::onStepEvent(bool left_foot) {

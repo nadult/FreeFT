@@ -18,36 +18,32 @@ namespace game
 		closing
 	)
 
-	struct ContainerDesc: public Tuple, TupleImpl<ContainerDesc> {
-		ContainerDesc(const TupleParser&);
+	DECLARE_ENUM(ContainerState,
+		closed,
+		opened,
+		opening,
+		closing
+	);
 
-		string sprite_name;
+
+	struct ContainerProto: public ProtoImpl<ContainerProto, EntityProto, ProtoId::container> {
+		ContainerProto(const TupleParser&);
+
 		string name;
 		SoundId sound_ids[ContainerSoundType::count];
+		int seq_ids[ContainerState::count];
+		bool is_always_opened;
 	};
 
 
-	class Container: public Entity
+	class Container: public EntityImpl<Container, ContainerProto, EntityId::container>
 	{
-		void initialize();
-
 	public:
-		enum State {
-			state_closed,
-			state_opened,
-			state_opening,
-			state_closing,
-
-			state_count
-		};
-
 		Container(Stream&);
 		Container(const XMLNode&);
-		Container(const ContainerDesc&, const float3 &pos);
+		Container(const ContainerProto&, const float3 &pos);
 
 		virtual ColliderFlags colliderType() const { return collider_static; }
-		virtual EntityId::Type entityType() const { return EntityId::container; }
-		virtual Entity *clone() const;
 
 		void open();
 		void close();
@@ -56,8 +52,8 @@ namespace game
 		virtual void interact(const Entity*);
 		virtual void onSoundEvent();
 
-		bool isOpened() const { return m_state == state_opened; }
-		bool isAlwaysOpened() const { return m_is_always_opened; }
+		bool isOpened() const { return m_state == ContainerState::opened; }
+		bool isAlwaysOpened() const { return m_proto.is_always_opened; }
 
 		const Inventory &inventory() const { return m_inventory; }
 		Inventory &inventory() { return m_inventory; }
@@ -68,15 +64,14 @@ namespace game
 	private:
 		virtual void think();
 		virtual void onAnimFinished();
+		void initialize();
 
-		const ContainerDesc *m_desc;
-		State m_state, m_target_state;
-		bool m_is_always_opened;
-		bool m_update_anim;
+		Inventory m_inventory;
 		Item m_key;
 
-		int m_seq_ids[state_count];
-		Inventory m_inventory;
+		ContainerState::Type m_state, m_target_state;
+		bool m_is_always_opened;
+		bool m_update_anim;
 	};
 };
 

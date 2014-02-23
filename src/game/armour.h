@@ -11,9 +11,9 @@
 
 namespace game {
 
-	struct ArmourDesc: public ItemDesc, TupleImpl<ArmourDesc> {
-		ItemType::Type type() const { return ItemType::armour; }
-		ArmourDesc(const TupleParser&);
+	struct ArmourProto: public ProtoImpl<ArmourProto, ItemProto, ProtoId::item_armour> {
+		ItemType::Type itemType() const { return ItemType::armour; }
+		ArmourProto(const TupleParser&);
 
 		ArmourClassId::Type class_id;
 		float damage_resistance;
@@ -23,12 +23,11 @@ namespace game {
 	{
 	public:
 		Armour(const Item &item) :Item((DASSERT(item.type() == ItemType::armour), item)) { }
-		Armour(const ArmourDesc &desc) :Item(desc) { }
-		Armour(int index) :Item(ArmourDesc::get(index)) { }
+		Armour(const ArmourProto &proto) :Item(proto) { }
 
-		ArmourClassId::Type classId() const { return desc().class_id; }
+		ArmourClassId::Type classId() const		{ return proto().class_id; }
 
-		const ArmourDesc &desc() const { return static_cast<const ArmourDesc&>(*m_desc); }
+		const ArmourProto &proto() const		{ return static_cast<const ArmourProto&>(*m_proto); }
 	};
 
 }

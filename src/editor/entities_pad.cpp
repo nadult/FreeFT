@@ -47,13 +47,13 @@ namespace ui {
 			m_actor_type->selectEntry(0);
 
 			m_door_id = new ComboBox(second_rect, 200, "Door: ");
-			for(int n = 0; n < (int)DoorDesc::count(); n++)
-				m_door_id->addEntry(DoorDesc::get(n).id.c_str());
+			for(int n = 0; n < countProtos(ProtoId::door); n++)
+				m_door_id->addEntry(getProto(n, ProtoId::door).id.c_str());
 			m_door_id->selectEntry(0);
 			
 			m_container_id = new ComboBox(second_rect, 200, "Container: ");
-			for(int n = 0; n < ContainerDesc::count(); n++)
-				m_container_id->addEntry(ContainerDesc::get(n).id.c_str());
+			for(int n = 0; n < countProtos(ProtoId::container); n++)
+				m_container_id->addEntry(getProto(n, ProtoId::container).id.c_str());
 			m_container_id->selectEntry(0);
 
 			m_item_type = new ComboBox(second_rect, 200, "Item type: ");
@@ -96,13 +96,14 @@ namespace ui {
 	void EntitiesPad::updateItemIds() {
 		ItemType::Type type = (ItemType::Type)m_item_type->selectedId();
 		DASSERT(ItemType::isValid(type));
+		ProtoId::Type proto_id = ItemType::toProtoId(type);
 
 		m_item_id->clear();
-		for(int n = 0; n < game::Item::count(type); n++) {
-			const game::ItemDesc &desc = game::Item::get(game::ItemIndex(n, type));
-
-			if(!desc.is_dummy)
-				m_item_id->addEntry(desc.id.c_str());
+		for(int n = 0; n < countProtos(proto_id); n++) {
+			const game::ItemProto &proto =
+				static_cast<const game::ItemProto&>(getProto(n, proto_id));
+			if(!proto.is_dummy)
+				m_item_id->addEntry(proto.id.c_str());
 		}
 		m_item_id->selectEntry(0);
 	}
@@ -150,39 +151,27 @@ namespace ui {
 
 		float3 pos(0, 0, 0);
 		
-		if(type == EntityId::actor)
-			m_proto = (PEntity)new game::Actor((ActorTypeId::Type)m_actor_type->selectedId(), pos);
+		if(type == EntityId::actor) {
+			//TODO: finish me
+			const ActorProto& proto = static_cast<const ActorProto&>(getProto(0, ProtoId::actor));
+			m_proto = (PEntity)new game::Actor(proto, (ActorTypeId::Type)m_actor_type->selectedId(), pos);
+		}
 		else if(type == EntityId::container) {
-			int desc_id = m_container_id->selectedId();
-			DASSERT(desc_id >= 0 && desc_id < ContainerDesc::count());
-			const ContainerDesc &desc = ContainerDesc::get(desc_id);
-
-			m_proto = (PEntity)new game::Container(desc, pos);
+			const ContainerProto &proto =
+				static_cast<const ContainerProto&>(getProto(m_container_id->selectedId(), ProtoId::container));
+			m_proto = (PEntity)new game::Container(proto, pos);
 		}
 		else if(type == EntityId::door) {
-			int desc_id = m_door_id->selectedId();
-			DASSERT(desc_id >= 0 && desc_id < DoorDesc::count());
-			const DoorDesc &desc = DoorDesc::get(desc_id);
-
-			/*
-			//TODO: verification of anims?
-			PSprite sprite = Sprite::mgr[sprite_name];
-			if(!Door::testSpriteType(sprite, type)) {
-				for(int n = 0; n < DoorTypeId::count; n++) {
-					type = (DoorTypeId::Type)n;
-					if(Door::testSpriteType(sprite, type))
-						break;
-				}
-				m_door_type->selectEntry(type);
-			}*/
-
-			m_proto = (PEntity)new game::Door(desc, pos);
+			const DoorProto &proto =
+				static_cast<const DoorProto&>(getProto(m_door_id->selectedId(), ProtoId::door));
+			m_proto = (PEntity)new game::Door(proto, pos);
 		}
 		else if(type == EntityId::item) {
 			ItemType::Type type = (ItemType::Type)m_item_type->selectedId();
-			int idx = m_item_id->selectedId();
+			ProtoId::Type proto_id = ItemType::toProtoId(type);
+			ProtoIndex index = findProto((*m_item_id)[m_item_id->selectedId()].text, proto_id);
 
-			m_proto = (PEntity)new game::ItemEntity(game::Item(idx, type), m_item_count_val, pos);
+			m_proto = (PEntity)new game::ItemEntity(game::Item(index), m_item_count_val, pos);
 		}
 
 		m_editor->setProto(m_proto.get());

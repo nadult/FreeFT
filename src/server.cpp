@@ -59,7 +59,7 @@ public:
 
 	int spawnActor(const float3 &pos) {
 		DASSERT(m_world);
-		return m_world->addEntity(new Actor(ActorTypeId::male, pos));
+		return m_world->addEntity(new Actor(getProto("male", ProtoId::actor), ActorTypeId::male, pos));
 	}
 
 	void disconnectClient(int client_id) {
@@ -243,7 +243,7 @@ int safe_main(int argc, char **argv)
 	unique_ptr<Server> host(new Server(port));
 	
 	Config config = loadConfig("server");
-	game::loadPools();
+	game::loadData();
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);

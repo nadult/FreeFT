@@ -30,7 +30,7 @@ int safe_main(int argc, char **argv)
 {
 	audio::initSoundMap();
 	Config config = loadConfig("game");
-	game::loadPools();
+	game::loadData(true);
 
 	audio::initDevice();
 
@@ -56,35 +56,9 @@ int safe_main(int argc, char **argv)
 
 	int height = 128;
 
-	Actor *actor = new Actor(ActorTypeId::male, float3(245, height, 335));
+	Actor *actor = new Actor(getProto(findProto("male", ProtoId::actor)),
+								ActorTypeId::male, float3(245, height, 335));
 	int actor_id = world.addEntity(actor);
-
-/*	Container *chest = world.addEntity(new Container("containers/Chest Wooden", float3(245, height, 340)));
-	Container *toolbench = world.addEntity(new Container("containers/Toolbench S", float3(260, height, 350)));
-	Container *fridge = world.addEntity(new Container("containers/Fridge S", float3(250, height, 340)));
-//	actor = world.addEntity(new Actor(ActorTypeId::mutant, float3(260, height, 335)));
-//	world.addEntity(new Container("containers/Ice Chest N", float3(240, height, 345)));
-
-//	Door *door = world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(495, height, 342), DoorTypeId::rotating));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(495, height, 382), DoorTypeId::rotating, float2(1, 0)));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(495, height, 392), DoorTypeId::rotating, float2(-1, 0)));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(485, height, 382), DoorTypeId::rotating, float2(0, 1)));
-//	world.addEntity(new Door("doors/PWT DOORS/PWT MetalDoor", float3(485, height, 392), DoorTypeId::rotating, float2(0, -1)));
-//	world.addEntity(new Door("doors/BOS DOORS/BOS InteriorDoor2", float3(475, height, 392), DoorTypeId::sliding, float2(0, -1)));
-	chest->setDir(float2(0, -1));
-	fridge->setDir(float2(-1, 0));
-//	door->setKey(ItemDesc::find("prison_key"));
-	fridge->setKey(ItemDesc::find("prison_key"));
-
-	chest->inventory().add(ItemDesc::find("laser_rifle"), 1);
-	chest->inventory().add(ItemDesc::find("plasma_rifle"), 1);
-	chest->inventory().add(ItemDesc::find("fusion_cell"), 100);
-	chest->inventory().add(ItemDesc::find("prison_key"), 1);
-	fridge->inventory().add(ItemDesc::find("power_armour"), 1);
-	fridge->inventory().add(ItemDesc::find("m60"), 1); */
-
-//	world.addEntity(new ItemEntity(ItemDesc::find("leather_armour"), float3(125, height, 60)));
-
 	world.updateNaviMap(true);
 
 	bool navi_show = 0;

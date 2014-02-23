@@ -54,7 +54,7 @@ namespace ui {
 			int inc = 0;
 			if(isKeyDown(Key_left)) inc = -1;
 			if(isKeyDown(Key_right)) inc = 1;
-			int dir_count = m_proto->sprite()->dirCount(0);
+			int dir_count = m_proto->sprite().dirCount(0);
 
 			if(inc && dir_count)
 				m_proto_angle = (m_proto_angle + inc + dir_count) % dir_count;

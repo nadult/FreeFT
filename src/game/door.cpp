@@ -24,9 +24,18 @@ namespace game {
 		"close"
 	)
 
-	DoorDesc::DoorDesc(const TupleParser &parser) :Tuple(parser) {
-		sprite_name = parser("sprite_name");
-		ASSERT(!sprite_name.empty());
+	static const char *s_seq_names[DoorState::count] = {
+		"Closed",
+		"OpenedIn",
+		"OpeningIn",
+		"ClosingIn",
+		"OpenedOut",
+		"OpeningOut",
+		"ClosingOut",
+	};
+	
+	DoorProto::DoorProto(const TupleParser &parser) :ProtoImpl(parser) {
+		ASSERT(!is_dummy);
 		name = parser("name");
 
 		class_id = DoorClassId::fromString(parser("class_id"));
@@ -37,86 +46,65 @@ namespace game {
 			snprintf(name, sizeof(name), "%s%s", sound_prefix, DoorSoundType::toString(n));
 			sound_ids[n] = SoundId(name);
 		}
-	}
-
-
-	static const char *s_seq_names[Door::state_count] = {
-		"Closed",
-		"OpenedIn",
-		"OpeningIn",
-		"ClosingIn",
-		"OpenedOut",
-		"OpeningOut",
-		"ClosingOut",
-	};
-
-	struct Transition { Door::State current, target, result; };
-	static Transition s_transitions[] = {
-		{ Door::state_closed, Door::state_opened_in,  Door::state_opening_in },
-		{ Door::state_closed, Door::state_opened_out, Door::state_opening_out },
-		{ Door::state_opened_in,  Door::state_closed, Door::state_closing_in },
-		{ Door::state_opened_out, Door::state_closed, Door::state_closing_out },
-	};
-
-	bool Door::testSpriteType(PSprite sprite, Door::Class type) {
-		int seq_ids[state_count];
-		for(int n = 0; n < state_count; n++)
+		
+		for(int n = 0; n < DoorState::count; n++)
 			seq_ids[n] = sprite->findSequence(s_seq_names[n]);
-
-		if(seq_ids[state_closed] == -1)
-			return false;
+		
+		if(seq_ids[DoorState::closed] == -1)
+			THROW("Missing sequence: %s", s_seq_names[DoorState::closed]);
 
 		bool can_open_in =
-			seq_ids[state_opened_in] != -1 &&
-			seq_ids[state_opening_in] != -1 &&
-			seq_ids[state_closing_in] != -1;
+			seq_ids[DoorState::opened_in] != -1 &&
+			seq_ids[DoorState::opening_in] != -1 &&
+			seq_ids[DoorState::closing_in] != -1;
 		bool can_open_out =
-			seq_ids[state_opened_out] != -1 &&
-			seq_ids[state_opening_out] != -1 &&
-			seq_ids[state_closing_out] != -1;
+			seq_ids[DoorState::opened_out] != -1 &&
+			seq_ids[DoorState::opening_out] != -1 &&
+			seq_ids[DoorState::closing_out] != -1;
 
-		if((type == DoorClassId::sliding || type == DoorClassId::rotating || type == DoorClassId::rotating_in) && !can_open_in)
-			return false;
-		if((type == DoorClassId::rotating || type == DoorClassId::rotating_out) && !can_open_out)
-			return false;
-		if(type == DoorClassId::sliding && can_open_out)
-			return false;
+		bool error = false;
 
-		return true;
+		if((class_id == DoorClassId::sliding || class_id == DoorClassId::rotating ||
+				class_id == DoorClassId::rotating_in) && !can_open_in)
+			error = true;
+		if((class_id == DoorClassId::rotating || class_id == DoorClassId::rotating_out) && !can_open_out)
+			error = true;
+		if(class_id == DoorClassId::sliding && can_open_out)
+			error = true;
+		
+		if(error)		
+			THROW("Invalid sequence combination");
 	}
 
-	Door::Door(Stream &sr) {
-		int desc_id = sr.decodeInt();
-		ASSERT(desc_id >= 0 && desc_id < DoorDesc::count());
-		m_desc = &DoorDesc::get(desc_id);
-		Entity::initialize(m_desc->sprite_name.c_str());
-		loadEntityParams(sr);
+	struct Transition { DoorState::Type current, target, result; };
+	static Transition s_transitions[] = {
+		{ DoorState::closed,		DoorState::opened_in,	DoorState::opening_in },
+		{ DoorState::closed,		DoorState::opened_out,	DoorState::opening_out },
+		{ DoorState::opened_in,		DoorState::closed,		DoorState::closing_in },
+		{ DoorState::opened_out,	DoorState::closed,		DoorState::closing_out },
+	};
+
+	Door::Door(Stream &sr) :EntityImpl(sr) {
 		sr.unpack(m_close_time, m_update_anim, m_state);
-	
-		for(int n = 0; n < state_count; n++)
-			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
 		setBBox(computeBBox(m_state));
 	}
 
-	Door::Door(const XMLNode &node) :Entity(node) {
-		m_desc = &DoorDesc::get(node.attrib("door_id"));
+	Door::Door(const XMLNode &node) :EntityImpl(node) {
 		initialize();
 	}
 		
-	Door::Door(const DoorDesc &desc, const float3 &pos) :Entity(desc.sprite_name), m_desc(&desc) {
+	Door::Door(const DoorProto &proto, const float3 &pos) :EntityImpl(proto) {
 		initialize();
 		setPos(pos);
 	}
 	
 	XMLNode Door::save(XMLNode &parent) const {
-		XMLNode node = Entity::save(parent);
-		node.addAttrib("door_id", node.own(m_desc->id));
+		XMLNode node = EntityImpl::save(parent);
 		return node;
 	}
 
 	void Door::save(Stream &sr) const {
-		sr.encodeInt(m_desc->idx);
-		Entity::saveEntityParams(sr);
+		EntityImpl::save(sr);
 		sr.pack(m_close_time, m_update_anim, m_state);
 	}
 
@@ -124,12 +112,8 @@ namespace game {
 		m_close_time = -1.0;
 		m_update_anim = false;
 		
-		for(int n = 0; n < state_count; n++)
-			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
-		DASSERT(testSpriteType(m_sprite, classId()));
-
-		m_state = state_closed;
-		playSequence(m_seq_ids[m_state]);
+		m_state = DoorState::closed;
+		playSequence(m_proto.seq_ids[m_state], false);
 		setBBox(computeBBox(m_state));
 	}
 		
@@ -148,9 +132,9 @@ namespace game {
 	}
 
 	void Door::interact(const Entity *interactor) {
-		State target, result = m_state;
+		DoorState::Type target, result = m_state;
 		if(isOpened())
-			target = state_closed;
+			target = DoorState::closed;
 		else {
 			if(!m_key.isDummy()) {
 				const Actor *actor = dynamic_cast<const Actor*>(interactor);
@@ -160,7 +144,7 @@ namespace game {
 				}
 			}
 
-			target = classId() == DoorClassId::rotating_out? state_opened_out : state_opened_in;
+			target = classId() == DoorClassId::rotating_out? DoorState::opened_out : DoorState::opened_in;
 		}
 
 		for(int n = 0; n < COUNTOF(s_transitions); n++)
@@ -175,9 +159,9 @@ namespace game {
 		FBox bbox = computeBBox(result);
 		bool is_colliding = world()->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 
-		if(is_colliding && classId() == DoorClassId::rotating && m_state == state_closed && target == state_opened_in) {
-			target = state_opened_out;
-			result = state_opening_out;
+		if(is_colliding && classId() == DoorClassId::rotating && m_state == DoorState::closed && target == DoorState::opened_in) {
+			target = DoorState::opened_out;
+			result = DoorState::opening_out;
 			bbox = computeBBox(result);
 			is_colliding = world()->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 		}
@@ -189,24 +173,24 @@ namespace game {
 	}
 		
 	void Door::onSoundEvent() {
-		bool is_opening = m_state == state_opening_in || m_state == state_opening_out;
-		world()->playSound(m_desc->sound_ids[is_opening? DoorSoundType::opening : DoorSoundType::closing], pos());
+		bool is_opening = m_state == DoorState::opening_in || m_state == DoorState::opening_out;
+		world()->playSound(m_proto.sound_ids[is_opening? DoorSoundType::opening : DoorSoundType::closing], pos());
 	}
 	
-	FBox Door::computeBBox(State state) const {	
-		float3 size = m_sprite->boundingBox();
+	FBox Door::computeBBox(DoorState::Type state) const {	
+		float3 size = m_sprite.boundingBox();
 		float maxs = max(size.x, size.z);
 		
 		FBox box;
-		if(classId() == DoorClassId::sliding || state == state_closed)
-			box = FBox(float3(0, 0, 0), state == state_opened_in? float3(0, 0, 0) : size);
-		else if(state == state_closing_in || state == state_opening_in)
+		if(classId() == DoorClassId::sliding || state == DoorState::closed)
+			box = FBox(float3(0, 0, 0), state == DoorState::opened_in? float3(0, 0, 0) : size);
+		else if(state == DoorState::closing_in || state == DoorState::opening_in)
 			box = FBox(-maxs + 1, 0, 0, 1, size.y, maxs);
-		else if(state == state_closing_out || state == state_opening_out)
+		else if(state == DoorState::closing_out || state == DoorState::opening_out)
 			box = FBox(0, 0, 0, maxs, size.y, maxs);
-		else if(state == state_opened_out)
+		else if(state == DoorState::opened_out)
 			box = FBox(0, 0, 0, size.z, size.y, size.x);
-		else if(state == state_opened_in)
+		else if(state == DoorState::opened_in)
 			box = FBox(-size.z + 1, 0, 0, 1, size.y, size.x);
 
 		//TODO: this is still wrong
@@ -223,17 +207,17 @@ namespace game {
 		
 		if(m_update_anim) {
 			world->replicate(this);
-			playSequence(m_seq_ids[m_state]);
+			playSequence(m_proto.seq_ids[m_state]);
 			m_update_anim = false;
 		}
-		if(classId() == DoorClassId::sliding && m_state == state_opened_in && world->currentTime() > m_close_time) {
-			FBox bbox = computeBBox(state_closed);
+		if(classId() == DoorClassId::sliding && m_state == DoorState::opened_in && world->currentTime() > m_close_time) {
+			FBox bbox = computeBBox(DoorState::closed);
 			if(world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				m_close_time = world->currentTime() + 1.5;
 			}
 			else {
 				setBBox(bbox);
-				m_state = state_closing_in;
+				m_state = DoorState::closing_in;
 				m_update_anim = true;
 			}
 		}
@@ -245,7 +229,7 @@ namespace game {
 				m_state = s_transitions[n].target;
 				setBBox(computeBBox(m_state));
 				m_update_anim = true;
-				if(m_state == state_opened_in && classId() == DoorClassId::sliding)
+				if(m_state == DoorState::opened_in && classId() == DoorClassId::sliding)
 					m_close_time = world()->currentTime() + 3.0;
 				break;
 			}

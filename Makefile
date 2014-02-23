@@ -20,7 +20,7 @@ SHARED_SRC=\
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/data_sheet \
 	net/socket net/chunk net/host \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
-	game/tile game/sprite game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
+	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/actor game/actor_anims game/actor_orders game/entity game/container game/door game/projectile \
 	game/item game/weapon game/armour game/inventory game/base game/entities game/level \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \

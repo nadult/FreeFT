@@ -118,6 +118,7 @@ namespace game {
 
 		inds.clear();
 		m_entity_map.findAll(inds, renderer.targetRect(), collider_all|visibility_flag);
+
 		for(int n = 0; n < (int)inds.size(); n++) {
 			const auto &obj = m_entity_map[inds[n]];
 			obj.ptr->addToRender(renderer);

@@ -18,21 +18,50 @@ namespace game {
 
 	static int s_unique_id = 0;
 
-	void Entity::initialize(const string &sprite_name) {
-		m_sprite = Sprite::mgr[sprite_name];
-		m_max_screen_rect = m_sprite->getMaxRect();
-		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
+	EntityProto::EntityProto(const TupleParser &parser) :Proto(parser) {
+		sprite_name = parser("sprite_name");
+		if(!is_dummy)
+			sprite = &Sprite::getPartial(sprite_name);
+		else 
+			sprite = nullptr;
+	}
+		
+	void Entity::initialize() {
+		DASSERT(m_sprite.isFullyLoaded());
+		
+		m_to_be_removed = false;
+		m_grid_index = -1;
+		m_unique_id = s_unique_id++;
+		m_first_ref = nullptr;
 
-		m_dir_idx = 0;
+		m_max_screen_rect = m_sprite.getMaxRect();
+		m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite.boundingBox());
+
 		m_dir_angle = 0.0f;
 		m_pos = float3(0.0f, 0.0f, 0.0f);
 		m_seq_id = -1;
-
-		//TODO: this function calls virtual functions (handle something)
-		// DONT DO IT!
-		playSequence(0);
+		playSequence(0, false);
 	}
 
+	Entity::Entity(const Sprite &sprite) :m_sprite(sprite) {
+		initialize();
+	}
+
+	//TODO: redundant initialization?
+	Entity::Entity(const Sprite &sprite, const XMLNode &node) :m_sprite(sprite) {
+		initialize();
+		m_pos = node.float3Attrib("pos");
+		m_dir_angle = node.floatAttrib("angle");
+		m_dir_idx = m_sprite.findDir(m_seq_id, m_dir_angle);
+	}
+
+	XMLNode Entity::save(XMLNode &parent) const {
+		XMLNode node = parent.addChild(EntityId::toString(entityType()));
+		node.addAttrib("pos", m_pos);
+		node.addAttrib("angle", m_dir_angle);
+		return node;
+	}
+	
 	enum {
 		flag_compressed = 1,
 		flag_is_looped = 2,
@@ -75,47 +104,18 @@ namespace game {
 			sr.unpack(m_seq_id, m_frame_id, m_dir_idx);
 	}
 
-	Entity::Entity() :m_to_be_removed(false), m_grid_index(-1), m_unique_id(s_unique_id++), m_first_ref(nullptr) { }
-
-	Entity::Entity(const string &sprite_name) :Entity() {
-		initialize(sprite_name);
-	}
-
-	Entity::Entity(const Entity &rhs) :Entity() {
-		operator=(rhs);
-	}
-
-	Entity::Entity(Stream &sr) :Entity() {
-		char sprite_name[256];
-		sr.loadString(sprite_name, sizeof(sprite_name));
-
-		initialize(sprite_name);
+	Entity::Entity(const Sprite &sprite, Stream &sr) :m_sprite(sprite) {
+		initialize();
 		loadEntityParams(sr);
-	}
-	
-	Entity::Entity(const XMLNode &node) :Entity() {
-		initialize(node.attrib("sprite"));
-		m_pos = node.float3Attrib("pos");
-		m_dir_angle = node.floatAttrib("angle");
-		m_dir_idx = m_sprite->findDir(m_seq_id, m_dir_angle);
-	}
-
-	XMLNode Entity::save(XMLNode &parent) const {
-		XMLNode node = parent.addChild(EntityId::toString(entityType()));
-		node.addAttrib("pos", m_pos);
-		node.addAttrib("sprite", node.own(m_sprite->resourceName()));
-		node.addAttrib("angle", m_dir_angle);
-		return node;
 	}
 
 	void Entity::save(Stream &sr) const {
-		ASSERT(sr.isSaving());
-		sr.saveString(m_sprite->resourceName());
 		saveEntityParams(sr);
 	}
 
-	void Entity::operator=(const Entity &rhs) {
-		m_sprite = rhs.m_sprite;
+	Entity::Entity(const Entity &rhs) :m_sprite(rhs.m_sprite) {
+		initialize();
+
 		m_max_screen_rect = rhs.m_max_screen_rect;
 		m_pos = rhs.m_pos;
 		m_bbox = rhs.m_bbox;
@@ -127,7 +127,7 @@ namespace game {
 		m_dir_idx = rhs.m_dir_idx;
 		m_dir_angle = rhs.m_dir_angle;
 	}
-
+	
 	Entity::~Entity() {
 		if(m_first_ref) {
 			EntityRef* ref = m_first_ref;
@@ -160,12 +160,12 @@ namespace game {
 	}
 	
 	const IRect Entity::currentScreenRect() const {
-		return m_sprite->getRect(m_seq_id, m_frame_id, m_dir_idx) + (int2)worldToScreen(pos());
+		return m_sprite.getRect(m_seq_id, m_frame_id, m_dir_idx) + (int2)worldToScreen(pos());
 	}
 
 	void Entity::addToRender(gfx::SceneRenderer &out) const {
 		//PROFILE("Entity::addToRender");
-		IRect rect = m_sprite->getRect(m_seq_id, m_frame_id, m_dir_idx);
+		IRect rect = m_sprite.getRect(m_seq_id, m_frame_id, m_dir_idx);
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))
 			return;
 
@@ -174,7 +174,7 @@ namespace game {
 			bbox.min.y = min(bbox.min.y + 1.0f, bbox.max.y - 0.5f);
 
 		FRect tex_rect;
-		PTexture tex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_idx, tex_rect);
+		PTexture tex = m_sprite.getFrame(m_seq_id, m_frame_id, m_dir_idx, tex_rect);
 		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
 
 		bbox += pos();
@@ -183,7 +183,7 @@ namespace game {
 	}
 		
 	bool Entity::testPixel(const int2 &screen_pos) const {
-		return m_sprite->testPixel(screen_pos - (int2)worldToScreen(pos()), m_seq_id, m_frame_id, m_dir_idx);
+		return m_sprite.testPixel(screen_pos - (int2)worldToScreen(pos()), m_seq_id, m_frame_id, m_dir_idx);
 	}
 
 	void Entity::handleEventFrame(const Sprite::Frame &frame) {
@@ -201,35 +201,18 @@ namespace game {
 			onPickupEvent();
 	}
 
-	void Entity::changeSprite(const string &new_name, bool update_bbox) {
-		string sequence_name = (*m_sprite)[m_seq_id].name;
-		m_sprite = Sprite::mgr[new_name];
-		int new_seq_id = m_sprite->findSequence(sequence_name.c_str());
-		if(new_seq_id == -1)
-			new_seq_id = 0;
-		m_seq_id = -1;
-		m_is_looped = false;
-	
-		// DONT call this function here, do it in a better way	
-		playSequence(new_seq_id);
-
-		if(update_bbox)
-			m_bbox = FBox(float3(0, 0, 0), (float3)m_sprite->boundingBox());
-
-		m_max_screen_rect = m_sprite->getMaxRect();
-	}
-
-	void Entity::playSequence(int seq_id) {
-		DASSERT(seq_id >= 0 && seq_id < m_sprite->size());
+	void Entity::playSequence(int seq_id, bool handle_events) {
+		DASSERT(seq_id >= 0 && seq_id < m_sprite.size());
 
 		m_is_finished = false;
 		if(seq_id != m_seq_id || !m_is_looped) {
-			int frame_count = m_sprite->frameCount(seq_id);
+			int frame_count = m_sprite.frameCount(seq_id);
 			m_frame_id = 0;
 
-			while(m_frame_id < frame_count && m_sprite->frame(seq_id, m_frame_id).id < 0) {
-				if(m_sprite->frame(seq_id, m_frame_id).id <= Sprite::ev_first_specific)
-					handleEventFrame(m_sprite->frame(seq_id, m_frame_id));
+			while(m_frame_id < frame_count && m_sprite.frame(seq_id, m_frame_id).id < 0) {
+				if(m_sprite.frame(seq_id, m_frame_id).id <= Sprite::ev_first_specific)
+					if(handle_events)
+						handleEventFrame(m_sprite.frame(seq_id, m_frame_id));
 				m_frame_id++;
 			}
 
@@ -237,8 +220,8 @@ namespace game {
 		}
 		if(seq_id != m_seq_id) {
 			m_seq_id = seq_id;
-			m_dir_idx = m_sprite->findDir(m_seq_id, m_dir_angle);
-			m_is_looped = m_sprite->isSequenceLooped(seq_id);
+			m_dir_idx = m_sprite.findDir(m_seq_id, m_dir_angle);
+			m_is_looped = m_sprite.isSequenceLooped(seq_id);
 		}
 	}
 
@@ -248,10 +231,10 @@ namespace game {
 
 		int prev_frame = m_frame_id;
 		m_frame_id++;
-		int frame_count = m_sprite->frameCount(m_seq_id);
+		int frame_count = m_sprite.frameCount(m_seq_id);
 
-		while(m_frame_id < frame_count && m_sprite->frame(m_seq_id, m_frame_id).id < 0) {
-			const Sprite::Frame &frame = m_sprite->frame(m_seq_id, m_frame_id);
+		while(m_frame_id < frame_count && m_sprite.frame(m_seq_id, m_frame_id).id < 0) {
+			const Sprite::Frame &frame = m_sprite.frame(m_seq_id, m_frame_id);
 			if(frame.id == Sprite::ev_repeat_all)
 				m_frame_id = 0;
 			else if(frame.id == Sprite::ev_jump_to_frame) 
@@ -276,7 +259,7 @@ namespace game {
 
 	void Entity::setDirAngle(float angle) {
 		m_dir_angle = angle;
-		m_dir_idx = m_sprite->findDir(m_seq_id, angle);
+		m_dir_idx = m_sprite.findDir(m_seq_id, angle);
 	}
 
 	const float2 Entity::dir() const {
@@ -284,7 +267,7 @@ namespace game {
 	}
 
 	float Entity::actualDirAngle() const {
-		int dir_count = m_sprite->dirCount(m_seq_id);
+		int dir_count = m_sprite.dirCount(m_seq_id);
 		return float(m_dir_idx) * (constant::pi * 2.0f) / float(dir_count) + constant::pi;
 	}
 

@@ -7,7 +7,6 @@
 #define GAME_ITEM_H
 
 #include "game/entity.h"
-#include "sys/data_sheet.h"
 #include "gfx/device.h"
 
 namespace game {
@@ -20,55 +19,29 @@ namespace game {
 		other
 	);
 
-	class ItemIndex {
-	public:
-		ItemIndex(int idx, ItemType::Type type);
-		ItemIndex() :m_idx(-1), m_type(ItemType::invalid) { }
+	namespace ItemType {
+		ProtoId::Type toProtoId(int id);
+		static_assert(ProtoId::item_last - ProtoId::item_first + 1 == ItemType::count, "Invalid item count in ProtoId");
+	}
 
-		void save(Stream&) const;
-		void load(Stream&);
-		void validate();
-		bool isValid() const { return m_type != ItemType::invalid; }
-
-		bool operator==(const ItemIndex &rhs) const { return m_idx == rhs.m_idx && m_type == rhs.m_type; }
-
-		ItemType::Type type() const { return m_type; }
-		int index() const { return m_idx; }
-
-	protected:
-		int m_idx;
-		ItemType::Type m_type;
-		friend class Item;
-	};
-
-	struct ItemDesc: public Tuple {
-		enum { param_count = 2 };
-
-		virtual ~ItemDesc() { }
-		ItemDesc(const TupleParser&);
-
-		virtual ItemType::Type type() const = 0;
+	struct ItemProto: public ProtoImpl<ItemProto, EntityProto, ProtoId::item> {
+		ItemProto(const TupleParser&);
+		virtual ItemType::Type itemType() const = 0;
 
 		string description;
 		string name;
-		string sprite_name; //TODO: add sprite_map as well, identify sprites with id-s, just like with sounds
 		float weight;
-
-		// Dummy items should specially handled
-		// Examples:
-		// dummy weapon is unarmed
-		// dummy armour is unarmoured
-		bool is_dummy;
+		int seq_ids[3];
 	};
 
-	struct OtherItemDesc: public ItemDesc, TupleImpl<OtherItemDesc> {
-		ItemType::Type type() const { return ItemType::other; }
-		OtherItemDesc(const TupleParser &parser) :ItemDesc(parser) { }
+	struct OtherItemProto: public ProtoImpl<OtherItemProto, ItemProto, ProtoId::item_other> {
+		ItemType::Type itemType() const { return ItemType::other; }
+		OtherItemProto(const TupleParser &parser) :ProtoImpl(parser) { }
 	};
 
-	struct AmmoDesc: public ItemDesc, TupleImpl<AmmoDesc> {
-		ItemType::Type type() const { return ItemType::ammo; }
-		AmmoDesc(const TupleParser&);
+	struct AmmoProto: public ProtoImpl<AmmoProto, ItemProto, ProtoId::item_ammo> {
+		ItemType::Type itemType() const { return ItemType::ammo; }
+		AmmoProto(const TupleParser&);
 
 		string class_id;
 		float damage_multiplier;
@@ -77,48 +50,40 @@ namespace game {
 	struct Item
 	{
 	public:
-		Item(const ItemDesc &desc) :m_desc(&desc) { }
-		Item(ItemIndex index) :m_desc(&get(index)) { }
-		Item(int idx, ItemType::Type type) :Item(ItemIndex(idx, type)) { }
-		Item(const string &name, ItemType::Type type) :Item(find(name, type), type) { }
-		Item(const Item &rhs) :m_desc(rhs.m_desc) { }
-		Item(Stream&);
+		Item(ProtoIndex);
+		Item(const ItemProto &proto) :m_proto(&proto) { }
+		Item(const Item &rhs) :m_proto(rhs.m_proto) { }
+		Item(Stream &sr) :Item(ProtoIndex(sr)) { }
 		Item() { *this = dummyItem(); }
 
-		static const ItemIndex find(const string &name);
-		static int find(const string &name, ItemType::Type type);
-		static int count(ItemType::Type type);
-		static const ItemDesc &get(ItemIndex);
 		static const Item dummyItem();
 
 		bool operator==(const Item &rhs) const { return index() == rhs.index(); }
 		bool operator!=(const Item &rhs) const { return !operator==(rhs); }
 
-		ItemType::Type type() const			{ return m_desc->type(); }
-		bool isDummy() const				{ return m_desc->is_dummy; }
-		const string &spriteName() const	{ return m_desc->sprite_name; }
-		const string &name() const			{ return m_desc->name; }
-		const string &id() const			{ return m_desc->id; }
-		float weight() const 				{ return m_desc->weight; }
+		ItemType::Type type() const			{ return m_proto->itemType(); }
+		bool isDummy() const				{ return m_proto->is_dummy; }
+		const string &spriteName() const	{ return m_proto->sprite_name; }
+		const string &name() const			{ return m_proto->name; }
+		const string &id() const			{ return m_proto->id; }
+		float weight() const 				{ return m_proto->weight; }
 
-		const ItemDesc &desc() const		{ return *m_desc; }
-		const ItemIndex index() const		{ return ItemIndex(m_desc->idx, m_desc->type()); }
+		const ItemProto &proto() const		{ return *m_proto; }
+		ProtoIndex index() const			{ return m_proto->index(); }
 
 		void save(Stream&) const;
 
 	protected:
-		const ItemDesc *m_desc;
+		const ItemProto *m_proto;
 	};
 
-	class ItemEntity: public Entity {
+	class ItemEntity: public EntityImpl<ItemEntity, ItemProto, EntityId::item> {
 	public:
 		ItemEntity(Stream&);
 		ItemEntity(const XMLNode&);
 		ItemEntity(const Item &item, int count, const float3 &pos);
 
 		ColliderFlags colliderType() const { return collider_item; }
-		virtual EntityId::Type entityType() const { return EntityId::item; }
-		virtual Entity *clone() const;
 
 		gfx::PTexture guiImage(bool small, FRect &tex_image) const;
 		const Item &item() const { return m_item; }
@@ -133,7 +98,6 @@ namespace game {
 	private:
 		void initialize();
 
-		int m_seq_ids[3];
 		Item m_item;
 		int m_count;
 	};

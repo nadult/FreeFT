@@ -9,61 +9,46 @@
 
 namespace game {
 
-	ImpactDesc::ImpactDesc(const TupleParser &parser) :Tuple(parser) {
-		sprite_name = parser("sprite_name");
-	}
-
-	ProjectileDesc::ProjectileDesc(const TupleParser &parser) :Tuple(parser) {
-		sprite_name = parser("sprite_name");
-		impact_ref = parser("impact_id");
+	ProjectileProto::ProjectileProto(const TupleParser &parser) :ProtoImpl(parser) {
+		impact = parser("impact_id");
 		blend_angles = toBool(parser("blend_angles"));
 		speed = toFloat(parser("speed"));
 	}
 
-	void ProjectileDesc::connect() {
-		if(!impact_ref.id().empty())
-			impact_ref.connect();
+	void ProjectileProto::connect() {
+		impact.connect();
 	}
 
-	Projectile::Projectile(const ProjectileDesc &desc, const float3 &pos,
+	Projectile::Projectile(const ProjectileProto &proto, const float3 &pos,
 							float initial_angle, const float3 &target, Entity *spawner)
-		:Entity(desc.sprite_name.c_str()), m_dir(target - pos), m_spawner(spawner), m_desc(&desc) {
+		:EntityImpl(proto), m_dir(target - pos), m_spawner(spawner) {
 			m_dir *= 1.0f / length(m_dir);
 			setPos(pos);
 			setDirAngle(initial_angle);
 			m_target_angle = vectorToAngle(m_dir.xz());
-			if(!desc.blend_angles)
+			if(!proto.blend_angles)
 				setDirAngle(m_target_angle);
-			m_speed = desc.speed;
+			m_speed = proto.speed;
 			m_frame_count = 0;
 //			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
 //					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}
 
-	Projectile::Projectile(Stream &sr) {
-		//TODO: wrong id may cause a crash, should we do smth about it?
-		m_desc = &ProjectileDesc::get(sr.decodeInt());
+	Projectile::Projectile(Stream &sr) :EntityImpl(sr) {
 		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle);
 		sr >> m_spawner;
-		Entity::initialize(m_desc->sprite_name.c_str());
-		loadEntityParams(sr);
 	}
 
 	void Projectile::save(Stream &sr) const {
-		sr.encodeInt(m_desc->idx);
+		EntityImpl::save(sr);
 		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle);
 		sr << m_spawner;
-		saveEntityParams(sr);
 	}
 		
 	XMLNode Projectile::save(XMLNode& parent) const {
 		return Entity::save(parent);
 	}
 	
-	Entity *Projectile::clone() const {
-		return new Projectile(*this);
-	}
-
 	void Projectile::nextFrame() {
 		Entity::nextFrame();
 		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi * 0.01f));
@@ -85,8 +70,8 @@ namespace game {
 		setPos(new_pos);
 
 		if(isect.distance() < ray_pos) {
-			if(m_desc->impact_ref.isValid()) {
-				world->addEntity(new Impact(*(const ImpactDesc*)m_desc->impact_ref, new_pos));
+			if(m_proto.impact.isValid()) {
+				world->addEntity(new Impact(*m_proto.impact, new_pos));
 
 				if(isect.isEntity()) {
 					float damage = 100.0f;
@@ -97,29 +82,19 @@ namespace game {
 		}
 	}
 
-	Impact::Impact(const ImpactDesc &desc, const float3 &pos)
-		:Entity(desc.sprite_name.c_str()), m_desc(&desc) {
+	Impact::Impact(const ImpactProto &proto, const float3 &pos)
+		:EntityImpl(proto) {
 		setPos(pos);
 	}
 	
-	Impact::Impact(Stream &sr) {
-		//TODO: wrong id may cause a crash, should we do smth about it?
-		m_desc = &ImpactDesc::get(sr.decodeInt());
-		Entity::initialize(m_desc->sprite_name.c_str());
-		loadEntityParams(sr);
-	}
+	Impact::Impact(Stream &sr) :EntityImpl(sr) { }
 
 	void Impact::save(Stream &sr) const {
-		sr.encodeInt(m_desc->idx);
-		saveEntityParams(sr);
+		EntityImpl::save(sr);
 	}
 	
 	XMLNode Impact::save(XMLNode& parent) const {
 		return Entity::save(parent);
-	}
-
-	Entity *Impact::clone() const {
-		return new Impact(*this);
 	}
 
 	void Impact::onAnimFinished() {

@@ -11,25 +11,22 @@
 
 namespace game {
 	
-	struct ImpactDesc: public Tuple, TupleImpl<ImpactDesc> {
-		ImpactDesc(const TupleParser &parser);
-
-		string sprite_name;
+	struct ImpactProto: public ProtoImpl<ImpactProto, EntityProto, ProtoId::impact> {
+		ImpactProto(const TupleParser &parser) :ProtoImpl(parser) { }
 	};
 
-	struct ProjectileDesc: public Tuple, TupleImpl<ProjectileDesc> {
-		ProjectileDesc(const TupleParser &parser);
+	struct ProjectileProto: public ProtoImpl<ProjectileProto, EntityProto, ProtoId::projectile> {
+		ProjectileProto(const TupleParser &parser);
 		void connect();
 
-		string sprite_name;
-		TupleRef<ImpactDesc> impact_ref;
+		ProtoRef<ImpactProto> impact;
 		float speed;
 		bool blend_angles;
 	};
 
-	class Projectile: public Entity {
+	class Projectile: public EntityImpl<Projectile, ProjectileProto, EntityId::projectile> {
 	public:
-		Projectile(const ProjectileDesc &desc, const float3 &pos, float initial_ang,
+		Projectile(const ProjectileProto &Proto, const float3 &pos, float initial_ang,
 					const float3 &target, Entity *spawner);
 		Projectile(Stream&);
 		
@@ -37,8 +34,6 @@ namespace game {
 		XMLNode save(XMLNode& parent) const;
 
 		virtual ColliderFlags colliderType() const { return collider_projectile; }
-		virtual EntityId::Type entityType() const { return EntityId::projectile; }
-		virtual Entity *clone() const;
 
 	protected:
 		virtual void think();
@@ -46,28 +41,24 @@ namespace game {
 		friend class World;
 
 	private:
-		const ProjectileDesc *m_desc;
 		EntityRef m_spawner;
 		float3 m_dir;
 		float m_speed, m_target_angle;
 		int m_frame_count;
 	};
 
-	class Impact: public Entity {
+	class Impact: public EntityImpl<Impact, ImpactProto, EntityId::impact> {
 	public:
-		Impact(const ImpactDesc&, const float3 &pos);
+		Impact(const ImpactProto&, const float3 &pos);
 		Impact(Stream&);
 
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
 
 		virtual ColliderFlags colliderType() const { return collider_projectile; }
-		virtual EntityId::Type entityType() const { return EntityId::impact; }
-		virtual Entity *clone() const;
 	
 	protected:
 		virtual void onAnimFinished();
-		const ImpactDesc *m_desc;
 	};
 
 }

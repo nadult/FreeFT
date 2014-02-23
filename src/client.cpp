@@ -195,7 +195,7 @@ int safe_main(int argc, char **argv)
 	
 	audio::initSoundMap();
 	Config config = loadConfig("client");
-	game::loadPools();
+	game::loadData();
 
 	audio::initDevice();
 

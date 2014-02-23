@@ -14,9 +14,9 @@ namespace game {
 		"outofammo"
 	);
 
-	WeaponDesc::WeaponDesc(const TupleParser &parser) :ItemDesc(parser) {
+	WeaponProto::WeaponProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ammo_class_id = parser("ammo_class_id");
-		projectile_ref = parser("projectile_id");
+		projectile = parser("projectile_id");
 		class_id = WeaponClassId::fromString(parser("class_id"));
 		damage = toFloat(parser("damage"));
 		attack_modes = AttackModeFlags::fromString(parser("attack_modes"));
@@ -31,10 +31,10 @@ namespace game {
 		}
 	}
 		
-	void WeaponDesc::connect() {
-		projectile_ref.connect();
+	void WeaponProto::connect() {
+		projectile.connect();
 		if(attack_modes & (AttackModeFlags::single | AttackModeFlags::burst))
-			ASSERT(projectile_ref.isValid());
+			ASSERT(projectile.isValid());
 	}
 
 }

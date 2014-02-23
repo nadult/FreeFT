@@ -25,40 +25,34 @@ namespace game
 		closing
 	)
 
-	struct DoorDesc: public Tuple, TupleImpl<DoorDesc> {
-		DoorDesc(const TupleParser&);
+	DECLARE_ENUM(DoorState,
+		closed,
+
+		opened_in,
+		opening_in,
+		closing_in,
+
+		opened_out,
+		opening_out,
+		closing_out
+	);
+
+	struct DoorProto: public ProtoImpl<DoorProto, EntityProto, ProtoId::door> {
+		DoorProto(const TupleParser&);
 
 		string sprite_name;
 		string name;
 		DoorClassId::Type class_id;
 		SoundId sound_ids[DoorSoundType::count];
+		int seq_ids[DoorState::count];
 	};
 
-	class Door: public Entity
+	class Door: public EntityImpl<Door, DoorProto, EntityId::door>
 	{
-	public:
-		typedef DoorClassId::Type Class;
-
-		enum State {
-			state_closed,
-
-			state_opened_in,
-			state_opening_in,
-			state_closing_in,
-
-			state_opened_out,
-			state_opening_out,
-			state_closing_out,
-
-			state_count
-		};
-
-		static bool testSpriteType(PSprite, Class);
-
 	public:
 		Door(Stream&);
 		Door(const XMLNode&);
-		Door(const DoorDesc &desc, const float3 &pos);
+		Door(const DoorProto &proto, const float3 &pos);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
 		virtual EntityId::Type entityType() const { return EntityId::door; }
@@ -67,8 +61,8 @@ namespace game
 		virtual void interact(const Entity*);
 		virtual void onSoundEvent();
 
-		bool isOpened() const { return m_state == state_opened_in || m_state == state_opened_out; }
-		Class classId() const { return m_desc->class_id; }
+		bool isOpened() const { return m_state == DoorState::opened_in || m_state == DoorState::opened_out; }
+		DoorClassId::Type classId() const { return m_proto.class_id; }
 		void setKey(const Item&);
 		virtual void setDirAngle(float angle);
 
@@ -80,15 +74,11 @@ namespace game
 
 		virtual void think();
 		virtual void onAnimFinished();
-		FBox computeBBox(State) const;
+		FBox computeBBox(DoorState::Type) const;
 
-		const DoorDesc *m_desc;
-
-		State m_state;
 		Item m_key;
+		DoorState::Type m_state;
 		double m_close_time;
-
-		int m_seq_ids[state_count];
 		bool m_update_anim;
 	};
 };

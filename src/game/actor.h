@@ -123,11 +123,12 @@ namespace game {
 	Order equipItemOrder(int item_id);
 	Order unequipItemOrder(ItemType::Type type);
 
-	//TODO: this should be shared among actors with the same sprites
-	class ActorAnims {
-	public:
-		ActorAnims(PSprite);
-		ActorAnims() = default;
+	struct ActorProto;
+
+	struct ActorArmourProto: public ProtoImpl<ActorArmourProto, EntityProto, ProtoId::actor_armour> {
+		ActorArmourProto(const TupleParser&, bool is_actor = false);
+
+		void connect();
 
 		const string deathAnimName(DeathTypeId::Type) const;
 		const string simpleAnimName(ActionId::Type, StanceId::Type) const;
@@ -145,21 +146,33 @@ namespace game {
 		// to default
 		void setFallbackAnims();
 
+		ProtoRef<ArmourProto> armour;
+		ProtoRef<ActorProto> actor;
+		ArmourClassId::Type class_id;
+
 	private:
+		void initAnims();
+
 		short m_death_ids[DeathTypeId::count];
 		short m_simple_ids[ActionId::first_special - ActionId::first_simple][StanceId::count];
 		short m_normal_ids[ActionId::first_simple  - ActionId::first_normal][StanceId::count][WeaponClassId::count];
+		bool is_actor;
 	};
 
-	class Actor: public Entity {
+	struct ActorProto: public ProtoImpl<ActorProto, ActorArmourProto, ProtoId::actor> {
+		ActorProto(const TupleParser&);
+	};
+
+	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
 	public:
 		Actor(Stream&);
 		Actor(const XMLNode&);
-		Actor(ActorTypeId::Type type, const float3 &pos);
+		Actor(const Proto &proto, ActorTypeId::Type type, const float3 &pos);
+
+		//TODO: use this to change armour
+		Actor(const Actor &rhs, const string &new_sprite_name);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
-		virtual EntityId::Type entityType() const { return EntityId::actor; }
-		virtual Entity *clone() const;
 		ActorTypeId::Type actorType() const { return m_type_id; }
 
 		void setNextOrder(const Order &order);
@@ -211,6 +224,7 @@ namespace game {
 		
 	private:
 		virtual bool shrinkRenderedBBox() const { return true; }
+
 		// orders
 		bool m_issue_next_order;
 		Order m_order;
@@ -233,8 +247,6 @@ namespace game {
 		ActorInventory m_inventory;
 		int m_burst_mode;
 		int3 m_burst_off;
-
-		ActorAnims m_anims;
 	};
 
 }

@@ -18,3 +18,5 @@
 - Duplicated sprites: Robot turrets
 
 - Fix problem with mixed upper/lower case of paths to resources
+
+- Crash when shooting at the automatic doors in the long corridor with M60 (game:237 (conversion to container))

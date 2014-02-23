@@ -20,13 +20,13 @@ namespace game {
 		out_of_ammo
 	);
 
-	struct WeaponDesc: public ItemDesc, TupleImpl<WeaponDesc> {
-		ItemType::Type type() const { return ItemType::weapon; }
-		WeaponDesc(const TupleParser&);
+	struct WeaponProto: public ProtoImpl<WeaponProto, ItemProto, ProtoId::item_weapon> {
+		ItemType::Type itemType() const { return ItemType::weapon; }
+		WeaponProto(const TupleParser&);
 		void connect();
 
 		string ammo_class_id;
-		TupleRef<ProjectileDesc> projectile_ref;
+		ProtoRef<ProjectileProto> projectile;
 		WeaponClassId::Type class_id;
 		float damage;
 		uint attack_modes;
@@ -38,16 +38,16 @@ namespace game {
 	struct Weapon: public Item
 	{
 	public:
-		Weapon(const WeaponDesc &desc) :Item(desc) { }
+		Weapon(const WeaponProto &proto) :Item(proto) { }
 		Weapon(const Item &item) :Item((DASSERT(item.type() == ItemType::weapon), item)) { }
-		Weapon(int index) :Weapon(WeaponDesc::get(index)) { }
 
-		const ProjectileDesc *projectileDesc() const			{ return (const ProjectileDesc*)desc().projectile_ref; }
-		WeaponClassId::Type classId() const						{ return desc().class_id; }
-		const SoundId soundId(WeaponSoundType::Type type) const	{ return desc().sound_ids[type]; }
-		uint attackModes() const								{ return desc().attack_modes; }
+		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
 
-		const WeaponDesc &desc() const { return static_cast<const WeaponDesc&>(*m_desc); }
+		WeaponClassId::Type classId() const						{ return proto().class_id; }
+		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }
+		uint attackModes() const								{ return proto().attack_modes; }
+
+		const WeaponProto &proto() const { return static_cast<const WeaponProto&>(*m_proto); }
 	};
 
 

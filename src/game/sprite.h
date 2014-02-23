@@ -6,6 +6,7 @@
 #ifndef GAME_SPRITE_H
 #define GAME_SPRITE_H
 
+#include "game/base.h"
 #include "gfx/texture.h"
 #include "gfx/device.h"
 #include "gfx/texture_cache.h"
@@ -17,7 +18,8 @@ namespace game {
 	public:
 		Sprite();
 		void legacyLoad(Stream &sr);
-		void load(Stream &sr);
+		void load(Stream &sr) { load(sr, true); }
+		void load(Stream &sr, bool full_load);
 		void save(Stream &sr) const;
 
 		enum EventId {
@@ -130,8 +132,22 @@ namespace game {
 
 		const int3 &boundingBox() const { return m_bbox; }
 
-		static ResourceMgr<Sprite> mgr;
 		static gfx::TextureCache cache;
+
+		// Preloads basic information of all sprites
+		// load sprites in full, when requested
+		// TODO: add free/unload functions
+		static void initMap();
+		static int count();
+		static int find(const string &name);
+		static const Sprite &get(int idx);
+		static const Sprite &get(const string &name);
+		static const Sprite &getPartial(const string &name);
+		static bool isValidIndex(int idx);
+
+		bool isFullyLoaded() const { return m_is_fully_loaded; }
+		int index() const { return m_index; }
+		void setIndex(int index) { m_index = index; }
 
 	private:
 		vector<Sequence> m_sequences;
@@ -141,6 +157,9 @@ namespace game {
 
 		int2 m_offset;
 		int3 m_bbox; //TODO: naming
+
+		bool m_is_fully_loaded;
+		int m_index;
 	};
 
 	typedef Ptr<Sprite> PSprite;

@@ -17,7 +17,15 @@ namespace game {
 		"close"
 	)
 
-	ContainerDesc::ContainerDesc(const TupleParser &parser) :Tuple(parser) {
+	static const char *s_seq_names[ContainerState::count] = {
+		"Closed",
+		"Opened",
+		"Opening",
+		"Closing",
+	};
+
+
+	ContainerProto::ContainerProto(const TupleParser &parser) :ProtoImpl(parser) {
 		sprite_name = parser("sprite_name");
 		ASSERT(!sprite_name.empty());
 		name = parser("name");
@@ -28,79 +36,52 @@ namespace game {
 			snprintf(name, sizeof(name), "%s%s", sound_prefix, ContainerSoundType::toString(n));
 			sound_ids[n] = SoundId(name);
 		}
-	}
 
-	static const char *s_seq_names[Container::state_count] = {
-		"Closed",
-		"Opened",
-		"Opening",
-		"Closing",
-	};
-
-	Container::Container(Stream &sr) {
-		int desc_id = sr.decodeInt();
-		ASSERT(desc_id >= 0 && desc_id < ContainerDesc::count());
-		m_desc = &ContainerDesc::get(desc_id);
-
-		Entity::initialize(m_desc->sprite_name.c_str());
-		loadEntityParams(sr);
-		sr.unpack(m_state, m_target_state);
-		
-		m_update_anim = false;
-		m_is_always_opened = false;
-		for(int n = 0; n < state_count; n++) {
-			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
-			if(m_seq_ids[n] == -1)
-				m_is_always_opened = true;
+		is_always_opened = false;
+		for(int n = 0; n < ContainerState::count; n++) {
+			seq_ids[n] = sprite->findSequence(s_seq_names[n]);
+			if(seq_ids[n] == -1)
+				is_always_opened = true;
 		}
 	}
 
-	Container::Container(const XMLNode &node) :Entity(node) {
-		m_desc = &ContainerDesc::get(node.attrib("container_id"));
+	Container::Container(Stream &sr) :EntityImpl(sr) {
+		sr.unpack(m_state, m_target_state);
+		m_update_anim = false;
+	}
+
+	Container::Container(const XMLNode &node) :EntityImpl(node) {
 		initialize();
 	}
-	Container::Container(const ContainerDesc &desc, const float3 &pos) :Entity(desc.sprite_name), m_desc(&desc) {
+	Container::Container(const ContainerProto &proto, const float3 &pos) :EntityImpl(proto) {
 		initialize();
 		setPos(pos);
 	}
 
 	void Container::save(Stream &sr) const {
-		sr.encodeInt(m_desc->idx);
-		saveEntityParams(sr);
+		EntityImpl::save(sr);
 		sr.pack(m_state, m_target_state);
 	}
 
 	XMLNode Container::save(XMLNode &parent) const {
-		XMLNode node = Entity::save(parent);
-		node.addAttrib("container_id", node.own(m_desc->id));
+		XMLNode node = EntityImpl::save(parent);
 		return node;
 	}
 
 	void Container::initialize() {
 		m_update_anim = false;
-
-		m_is_always_opened = false;
-		for(int n = 0; n < state_count; n++) {
-			m_seq_ids[n] = m_sprite->findSequence(s_seq_names[n]);
-			if(m_seq_ids[n] == -1)
-				m_is_always_opened = true;
-		}
-		m_state = m_target_state = m_is_always_opened? state_opened : state_closed;
-		if(!m_is_always_opened)
-			playSequence(m_seq_ids[m_state]);
+		m_state = m_target_state = m_proto.is_always_opened? ContainerState::opened : ContainerState::closed;
+		if(!m_proto.is_always_opened)
+			playSequence(m_proto.seq_ids[m_state], false);
 	}
 	
-	Entity *Container::clone() const {
-		return new Container(*this);
-	}
-
 	void Container::setKey(const Item &key) {
 		DASSERT(key.type() == ItemType::other);
 		m_key = key;
 	}
 
 	void Container::interact(const Entity *interactor) {
-		if(m_is_always_opened)
+		if(m_proto.is_always_opened)
 			return;
 		
 		if(isOpened())
@@ -118,51 +99,51 @@ namespace game {
 	}
 	
 	void Container::onSoundEvent() {
-		bool is_opening = m_state == state_opening;
+		bool is_opening = m_state == ContainerState::opening;
 		ContainerSoundType::Type sound_type = is_opening? ContainerSoundType::opening : ContainerSoundType::closing;
-		world()->playSound(m_desc->sound_ids[sound_type], pos());
+		world()->playSound(m_proto.sound_ids[sound_type], pos());
 	}
 	
 	void Container::open() {
-		m_target_state = state_opened;
+		m_target_state = ContainerState::opened;
 	}
 
 	void Container::close() {
-		m_target_state = state_closed;
+		m_target_state = ContainerState::closed;
 	}
 
 	void Container::think() {
-		if(m_is_always_opened)
+		if(m_proto.is_always_opened)
 			return;
 
 		if(m_target_state != m_state) {
-			if(m_state == state_closed && m_target_state == state_opened) {
-				m_state = state_opening;
+			if(m_state == ContainerState::closed && m_target_state == ContainerState::opened) {
+				m_state = ContainerState::opening;
 				m_update_anim = true;
 			}
-			if(m_state == state_opened && m_target_state == state_closed) {
-				m_state = state_closing;
+			if(m_state == ContainerState::opened && m_target_state == ContainerState::closed) {
+				m_state = ContainerState::closing;
 				m_update_anim = true;
 			}
 		}
 		if(m_update_anim) {
 			world()->replicate(this);
 
-			playSequence(m_seq_ids[m_state]);
+			playSequence(m_proto.seq_ids[m_state]);
 			m_update_anim = false;
 		}
 	}
 
 	void Container::onAnimFinished() {
-		if(m_is_always_opened)
+		if(m_proto.is_always_opened)
 			return;
 
-		if(m_state == state_opening) {
-			m_state = state_opened;
+		if(m_state == ContainerState::opening) {
+			m_state = ContainerState::opened;
 			m_update_anim = true;
 		}
-		else if(m_state == state_closing) {
-			m_state = state_closed;
+		else if(m_state == ContainerState::closing) {
+			m_state = ContainerState::closed;
 			m_update_anim = true;
 		}
 	}

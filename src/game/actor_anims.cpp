@@ -109,8 +109,8 @@ namespace game {
 		"Riddled"
 	};
 
-	ActorAnims::ActorAnims(PSprite sprite) {
-		DASSERT(sprite);
+	void ActorArmourProto::initAnims() {
+		ASSERT(sprite);
 
 		for(int d = 0; d < DeathTypeId::count; d++) {
 			const string &name = deathAnimName((DeathTypeId::Type)d);
@@ -134,13 +134,13 @@ namespace game {
 		setFallbackAnims();
 	}
 
-	const string ActorAnims::deathAnimName(DeathTypeId::Type id) const {
+	const string ActorArmourProto::deathAnimName(DeathTypeId::Type id) const {
 		char text[128];
 		snprintf(text, sizeof(text), "Death%s", s_death_names[id]);
 		return text;
 	}
 
-	const string ActorAnims::simpleAnimName(ActionId::Type action, StanceId::Type stance) const {
+	const string ActorArmourProto::simpleAnimName(ActionId::Type action, StanceId::Type stance) const {
 		DASSERT(ActionId::isSimple(action));
 		const char *name = s_simple_names[action - ActionId::first_simple][stance];
 		if(!name)
@@ -151,7 +151,7 @@ namespace game {
 		return text;
 	}
 
-	const string ActorAnims::animName(ActionId::Type action, StanceId::Type stance, WeaponClassId::Type weapon) const {
+	const string ActorArmourProto::animName(ActionId::Type action, StanceId::Type stance, WeaponClassId::Type weapon) const {
 		DASSERT(!ActionId::isSpecial(action));
 		if(ActionId::isSimple(action))
 			return simpleAnimName(action, stance);
@@ -168,21 +168,21 @@ namespace game {
 		return text;
 	}
 	
-	int ActorAnims::deathAnimId(DeathTypeId::Type id) const {
+	int ActorArmourProto::deathAnimId(DeathTypeId::Type id) const {
 		return m_death_ids[id];
 	}
 
-	int ActorAnims::simpleAnimId(ActionId::Type action, StanceId::Type stance) const {
+	int ActorArmourProto::simpleAnimId(ActionId::Type action, StanceId::Type stance) const {
 		DASSERT(ActionId::isSimple(action));
 		return m_simple_ids[action - ActionId::first_simple][stance];
 	}
 
-	int ActorAnims::animId(ActionId::Type action, StanceId::Type stance, WeaponClassId::Type weapon) const {
+	int ActorArmourProto::animId(ActionId::Type action, StanceId::Type stance, WeaponClassId::Type weapon) const {
 		DASSERT(!ActionId::isSpecial(action));
 		return ActionId::isSimple(action)? simpleAnimId(action, stance) : m_normal_ids[action][stance][weapon];
 	}
 
-	bool ActorAnims::canChangeStance() const {
+	bool ActorArmourProto::canChangeStance() const {
 		for(int s = 0; s < StanceId::count; s++) {
 			if(animId(ActionId::idle, (StanceId::Type)s, WeaponClassId::unarmed) == -1)
 				return false;
@@ -199,7 +199,7 @@ namespace game {
 		return true;
 	}
 
-	void ActorAnims::setFallbackAnims() {
+	void ActorArmourProto::setFallbackAnims() {
 		for(int d = 0; d < DeathTypeId::count; d++)
 			if(m_death_ids[d] == -1)
 				m_death_ids[d] = m_death_ids[DeathTypeId::normal];
@@ -212,11 +212,11 @@ namespace game {
 
 	// sets seq_id, frame_id and seq_name
 	void Actor::animate(ActionId::Type action_id) {
-		int seq_id = m_anims.animId(action_id, m_stance_id, m_weapon_class_id);
+		int seq_id = m_proto.animId(action_id, m_stance_id, m_weapon_class_id);
 		if(seq_id == -1) {
 			//TODO: better error handling of missing sequences
 			printf("Sequence: %s not found!\n",
-					m_anims.animName(action_id, m_stance_id, m_weapon_class_id).c_str());
+					m_proto.animName(action_id, m_stance_id, m_weapon_class_id).c_str());
 			ASSERT(seq_id != -1);
 		}
 
@@ -225,7 +225,7 @@ namespace game {
 	}
 
 	void Actor::animateDeath(DeathTypeId::Type death_id) {
-		playSequence(m_anims.deathAnimId(death_id));
+		playSequence(m_proto.deathAnimId(death_id));
 		m_action_id = ActionId::death;
 	}
 

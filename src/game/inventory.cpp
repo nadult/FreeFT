@@ -120,15 +120,15 @@ namespace game {
 		:m_weapon(dummyWeapon()), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} { }
 		
 	const Weapon ActorInventory::dummyWeapon() {
-		return Weapon(Item::find("_dummy_weapon", ItemType::weapon));
+		return Weapon(findProto("_dummy_weapon", ProtoId::item_weapon));
 	}
 
 	const Armour ActorInventory::dummyArmour() {
-		return Armour(Item::find("_dummy_armour", ItemType::armour));
+		return Armour(findProto("_dummy_armour", ProtoId::item_armour));
 	}
 
 	const Item   ActorInventory::dummyAmmo() {
-		return Item(Item::find("_dummy_ammo", ItemType::ammo), ItemType::ammo);
+		return Item(findProto("_dummy_ammo", ProtoId::item_ammo));
 	}
 
 	int ActorInventory::unequip(ItemType::Type item_type) {

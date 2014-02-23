@@ -94,7 +94,13 @@ int fromString(const char *str, const char **strings, int count) {
 		if(strcmp(str, strings[n]) == 0)
 			return n;
 	
-	THROW("Can't find string: \"%s\" in string array", str);
+	char tstrings[1024], *ptr = tstrings;
+	for(int i = 0; i < count; i++)
+		ptr += snprintf(ptr, sizeof(tstrings) - (ptr - tstrings), "%s ", strings[i]);
+	if(count)
+		ptr[-1] = 0;
+
+	THROW("Error while finding string \"%s\" in array (%s)", str, tstrings);
 	return -1;
 }
 

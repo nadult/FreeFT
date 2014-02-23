@@ -94,6 +94,7 @@ namespace game {
 	}
 
 	void Actor::issueNextOrder() {
+		// TODO: orders are very bug-prone, fix them too
 		if(m_order.id == OrderId::do_nothing && m_next_order.id == OrderId::do_nothing)
 			return;
 
@@ -173,11 +174,12 @@ namespace game {
 				roundPos();
 				lookAt(m_next_order.attack.target_pos);
 		
-				AttackMode::Type mode = m_order.attack.mode;
+				AttackMode::Type mode = m_next_order.attack.mode;
 				uint modes = m_inventory.weapon().attackModes();
-				modes &= AttackMode::toFlags(mode);
+				if(mode != AttackMode::undefined)	
+					modes &= AttackMode::toFlags(mode);
 				m_next_order.attack.mode = mode = AttackModeFlags::getFirst(modes);
-				
+			
 				//TODO: fix actionId from attack_mode
 				if(mode != AttackMode::undefined)
 					animate(AttackMode::actionId(mode) == 2? ActionId::attack2 : ActionId::attack1);

@@ -31,28 +31,7 @@ static const char *getText(XMLNode cell_node) {
 	return "";
 }
 
-DataSheet::DataSheet()
-	:m_is_loaded(false) { }
-
-void DataSheet::load(const XMLDocument &doc, const char *shit_name) {
-	if(m_is_loaded)
-		THROW("DataSheet can only be loaded once");
-	m_name = shit_name;
-	
-	XMLNode doc_node = doc.child("office:document");
-	ASSERT(doc_node);
-
-	XMLNode body_node = doc_node.child("office:body");
-	ASSERT(body_node);
-
-	XMLNode spreadsheet_node = body_node.child("office:spreadsheet");
-	ASSERT(spreadsheet_node);
-
-	XMLNode table_node = spreadsheet_node.child("table:table");
-	while(table_node && !caseEqual(table_node.attrib("table:name"), shit_name))
-		table_node = table_node.sibling("table:table");
-	ASSERT(table_node);
-
+void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser&)) {
 	vector<XMLNode> rows;
 	vector<CString> col_names;
 
@@ -125,14 +104,14 @@ void DataSheet::load(const XMLDocument &doc, const char *shit_name) {
 
 		TupleParser parser(columns.data(), num_columns, column_map);
 		try {
-			Tuple &tuple = addTuple(parser);
+			string id = columns[id_column];
+			if(id.empty())
+				THROW("ID undefined");
+			if(map.find(id) != map.end())
+				THROW("Duplicated ID: %s", id.c_str());
 
-			if(tuple.id.empty())
-				THROW("Id undefined");
-			if(m_map.find(tuple.id) != m_map.end())
-				THROW("Duplicated id: %s", tuple.id.c_str());
-
-			m_map.emplace(tuple.id, tuple.idx);
+			int index = add_func(parser);
+			map.emplace(std::move(id), index);
 		}
 		catch(const Exception &ex) {
 			errors = true;
@@ -142,18 +121,5 @@ void DataSheet::load(const XMLDocument &doc, const char *shit_name) {
 	}
 
 	if(errors)
-		THROW("Errors while parsing sheet: %s\n", shit_name);
-
-	m_is_loaded = true;
+		THROW("Errors while parsing sheet: %s\n", table_node.attrib("table:name"));
 }
-
-int DataSheet::findTuple(const string &id) const {
-	auto it = m_map.find(id);
-	return it == m_map.end()? -1 : it->second;
-}
-	
-
-Tuple::Tuple(const TupleParser &parser) {
-	id = parser("id");
-}
-

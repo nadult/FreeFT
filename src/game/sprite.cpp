@@ -46,7 +46,7 @@ namespace game
 		return 0;
 	}
 
-	Sprite::Sprite() :m_bbox(0, 0, 0), m_offset(0, 0) { }
+	Sprite::Sprite() :m_bbox(0, 0, 0), m_offset(0, 0), m_is_fully_loaded(false), m_index(-1) { }
 
 	void Sprite::Sequence::load(Stream &sr) {
 		sr >> name;
@@ -133,19 +133,27 @@ namespace game
 	}
 
 
-	void Sprite::load(Stream &sr) {
+	void Sprite::load(Stream &sr, bool full_load) {
 		sr.signature("SPRITE", 6);
-		sr >> m_sequences >> m_frames >> m_palettes >> m_images;
 		sr.unpack(m_offset, m_bbox);
+		sr >> m_sequences >> m_frames;
+
+		m_is_fully_loaded = full_load;
+		if(full_load) {
+	 		sr >> m_palettes >> m_images;
+		}
+		else {
+			m_palettes.clear();
+			m_images.clear();
+		}
 	}
 
 	void Sprite::save(Stream &sr) const {
 		sr.signature("SPRITE", 6);
-		sr << m_sequences << m_frames << m_palettes << m_images;
 		sr.pack(m_offset, m_bbox);
+		sr << m_sequences << m_frames << m_palettes << m_images;
 	}
 	
-
 	void Sprite::clear() {
 		m_sequences.clear();
 		m_frames.clear();
@@ -266,7 +274,5 @@ namespace game
 			printf("frame #%d: %d\n", n, (int)m_frames[seq.first_frame + n].id);
 		printf("\n");
 	}
-
-	ResourceMgr<Sprite> Sprite::mgr("data/sprites/", ".sprite");
 
 }

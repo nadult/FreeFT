@@ -109,65 +109,47 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="62">
-	<container pos="162 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<actor pos="163 115 228" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
-	<container pos="165 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="168 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<actor pos="170 115 221" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
-	<container pos="171 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="174 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="177 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<actor pos="180 115 225" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
-	<container pos="180 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="183 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<actor pos="183 115 407" sprite="critters/SDC" angle="4.712389" actor_type="sdc"/>
-	<container pos="186 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<container pos="189 115 320" container_id="locker01" sprite="containers/BOS_locker01" angle="1.570796"/>
-	<actor pos="195 115 404" sprite="critters/SDC" angle="3.926991" actor_type="sdc"/>
-	<door pos="198 115 222" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<door pos="198 115 252" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<door pos="198 115 294" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<door pos="228 115 270" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<door pos="228 115 324" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<door pos="248 115 220" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="4.712389" door_id="bos_interior"/>
-	<door pos="246 115 303" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="0" door_id="vault_interior"/>
-	<door pos="249 115 250" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="4.712389" door_id="bos_interior"/>
-	<door pos="250 128 423" sprite="doors/Village DOORS/Fence" angle="0" door_id="fence"/>
-	<item pos="269 128 352" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1000"/>
-	<container pos="269 128 363" container_id="pot" sprite="containers/Pot" angle="0"/>
-	<door pos="270 115 210" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="3.141593" door_id="bos_interior"/>
-	<item pos="270 128 355" sprite="items/ammo/762mm" angle="0" item_desc="762mm" item_type="ammo" count="1000"/>
-	<container pos="270 128 360" container_id="pot" sprite="containers/Pot" angle="0"/>
-	<container pos="272 115 279" container_id="safe" sprite="containers/Safe" angle="0"/>
-	<container pos="272 128 363" container_id="pot" sprite="containers/Pot" angle="0"/>
-	<item pos="275 128 356" sprite="weapons/Rifles/Pulse Rifle" angle="0" item_desc="pulse_rifle" item_type="weapon" count="1"/>
-	<item pos="277 128 361" sprite="weapons/Rifles/Plasma Rifle" angle="0" item_desc="plasma_rifle" item_type="weapon" count="1"/>
-	<item pos="279 128 370" sprite="weapons/Miniguns/Gatling Laser" angle="0" item_desc="gatling_laser" item_type="weapon" count="1"/>
-	<item pos="280 128 358" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60" item_type="weapon" count="1"/>
-	<item pos="287 128 367" sprite="armour/Power Armour" angle="0" item_desc="power_armour" item_type="armour" count="1"/>
-	<actor pos="296 115 313" sprite="critters/RadScorpion" angle="5.497787" actor_type="rad_scorpion"/>
-	<door pos="296 128 432" sprite="doors/Village DOORS/Fence" angle="0" door_id="fence"/>
-	<item pos="298 115 262" sprite="weapons/Rifles/Plasma Rifle" angle="1.570796" item_desc="plasma_rifle" item_type="weapon" count="1"/>
-	<item pos="300 115 276" sprite="weapons/Heavy/M-60" angle="0" item_desc="m60" item_type="weapon" count="1"/>
-	<item pos="301 115 261" sprite="weapons/Rifles/Laser Rifle" angle="1.570796" item_desc="laser_rifle" item_type="weapon" count="1"/>
-	<actor pos="308 115 329" sprite="critters/RadScorpion" angle="0" actor_type="rad_scorpion"/>
-	<item pos="311 119 262" sprite="armour/Power Armour" angle="1.570796" item_desc="power_armour" item_type="armour" count="1"/>
-	<item pos="314 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
-	<item pos="316 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
-	<item pos="316 119 262" sprite="armour/Leather Armour" angle="1.570796" item_desc="leather_armour" item_type="armour" count="1"/>
-	<item pos="318 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
-	<item pos="320 119 260" sprite="items/ammo/Energy Cell Large" angle="0" item_desc="fusion_cell" item_type="ammo" count="1"/>
-	<door pos="380 115 219" sprite="doors/BOS DOORS/BOS InteriorDoor1" angle="1.570796" door_id="bos_interior"/>
-	<door pos="398 115 229" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_id="vault_interior"/>
-	<door pos="399 115 239" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_id="vault_interior"/>
-	<actor pos="405 115 268" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
-	<actor pos="407 115 318" sprite="critters/SDC" angle="1.570796" actor_type="sdc"/>
-	<actor pos="414 115 316" sprite="critters/SDC" angle="0.785398" actor_type="sdc"/>
-	<door pos="441 115 219" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_id="vault_interior"/>
-	<door pos="441 115 231" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_id="vault_interior"/>
-	<door pos="639 115 219" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_id="vault_interior"/>
-	<door pos="639 115 231" sprite="doors/Vault DOORS/VaultInteriorDoor" angle="3.141593" door_id="vault_interior"/>
+<entity_map size="1056 936" entity_count="40">
+	<container pos="162 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="165 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="168 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="171 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="174 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="177 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="180 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="183 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="186 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<container pos="189 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
+	<door pos="198 115 222" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<door pos="198 115 252" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<door pos="198 115 294" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<door pos="228 115 270" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<door pos="228 115 324" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<item pos="238 128 366" angle="3.141593" proto_type="armour" proto_id="leather_armour" item_count="1"/>
+	<item pos="238 128 373" angle="3.141593" proto_type="armour" proto_id="metal_armour" item_count="1"/>
+	<item pos="243 128 370" angle="3.141593" proto_type="armour" proto_id="power_armour" item_count="1"/>
+	<door pos="248 115 220" angle="4.712389" proto_type="door" proto_id="bos_interior"/>
+	<door pos="246 115 303" angle="0" proto_type="door" proto_id="vault_interior"/>
+	<door pos="249 115 250" angle="4.712389" proto_type="door" proto_id="bos_interior"/>
+	<door pos="250 128 423" angle="0" proto_type="door" proto_id="fence"/>
+	<container pos="269 128 363" angle="0" proto_type="container" proto_id="pot"/>
+	<door pos="270 115 210" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<container pos="270 128 360" angle="0" proto_type="container" proto_id="pot"/>
+	<container pos="272 115 279" angle="0" proto_type="container" proto_id="safe"/>
+	<container pos="272 128 363" angle="0" proto_type="container" proto_id="pot"/>
+	<item pos="276 128 356" angle="0" proto_type="weapon" proto_id="m60" item_count="1"/>
+	<item pos="277 128 362" angle="0" proto_type="weapon" proto_id="plasma_rifle" item_count="1"/>
+	<item pos="279 128 359" angle="0" proto_type="weapon" proto_id="laser_rifle" item_count="1"/>
+	<item pos="279 128 370" angle="1.570796" proto_type="weapon" proto_id="gatling_laser" item_count="1"/>
+	<item pos="281 128 366" angle="0" proto_type="weapon" proto_id="pulse_rifle" item_count="1"/>
+	<door pos="296 128 432" angle="0" proto_type="door" proto_id="fence"/>
+	<door pos="380 115 219" angle="1.570796" proto_type="door" proto_id="bos_interior"/>
+	<door pos="398 115 229" angle="3.141593" proto_type="door" proto_id="vault_interior"/>
+	<door pos="399 115 239" angle="3.141593" proto_type="door" proto_id="vault_interior"/>
+	<door pos="441 115 219" angle="3.141593" proto_type="door" proto_id="vault_interior"/>
+	<door pos="441 115 231" angle="3.141593" proto_type="door" proto_id="vault_interior"/>
+	<door pos="639 115 219" angle="3.141593" proto_type="door" proto_id="vault_interior"/>
+	<door pos="639 115 231" angle="3.141593" proto_type="door" proto_id="vault_interior"/>
 </entity_map>
 .
 40167a
