@@ -29,8 +29,14 @@ namespace ui {
 		void clear();
 		int size() const;
 		
+		const string &selectedText() const {
+			DASSERT(size() > 0);
+			return (*this)[selectedId()].text;
+		}
+
 		const ListBox::Entry& operator[](int idx) const;
 		ListBox::Entry& operator[](int idx);
+
 		void updateButton();
 
 	protected:

@@ -76,19 +76,16 @@ namespace game {
 	ItemEntity::ItemEntity(const Item &item, int count, const float3 &pos)
 			:EntityImpl(item.proto()), m_item(item), m_count(count) {
 		DASSERT(count >= 1);
-		initialize();
 		setPos(pos);
 	}
 
 	ItemEntity::ItemEntity(const XMLNode &node) :EntityImpl(node), m_item(m_proto) {
 		m_count = node.intAttrib("item_count");
-		initialize();
 	}
 
 	ItemEntity::ItemEntity(Stream &sr) :EntityImpl(sr), m_item(m_proto) {
 		m_count = sr.decodeInt();
 		ASSERT(m_count > 0);
-		initialize();
 	}
 
 	void ItemEntity::save(Stream &sr) const {
@@ -102,8 +99,10 @@ namespace game {
 		return node;
 	}
 			
-	void ItemEntity::initialize() {
-		setBBox(FBox(float3(0.0f, 0.0f, 0.0f), asXZY(bboxSize().xz(), 0.0f)));
+		
+	const FBox ItemEntity::boundingBox() const {
+		float3 bbox_size = m_sprite.bboxSize();
+		return FBox(0, 0, 0, bbox_size.x, 0.0f, bbox_size.z) + pos();
 	}
 		
 	void ItemEntity::setCount(int count) {

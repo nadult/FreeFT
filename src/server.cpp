@@ -59,7 +59,7 @@ public:
 
 	int spawnActor(const float3 &pos) {
 		DASSERT(m_world);
-		return m_world->addEntity(new Actor(getProto("male", ProtoId::actor), ActorTypeId::male, pos));
+		return m_world->addEntity(PEntity(new Actor(getProto("male", ProtoId::actor), pos)));
 	}
 
 	void disconnectClient(int client_id) {
@@ -71,7 +71,6 @@ public:
 		DASSERT(client.isValid());
 		beginSending(client.host_id);
 
-		EntityMap &emap = m_world->entityMap();
 		const Chunk *chunk = nullptr;
 
 		while( const Chunk *chunk_ptr = host.getIChunk() ) {
@@ -81,9 +80,9 @@ public:
 				client.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
 //				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
-				client.update_map.resize(emap.size() * 2);
-				for(int n = 0; n < emap.size(); n++)
-					if(emap[n].ptr)
+				client.update_map.resize(m_world->entityCount() * 2);
+				for(int n = 0; n < m_world->entityCount(); n++)
+					if(m_world->getEntity(n))
 						client.update_map[n] = true;
 
 				TempPacket temp;
@@ -112,7 +111,6 @@ public:
 		}
 		
 		if(client.mode == ClientMode::connected) {
-			EntityMap &emap = m_world->entityMap();
 			const vector<int> &new_updates = m_world->replicationList();
 				
 			for(int n = 0; n < (int)new_updates.size(); n++)
@@ -127,14 +125,14 @@ public:
 				
 			int idx = 0;
 			BitVector &map = client.update_map;
-			while(idx < emap.size()) {
+			while(idx < m_world->entityCount()) {
 				if(!map.any(idx >> BitVector::base_shift)) {
 					idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
 					continue;
 				}
 
 				if(map[idx]) {
-					const Entity *entity = emap[idx].ptr;
+					const Entity *entity = m_world->getEntity(idx);
 
 					TempPacket temp;
 
@@ -159,8 +157,6 @@ public:
 		InPacket packet;
 		Address source;
 
-		EntityMap &emap = m_world->entityMap();
-
 		double time = getTime();
 		m_current_time = time;
 
@@ -179,8 +175,8 @@ public:
 				client.mode = ClientMode::connecting;
 				client.host_id = h;
 			}
-			if(emap.size() > client.update_map.size())
-				client.update_map.resize(emap.size() * 2);
+			if(m_world->entityCount() > client.update_map.size())
+				client.update_map.resize(m_world->entityCount() * 2);
 
 			handleHost(*host, client);
 		}
@@ -301,7 +297,7 @@ int safe_main(int argc, char **argv)
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 		
 		if(!isect.isEmpty()) {		
-			FBox box = isect.boundingBox();
+			FBox box = world.refBBox(isect);
 			renderer.addBox(box, Color(255, 255, 255, 100));
 		}
 

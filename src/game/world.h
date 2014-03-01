@@ -11,37 +11,9 @@
 #include "game/entity_map.h"
 #include "game/level.h"
 #include "navi_map.h"
+#include <unordered_map>
 
 namespace game {
-
-	class Intersection {
-	public:
-		Intersection(const   TileMap::ObjectDef *object = nullptr, float distance = constant::inf)
-			:m_tile(object), m_is_entity(false), m_distance(distance) { }
-		Intersection(const EntityMap::ObjectDef *object, float distance = constant::inf)
-			:m_entity(object), m_is_entity(true), m_distance(distance) { }
-
-		const FBox boundingBox() const { return m_entity? m_entity->bbox : FBox::empty(); }
-
-		const Tile *tile() const { return   isTile()?   m_tile->ptr : nullptr; }
-		  Entity *entity() const { return isEntity()? m_entity->ptr : nullptr; }
-
-		bool isEntity() const { return  m_is_entity && m_entity; }
-		bool   isTile() const { return !m_is_entity && m_tile; }
-
-		bool isEmpty() const { return !m_entity; }
-		float distance() const { return m_distance; }
-
-	private:
-		union {
-			const EntityMap::ObjectDef *m_entity;
-			const   TileMap::ObjectDef *m_tile;
-		};
-		float m_distance;
-		bool m_is_entity;
-	};
-
-//	inline const Intersection &min(const Intersection &a, const Intersection &b) { return a.t < b.t? a : b; }
 
 	class World {
 	public:
@@ -63,8 +35,10 @@ namespace game {
 
 		void removeEntity(Entity*);
 		void removeEntity(int entity_id);
-		int addEntity(Entity*);
-		void addEntity(int entity_id, Entity*);
+
+		// Takes ownership of entity
+		int addEntity(PEntity&&, int index = -1);
+
 		void simulate(double time_diff);
 
 		void updateNaviMap(bool full_recompute);
@@ -78,10 +52,16 @@ namespace game {
 
 		const TileMap &tileMap() const { return m_level.tile_map; }
 		const NaviMap &naviMap() const { return m_navi_map; }
-		EntityMap &entityMap() { return m_entity_map; }
 		NaviMap &naviMap() { return m_navi_map; }
 	
-		bool isColliding(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
+		const FBox refBBox(ObjectRef) const;
+		const Tile *refTile(ObjectRef) const;
+		const Entity *refEntity(ObjectRef) const;
+		Entity *refEntity(ObjectRef);
+		Entity *refEntity(EntityRef);
+
+		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
+		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
 
 		//TODO: option to ignore entities
@@ -112,20 +92,16 @@ namespace game {
 		double m_last_anim_frame_time;
 		int m_anim_frame;
 
+		//TODO: remove level
 		Level		m_level;
 		TileMap		&m_tile_map;
 		EntityMap	&m_entity_map;
 		NaviMap		m_navi_map;
-
+		
+		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
 		vector<int> m_replication_list;
-
-		static World *s_instance;
-		friend World* Entity::world();
+		friend class EntityWorldProxy;
 	};
-
-	inline World *Entity::world() {
-		return World::s_instance;
-	}
 
 }
 

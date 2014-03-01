@@ -41,22 +41,6 @@ namespace game {
 		"power"
 	)
 
-	DEFINE_ENUM(ActorTypeId,
-		"male",
-		"female",
-		"ghoul",
-		"vault_male",
-		"vault_female",
-		"mutant",
-
-		"rad_scorpion",
-		"giant_rat",
-		"wolf",
-		"brahmin",
-		"mdc",
-		"sdc"
-	)
-
 	DEFINE_ENUM(ProjectileTypeId,
 		"bullet",
 		"plasma",

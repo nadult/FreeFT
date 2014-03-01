@@ -136,7 +136,7 @@ namespace game
 	void Sprite::load(Stream &sr, bool full_load) {
 		sr.signature("SPRITE", 6);
 		sr.unpack(m_offset, m_bbox);
-		sr >> m_sequences >> m_frames;
+		sr >> m_sequences >> m_frames >> m_max_rect;
 
 		m_is_fully_loaded = full_load;
 		if(full_load) {
@@ -151,7 +151,8 @@ namespace game
 	void Sprite::save(Stream &sr) const {
 		sr.signature("SPRITE", 6);
 		sr.pack(m_offset, m_bbox);
-		sr << m_sequences << m_frames << m_palettes << m_images;
+		sr << m_sequences << m_frames << m_max_rect;
+		sr << m_palettes << m_images;
 	}
 	
 	void Sprite::clear() {
@@ -196,14 +197,14 @@ namespace game
 		return m_images[imageIndex(seq_id, frame_id, dir_id)].rect - m_offset;
 	}
 
-	IRect Sprite::getMaxRect() const {
+	void Sprite::updateMaxRect() {
 		if(m_images.empty())
-			return IRect::empty();
+			m_max_rect = IRect::empty();
 
 		IRect out = m_images[0].rect;
 		for(int n = 1; n < (int)m_images.size(); n++)
 			out = sum(out, m_images[n].rect);
-		return out - m_offset;
+		m_max_rect = out - m_offset;
 	}
 		
 	bool Sprite::testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const {

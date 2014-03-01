@@ -102,7 +102,8 @@ namespace game {
 
 		int imageIndex(int seq_id, int frame_id, int dir_id) const;
 		IRect getRect(int seq_id, int frame_id, int dir_id) const;
-		IRect getMaxRect() const;
+		IRect getMaxRect() const { return m_max_rect; }
+		void updateMaxRect();
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
 		gfx::PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const;
@@ -130,7 +131,7 @@ namespace game {
 
 		void clear();
 
-		const int3 &boundingBox() const { return m_bbox; }
+		const int3 &bboxSize() const { return m_bbox; }
 
 		static gfx::TextureCache cache;
 
@@ -155,6 +156,7 @@ namespace game {
 		vector<MultiPalette> m_palettes;
 		vector<MultiImage> m_images;
 
+		IRect m_max_rect;
 		int2 m_offset;
 		int3 m_bbox; //TODO: naming
 

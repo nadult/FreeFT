@@ -113,13 +113,13 @@ namespace game {
 	Order doNothingOrder();
 	Order changeStanceOrder(int next_stance);
 	Order attackOrder(AttackMode::Type, const int3 &target_pos);
-	Order interactOrder(Entity *target, InteractionMode mode);
+	Order interactOrder(EntityRef target, InteractionMode mode);
 
 	//TODO: zamiast idkow, w rozkazach przekazywac cale obiekty? jesli, np.
 	//w trakcje wykonywania rozkazu zmieni sie stan kontenera, to zostanie
 	//przekazany nie ten item co trzeba
 	Order dropItemOrder(int item_id);
-	Order transferItemOrder(Entity *target, TransferMode mode, int item_id, int count);
+	Order transferItemOrder(EntityRef target, TransferMode mode, int item_id, int count);
 	Order equipItemOrder(int item_id);
 	Order unequipItemOrder(ItemType::Type type);
 
@@ -148,7 +148,8 @@ namespace game {
 
 		ProtoRef<ArmourProto> armour;
 		ProtoRef<ActorProto> actor;
-		ArmourClassId::Type class_id;
+
+		SoundId step_sounds[StanceId::count][SurfaceId::count];
 
 	private:
 		void initAnims();
@@ -161,19 +162,21 @@ namespace game {
 
 	struct ActorProto: public ProtoImpl<ActorProto, ActorArmourProto, ProtoId::actor> {
 		ActorProto(const TupleParser&);
+
+		bool is_heavy;
+
+		// run, walk, crouch, prone
+		float speeds[StanceId::count + 1];
 	};
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
 	public:
 		Actor(Stream&);
 		Actor(const XMLNode&);
-		Actor(const Proto &proto, ActorTypeId::Type type, const float3 &pos);
-
-		//TODO: use this to change armour
-		Actor(const Actor &rhs, const string &new_sprite_name);
+		Actor(const Proto &proto, const float3 &pos);
+		Actor(const Actor &rhs, const Proto &new_proto);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
-		ActorTypeId::Type actorType() const { return m_type_id; }
 
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }
@@ -187,7 +190,7 @@ namespace game {
 		SurfaceId::Type surfaceUnder() const;
 
 	private:
-		void initialize(ActorTypeId::Type);
+		void initialize();
 
 		void think();
 
@@ -195,7 +198,6 @@ namespace game {
 		void issueNextOrder();
 		void issueMoveOrder();
 
-		void updateWeapon();
 		void updateArmour();
 
 		bool canEquipItem(int item_id) const;
@@ -204,7 +206,6 @@ namespace game {
 		// What sux even more: some weapons can be fired only when actor has the armour on
 		// (some sprites have some animations missing...)!
 		bool canEquipWeapon(WeaponClassId::Type) const;
-		bool canEquipArmour(ArmourClassId::Type) const;
 		bool canChangeStance() const;
 
 		void animate(ActionId::Type);
@@ -225,6 +226,10 @@ namespace game {
 	private:
 		virtual bool shrinkRenderedBBox() const { return true; }
 
+		void handleEquipOrder(const Order&);
+
+		const ActorProto &m_actor;
+
 		// orders
 		bool m_issue_next_order;
 		Order m_order;
@@ -236,10 +241,6 @@ namespace game {
 		float m_path_t;
 		int m_path_pos;
 		vector<int3> m_path;
-
-		ActorTypeId::Type m_type_id;
-		WeaponClassId::Type m_weapon_class_id;
-		ArmourClassId::Type m_armour_class_id;
 
 		ActionId::Type m_action_id;
 		StanceId::Type m_stance_id;

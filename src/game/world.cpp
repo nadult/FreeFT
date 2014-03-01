@@ -19,28 +19,28 @@ namespace game {
 	// TODO: multiple navigation maps (2, 3, 4 at least)
 	enum { agent_size = 3 };
 
-	World *World::s_instance = nullptr;
-
 	World::World(Mode mode)
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
 		m_anim_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
 		if(m_mode == Mode::server)
 			m_replication_list.reserve(1024);
-
-		ASSERT(s_instance == nullptr);
-		s_instance = this;
 	} 
 
 	World::World(Mode mode, const char *file_name) :World(mode) {
 		m_level.load(file_name);
+		for(int n = 0; n < m_entity_map.size(); n++) {
+			auto &obj = m_entity_map[n];
+			if(obj.ptr)
+				obj.ptr->hook(this, n);
+		}
+
 //		m_tile_map.printInfo();
 		m_map_name = file_name;
 //		updateNaviMap(true);
 	}
 	World::~World() {
-		s_instance = nullptr;
 	}
-
+		
 	void World::updateNaviMap(bool full_recompute) {
 		//PROFILE("updateNaviMap");
 
@@ -86,30 +86,32 @@ namespace game {
 		}
 	}
 
-	void World::removeEntity(int entity_id) {
-		DASSERT(entity_id >= 0 && entity_id < m_entity_map.size());
-		m_entity_map.remove(entity_id);
-		replicate(entity_id);
+	void World::removeEntity(Entity *entity) {
+		DASSERT(entity && entity->isHooked());
+		DASSERT(entity->m_world == this);
+		removeEntity(entity->index());
 	}
 
-	void World::addEntity(int index, Entity *entity) {
-		DASSERT(entity);
-		m_entity_map.add(index, entity);
-		replicate(entity);
+	void World::removeEntity(int index) {
+		DASSERT(index >= 0 && index < m_entity_map.size());
+		m_entity_map.remove(index);
+		replicate(index);
 	}
 
-	int World::addEntity(Entity *entity) {
-		DASSERT(entity);
-		m_entity_map.add(entity);
-		replicate(entity);
-		return entity->m_grid_index;
+	int World::addEntity(PEntity &&ptr, int index) {
+		DASSERT(ptr);
+		Entity *entity = ptr.get();
+		index = m_entity_map.add(std::move(ptr), index);
+		entity->hook(this, index);
+		replicate(index);
+		return index;
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {
 		PROFILE("World::addToRender");
 
 		vector<int> inds;
-		inds.reserve(1024);
+		inds.reserve(8192);
 		m_tile_map.findAll(inds, renderer.targetRect(), collider_all|visibility_flag);
 		for(int n = 0; n < (int)inds.size(); n++) {
 			const auto &obj = m_tile_map[inds[n]];
@@ -155,75 +157,160 @@ namespace game {
 				continue;
 
 			object.ptr->think();
-			if(object.ptr->m_to_be_removed) {
-				replicate(object.ptr);
-				m_entity_map.remove(object.ptr);
-				continue;
-			}
 			if(object.flags & (collider_dynamic | collider_dynamic_nv | collider_projectile))
-				m_entity_map.update(object.ptr);
+				m_entity_map.update(n);
 
 			for(int f = 0; f < frame_skip; f++)
 				object.ptr->nextFrame();
 		}
 
+		for(int n = 0; n < (int)m_replace_list.size(); n++) {
+			auto &pair = m_replace_list[n];
+			int index = pair.second;
+			int old_uid = -1;
+
+			if(index != -1) {
+				const Entity *entity = m_entity_map[index].ptr;
+				if(entity)
+					old_uid = entity->m_unique_id;
+				removeEntity(index);
+			}
+
+			if(pair.first.get()) {
+				if(old_uid != -1)
+					pair.first.get()->m_unique_id = old_uid;
+				index = addEntity(std::move(pair.first), index);
+			}
+			replicate(index);
+		}
+		m_replace_list.clear();
+
 		m_last_time = current_time;
 	}
 	
+	
+	const FBox World::refBBox(ObjectRef ref) const {
+		if(ref.isTile()) {
+		   	if(ref.m_index >= 0 && ref.m_index < m_tile_map.size())
+				return m_tile_map[ref.m_index].bbox;
+		}
+		else {
+		   	if(ref.m_index >= 0 && ref.m_index < m_entity_map.size())
+				return m_entity_map[ref.m_index].bbox;
+		}
+
+		return FBox::empty();
+	}
+
+	const Tile *World::refTile(ObjectRef ref) const {
+		if(ref.isTile() && ref.m_index >= 0 && ref.m_index < m_tile_map.size())
+			return m_tile_map[ref.m_index].ptr;
+		return nullptr;
+	}
+
+	const Entity *World::refEntity(ObjectRef ref) const {
+		if(ref.m_is_entity && ref.m_index >= 0 && ref.m_index < m_entity_map.size())
+			return m_entity_map[ref.m_index].ptr;
+		return nullptr;
+	}
+
+	Entity *World::refEntity(ObjectRef ref) {
+		if(ref.m_is_entity && ref.m_index >= 0 && ref.m_index < m_entity_map.size())
+			return m_entity_map[ref.m_index].ptr;
+		return nullptr;
+	}
+
+	Entity *World::refEntity(EntityRef ref) {
+		if(ref.m_index < 0 || ref.m_index >= m_entity_map.size())
+			return nullptr;
+
+		Entity *entity = m_entity_map[ref.m_index].ptr;
+		if(entity && entity->m_unique_id == ref.m_unique_id)
+			return entity;
+
+		return nullptr;
+	}
+
 	Intersection World::trace(const Segment &segment, const Entity *ignore, int flags) const {
 		PROFILE("World::trace");
 		Intersection out;
 
 		if(flags & collider_tiles) {
 			pair<int, float> isect = m_tile_map.trace(segment, -1, flags);
-			if(isect.first != -1)
-				out = Intersection(&m_tile_map[isect.first], isect.second);
+			if(isect.first != -1) {
+				const auto &obj = m_tile_map[isect.first];
+				out = Intersection(ObjectRef(isect.first, false), isect.second);
+			}
 		}
 
 		if(flags & collider_entities) {
-			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->m_grid_index : -1, flags);
-			if(isect.first != -1 && isect.second < out.distance())
-				out = Intersection(&m_entity_map[isect.first], isect.second);
+			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->index() : -1, flags);
+			if(isect.first != -1 && isect.second < out.distance()) {
+				const auto &obj = m_entity_map[isect.first];
+				out = Intersection(ObjectRef(isect.first, true), isect.second);
+			}
 		}
 
 		return out;
 	}
-
+	
 	Intersection World::pixelIntersect(const int2 &screen_pos, int flags) const {
 		//PROFILE("world::pixelIntersect");
 		Intersection out;
 		Ray ray = screenRay(screen_pos);
 
 		if(flags & collider_tiles) {
-			int tile_id = m_tile_map.pixelIntersect(screen_pos, flags);
-			if(tile_id != -1)
-				out = Intersection(&m_tile_map[tile_id], intersection(ray, m_tile_map[tile_id].bbox));
+			int index = m_tile_map.pixelIntersect(screen_pos, flags);
+			if(index != -1) {
+				const auto &obj = m_tile_map[index];
+				out = Intersection(ObjectRef(index, false), intersection(ray, obj.bbox));
+			}
 		}
 
 		if(flags & collider_entities) {
-			int entity_id = m_entity_map.pixelIntersect(screen_pos, flags);
-			if(entity_id != -1) {
-				const auto *object = &m_entity_map[entity_id];
-				if(out.isEmpty() || drawingOrder(object->bbox, out.boundingBox()) == 1)
-					out = Intersection(object, intersection(ray, object->bbox));
+			int index = m_entity_map.pixelIntersect(screen_pos, flags);
+			if(index != -1) {
+				const auto *object = &m_entity_map[index];
+				if(out.isEmpty() || drawingOrder(object->bbox, refBBox(out)) == 1)
+					out = Intersection(ObjectRef(index, true), intersection(ray, object->bbox));
 			}
 		}
 
 		return out;
 	}
 
-	bool World::isColliding(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
-		//PROFILE("world::isColliding");
+	ObjectRef World::findAny(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
+		if((flags & collider_tiles)) {
+			int index = m_tile_map.findAny(box, flags);
+			if(index != -1)
+				return ObjectRef(index, false);
+		}
 
-		if((flags & collider_tiles))
-			if(m_tile_map.findAny(box, flags) != -1)
-				return true;
+		if(flags & collider_entities) {
+			int index = m_entity_map.findAny(box, ignore? ignore->index() : -1, flags);
+			if(index != -1)
+				return ObjectRef(index, true);
+		}
 
-		if(flags & collider_entities)
-			if(m_entity_map.findAny(box, ignore? ignore->m_grid_index : -1, flags) != -1)
-				return true;
+		return ObjectRef();
+	}
 
-		return false;
+	void World::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, ColliderFlags flags) const {
+		vector<int> inds;
+		inds.reserve(1024);
+
+		if(flags & collider_tiles) {
+			m_tile_map.findAll(inds, box, flags);
+			for(int n = 0; n < (int)inds.size(); n++)
+				out.emplace_back(ObjectRef(inds[n], false));
+			inds.clear();
+		}
+
+		if(flags & collider_entities) {
+			m_entity_map.findAll(inds, box, ignore? ignore->index() : -1, flags);
+			for(int n = 0; n < (int)inds.size(); n++)
+				out.emplace_back(ObjectRef(inds[n], true));
+		}
 	}
 
 	bool World::isInside(const FBox &box) const {
@@ -236,13 +323,14 @@ namespace game {
 	}
 	
 	void World::replicate(const Entity *entity) {
-		DASSERT(entity && entity->m_grid_index != -1);
-		replicate(entity->m_grid_index);
+		DASSERT(entity && entity->isHooked());
+		DASSERT(entity->m_world == this);
+		replicate(entity->index());
 	}
 
-	void World::replicate(int entity_id) {
+	void World::replicate(int index) {
 		if(m_mode == Mode::server)
-			m_replication_list.push_back(entity_id);
+			m_replication_list.push_back(index);
 	}
 
 	void World::playSound(const char *name, const float3 &pos) {

@@ -34,19 +34,6 @@ namespace game
 			{ return ((const Entity*)object.ptr)->testPixel(pos); },  flags);
 	}
 
-	void EntityMap::add(Entity *entity) {
-		add(findFreeObject(), entity);
-	}	
-
-	void EntityMap::add(int index, Entity *entity) {
-		DASSERT(entity);
-
-		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
-					entity->colliderType() | visibility_flag));
-		entity->m_grid_index = index;
-		updateOccluderId(index);
-	}
-
 	void EntityMap::updateOccluderId(int object_id) {
 		DASSERT(object_id >= 0 && object_id < size());
 		auto &object = (*this)[object_id];
@@ -77,32 +64,34 @@ namespace game
 		object.occluder_id = best_occluder_id;
 	}
 
-	void EntityMap::remove(Entity *entity) {
-		DASSERT(entity && entity->m_grid_index != -1);
-		remove(entity->m_grid_index);
-	}
-	
-	void EntityMap::remove(int entity_id) {
-		DASSERT(entity_id >= 0 && entity_id < size());
-		Grid::remove(entity_id);
-		delete (*this)[entity_id].ptr;
-	}
+	int EntityMap::add(unique_ptr<Entity> &&ptr, int index) {
+		DASSERT(ptr && index >= -1);
+		if(index == -1)
+			index = findFreeObject();
+		Entity *entity = ptr.get();
 
-	void EntityMap::update(Entity *entity) {
-		DASSERT(entity && entity->m_grid_index != -1);
-		update(entity->m_grid_index);
+		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
+					entity->colliderType() | visibility_flag));
+		updateOccluderId(index);
+		ptr.release();
+
+		return index;
 	}
 
-	void EntityMap::update(int entity_id) {
-		auto &object = (*this)[entity_id];
-		FBox old_bbox = object.bbox;
-		Entity *entity = object.ptr;
+	void EntityMap::remove(int index) {
+		DASSERT(index >= 0 && index < size());
+		Grid::remove(index);
+		delete (*this)[index].ptr;
+	}
 
-		Grid::update(entity_id,
-				Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType() | visibility_flag));
-		
-		if(object.bbox != old_bbox)
-			updateOccluderId(entity_id);
+	void EntityMap::update(int index) {
+		DASSERT(index >= 0 && index < size());
+		Entity *entity = (*this)[index].ptr;
+		DASSERT(entity);
+
+		if(Grid::update(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
+												entity->colliderType() | visibility_flag)))
+			updateOccluderId(index);
 	}
 
 	void EntityMap::updateVisibility() {
@@ -140,8 +129,8 @@ namespace game
 
 		XMLNode node = main_node.child();
 		while(node) {
-			Entity *entity = Entity::construct(node);
-			add(entity);
+			unique_ptr<Entity> new_entity(Entity::construct(node));
+			add(std::move(new_entity));
 			node = node.sibling();
 		}
 	}

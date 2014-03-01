@@ -28,10 +28,10 @@ namespace sys {
 // calling nextFrame()
 void *frameAlloc(size_t bytes);
 
-inline void operator delete(void *p) { sys::free(p); }
-inline void operator delete[](void *p) { sys::free(p); }
-inline void *operator new(size_t size) { return sys::alloc(size); }
-inline void *operator new[](size_t size) { return sys::alloc(size); }
+inline void operator delete(void *p) throw() { sys::free(p); }
+inline void operator delete[](void *p) throw() { sys::free(p); }
+inline void *operator new(size_t size) throw() { return sys::alloc(size); }
+inline void *operator new[](size_t size) throw() { return sys::alloc(size); }
 
 #endif
 

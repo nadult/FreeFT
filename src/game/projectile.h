@@ -27,7 +27,7 @@ namespace game {
 	class Projectile: public EntityImpl<Projectile, ProjectileProto, EntityId::projectile> {
 	public:
 		Projectile(const ProjectileProto &Proto, const float3 &pos, float initial_ang,
-					const float3 &target, Entity *spawner);
+					const float3 &target, EntityRef spawner);
 		Projectile(Stream&);
 		
 		void save(Stream&) const;

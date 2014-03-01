@@ -29,7 +29,7 @@ namespace game {
 	bool Order::isValid() const {
 		if(id == OrderId::invalid)
 			return false;
-		if((id == OrderId::transfer_item || id == OrderId::interact) && !target.get())
+		if((id == OrderId::transfer_item || id == OrderId::interact) && target.isEmpty())
 			return false;
 		return true;
 	}
@@ -58,9 +58,8 @@ namespace game {
 		new_order.attack = Order::Attack{target_pos, attack_mode};
 		return new_order;
 	}
-	Order interactOrder(Entity *target, InteractionMode mode) {
+	Order interactOrder(EntityRef target, InteractionMode mode) {
 		Order new_order(OrderId::interact);
-		DASSERT(target);
 		new_order.target = target;
 		new_order.interact = Order::Interact{mode, false};
 		return new_order;
@@ -81,9 +80,8 @@ namespace game {
 		new_order.unequip_item = Order::UnequipItem{type};
 		return new_order;
 	}
-	Order transferItemOrder(Entity *target, TransferMode mode, int item_id, int count) {
+	Order transferItemOrder(EntityRef target, TransferMode mode, int item_id, int count) {
 		Order new_order(OrderId::transfer_item);
-		DASSERT(target); //TODO: entity pointer may become invalid
 		new_order.target = target;
 		new_order.transfer_item = Order::TransferItem{item_id, count, mode};
 		return new_order;
@@ -98,12 +96,11 @@ namespace game {
 		if(m_order.id == OrderId::do_nothing && m_next_order.id == OrderId::do_nothing)
 			return;
 
-		World *world = this->world();
-		if(world->isClient()) {
+		if(isClient()) {
 			m_next_order = doNothingOrder();
 		}
-		else if(world->isServer())
-			world->replicate(this);
+		else if(isServer())
+			replicate();
 		
 		if(m_order.id == OrderId::change_stance) {
 			m_stance_id = (StanceId::Type)(m_stance_id - m_order.change_stance.next_stance);
@@ -123,41 +120,47 @@ namespace game {
 		}
 		else if(m_next_order.id == OrderId::interact) {
 			IBox my_box(boundingBox());
-			IBox other_box = enclosingIBox(m_next_order.target->boundingBox());
+			Entity *target = refEntity(m_next_order.target);
 
-			if(areAdjacent(*this, *m_next_order.target)) {
-				m_order = m_next_order;
-				m_next_order = doNothingOrder();
-				ActionId::Type action = m_order.interact.mode == interact_pickup? ActionId::pickup :
-					other_box.max.y < my_box.max.y * 2 / 3? ActionId::magic2 : ActionId::magic1;
-				animate(action);
-				lookAt(other_box.center());
-			}
-			else {
-				if(m_next_order.interact.waiting_for_move) {
-					printf("Cannot get there!\n");
-					m_order = m_next_order = doNothingOrder();
+			if(target) {
+				IBox other_box = enclosingIBox(target->boundingBox());
+
+				if(areAdjacent(*this, *target)) {
+					m_order = m_next_order;
+					m_next_order = doNothingOrder();
+					ActionId::Type action = m_order.interact.mode == interact_pickup? ActionId::pickup :
+						other_box.max.y < my_box.max.y * 2 / 3? ActionId::magic2 : ActionId::magic1;
+					animate(action);
+					lookAt(other_box.center());
 				}
 				else {
-					int3 target_pos = my_box.min;
-					if(my_box.max.x < other_box.min.x)
-						target_pos.x = other_box.min.x - my_box.width();
-					else if(my_box.min.x > other_box.max.x)
-						target_pos.x = other_box.max.x;
-					if(my_box.max.z < other_box.min.z)
-						target_pos.z = other_box.min.z - my_box.depth();
-					else if(my_box.min.z > other_box.max.z)
-						target_pos.z = other_box.max.z;
-					
-					target_pos = world->naviMap().findClosestCorrectPos(target_pos, other_box);
-					Order order = m_next_order;
-					order.interact.waiting_for_move = true;
-					m_next_order = moveOrder(target_pos, true);
-					issueMoveOrder();
-					if(m_order.id == OrderId::move)
-						m_next_order = order;
+					if(m_next_order.interact.waiting_for_move) {
+						printf("Cannot get there!\n");
+						m_order = m_next_order = doNothingOrder();
+					}
+					else {
+						int3 target_pos = my_box.min;
+						if(my_box.max.x < other_box.min.x)
+							target_pos.x = other_box.min.x - my_box.width();
+						else if(my_box.min.x > other_box.max.x)
+							target_pos.x = other_box.max.x;
+						if(my_box.max.z < other_box.min.z)
+							target_pos.z = other_box.min.z - my_box.depth();
+						else if(my_box.min.z > other_box.max.z)
+							target_pos.z = other_box.max.z;
+						
+						target_pos = world()->naviMap().findClosestCorrectPos(target_pos, other_box);
+						Order order = m_next_order;
+						order.interact.waiting_for_move = true;
+						m_next_order = moveOrder(target_pos, true);
+						issueMoveOrder();
+						if(m_order.id == OrderId::move)
+							m_next_order = order;
+					}
 				}
 			}
+			else
+				m_next_order = doNothingOrder();
 		}
 		else {
 			if(m_next_order.id == OrderId::change_stance) {
@@ -195,10 +198,10 @@ namespace game {
 			}
 			else if(m_next_order.id == OrderId::transfer_item) {
 				auto params = m_next_order.transfer_item;
-				const EntityRef &target = m_next_order.target;
+				Entity *target = refEntity(m_next_order.target);
 
 				if(areAdjacent(*this, *target) && target->entityType() == EntityId::container) {
-					Container *container = static_cast<Container*>(target.get());
+					Container *container = static_cast<Container*>(target);
 					Inventory *src = &m_inventory, *dst = &container->inventory();
 					if(params.mode == transfer_from)
 						swap(src, dst);
@@ -211,30 +214,23 @@ namespace game {
 				m_next_order = doNothingOrder();
 			}
 			else if(m_next_order.id == OrderId::equip_item || m_next_order.id == OrderId::unequip_item) {
+				bool do_change = false;
 				ItemType::Type changed_item = ItemType::invalid;
 
 				if(m_next_order.id == OrderId::equip_item) {
 					int item_id = m_next_order.equip_item.item_id;
-
-					if(m_inventory.isValidId(item_id) && canEquipItem(item_id)) {
-						//TODO: reloading ammo
-						changed_item = m_inventory[item_id].item.type();
-						if(!m_inventory.equip(item_id))
-							changed_item = ItemType::invalid;
-					}
+					if(m_inventory.isValidId(item_id) && canEquipItem(item_id))
+						do_change = true;
 				}
 				else {
-					ItemType::Type type = m_next_order.unequip_item.item_type;
-					if(m_inventory.unequip(type) != -1)
-						changed_item = type;
+					if(m_inventory.isEquipped(m_next_order.unequip_item.item_type))
+						do_change = true;
 				}
 
-				m_next_order = doNothingOrder();
-
-				if(changed_item == ItemType::armour)
-					updateArmour();
-				else if(changed_item == ItemType::weapon)
-					updateWeapon();
+				if(do_change)
+					animate(ActionId::magic1);
+				else
+					m_next_order = doNothingOrder();
 			}
 			else if(m_next_order.id == OrderId::die) {
 				animateDeath(m_next_order.die.death_type);
@@ -254,6 +250,7 @@ namespace game {
 		OrderId order_id = m_next_order.id;
 		int3 new_pos = m_next_order.move.target_pos;
 		DASSERT(order_id == OrderId::move);
+		DASSERT(world());
 
 		new_pos = max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 

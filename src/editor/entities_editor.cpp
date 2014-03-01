@@ -110,7 +110,7 @@ namespace ui {
 				computeCursor(current, current);
 			}
 			else if(m_mode == mode_placing && is_final)
-				m_entity_map.add(m_proto->clone());
+				m_entity_map.add(PEntity(m_proto->clone()));
 
 			return true;
 		}

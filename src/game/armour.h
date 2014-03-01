@@ -17,6 +17,7 @@ namespace game {
 
 		ArmourClassId::Type class_id;
 		float damage_resistance;
+		string sound_prefix;
 	};
 
 	struct Armour: public Item

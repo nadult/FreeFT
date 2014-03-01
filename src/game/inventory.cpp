@@ -131,6 +131,17 @@ namespace game {
 		return Item(findProto("_dummy_ammo", ProtoId::item_ammo));
 	}
 
+	bool ActorInventory::isEquipped(ItemType::Type item_type) {
+		if(item_type == ItemType::weapon) 
+			return !m_weapon.isDummy();
+		else if(item_type == ItemType::armour)
+			return !m_armour.isDummy();
+		else if(item_type == ItemType::ammo)
+			return !m_ammo.item.isDummy();
+
+		return false;
+	}
+
 	int ActorInventory::unequip(ItemType::Type item_type) {
 		int ret = -1;
 

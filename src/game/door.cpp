@@ -86,7 +86,7 @@ namespace game {
 
 	Door::Door(Stream &sr) :EntityImpl(sr) {
 		sr.unpack(m_close_time, m_update_anim, m_state);
-		setBBox(computeBBox(m_state));
+		m_bbox = computeBBox(m_state);
 	}
 
 	Door::Door(const XMLNode &node) :EntityImpl(node) {
@@ -114,12 +114,12 @@ namespace game {
 		
 		m_state = DoorState::closed;
 		playSequence(m_proto.seq_ids[m_state], false);
-		setBBox(computeBBox(m_state));
+		m_bbox = computeBBox(m_state);
 	}
 		
 	void Door::setDirAngle(float angle) {
 		Entity::setDirAngle(angle);
-		setBBox(computeBBox(m_state));
+		m_bbox = computeBBox(m_state);
 	}
 	
 	Entity *Door::clone() const {
@@ -157,16 +157,16 @@ namespace game {
 
 		//TODO: open direction should depend on interactor's position		
 		FBox bbox = computeBBox(result);
-		bool is_colliding = world()->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+		bool is_colliding = (bool)world()->findAny(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 
 		if(is_colliding && classId() == DoorClassId::rotating && m_state == DoorState::closed && target == DoorState::opened_in) {
 			target = DoorState::opened_out;
 			result = DoorState::opening_out;
 			bbox = computeBBox(result);
-			is_colliding = world()->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+			is_colliding = (bool)world()->findAny(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
 		}
 		if(!is_colliding) {
-			setBBox(bbox);
+			m_bbox = bbox;
 			m_state = result;
 			m_update_anim = true;
 		}
@@ -178,7 +178,7 @@ namespace game {
 	}
 	
 	FBox Door::computeBBox(DoorState::Type state) const {	
-		float3 size = m_sprite.boundingBox();
+		float3 size = m_sprite.bboxSize();
 		float maxs = max(size.x, size.z);
 		
 		FBox box;
@@ -200,6 +200,8 @@ namespace game {
 		DASSERT(classId() == DoorClassId::sliding || !out.isEmpty());
 		return out;
 	}
+		
+	const FBox Door::boundingBox() const { return m_bbox + pos(); }
 
 	void Door::think() {
 		const float2 dir = actualDir();
@@ -212,11 +214,11 @@ namespace game {
 		}
 		if(classId() == DoorClassId::sliding && m_state == DoorState::opened_in && world->currentTime() > m_close_time) {
 			FBox bbox = computeBBox(DoorState::closed);
-			if(world->isColliding(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
+			if((bool)world->findAny(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				m_close_time = world->currentTime() + 1.5;
 			}
 			else {
-				setBBox(bbox);
+				m_bbox = bbox;
 				m_state = DoorState::closing_in;
 				m_update_anim = true;
 			}
@@ -227,7 +229,7 @@ namespace game {
 		for(int n = 0; n < COUNTOF(s_transitions); n++)
 			if(m_state == s_transitions[n].result) {
 				m_state = s_transitions[n].target;
-				setBBox(computeBBox(m_state));
+				m_bbox = computeBBox(m_state);
 				m_update_anim = true;
 				if(m_state == DoorState::opened_in && classId() == DoorClassId::sliding)
 					m_close_time = world()->currentTime() + 3.0;

@@ -38,7 +38,7 @@ Grid::Grid(const int2 &size) {
 
 int Grid::findFreeObject() {
 	if(m_free_objects.isEmpty()) {
-		m_objects.push_back(Object());
+		m_objects.emplace_back(Object());
 		INSERT(m_free_objects, (int)m_objects.size() - 1);
 	}
 
@@ -47,7 +47,7 @@ int Grid::findFreeObject() {
 	
 int Grid::findFreeOverlap() {
 	if(m_free_overlaps.isEmpty()) {
-		m_overlaps.push_back(Overlap());
+		m_overlaps.emplace_back(Overlap());
 		OV_INSERT(m_free_overlaps, (int)m_overlaps.size() - 1);
 	}
 
@@ -76,6 +76,7 @@ void Grid::add(int object_id, const ObjectDef &def) {
 	}
 
 	Object &object = m_objects[object_id];
+	DASSERT(object.ptr == nullptr);
 	((ObjectDef&)object) = def;
 
 	if(grid_box.min == grid_box.max) {
@@ -108,7 +109,8 @@ void Grid::add(int object_id, const ObjectDef &def) {
 
 void Grid::remove(int idx) {
 	Object &object = m_objects[idx];
-	DASSERT(object.ptr != nullptr);
+	if(object.ptr == nullptr)
+		return;
 
 	if(object.node_id == -1) {
 		IRect grid_box = nodeCoords(object.bbox);
@@ -145,10 +147,20 @@ void Grid::remove(int idx) {
 	INSERT(m_free_objects, idx);
 }
 
-void Grid::update(int id, const ObjectDef &object) {
-	//TODO: speed up; in most cases it can be done fast, coz we have a pointer to node
-	remove(id);
-	add(id, object);
+bool Grid::update(int idx, const ObjectDef &object) {
+	DASSERT(idx >= 0 && idx < size());
+	const ObjectDef &old_object = (*this)[idx];
+	DASSERT(object.ptr == old_object.ptr);
+
+	if(old_object.bbox != object.bbox || old_object.rect_pos != object.rect_pos ||
+		old_object.rect_size != object.rect_size || old_object.flags != object.flags) {
+		//TODO: speed up; in most cases it can be done fast, coz we have a pointer to node
+		remove(idx);
+		add(idx, object);
+		return true;
+	}
+
+	return false;
 }
 
 void Grid::updateNodes() {
@@ -267,7 +279,7 @@ void Grid::clear() {
 void Grid::disableOverlap(const Object *object) const {
 	DASSERT(object && object->node_id == -1);
 	object->is_disabled = 1;
-	m_disabled_overlaps.push_back(object - m_objects.data());
+	m_disabled_overlaps.emplace_back(object - m_objects.data());
 }
 
 void Grid::clearDisables() const {

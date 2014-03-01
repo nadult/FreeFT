@@ -15,7 +15,6 @@ namespace game
 {
 
 	// Grid based container for entities
-	// when removing entities, they will be automaticly deleted
 	class EntityMap: public Grid
 	{
 	public:
@@ -33,14 +32,9 @@ namespace game
 
 		void resize(const int2 &new_dims);
 	
-		void add(Entity*);
-		void add(int, Entity*);
-
-		void update(Entity*);
-		void update(int entity_id);
-
-		void remove(Entity*);
-		void remove(int entity_id);
+		int add(unique_ptr<Entity> &&ptr, int index = -1);
+		void update(int index);
+		void remove(int index);
 		
 		int pixelIntersect(const int2 &pos, int flags = collider_flags) const;
 		void updateVisibility();

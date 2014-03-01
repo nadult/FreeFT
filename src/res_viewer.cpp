@@ -53,7 +53,7 @@ public:
 	Resource(PSprite res, int id) :Resource(ResType::sprite, id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->boundingBox() + int3{4,4,4})).size();
+		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->bboxSize() + int3{4,4,4})).size();
 
 		m_last_time = getTime();
 		m_frame_id = m_dir_id = m_seq_id = 0;
@@ -133,7 +133,7 @@ public:
 			PTexture dtex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
 			dtex->bind();
 
-			IBox box({0,0,0}, sprite->boundingBox());
+			IBox box({0,0,0}, sprite->bboxSize());
 			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));
 			if(is_gui_image) {
 				rect -= rect.min;

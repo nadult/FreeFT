@@ -103,10 +103,8 @@ public:
 					if(world)
 						delete world.release();
 					world = unique_ptr<World>(new World(World::Mode::client, data.map_name.c_str()));
-					EntityMap &emap = world->entityMap();
-					for(int n =0; n < emap.size(); n++)
-						if(emap[n].ptr)
-							emap.remove(n);
+					for(int n = 0; n < world->entityCount(); n++)
+						world->removeEntity(n);
 					m_mode = Mode::connected;
 
 					host->enqueChunk("", 0, ChunkType::join_complete, 0);
@@ -145,16 +143,15 @@ protected:
 	void entityUpdate(InChunk &chunk) {
 		DASSERT(chunk.type() == ChunkType::entity_full || chunk.type() == ChunkType::entity_delete);
 
-		EntityMap &emap = world->entityMap();
 		int entity_id = chunk.chunkId();
 
 		if(entity_id >= 0) {
-			if(entity_id < emap.size() && emap[entity_id].ptr)
-				emap.remove(entity_id);
+			if(entity_id < world->entityCount() && world->getEntity(entity_id))
+				world->removeEntity(entity_id);
 
 			if(chunk.type() == ChunkType::entity_full) {
 				Entity *new_entity = Entity::construct(chunk);
-				world->addEntity(entity_id, new_entity);
+				world->addEntity(PEntity(new_entity), entity_id);
 			}
 		}
 	}
@@ -254,6 +251,7 @@ int safe_main(int argc, char **argv)
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
 		
+		//TODO: use EntityRef
 		int actor_id = host->actorId();
 		const Actor *actor = nullptr;
 		if(actor_id >= 0 && actor_id < world->entityCount())
@@ -276,11 +274,12 @@ int safe_main(int argc, char **argv)
 
 		if(actor) {
 			if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
-				if(isect.entity() && entity_debug) {
+				Entity *entity = world->refEntity(isect);
+
+				if(entity && entity_debug) {
 					//isect.entity->interact(nullptr);
-					InteractionMode mode = isect.entity()->entityType() == EntityId::item?
-						interact_pickup : interact_normal;
-					host->sendOrder(interactOrder(isect.entity(), mode));
+					InteractionMode mode = entity->entityType() == EntityId::item? interact_pickup : interact_normal;
+					host->sendOrder(interactOrder(entity->makeRef(), mode));
 				}
 				else if(isect.isTile()) {
 					//TODO: pixel intersect always returns distance == 0
@@ -322,7 +321,7 @@ int safe_main(int argc, char **argv)
 			world->updateVisibility(actor->boundingBox());
 		world->addToRender(renderer);
 
-		renderer.addBox(isect.boundingBox(), Color::yellow);
+		renderer.addBox(world->refBBox(isect), Color::yellow);
 
 		if(!full_isect.isEmpty() && shooting_debug && actor) {
 			float3 target = ray.at(full_isect.distance());
@@ -333,7 +332,7 @@ int safe_main(int argc, char **argv)
 			Intersection shoot_isect = world->trace(Segment(shoot_ray, 0.0f), actor);
 
 			if(!shoot_isect.isEmpty()) {
-				FBox box = shoot_isect.boundingBox();
+				FBox box = world->refBBox(shoot_isect);
 				renderer.addBox(box, Color(255, 0, 0, 100));
 				target_pos = shoot_ray.at(shoot_isect.distance());
 			}
@@ -377,7 +376,7 @@ int safe_main(int argc, char **argv)
 					inventory_sel++;
 			}
 
-			Container *container = dynamic_cast<Container*>(isect.entity());
+			Container *container = dynamic_cast<Container*>(world->refEntity(isect));
 			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
 				container = nullptr;
 
@@ -395,9 +394,9 @@ int safe_main(int argc, char **argv)
 
 			if(container) {
 				if(isKeyDown(Key_right) && inventory_sel >= 0)
-					host->sendOrder(transferItemOrder(container, transfer_to, inventory_sel, 1));
+					host->sendOrder(transferItemOrder(container->makeRef(), transfer_to, inventory_sel, 1));
 				if(isKeyDown(Key_left))
-					host->sendOrder(transferItemOrder(container, transfer_from, container_sel, 1));
+					host->sendOrder(transferItemOrder(container->makeRef(), transfer_from, container_sel, 1));
 			}
 
 			string inv_info = actor->inventory().printMenu(inventory_sel);

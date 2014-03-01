@@ -68,6 +68,7 @@ namespace game
 
 		virtual XMLNode save(XMLNode&) const;
 		virtual void save(Stream&) const;
+		virtual const FBox boundingBox() const;
 		
 	private:
 		void initialize();
@@ -76,6 +77,7 @@ namespace game
 		virtual void onAnimFinished();
 		FBox computeBBox(DoorState::Type) const;
 
+		FBox m_bbox;
 		Item m_key;
 		DoorState::Type m_state;
 		double m_close_time;

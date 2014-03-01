@@ -911,7 +911,12 @@ class TupleParser;
 
 bool  toBool(const char *input);
 int   toInt(const char *input);
+
 float toFloat(const char *input);
+float2 toFloat2(const char *input);
+float3 toFloat3(const char *input);
+float4 toFloat4(const char *input);
+
 uint  toFlags(const char *input, const char **flags, int num_flags, uint first_flag);
 
 #endif

@@ -43,7 +43,7 @@ public:
 		int quad_id;
 	};
 
-	int3 findClosestCorrectPos(const int3 &pos, const IBox &dist_to) const;
+	int3 findClosestCorrectPos(const int3 &source, const IBox &target) const;
 	int findQuad(const int3 &pos, bool find_disabled = false) const;
 
 	void addCollider(const IRect &rect);

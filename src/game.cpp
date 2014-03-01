@@ -56,9 +56,12 @@ int safe_main(int argc, char **argv)
 
 	int height = 128;
 
-	Actor *actor = new Actor(getProto(findProto("male", ProtoId::actor)),
-								ActorTypeId::male, float3(245, height, 335));
-	int actor_id = world.addEntity(actor);
+	EntityRef actor_ref; {
+		Actor *actor = new Actor(getProto(findProto("male", ProtoId::actor)), float3(245, height, 335));
+		world.addEntity(PEntity(actor));
+		actor_ref = actor->makeRef();
+	}
+
 	world.updateNaviMap(true);
 
 	bool navi_show = 0;
@@ -84,6 +87,8 @@ int safe_main(int argc, char **argv)
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
 		
+		Actor *actor = dynamic_cast<Actor*>(world.refEntity(actor_ref));
+
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
 				collider_tile_floors|collider_tile_roofs|collider_tile_stairs|collider_entities|visibility_flag);
@@ -100,17 +105,17 @@ int safe_main(int argc, char **argv)
 			actor->setPos(ray.at(isect.distance()));
 
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
-			if(isect.entity() && entity_debug) {
+			Entity *entity = world.refEntity(isect);
+
+			if(entity && entity_debug) {
 				//isect.entity->interact(nullptr);
-				InteractionMode mode = isect.entity()->entityType() == EntityId::item?
-					interact_pickup : interact_normal;
-				actor->setNextOrder(interactOrder(isect.entity(), mode));
+				InteractionMode mode = entity->entityType() == EntityId::item? interact_pickup : interact_normal;
+				actor->setNextOrder(interactOrder(entity->makeRef(), mode));
 			}
 			else if(navi_debug) {
 				//TODO: do this on floats, in actor and navi code too
 				int3 wpos = (int3)(ray.at(isect.distance()));
 				world.naviMap().addCollider(IRect(wpos.xz(), wpos.xz() + int2(4, 4)));
-
 			}
 			else if(isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
@@ -142,6 +147,9 @@ int safe_main(int argc, char **argv)
 
 		audio::tick();
 		world.simulate((time - last_time) * config.time_multiplier);
+		
+		actor = dynamic_cast<Actor*>(world.refEntity(actor_ref));
+		ASSERT(actor);
 
 		last_time = time;
 
@@ -153,7 +161,7 @@ int safe_main(int argc, char **argv)
 		world.addToRender(renderer);
 
 		if((entity_debug && isect.isEntity()) || 1)
-			renderer.addBox(isect.boundingBox(), Color::yellow);
+			renderer.addBox(world.refBBox(isect), Color::yellow);
 
 		if(!full_isect.isEmpty() && shooting_debug) {
 			float3 target = ray.at(full_isect.distance());
@@ -164,7 +172,7 @@ int safe_main(int argc, char **argv)
 			Intersection shoot_isect = world.trace(Segment(shoot_ray, 0.0f), actor);
 
 			if(!shoot_isect.isEmpty()) {
-				FBox box = shoot_isect.boundingBox();
+				FBox box = world.refBBox(shoot_isect);
 				renderer.addBox(box, Color(255, 0, 0, 100));
 				target_pos = shoot_ray.at(shoot_isect.distance());
 			}
@@ -208,7 +216,7 @@ int safe_main(int argc, char **argv)
 					inventory_sel++;
 			}
 
-			Container *container = dynamic_cast<Container*>(isect.entity());
+			Container *container = dynamic_cast<Container*>(world.refEntity(isect));
 			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
 				container = nullptr;
 
@@ -226,9 +234,9 @@ int safe_main(int argc, char **argv)
 
 			if(container) {
 				if(isKeyDown(Key_right) && inventory_sel >= 0)
-					actor->setNextOrder(transferItemOrder(container, transfer_to, inventory_sel, 1));
+					actor->setNextOrder(transferItemOrder(container->makeRef(), transfer_to, inventory_sel, 1));
 				if(isKeyDown(Key_left))
-					actor->setNextOrder(transferItemOrder(container, transfer_from, container_sel, 1));
+					actor->setNextOrder(transferItemOrder(container->makeRef(), transfer_from, container_sel, 1));
 			}
 
 			string inv_info = actor->inventory().printMenu(inventory_sel);

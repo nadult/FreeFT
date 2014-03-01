@@ -4,10 +4,10 @@
  */
 
 #include "game/actor.h"
-#include "game/world.h"
 #include "game/sprite.h"
 #include "game/projectile.h"
 #include "game/tile.h"
+#include "game/world.h"
 #include "sys/xml.h"
 #include "sys/data_sheet.h"
 #include "net/socket.h"
@@ -18,12 +18,12 @@ namespace game {
 
 	ActorArmourProto::ActorArmourProto(const TupleParser &parser, bool is_actor)
 		:ProtoImpl(parser), is_actor(is_actor) {
+		ASSERT(!is_dummy);
+
 		if(is_actor) {
-			class_id = ArmourClassId::none;
 			armour = "_dummy_armour";
 		}
 		else {
-			class_id = ArmourClassId::fromString(parser("class_id"));
 			actor = parser("actor_id");
 			armour = parser("armour_id");
 		}
@@ -32,104 +32,33 @@ namespace game {
 	}
 
 	void ActorArmourProto::connect() {
-		if(is_actor) {
+		if(is_actor)
 			actor = index();
-		}
-		else {
+		else
 			actor.connect();
-			armour.connect();
-		}
+		armour.connect();
+
+		for(int st = 0; st < StanceId::count; st++)
+			for(int su = 0; su < SurfaceId::count; su++) {
+				char name[256];
+				snprintf(name, sizeof(name), "%s%s%s%s",
+						st == StanceId::prone? "prone" : "stand", actor->is_heavy? "heavy" : "normal",
+						armour->sound_prefix.c_str(), SurfaceId::toString(su));
+				step_sounds[st][su] = SoundId(name);
+			}
 	}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
-
+		is_heavy = toBool(parser("is_heavy"));
+		float4 speed_vec = toFloat4(parser("speeds"));
+		speeds[0] = speed_vec.x;
+		speeds[1] = speed_vec.y;
+		speeds[2] = speed_vec.z;
+		speeds[3] = speed_vec.w;
 	}
 
-	static const char *s_step_stance[StanceId::count] = {
-		"stand",
-		"stand",
-		"prone"
-	};
-
-	static const char *s_step_armour[ArmourClassId::count] = {
-		"",
-		"leath",
-		"metal",
-		"metal",
-		"pow",
-	};
-
-	const SoundId getStepSoundId(StanceId::Type stance, ArmourClassId::Type armour, SurfaceId::Type surf, bool is_heavy) {
-		char name[256];
-		snprintf(name, sizeof(name), "%s%s%s%s", s_step_stance[stance],is_heavy? "heavy" : "normal",
-				s_step_armour[armour], SurfaceId::toString(surf));
-		return SoundId(name);
-	}
-
-
-	//TODO: different speeds for different actors
-	//TODO: load speeds, sprite names, etc. from XML
-	static const float s_speeds[StanceId::count + 1] = {
-		25.0f,
-		10.0f,
-		6.0f,
-		3.5f,
-	};
-
-	//TODO: load all the tables from scripts?
-	static const char *s_sprite_names[ActorTypeId::count][ArmourClassId::count] = {
-		{	// Male
-			"characters/TribalMale",
-			"characters/LeatherMale",
-			"characters/MetalMale",
-			"characters/Environmental",
-			"characters/Power",
-		},
-		{	// Female
-			"characters/TribalFemale",
-			"characters/LeatherFemale",
-			"characters/MetalFemale",
-			"characters/Environmental",
-			"characters/Power",
-		},
-		{	// Ghoul
-			"characters/Ghoul",
-			"characters/Ghoul",
-			"characters/GhoulArmour",
-			"characters/Environmental",
-			"characters/Power",
-		},
-		{ // Vault Male
-			"characters/VaultMale",
-			"characters/LeatherMale",
-			"characters/MetalMale",
-			"characters/Environmental",
-			"characters/Power",
-		},
-		{ // Vault Female
-			"characters/VaultFemale",
-			"characters/LeatherFemale",
-			"characters/MetalFemale",
-			"characters/Environmental",
-			"characters/Power",
-		},
-		{ // Mutant
-			"characters/Mutant",
-			nullptr,
-			"characters/MutantArmour",
-			nullptr,
-			nullptr,
-		},
-		{ "critters/RadScorpion",		nullptr, nullptr, nullptr, nullptr, },
-		{ "critters/GiantRat",			nullptr, nullptr, nullptr, nullptr, },
-		{ "critters/Wolf",				nullptr, nullptr, nullptr, nullptr, },
-		{ "critters/TwoHeadedBrahmin",	nullptr, nullptr, nullptr, nullptr, },
-		{ "critters/MDC",				nullptr, nullptr, nullptr, nullptr, },
-		{ "critters/SDC",				nullptr, nullptr, nullptr, nullptr, },
-	};
-
-	Actor::Actor(Stream &sr) :EntityImpl(sr) {
-	   	sr.unpack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
+	Actor::Actor(Stream &sr) :EntityImpl(sr), m_actor(*m_proto.actor) {
+	   	sr.unpack(m_target_angle, m_action_id, m_stance_id, m_issue_next_order);
 
 		sr >> m_order >> m_next_order;
 		m_burst_mode = sr.decodeInt();
@@ -149,25 +78,24 @@ namespace game {
 		m_inventory.load(sr);
 	}
 
-	Actor::Actor(const XMLNode &node) :EntityImpl(node) {
-		initialize(ActorTypeId::fromString(node.attrib("actor_type")));
+	Actor::Actor(const XMLNode &node) :EntityImpl(node), m_actor(*m_proto.actor) {
+		initialize();
 	}
 
-	Actor::Actor(const Proto &proto, ActorTypeId::Type type_id, const float3 &pos)
-		:EntityImpl(proto) {
-		initialize(type_id);
+	Actor::Actor(const Proto &proto, const float3 &pos)
+		:EntityImpl(proto), m_actor(*m_proto.actor) {
+		initialize();
 		setPos(pos);
 	}
 
 	XMLNode Actor::save(XMLNode &parent) const {
 		XMLNode node = EntityImpl::save(parent);
-		node.addAttrib("actor_type", ActorTypeId::toString(m_type_id));
 		return node;
 	}
 
 	void Actor::save(Stream &sr) const {
 		EntityImpl::save(sr);
-	   	sr.pack(m_target_angle, m_type_id, m_weapon_class_id, m_armour_class_id, m_action_id, m_stance_id, m_issue_next_order);
+	   	sr.pack(m_target_angle, m_action_id, m_stance_id, m_issue_next_order);
 		sr << m_order << m_next_order;
 		sr.encodeInt(m_burst_mode);
 		net::encodeInt3(sr, m_burst_off);
@@ -185,14 +113,10 @@ namespace game {
 		m_inventory.save(sr);
 	}
 
-	void Actor::initialize(ActorTypeId::Type type_id) {
-		m_type_id = type_id;
-
+	void Actor::initialize() {
 		m_issue_next_order = false;
 		m_stance_id = StanceId::standing;
 
-		m_armour_class_id = ArmourClassId::none;
-		m_weapon_class_id = WeaponClassId::unarmed;
 		animate(ActionId::idle);
 		m_target_angle = dirAngle();
 		m_order = m_next_order = doNothingOrder();
@@ -200,13 +124,14 @@ namespace game {
 	}
 
 	SurfaceId::Type Actor::surfaceUnder() const {
-		const TileMap &map = world()->tileMap();
+		DASSERT(world());
+
+		//TODO: make it more robust
 		FBox box_under = boundingBox();
 		box_under.max.y = box_under.min.y;
 		box_under.min.y -= 2.0f;
-		int id = map.findAny(box_under);
-		//TODO: make it more robust
-		return id == -1? SurfaceId::unknown : map[id].ptr->surfaceId();
+		const Tile *tile = refTile(world()->findAny(box_under, nullptr, collider_tiles));
+		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 
 	bool Actor::isDead() const {
@@ -226,36 +151,28 @@ namespace game {
 		setNextOrder(dieOrder(death_id));
 		issueNextOrder();
 	}
-
-	void Actor::updateArmour() {
-		printf("WRITE ME\n");
-		exit(0);
-
-	/*	const Armour &armour = m_inventory.armour();
-		ArmourClassId::Type class_id = armour.classId();
-		DASSERT(canEquipArmour(class_id));
-
-		if(class_id != m_armour_class_id) {
-			m_armour_class_id = class_id;
-			//TODO: może nie byc miejsca na postać w nowym rozmiarze
-			changeSprite(s_sprite_names[m_type_id][class_id], true);
-
-			if(!canEquipWeapon(m_weapon_class_id)) {
-				m_inventory.unequip(ItemType::weapon);
-				updateWeapon();
-				DASSERT(canEquipWeapon(m_weapon_class_id));
-			}
-		}*/
+		
+	Actor::Actor(const Actor &rhs, const Proto &new_proto) :EntityImpl(new_proto), m_actor(*m_proto.actor) {
+		initialize();
+		setPos(rhs.pos());
+		m_inventory = rhs.m_inventory;
+		setDirAngle(rhs.dirAngle());
+		m_target_angle = rhs.m_target_angle;
+		m_stance_id = rhs.m_stance_id;
+		animate(ActionId::idle);
 	}
 
-	void Actor::updateWeapon() {
-		const Weapon &weapon = m_inventory.weapon();
-		WeaponClassId::Type class_id = weapon.classId();
-		DASSERT(canEquipWeapon(class_id));
+	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
+		return armour.isDummy()? actor.index() :
+			findProto(actor.id + ":" + armour.id(), ProtoId::actor_armour);
+	}
 
-		if(class_id != m_weapon_class_id) {
-			m_weapon_class_id = class_id;
-			animate(m_action_id);
+	void Actor::updateArmour() {
+		ProtoIndex proto_idx = findActorArmour(m_actor, m_inventory.armour());
+
+		if(proto_idx) {
+			const Proto &new_proto = getProto(proto_idx);
+			replaceMyself(PEntity(new Actor(*this, new_proto)));
 		}
 	}
 
@@ -264,8 +181,9 @@ namespace game {
 		const Item &item = m_inventory[item_id].item;
 		if(item.type() == ItemType::weapon)
 			return canEquipWeapon(Weapon(item).classId());
-		else if(item.type() == ItemType::armour)
-			return canEquipArmour(Armour(item).classId());
+		else if(item.type() == ItemType::armour) {
+			return (bool)findActorArmour(m_actor, m_inventory.armour());
+		}
 
 		return true;
 	}
@@ -289,11 +207,6 @@ namespace game {
 		return true;
 	}
 
-	bool Actor::canEquipArmour(ArmourClassId::Type class_id) const {
-		DASSERT(ArmourClassId::isValid(class_id));
-		return s_sprite_names[m_type_id][class_id] != nullptr;
-	}
-
 	bool Actor::canChangeStance() const {
 		return m_proto.canChangeStance();
 	}
@@ -301,9 +214,9 @@ namespace game {
 	void Actor::think() {
 		if(isDead())
 			return;
-
-		World *world = this->world();
-		double time_delta = world->timeDelta();
+		
+		double time_delta = timeDelta();
+		DASSERT(world());
 
 		if(m_issue_next_order)
 			issueNextOrder();
@@ -316,14 +229,14 @@ namespace game {
 		else if(order_id == OrderId::move) {
 			DASSERT(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
 			
-			float speed = s_speeds[m_order.move.run? 0 : m_stance_id + 1];
+			float speed = m_actor.speeds[m_order.move.run? 0 : m_stance_id + 1];
 			float dist = speed * time_delta;
 			m_issue_next_order = false;
 			float3 new_pos;
 
 			while(dist > 0.0001f) {
 				int3 target = m_path[m_path_pos];
-				if(world->isColliding(boundingBox() - pos() + float3(target), this, collider_tiles))
+				if(world()->findAny(boundingBox() - pos() + float3(target), this, collider_tiles))
 					target.y += 1;
 
 				int3 diff = target - m_last_pos;
@@ -357,7 +270,7 @@ namespace game {
 				}
 			}
 
-			if(world->isColliding(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
+			if(world()->findAny(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
 				//TODO: response to collision
 				m_issue_next_order = true;
 				m_path.clear();
@@ -365,7 +278,6 @@ namespace game {
 			else
 				setPos(new_pos);
 		}
-
 	}
 
 	// sets direction
@@ -397,30 +309,62 @@ namespace game {
 		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack || m_order.id == OrderId::drop_item)
 			m_issue_next_order = true;
 		else if(m_order.id == OrderId::interact) {
-			if(m_order.interact.mode == interact_normal && !world()->isClient()) {
-				m_order.target->interact(this);
+			if(m_order.interact.mode == interact_normal && !isClient()) {
+				Entity *target = refEntity(m_order.target);
+				if(target)
+					target->interact(this);
 			}
 			m_issue_next_order = true;
 		}
+		else if(m_order.id == OrderId::equip_item || m_order.id == OrderId::unequip_item) {
+			handleEquipOrder(m_order);
+			m_issue_next_order = true;
+		}
 		else if(m_order.id == OrderId::move && m_stance_id == StanceId::crouching) { //fix for broken anims
-			int seq_id = m_proto.animId(m_action_id, m_stance_id, m_weapon_class_id);
-			playSequence(seq_id);
+			animate(m_action_id);
 		}
 	}
 
+	void Actor::handleEquipOrder(const Order &order) {
+		ItemType::Type changed_item = ItemType::invalid;
+
+		if(order.id == OrderId::equip_item) {
+			int item_id = order.equip_item.item_id;
+
+			if(m_inventory.isValidId(item_id) && canEquipItem(item_id)) {
+				//TODO: reloading ammo
+				changed_item = m_inventory[item_id].item.type();
+				if(!m_inventory.equip(item_id))
+					changed_item = ItemType::invalid;
+			}
+				
+		}
+		else if(order.id == OrderId::unequip_item) {
+			ItemType::Type type = order.unequip_item.item_type;
+			if(m_inventory.unequip(type) != -1)
+				changed_item = type;
+		}
+			
+		if(changed_item == ItemType::armour)
+			updateArmour();
+	}
+
 	void Actor::onPickupEvent() {
-		if(world()->isClient())
+		if(isClient())
 			return;
 
 		//TODO: magic_hi animation when object to be picked up is high enough
 		if(m_order.id == OrderId::interact) {
-			DASSERT(m_order.target->entityType() == EntityId::item);
-			ItemEntity *item_entity = static_cast<ItemEntity*>(m_order.target.get());
-			Item item = item_entity->item();
-			int count = item_entity->count();
+			Entity *target = refEntity(m_order.target);
+			if(target && target->entityType() == EntityId::item) {
+				ItemEntity *item_entity = static_cast<ItemEntity*>(target);
+				Item item = item_entity->item();
+				int count = item_entity->count();
+				//TODO: what will happen if two actors will pickup at the same time?
 
-			item_entity->remove();
-			m_inventory.add(item, count);
+				item_entity->remove();
+				m_inventory.add(item, count);
+			}
 		}
 		else if(m_order.id == OrderId::drop_item) {
 			int item_id = m_order.drop_item.item_id;
@@ -431,13 +375,13 @@ namespace game {
 				count = 1;
 
 			m_inventory.remove(item_id, count);
-			world()->addEntity(new ItemEntity(item, count, pos())); 
+			addEntity(new ItemEntity(item, count, pos())); 
 		}
 	}
 		
 	void Actor::onFireEvent(const int3 &off) {
 		const Weapon &weapon = m_inventory.weapon();
-		if(m_order.id != OrderId::attack || world()->isClient())
+		if(m_order.id != OrderId::attack || isClient())
 			return;
 		AttackMode::Type mode = m_order.attack.mode;
 
@@ -467,29 +411,29 @@ namespace game {
 		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
 
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
-			world()->addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, this));
+			addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, makeRef()));
 	}
 
 	void Actor::onStepEvent(bool left_foot) {
-		if(world()->isServer())
+		if(isServer())
 			return;
+		DASSERT(world());
 
 		SurfaceId::Type standing_surface = surfaceUnder();
-		SoundId sound_id = getStepSoundId(m_stance_id, m_armour_class_id, standing_surface, false);
-		world()->playSound(sound_id, pos());
+		world()->playSound(m_proto.step_sounds[m_stance_id][standing_surface], pos());
 	}
 
 	void Actor::onSoundEvent() {
-		if(world()->isServer())
+		if(isServer())
 			return;
 
 		if(m_order.id == OrderId::attack) {
 			const Weapon &weapon = m_inventory.weapon();
 
 			//TODO: select firing mode in attack order
-			world()->playSound(m_weapon_class_id == WeaponClassId::minigun?
-					weapon.soundId(WeaponSoundType::fire_burst) :
-					weapon.soundId(WeaponSoundType::fire_single), pos());
+			world()->playSound(m_burst_mode?
+						weapon.soundId(WeaponSoundType::fire_burst) :
+						weapon.soundId(WeaponSoundType::fire_single), pos());
 		}
 	}
 

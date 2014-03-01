@@ -291,6 +291,8 @@ namespace game
 					m_images.push_back(image);
 				}
 		}
+
+		updateMaxRect();
 	}
 
 }

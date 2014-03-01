@@ -61,7 +61,9 @@ public:
 
 	void add(int index, const ObjectDef&);
 	void remove(int idx);
-	void update(int idx, const ObjectDef&);
+
+	// Returns true if anything has changed
+	bool update(int idx, const ObjectDef&);
 	void updateNodes();
 
 	int findAny(const FBox &box, int ignored_id = -1, int flags = collider_flags) const;

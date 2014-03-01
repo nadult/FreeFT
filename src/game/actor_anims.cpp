@@ -212,11 +212,13 @@ namespace game {
 
 	// sets seq_id, frame_id and seq_name
 	void Actor::animate(ActionId::Type action_id) {
-		int seq_id = m_proto.animId(action_id, m_stance_id, m_weapon_class_id);
+		WeaponClassId::Type weapon_class_id = m_inventory.weapon().classId();
+
+		int seq_id = m_proto.animId(action_id, m_stance_id, weapon_class_id);
 		if(seq_id == -1) {
 			//TODO: better error handling of missing sequences
 			printf("Sequence: %s not found!\n",
-					m_proto.animName(action_id, m_stance_id, m_weapon_class_id).c_str());
+					m_proto.animName(action_id, m_stance_id, weapon_class_id).c_str());
 			ASSERT(seq_id != -1);
 		}
 

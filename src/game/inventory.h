@@ -47,7 +47,9 @@ namespace game {
 		ActorInventory();
 
 		bool equip(int id, int count = 1);
+		bool isEquipped(ItemType::Type);
 		int unequip(ItemType::Type);
+
 
 		const string printMenu(int select) const;
 		float weight() const;

@@ -94,6 +94,8 @@ namespace game {
 
 		virtual XMLNode save(XMLNode&) const;
 		virtual void save(Stream&) const;
+
+		virtual const FBox boundingBox() const;
 		
 	private:
 		void initialize();

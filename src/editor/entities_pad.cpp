@@ -41,10 +41,10 @@ namespace ui {
 		{
 			IRect second_rect(0, 44, width, 66);
 
-			m_actor_type = new ComboBox(second_rect, 200, "Actor type: ");
-			for(int n = 0; n < ActorTypeId::count; n++)
-				m_actor_type->addEntry(ActorTypeId::toString((ActorTypeId::Type)n));
-			m_actor_type->selectEntry(0);
+			m_actor_id = new ComboBox(second_rect, 200, "Actor: ");
+			for(int n = 0; n < countProtos(ProtoId::actor); n++)
+				m_actor_id->addEntry(getProto(n, ProtoId::actor).id.c_str());
+			m_actor_id->selectEntry(0);
 
 			m_door_id = new ComboBox(second_rect, 200, "Door: ");
 			for(int n = 0; n < countProtos(ProtoId::door); n++)
@@ -82,7 +82,7 @@ namespace ui {
 		attach(m_editor_mode_box.get());
 		attach(m_entity_type.get());
 
-		attach(m_actor_type.get());
+		attach(m_actor_id.get());
 		attach(m_door_id.get());
 		attach(m_container_id.get());
 		attach(m_item_type.get());
@@ -152,9 +152,8 @@ namespace ui {
 		float3 pos(0, 0, 0);
 		
 		if(type == EntityId::actor) {
-			//TODO: finish me
-			const ActorProto& proto = static_cast<const ActorProto&>(getProto(0, ProtoId::actor));
-			m_proto = (PEntity)new game::Actor(proto, (ActorTypeId::Type)m_actor_type->selectedId(), pos);
+			const Proto& proto = getProto(m_actor_id->selectedText(), ProtoId::actor);
+			m_proto = (PEntity)new game::Actor(proto, pos);
 		}
 		else if(type == EntityId::container) {
 			const ContainerProto &proto =
@@ -179,7 +178,7 @@ namespace ui {
 
 	void EntitiesPad::updateVisibility() {
 		EntityId::Type type = s_types[m_entity_type->selectedId()];
-		m_actor_type->setVisible(type == EntityId::actor);
+		m_actor_id->setVisible(type == EntityId::actor);
 		m_door_id->setVisible(type == EntityId::door);
 		m_container_id->setVisible(type == EntityId::container);
 		m_item_type->setVisible(type == EntityId::item);

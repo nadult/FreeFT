@@ -27,9 +27,10 @@ namespace ui {
 		PEntitiesEditor	m_editor;
 		PComboBox		m_editor_mode_box;
 
+		//TODO: generic way to iterate any entity-based proto
 		PComboBox		m_entity_type;
 
-		PComboBox		m_actor_type;
+		PComboBox		m_actor_id;
 		PComboBox		m_door_id;
 		PComboBox		m_container_id;
 

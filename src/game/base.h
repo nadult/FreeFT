@@ -32,22 +32,6 @@ namespace game {
 		power
 	)
 
-	DECLARE_ENUM(ActorTypeId,
-		male,
-		female,
-		ghoul,
-		vault_male,
-		vault_female,
-		mutant,
-
-		rad_scorpion,
-		giant_rat,
-		wolf,
-		brahmin,
-		mdc,
-		sdc
-	)
-
 	DECLARE_ENUM(ProjectileTypeId,
 		bullet,
 		plasma,
@@ -210,6 +194,7 @@ namespace game {
 		ProtoIndex() :m_idx(-1), m_type(ProtoId::invalid) { }
 		ProtoIndex(Stream&);
 		ProtoIndex(const XMLNode&);
+		explicit operator bool() const { return isValid(); }
 
 		void save(Stream&) const;
 		void save(XMLNode) const;
@@ -265,6 +250,7 @@ namespace game {
 	inline const Proto &getProto(int index, ProtoId::Type type)
 		{ return getProto(ProtoIndex(index, type)); }
 
+	//TODO: store pointer instead of ProtoIndex
 	template <class ProtoType>
 	class ProtoRef {
 	public:
@@ -283,6 +269,10 @@ namespace game {
 		operator const ProtoType*() const {
 		   return (const ProtoType*)(m_index.isValid()? &getProto(m_index) : nullptr);
 		}
+		const ProtoType* operator->() const {
+			DASSERT(isValid());
+			return operator const ProtoType*();
+		}
 
 		const string &id() const { return m_id; }
 		ProtoIndex index() const { return m_index; }
@@ -290,6 +280,47 @@ namespace game {
 	private:
 		string m_id;
 		ProtoIndex m_index;
+	};
+
+	class Entity;
+	class Tile;
+
+	// Object reference contains only pure indices, so they may be invalid
+	// and refEntity / refTile methods in World may return null even if
+	// isEntity / isTile returns true
+	class ObjectRef {
+	public:
+		ObjectRef() :m_index(-1) { }
+		explicit operator bool() const { return !isEmpty(); }
+
+		bool isEmpty() const { return m_index == -1; }
+		bool isEntity() const { return !isEmpty() && m_is_entity; }
+		bool isTile() const { return !isEmpty() && !m_is_entity; }
+
+	private:
+		ObjectRef(int index, bool is_entity) :m_index(index), m_is_entity(is_entity? 1 : 0) { }
+
+		int m_index: 31;
+		int m_is_entity: 1;
+		friend class World;
+	};
+
+	class Intersection {
+	public:
+		Intersection(ObjectRef ref = ObjectRef(), float distance = constant::inf)
+			:m_ref(ref), m_distance(distance) { }
+		explicit operator bool() const { return !isEmpty(); }
+
+		operator const ObjectRef() const { return m_ref; }
+		bool isEmpty() const { return m_ref.isEmpty(); }
+		bool isEntity() const { return m_ref.isEntity(); }
+		bool isTile() const { return m_ref.isTile(); }
+
+		float distance() const { return m_distance; }
+
+	private:
+		ObjectRef m_ref;
+		float m_distance;
 	};
 
 }

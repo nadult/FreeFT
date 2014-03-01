@@ -4,7 +4,6 @@
  */
 
 #include "game/projectile.h"
-#include "game/world.h"
 #include "sys/xml.h"
 
 namespace game {
@@ -20,7 +19,7 @@ namespace game {
 	}
 
 	Projectile::Projectile(const ProjectileProto &proto, const float3 &pos,
-							float initial_angle, const float3 &target, Entity *spawner)
+							float initial_angle, const float3 &target, EntityRef spawner)
 		:EntityImpl(proto), m_dir(target - pos), m_spawner(spawner) {
 			m_dir *= 1.0f / length(m_dir);
 			setPos(pos);
@@ -56,26 +55,25 @@ namespace game {
 	}
 
 	void Projectile::think() {
-		World *world = Entity::world();
-
-		float time_delta = world->timeDelta();
+		float time_delta = timeDelta();
 		Ray ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
 		if(m_frame_count < 2)
 			return;
 
-		Intersection isect = world->trace(Segment(ray, 0.0f, ray_pos), m_spawner.get(), collider_solid);
+		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), refEntity(m_spawner), collider_solid);
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		setPos(new_pos);
 
 		if(isect.distance() < ray_pos) {
 			if(m_proto.impact.isValid()) {
-				world->addEntity(new Impact(*m_proto.impact, new_pos));
+				addEntity(new Impact(*m_proto.impact, new_pos));
+				Entity *entity = refEntity(isect);
 
-				if(isect.isEntity()) {
+				if(entity) {
 					float damage = 100.0f;
-					isect.entity()->onImpact(0, damage);
+					entity->onImpact(0, damage);
 				}
 			}
 			remove();

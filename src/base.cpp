@@ -46,11 +46,34 @@ int toInt(const char *str) {
 	return out;
 }
 
-float toFloat(const char *str) {
-	DASSERT(str);
+static void toFloat(const char *input, int count, float *out) {
+	DASSERT(input);
+	if(sscanf(input, "%f %f %f %f" + (4 - count) * 3, out + 0, out + 1, out + 2, out + 3) != count)
+		THROW("Error while converting string \"%s\" to float%d", input, count);
+}
+
+float toFloat(const char *input) {
 	float out;
-	if(sscanf(str, "%f", &out) != 1)
-		THROW("Error while converting string \"%s\" to float", str);
+	toFloat(input, 1, &out);
+	return out;
+}
+
+float2 toFloat2(const char *input) {
+	float2 out;
+	toFloat(input, 2, &out.x);
+	return out;
+}
+
+float3 toFloat3(const char *input) {
+	float3 out;
+	toFloat(input, 3, &out.x);
+	return out;
+}
+
+
+float4 toFloat4(const char *input) {
+	float4 out;
+	toFloat(input, 4, &out.x);
 	return out;
 }
 
