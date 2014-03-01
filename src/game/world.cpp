@@ -19,15 +19,13 @@ namespace game {
 	// TODO: multiple navigation maps (2, 3, 4 at least)
 	enum { agent_size = 3 };
 
-	World::World(Mode mode)
+	World::World(const string &file_name, Mode mode, Replicator *replicator)
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
-		m_anim_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
-		if(m_mode == Mode::server)
-			m_replication_list.reserve(1024);
-	} 
+		m_anim_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map),
+	   	m_replicator(replicator) {
+		DASSERT(m_mode == Mode::single_player || m_replicator != nullptr);
 
-	World::World(Mode mode, const char *file_name) :World(mode) {
-		m_level.load(file_name);
+		m_level.load(file_name.c_str());
 		for(int n = 0; n < m_entity_map.size(); n++) {
 			auto &obj = m_entity_map[n];
 			if(obj.ptr)
@@ -36,8 +34,9 @@ namespace game {
 
 //		m_tile_map.printInfo();
 		m_map_name = file_name;
-//		updateNaviMap(true);
+		updateNaviMap(true);
 	}
+
 	World::~World() {
 	}
 		
@@ -329,8 +328,8 @@ namespace game {
 	}
 
 	void World::replicate(int index) {
-		if(m_mode == Mode::server)
-			m_replication_list.push_back(index);
+		if(isServer())
+			m_replicator->replicateEntity(index);
 	}
 
 	void World::playSound(const char *name, const float3 &pos) {
@@ -343,6 +342,17 @@ namespace game {
 		if(isServer())
 			return;
 		audio::playSound(sound_id, pos);
+	}
+
+	bool World::sendOrder(POrder &&order_ptr, EntityRef entity_ref) {
+		if(isClient()) {
+			m_replicator->replicateOrder(std::move(order_ptr), entity_ref);
+			return true;
+		}
+
+		if( Entity *entity = refEntity(entity_ref) )
+			return entity->setOrder(std::move(order_ptr));
+		return false;
 	}
 
 }

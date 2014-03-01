@@ -15,7 +15,14 @@
 
 namespace game {
 
-	class World {
+	class Replicator {
+	public:
+		virtual ~Replicator() { }
+		virtual void replicateEntity(int entity_id) { }
+		virtual void replicateOrder(POrder&&, EntityRef) { }
+	};
+
+	class World: public RefCounter {
 	public:
 		enum class Mode {
 			client,
@@ -23,8 +30,7 @@ namespace game {
 			single_player,
 		};
 
-		World(Mode mode = Mode::single_player);
-		World(Mode mode, const char *file_name);
+		World(const string &file_name, Mode mode = Mode::single_player, Replicator* = nullptr);
 		~World();
 
 		const char *mapName() const { return m_map_name.c_str(); }
@@ -60,6 +66,14 @@ namespace game {
 		Entity *refEntity(ObjectRef);
 		Entity *refEntity(EntityRef);
 
+		template <class TEntity>
+		TEntity *refEntity(EntityRef ref) {
+			Entity *entity = refEntity(ref);
+			if(entity && entity->entityType() == (EntityId::Type)TEntity::type_id)
+				return static_cast<TEntity*>(entity);
+			return nullptr;
+		}
+
 		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
@@ -76,10 +90,11 @@ namespace game {
 
 		void replicate(int entity_id);
 		void replicate(const Entity*);
-		vector<int> &replicationList() { return m_replication_list; }
 
 		void playSound(SoundId, const float3 &pos);
 		void playSound(const char*, const float3 &pos);
+
+		bool sendOrder(POrder&&, EntityRef);
 
 	private:
 		const Mode m_mode;
@@ -99,9 +114,12 @@ namespace game {
 		NaviMap		m_navi_map;
 		
 		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
-		vector<int> m_replication_list;
+
+		Replicator *m_replicator;
 		friend class EntityWorldProxy;
 	};
+
+	typedef Ptr<World> PWorld;
 
 }
 

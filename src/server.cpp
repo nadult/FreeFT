@@ -29,9 +29,9 @@ using namespace game;
 using namespace net;
 
 
-class Server: public net::LocalHost {
+class Server: public net::LocalHost, game::Replicator {
 public:
-	Server(int port) :LocalHost(Address(port)), m_world(0), m_timestamp(0), m_client_count(0) { }
+	Server(int port) :LocalHost(Address(port)), m_timestamp(0), m_client_count(0) { }
 
 	enum {
 		max_clients = 32,
@@ -46,20 +46,21 @@ public:
 	};
 
 	struct Client {
-		Client() :mode(ClientMode::invalid), actor_id(-1), host_id(-1) { }
+		Client() :mode(ClientMode::invalid), host_id(-1) { }
 
 		bool isValid() const { return host_id != -1 && mode != ClientMode::invalid; }
 
 		ClientMode mode;
 		BitVector update_map;
-		int actor_id;
+		EntityRef actor_ref;
 		int host_id;
 	};
 
 
-	int spawnActor(const float3 &pos) {
+	EntityRef spawnActor(const float3 &pos) {
 		DASSERT(m_world);
-		return m_world->addEntity(PEntity(new Actor(getProto("male", ProtoId::actor), pos)));
+		int id = m_world->addEntity(PEntity(new Actor(getProto("male", ProtoId::actor), pos)));
+		return m_world->getEntity(id)->makeRef();
 	}
 
 	void disconnectClient(int client_id) {
@@ -77,7 +78,7 @@ public:
 			InChunk chunk(*chunk_ptr);
 
 			if(chunk.type() == ChunkType::join) {
-				client.actor_id = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
+				client.actor_ref = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
 //				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
 				client.update_map.resize(m_world->entityCount() * 2);
@@ -86,7 +87,7 @@ public:
 						client.update_map[n] = true;
 
 				TempPacket temp;
-				temp << JoinAcceptPacket{string(m_world->mapName()), client.actor_id};
+				temp << string(m_world->mapName()) << client.actor_ref;
 				host.enqueChunk(temp, ChunkType::join_accept, 0);
 			}
 			if(chunk.type() == ChunkType::join_complete) {
@@ -100,7 +101,9 @@ public:
 				break;
 			}
 			else if(client.mode == ClientMode::connected && chunk.type() == ChunkType::actor_order) {
-				Actor *actor = dynamic_cast<Actor*>(m_world->getEntity(client.actor_id));
+				Actor *actor = m_world->refEntity<Actor>(client.actor_ref);
+				DASSERT(actor);
+
 				Order order;
 				chunk >> order;
 				if(order.isValid())
@@ -111,10 +114,8 @@ public:
 		}
 		
 		if(client.mode == ClientMode::connected) {
-			const vector<int> &new_updates = m_world->replicationList();
-				
-			for(int n = 0; n < (int)new_updates.size(); n++)
-				client.update_map[new_updates[n]] = true;
+			for(int n = 0; n < (int)m_replication_list.size(); n++)
+				client.update_map[m_replication_list[n]] = true;
 			vector<int> &lost = host.lostUChunks();
 			for(int n = 0; n < (int)lost.size(); n++)
 				client.update_map[lost[n]] = true;
@@ -186,9 +187,9 @@ public:
 		for(int h = 0; h < (int)m_clients.size(); h++) {
 			Client &client = m_clients[h];
 			if(client.mode == ClientMode::to_be_removed) {
-				if(client.actor_id != -1) {
-					m_world->removeEntity(client.actor_id);
-					client.actor_id = -1;
+				if(client.actor_ref) {
+					m_world->removeEntity(m_world->refEntity(client.actor_ref));
+					client.actor_ref = EntityRef();
 				}
 				
 				printf("Client disconnected: %s\n", getRemoteHost(h)->address().toString().c_str());
@@ -198,17 +199,28 @@ public:
 			}
 		}
 		
-		m_world->replicationList().clear();
+		m_replication_list.clear();
 
 		//TODO: check timeouts
 		m_timestamp++;
 	}
 
-	void setWorld(World *world) { m_world = world; }
+	void createWorld(const string &file_name) {
+		//TODO: update clients
+		m_world = new World(file_name, World::Mode::server, this);
+	}
+
+	PWorld world() { return m_world; }
+
+	void replicateEntity(int entity_id) {
+		m_replication_list.emplace_back(entity_id);
+	}
 
 private:
+	vector<int> m_replication_list;
 	vector<Client> m_clients;
-	World *m_world;
+
+	PWorld m_world;
 	int m_timestamp;
 	int m_client_count;
 	double m_current_time;
@@ -255,10 +267,8 @@ int safe_main(int argc, char **argv)
 
 	PFont font = Font::mgr["liberation_32"];
 
-	World world(World::Mode::server, map_name.c_str());
-
-	world.updateNaviMap(true);
-	host->setWorld(&world);
+	host->createWorld(map_name);
+	PWorld world = host->world();
 
 	double last_time = getTime();
 	vector<int3> path;
@@ -278,14 +288,14 @@ int safe_main(int argc, char **argv)
 			view_pos -= getMouseMove();
 		
 		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world.pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
+		Intersection isect = world->pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
 		if(isect.isEmpty() || isect.isTile())
-			isect = world.trace(ray, nullptr, collider_all|visibility_flag);
+			isect = world->trace(ray, nullptr, collider_all|visibility_flag);
 
 		double time = getTime();
 
-		world.updateNaviMap(false);
-		world.simulate((time - last_time) * config.time_multiplier);
+		world->updateNaviMap(false);
+		world->simulate((time - last_time) * config.time_multiplier);
 		last_time = time;
 
 		static int counter = 0;
@@ -297,12 +307,12 @@ int safe_main(int argc, char **argv)
 		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
 		
 		if(!isect.isEmpty()) {		
-			FBox box = world.refBBox(isect);
+			FBox box = world->refBBox(isect);
 			renderer.addBox(box, Color(255, 255, 255, 100));
 		}
 
-	//	world.updateVisibility(actor->boundingBox());
-		world.addToRender(renderer);
+	//	world->updateVisibility(actor->boundingBox());
+		world->addToRender(renderer);
 
 		renderer.render();
 		lookAt(view_pos);

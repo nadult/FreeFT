@@ -211,14 +211,4 @@ namespace net {
 		*this << PacketInfo(packet_id, current_id, remote_id, flags);
 	}
 
-	void JoinAcceptPacket::save(Stream &sr) const {
-		sr << map_name;
-		sr.encodeInt(actor_id);
-	}
-
-	void JoinAcceptPacket::load(Stream &sr) {
-		sr >> map_name;
-		actor_id = sr.decodeInt();
-	}
-		
 }

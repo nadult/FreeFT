@@ -147,14 +147,6 @@ namespace net {
 		OutPacket(SeqNumber packet_id, int current_id, int remote_id, int flags);
 	};
 
-	struct JoinAcceptPacket {
-		void save(Stream&) const;
-		void load(Stream&);
-
-		string map_name;
-		i32 actor_id;
-	};
-
 	enum class RefuseReason: char {
 		too_many_clients,
 	};

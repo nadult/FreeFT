@@ -178,6 +178,7 @@ namespace game {
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 
+		bool setOrder(POrder&&);
 		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }
 		void onImpact(int projectile_type, float damage);

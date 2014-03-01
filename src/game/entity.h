@@ -18,6 +18,9 @@ namespace game {
 	class Entity;
 
 	typedef std::unique_ptr<Entity> PEntity;
+	
+	class Order;
+	typedef unique_ptr<Order> POrder;
 
 	struct EntityProto: public Proto {
 		EntityProto(const TupleParser&);
@@ -38,11 +41,17 @@ namespace game {
 		EntityRef(const EntityRef &rhs) :m_index(rhs.m_index), m_unique_id(rhs.m_unique_id) { }
 		EntityRef() :m_index(-1), m_unique_id(-1) { }
 		bool isEmpty() const { return m_index == -1; }
+		explicit operator bool() const { return !isEmpty(); }
 
 		void operator=(const EntityRef &rhs) {
 			m_index = rhs.m_index;
 			m_unique_id = rhs.m_unique_id;
 		}
+
+		bool operator==(const EntityRef &rhs) const {
+			return m_index == rhs.m_index && m_unique_id == rhs.m_unique_id;
+		}
+		bool operator!=(const EntityRef &rhs) const { return !operator==(rhs); }
 
 		void save(Stream&) const;
 		void load(Stream&);
@@ -159,6 +168,10 @@ namespace game {
 
 		// Assumes that object is hooked to World		
 		virtual void think() { }
+
+		// Returns true if order can be handled
+		virtual bool setOrder(POrder&&) { return false; }
+
 		virtual void nextFrame();
 
 	protected:
@@ -198,11 +211,11 @@ namespace game {
 	};
 
 	//TODO: collider also
-	template <class Type, class ProtoType, int entity_id>
+	template <class Type, class ProtoType, int type_id_>
 	class EntityImpl: public Entity
 	{
 	private:
-		static_assert(entity_id >= 0 && entity_id < EntityId::count, "Wrong entity_id");
+		static_assert(type_id_ >= 0 && type_id_ < EntityId::count, "Wrong entity type_id");
 
 		struct Initializer {
 			Initializer(ProtoIndex index) {
@@ -233,6 +246,7 @@ namespace game {
 			:Entity(*init.sprite, sr), m_proto(*init.proto) { }
 
 	public:
+		enum { type_id = type_id_ };
 		EntityImpl(const Proto &proto) :EntityImpl(Initializer(proto)) { }
 		EntityImpl(const XMLNode &node) :EntityImpl(Initializer(node), node) { }
 		EntityImpl(Stream &sr) :EntityImpl(Initializer(sr), sr) { }
@@ -241,7 +255,7 @@ namespace game {
 			return new Type(*static_cast<const Type*>(this));
 		}
 		virtual EntityId::Type entityType() const {
-			return EntityId::Type(entity_id);
+			return EntityId::Type(type_id_);
 		}
 		virtual void save(Stream &sr) const {
 			sr << m_proto.index();

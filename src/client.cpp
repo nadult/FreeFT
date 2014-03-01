@@ -27,9 +27,7 @@ using namespace gfx;
 using namespace game;
 using namespace net;
 
-static unique_ptr<World> world;
-
-class Client: public net::LocalHost {
+class Client: public net::LocalHost, game::Replicator {
 public:
 	enum class Mode {
 		disconnected,
@@ -38,7 +36,7 @@ public:
 	};
 
 	Client(int port)
-		:LocalHost(Address(port)), m_mode(Mode::disconnected), m_actor_id(-1) {
+		:LocalHost(Address(port)), m_mode(Mode::disconnected) {
 			m_order.id = OrderId::invalid;
 		}
 		
@@ -95,20 +93,17 @@ public:
 					//TODO: handle timeout
 					
 					host->verify(true);
-					JoinAcceptPacket data;
-					chunk >> data;
+					string map_name;
+					chunk >> map_name;
+					chunk >> m_actor_ref;
 
-					m_actor_id = data.actor_id;
-
-					if(world)
-						delete world.release();
-					world = unique_ptr<World>(new World(World::Mode::client, data.map_name.c_str()));
-					for(int n = 0; n < world->entityCount(); n++)
-						world->removeEntity(n);
+					m_world = new World(map_name.c_str(), World::Mode::client, this);
+					for(int n = 0; n < m_world->entityCount(); n++)
+						m_world->removeEntity(n);
 					m_mode = Mode::connected;
 
 					host->enqueChunk("", 0, ChunkType::join_complete, 0);
-					printf("Joined to: %s (map: %s)\n", m_server_address.toString().c_str(), data.map_name.c_str());
+					printf("Joined to: %s (map: %s)\n", m_server_address.toString().c_str(), map_name.c_str());
 
 				}
 				else if(chunk.type() == ChunkType::join_refuse) {
@@ -137,28 +132,37 @@ public:
 		finishFrame();
 	}
 
-	int actorId() const { return m_actor_id; }	
+	EntityRef actorRef() const { return m_actor_ref; }
+
+	PWorld world() { return m_world; }
 
 protected:
 	void entityUpdate(InChunk &chunk) {
 		DASSERT(chunk.type() == ChunkType::entity_full || chunk.type() == ChunkType::entity_delete);
 
-		int entity_id = chunk.chunkId();
+		int index = chunk.chunkId();
 
-		if(entity_id >= 0) {
-			if(entity_id < world->entityCount() && world->getEntity(entity_id))
-				world->removeEntity(entity_id);
+		if(index >= 0) {
+			if(index < m_world->entityCount() && m_world->getEntity(index))
+				m_world->removeEntity(index);
 
 			if(chunk.type() == ChunkType::entity_full) {
 				Entity *new_entity = Entity::construct(chunk);
-				world->addEntity(PEntity(new_entity), entity_id);
+				m_world->addEntity(PEntity(new_entity), index);
 			}
 		}
 	}
 
+	void replicateOrder(POrder &&order, EntityRef entity_ref) {
+		if(entity_ref == m_actor_ref)
+			m_order = *order;
+	}
+
 private:
-	int m_actor_id, m_server_id;
+	EntityRef m_actor_ref;
+	int m_server_id;
 	Mode m_mode;
+	PWorld m_world;
 
 	Order m_order;
 	Address m_server_address;
@@ -221,7 +225,7 @@ int safe_main(int argc, char **argv)
 		sleep(0.01);
 	}
 
-	world->updateNaviMap(true);
+	PWorld world = host->world();
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
@@ -250,12 +254,8 @@ int safe_main(int argc, char **argv)
 
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
-		
-		//TODO: use EntityRef
-		int actor_id = host->actorId();
-		const Actor *actor = nullptr;
-		if(actor_id >= 0 && actor_id < world->entityCount())
-			actor = dynamic_cast<Actor*>(world->getEntity(actor_id));	
+	
+		const Actor *actor = world->refEntity<Actor>(host->actorRef());
 
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world->pixelIntersect(getMousePos() + view_pos,

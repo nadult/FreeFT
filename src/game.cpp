@@ -52,7 +52,7 @@ int safe_main(int argc, char **argv)
 	string map_name = "data/maps/mission05.mod";
 	if(argc > 1)
 		map_name = string("data/maps/") + argv[1];
-	World world(World::Mode::single_player, map_name.c_str());
+	World world(map_name.c_str(), World::Mode::single_player);
 
 	int height = 128;
 

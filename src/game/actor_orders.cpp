@@ -87,6 +87,11 @@ namespace game {
 		return new_order;
 	}
 
+	bool Actor::setOrder(POrder &&order) {
+		setNextOrder(*order);
+		return true;
+	}
+
 	void Actor::setNextOrder(const Order &order) {
 		m_next_order = order;
 	}
