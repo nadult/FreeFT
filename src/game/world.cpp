@@ -13,6 +13,7 @@
 #include "navi_heightmap.h"
 #include <cstdio>
 #include "audio/device.h"
+#include "game/actor.h"
 
 namespace game {
 
@@ -206,25 +207,13 @@ namespace game {
 			return m_tile_map[ref.m_index].ptr;
 		return nullptr;
 	}
-
-	const Entity *World::refEntity(ObjectRef ref) const {
-		if(ref.m_is_entity && ref.m_index >= 0 && ref.m_index < m_entity_map.size())
-			return m_entity_map[ref.m_index].ptr;
-		return nullptr;
-	}
-
-	Entity *World::refEntity(ObjectRef ref) {
-		if(ref.m_is_entity && ref.m_index >= 0 && ref.m_index < m_entity_map.size())
-			return m_entity_map[ref.m_index].ptr;
-		return nullptr;
-	}
-
+	
 	Entity *World::refEntity(EntityRef ref) {
 		if(ref.m_index < 0 || ref.m_index >= m_entity_map.size())
 			return nullptr;
 
 		Entity *entity = m_entity_map[ref.m_index].ptr;
-		if(entity && entity->m_unique_id == ref.m_unique_id)
+		if(entity && (ref.m_unique_id == -1 || entity->m_unique_id == ref.m_unique_id))
 			return entity;
 
 		return nullptr;
@@ -344,13 +333,15 @@ namespace game {
 		audio::playSound(sound_id, pos);
 	}
 
-	bool World::sendOrder(POrder &&order_ptr, EntityRef entity_ref) {
+	bool World::sendOrder(POrder &&order_ptr, EntityRef actor_ref) {
+		DASSERT(order_ptr);
+
 		if(isClient()) {
-			m_replicator->replicateOrder(std::move(order_ptr), entity_ref);
+			m_replicator->replicateOrder(std::move(order_ptr), actor_ref);
 			return true;
 		}
 
-		if( Entity *entity = refEntity(entity_ref) )
+		if( Actor *entity = refEntity<Actor>(actor_ref) )
 			return entity->setOrder(std::move(order_ptr));
 		return false;
 	}

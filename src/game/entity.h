@@ -13,15 +13,11 @@
 namespace game {
 
 	class World;
-	class Actor;
 	class EntityRef;
 	class Entity;
 
 	typedef std::unique_ptr<Entity> PEntity;
 	
-	class Order;
-	typedef unique_ptr<Order> POrder;
-
 	struct EntityProto: public Proto {
 		EntityProto(const TupleParser&);
 
@@ -39,6 +35,9 @@ namespace game {
 	{
 	public:
 		EntityRef(const EntityRef &rhs) :m_index(rhs.m_index), m_unique_id(rhs.m_unique_id) { }
+		EntityRef(const ObjectRef &rhs) :m_index(rhs.isEntity()? rhs.m_index : -1), m_unique_id(-1) { }
+		EntityRef(const Intersection &isect) :EntityRef((ObjectRef)isect) { }
+		EntityRef(int index) :m_index(index), m_unique_id(-1) { DASSERT(index >= -1); }
 		EntityRef() :m_index(-1), m_unique_id(-1) { }
 		bool isEmpty() const { return m_index == -1; }
 		explicit operator bool() const { return !isEmpty(); }
@@ -69,7 +68,7 @@ namespace game {
 	class EntityWorldProxy {
 	public:
 		int index() const { return m_index; }
-		EntityRef makeRef();
+		EntityRef ref();
 		
 		void remove();
 		void replicate();
@@ -97,8 +96,9 @@ namespace game {
 	
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
-		Entity *refEntity(ObjectRef) const;
 		Entity *refEntity(EntityRef) const;
+	
+		template <class TEntity> TEntity *refEntity(EntityRef ref);
 
 		bool isClient() const;
 		bool isServer() const;
@@ -136,7 +136,7 @@ namespace game {
 		virtual Entity *clone() const = 0;
 
 		virtual ColliderFlags colliderType() const = 0;
-		virtual EntityId::Type entityType() const = 0;
+		virtual EntityId::Type entityType() const = 0; //TODO: change to typeId
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
@@ -168,9 +168,6 @@ namespace game {
 
 		// Assumes that object is hooked to World		
 		virtual void think() { }
-
-		// Returns true if order can be handled
-		virtual bool setOrder(POrder&&) { return false; }
 
 		virtual void nextFrame();
 
@@ -268,11 +265,21 @@ namespace game {
 			return node;
 		}
 
+		const ProtoType &proto() const { return m_proto; }
+
 	protected:
 		const ProtoType &m_proto;
 	};
 
 	bool areAdjacent(const Entity&, const Entity&);
+
+	template <class TEntity>
+	TEntity *EntityWorldProxy::refEntity(EntityRef ref) {
+		Entity *entity = refEntity(ref);
+		if(entity && entity->entityType() == (EntityId::Type)TEntity::type_id)
+			return static_cast<TEntity*>(entity);
+		return nullptr;
+	}
 
 }
 

@@ -11,6 +11,12 @@
 
 namespace game {
 
+	class Entity;
+	class Tile;
+
+	class Order;
+	class POrder;
+
 	DECLARE_ENUM(WeaponClassId,
 		unarmed,
 		club,
@@ -79,10 +85,10 @@ namespace game {
 		unknown
 	);
 
-	DECLARE_ENUM(StanceId,
-		standing,
+	DECLARE_ENUM(Stance,
+		prone,
 		crouching,
-		prone
+		standing
 	);
 
 	DECLARE_ENUM(AttackMode,
@@ -282,9 +288,6 @@ namespace game {
 		ProtoIndex m_index;
 	};
 
-	class Entity;
-	class Tile;
-
 	// Object reference contains only pure indices, so they may be invalid
 	// and refEntity / refTile methods in World may return null even if
 	// isEntity / isTile returns true
@@ -303,6 +306,7 @@ namespace game {
 		int m_index: 31;
 		int m_is_entity: 1;
 		friend class World;
+		friend class EntityRef;
 	};
 
 	class Intersection {

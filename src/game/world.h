@@ -36,6 +36,9 @@ namespace game {
 		const char *mapName() const { return m_map_name.c_str(); }
 
 		int entityCount() const { return m_entity_map.size(); }
+	
+		//TODO: access to entities only through EntityRef (which could also be initialized with
+		//      simple index, then unique_id will not be checked)
 		const Entity *getEntity(int id) const { return m_entity_map[id].ptr; }
 		Entity *getEntity(int id) { return m_entity_map[id].ptr; }
 
@@ -62,8 +65,6 @@ namespace game {
 	
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
-		const Entity *refEntity(ObjectRef) const;
-		Entity *refEntity(ObjectRef);
 		Entity *refEntity(EntityRef);
 
 		template <class TEntity>
@@ -94,7 +95,7 @@ namespace game {
 		void playSound(SoundId, const float3 &pos);
 		void playSound(const char*, const float3 &pos);
 
-		bool sendOrder(POrder&&, EntityRef);
+		bool sendOrder(POrder &&order, EntityRef actor_ref);
 
 	private:
 		const Mode m_mode;

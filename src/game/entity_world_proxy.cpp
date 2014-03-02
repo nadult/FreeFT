@@ -42,7 +42,7 @@ namespace game {
 			m_world->replicate(m_index);
 	}
 		
-	EntityRef EntityWorldProxy::makeRef() {
+	EntityRef EntityWorldProxy::ref() {
 		DASSERT(isHooked());
 		return EntityRef(m_index, m_unique_id);
 	}
@@ -53,10 +53,6 @@ namespace game {
 
 	const Tile *EntityWorldProxy::refTile(ObjectRef ref) const {
 		return m_world? m_world->refTile(ref) : nullptr;
-	}
-
-	Entity *EntityWorldProxy::refEntity(ObjectRef ref) const {
-		return m_world? m_world->refEntity(ref) : nullptr;
 	}
 
 	Entity *EntityWorldProxy::refEntity(EntityRef ref) const {

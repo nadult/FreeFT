@@ -38,11 +38,11 @@ namespace game {
 			actor.connect();
 		armour.connect();
 
-		for(int st = 0; st < StanceId::count; st++)
+		for(int st = 0; st < Stance::count; st++)
 			for(int su = 0; su < SurfaceId::count; su++) {
 				char name[256];
 				snprintf(name, sizeof(name), "%s%s%s%s",
-						st == StanceId::prone? "prone" : "stand", actor->is_heavy? "heavy" : "normal",
+						st == Stance::prone? "prone" : "stand", actor->is_heavy? "heavy" : "normal",
 						armour->sound_prefix.c_str(), SurfaceId::toString(su));
 				step_sounds[st][su] = SoundId(name);
 			}
@@ -58,36 +58,39 @@ namespace game {
 	}
 
 	Actor::Actor(Stream &sr) :EntityImpl(sr), m_actor(*m_proto.actor) {
-	   	sr.unpack(m_target_angle, m_action_id, m_stance_id, m_issue_next_order);
-
-		sr >> m_order >> m_next_order;
-		m_burst_mode = sr.decodeInt();
-		m_burst_off = net::decodeInt3(sr);
-
-		sr >> m_path_t;
-		m_path_pos = sr.decodeInt();
-		m_last_pos = net::decodeInt3(sr);
-		int3 prev = m_last_pos;
-		int path_size = sr.decodeInt();
-		m_path.resize(path_size);
-		for(int i = 0; i < path_size; i++) {
-			m_path[i] = net::decodeInt3(sr) + prev;
-			prev = m_path[i];
+		u8 flags;
+		sr >> flags;
+		if(flags & 1) {
+			sr >> m_order;
+			updateOrderFunc();
 		}
-
-		m_inventory.load(sr);
+		if(flags & 2)
+			sr >> m_next_order;
+		if(flags & 4)
+			sr >> m_target_angle;
+		else
+			m_target_angle = dirAngle();
+		sr.unpack(m_action_id, m_stance);
+		sr >> m_inventory;
 	}
 
-	Actor::Actor(const XMLNode &node) :EntityImpl(node), m_actor(*m_proto.actor) {
-		initialize();
+	Actor::Actor(const XMLNode &node) :EntityImpl(node), m_actor(*m_proto.actor), m_stance(Stance::standing), m_target_angle(dirAngle()) {
+		animate(ActionId::idle);
+		updateOrderFunc();
 	}
 
-	Actor::Actor(const Proto &proto, const float3 &pos)
-		:EntityImpl(proto), m_actor(*m_proto.actor) {
-		initialize();
-		setPos(pos);
+	Actor::Actor(const Proto &proto, Stance::Type stance)
+		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()) {
+		animate(ActionId::idle);
+		updateOrderFunc();
 	}
 
+	Actor::Actor(const Actor &rhs, const Proto &new_proto) :Actor(new_proto, rhs.m_stance) {
+		setPos(rhs.pos());
+		setDirAngle(m_target_angle = rhs.dirAngle());
+		m_inventory = rhs.m_inventory;
+	}
+	
 	XMLNode Actor::save(XMLNode &parent) const {
 		XMLNode node = EntityImpl::save(parent);
 		return node;
@@ -95,32 +98,19 @@ namespace game {
 
 	void Actor::save(Stream &sr) const {
 		EntityImpl::save(sr);
-	   	sr.pack(m_target_angle, m_action_id, m_stance_id, m_issue_next_order);
-		sr << m_order << m_next_order;
-		sr.encodeInt(m_burst_mode);
-		net::encodeInt3(sr, m_burst_off);
+		u8 flags =	(m_order? 1 : 0) |
+					(m_next_order? 2 : 0) |
+					(m_target_angle != dirAngle()? 4 : 0);
 
-		sr << m_path_t;
-		sr.encodeInt(m_path_pos);
-		net::encodeInt3(sr, m_last_pos);
-		sr.encodeInt(m_path.size());
-		int3 prev = m_last_pos;
-		for(int i = 0; i < (int)m_path.size(); i++) {
-			net::encodeInt3(sr, m_path[i] - prev);
-			prev = m_path[i];
-		}
-
-		m_inventory.save(sr);
-	}
-
-	void Actor::initialize() {
-		m_issue_next_order = false;
-		m_stance_id = StanceId::standing;
-
-		animate(ActionId::idle);
-		m_target_angle = dirAngle();
-		m_order = m_next_order = doNothingOrder();
-		m_burst_mode = false; //TODO: proper serialize
+		sr << flags;
+		if(flags & 1)
+			sr << m_order;
+		if(flags & 2)
+			sr << m_next_order;
+		if(flags & 4)
+			sr << m_target_angle;
+		sr.pack(m_action_id, m_stance);
+		sr << m_inventory;
 	}
 
 	SurfaceId::Type Actor::surfaceUnder() const {
@@ -135,33 +125,20 @@ namespace game {
 	}
 
 	bool Actor::isDead() const {
-		return m_order.id == OrderId::die;
+		return m_order && m_order->typeId() == OrderTypeId::die;
 	}
 		
 	void Actor::onImpact(int projectile_type, float damage) {
-		if(m_order.id == OrderId::die)
-			return;
-
-		DeathTypeId::Type death_id = DeathTypeId::normal;
-		/*
-		DeathTypeId::Type death_id =
-			projectile_type == ProjectileTypeId::plasma? DeathTypeId::melt :
+		DeathTypeId::Type death_id = DeathTypeId::explode;
+		/*	projectile_type == ProjectileTypeId::plasma? DeathTypeId::melt :
 			projectile_type == ProjectileTypeId::laser? DeathTypeId::melt :
-			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal;*/
-		setNextOrder(dieOrder(death_id));
-		issueNextOrder();
+			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal; */
+		
+		//TODO: immediate order cancel
+		setOrder(new DieOrder(death_id));
 	}
 		
-	Actor::Actor(const Actor &rhs, const Proto &new_proto) :EntityImpl(new_proto), m_actor(*m_proto.actor) {
-		initialize();
-		setPos(rhs.pos());
-		m_inventory = rhs.m_inventory;
-		setDirAngle(rhs.dirAngle());
-		m_target_angle = rhs.m_target_angle;
-		m_stance_id = rhs.m_stance_id;
-		animate(ActionId::idle);
-	}
-
+	
 	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
 		return armour.isDummy()? actor.index() :
 			findProto(actor.id + ":" + armour.id(), ProtoId::actor_armour);
@@ -194,13 +171,13 @@ namespace game {
 		//TODO: fix this completely:
 		//- when changing stance and cannot equip item in new stance: unequip
 
-		if(m_proto.animId(ActionId::idle, m_stance_id, class_id) == -1) {
+		if(m_proto.animId(ActionId::idle, m_stance, class_id) == -1) {
 			printf("no idle anim: s:%s c:%s\n",
-					StanceId::toString(m_stance_id), WeaponClassId::toString(class_id));
+					Stance::toString(m_stance), WeaponClassId::toString(class_id));
 			return false;
 		}
-		if(m_proto.animId(ActionId::walking, m_stance_id, class_id) == -1) {
-			printf("no walk anim: %d %d\n", m_stance_id, class_id);
+		if(m_proto.animId(ActionId::walking, m_stance, class_id) == -1) {
+			printf("no walk anim: %d %d\n", m_stance, class_id);
 			return false;
 		}
 
@@ -210,6 +187,25 @@ namespace game {
 	bool Actor::canChangeStance() const {
 		return m_proto.canChangeStance();
 	}
+		
+	void Actor::handleOrder(ActorEvent::Type event, const ActorEventParams &params) {
+		if(m_order) 
+			(this->*m_order_func)(m_order.get(), event, params);
+	}
+
+	bool Actor::setOrder(POrder &&order) {
+		if(!world() || isClient())
+			return false;
+
+		//TODO: pass information about wheter this order can be handled
+		m_next_order = std::move(order);
+		if(m_order)
+			m_order->cancel();
+
+		replicate();
+
+		return true;
+	}
 
 	void Actor::think() {
 		if(isDead())
@@ -218,66 +214,18 @@ namespace game {
 		double time_delta = timeDelta();
 		DASSERT(world());
 
-		if(m_issue_next_order)
-			issueNextOrder();
-
-		OrderId order_id = m_order.id;
-		if(order_id == OrderId::do_nothing) {
-			roundPos();
-			m_issue_next_order = true;
-		}
-		else if(order_id == OrderId::move) {
-			DASSERT(!m_path.empty() && m_path_pos >= 0 && m_path_pos < (int)m_path.size());
-			
-			float speed = m_actor.speeds[m_order.move.run? 0 : m_stance_id + 1];
-			float dist = speed * time_delta;
-			m_issue_next_order = false;
-			float3 new_pos;
-
-			while(dist > 0.0001f) {
-				int3 target = m_path[m_path_pos];
-				if(world()->findAny(boundingBox() - pos() + float3(target), this, collider_tiles))
-					target.y += 1;
-
-				int3 diff = target - m_last_pos;
-				float3 diff_vec(diff); diff_vec = diff_vec / length(diff_vec);
-				float3 cur_pos = float3(m_last_pos) + float3(diff) * m_path_t;
-				float tdist = distance(float3(target), cur_pos);
-
-				if(tdist < dist) {
-					dist -= tdist;
-					m_last_pos = target;
-					m_path_t = 0.0f;
-
-					bool stop_moving = m_next_order.id != OrderId::do_nothing &&
-							!(m_next_order.id == OrderId::interact && m_next_order.interact.waiting_for_move);
-
-					if(++m_path_pos == (int)m_path.size() || stop_moving) {
-						lookAt(target);
-						new_pos = target;
-						m_path.clear();
-						m_issue_next_order = true;
-						break;
-					}
-				}
-				else {
-					float new_x = cur_pos.x + diff_vec.x * dist;
-					float new_z = cur_pos.z + diff_vec.z * dist;
-					m_path_t = diff.x? (new_x - m_last_pos.x) / float(diff.x) : (new_z - m_last_pos.z) / float(diff.z);
-					new_pos = (float3)m_last_pos + float3(diff) * m_path_t;
-					lookAt(target);
-					break;
-				}
-			}
-
-			if(world()->findAny(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
-				//TODO: response to collision
-				m_issue_next_order = true;
-				m_path.clear();
-			}
+		if(!m_order || m_order->isFinished()) {
+			if(m_order && m_order->hasFollowup())
+				m_order = m_order->getFollowup();
 			else
-				setPos(new_pos);
+				m_order = m_next_order? std::move(m_next_order) : new IdleOrder();
+
+			updateOrderFunc();
+			handleOrder(ActorEvent::init_order);
+			replicate();
 		}
+
+		handleOrder(ActorEvent::think);
 	}
 
 	// sets direction
@@ -294,106 +242,21 @@ namespace game {
 		Entity::nextFrame();
 
 		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi / 4.0f));
-
-		if(m_burst_mode && m_order.id == OrderId::attack) {
-			m_burst_mode++;
-			fireProjectile(m_burst_off, (float3)m_order.attack.target_pos, m_inventory.weapon(), 0.05f);
-			if(m_burst_mode > 15)
-				m_burst_mode = 0;
-		}
+		handleOrder(ActorEvent::next_frame);	
 	}
 
 	void Actor::onAnimFinished() {
-		m_burst_mode = false;
-		
-		if(m_order.id == OrderId::change_stance || m_order.id == OrderId::attack || m_order.id == OrderId::drop_item)
-			m_issue_next_order = true;
-		else if(m_order.id == OrderId::interact) {
-			if(m_order.interact.mode == interact_normal && !isClient()) {
-				Entity *target = refEntity(m_order.target);
-				if(target)
-					target->interact(this);
-			}
-			m_issue_next_order = true;
-		}
-		else if(m_order.id == OrderId::equip_item || m_order.id == OrderId::unequip_item) {
-			handleEquipOrder(m_order);
-			m_issue_next_order = true;
-		}
-		else if(m_order.id == OrderId::move && m_stance_id == StanceId::crouching) { //fix for broken anims
-			animate(m_action_id);
-		}
-	}
-
-	void Actor::handleEquipOrder(const Order &order) {
-		ItemType::Type changed_item = ItemType::invalid;
-
-		if(order.id == OrderId::equip_item) {
-			int item_id = order.equip_item.item_id;
-
-			if(m_inventory.isValidId(item_id) && canEquipItem(item_id)) {
-				//TODO: reloading ammo
-				changed_item = m_inventory[item_id].item.type();
-				if(!m_inventory.equip(item_id))
-					changed_item = ItemType::invalid;
-			}
-				
-		}
-		else if(order.id == OrderId::unequip_item) {
-			ItemType::Type type = order.unequip_item.item_type;
-			if(m_inventory.unequip(type) != -1)
-				changed_item = type;
-		}
-			
-		if(changed_item == ItemType::armour)
-			updateArmour();
+		handleOrder(ActorEvent::anim_finished);
 	}
 
 	void Actor::onPickupEvent() {
 		if(isClient())
 			return;
-
-		//TODO: magic_hi animation when object to be picked up is high enough
-		if(m_order.id == OrderId::interact) {
-			Entity *target = refEntity(m_order.target);
-			if(target && target->entityType() == EntityId::item) {
-				ItemEntity *item_entity = static_cast<ItemEntity*>(target);
-				Item item = item_entity->item();
-				int count = item_entity->count();
-				//TODO: what will happen if two actors will pickup at the same time?
-
-				item_entity->remove();
-				m_inventory.add(item, count);
-			}
-		}
-		else if(m_order.id == OrderId::drop_item) {
-			int item_id = m_order.drop_item.item_id;
-			DASSERT(item_id >= 0 && item_id < m_inventory.size());
-			Item item = m_inventory[item_id].item;
-			int count = m_inventory[item_id].count;
-			if(item.type() != ItemType::ammo)
-				count = 1;
-
-			m_inventory.remove(item_id, count);
-			addEntity(new ItemEntity(item, count, pos())); 
-		}
+		handleOrder(ActorEvent::pickup);
 	}
 		
 	void Actor::onFireEvent(const int3 &off) {
-		const Weapon &weapon = m_inventory.weapon();
-		if(m_order.id != OrderId::attack || isClient())
-			return;
-		AttackMode::Type mode = m_order.attack.mode;
-
-		if(mode != AttackMode::single && mode != AttackMode::burst)
-			return;
-
-		if(mode == AttackMode::burst) {
-			m_burst_mode = 1;
-			m_burst_off = off;
-		}
-		else
-			fireProjectile(off, m_order.attack.target_pos, weapon, 0.0f);
+		handleOrder(ActorEvent::fire, ActorEventParams{off, false});
 	}
 		
 	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
@@ -411,30 +274,20 @@ namespace game {
 		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
 
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
-			addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, makeRef()));
+			addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, ref()));
 	}
 
 	void Actor::onStepEvent(bool left_foot) {
 		if(isServer())
 			return;
-		DASSERT(world());
-
-		SurfaceId::Type standing_surface = surfaceUnder();
-		world()->playSound(m_proto.step_sounds[m_stance_id][standing_surface], pos());
+		handleOrder(ActorEvent::step, ActorEventParams{ int3(), left_foot });
 	}
 
 	void Actor::onSoundEvent() {
 		if(isServer())
 			return;
 
-		if(m_order.id == OrderId::attack) {
-			const Weapon &weapon = m_inventory.weapon();
-
-			//TODO: select firing mode in attack order
-			world()->playSound(m_burst_mode?
-						weapon.soundId(WeaponSoundType::fire_burst) :
-						weapon.soundId(WeaponSoundType::fire_single), pos());
-		}
+		handleOrder(ActorEvent::sound);
 	}
 
 }

@@ -88,10 +88,10 @@ namespace game {
 		"unknown"
 	)
 
-	DEFINE_ENUM(StanceId,
-		"standing",
+	DEFINE_ENUM(Stance,
 		"crouching",
-		"prone"
+		"prone",
+		"standing"
 	)
 
 	DEFINE_ENUM(AttackMode,

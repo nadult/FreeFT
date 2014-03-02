@@ -9,6 +9,7 @@
 #include "game/entity.h"
 #include "game/inventory.h"
 #include "game/weapon.h"
+#include "game/orders.h"
 
 namespace game {
 
@@ -45,84 +46,6 @@ namespace game {
 	}
 
 
-	enum class OrderId: char {
-		invalid,
-		do_nothing,
-		move,
-		attack,
-		change_stance,
-		interact,
-		drop_item,
-		equip_item,
-		unequip_item,
-		transfer_item,
-		die,
-
-		count,
-	};
-
-	enum InteractionMode: char {
-		interact_normal,
-		interact_pickup,
-		interact_use_item,
-	};
-
-	enum TransferMode: char {
-		transfer_to,
-		transfer_from,
-	};
-
-	struct Order {
-		Order(OrderId id = OrderId::do_nothing) :id(id) { }
-		
-		struct Die			{ DeathTypeId::Type death_type; };
-		struct Move			{ int3 target_pos; bool run; };
-		struct ChangeStance	{ int next_stance; };
-		struct Attack		{ int3 target_pos; AttackMode::Type mode; };
-		struct Interact {
-			InteractionMode mode;
-			bool waiting_for_move;
-		};
-		struct DropItem { int item_id; };
-		struct EquipItem { int item_id; };
-		struct UnequipItem { ItemType::Type item_type; };
-		struct TransferItem { int item_id, count; TransferMode mode; };
-
-		OrderId id;
-		EntityRef target;
-		union {
-			Die die;
-			Move move;
-			Attack attack;
-			ChangeStance change_stance;
-			Interact interact;
-			DropItem drop_item;
-			EquipItem equip_item;
-			UnequipItem unequip_item;
-			TransferItem transfer_item;
-			int data[4];
-		};
-
-		void save(Stream&) const;
-		void load(Stream&);
-		bool isValid() const;
-	};
-	
-	Order dieOrder(DeathTypeId::Type);	
-	Order moveOrder(int3 target_pos, bool run);
-	Order doNothingOrder();
-	Order changeStanceOrder(int next_stance);
-	Order attackOrder(AttackMode::Type, const int3 &target_pos);
-	Order interactOrder(EntityRef target, InteractionMode mode);
-
-	//TODO: zamiast idkow, w rozkazach przekazywac cale obiekty? jesli, np.
-	//w trakcje wykonywania rozkazu zmieni sie stan kontenera, to zostanie
-	//przekazany nie ten item co trzeba
-	Order dropItemOrder(int item_id);
-	Order transferItemOrder(EntityRef target, TransferMode mode, int item_id, int count);
-	Order equipItemOrder(int item_id);
-	Order unequipItemOrder(ItemType::Type type);
-
 	struct ActorProto;
 
 	struct ActorArmourProto: public ProtoImpl<ActorArmourProto, EntityProto, ProtoId::actor_armour> {
@@ -131,14 +54,14 @@ namespace game {
 		void connect();
 
 		const string deathAnimName(DeathTypeId::Type) const;
-		const string simpleAnimName(ActionId::Type, StanceId::Type) const;
-		const string animName(ActionId::Type, StanceId::Type, WeaponClassId::Type) const;
+		const string simpleAnimName(ActionId::Type, Stance::Type) const;
+		const string animName(ActionId::Type, Stance::Type, WeaponClassId::Type) const;
 
 		//TODO: methods for additional checking
 		//TODO: checking if animation is valid in these methods:
 		int deathAnimId(DeathTypeId::Type) const;
-		int simpleAnimId(ActionId::Type, StanceId::Type) const;
-		int animId(ActionId::Type, StanceId::Type, WeaponClassId::Type) const;
+		int simpleAnimId(ActionId::Type, Stance::Type) const;
+		int animId(ActionId::Type, Stance::Type, WeaponClassId::Type) const;
 
 		bool canChangeStance() const;
 
@@ -149,14 +72,14 @@ namespace game {
 		ProtoRef<ArmourProto> armour;
 		ProtoRef<ActorProto> actor;
 
-		SoundId step_sounds[StanceId::count][SurfaceId::count];
+		SoundId step_sounds[Stance::count][SurfaceId::count];
 
 	private:
 		void initAnims();
 
 		short m_death_ids[DeathTypeId::count];
-		short m_simple_ids[ActionId::first_special - ActionId::first_simple][StanceId::count];
-		short m_normal_ids[ActionId::first_simple  - ActionId::first_normal][StanceId::count][WeaponClassId::count];
+		short m_simple_ids[ActionId::first_special - ActionId::first_simple][Stance::count];
+		short m_normal_ids[ActionId::first_simple  - ActionId::first_normal][Stance::count][WeaponClassId::count];
 		bool is_actor;
 	};
 
@@ -165,21 +88,20 @@ namespace game {
 
 		bool is_heavy;
 
-		// run, walk, crouch, prone
-		float speeds[StanceId::count + 1];
+		// prone, crouch, walk, run
+		float speeds[Stance::count + 1];
 	};
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
 	public:
 		Actor(Stream&);
 		Actor(const XMLNode&);
-		Actor(const Proto &proto, const float3 &pos);
+		Actor(const Proto &proto, Stance::Type stance = Stance::standing);
 		Actor(const Actor &rhs, const Proto &new_proto);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 
 		bool setOrder(POrder&&);
-		void setNextOrder(const Order &order);
 		const ActorInventory &inventory() const { return m_inventory; }
 		void onImpact(int projectile_type, float damage);
 
@@ -189,6 +111,7 @@ namespace game {
 		virtual void save(Stream&) const;
 
 		SurfaceId::Type surfaceUnder() const;
+		Stance::Type stance() const { return m_stance; }
 
 	private:
 		void initialize();
@@ -227,29 +150,43 @@ namespace game {
 	private:
 		virtual bool shrinkRenderedBBox() const { return true; }
 
-		void handleEquipOrder(const Order&);
+		typedef void (Actor::*HandleFunc)(Order*, ActorEvent::Type, const ActorEventParams&);
+
+		void updateOrderFunc();
+		void handleOrder(ActorEvent::Type, const ActorEventParams &params = ActorEventParams{});
+
+		template <class TOrder>
+		void handleOrder(Order *order, ActorEvent::Type event, const ActorEventParams &params) {
+			DASSERT(order && order->typeId() == (OrderTypeId::Type)TOrder::type_id);
+			if((TOrder::event_flags & event) && !order->isFinished())
+				handleOrder(*static_cast<TOrder*>(order), event, params);
+		}
+		void emptyHandleFunc(Order*, ActorEvent::Type, const ActorEventParams&) { }
+		
+		void handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(MoveOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(AttackOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(ChangeStanceOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(InteractOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(DropItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(EquipItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(UnequipItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(TransferItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		void handleOrder(DieOrder&, ActorEvent::Type, const ActorEventParams&);
 
 		const ActorProto &m_actor;
 
-		// orders
-		bool m_issue_next_order;
-		Order m_order;
-		Order m_next_order;
+		POrder m_order;
+		POrder m_next_order;
+		HandleFunc m_order_func;
 
-		// movement state
 		float m_target_angle;
-		int3 m_last_pos;
-		float m_path_t;
-		int m_path_pos;
-		vector<int3> m_path;
-
 		ActionId::Type m_action_id;
-		StanceId::Type m_stance_id;
+		Stance::Type m_stance;
 
 		ActorInventory m_inventory;
-		int m_burst_mode;
-		int3 m_burst_off;
 	};
+
 
 }
 

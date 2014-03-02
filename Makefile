@@ -10,6 +10,7 @@ _dummy := $(shell [ -d $(BUILD)/sys ] || mkdir -p $(BUILD)/sys)
 _dummy := $(shell [ -d $(BUILD)/net ] || mkdir -p $(BUILD)/net)
 _dummy := $(shell [ -d $(BUILD)/audio ] || mkdir -p $(BUILD)/audio)
 _dummy := $(shell [ -d $(BUILD)/game ] || mkdir -p $(BUILD)/game)
+_dummy := $(shell [ -d $(BUILD)/game/orders ] || mkdir -p $(BUILD)/game/orders)
 _dummy := $(shell [ -d $(BUILD)/gameui ] || mkdir -p $(BUILD)/gameui)
 _dummy := $(shell [ -d $(BUILD)/editor ] || mkdir -p $(BUILD)/editor)
 _dummy := $(shell [ -d $(BUILD)/lz4 ] || mkdir -p $(BUILD)/lz4)
@@ -21,8 +22,11 @@ SHARED_SRC=\
 	net/socket net/chunk net/host \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
-	game/world game/actor game/actor_anims game/actor_orders game/entity game/entity_world_proxy game/container \
-	game/door game/projectile game/item game/weapon game/armour game/inventory game/base game/entities game/level \
+	game/world game/entity game/entity_world_proxy game/container game/level \
+	game/door game/projectile game/item game/weapon game/armour game/inventory game/base game/entities \
+	game/actor game/actor_anims game/orders \
+	game/orders/attack game/orders/change_stance game/orders/die game/orders/idle game/orders/interact \
+	game/orders/inventory game/orders/move \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
@@ -103,7 +107,8 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD)/%_.o $(BUILD)/sys/pla
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
 			$(MINGW_PROGRAMS) $(DEPS) $(BUILD)/.depend
-	-rmdir $(BUILD)/gfx $(BUILD)/sys $(BUILD)/ui $(BUILD)/game $(BUILD)/gameui $(BUILD)/editor $(BUILD)/lz4 $(BUILD)/net
+	-rmdir $(BUILD)/game/orders $(BUILD)/lz4 $(BUILD)/net
+	-rmdir $(BUILD)/gfx $(BUILD)/sys $(BUILD)/ui $(BUILD)/game $(BUILD)/gameui $(BUILD)/editor
 	-rmdir $(BUILD)
 
 $(BUILD)/.depend: $(DEPS)

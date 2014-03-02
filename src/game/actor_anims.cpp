@@ -72,10 +72,10 @@ namespace game {
 		nullptr,
 	};
 
-	static const char *s_stance_names[StanceId::count] = {
-		"Stand",
+	static const char *s_stance_names[Stance::count] = {
+		"Prone",
 		"Crouch",
-		"Prone"
+		"Stand"
 	};
 
 	static const char *s_normal_names[ActionId::first_simple - ActionId::first_normal] = {
@@ -85,17 +85,17 @@ namespace game {
 		"Attack",
 	};
 
-	static const char *s_simple_names[ActionId::first_special - ActionId::first_simple][StanceId::count] = {
+	static const char *s_simple_names[ActionId::first_special - ActionId::first_simple][Stance::count] = {
 		// standing, 	crouching,	prone,
-		{ "Run",		nullptr,	nullptr },		// running
+		{ nullptr,		nullptr,	"Run" },		// running
 
-		{ nullptr,		"Stand", 	"Crouch" },		// stance up
-		{ "Crouch",		"Prone", 	nullptr },		// stance down
+		{ "Crouch",		"Stand", 	nullptr },		// stance up
+		{ nullptr,		"Prone", 	"Crouch" },		// stance down
 
 
 		{ "Pickup", 	"Pickup", 	"Pickup" },		// pickup
-		{ "Magichigh",	"Magic",	"Magic" },		// magic 1
-		{ "Magiclow", 	"Magic", 	"Magic" }		// magic 2
+		{ "Magic",		"Magic",	"Magichigh" },	// magic 1
+		{ "Magic", 		"Magic", 	"Magiclow" }	// magic 2
 	};
 
 	static const char *s_death_names[DeathTypeId::count] = {
@@ -118,15 +118,15 @@ namespace game {
 		}
 
 		for(int a = 0; a < ActionId::count; a++)
-			for(int s = 0; s < StanceId::count; s++) {
+			for(int s = 0; s < Stance::count; s++) {
 				if(ActionId::isNormal((ActionId::Type)a)) {
 					for(int w = 0; w < WeaponClassId::count; w++) {
-						const string &name = animName((ActionId::Type)a, (StanceId::Type)s, (WeaponClassId::Type)w);
+						const string &name = animName((ActionId::Type)a, (Stance::Type)s, (WeaponClassId::Type)w);
 						m_normal_ids[a][s][w] = name.empty()? -1 : sprite->findSequence(name.c_str());
 					}
 				}
 				else if(ActionId::isSimple((ActionId::Type)a)) {
-					const string &name = simpleAnimName((ActionId::Type)a, (StanceId::Type)s);
+					const string &name = simpleAnimName((ActionId::Type)a, (Stance::Type)s);
 					m_simple_ids[a - ActionId::first_simple][s] = name.empty()? -1 : sprite->findSequence(name.c_str());
 				}
 			}
@@ -140,7 +140,7 @@ namespace game {
 		return text;
 	}
 
-	const string ActorArmourProto::simpleAnimName(ActionId::Type action, StanceId::Type stance) const {
+	const string ActorArmourProto::simpleAnimName(ActionId::Type action, Stance::Type stance) const {
 		DASSERT(ActionId::isSimple(action));
 		const char *name = s_simple_names[action - ActionId::first_simple][stance];
 		if(!name)
@@ -151,7 +151,7 @@ namespace game {
 		return text;
 	}
 
-	const string ActorArmourProto::animName(ActionId::Type action, StanceId::Type stance, WeaponClassId::Type weapon) const {
+	const string ActorArmourProto::animName(ActionId::Type action, Stance::Type stance, WeaponClassId::Type weapon) const {
 		DASSERT(!ActionId::isSpecial(action));
 		if(ActionId::isSimple(action))
 			return simpleAnimName(action, stance);
@@ -172,28 +172,28 @@ namespace game {
 		return m_death_ids[id];
 	}
 
-	int ActorArmourProto::simpleAnimId(ActionId::Type action, StanceId::Type stance) const {
+	int ActorArmourProto::simpleAnimId(ActionId::Type action, Stance::Type stance) const {
 		DASSERT(ActionId::isSimple(action));
 		return m_simple_ids[action - ActionId::first_simple][stance];
 	}
 
-	int ActorArmourProto::animId(ActionId::Type action, StanceId::Type stance, WeaponClassId::Type weapon) const {
+	int ActorArmourProto::animId(ActionId::Type action, Stance::Type stance, WeaponClassId::Type weapon) const {
 		DASSERT(!ActionId::isSpecial(action));
 		return ActionId::isSimple(action)? simpleAnimId(action, stance) : m_normal_ids[action][stance][weapon];
 	}
 
 	bool ActorArmourProto::canChangeStance() const {
-		for(int s = 0; s < StanceId::count; s++) {
-			if(animId(ActionId::idle, (StanceId::Type)s, WeaponClassId::unarmed) == -1)
+		for(int s = 0; s < Stance::count; s++) {
+			if(animId(ActionId::idle, (Stance::Type)s, WeaponClassId::unarmed) == -1)
 				return false;
-			if(animId(ActionId::walking, (StanceId::Type)s, WeaponClassId::unarmed) == -1)
+			if(animId(ActionId::walking, (Stance::Type)s, WeaponClassId::unarmed) == -1)
 				return false;
 		}
 
-		if(	simpleAnimId(ActionId::stance_up, StanceId::prone) == -1 ||
-			simpleAnimId(ActionId::stance_up, StanceId::crouching) == -1 ||
-			simpleAnimId(ActionId::stance_down, StanceId::crouching) == -1 ||
-			simpleAnimId(ActionId::stance_down, StanceId::standing) == -1)
+		if(	simpleAnimId(ActionId::stance_up, Stance::prone) == -1 ||
+			simpleAnimId(ActionId::stance_up, Stance::crouching) == -1 ||
+			simpleAnimId(ActionId::stance_down, Stance::crouching) == -1 ||
+			simpleAnimId(ActionId::stance_down, Stance::standing) == -1)
 			return false;
 
 		return true;
@@ -205,7 +205,7 @@ namespace game {
 				m_death_ids[d] = m_death_ids[DeathTypeId::normal];
 
 		for(int w = 0; w < WeaponClassId::count; w++)
-			for(int s = 0; s < StanceId::count; s++)
+			for(int s = 0; s < Stance::count; s++)
 				if(m_normal_ids[ActionId::walking][s][w] == -1 && m_normal_ids[ActionId::idle][s][w] != -1)
 					m_normal_ids[ActionId::walking][s][w] = m_normal_ids[ActionId::walking][s][WeaponClassId::unarmed];
 	}
@@ -214,11 +214,11 @@ namespace game {
 	void Actor::animate(ActionId::Type action_id) {
 		WeaponClassId::Type weapon_class_id = m_inventory.weapon().classId();
 
-		int seq_id = m_proto.animId(action_id, m_stance_id, weapon_class_id);
+		int seq_id = m_proto.animId(action_id, m_stance, weapon_class_id);
 		if(seq_id == -1) {
 			//TODO: better error handling of missing sequences
 			printf("Sequence: %s not found!\n",
-					m_proto.animName(action_id, m_stance_id, weapon_class_id).c_str());
+					m_proto.animName(action_id, m_stance, weapon_class_id).c_str());
 			ASSERT(seq_id != -1);
 		}
 

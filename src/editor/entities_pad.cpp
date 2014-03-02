@@ -153,7 +153,8 @@ namespace ui {
 		
 		if(type == EntityId::actor) {
 			const Proto& proto = getProto(m_actor_id->selectedText(), ProtoId::actor);
-			m_proto = (PEntity)new game::Actor(proto, pos);
+			m_proto = (PEntity)new game::Actor(proto);
+			m_proto->setPos(pos);
 		}
 		else if(type == EntityId::container) {
 			const ContainerProto &proto =

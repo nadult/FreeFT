@@ -57,12 +57,11 @@ int safe_main(int argc, char **argv)
 	int height = 128;
 
 	EntityRef actor_ref; {
-		Actor *actor = new Actor(getProto(findProto("male", ProtoId::actor)), float3(245, height, 335));
+		Actor *actor = new Actor(getProto("male", ProtoId::actor));
+		actor->setPos(float3(245, height, 335));
 		world.addEntity(PEntity(actor));
-		actor_ref = actor->makeRef();
+		actor_ref = actor->ref();
 	}
-
-	world.updateNaviMap(true);
 
 	bool navi_show = 0;
 	bool navi_debug = 0;
@@ -87,7 +86,7 @@ int safe_main(int argc, char **argv)
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			view_pos -= getMouseMove();
 		
-		Actor *actor = dynamic_cast<Actor*>(world.refEntity(actor_ref));
+		Actor *actor = world.refEntity<Actor>(actor_ref);
 
 		Ray ray = screenRay(getMousePos() + view_pos);
 		Intersection isect = world.pixelIntersect(getMousePos() + view_pos,
@@ -108,9 +107,7 @@ int safe_main(int argc, char **argv)
 			Entity *entity = world.refEntity(isect);
 
 			if(entity && entity_debug) {
-				//isect.entity->interact(nullptr);
-				InteractionMode mode = entity->entityType() == EntityId::item? interact_pickup : interact_normal;
-				actor->setNextOrder(interactOrder(entity->makeRef(), mode));
+				world.sendOrder(new InteractOrder(entity->ref()), actor_ref);
 			}
 			else if(navi_debug) {
 				//TODO: do this on floats, in actor and navi code too
@@ -120,22 +117,23 @@ int safe_main(int argc, char **argv)
 			else if(isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
 				int3 wpos = int3(ray.at(isect.distance()) + float3(0, 0.5f, 0));
-				actor->setNextOrder(moveOrder(wpos, !isKeyPressed(Key_lshift)));
+				world.sendOrder(new MoveOrder(wpos, !isKeyPressed(Key_lshift)), actor_ref);
 			}
 		}
 		if(isMouseKeyDown(1) && shooting_debug) {
 			AttackMode::Type mode = isKeyPressed(Key_lshift)? AttackMode::burst : AttackMode::undefined;
-			actor->setNextOrder(attackOrder(mode, (int3)target_pos));
+			world.sendOrder(new AttackOrder(mode, (int3)target_pos), actor_ref);
 		}
-		if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
+	/*	if((navi_debug || (navi_show && !shooting_debug)) && isMouseKeyDown(1)) {
 			int3 wpos = (int3)ray.at(isect.distance());
 			path = world.findPath(last_pos, wpos);
 			last_pos = wpos;
+		}*/
+		if(isKeyDown(Key_kp_add) || isKeyDown(Key_kp_subtract)) {
+			Stance::Type stance = (Stance::Type)(actor->stance() + (isKeyDown(Key_kp_add)? 1 : -1));
+			if(Stance::isValid(stance))
+				world.sendOrder(new ChangeStanceOrder(stance), actor_ref);
 		}
-		if(isKeyDown(Key_kp_add))
-			actor->setNextOrder(changeStanceOrder(1));
-		if(isKeyDown(Key_kp_subtract))
-			actor->setNextOrder(changeStanceOrder(-1));
 
 		if(isKeyDown('R') && navi_debug) {
 			world.naviMap().removeColliders();
@@ -216,7 +214,7 @@ int safe_main(int argc, char **argv)
 					inventory_sel++;
 			}
 
-			Container *container = dynamic_cast<Container*>(world.refEntity(isect));
+			Container *container = world.refEntity<Container>(isect);
 			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
 				container = nullptr;
 
@@ -224,23 +222,25 @@ int safe_main(int argc, char **argv)
 			container_sel = clamp(container_sel, 0, container? container->inventory().size() - 1 : 0);
 
 			if(isKeyDown('D') && inventory_sel >= 0)
-				actor->setNextOrder(dropItemOrder(inventory_sel));
+				world.sendOrder(new DropItemOrder(inventory_sel), actor_ref);
 			else if(isKeyDown('E') && inventory_sel >= 0)
-				actor->setNextOrder(equipItemOrder(inventory_sel));
+				world.sendOrder(new EquipItemOrder(inventory_sel), actor_ref);
 			else if(isKeyDown('E') && inventory_sel < 0) {
 				ItemType::Type type = ItemType::Type(inventory_sel + 3);
-				actor->setNextOrder(unequipItemOrder(type));
+				world.sendOrder(new UnequipItemOrder(type), actor_ref);
 			}
 
 			if(container) {
 				if(isKeyDown(Key_right) && inventory_sel >= 0)
-					actor->setNextOrder(transferItemOrder(container->makeRef(), transfer_to, inventory_sel, 1));
+					world.sendOrder(new TransferItemOrder(container->ref(), transfer_to, inventory_sel, 1), actor_ref);
 				if(isKeyDown(Key_left))
-					actor->setNextOrder(transferItemOrder(container->makeRef(), transfer_from, container_sel, 1));
+					world.sendOrder(new TransferItemOrder(container->ref(), transfer_from, container_sel, 1), actor_ref);
 			}
 
 			string inv_info = actor->inventory().printMenu(inventory_sel);
 			string cont_info = container? container->inventory().printMenu(container_sel) : string();
+			if(container)
+				cont_info = string("Container: ") + container->proto().id + "\n" + cont_info;
 				
 			IRect extents = font->evalExtents(inv_info.c_str());
 			font->drawShadowed(int2(0, config.resolution.y - extents.height()),

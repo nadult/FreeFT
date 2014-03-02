@@ -59,8 +59,10 @@ public:
 
 	EntityRef spawnActor(const float3 &pos) {
 		DASSERT(m_world);
-		int id = m_world->addEntity(PEntity(new Actor(getProto("male", ProtoId::actor), pos)));
-		return m_world->getEntity(id)->makeRef();
+		PEntity actor(new Actor(getProto("male", ProtoId::actor)));
+		actor->setPos(pos);
+		int id = m_world->addEntity(std::move(actor));
+		return m_world->getEntity(id)->ref();
 	}
 
 	void disconnectClient(int client_id) {
@@ -101,13 +103,10 @@ public:
 				break;
 			}
 			else if(client.mode == ClientMode::connected && chunk.type() == ChunkType::actor_order) {
-				Actor *actor = m_world->refEntity<Actor>(client.actor_ref);
-				DASSERT(actor);
-
-				Order order;
+				POrder order;
 				chunk >> order;
-				if(order.isValid())
-					actor->setNextOrder(order);
+				if(order)
+					m_world->sendOrder(std::move(order), client.actor_ref);
 				else
 					printf("Invalid order!\n");
 			}
