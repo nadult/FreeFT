@@ -135,7 +135,7 @@ namespace game {
 		if(event == ActorEvent::init_order) {
 			Container *container = refEntity<Container>(order.m_target);
 
-			if(container && areAdjacent(*this, *container)) {
+			if(container && areAdjacent(*this, *container) && !isClient()) {
 				Inventory *src = &m_inventory, *dst = &container->inventory();
 				if(order.m_mode == transfer_from)
 					swap(src, dst);
@@ -144,6 +144,7 @@ namespace game {
 					src->remove(order.m_src_inventory_id, order.m_count);
 					dst->add(item, order.m_count);
 				}
+				container->replicate();
 			}
 			order.finish();
 		}

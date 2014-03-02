@@ -48,6 +48,7 @@ namespace game {
 	Container::Container(Stream &sr) :EntityImpl(sr) {
 		sr.unpack(m_state, m_target_state);
 		m_update_anim = false;
+		sr >> m_inventory;
 	}
 
 	Container::Container(const XMLNode &node) :EntityImpl(node) {
@@ -61,6 +62,7 @@ namespace game {
 	void Container::save(Stream &sr) const {
 		EntityImpl::save(sr);
 		sr.pack(m_state, m_target_state);
+		sr << m_inventory;
 	}
 
 	XMLNode Container::save(XMLNode &parent) const {

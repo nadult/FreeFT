@@ -7,17 +7,13 @@
 #include <cstdio>
 
 #include "gfx/device.h"
-#include "gfx/font.h"
-#include "gfx/scene_renderer.h"
+#include "io.h"
 
 #include "navi_map.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "game/actor.h"
 #include "game/world.h"
-#include "game/container.h"
-#include "game/door.h"
-#include "game/item.h"
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/host.h"
@@ -262,84 +258,25 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	int2 view_pos(-1000, 500);
-
-	PFont font = Font::mgr["liberation_32"];
-
 	host->createWorld(map_name);
 	PWorld world = host->world();
 
+	IO io(config.resolution, world, EntityRef(), config.profiler_enabled);
+
 	double last_time = getTime();
-	vector<int3> path;
-	int3 last_pos(0, 0, 0);
-	float3 target_pos(0, 0, 0);
-
-	int inventory_sel = -1, container_sel = -1;
-	string prof_stats;
-	double stat_update_time = getTime();
-
-	while(pollEvents()) {
-		double loop_start = profiler::getTime();
-		if(isKeyDown(Key_esc))
-			break;
-
-		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
-			view_pos -= getMouseMove();
-		
-		Ray ray = screenRay(getMousePos() + view_pos);
-		Intersection isect = world->pixelIntersect(getMousePos() + view_pos, collider_all|visibility_flag);
-		if(isect.isEmpty() || isect.isTile())
-			isect = world->trace(ray, nullptr, collider_all|visibility_flag);
-
+	while(pollEvents() && !isKeyDown(Key_esc)) {
 		double time = getTime();
 
-		world->updateNaviMap(false);
+		io.processInput();
+
 		world->simulate((time - last_time) * config.time_multiplier);
+		host->action();
 		last_time = time;
 
-		static int counter = 0;
-		if(host)// && counter % 30 == 0)
-			host->action();
-		counter++;
-
-		clear(Color(128, 64, 0));
-		SceneRenderer renderer(IRect(int2(0, 0), config.resolution), view_pos);
-		
-		if(!isect.isEmpty()) {		
-			FBox box = world->refBBox(isect);
-			renderer.addBox(box, Color(255, 255, 255, 100));
-		}
-
-	//	world->updateVisibility(actor->boundingBox());
-		world->addToRender(renderer);
-
-		renderer.render();
-		lookAt(view_pos);
-			
-		lookAt({0, 0});
-		drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
-		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
-
-		DTexture::bind0();
-		drawQuad(0, 0, 250, config.profiler_enabled? 300 : 50, Color(0, 0, 0, 80));
-		
-		gfx::PFont font = gfx::Font::mgr["liberation_16"];
-		float3 isect_pos = ray.at(isect.distance());
-		font->drawShadowed(int2(0, 0), Color::white, Color::black,
-				"View:(%d %d)\nRay:(%.2f %.2f %.2f)\n",
-				view_pos.x, view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
-		if(config.profiler_enabled)
-			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", prof_stats.c_str());
+		io.draw();
 
 		swapBuffers();
 		TextureCache::main_cache.nextFrame();
-
-		profiler::updateTimer("main_loop", profiler::getTime() - loop_start);
-		if(getTime() - stat_update_time > 0.25) {
-			prof_stats = profiler::getStats();
-			stat_update_time = getTime();
-		}
-		profiler::nextFrame();
 	}
 
 	delete host.release();

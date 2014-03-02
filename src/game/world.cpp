@@ -128,7 +128,6 @@ namespace game {
 	}
 
 	void World::simulate(double time_diff) {
-		PROFILE("World::simulate");
 		//TODO: synchronizing time between client/server
 
 		DASSERT(time_diff > 0.0);

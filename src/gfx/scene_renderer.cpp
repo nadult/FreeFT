@@ -176,7 +176,7 @@ namespace gfx {
 				gdata.resize(count);
 			bool any_weak = false;
 
-			{ PROFILE("SceneRenderer::inner_loop"); 
+			{
 				IRect rects[count];
 				FBox bboxes[count];
 				for(int i = 0; i < count; i++) {
@@ -226,7 +226,6 @@ REPEAT:
 			setScissorRect(grid_rect);
 
 			profiler::updateCounter("SceneRenderer::rendered_count", count);
-			PROFILE("SceneRenderer::blit");
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
 				if(elem.texture) {
