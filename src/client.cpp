@@ -32,6 +32,7 @@ public:
 
 	Client(int port)
 		:LocalHost(Address(port)), m_mode(Mode::disconnected) {
+			m_order_type = OrderTypeId::invalid;
 		}
 		
 	void connect(const char *server_name, int server_port) {
@@ -67,21 +68,18 @@ public:
 	
 	Mode mode() const { return m_mode; }
 
-	void action() {
+	void beginFrame() {
 		if(m_server_id == -1)
 			return;
 		RemoteHost *host = getRemoteHost(m_server_id);
 
-		beginFrame();
-		beginSending(m_server_id);
+		LocalHost::receive();
 
 		if(m_mode == Mode::connecting) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
 				if(chunk.type() == ChunkType::join_accept) {
-					//TODO: handle timeout
-					
 					host->verify(true);
 					string map_name;
 					chunk >> map_name;
@@ -117,9 +115,37 @@ public:
 				m_order.reset();
 			}
 		}
+	}
+
+	void finishFrame() {
+		if(m_server_id == -1)
+			return;
+		RemoteHost *host = getRemoteHost(m_server_id);
+		beginSending(m_server_id);
+
+		if(m_mode == Mode::connected) {
+			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
+				InChunk chunk(*chunk_ptr);
+
+				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
+					entityUpdate(chunk);
+			}
+
+			if(m_order) {
+				TempPacket temp;
+				temp << m_order;
+				host->enqueChunk(temp, ChunkType::actor_order, 0);
+				m_order.reset();
+			}
+		}
 
 		finishSending();
-		finishFrame();
+		m_timestamp++;
+
+		if(host->timeout() > 10.0) {
+			printf("Timeout\n");
+			disconnect();
+		}
 	}
 
 	EntityRef actorRef() const { return m_actor_ref; }
@@ -139,13 +165,23 @@ protected:
 			if(chunk.type() == ChunkType::entity_full) {
 				Entity *new_entity = Entity::construct(chunk);
 				m_world->addEntity(PEntity(new_entity), index);
+				if(new_entity->ref() == m_actor_ref) {
+					Actor *actor = static_cast<Actor*>(new_entity);
+					if(actor->currentOrder() == m_order_type && m_order_type != OrderTypeId::invalid) {
+						printf("Order lag: %f\n", getTime() - m_order_send_time);
+						m_order_type = OrderTypeId::invalid;
+					}
+				}
 			}
 		}
 	}
 
 	void replicateOrder(POrder &&order, EntityRef entity_ref) {
-		if(entity_ref == m_actor_ref)
+		if(entity_ref == m_actor_ref) {
 			m_order = std::move(order);
+			m_order_type = m_order->typeId();
+			m_order_send_time = getTime();
+		}
 	}
 
 private:
@@ -156,6 +192,9 @@ private:
 
 	POrder m_order;
 	Address m_server_address;
+
+	OrderTypeId::Type m_order_type;
+	double m_order_send_time;
 };
 
 int safe_main(int argc, char **argv)
@@ -207,27 +246,30 @@ int safe_main(int argc, char **argv)
 	host->connect(server_name, server_port);
 	
 	while(host->mode() != Client::Mode::connected) {
-		host->action();
+		host->beginFrame();
+		host->finishFrame();
 		sleep(0.05);
 	}
 
 	PWorld world = host->world();
 
 	while(!world->refEntity(host->actorRef())) {
-		host->action();
+		host->beginFrame();
+		host->finishFrame();
 		sleep(0.01);
 	}
 
 	IO io(config.resolution, world, host->actorRef(), config.profiler_enabled);
 
 	double last_time = getTime();
-	while(pollEvents() && !isKeyDown(Key_esc)) {
+	while(pollEvents() && !isKeyDown(Key_esc) && host->mode() == Client::Mode::connected) {
 		double time = getTime();
 		io.processInput();
+		host->beginFrame();
 
 		audio::tick();
 		world->simulate((time - last_time) * config.time_multiplier);
-		host->action();
+		host->finishFrame();
 		last_time = time;
 
 		io.draw();

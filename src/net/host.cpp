@@ -73,6 +73,11 @@ namespace net {
 		 m_last_timestamp(0) {
 		DASSERT(address.isValid());
 		m_channels.resize(max_channels);
+		m_last_time_received = getTime();
+	}
+	
+	double RemoteHost::timeout() const {
+		return getTime() - m_last_time_received;
 	}
 
 	void RemoteHost::sendPacket() {
@@ -270,8 +275,9 @@ namespace net {
 		const Chunk *chunks;
 	};
 
-	void RemoteHost::receive(InPacket &packet, int timestamp) {
+	void RemoteHost::receive(InPacket &packet, int timestamp, double time) {
 		m_last_timestamp = timestamp;
+		m_last_time_received = time;
 
 		if(m_remote_id == -1)
 			m_remote_id = packet.currentId();
@@ -398,7 +404,6 @@ ERROR:;
 		m_ichunk_indices.resize(
 			std::remove(m_ichunk_indices.begin(), m_ichunk_indices.end(), -1) - m_ichunk_indices.begin());
 
-
 		//TODO: make client verification more secure
 		
 		//TODO: unsafe, theoretically a cycle is possible 
@@ -504,18 +509,9 @@ ERROR:;
 		:m_socket(address), m_current_id(-1), m_unverified_count(0), m_timestamp(0) {
 		}
 
-	void LocalHost::beginFrame() {
-		receive();
-	}
-
-	void LocalHost::finishFrame() {
-		m_timestamp++;
-
-		//TODO: check for timeouts in remote hosts
-	}
-
-
 	void LocalHost::receive() {
+		double current_time = getTime();
+
 		m_unverified_count = 0;
 		for(int n = 0; n < (int)m_remote_hosts.size(); n++) {
 			RemoteHost *remote = m_remote_hosts[n].get();
@@ -561,7 +557,7 @@ ERROR:;
 			if(current_id >= 0 && current_id < numRemoteHosts()) {
 				RemoteHost *remote = m_remote_hosts[current_id].get();
 				if(remote && remote->address() == source)
-					m_remote_hosts[current_id]->receive(packet, m_timestamp);
+					m_remote_hosts[current_id]->receive(packet, m_timestamp, current_time);
 			}
 		}
 
@@ -667,13 +663,5 @@ ERROR:;
 		printf("  chunks(%d): %d KB\n", nchunks, (nchunks * (int)sizeof(Chunk)) / 1024);
 		printf("  total memory: %d KB\n", data_size / 1024);
 	}
-
-/*	bool LocalHost::receiveChunk(PodArray<char> &data, ChunkInfo &info) {
-
-	}
-
-	int LocalHost::getLostChunks(int target_id, int *buffer, int buffer_size) {
-
-	}*/
 
 }

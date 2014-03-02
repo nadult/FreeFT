@@ -55,7 +55,7 @@ namespace net {
 		void finishSending();
 
 		void beginReceiving();
-		void receive(InPacket &packet, int timestamp);
+		void receive(InPacket &packet, int timestamp, double time);
 		void handlePacket(InPacket& packet);
 		void finishReceiving();
 		const Chunk *getIChunk();
@@ -69,6 +69,8 @@ namespace net {
 
 		int memorySize() const;
 		int currentId() const { return m_current_id; }
+
+		double timeout() const;
 
 	protected:
 		void sendChunks(int max_channel);
@@ -108,6 +110,7 @@ namespace net {
 		List m_free_uchunks;
 		List m_out_ichunks;
 
+		double m_last_time_received;
 		int m_last_timestamp;
 		int m_max_bpf;
 		int m_current_id, m_remote_id;
@@ -137,9 +140,6 @@ namespace net {
 		};
 
 		LocalHost(const net::Address &address);
-
-		void beginFrame();
-		void finishFrame();
 
 		void receive();
 
@@ -172,7 +172,7 @@ namespace net {
 		int m_unverified_count, m_remote_count;
 
 		int m_current_id;
-		int m_timestamp;
+		int m_timestamp; //TODO: fix timeout updating
 	};
 
 }

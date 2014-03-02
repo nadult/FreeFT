@@ -113,6 +113,8 @@ namespace game {
 		SurfaceId::Type surfaceUnder() const;
 		Stance::Type stance() const { return m_stance; }
 
+		OrderTypeId::Type currentOrder() const { return m_order? m_order->typeId() : OrderTypeId::invalid; }
+
 	private:
 		void initialize();
 

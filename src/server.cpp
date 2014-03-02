@@ -66,9 +66,8 @@ public:
 		m_clients[client_id].mode = ClientMode::to_be_removed;
 	}
 
-	void handleHost(RemoteHost &host, Client &client) {
+	void handleHostReceiving(RemoteHost &host, Client &client) {
 		DASSERT(client.isValid());
-		beginSending(client.host_id);
 
 		const Chunk *chunk = nullptr;
 
@@ -107,7 +106,12 @@ public:
 					printf("Invalid order!\n");
 			}
 		}
-		
+	}
+
+	void handleHostSending(RemoteHost &host, Client &client) {
+		DASSERT(client.isValid());
+		beginSending(client.host_id);
+
 		if(client.mode == ClientMode::connected) {
 			for(int n = 0; n < (int)m_replication_list.size(); n++)
 				client.update_map[m_replication_list[n]] = true;
@@ -149,14 +153,14 @@ public:
 		finishSending();
 	}
 
-	void action() {
+	void beginFrame() {
 		InPacket packet;
 		Address source;
 
 		double time = getTime();
 		m_current_time = time;
 
-		LocalHost::beginFrame();
+		LocalHost::receive();
 
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
@@ -174,10 +178,34 @@ public:
 			if(m_world->entityCount() > client.update_map.size())
 				client.update_map.resize(m_world->entityCount() * 2);
 
-			handleHost(*host, client);
+			handleHostReceiving(*host, client);
 		}
-		
-		LocalHost::finishFrame();
+	}
+
+	void finishFrame() {
+		for(int h = 0; h < numRemoteHosts(); h++) {
+			RemoteHost *host = getRemoteHost(h);
+
+			if(!host)
+				continue;
+				
+			if((int)m_clients.size() <= h)
+				m_clients.resize(h + 1);
+			Client &client = m_clients[h];
+			if(!client.isValid()) {
+				client.mode = ClientMode::connecting;
+				client.host_id = h;
+			}
+			if(m_world->entityCount() > client.update_map.size())
+				client.update_map.resize(m_world->entityCount() * 2);
+
+			handleHostSending(*host, client);
+
+			if(host->timeout() > 10.0) {
+				printf("Disconnecting host (timeout)\n");
+				disconnectClient(h);
+			}
+		}
 
 		for(int h = 0; h < (int)m_clients.size(); h++) {
 			Client &client = m_clients[h];
@@ -268,9 +296,10 @@ int safe_main(int argc, char **argv)
 		double time = getTime();
 
 		io.processInput();
+		host->beginFrame();
 
 		world->simulate((time - last_time) * config.time_multiplier);
-		host->action();
+		host->finishFrame();
 		last_time = time;
 
 		io.draw();
