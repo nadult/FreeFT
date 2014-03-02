@@ -18,6 +18,11 @@ namespace game {
 	void IdleOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
 	}
+
+	void IdleOrder::cancel() {
+		Order::cancel();
+		finish();
+	}
 		
 	void Actor::handleOrder(IdleOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(order.needCancel()) {

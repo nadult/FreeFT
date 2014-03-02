@@ -82,7 +82,7 @@ namespace game {
 		bool needCancel() const { return m_please_cancel; }
 
 		void finish() { m_is_finished = true; }
-		void cancel() { m_please_cancel = true; }
+		virtual void cancel() { m_please_cancel = true; }
 		
 	private:
 		POrder m_followup;

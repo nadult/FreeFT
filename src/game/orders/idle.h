@@ -17,6 +17,7 @@ namespace game {
 		IdleOrder(Stream&);
 
 		void save(Stream&) const;
+		void cancel();
 
 		// last breathe time, etc.
 	};
