@@ -50,12 +50,12 @@ namespace game
 
 	void Sprite::Sequence::load(Stream &sr) {
 		sr >> name;
-		sr.unpack(frame_count, dir_count, first_frame, palette_id);
+		sr.unpack(frame_count, dir_count, first_frame, palette_id, overlay_id);
 	}
 
 	void Sprite::Sequence::save(Stream &sr) const {
 		sr << name;
-		sr.pack(frame_count, dir_count, first_frame, palette_id);
+		sr.pack(frame_count, dir_count, first_frame, palette_id, overlay_id);
 	}
 
 	void Sprite::MultiPalette::load(Stream &sr) {
@@ -214,7 +214,7 @@ namespace game
 
 	int Sprite::findSequence(const char *name) const {
 		for(int n = 0; n < (int)m_sequences.size(); n++)
-			if(m_sequences[n].name == name)
+			if(strcasecmp(m_sequences[n].name.c_str(), name) == 0)
 				return n;
 		return -1;
 	}

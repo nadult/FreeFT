@@ -11,10 +11,11 @@
 namespace game {
 
 	MoveOrder::MoveOrder(const int3 &target_pos, bool run)
-		:m_target_pos(target_pos), m_please_run(run) { }
+		:m_target_pos(target_pos), m_please_run(run), m_last_pos(0, 0, 0), m_path_t(0.0), m_path_pos(0) { }
 
 	MoveOrder::MoveOrder(Stream &sr) :OrderImpl(sr) {
-		sr >> m_target_pos >> m_please_run;
+		m_target_pos = net::decodeInt3(sr);
+		sr >> m_please_run;
 
 		sr >> m_path_t;
 		m_path_pos = sr.decodeInt();
@@ -31,7 +32,8 @@ namespace game {
 	void MoveOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
 
-		sr << m_target_pos << m_please_run;
+		net::encodeInt3(sr, m_target_pos);
+		sr << m_please_run;
 		sr << m_path_t;
 		sr.encodeInt(m_path_pos);
 		net::encodeInt3(sr, m_last_pos);
@@ -43,7 +45,7 @@ namespace game {
 		}
 	}	
 
-	void Actor::handleOrder(MoveOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(MoveOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order) {
 			int3 new_pos = order.m_target_pos;
 
@@ -52,10 +54,8 @@ namespace game {
 			int3 cur_pos = (int3)pos();
 			vector<int3> tmp_path = world()->findPath(cur_pos, new_pos);
 
-			if(cur_pos == new_pos || tmp_path.empty()) {
-				order.finish();
-				return;
-			}
+			if(cur_pos == new_pos || tmp_path.empty())
+				return false;
 
 			order.m_last_pos = cur_pos;
 			order.m_path.clear();
@@ -88,9 +88,13 @@ namespace game {
 				}
 			}
 			
-			if(order.m_path.size() <= 1 || m_stance != Stance::standing)
+			if(order.m_path.size() <= 1 || m_stance != Stance::stand)
 				order.m_please_run = 0;
-			animate(order.m_please_run? ActionId::running : ActionId::walking);
+			if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
+				order.m_please_run = 0;
+
+			if(!animate(order.m_please_run? Action::run : Action::walk))
+				return false;
 			DASSERT(!order.m_path.empty());
 		}
 		if(event == ActorEvent::think) {
@@ -140,13 +144,15 @@ namespace game {
 			else
 				setPos(new_pos);
 		}
-		if(event == ActorEvent::anim_finished && m_stance == Stance::crouching) {
-			animate(m_action_id);
+		if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
+			animate(m_action);
 		}
 		if(event == ActorEvent::step) {
 			SurfaceId::Type standing_surface = surfaceUnder();
 			world()->playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 		}
+
+		return true;
 	}
 
 }

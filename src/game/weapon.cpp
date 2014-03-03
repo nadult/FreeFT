@@ -17,7 +17,7 @@ namespace game {
 	WeaponProto::WeaponProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ammo_class_id = parser("ammo_class_id");
 		projectile = parser("projectile_id");
-		class_id = WeaponClassId::fromString(parser("class_id"));
+		class_id = WeaponClass::fromString(parser("class_id"));
 		damage = toFloat(parser("damage"));
 		attack_modes = AttackModeFlags::fromString(parser("attack_modes"));
 		max_ammo = toInt(parser("max_ammo"));

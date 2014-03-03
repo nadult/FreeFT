@@ -24,15 +24,15 @@ namespace game {
 		finish();
 	}
 		
-	void Actor::handleOrder(IdleOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(order.needCancel()) {
-			order.finish();
-			return;
-		}
+	bool Actor::handleOrder(IdleOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		if(order.needCancel())
+			return false;
 		if(event == ActorEvent::anim_finished || event==ActorEvent::init_order) {
-			animate(ActionId::idle);
+			animate(Action::idle);
 			roundPos();
 		}
+
+		return true;
 	}
 
 }

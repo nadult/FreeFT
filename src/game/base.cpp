@@ -20,7 +20,7 @@
 
 namespace game {
 
-	DEFINE_ENUM(WeaponClassId,
+	DEFINE_ENUM(WeaponClass,
 		"unarmed",
 		"club",
 		"heavy",
@@ -89,9 +89,9 @@ namespace game {
 	)
 
 	DEFINE_ENUM(Stance,
-		"crouching",
 		"prone",
-		"standing"
+		"crouch",
+		"stand"
 	)
 
 	DEFINE_ENUM(AttackMode,
@@ -101,18 +101,16 @@ namespace game {
 		"slash",
 		"throw",
 		"punch",
-		"kick",
-		
-		"default"
+		"kick"
 	)
 
 	namespace AttackModeFlags {
 		uint fromString(const char *string) {
-			return ::toFlags(string, AttackMode::s_strings, AttackMode::count - 1, 1);
+			return ::toFlags(string, AttackMode::s_strings, AttackMode::count, 1);
 		}
 
 		AttackMode::Type getFirst(uint flags) {
-			for(int n = 0; n < AttackMode::count - 1; n++)
+			for(int n = 0; n < AttackMode::count; n++)
 				if(flags & (1 << n))
 					return (AttackMode::Type)n;
 			return AttackMode::undefined;

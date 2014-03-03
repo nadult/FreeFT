@@ -16,50 +16,9 @@
 
 namespace game {
 
-	ActorArmourProto::ActorArmourProto(const TupleParser &parser, bool is_actor)
-		:ProtoImpl(parser), is_actor(is_actor) {
-		ASSERT(!is_dummy);
-
-		if(is_actor) {
-			armour = "_dummy_armour";
-		}
-		else {
-			actor = parser("actor_id");
-			armour = parser("armour_id");
-		}
-
-		initAnims();
-	}
-
-	void ActorArmourProto::connect() {
-		if(is_actor)
-			actor = index();
-		else
-			actor.connect();
-		armour.connect();
-
-		for(int st = 0; st < Stance::count; st++)
-			for(int su = 0; su < SurfaceId::count; su++) {
-				char name[256];
-				snprintf(name, sizeof(name), "%s%s%s%s",
-						st == Stance::prone? "prone" : "stand", actor->is_heavy? "heavy" : "normal",
-						armour->sound_prefix.c_str(), SurfaceId::toString(su));
-				step_sounds[st][su] = SoundId(name);
-			}
-	}
-
-	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
-		is_heavy = toBool(parser("is_heavy"));
-		float4 speed_vec = toFloat4(parser("speeds"));
-		speeds[0] = speed_vec.x;
-		speeds[1] = speed_vec.y;
-		speeds[2] = speed_vec.z;
-		speeds[3] = speed_vec.w;
-	}
-
 	Actor::Actor(Stream &sr) :EntityImpl(sr), m_actor(*m_proto.actor) {
 		u8 flags;
-		sr >> flags;
+		sr.unpack(flags, m_stance, m_action);
 		if(flags & 1) {
 			sr >> m_order;
 			updateOrderFunc();
@@ -70,18 +29,17 @@ namespace game {
 			sr >> m_target_angle;
 		else
 			m_target_angle = dirAngle();
-		sr.unpack(m_action_id, m_stance);
 		sr >> m_inventory;
 	}
 
-	Actor::Actor(const XMLNode &node) :EntityImpl(node), m_actor(*m_proto.actor), m_stance(Stance::standing), m_target_angle(dirAngle()) {
-		animate(ActionId::idle);
+	Actor::Actor(const XMLNode &node) :EntityImpl(node), m_actor(*m_proto.actor), m_stance(Stance::stand), m_target_angle(dirAngle()) {
+		animate(Action::idle);
 		updateOrderFunc();
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
 		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()) {
-		animate(ActionId::idle);
+		animate(Action::idle);
 		updateOrderFunc();
 	}
 
@@ -102,14 +60,13 @@ namespace game {
 					(m_next_order? 2 : 0) |
 					(m_target_angle != dirAngle()? 4 : 0);
 
-		sr << flags;
+		sr.pack(flags, m_stance, m_action);
 		if(flags & 1)
 			sr << m_order;
 		if(flags & 2)
 			sr << m_next_order;
 		if(flags & 4)
 			sr << m_target_angle;
-		sr.pack(m_action_id, m_stance);
 		sr << m_inventory;
 	}
 
@@ -124,12 +81,9 @@ namespace game {
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 
-	bool Actor::isDead() const {
-		return m_order && m_order->typeId() == OrderTypeId::die;
-	}
-		
 	void Actor::onImpact(int projectile_type, float damage) {
-		DeathTypeId::Type death_id = DeathTypeId::explode;
+		DeathTypeId::Type death_id = (DeathTypeId::Type)(rand() % DeathTypeId::count);
+
 		/*	projectile_type == ProjectileTypeId::plasma? DeathTypeId::melt :
 			projectile_type == ProjectileTypeId::laser? DeathTypeId::melt :
 			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal; */
@@ -138,7 +92,6 @@ namespace game {
 		setOrder(new DieOrder(death_id));
 	}
 		
-	
 	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
 		return armour.isDummy()? actor.index() :
 			findProto(actor.id + ":" + armour.id(), ProtoId::actor_armour);
@@ -153,32 +106,22 @@ namespace game {
 		}
 	}
 
+
+	OrderTypeId::Type Actor::currentOrder() const {
+		return m_order? m_order->typeId() : OrderTypeId::invalid;
+	}
+
+	WeaponClass::Type Actor::equippedWeaponClass() const {
+		return m_inventory.weapon().classId();
+	}
+
 	bool Actor::canEquipItem(int item_id) const {
 		DASSERT(item_id >= 0 && item_id < m_inventory.size());
 		const Item &item = m_inventory[item_id].item;
 		if(item.type() == ItemType::weapon)
-			return canEquipWeapon(Weapon(item).classId());
+			return m_proto.canEquipWeapon(Weapon(item).classId());
 		else if(item.type() == ItemType::armour) {
 			return (bool)findActorArmour(m_actor, m_inventory.armour());
-		}
-
-		return true;
-	}
-
-	bool Actor::canEquipWeapon(WeaponClassId::Type class_id) const {
-		DASSERT(WeaponClassId::isValid(class_id));
-
-		//TODO: fix this completely:
-		//- when changing stance and cannot equip item in new stance: unequip
-
-		if(m_proto.animId(ActionId::idle, m_stance, class_id) == -1) {
-			printf("no idle anim: s:%s c:%s\n",
-					Stance::toString(m_stance), WeaponClassId::toString(class_id));
-			return false;
-		}
-		if(m_proto.animId(ActionId::walking, m_stance, class_id) == -1) {
-			printf("no walk anim: %d %d\n", m_stance, class_id);
-			return false;
 		}
 
 		return true;
@@ -208,22 +151,23 @@ namespace game {
 	}
 
 	void Actor::think() {
-		if(isDead())
-			return;
-		
 		double time_delta = timeDelta();
 		DASSERT(world());
 
-		if(!m_order || m_order->isFinished()) {
+		bool need_replicate = false;
+		while(!m_order || m_order->isFinished()) {
 			if(m_order && m_order->hasFollowup())
-				m_order = m_order->getFollowup();
+				m_order = m_order->getFollowup(); //TODO: maybe followup orders shouldnt be initialized twice?
 			else
 				m_order = m_next_order? std::move(m_next_order) : new IdleOrder();
 
 			updateOrderFunc();
 			handleOrder(ActorEvent::init_order);
-			replicate();
+			need_replicate = true;
 		}
+		
+		if(need_replicate)	
+			replicate();
 
 		handleOrder(ActorEvent::think);
 	}
@@ -259,6 +203,19 @@ namespace game {
 		handleOrder(ActorEvent::fire, ActorEventParams{off, false});
 	}
 		
+	void Actor::onStepEvent(bool left_foot) {
+		if(isServer())
+			return;
+		handleOrder(ActorEvent::step, ActorEventParams{ int3(), left_foot });
+	}
+
+	void Actor::onSoundEvent() {
+		if(isServer())
+			return;
+
+		handleOrder(ActorEvent::sound);
+	}
+
 	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
 		float3 pos = boundingBox().center();
@@ -277,17 +234,29 @@ namespace game {
 			addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, ref()));
 	}
 
-	void Actor::onStepEvent(bool left_foot) {
-		if(isServer())
-			return;
-		handleOrder(ActorEvent::step, ActorEventParams{ int3(), left_foot });
+	bool Actor::animate(Action::Type action) {
+		DASSERT(!Action::isSpecial(action));
+
+		int anim_id = m_proto.animId(action, m_stance, equippedWeaponClass());
+		if(anim_id == -1 && Action::isNormal(action))
+			anim_id = m_proto.animId(action, m_stance, WeaponClass::unarmed);
+
+		if(anim_id == -1)
+			return false;
+
+		m_action = action;
+		playSequence(anim_id);
+
+		return true;
 	}
-
-	void Actor::onSoundEvent() {
-		if(isServer())
-			return;
-
-		handleOrder(ActorEvent::sound);
+		
+	bool Actor::animateDeath(DeathTypeId::Type death_type) {
+		int anim_id = m_proto.deathAnimId(death_type);
+		if(anim_id == -1)
+			return false;
+		playSequence(anim_id);
+		m_action = Action::death;
+		return true;
 	}
 
 }

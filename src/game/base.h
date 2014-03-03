@@ -17,7 +17,7 @@ namespace game {
 	class Order;
 	class POrder;
 
-	DECLARE_ENUM(WeaponClassId,
+	DECLARE_ENUM(WeaponClass,
 		unarmed,
 		club,
 		heavy,
@@ -87,25 +87,23 @@ namespace game {
 
 	DECLARE_ENUM(Stance,
 		prone,
-		crouching,
-		standing
+		crouch,
+		stand
 	);
 
 	DECLARE_ENUM(AttackMode,
-		single,
+		undefined = -1,
+		single = 0,
 		burst,
 		thrust,
 		slash,
 		throwing,
 		punch,
-		kick,
-
-		undefined
+		kick
 	);
 	
 	namespace AttackMode {
 		inline constexpr uint toFlags(Type t) { return t == undefined? 0 : 1 << t; }
-		inline int actionId(Type t) { return t == burst || t == kick? 2 : 1; }
 	};
 
 	namespace AttackModeFlags {
@@ -115,6 +113,8 @@ namespace game {
 			thrust		= toFlags(AttackMode::thrust),
 			slash		= toFlags(AttackMode::slash),
 			throwing	= toFlags(AttackMode::throwing),
+			punch		= toFlags(AttackMode::punch),
+			kick		= toFlags(AttackMode::kick)
 		};
 
 		uint fromString(const char*);

@@ -1,6 +1,6 @@
-- Receive packets at the beginning of the frame, send them at the end (after world update)
+- Receive packets at the beginning of the frame, send them at the end (after world update)  DONE
 - Add encryption 
-- secondary: Don't send strings, only identifiers
+- secondary: Don't send strings, only identifiers  DONE
 - secondary: Add compression
 - secondary: BitStream class with nice, tight bit-packing
 

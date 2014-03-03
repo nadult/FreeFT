@@ -5,15 +5,11 @@
 - In res_viewer when popup is visible, you can still select objects behind it by
   clicking on screen (outside of popup area)
 
-- Occusion doesn't work for entities
+- Problems with entity occlusions (visible in editor for example)
 
 - In release build some bugs (no sound file, etc.) should be handled silently or, logged to a text file
 
 - When standing near a wall, you can fire through it (projectiles spawn too far away)
-
-- When serializing items to XML save not only item desc_id, but also type_id
-
-- Verify if sprite_name is valid in ***Desc
 
 - Duplicated sprites: Robot turrets
 
@@ -22,8 +18,6 @@
 - Crash when shooting at the automatic doors in the long corridor with M60 (game:237 (conversion to container))
 
 - Client cannot connect to server when started much earlier
-
-- Problems with entity occlusions (visible in editor for example)
 
 - TODO: think about handling orders on client / server and replication
 

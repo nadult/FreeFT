@@ -24,12 +24,12 @@ namespace game {
 		sr << m_inventory_id;
 	}
 
-	void Actor::handleOrder(DropItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(DropItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		int item_id = order.m_inventory_id;
 
 		if(event == ActorEvent::init_order) {
 			if(m_inventory.isValidId(item_id))
-				animate(ActionId::pickup);
+				animate(Action::pickup);
 			else
 				order.finish();
 		}
@@ -45,6 +45,8 @@ namespace game {
 		}
 		if(event == ActorEvent::anim_finished)
 			order.finish();
+
+		return true;
 	}
 
 
@@ -61,28 +63,29 @@ namespace game {
 		sr << m_inventory_id;
 	}
 
-	void Actor::handleOrder(EquipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(EquipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		if(!m_inventory.isValidId(order.m_inventory_id) || !canEquipItem(order.m_inventory_id))
+			return false;
+		ItemType::Type item_type = m_inventory[order.m_inventory_id].item.type(); //TODO: type->typeId
+
 		//TODO: magic_hi animation when object to be picked up is high enough
 		
-		if(event == ActorEvent::init_order)
-			animate(ActionId::magic1);
-		if(event == ActorEvent::anim_finished) {
-			ItemType::Type changed_item = ItemType::invalid;
-
-			int item_id = order.m_inventory_id;
-
-			if(m_inventory.isValidId(item_id) && canEquipItem(item_id)) {
-				//TODO: reloading ammo
-				changed_item = m_inventory[item_id].item.type();
-				if(!m_inventory.equip(item_id))
-					changed_item = ItemType::invalid;
+		if(event == ActorEvent::init_order) {
+			if(item_type == ItemType::weapon) {
+				m_inventory.equip(order.m_inventory_id);
+				return false;
 			}
-			
-			if(changed_item == ItemType::armour)
+
+			animate(item_type == ItemType::armour? Action::magic_low : Action::magic);
+		}
+		if(event == ActorEvent::anim_finished) {
+			m_inventory.equip(order.m_inventory_id);
+			if(item_type == ItemType::armour)
 				updateArmour();
-			order.finish();
+			return false;
 		}
 
+		return true;
 	}
 
 
@@ -100,22 +103,24 @@ namespace game {
 		sr << m_item_type;
 	}
 
-	void Actor::handleOrder(UnequipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(event == ActorEvent::init_order)
-			animate(ActionId::magic1);
-		if(event == ActorEvent::anim_finished) {
-			ItemType::Type changed_item = ItemType::invalid;
+	bool Actor::handleOrder(UnequipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		if(event == ActorEvent::init_order) {
+			if(order.m_item_type == ItemType::weapon) {
+				m_inventory.unequip(order.m_item_type);
+				return false;
+			}
 
-			ItemType::Type type = order.m_item_type;
-			if(m_inventory.unequip(type) != -1)
-				changed_item = type;
-				
-			if(changed_item == ItemType::armour)
-				updateArmour();
-			order.finish();
+			animate(order.m_item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}
+		if(event == ActorEvent::anim_finished) {
+			if(m_inventory.unequip(order.m_item_type) != -1)
+				if(order.m_item_type == ItemType::armour)
+					updateArmour();
+			return false;
+		}
+
+		return true;
 	}
-	
 
 
 	TransferItemOrder::TransferItemOrder(EntityRef target, TransferMode mode, int src_inventory_id, int count)
@@ -131,7 +136,7 @@ namespace game {
 		sr << m_target << m_mode << m_src_inventory_id << m_count;
 	}
 	
-	void Actor::handleOrder(TransferItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(TransferItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order) {
 			Container *container = refEntity<Container>(order.m_target);
 
@@ -148,6 +153,8 @@ namespace game {
 			}
 			order.finish();
 		}
+
+		return true;
 	}
 
 }

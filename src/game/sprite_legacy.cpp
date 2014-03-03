@@ -293,6 +293,12 @@ namespace game
 		}
 
 		updateMaxRect();
+
+		for(int s = 0; s < size(); s++) {
+			Sequence &seq = m_sequences[s];
+			string overlay_name = seq.name + "overlay";
+			seq.overlay_id = findSequence(overlay_name.c_str());
+		}
 	}
 
 }

@@ -60,6 +60,7 @@ namespace game {
 			int frame_count, dir_count;
 			int first_frame;
 			int palette_id;
+			int overlay_id;
 		};
 
 		struct MultiPalette {
@@ -108,6 +109,7 @@ namespace game {
 		
 		gfx::PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const;
 		
+		// Search is case-insensitive
 		int findSequence(const char *name) const;
 
 		int memorySize() const;

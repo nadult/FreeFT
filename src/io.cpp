@@ -74,7 +74,14 @@ void IO::processInput() {
 		}
 	}
 	if(isMouseKeyDown(1)) {
-		AttackMode::Type mode = isKeyPressed(Key_lshift)? AttackMode::burst : AttackMode::undefined;
+		AttackMode::Type mode = AttackMode::undefined;
+		if(isKeyPressed(Key_lshift)) {
+			const Weapon &weapon = actor->inventory().weapon();
+			if(weapon.proto().attack_modes & AttackModeFlags::burst)
+				mode = AttackMode::burst;
+			else if(weapon.proto().attack_modes & AttackModeFlags::kick)
+				mode = AttackMode::kick;
+		}
 		m_world->sendOrder(new AttackOrder(mode, (int3)m_target_pos), m_actor_ref);
 	}
 	if(isKeyDown(Key_kp_add) || isKeyDown(Key_kp_subtract)) {

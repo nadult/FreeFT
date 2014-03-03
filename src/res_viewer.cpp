@@ -161,6 +161,10 @@ public:
 				m_dir_id--;
 			if(isKeyDown(Key_right))
 				m_dir_id++;
+			if(isKeyDown('P')) {
+				for(int s = 0; s < sprite->size(); s++)
+					printf("Seq %3d: %s\n", s, (*sprite)[s].name.c_str());
+			}
 
 			m_seq_id = (m_seq_id + (int)sprite->size()) % (int)sprite->size();
 			int dir_count = sprite->dirCount(m_seq_id);

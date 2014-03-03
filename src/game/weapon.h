@@ -27,7 +27,7 @@ namespace game {
 
 		string ammo_class_id;
 		ProtoRef<ProjectileProto> projectile;
-		WeaponClassId::Type class_id;
+		WeaponClass::Type class_id;
 		float damage;
 		uint attack_modes;
 		int max_ammo, burst_ammo;
@@ -43,7 +43,7 @@ namespace game {
 
 		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
 
-		WeaponClassId::Type classId() const						{ return proto().class_id; }
+		WeaponClass::Type classId() const						{ return proto().class_id; }
 		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }
 		uint attackModes() const								{ return proto().attack_modes; }
 

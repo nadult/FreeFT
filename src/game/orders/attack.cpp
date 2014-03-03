@@ -24,29 +24,37 @@ namespace game {
 		sr << m_burst_mode << m_burst_off;
 	}
 
-	void Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order) {
+			const Weapon &weapon = m_inventory.weapon();
+			if(!m_proto.canUseWeapon(weapon.classId(), m_stance)) {
+				printf("Cant use weapon: %s\n", weapon.proto().id.c_str());
+				return false;
+			}
+
 			roundPos();
 			lookAt(order.m_target_pos);
 	
 			AttackMode::Type mode = order.m_mode;
-			uint modes = m_inventory.weapon().attackModes();
+			uint modes = weapon.attackModes();
 			if(mode != AttackMode::undefined)	
 				modes &= AttackMode::toFlags(mode);
 			order.m_mode = mode = AttackModeFlags::getFirst(modes);
 		
-			//TODO: fix actionId from mode
-			if(mode != AttackMode::undefined)
-				animate(AttackMode::actionId(mode) == 2? ActionId::attack2 : ActionId::attack1);
-			else
-				order.finish();
+			if(mode == AttackMode::undefined)
+				return false;
+			int anim_id = m_proto.attackAnimId(mode, m_stance, weapon.classId());
+			if(anim_id == -1)
+				return false;
+			playSequence(anim_id);
+			m_action = Action::attack;
 		}
 		if(event == ActorEvent::fire) {
 			const Weapon &weapon = m_inventory.weapon();
 			AttackMode::Type mode = order.m_mode;
 
 			if(mode != AttackMode::single && mode != AttackMode::burst)
-				return;
+				return true;
 
 			if(mode == AttackMode::burst) {
 				order.m_burst_mode = 1;
@@ -67,10 +75,12 @@ namespace game {
 		if(event == ActorEvent::sound) {
 			const Weapon &weapon = m_inventory.weapon();
 			//TODO: select firing mode in attack order
-			world()->playSound(order.m_burst_mode?
+			world()->playSound(order.m_mode == AttackMode::burst?
 						weapon.soundId(WeaponSoundType::fire_burst) :
 						weapon.soundId(WeaponSoundType::fire_single), pos());
 		}
+
+		return true;
 	}
 
 }

@@ -143,9 +143,17 @@ namespace game {
 		if(shrinkRenderedBBox())
 			bbox.min.y = min(bbox.min.y + 1.0f, bbox.max.y - 0.5f);
 
+		const Sprite::Sequence &seq = m_sprite[m_seq_idx];
+
 		FRect tex_rect;
 		PTexture tex = m_sprite.getFrame(m_seq_idx, m_frame_idx, m_dir_idx, tex_rect);
 		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
+
+	//	if(seq.overlay_id != -1) {
+	//		rect = m_sprite.getRect(seq.overlay_id, m_frame_idx, m_dir_idx);
+	//		PTexture ov_tex = m_sprite.getFrame(seq.overlay_id, m_frame_idx, m_dir_idx, tex_rect);
+	//		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
+	//	}
 
 		bbox += pos();
 		if(world() && world()->findAny(bbox, this))
@@ -212,6 +220,8 @@ namespace game {
 			else {
 				if(frame.id <= Sprite::ev_first_specific)
 					handleEventFrame(frame);
+			//	if(frame.id == Sprite::ev_overlay)
+			//		printf("Overlay: %d\n", m_frame_idx);
 				m_frame_idx++;
 			}
 		}

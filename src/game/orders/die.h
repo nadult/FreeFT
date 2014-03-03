@@ -11,7 +11,7 @@
 namespace game {
 
 	class DieOrder: public OrderImpl<DieOrder, OrderTypeId::die,
-			ActorEvent::init_order | ActorEvent::anim_finished> {
+			ActorEvent::init_order | ActorEvent::anim_finished | ActorEvent::sound> {
 	public:
 		DieOrder(DeathTypeId::Type death_id);
 		DieOrder(Stream&);

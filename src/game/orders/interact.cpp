@@ -29,13 +29,11 @@ namespace game {
 		sr << m_target << m_mode << m_is_followup;
 	}
 
-	void Actor::handleOrder(InteractOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(InteractOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order) {
 			Entity *target = refEntity(order.m_target);
-			if(!target) {
-				order.finish();
-				return;
-			}
+			if(!target)
+				return false;
 
 			if(order.m_mode == InteractionMode::undefined) {
 				if(target->entityType() == EntityId::item)
@@ -48,8 +46,8 @@ namespace game {
 			IBox other_box = enclosingIBox(target->boundingBox());
 
 			if(areAdjacent(*this, *target)) {
-				ActionId::Type action = order.m_mode == InteractionMode::pickup? ActionId::pickup :
-					other_box.max.y < my_box.max.y * 2 / 3? ActionId::magic2 : ActionId::magic1;
+				Action::Type action = order.m_mode == InteractionMode::pickup? Action::pickup :
+					other_box.max.y < my_box.max.y * 2 / 3? Action::magic_low : Action::magic;
 				animate(action);
 				lookAt(other_box.center());
 			}
@@ -99,6 +97,8 @@ namespace game {
 
 			order.finish();
 		}
+
+		return true;
 	}
 
 }

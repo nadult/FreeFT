@@ -18,33 +18,49 @@ namespace game {
 	// simple which have same animations for different weapon types
 	//
 	// TODO: additional actions: breathe, fall, dodge, getup, recoil?
-	namespace ActionId {
-		enum Type: char {
-			first_normal,
-			idle = first_normal,
-			walking,
-			attack1,
-			attack2,
+	
+	//TODO: deaths with overlays
 
-			first_simple,
-			running = first_simple,
+	namespace Action {
+		enum Type: char {
+			_normal, // Normal anims: (stance x weapon)
+			idle = _normal,
+			walk,
+			breathe,
+
+			_simple, // Simple anims: (stance)
+			fall_back = _simple,
+			fallen_back,
+			fall_forward,
+			fallen_forward,
+			getup_back,
+			getup_forward,
+			recoil,
+			dodge1,
+			dodge2,
+			fidget,
+			magic,
+			magic_low,
+			run,
 			stance_up,
 			stance_down,
 			pickup,
-			magic1,
-			magic2,
 
-			first_special,
-			death = first_special,
+			_special, // Special anims:
+			attack = _special,
+			climb,
+			climb_up,
+			climb_down,
+			death,
 
-			count,
+			count
 		};
 
-		bool isNormal(Type);
-		bool isSimple(Type);
-		bool isSpecial(Type);
+		bool isNormal(int);
+		bool isSimple(int);
+		bool isSpecial(int);
+		bool isValid(int);
 	}
-
 
 	struct ActorProto;
 
@@ -53,34 +69,39 @@ namespace game {
 
 		void connect();
 
-		const string deathAnimName(DeathTypeId::Type) const;
-		const string simpleAnimName(ActionId::Type, Stance::Type) const;
-		const string animName(ActionId::Type, Stance::Type, WeaponClassId::Type) const;
-
-		//TODO: methods for additional checking
-		//TODO: checking if animation is valid in these methods:
+		int climbAnimId(Action::Type);
+		int attackAnimId(AttackMode::Type, Stance::Type, WeaponClass::Type) const;
 		int deathAnimId(DeathTypeId::Type) const;
-		int simpleAnimId(ActionId::Type, Stance::Type) const;
-		int animId(ActionId::Type, Stance::Type, WeaponClassId::Type) const;
+		int simpleAnimId(Action::Type, Stance::Type) const;
+		int animId(Action::Type, Stance::Type, WeaponClass::Type) const;
 
 		bool canChangeStance() const;
-
-		// When some animation is not-available, it will be changed
-		// to default
-		void setFallbackAnims();
+		bool canEquipWeapon(WeaponClass::Type) const;
+		bool canUseWeapon(WeaponClass::Type, Stance::Type) const;
 
 		ProtoRef<ArmourProto> armour;
 		ProtoRef<ActorProto> actor;
 
 		SoundId step_sounds[Stance::count][SurfaceId::count];
 
+		//TODO: add sound variations, each actor instance will have different sound set
+		//TODO: these sounds could be placed in ActorProto
+		SoundId death_sounds[DeathTypeId::count];
+
 	private:
 		void initAnims();
 
-		short m_death_ids[DeathTypeId::count];
-		short m_simple_ids[ActionId::first_special - ActionId::first_simple][Stance::count];
-		short m_normal_ids[ActionId::first_simple  - ActionId::first_normal][Stance::count][WeaponClassId::count];
-		bool is_actor;
+		string m_sound_prefix;
+
+		u8 m_climb_idx[3];
+		u8 m_death_idx[DeathTypeId::count];
+		u8 m_simple_idx[Action::_special - Action::_simple][Stance::count];
+		u8 m_normal_idx[Action::_simple  - Action::_normal][Stance::count][WeaponClass::count];
+		u8 m_attack_idx[WeaponClass::count][AttackMode::count][Stance::count];
+		bool m_can_equip_weapon[WeaponClass::count];
+		bool m_can_use_weapon[WeaponClass::count][Stance::count];
+		bool m_can_change_stance;
+		bool m_is_actor;
 	};
 
 	struct ActorProto: public ProtoImpl<ActorProto, ActorArmourProto, ProtoId::actor> {
@@ -96,46 +117,33 @@ namespace game {
 	public:
 		Actor(Stream&);
 		Actor(const XMLNode&);
-		Actor(const Proto &proto, Stance::Type stance = Stance::standing);
+		Actor(const Proto &proto, Stance::Type stance = Stance::stand);
 		Actor(const Actor &rhs, const Proto &new_proto);
 
-		virtual ColliderFlags colliderType() const { return collider_dynamic; }
+		ColliderFlags colliderType() const { return collider_dynamic; }
 
 		bool setOrder(POrder&&);
-		const ActorInventory &inventory() const { return m_inventory; }
 		void onImpact(int projectile_type, float damage);
 
-		bool isDead() const;
-		
-		virtual XMLNode save(XMLNode&) const;
-		virtual void save(Stream&) const;
+		XMLNode save(XMLNode&) const;
+		void save(Stream&) const;
 
 		SurfaceId::Type surfaceUnder() const;
-		Stance::Type stance() const { return m_stance; }
+		WeaponClass::Type equippedWeaponClass() const;
+		OrderTypeId::Type currentOrder() const;
 
-		OrderTypeId::Type currentOrder() const { return m_order? m_order->typeId() : OrderTypeId::invalid; }
+		Stance::Type stance() const { return m_stance; }
+		Action::Type action() const { return m_action; }
+		const ActorInventory &inventory() const { return m_inventory; }
+		
+		bool canEquipItem(int item_id) const;
+		bool canChangeStance() const;
 
 	private:
-		void initialize();
-
 		void think();
-
-		//TODO: orders are getting too complicated, refactor them
-		void issueNextOrder();
-		void issueMoveOrder();
 
 		void updateArmour();
 
-		bool canEquipItem(int item_id) const;
-
-		// TODO: Some weapons can be equipped, but cannot be fired in every possible stance
-		// What sux even more: some weapons can be fired only when actor has the armour on
-		// (some sprites have some animations missing...)!
-		bool canEquipWeapon(WeaponClassId::Type) const;
-		bool canChangeStance() const;
-
-		void animate(ActionId::Type);
-		void animateDeath(DeathTypeId::Type);
 		void lookAt(const float3 &pos, bool at_once = false);
 
 		void nextFrame();
@@ -148,9 +156,12 @@ namespace game {
 
 		void fireProjectile(const int3 &offset, const float3 &target, const Weapon &weapon,
 								float random_val = 0.0f);
+
+		bool animateDeath(DeathTypeId::Type);
+		bool animate(Action::Type);
 		
 	private:
-		virtual bool shrinkRenderedBBox() const { return true; }
+		bool shrinkRenderedBBox() const { return true; }
 
 		typedef void (Actor::*HandleFunc)(Order*, ActorEvent::Type, const ActorEventParams&);
 
@@ -161,20 +172,21 @@ namespace game {
 		void handleOrder(Order *order, ActorEvent::Type event, const ActorEventParams &params) {
 			DASSERT(order && order->typeId() == (OrderTypeId::Type)TOrder::type_id);
 			if((TOrder::event_flags & event) && !order->isFinished())
-				handleOrder(*static_cast<TOrder*>(order), event, params);
+				if(!handleOrder(*static_cast<TOrder*>(order), event, params))
+					order->finish();
 		}
 		void emptyHandleFunc(Order*, ActorEvent::Type, const ActorEventParams&) { }
 		
-		void handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(MoveOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(AttackOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(ChangeStanceOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(InteractOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(DropItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(EquipItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(UnequipItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(TransferItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		void handleOrder(DieOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(MoveOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(AttackOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(ChangeStanceOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(InteractOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(DropItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(EquipItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(UnequipItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(TransferItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(DieOrder&, ActorEvent::Type, const ActorEventParams&);
 
 		const ActorProto &m_actor;
 
@@ -183,8 +195,8 @@ namespace game {
 		HandleFunc m_order_func;
 
 		float m_target_angle;
-		ActionId::Type m_action_id;
 		Stance::Type m_stance;
+		Action::Type m_action;
 
 		ActorInventory m_inventory;
 	};
