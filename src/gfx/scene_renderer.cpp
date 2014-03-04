@@ -18,12 +18,12 @@ namespace gfx {
 		m_elements.reserve(1024);
 	}
 
-	void SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color, FRect tex_rect) {
+	bool SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color, FRect tex_rect, bool is_overlay) {
 		DASSERT(texture);
 
 		rect += (int2)worldToScreen(pos);
 		if(!areOverlapping(rect, m_target_rect))
-			return; //TODO: redundant check
+			return false; //TODO: redundant check
 
 		Element new_elem;
 		new_elem.texture = texture;
@@ -31,8 +31,10 @@ namespace gfx {
 		new_elem.rect = rect;
 		new_elem.color = color;
 		new_elem.tex_rect = tex_rect;
+		new_elem.is_overlay = is_overlay;
 
 		m_elements.push_back(new_elem);
+		return true;
 	}
 
 	void SceneRenderer::addBox(FBox bbox, Color color, bool is_filled) {
@@ -179,17 +181,26 @@ namespace gfx {
 			{
 				IRect rects[count];
 				FBox bboxes[count];
+				bool is_overlay[count];
+
 				for(int i = 0; i < count; i++) {
 					const Element &elem = m_elements[grid[g + i].second];
 					rects[i] = elem.rect;
 					bboxes[i] = elem.bbox;
+					is_overlay[i] = elem.is_overlay;
 				}
+
 				for(int i = 0; i < count; i++) {
 					bool overlaps[count];
 					IRect rect = rects[i];
 
 					for(int j = i + 1; j < count; j++) {
 						int result = areOverlapping(rect, rects[j])? fastDrawingOrder(bboxes[i], bboxes[j]): 0;
+						if(result == 0) {
+							if(is_overlay[i] != is_overlay[j])
+								result = is_overlay[i]? 2 : -2;
+						}
+
 						graph[i + j * count] = result;
 						graph[j + i * count] = -result;
 						if(result == 1 || result == -1)
@@ -228,6 +239,7 @@ REPEAT:
 			profiler::updateCounter("SceneRenderer::rendered_count", count);
 			for(int i = count - 1; i >= 0; i--) {
 				const Element &elem = m_elements[gdata[i].second];
+
 				if(elem.texture) {
 					elem.texture->bind();
 					drawQuad(elem.rect.min, elem.rect.size(), elem.tex_rect.min, elem.tex_rect.max, elem.color);

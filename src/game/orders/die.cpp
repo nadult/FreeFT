@@ -27,10 +27,13 @@ namespace game {
 				animateDeath(DeathTypeId::normal);
 		}
 		if(event == ActorEvent::sound) {
-			SoundId sound_id = m_proto.death_sounds[order.m_death_id];
+			SoundId sound_id = m_actor.death_sounds[order.m_death_id];
 			if(sound_id == -1)
-				sound_id = m_proto.death_sounds[DeathTypeId::normal];
+				sound_id = m_actor.death_sounds[DeathTypeId::normal];
 			world()->playSound(sound_id, pos());
+
+			if(m_actor.is_alive)
+				world()->playSound(m_actor.human_death_sounds[order.m_death_id], pos());
 		}
 
 		return true;

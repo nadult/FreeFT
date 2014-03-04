@@ -72,7 +72,6 @@ namespace game {
 
 		if(m_is_actor) {
 			armour = "_dummy_armour";
-			m_sound_prefix = parser("sound_prefix");
 		}
 		else {
 			actor = parser("actor_id");
@@ -143,21 +142,32 @@ namespace game {
 				step_sounds[st][su] = SoundId(name);
 			}
 
-		const char *prefix = m_is_actor? m_sound_prefix.c_str() : actor->m_sound_prefix.c_str();
-		for(int d = 0; d < DeathTypeId::count; d++) {
-			char text[256];
-			snprintf(text, sizeof(text), "%s%s", prefix, d == DeathTypeId::normal? "death" : s_death_names[d]);
-			death_sounds[d] = SoundId(text);
 		}
-	}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
+		sound_prefix = parser("sound_prefix");
 		is_heavy = toBool(parser("is_heavy"));
+		is_alive = toBool(parser("is_alive"));
+
 		float4 speed_vec = toFloat4(parser("speeds"));
 		speeds[0] = speed_vec.x;
 		speeds[1] = speed_vec.y;
 		speeds[2] = speed_vec.z;
 		speeds[3] = speed_vec.w;
+	}
+
+	void ActorProto::connect() {
+		ActorArmourProto::connect();
+
+		for(int d = 0; d < DeathTypeId::count; d++) {
+			char text[256];
+			const char *death_name = d == DeathTypeId::normal? "death" : s_death_names[d];
+			snprintf(text, sizeof(text), "%s%s", sound_prefix.c_str(), death_name);
+
+			death_sounds[d] = SoundId(text);
+			snprintf(text, sizeof(text), "human%s", death_name);
+			human_death_sounds[d] = SoundId(text);
+		}
 	}
 
 	enum { invalid_id = 255 };

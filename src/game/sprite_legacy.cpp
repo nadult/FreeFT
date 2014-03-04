@@ -298,6 +298,10 @@ namespace game
 			Sequence &seq = m_sequences[s];
 			string overlay_name = seq.name + "overlay";
 			seq.overlay_id = findSequence(overlay_name.c_str());
+			if(seq.overlay_id != -1 && m_sequences[seq.overlay_id].dir_count != seq.dir_count) {
+				printf("Wrong dir_count in overlay: %s\n", overlay_name.c_str());
+				seq.overlay_id = -1;
+			}
 		}
 	}
 

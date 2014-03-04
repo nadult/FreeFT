@@ -12,6 +12,7 @@ namespace game {
 		impact = parser("impact_id");
 		blend_angles = toBool(parser("blend_angles"));
 		speed = toFloat(parser("speed"));
+		death_id = DeathTypeId::fromString(parser("death_id"));
 	}
 
 	void ProjectileProto::connect() {
@@ -73,7 +74,7 @@ namespace game {
 
 				if(entity) {
 					float damage = 100.0f;
-					entity->onImpact(0, damage);
+					entity->onImpact(m_proto.death_id, damage);
 				}
 			}
 			remove();

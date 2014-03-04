@@ -109,7 +109,7 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="60">
+<entity_map size="1056 936" entity_count="69">
 	<container pos="162 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<container pos="165 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<actor pos="167 147 405" angle="0" proto_type="actor" proto_id="mutant"/>
@@ -129,7 +129,9 @@ CRC32 d1c72fa9
 	<door pos="198 115 252" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<door pos="198 115 294" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<actor pos="205 128 317" angle="0.785398" proto_type="actor" proto_id="mutant"/>
+	<actor pos="209 128 437" angle="5.497787" proto_type="actor" proto_id="robot"/>
 	<actor pos="217 128 315" angle="0.785398" proto_type="actor" proto_id="mutant"/>
+	<actor pos="219 128 445" angle="5.497787" proto_type="actor" proto_id="robot"/>
 	<actor pos="221 128 307" angle="0.785398" proto_type="actor" proto_id="mutant"/>
 	<door pos="228 115 270" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<door pos="228 115 324" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
@@ -141,19 +143,26 @@ CRC32 d1c72fa9
 	<door pos="249 115 250" angle="4.712389" proto_type="door" proto_id="bos_interior"/>
 	<actor pos="249 128 291" angle="1.570796" proto_type="actor" proto_id="mutant"/>
 	<door pos="250 128 423" angle="0" proto_type="door" proto_id="fence"/>
+	<item pos="251 128 359" angle="1.570796" proto_type="weapon" proto_id="rocket_launcher" item_count="1"/>
+	<actor pos="256 128 437" angle="4.712389" proto_type="actor" proto_id="robot"/>
 	<actor pos="258 128 288" angle="1.570796" proto_type="actor" proto_id="mutant"/>
+	<actor pos="265 128 438" angle="4.712389" proto_type="actor" proto_id="robot"/>
 	<container pos="269 128 363" angle="0" proto_type="container" proto_id="pot"/>
 	<door pos="270 115 210" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<actor pos="270 128 293" angle="1.570796" proto_type="actor" proto_id="mutant"/>
 	<container pos="270 128 360" angle="0" proto_type="container" proto_id="pot"/>
 	<container pos="272 115 279" angle="0" proto_type="container" proto_id="safe"/>
 	<container pos="272 128 363" angle="0" proto_type="container" proto_id="pot"/>
+	<actor pos="272 128 437" angle="4.712389" proto_type="actor" proto_id="robot"/>
 	<item pos="276 128 356" angle="0" proto_type="weapon" proto_id="m60" item_count="1"/>
 	<item pos="277 128 362" angle="0" proto_type="weapon" proto_id="plasma_rifle" item_count="1"/>
 	<item pos="279 128 359" angle="0" proto_type="weapon" proto_id="laser_rifle" item_count="1"/>
 	<item pos="279 128 370" angle="1.570796" proto_type="weapon" proto_id="gatling_laser" item_count="1"/>
 	<item pos="281 128 366" angle="0" proto_type="weapon" proto_id="pulse_rifle" item_count="1"/>
+	<actor pos="281 128 438" angle="4.712389" proto_type="actor" proto_id="robot"/>
 	<door pos="296 128 432" angle="0" proto_type="door" proto_id="fence"/>
+	<actor pos="297 128 421" angle="3.926991" proto_type="actor" proto_id="robot"/>
+	<actor pos="310 134 420" angle="3.926991" proto_type="actor" proto_id="robot"/>
 	<actor pos="362 128 365" angle="3.141593" proto_type="actor" proto_id="rad_scorpion"/>
 	<actor pos="366 128 380" angle="2.356194" proto_type="actor" proto_id="rad_scorpion"/>
 	<actor pos="367 128 338" angle="2.356194" proto_type="actor" proto_id="rad_scorpion"/>

@@ -23,3 +23,5 @@
 
 - Handle situation when client connection was broken, but server still expects
   normal communication on some specific port, and client tries to reconnect
+
+- Still some problems with drawing order when lots of entities & explosions

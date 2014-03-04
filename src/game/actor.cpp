@@ -81,13 +81,7 @@ namespace game {
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 
-	void Actor::onImpact(int projectile_type, float damage) {
-		DeathTypeId::Type death_id = (DeathTypeId::Type)(rand() % DeathTypeId::count);
-
-		/*	projectile_type == ProjectileTypeId::plasma? DeathTypeId::melt :
-			projectile_type == ProjectileTypeId::laser? DeathTypeId::melt :
-			projectile_type == ProjectileTypeId::rocket? DeathTypeId::explode : DeathTypeId::normal; */
-		
+	void Actor::onImpact(DeathTypeId::Type death_id, float damage) {
 		//TODO: immediate order cancel
 		setOrder(new DieOrder(death_id));
 	}

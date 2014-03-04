@@ -84,14 +84,8 @@ namespace game {
 
 		SoundId step_sounds[Stance::count][SurfaceId::count];
 
-		//TODO: add sound variations, each actor instance will have different sound set
-		//TODO: these sounds could be placed in ActorProto
-		SoundId death_sounds[DeathTypeId::count];
-
 	private:
 		void initAnims();
-
-		string m_sound_prefix;
 
 		u8 m_climb_idx[3];
 		u8 m_death_idx[DeathTypeId::count];
@@ -107,10 +101,18 @@ namespace game {
 	struct ActorProto: public ProtoImpl<ActorProto, ActorArmourProto, ProtoId::actor> {
 		ActorProto(const TupleParser&);
 
+		void connect();
+
+		string sound_prefix;
 		bool is_heavy;
+		bool is_alive;
 
 		// prone, crouch, walk, run
 		float speeds[Stance::count + 1];
+		
+		//TODO: add sound variations, each actor instance will have different sound set
+		SoundId death_sounds[DeathTypeId::count];
+		SoundId human_death_sounds[DeathTypeId::count];
 	};
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
@@ -123,7 +125,7 @@ namespace game {
 		ColliderFlags colliderType() const { return collider_dynamic; }
 
 		bool setOrder(POrder&&);
-		void onImpact(int projectile_type, float damage);
+		void onImpact(DeathTypeId::Type, float damage);
 
 		XMLNode save(XMLNode&) const;
 		void save(Stream&) const;

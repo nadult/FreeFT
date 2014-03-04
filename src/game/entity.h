@@ -123,9 +123,8 @@ namespace game {
 		Entity(const Sprite &sprite);
 		Entity(const Sprite &sprite, const XMLNode&);
 		Entity(const Sprite &sprite, Stream&);
-
-		Entity(const Entity&);
-		virtual ~Entity();
+		Entity(const Entity&) = default;
+		virtual ~Entity() = default;
 		
 		virtual void save(Stream&) const;
 		virtual XMLNode save(XMLNode& parent) const;
@@ -137,10 +136,11 @@ namespace game {
 
 		virtual ColliderFlags colliderType() const = 0;
 		virtual EntityId::Type entityType() const = 0; //TODO: change to typeId
+		virtual bool renderAsOverlay() const { return false; }
 
 		virtual void addToRender(gfx::SceneRenderer&) const;
 		virtual void interact(const Entity *interactor) { }
-		virtual void onImpact(int type, float damage) { }
+		virtual void onImpact(DeathTypeId::Type, float damage) { }
 
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially
@@ -201,8 +201,8 @@ namespace game {
 		// Animation state:
 		float m_dir_angle; //TODO: remove dir_angle (dir_idx should be enough)
 		short m_dir_idx;
-		short m_seq_idx;
-		short m_frame_idx;
+		short m_seq_idx, m_oseq_idx;		// normal sequence, overlay sequence
+		short m_frame_idx, m_oframe_idx;	// normal frame, overlay frame
 		bool m_is_seq_looped;
 		bool m_is_seq_finished;
 	};

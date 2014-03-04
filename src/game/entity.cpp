@@ -50,6 +50,7 @@ namespace game {
 		flag_compressed = 1,
 		flag_is_looped = 2,
 		flag_is_finished = 4,
+		flag_has_overlay = 8,
 	};
 
 	Entity::Entity(const Sprite &sprite, Stream &sr) :EntityWorldProxy(sr), m_sprite(sprite) {
@@ -70,11 +71,22 @@ namespace game {
 		}
 		else
 			sr.unpack(m_seq_idx, m_frame_idx, m_dir_idx);
+
+		if(flags & flag_has_overlay) {
+			m_oseq_idx = sr.decodeInt();
+			m_oframe_idx = sr.decodeInt();
+		}
+		else {
+			m_oseq_idx = -1;
+			m_oframe_idx = -1;
+		}
+
 	}
 
 	void Entity::resetAnimState() {
 		m_dir_angle = 0.0f;
 		m_seq_idx = -1;
+		m_oseq_idx = -1;
 		playSequence(0, false);
 	}
 
@@ -88,7 +100,8 @@ namespace game {
 
 		u8 flags =	(can_compress? flag_compressed : 0) |
 					(m_is_seq_looped? flag_is_looped : 0) |
-					(m_is_seq_finished? flag_is_finished : 0);
+					(m_is_seq_finished? flag_is_finished : 0) |
+					(m_oframe_idx != -1 || m_oseq_idx != -1? flag_has_overlay : 0);
 
 		sr.pack(flags, m_pos, m_dir_angle);
 
@@ -96,20 +109,10 @@ namespace game {
 			sr.pack(u8(m_seq_idx), u8(m_frame_idx), u8(m_dir_idx));
 		else
 			sr.pack(m_seq_idx, m_frame_idx, m_dir_idx);
-	}
-
-	Entity::Entity(const Entity &rhs) :m_sprite(rhs.m_sprite) {
-		m_pos = rhs.m_pos;
-		
-		m_dir_angle = rhs.m_dir_angle;
-		m_dir_idx = rhs.m_dir_idx;
-		m_seq_idx = rhs.m_seq_idx;
-		m_frame_idx = rhs.m_frame_idx;
-		m_is_seq_looped = rhs.m_is_seq_looped;
-		m_is_seq_finished = rhs.m_is_seq_finished;
-	}
-	
-	Entity::~Entity() {
+		if(flag_has_overlay) {
+			sr.encodeInt(m_oseq_idx);
+			sr.encodeInt(m_oframe_idx);
+		}
 	}
 
 	void Entity::roundPos() {
@@ -129,8 +132,12 @@ namespace game {
 	}
 	
 	const IRect Entity::currentScreenRect() const {
+		IRect rect = m_sprite.getRect(m_seq_idx, m_frame_idx, m_dir_idx);
+		if(m_oseq_idx != -1 && m_oframe_idx != -1)
+			rect = sum(rect, m_sprite.getRect(m_oseq_idx, m_oframe_idx, m_dir_idx));
+
 		//TODO: float based results
-		return m_sprite.getRect(m_seq_idx, m_frame_idx, m_dir_idx) + (int2)worldToScreen(pos());
+		return  rect + (int2)worldToScreen(pos());
 	}
 
 	void Entity::addToRender(gfx::SceneRenderer &out) const {
@@ -143,21 +150,22 @@ namespace game {
 		if(shrinkRenderedBBox())
 			bbox.min.y = min(bbox.min.y + 1.0f, bbox.max.y - 0.5f);
 
-		const Sprite::Sequence &seq = m_sprite[m_seq_idx];
+		bool as_overlay = renderAsOverlay();
 
 		FRect tex_rect;
 		PTexture tex = m_sprite.getFrame(m_seq_idx, m_frame_idx, m_dir_idx, tex_rect);
-		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
+		bool added = out.add(tex, rect, m_pos, bbox, Color::white, tex_rect, as_overlay);
+	
+	 	if(added && m_oseq_idx != -1 && m_oframe_idx != -1) {
+			//TODO: overlay may be visible, while normal sprite is not!
+			rect = m_sprite.getRect(m_oseq_idx, m_oframe_idx, m_dir_idx);
+			PTexture ov_tex = m_sprite.getFrame(m_oseq_idx, m_oframe_idx, m_dir_idx, tex_rect);
+			out.add(ov_tex, rect, m_pos, bbox, Color::white, tex_rect, true);
+		}
 
-	//	if(seq.overlay_id != -1) {
-	//		rect = m_sprite.getRect(seq.overlay_id, m_frame_idx, m_dir_idx);
-	//		PTexture ov_tex = m_sprite.getFrame(seq.overlay_id, m_frame_idx, m_dir_idx, tex_rect);
-	//		out.add(tex, rect, m_pos, bbox, Color::white, tex_rect);
-	//	}
-
-		bbox += pos();
-		if(world() && world()->findAny(bbox, this))
-			out.addBox(bbox, Color::red);
+	//	bbox += pos();
+	//	if(world() && world()->findAny(bbox, this))
+	//		out.addBox(bbox, Color::red);
 	}
 		
 	bool Entity::testPixel(const int2 &screen_pos) const {
@@ -186,12 +194,24 @@ namespace game {
 		if(seq_idx != m_seq_idx || !m_is_seq_looped) {
 			int frame_count = m_sprite.frameCount(seq_idx);
 			m_frame_idx = 0;
+			m_oframe_idx = -1;
+			m_oseq_idx = m_sprite[seq_idx].overlay_id;
 
 			while(m_frame_idx < frame_count && m_sprite.frame(seq_idx, m_frame_idx).id < 0) {
-				if(m_sprite.frame(seq_idx, m_frame_idx).id <= Sprite::ev_first_specific)
+				int frame_id = m_sprite.frame(seq_idx, m_frame_idx).id;
+				if(frame_id <= Sprite::ev_first_specific) {
 					if(handle_events)
 						handleEventFrame(m_sprite.frame(seq_idx, m_frame_idx));
+				}
 				m_frame_idx++;
+				if(frame_id == Sprite::ev_overlay && m_oseq_idx != -1) {
+					m_oframe_idx = 0;
+					int ov_frame_count = m_sprite.frameCount(m_oseq_idx);
+					while(m_oframe_idx < ov_frame_count && m_sprite.frame(m_oseq_idx, m_oframe_idx).id < 0)
+						m_oframe_idx++;
+					if(m_oframe_idx == ov_frame_count)
+						m_oframe_idx = -1;
+				}
 			}
 
 			DASSERT(m_frame_idx < frame_count);
@@ -204,32 +224,42 @@ namespace game {
 	}
 
 	void Entity::nextFrame() {
-		if(m_is_seq_finished)
-			return;
+		if(m_oframe_idx != -1)
+			m_oframe_idx++;
 
-		int prev_frame = m_frame_idx;
-		m_frame_idx++;
-		int frame_count = m_sprite.frameCount(m_seq_idx);
+		if(!m_is_seq_finished) {
+			int prev_frame = m_frame_idx;
+			int frame_count = m_sprite.frameCount(m_seq_idx);
+			m_frame_idx++;
 
-		while(m_frame_idx < frame_count && m_sprite.frame(m_seq_idx, m_frame_idx).id < 0) {
-			const Sprite::Frame &frame = m_sprite.frame(m_seq_idx, m_frame_idx);
-			if(frame.id == Sprite::ev_repeat_all)
-				m_frame_idx = 0;
-			else if(frame.id == Sprite::ev_jump_to_frame) 
-				m_frame_idx = frame.params[0];
-			else {
-				if(frame.id <= Sprite::ev_first_specific)
-					handleEventFrame(frame);
-			//	if(frame.id == Sprite::ev_overlay)
-			//		printf("Overlay: %d\n", m_frame_idx);
-				m_frame_idx++;
+			while(m_frame_idx < frame_count && m_sprite.frame(m_seq_idx, m_frame_idx).id < 0) {
+				const Sprite::Frame &frame = m_sprite.frame(m_seq_idx, m_frame_idx);
+				if(frame.id == Sprite::ev_repeat_all)
+					m_frame_idx = 0;
+				else if(frame.id == Sprite::ev_jump_to_frame) 
+					m_frame_idx = frame.params[0];
+				else {
+					if(frame.id <= Sprite::ev_first_specific)
+						handleEventFrame(frame);
+					if(frame.id == Sprite::ev_overlay)
+						m_oframe_idx = 0;
+					m_frame_idx++;
+				}
+			}
+	
+			if(m_frame_idx == frame_count) {
+				m_is_seq_finished = true;
+				m_frame_idx = prev_frame;
+				onAnimFinished();
 			}
 		}
 
-		if(m_frame_idx == frame_count) {
-			m_is_seq_finished = true;
-			m_frame_idx = prev_frame;
-			onAnimFinished();
+		if(m_oframe_idx != -1) {
+			int ov_frame_count = m_sprite.frameCount(m_oseq_idx);
+			while(m_oframe_idx < ov_frame_count - 1 && m_sprite.frame(m_oseq_idx, m_oframe_idx).id < 0)
+				m_oframe_idx++;
+			if(m_oframe_idx >= ov_frame_count)
+				m_oframe_idx = ov_frame_count - 1;
 		}
 	}
 

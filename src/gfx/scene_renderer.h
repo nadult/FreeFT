@@ -14,9 +14,9 @@ namespace gfx {
 	{
 	public:
 		SceneRenderer(IRect viewport, int2 view_pos);
-		void add(PTexture tex, IRect rect, float3 pos, FBox bbox, Color col = Color::white, FRect tex_rect = FRect(0, 0, 1, 1));
-		void add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white, FRect tex_rect = FRect(0, 0, 1, 1))
-			{ add(tex, rect, pos, FBox(float3(0, 0, 0), bbox), col, tex_rect); }
+		bool add(PTexture tex, IRect rect, float3 pos, FBox bbox, Color col = Color::white, FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false);
+		bool add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white, FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false)
+			{ return add(tex, rect, pos, FBox(float3(0, 0, 0), bbox), col, tex_rect, is_overlay); }
 
 		void addBox(FBox box, Color col = Color::white, bool is_filled = false);
 		void addBox(IBox box, Color col = Color::white, bool is_filled = false)
@@ -34,6 +34,7 @@ namespace gfx {
 			FBox bbox;
 			FRect tex_rect;
 			Color color;
+			bool is_overlay;
 		};
 
 		struct BoxElement {

@@ -120,6 +120,8 @@ public:
 			int id;
 			while((id = sprite->frame(m_seq_id, m_frame_id).id) < 0) {
 				const char *event_name = Sprite::eventIdToString((Sprite::EventId)id);
+				if(id == Sprite::ev_overlay)
+					event_name = "overlay";
 				if(event_name)
 					m_events.push_back(make_pair(event_name, getTime()));
 
@@ -162,8 +164,10 @@ public:
 			if(isKeyDown(Key_right))
 				m_dir_id++;
 			if(isKeyDown('P')) {
+				printf("Sequences for: %s\n", sprite->resourceName());
 				for(int s = 0; s < sprite->size(); s++)
 					printf("Seq %3d: %s\n", s, (*sprite)[s].name.c_str());
+				printf("\n");
 			}
 
 			m_seq_id = (m_seq_id + (int)sprite->size()) % (int)sprite->size();
@@ -286,6 +290,7 @@ public:
 				Loader(file_name) >> *sprite;
 				res = ::Resource(sprite, id);
 				sprite->printInfo();
+				sprite->setResourceName(file_name);
 			}
 			else
 				return;
