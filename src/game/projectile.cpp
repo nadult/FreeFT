@@ -5,6 +5,7 @@
 
 #include "game/projectile.h"
 #include "sys/xml.h"
+#include "game/world.h"
 
 namespace game {
 
@@ -13,6 +14,10 @@ namespace game {
 		blend_angles = toBool(parser("blend_angles"));
 		speed = toFloat(parser("speed"));
 		death_id = DeathTypeId::fromString(parser("death_id"));
+	}
+		
+	ImpactProto::ImpactProto(const TupleParser &parser) :ProtoImpl(parser) {
+		sound_idx = SoundId(parser("sound_id"));
 	}
 
 	void ProjectileProto::connect() {
@@ -82,11 +87,11 @@ namespace game {
 	}
 
 	Impact::Impact(const ImpactProto &proto, const float3 &pos)
-		:EntityImpl(proto) {
+		:EntityImpl(proto), m_played_sound(false) {
 		setPos(pos);
 	}
 	
-	Impact::Impact(Stream &sr) :EntityImpl(sr) { }
+	Impact::Impact(Stream &sr) :EntityImpl(sr), m_played_sound(false) { }
 
 	void Impact::save(Stream &sr) const {
 		EntityImpl::save(sr);
@@ -98,6 +103,20 @@ namespace game {
 
 	void Impact::onAnimFinished() {
 		remove();
+	}
+
+	void Impact::nextFrame() {
+		if(!m_played_sound) {
+			playSequence(0);
+			m_played_sound = true;
+			return;
+		}
+
+		Entity::nextFrame();
+	}
+
+	void Impact::onSoundEvent() {
+		world()->playSound(m_proto.sound_idx, pos());
 	}
 
 

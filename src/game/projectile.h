@@ -12,7 +12,9 @@
 namespace game {
 	
 	struct ImpactProto: public ProtoImpl<ImpactProto, EntityProto, ProtoId::impact> {
-		ImpactProto(const TupleParser &parser) :ProtoImpl(parser) { }
+		ImpactProto(const TupleParser &parser);
+
+		SoundId sound_idx;
 	};
 
 	struct ProjectileProto: public ProtoImpl<ProjectileProto, EntityProto, ProtoId::projectile> {
@@ -56,11 +58,17 @@ namespace game {
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
 
+
 		ColliderFlags colliderType() const { return collider_projectile; }
-		bool renderAsOverlay() const { return true; }
 	
 	protected:
-		virtual void onAnimFinished();
+		void onAnimFinished() override;
+		void onSoundEvent() override;
+		void nextFrame() override;
+
+		//TODO: Ugly hack; Add possibility to create entity with world as a parameter,
+		//this way we will be able to play sounds that should be played on the first frame
+		bool m_played_sound;
 	};
 
 }

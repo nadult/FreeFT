@@ -4,7 +4,6 @@
  */
 
 #include "game/world.h"
-#include "game/projectile.h"
 #include "tile_map.h"
 #include "sys/xml.h"
 #include "sys/profiler.h"

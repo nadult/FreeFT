@@ -17,6 +17,7 @@ Secondary:
 - Lighting
 - Different coloring for sprites (so that players could differentiate their characters)
 - ? Mines
+- Fix problems with rendering explosions, sparks, etc. (mainly)
 
 +REQUIREMENTS:  (97h + ?)
 issues/6-basic_shooting

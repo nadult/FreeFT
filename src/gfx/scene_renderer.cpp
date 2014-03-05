@@ -195,16 +195,22 @@ namespace gfx {
 					IRect rect = rects[i];
 
 					for(int j = i + 1; j < count; j++) {
-						int result = areOverlapping(rect, rects[j])? fastDrawingOrder(bboxes[i], bboxes[j]): 0;
-						if(result == 0) {
-							if(is_overlay[i] != is_overlay[j])
-								result = is_overlay[i]? 2 : -2;
-						}
+						if(areOverlapping(rect, rects[j])) {
+							int result = fastDrawingOrder(bboxes[i], bboxes[j]);
+							if(result == 0) {
+								if(is_overlay[i] != is_overlay[j])
+									result = is_overlay[i]? 2 : -2;
+							}
 
-						graph[i + j * count] = result;
-						graph[j + i * count] = -result;
-						if(result == 1 || result == -1)
-							any_weak = true;
+							graph[i + j * count] = result;
+							graph[j + i * count] = -result;
+							if(result == 1 || result == -1)
+								any_weak = true;
+						}
+						else {
+							graph[i + j * count] = 0;
+							graph[j + i * count] = 0;
+						}
 					}
 				}
 			}

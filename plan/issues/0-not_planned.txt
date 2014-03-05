@@ -40,5 +40,8 @@
   02.01.13: 23:30 - 01:00 (1h 30min)
   03.01.13: 19:30 - 00:30 (5h)
 
-- Loading data from .fods data sheets
-  20.02.14 - 22.02.14     (2 days)
+- Loading data from .fods data sheets, centralized proto system
+  20.02.14 - 22.02.14     (3 days)
+
+- Refactoring Actor's: protos & orders, working armours, added death animations & sounds,
+  rocket launcher, minor improvements in networking code, added basic I/O class  (3 days)
