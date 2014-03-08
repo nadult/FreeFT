@@ -211,6 +211,9 @@ namespace game {
 	}
 
 	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
+		if(isClient())
+			return;
+
 		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
 		float3 pos = boundingBox().center();
 		pos.y = this->pos().y;

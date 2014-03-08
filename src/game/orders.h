@@ -95,7 +95,7 @@ namespace game {
 	public:
 		enum {
 			type_id = type_id_,
-	   		event_flags = event_flags_
+	   		event_flags = event_flags_ //TODO: maybe event flags aren't really needed
 		};
 
 		OrderImpl() { }

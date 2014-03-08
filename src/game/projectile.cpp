@@ -71,7 +71,7 @@ namespace game {
 		setPos(new_pos);
 
 		if(isect.distance() < ray_pos) {
-			if(m_proto.impact.isValid()) {
+			if(m_proto.impact.isValid() && !isClient()) {
 				addNewEntity<Impact>(new_pos, *m_proto.impact);
 				if( Entity *entity = refEntity(isect) ) {
 					float damage = 100.0f;

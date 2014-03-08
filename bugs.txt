@@ -25,7 +25,6 @@
   normal communication on some specific port, and client tries to reconnect
 
 - Still some problems with drawing order when lots of entities & explosions
-
 - Entities shouldn't break order of tiles when rendering
 
-- Fix problem in client/server network serialization
+- Sometimes death sounds are not played

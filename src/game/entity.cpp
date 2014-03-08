@@ -109,7 +109,8 @@ namespace game {
 			sr.pack(u8(m_seq_idx), u8(m_frame_idx), u8(m_dir_idx));
 		else
 			sr.pack(m_seq_idx, m_frame_idx, m_dir_idx);
-		if(flag_has_overlay) {
+
+		if(flags & flag_has_overlay) {
 			sr.encodeInt(m_oseq_idx);
 			sr.encodeInt(m_oframe_idx);
 		}
