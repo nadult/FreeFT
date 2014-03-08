@@ -52,7 +52,7 @@ namespace game
 	public:
 		Door(Stream&);
 		Door(const XMLNode&);
-		Door(const DoorProto &proto, const float3 &pos);
+		Door(const DoorProto &proto);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
 		virtual EntityId::Type entityType() const { return EntityId::door; }

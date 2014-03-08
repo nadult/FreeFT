@@ -73,10 +73,9 @@ namespace game {
 		sr << index();
 	}
 
-	ItemEntity::ItemEntity(const Item &item, int count, const float3 &pos)
+	ItemEntity::ItemEntity(const Item &item, int count)
 			:EntityImpl(item.proto()), m_item(item), m_count(count) {
 		DASSERT(count >= 1);
-		setPos(pos);
 	}
 
 	ItemEntity::ItemEntity(const XMLNode &node) :EntityImpl(node), m_item(m_proto) {

@@ -54,9 +54,8 @@ namespace game {
 	Container::Container(const XMLNode &node) :EntityImpl(node) {
 		initialize();
 	}
-	Container::Container(const ContainerProto &proto, const float3 &pos) :EntityImpl(proto) {
+	Container::Container(const ContainerProto &proto) :EntityImpl(proto) {
 		initialize();
-		setPos(pos);
 	}
 
 	void Container::save(Stream &sr) const {

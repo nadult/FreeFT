@@ -44,12 +44,7 @@ int safe_main(int argc, char **argv)
 		map_name = string("data/maps/") + argv[1];
 	PWorld world(new World(map_name.c_str(), World::Mode::single_player));
 
-	EntityRef actor_ref; {
-		Actor *actor = new Actor(getProto("male", ProtoId::actor));
-		actor->setPos(float3(245, 128, 335));
-		world->addEntity(PEntity(actor));
-		actor_ref = actor->ref();
-	}
+	EntityRef actor_ref = world->addNewEntity<Actor>(float3(245, 128, 335), getProto("male", ProtoId::actor));
 
 	IO io(config.resolution, world, actor_ref, config.profiler_enabled);
 

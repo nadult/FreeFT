@@ -55,10 +55,7 @@ public:
 
 	EntityRef spawnActor(const float3 &pos) {
 		DASSERT(m_world);
-		PEntity actor(new Actor(getProto("male", ProtoId::actor)));
-		actor->setPos(pos);
-		int id = m_world->addEntity(std::move(actor));
-		return m_world->getEntity(id)->ref();
+		return m_world->addNewEntity<Actor>(pos, getProto("male", ProtoId::actor));
 	}
 
 	void disconnectClient(int client_id) {
@@ -80,7 +77,7 @@ public:
 
 				client.update_map.resize(m_world->entityCount() * 2);
 				for(int n = 0; n < m_world->entityCount(); n++)
-					if(m_world->getEntity(n))
+					if(m_world->refEntity(n))
 						client.update_map[n] = true;
 
 				TempPacket temp;
@@ -132,7 +129,7 @@ public:
 				}
 
 				if(map[idx]) {
-					const Entity *entity = m_world->getEntity(idx);
+					const Entity *entity = m_world->refEntity(idx);
 
 					TempPacket temp;
 
@@ -211,7 +208,7 @@ public:
 			Client &client = m_clients[h];
 			if(client.mode == ClientMode::to_be_removed) {
 				if(client.actor_ref) {
-					m_world->removeEntity(m_world->refEntity(client.actor_ref));
+					m_world->removeEntity(client.actor_ref);
 					client.actor_ref = EntityRef();
 				}
 				

@@ -216,7 +216,7 @@ namespace game {
 		pos.y = this->pos().y;
 		float3 offset = asXZY(rotateVector(float2(off.x, off.z), actualDirAngle() - constant::pi * 0.5f), off.y);
 
-		float3 dir = float3(target) - pos;
+		float3 dir = float3(target) - (pos + offset);
 		float len = length(dir);
 		dir *= 1.0f / len;
 		float2 horiz = angleToVector(vectorToAngle(float2(dir.x, dir.z)) + frand() * constant::pi * random_val);
@@ -225,7 +225,7 @@ namespace game {
 		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
 
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
-			addEntity(new Projectile(*proj_proto, pos + offset, actualDirAngle(), pos + dir * len, ref()));
+			addNewEntity<Projectile>(pos + offset, *proj_proto, actualDirAngle(), dir * len, ref());
 	}
 
 	bool Actor::animate(Action::Type action) {

@@ -40,7 +40,7 @@ namespace game {
 				if(item.type() != ItemType::ammo)
 					count = 1;
 				m_inventory.remove(item_id, count);
-				addEntity(new ItemEntity(item, count, pos())); 
+				addNewEntity<ItemEntity>(pos(), item, count);
 			}
 		}
 		if(event == ActorEvent::anim_finished)

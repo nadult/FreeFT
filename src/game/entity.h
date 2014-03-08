@@ -54,6 +54,7 @@ namespace game {
 
 		void save(Stream&) const;
 		void load(Stream&);
+		int index() const { return m_index; }
 		
 	private:
 		EntityRef(int index, int unique_id) :m_index(index), m_unique_id(unique_id) { }
@@ -84,8 +85,11 @@ namespace game {
 		// References will now point to the new object
 		// current Entity will be destroyed
 		void replaceMyself(PEntity &&new_entity);
+
+		template <class TEntity, class ...Args>
+		void addNewEntity(const float3 &pos, const Args&... args);
+
 		void addEntity(PEntity &&new_entity);
-		void addEntity(Entity *new_entity) { addEntity(PEntity(new_entity)); }
 
 		double timeDelta() const;
 		double currentTime() const;
@@ -281,6 +285,12 @@ namespace game {
 		return nullptr;
 	}
 
+	template <class TEntity, class ...Args>
+	void EntityWorldProxy::addNewEntity(const float3 &pos, const Args&... args) {
+		PEntity entity(new TEntity(args...));
+		entity->setPos(pos);
+		addEntity(std::move(entity));
+	}
 }
 
 #endif

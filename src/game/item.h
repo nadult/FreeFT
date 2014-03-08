@@ -81,7 +81,7 @@ namespace game {
 	public:
 		ItemEntity(Stream&);
 		ItemEntity(const XMLNode&);
-		ItemEntity(const Item &item, int count, const float3 &pos);
+		ItemEntity(const Item &item, int count);
 
 		ColliderFlags colliderType() const { return collider_item; }
 

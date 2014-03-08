@@ -85,25 +85,20 @@ namespace game {
 		}
 	}
 
-	void World::removeEntity(Entity *entity) {
-		DASSERT(entity && entity->isHooked());
-		DASSERT(entity->m_world == this);
-		removeEntity(entity->index());
+	void World::removeEntity(EntityRef ref) {
+		if( Entity *entity = refEntity(ref) ) {
+			m_entity_map.remove(ref.index());
+			replicate(ref.index());
+		}
 	}
 
-	void World::removeEntity(int index) {
-		DASSERT(index >= 0 && index < m_entity_map.size());
-		m_entity_map.remove(index);
-		replicate(index);
-	}
-
-	int World::addEntity(PEntity &&ptr, int index) {
+	EntityRef World::addEntity(PEntity &&ptr, int index) {
 		DASSERT(ptr);
 		Entity *entity = ptr.get();
 		index = m_entity_map.add(std::move(ptr), index);
 		entity->hook(this, index);
 		replicate(index);
-		return index;
+		return entity->ref();
 	}
 
 	void World::addToRender(gfx::SceneRenderer &renderer) {
@@ -177,7 +172,7 @@ namespace game {
 			if(pair.first.get()) {
 				if(old_uid != -1)
 					pair.first.get()->m_unique_id = old_uid;
-				index = addEntity(std::move(pair.first), index);
+				index = addEntity(std::move(pair.first), index).index();
 			}
 			replicate(index);
 		}

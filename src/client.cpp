@@ -156,21 +156,19 @@ protected:
 	void entityUpdate(InChunk &chunk) {
 		DASSERT(chunk.type() == ChunkType::entity_full || chunk.type() == ChunkType::entity_delete);
 
-		int index = chunk.chunkId();
+		EntityRef ref(chunk.chunkId());
 
-		if(index >= 0) {
-			if(index < m_world->entityCount() && m_world->getEntity(index))
-				m_world->removeEntity(index);
+		m_world->removeEntity(ref);
 
-			if(chunk.type() == ChunkType::entity_full) {
-				Entity *new_entity = Entity::construct(chunk);
-				m_world->addEntity(PEntity(new_entity), index);
-				if(new_entity->ref() == m_actor_ref) {
-					Actor *actor = static_cast<Actor*>(new_entity);
-					if(actor->currentOrder() == m_order_type && m_order_type != OrderTypeId::invalid) {
-						printf("Order lag: %f\n", getTime() - m_order_send_time);
-						m_order_type = OrderTypeId::invalid;
-					}
+		if(chunk.type() == ChunkType::entity_full) {
+			Entity *new_entity = Entity::construct(chunk);
+			m_world->addEntity(PEntity(new_entity), ref.index());
+
+			if(new_entity->ref() == m_actor_ref) {
+				Actor *actor = static_cast<Actor*>(new_entity);
+				if(actor->currentOrder() == m_order_type && m_order_type != OrderTypeId::invalid) {
+					printf("Order lag: %f\n", getTime() - m_order_send_time);
+					m_order_type = OrderTypeId::invalid;
 				}
 			}
 		}

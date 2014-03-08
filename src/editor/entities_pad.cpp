@@ -154,26 +154,26 @@ namespace ui {
 		if(type == EntityId::actor) {
 			const Proto& proto = getProto(m_actor_id->selectedText(), ProtoId::actor);
 			m_proto = (PEntity)new game::Actor(proto);
-			m_proto->setPos(pos);
 		}
 		else if(type == EntityId::container) {
 			const ContainerProto &proto =
 				static_cast<const ContainerProto&>(getProto(m_container_id->selectedId(), ProtoId::container));
-			m_proto = (PEntity)new game::Container(proto, pos);
+			m_proto = (PEntity)new game::Container(proto);
 		}
 		else if(type == EntityId::door) {
 			const DoorProto &proto =
 				static_cast<const DoorProto&>(getProto(m_door_id->selectedId(), ProtoId::door));
-			m_proto = (PEntity)new game::Door(proto, pos);
+			m_proto = (PEntity)new game::Door(proto);
 		}
 		else if(type == EntityId::item) {
 			ItemType::Type type = (ItemType::Type)m_item_type->selectedId();
 			ProtoId::Type proto_id = ItemType::toProtoId(type);
 			ProtoIndex index = findProto((*m_item_id)[m_item_id->selectedId()].text, proto_id);
 
-			m_proto = (PEntity)new game::ItemEntity(game::Item(index), m_item_count_val, pos);
+			m_proto = (PEntity)new game::ItemEntity(game::Item(index), m_item_count_val);
 		}
-
+			
+		m_proto->setPos(pos);
 		m_editor->setProto(m_proto.get());
 	}
 

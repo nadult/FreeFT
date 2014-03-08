@@ -24,11 +24,9 @@ namespace game {
 		impact.connect();
 	}
 
-	Projectile::Projectile(const ProjectileProto &proto, const float3 &pos,
-							float initial_angle, const float3 &target, EntityRef spawner)
-		:EntityImpl(proto), m_dir(target - pos), m_spawner(spawner) {
+	Projectile::Projectile(const ProjectileProto &proto, float initial_angle, const float3 &dir, EntityRef spawner)
+		:EntityImpl(proto), m_dir(dir), m_spawner(spawner) {
 			m_dir *= 1.0f / length(m_dir);
-			setPos(pos);
 			setDirAngle(initial_angle);
 			m_target_angle = vectorToAngle(m_dir.xz());
 			if(!proto.blend_angles)
@@ -74,10 +72,8 @@ namespace game {
 
 		if(isect.distance() < ray_pos) {
 			if(m_proto.impact.isValid()) {
-				addEntity(new Impact(*m_proto.impact, new_pos));
-				Entity *entity = refEntity(isect);
-
-				if(entity) {
+				addNewEntity<Impact>(new_pos, *m_proto.impact);
+				if( Entity *entity = refEntity(isect) ) {
 					float damage = 100.0f;
 					entity->onImpact(m_proto.death_id, damage);
 				}
@@ -86,9 +82,8 @@ namespace game {
 		}
 	}
 
-	Impact::Impact(const ImpactProto &proto, const float3 &pos)
+	Impact::Impact(const ImpactProto &proto)
 		:EntityImpl(proto), m_played_sound(false) {
-		setPos(pos);
 	}
 	
 	Impact::Impact(Stream &sr) :EntityImpl(sr), m_played_sound(false) { }
@@ -105,19 +100,12 @@ namespace game {
 		remove();
 	}
 
-	void Impact::nextFrame() {
+	void Impact::think() {
 		if(!m_played_sound) {
-			playSequence(0);
+			world()->playSound(m_proto.sound_idx, pos());
 			m_played_sound = true;
 			return;
 		}
-
-		Entity::nextFrame();
 	}
-
-	void Impact::onSoundEvent() {
-		world()->playSound(m_proto.sound_idx, pos());
-	}
-
 
 }

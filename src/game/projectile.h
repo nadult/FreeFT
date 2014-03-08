@@ -29,8 +29,7 @@ namespace game {
 
 	class Projectile: public EntityImpl<Projectile, ProjectileProto, EntityId::projectile> {
 	public:
-		Projectile(const ProjectileProto &Proto, const float3 &pos, float initial_ang,
-					const float3 &target, EntityRef spawner);
+		Projectile(const ProjectileProto &Proto, float initial_ang, const float3 &dir, EntityRef spawner);
 		Projectile(Stream&);
 		
 		void save(Stream&) const;
@@ -41,7 +40,6 @@ namespace game {
 	protected:
 		virtual void think();
 		void nextFrame();
-		friend class World;
 
 	private:
 		EntityRef m_spawner;
@@ -52,19 +50,17 @@ namespace game {
 
 	class Impact: public EntityImpl<Impact, ImpactProto, EntityId::impact> {
 	public:
-		Impact(const ImpactProto&, const float3 &pos);
+		Impact(const ImpactProto&);
 		Impact(Stream&);
 
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
 
-
 		ColliderFlags colliderType() const { return collider_projectile; }
 	
 	protected:
 		void onAnimFinished() override;
-		void onSoundEvent() override;
-		void nextFrame() override;
+		void think() override;
 
 		//TODO: Ugly hack; Add possibility to create entity with world as a parameter,
 		//this way we will be able to play sounds that should be played on the first frame

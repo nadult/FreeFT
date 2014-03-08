@@ -41,8 +41,7 @@ namespace game
 	public:
 		Container(Stream&);
 		Container(const XMLNode&);
-		Container(const ContainerProto&, const float3 &pos);
-		//TODO: remove pos from initializer (everywhere)
+		Container(const ContainerProto&);
 
 		virtual ColliderFlags colliderType() const { return collider_static; }
 

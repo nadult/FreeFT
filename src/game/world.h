@@ -37,16 +37,17 @@ namespace game {
 
 		int entityCount() const { return m_entity_map.size(); }
 	
-		//TODO: access to entities only through EntityRef (which could also be initialized with
-		//      simple index, then unique_id will not be checked)
-		const Entity *getEntity(int id) const { return m_entity_map[id].ptr; }
-		Entity *getEntity(int id) { return m_entity_map[id].ptr; }
+		void removeEntity(EntityRef);
 
-		void removeEntity(Entity*);
-		void removeEntity(int entity_id);
+		template <class TEntity, class ...Args>
+		EntityRef addNewEntity(const float3 &pos, const Args&... args) {
+			PEntity entity(new TEntity(args...));
+			entity->setPos(pos);
+			return addEntity(std::move(entity));
+		}
 
 		// Takes ownership of entity
-		int addEntity(PEntity&&, int index = -1);
+		EntityRef addEntity(PEntity&&, int index = -1);
 
 		void simulate(double time_diff);
 

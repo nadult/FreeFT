@@ -18,6 +18,7 @@ Secondary:
 - Different coloring for sprites (so that players could differentiate their characters)
 - ? Mines
 - Fix problems with rendering explosions, sparks, etc. (mainly)
+- Improve projectiles: separate muzzle flash from projectile and link muzzle flash to weapon
 
 +REQUIREMENTS:  (97h + ?)
 issues/6-basic_shooting

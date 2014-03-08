@@ -93,9 +93,8 @@ namespace game {
 		initialize();
 	}
 		
-	Door::Door(const DoorProto &proto, const float3 &pos) :EntityImpl(proto) {
+	Door::Door(const DoorProto &proto) :EntityImpl(proto) {
 		initialize();
-		setPos(pos);
 	}
 	
 	XMLNode Door::save(XMLNode &parent) const {
