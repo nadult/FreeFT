@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "io.h"
+#include "input_output.h"
 #include "sys/profiler.h"
 
 #include "game/actor.h"

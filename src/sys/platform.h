@@ -90,6 +90,7 @@ bool removeSuffix(string &str, const string &suffix);
 bool removePrefix(string &str, const string &prefix);
 const string toLower(const string &str);
 void mkdirRecursive(const Path &path);
+bool access(const Path &path);
 
 
 #endif

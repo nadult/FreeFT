@@ -7,7 +7,7 @@
 #include <cstdio>
 
 #include "gfx/device.h"
-#include "io.h"
+#include "input_output.h"
 
 #include "navi_map.h"
 #include "sys/profiler.h"

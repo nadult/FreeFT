@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-#include "io.h"
+#include "input_output.h"
 
 #include "sys/profiler.h"
 #include "sys/platform.h"

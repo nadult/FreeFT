@@ -14,7 +14,79 @@
 #include <set>
 #include <zip.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
+
+#include <windows.h>
+#include <shlobj.h>
+
+static int CALLBACK browseFolderCB(HWND hwnd, UINT msg, LPARAM lparam, LPARAM data) {
+	if (msg == BFFM_INITIALIZED) {
+		LPCTSTR path = reinterpret_cast<LPCTSTR>(data);
+		SendMessage(hwnd, BFFM_SETSELECTION, true, (LPARAM)path);
+	}
+
+	return 0;
+}
+
+string browseFolder(const char *message, string starting_path) {
+    TCHAR path[MAX_PATH];
+
+    BROWSEINFO bi = { 0 };
+    bi.lpszTitle  = message;
+    bi.ulFlags    = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+    bi.lpfn       = browseFolderCB;
+    bi.lParam     = (LPARAM)starting_path.c_str();
+
+    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+    if (pidl != 0) {
+        SHGetPathFromIDList(pidl, path);
+
+        IMalloc *imalloc = 0;
+        if(SUCCEEDED(SHGetMalloc(&imalloc))) {
+            imalloc->Free(pidl);
+            imalloc->Release();
+        }
+
+        return path;
+    }
+
+    return "";
+}
+
+static bool verifyFTPath(string path) {
+	return access(Path(path) / "core");
+}
+
+static const string locateFTPath() {
+	HKEY key;
+
+	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\GOG.com\\GOGFALLOUTTACTICS\\"), 0, KEY_READ, &key) == ERROR_SUCCESS) {
+		DWORD type;
+		char path[1024];
+		DWORD path_size = sizeof(path) - 1;
+		if(RegQueryValueEx(key, "PATH", NULL, &type, (BYTE*)path, &path_size) == ERROR_SUCCESS) {
+			path[path_size] = 0;
+			if(verifyFTPath(path))
+				return path;
+		}
+		RegCloseKey(key);
+	}
+
+	const char *std_paths[] = {
+		"c:\\Program Files\\14 Degrees East\\Fallout Tactics\\",
+		"c:\\Program Files (x86)\\14 Degrees East\\Fallout Tactics\\",
+	};
+
+	for(int n = 0; n < COUNTOF(std_paths); n++)
+		if(verifyFTPath(std_paths[n]))
+			return std_paths[n];
+
+	return browseFolder("Please select folder in which Fallout Tactics is installed:", Path::current());
+}
+
+
+#else
+
 #define USE_OPENMP
 #endif
 
@@ -419,6 +491,20 @@ int safe_main(int argc, char **argv) {
 		}
 	}
 
+#ifdef _WIN32
+	if(argc == 1) {
+		path = locateFTPath();
+
+		if(path.empty()) {
+			printf("Cannot find Fallout Tactics installation. Please install FT and then rerun this program.\n");
+			return 0;
+		}
+
+		printf("Found FT installed in: %s\n", path.c_str());
+		command = "all";
+	}
+#endif
+
 #ifdef USE_OPENMP
 	if(command == "maps") // ResourceManager<Tile> is single-threaded (used in tile_map_legacy.cpp)
 		jobs = 1;
@@ -449,7 +535,18 @@ int safe_main(int argc, char **argv) {
 
 	else if(command == "all") {
 		ASSERT(!path.empty());
+		if(!verifyFTPath(path)) {
+#ifdef _WIN32
+			MessageBox(0, "Invalid path specified!", "Error", MB_OK);
+#endif
+			printf("Invalid path specified\n");
+			return 0;
+		}
 		convertAll(path.c_str(), filter);
+
+#ifdef _WIN32
+		MessageBox(0, "All done!", "Message", MB_OK);
+#endif
 	}
 	else {
 		if(!command.empty())

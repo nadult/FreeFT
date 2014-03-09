@@ -3,6 +3,9 @@
    This file is part of FreeFT.
  */
 
+#ifndef FREEFT_INPUT_OUTPUT_H
+#define FREEFT_INPUT_OUTPUT_H
+
 #include "game/world.h"
 
 class IO {
@@ -30,3 +33,5 @@ protected:
 	game::Intersection m_shoot_isect;
 	float3 m_target_pos;
 };
+
+#endif

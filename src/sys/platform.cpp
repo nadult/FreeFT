@@ -6,10 +6,16 @@
 #include "sys/platform.h"
 #include <cstring>
 #include <cstdio>
+#include <algorithm>
+
+#ifdef _WIN32
+#include <io.h>
+#include <direct.h>
+#else
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <algorithm>
+#endif
 
 bool Path::Element::isDot() const {
 	return size == 1 && ptr[0] == '.';
@@ -213,10 +219,19 @@ const string toLower(const string &str) {
 	return std::move(out);
 }
 
+bool access(const Path &path) {
+#ifdef _WIN32
+	return _access(path.c_str(), 0) == 0;
+#else
+	return access(path.c_str(), F_OK) == 0;
+#endif
+}
+
 void mkdirRecursive(const Path &path) {
 	Path parent = path.parent();
-	if(access(parent.c_str(), F_OK) != 0)
-			mkdirRecursive(parent);
+
+	if(!access(parent))
+		mkdirRecursive(parent);
 
 #ifdef _WIN32
 	int ret = mkdir(path.c_str());
@@ -225,5 +240,5 @@ void mkdirRecursive(const Path &path) {
 #endif
 
 	if(ret != 0)
-		THROW("Cannot create directory: %s error: %s\n", path.c_str(), strerror(errno));
+		THROW("Cannot create directory: \"%s\" error: %s\n", path.c_str(), strerror(errno));
 }

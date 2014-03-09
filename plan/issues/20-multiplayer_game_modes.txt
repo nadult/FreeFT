@@ -6,6 +6,7 @@
   - add new entity types in game & editor 6h
   - gameplay 4h
   - testing ? 
+- treasure hunt: raiding a crypt for treasures
 
 
 +FINISHED

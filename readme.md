@@ -37,6 +37,17 @@ convert.exe -p path\_to\_ft all
 Where path\_to\_ft is simply a path to the original game, for example:  
 convert.exe -p "c:/program files/fallout tactics/" all
 
+## Basic controls in the game
+
+* LMB on tile: move (shift: walk)
+* LMB on entity: interact
+* RMB: attack (shift: secondary attack)
+* Middle mouse dragging: change view
+* keypad + / -: change stance
+* t: teleport to cursor
+* up / down: select item
+* up / down + CTRL: select item in container
+* left / right: move item to / from container
 
 ## Used libraries and resources:
 * Liberation fonts (licensed under SIL Open Font License)
@@ -72,4 +83,4 @@ First tech-demo:
 ![](http://freeft.pl/wp-content/uploads/2014/03/techdemo1b.jpg "Tech-demo #1")
 
 Second tech-demo:
-![](http://freeft.pl/wp-content/uploads/2014/03/screen2.jpg "Tech-demo #2")
+![](http://freeft.pl/wp-content/uploads/2014/03/techdemo2b.jpg "Tech-demo #2")

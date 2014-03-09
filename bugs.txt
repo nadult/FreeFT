@@ -27,4 +27,4 @@
 - Still some problems with drawing order when lots of entities & explosions
 - Entities shouldn't break order of tiles when rendering
 
-- Sometimes death sounds are not played
+- Sometimes death sounds are not played (in multiplayer mode)
