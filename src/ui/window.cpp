@@ -16,6 +16,7 @@ namespace ui
 		DTexture::bind0();
 		float3 fcolor = (float3)color;
 		float falpha = float(color.a) * (1.0f / 255.0f);
+		printf("al: %f\n", falpha);
 
 		Color lighter(fcolor * 1.2f, falpha);
 		Color darker(fcolor * 0.8f, falpha);
@@ -174,8 +175,14 @@ namespace ui
 		lookAt(-m_clipped_rect.min);
 		setScissorRect(m_clipped_rect);
 
-		if(m_background_color.a > 0)
-			clear(m_background_color);
+		if(m_background_color.a > 0) {
+			if(m_background_color.a == 255)
+				clear(m_background_color);
+			else {
+				DTexture::bind0();
+				drawQuad(m_clipped_rect.min, m_clipped_rect.max, m_background_color);
+			}
+		}
 		
 		drawContents();
 		lookAt(-m_clipped_rect.min);

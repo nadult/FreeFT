@@ -48,7 +48,13 @@ namespace ui {
 				break;
 			}
 		}
-	}	
+	}
+
+	void EditBox::reset(bool is_editing) {
+		m_cursor_pos = 0;
+		setFocus( (m_is_editing = is_editing) );
+		m_old_text = m_text = "";
+	}
 
 	void EditBox::onInput(int2 mouse_pos) {
 		if(!m_is_editing) {

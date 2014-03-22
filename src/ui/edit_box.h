@@ -20,6 +20,7 @@ namespace ui {
 
 		void setText(const char *text);
 		const char *text() const { return m_text.c_str(); }
+		void reset(bool is_editing);
 
 		void drawContents() const;
 		void onInput(int2);

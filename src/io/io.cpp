@@ -61,6 +61,8 @@ namespace io {
 		if(isKeyDown('T') && !m_isect.isEmpty() && actor)
 			actor->setPos(ray.at(m_isect.distance()));
 
+		m_console.processInput();
+
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			Entity *entity = m_world->refEntity(m_isect);
 
@@ -135,6 +137,14 @@ namespace io {
 		}
 		profiler::nextFrame();
 		m_last_time = profiler::getTime();
+
+		while(true) {
+			string command = m_console.getCommand();
+			if(command.empty())
+				break;
+
+			printf("Invalid command: %s\n", command.c_str());
+		}
 	}
 
 	void IO::draw() {
@@ -163,6 +173,7 @@ namespace io {
 		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
 		DTexture::bind0();
+		lookAt({0, -m_console.size().y});
 		drawQuad(0, 0, 280, m_show_stats? 220 : 50, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
@@ -180,6 +191,7 @@ namespace io {
 		if(m_show_stats)
 			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", m_profiler_stats.c_str());
 
+		lookAt({0, 0});
 		if(actor) {
 			Container *container = m_world->refEntity<Container>(m_container_ref);
 			string inv_info = actor? actor->inventory().printMenu(m_inventory_sel) : string();
@@ -196,6 +208,7 @@ namespace io {
 							Color::white, Color::black, "%s", cont_info.c_str());
 		}
 
+		m_console.draw();
 	}
 
 }
