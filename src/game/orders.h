@@ -16,6 +16,7 @@ namespace game {
 		invalid = -1,
 	
 		idle = 0,
+		look_at,
 		move,
 		attack,
 		change_stance,
@@ -105,22 +106,12 @@ namespace game {
 		OrderTypeId::Type typeId() const { return type_id_; }
 	};
 
-	class IdleOrder;
-	class MoveOrder;
-	class AttackOrder;
-	class ChangeStanceOrder;
-	class InteractOrder;
-	class DropItemOrder;
-	class EquipItemOrder;
-	class UnequipItemOrder;
-	class TransferItemOrder;
-	class DieOrder;
-	
 }
 
 #endif
 
 #include "game/orders/idle.h"
+#include "game/orders/look_at.h"
 #include "game/orders/move.h"
 #include "game/orders/attack.h"
 #include "game/orders/change_stance.h"

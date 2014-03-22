@@ -180,6 +180,7 @@ namespace game {
 		void emptyHandleFunc(Order*, ActorEvent::Type, const ActorEventParams&) { }
 		
 		bool handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(LookAtOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(MoveOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(AttackOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(ChangeStanceOrder&, ActorEvent::Type, const ActorEventParams&);
@@ -193,7 +194,7 @@ namespace game {
 		const ActorProto &m_actor;
 
 		POrder m_order;
-		POrder m_next_order;
+		vector<POrder> m_following_orders;
 		HandleFunc m_order_func;
 
 		float m_target_angle;

@@ -86,11 +86,11 @@ namespace game
 
 	void EntityMap::update(int index) {
 		DASSERT(index >= 0 && index < size());
-		Entity *entity = (*this)[index].ptr;
+		ObjectDef &object = (*this)[index];
+		Entity *entity = object.ptr;
 		DASSERT(entity);
 
-		if(Grid::update(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
-												entity->colliderType() | visibility_flag)))
+		if(Grid::update(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), object.flags)))
 			updateOccluderId(index);
 	}
 
@@ -99,6 +99,7 @@ namespace game
 
 		for(int n = 0; n < size(); n++) {
 			auto &object = Grid::operator[](n);
+
 			if(object.occluder_id != -1) {
 				bool is_visible = occmap[object.occluder_id].is_visible;
 				if(is_visible)

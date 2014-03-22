@@ -5,9 +5,12 @@
 - More control over occlusion system  (6h)
   - if he's under occluder, then it should be disabled
   - using shift key to look inside?
+- Properly computing bounding box of actors (depending on actor's stance) (2h)
+- Blending in / out objects (2h)
 
 
-+ESTIMATED_TIME: 13h
++ESTIMATED_TIME: 15h
 +TIME_SPENT:
 
 +WORK_LOG:
+22.03.14: 19:00 - 

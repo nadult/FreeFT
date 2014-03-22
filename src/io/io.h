@@ -19,6 +19,8 @@ namespace io {
 		void processInput();
 		void draw();
 
+		void drawVisibility(game::EntityRef);
+
 	protected:
 		Console m_console;
 		game::PWorld m_world;
@@ -35,6 +37,7 @@ namespace io {
 		game::Intersection m_isect, m_full_isect;
 		game::Intersection m_shoot_isect;
 		float3 m_target_pos;
+		float3 m_last_look_at;
 	};
 
 }

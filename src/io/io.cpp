@@ -28,6 +28,7 @@ namespace io {
 				m_view_pos = int2(worldToScreen(actor->pos())) - resolution / 2;
 		
 			m_last_time = m_stats_update_time = getTime();
+			m_last_look_at = float3(0, 0, 0);
 		}
 
 	void IO::processInput() {
@@ -63,6 +64,14 @@ namespace io {
 
 		m_console.processInput();
 
+		if(!m_isect.isEmpty()) {
+			//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
+			float3 look_at = ray.at(m_isect.distance());
+			if(look_at != m_last_look_at) {
+				m_world->sendOrder(new LookAtOrder(look_at), m_actor_ref);
+				m_last_look_at = look_at;
+			}
+		}
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			Entity *entity = m_world->refEntity(m_isect);
 
@@ -209,6 +218,9 @@ namespace io {
 		}
 
 		m_console.draw();
+	}
+
+	void IO::drawVisibility(game::EntityRef ref) {
 	}
 
 }

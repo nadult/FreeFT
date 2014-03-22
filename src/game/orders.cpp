@@ -53,6 +53,7 @@ namespace game {
 
 		switch(order_id) {
 		case OrderTypeId::idle:				return new IdleOrder(sr);
+		case OrderTypeId::look_at:			return new LookAtOrder(sr);
 		case OrderTypeId::move:				return new MoveOrder(sr);
 		case OrderTypeId::attack:			return new AttackOrder(sr);
 		case OrderTypeId::change_stance:	return new ChangeStanceOrder(sr);
@@ -91,8 +92,9 @@ namespace game {
 	}
 
 	void Actor::updateOrderFunc() {
-		static HandleFunc s_handle_funcs[OrderTypeId::count] = {
+		static HandleFunc s_handle_funcs[] = {
 			&Actor::handleOrder<IdleOrder>,
+			&Actor::handleOrder<LookAtOrder>,
 			&Actor::handleOrder<MoveOrder>,
 			&Actor::handleOrder<AttackOrder>,
 			&Actor::handleOrder<ChangeStanceOrder>,
@@ -101,8 +103,9 @@ namespace game {
 			&Actor::handleOrder<EquipItemOrder>,
 			&Actor::handleOrder<UnequipItemOrder>,
 			&Actor::handleOrder<TransferItemOrder>,
-			&Actor::handleOrder<DieOrder>,
+			&Actor::handleOrder<DieOrder>
 		};
+		static_assert(COUNTOF(s_handle_funcs) == OrderTypeId::count, "");
 
 		m_order_func = m_order? s_handle_funcs[m_order->typeId()] : &Actor::emptyHandleFunc;
 	}

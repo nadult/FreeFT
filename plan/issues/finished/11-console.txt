@@ -1,0 +1,8 @@
+Simple console for passing different commands to different submodules
+
++ESTIMATED_TIME: 2h
++TIME_SPENT: 1h 45min
++FINISHED
+
++WORK_LOG:
+22.03.14: 12:30 - 14:15

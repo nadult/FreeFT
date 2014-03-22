@@ -5,7 +5,7 @@
 - In res_viewer when popup is visible, you can still select objects behind it by
   clicking on screen (outside of popup area)
 
-- Problems with entity occlusions (visible in editor for example)
+- Problems with entity occlusions in editor
 
 - In release build some bugs (no sound file, etc.) should be handled silently or, logged to a text file
 

@@ -23,8 +23,13 @@ namespace game {
 			sr >> m_order;
 			updateOrderFunc();
 		}
-		if(flags & 2)
-			sr >> m_next_order;
+		if(flags & 2) {
+			int count = sr.decodeInt();
+			ASSERT(count >= 1);
+			m_following_orders.resize(count);
+			for(int n = 0; n < count; n++)
+				sr >> m_following_orders[n];
+		}
 		if(flags & 4)
 			sr >> m_target_angle;
 		else
@@ -57,14 +62,17 @@ namespace game {
 	void Actor::save(Stream &sr) const {
 		EntityImpl::save(sr);
 		u8 flags =	(m_order? 1 : 0) |
-					(m_next_order? 2 : 0) |
+					(!m_following_orders.empty()? 2 : 0) |
 					(m_target_angle != dirAngle()? 4 : 0);
 
 		sr.pack(flags, m_stance, m_action);
 		if(flags & 1)
 			sr << m_order;
-		if(flags & 2)
-			sr << m_next_order;
+		if(flags & 2) {
+			sr.encodeInt((int)m_following_orders.size());
+			for(int n = 0; n < (int)m_following_orders.size(); n++)
+				sr << m_following_orders[n];
+		}
 		if(flags & 4)
 			sr << m_target_angle;
 		sr << m_inventory;
@@ -134,13 +142,20 @@ namespace game {
 		if(!world() || isClient())
 			return false;
 
-		//TODO: pass information about wheter this order can be handled
-		m_next_order = std::move(order);
+		if(order->typeId() == OrderTypeId::look_at) {
+			if((m_order && m_order->typeId() != OrderTypeId::idle) || !m_following_orders.empty())
+				return false;
+		}
+
 		if(m_order)
 			m_order->cancel();
 
+		m_following_orders.clear();
+		m_following_orders.emplace_back(std::move(order));
+
 		replicate();
 
+		//TODO: pass information about wheter this order can be handled
 		return true;
 	}
 
@@ -152,8 +167,16 @@ namespace game {
 		while(!m_order || m_order->isFinished()) {
 			if(m_order && m_order->hasFollowup())
 				m_order = m_order->getFollowup(); //TODO: maybe followup orders shouldnt be initialized twice?
-			else
-				m_order = m_next_order? std::move(m_next_order) : new IdleOrder();
+			else {
+				if(m_following_orders.empty()) {
+					if(!m_order || m_order->typeId() != OrderTypeId::idle)
+						m_order = new IdleOrder();
+				}
+				else {
+					m_order = std::move(m_following_orders.front());
+					m_following_orders.erase(m_following_orders.begin());
+				}
+			}
 
 			updateOrderFunc();
 			handleOrder(ActorEvent::init_order);

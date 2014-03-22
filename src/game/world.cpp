@@ -84,7 +84,7 @@ namespace game {
 			m_entity_map.updateVisibility();
 		}
 	}
-
+		
 	void World::removeEntity(EntityRef ref) {
 		if( Entity *entity = refEntity(ref) ) {
 			m_entity_map.remove(ref.index());

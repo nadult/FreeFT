@@ -108,13 +108,6 @@ public:
 				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
 					entityUpdate(chunk);
 			}
-
-			if(m_order) {
-				TempPacket temp;
-				temp << m_order;
-				host->enqueChunk(temp, ChunkType::actor_order, 0);
-				m_order.reset();
-			}
 		}
 	}
 
@@ -132,12 +125,12 @@ public:
 					entityUpdate(chunk);
 			}
 
-			if(m_order) {
+			for(int n = 0; n < (int)m_orders.size(); n++) {
 				TempPacket temp;
-				temp << m_order;
+				temp << m_orders[n];
 				host->enqueChunk(temp, ChunkType::actor_order, 0);
-				m_order.reset();
 			}
+			m_orders.clear();
 		}
 
 		finishSending();
@@ -176,9 +169,10 @@ protected:
 	}
 
 	void replicateOrder(POrder &&order, EntityRef entity_ref) {
+		//TODO: handle cancel_prev
 		if(entity_ref == m_actor_ref) {
-			m_order = std::move(order);
-			m_order_type = m_order->typeId();
+			m_order_type = order->typeId();
+			m_orders.emplace_back(std::move(order));
 			m_order_send_time = getTime();
 		}
 	}
@@ -189,9 +183,10 @@ private:
 	Mode m_mode;
 	PWorld m_world;
 
-	POrder m_order;
 	Address m_server_address;
 
+	vector<POrder> m_orders;
+	bool m_order_cancels_prev;
 	OrderTypeId::Type m_order_type;
 	double m_order_send_time;
 };
