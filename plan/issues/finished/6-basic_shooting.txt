@@ -1,9 +1,9 @@
 Oprócz biegania gracz moze tez strzelać za pomocą różnych broni z różnych postaw
 - dodanie obsługi animacji trzymania broni podczas stania / leżenia / chodzenia / etc.  2h DONE
-- strzelanie do konkretnego celu (jakiejś encji, którą można zniszczyć): dorobienie encji typu Target  2h
-- różne tryby strzelania; zorientowanie się czy da się strzelać trybem ciągłym, a nie tylko krótkimi seriami   2h
-- strzelanie z plazmówek i laserówek, rendering pocisków, strzelanie z rakietnicy  4h
-- rozwalanie Dummy.spr		3h
+- strzelanie do konkretnego celu (jakiejś encji, którą można zniszczyć): dorobienie encji typu Target  2h DROPPED
+- różne tryby strzelania; zorientowanie się czy da się strzelać trybem ciągłym, a nie tylko krótkimi seriami   2h DROPPED
+- strzelanie z plazmówek i laserówek, rendering pocisków, strzelanie z rakietnicy  4h DONE
+- rozwalanie Dummy.spr		3h DROPPED
 - testowanie widoczności (bez dodatkowej struktury przyspieszającej)  4h DONE
 - rozwiązać problemy z przeskakującymi animacjami  DONE
 - kolizje z projectile-ami robimy za pomocą ray-tracingu (ew. później dla rakiet będzie można to zrobić lepiej)  DONE
@@ -13,6 +13,7 @@ issues/5-entities
 
 +ESTIMATED_TIME: 17h
 +TIME_SPENT: 6.00h
++FINISHED
 
 +WORK_LOG:
 22.11.12: 20:30 - 22:00  (1.50h)

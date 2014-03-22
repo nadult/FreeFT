@@ -14,6 +14,10 @@
 #include <set>
 #include <zip.h>
 
+static bool verifyFTPath(string path) {
+	return access(Path(path) / "core");
+}
+
 #ifdef _WIN32
 
 #include <windows.h>
@@ -51,10 +55,6 @@ string browseFolder(const char *message, string starting_path) {
     }
 
     return "";
-}
-
-static bool verifyFTPath(string path) {
-	return access(Path(path) / "core");
 }
 
 static const string locateFTPath() {

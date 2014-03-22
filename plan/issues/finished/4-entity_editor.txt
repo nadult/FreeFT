@@ -18,11 +18,12 @@ Pomysły:
   bez kolizji i tam go wyświetlać
 
 +REQUIREMENTS:
-issues/5-entities
-issues/10-ui_improvements
+5-entities
+10-ui_improvements
 
 +ESTIMATED_TIME: 20h (VERY ROUGH)
 +TIME_SPENT: 28h 20min (+ some time spent on issue #13)
++FINISHED
 
 +WORK_LOG:
 28.12.12: 20:00 - 21:50 (1h 50min)

@@ -19,8 +19,6 @@
 
 - Client cannot connect to server when started much earlier
 
-- TODO: think about handling orders on client / server and replication
-
 - Handle situation when client connection was broken, but server still expects
   normal communication on some specific port, and client tries to reconnect
 

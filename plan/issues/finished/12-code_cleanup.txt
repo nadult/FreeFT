@@ -6,6 +6,7 @@ Porządki i refaktoring kodu:
 
 +ESTIMATED_TIME: 7h
 +TIME_SPENT: 2.75h
++FINISHED
 
 +WORK_LOG:
 11.11.12: 20:45 - 23:30

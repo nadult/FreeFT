@@ -1,0 +1,10 @@
+- Estimating hit chance by throwing multiple rays (brute force) [4h]
+- Ricochets, shooting through objects [3h]
+- two modes of aiming: automatic and manual [3h]
+  - tracing targets for auto mode
+- Possibility to shoot over some obstacle (suppresive fire) [3h]
+
++ESTIMATED_TIME: 13h
++TIME_SPENT:
+
++WORK_LOG:

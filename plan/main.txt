@@ -1,12 +1,9 @@
-TODO:
- - new name
-
 0. Random stuff
  - Alpha release
    issues/15-alpha_release.txt
 
  - Pre-alpha release
-   issues/13-pre_alpha_release.txt DONE  (68h 45min)
+   issues/finished/13-pre_alpha_release.txt (68h 45min)
 
  - Not planned stuff
    issues/0-not_planned.txt (10.25)
@@ -14,35 +11,35 @@ TODO:
 
 1. Map editor
  - prosty edytor tile-ów:
-   issues/1-tile_editor.txt DONE (27 / 18)
+   issues/finished/1-tile_editor.txt (27 / 18)
 
  - proste ui:
-   issues/2-simple_ui.txt DONE	 (16 / 12)
+   issues/finished/2-simple_ui.txt  (16 / 12)
 
  - rozstawianie encji i edycja ich parametrów
-   issues/4-entity_editor.txt
+   issues/finished/4-entity_editor.txt (28 / 20)
 
  - ulepszenia w edytorze
-   issues/8-improve_editor.txt DONE  (9.5 / 12)
+   issues/finished/8-improve_editor.txt  (9.5 / 12)
 
  - ulepszony UI:
-   issues/10-ui_improvements.txt DONE  (20 / 31)
+   issues/finished/10-ui_improvements.txt  (20 / 31)
 
 2. Simple game
  - character movement
-   issues/3-simple_character_movement.txt DONE  (26 / 15)
+   issues/finished/3-simple_character_movement.txt  (26 / 15)
 
  - entities, interaction with environment
-   issues/5-entities.txt  DONE (64 / 18.5)
+   issues/finished/5-entities.txt  (64 / 18.5)
 
  - shooting and destroying objects
-   issues/6-basic_shooting.txt
+   issues/finished/6-basic_shooting.txt  (6 / 6)
 
  - correct navigation
-   issues/7-improve_navigation.txt DONE (13 / 15)
+   issues/finished/7-improve_navigation.txt (13 / 15)
 
  - simple sound system
-   issues/9-simple_audio.txt
+   issues/finished/9-simple_audio.txt (10.5 / 8)
 
  - scripting  SECONDARY
    issues/19-scripting.txt
@@ -57,8 +54,8 @@ TODO:
 - Visibility system:
    issues/16-visibility_system.txt
  
-- combat and simple AI (for critters like rad-scorpions)
-   issues/17-combat_and_simple_ai.txt
+- simple AI (for critters like rad-scorpions)
+   issues/17-simple_ai.txt
 
 - UI: HUD + menus
    issues/18-game_ui.txt
@@ -79,7 +76,7 @@ TODO:
    issues/11-console.txt
  
  - finish refactoring of names
-   issues/12-code_cleanup.txt DONE (3 / 7)
+   issues/finished/12-code_cleanup.txt (3 / 7)
 
  - improve performance only if there is a real need
 

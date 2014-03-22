@@ -1,0 +1,7 @@
+- think about handling orders on client / server and replication
+
+- convert should be run automaticly by game or editor. Some text file should also be created
+  with information about file format versions, so that when .sprite format changes, the game
+  won't crash, but will re-create all sprites automaticly.
+
+- use librocket instead of my own UI?

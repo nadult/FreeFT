@@ -14,5 +14,6 @@
 /data/config.xml
 /data/tiles
 /data/sprites
+/data/sounds
 /data/maps/*.xml
 /media

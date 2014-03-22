@@ -6,7 +6,7 @@
 #include <memory.h>
 #include <cstdio>
 
-#include "input_output.h"
+#include "io/io.h"
 #include "gfx/device.h"
 
 #include "sys/profiler.h"
@@ -21,6 +21,7 @@
 using namespace gfx;
 using namespace game;
 using namespace net;
+using namespace io;
 
 class Client: public net::LocalHost, game::Replicator {
 public:

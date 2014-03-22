@@ -9,6 +9,7 @@ _dummy := $(shell [ -d $(BUILD)/ui ] || mkdir -p $(BUILD)/ui)
 _dummy := $(shell [ -d $(BUILD)/sys ] || mkdir -p $(BUILD)/sys)
 _dummy := $(shell [ -d $(BUILD)/net ] || mkdir -p $(BUILD)/net)
 _dummy := $(shell [ -d $(BUILD)/audio ] || mkdir -p $(BUILD)/audio)
+_dummy := $(shell [ -d $(BUILD)/io ] || mkdir -p $(BUILD)/io)
 _dummy := $(shell [ -d $(BUILD)/game ] || mkdir -p $(BUILD)/game)
 _dummy := $(shell [ -d $(BUILD)/game/orders ] || mkdir -p $(BUILD)/game/orders)
 _dummy := $(shell [ -d $(BUILD)/gameui ] || mkdir -p $(BUILD)/gameui)
@@ -19,7 +20,7 @@ SHARED_SRC=\
 	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/scene_renderer gfx/packed_texture \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/data_sheet \
-	net/socket net/chunk net/host input_output \
+	net/socket net/chunk net/host io/io io/console \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/entity game/entity_world_proxy game/container game/level \
@@ -107,7 +108,7 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD)/%_.o $(BUILD)/sys/pla
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
 			$(MINGW_PROGRAMS) $(DEPS) $(BUILD)/.depend
-	-rmdir $(BUILD)/game/orders $(BUILD)/lz4 $(BUILD)/net
+	-rmdir $(BUILD)/game/orders $(BUILD)/lz4 $(BUILD)/net $(BUILD)/io
 	-rmdir $(BUILD)/gfx $(BUILD)/sys $(BUILD)/ui $(BUILD)/game $(BUILD)/gameui $(BUILD)/editor
 	-rmdir $(BUILD)
 

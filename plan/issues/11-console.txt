@@ -7,3 +7,4 @@ Konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
 +TIME_SPENT: 0h
 
 +WORK_LOG:
+22.03.14: 12:30 - 

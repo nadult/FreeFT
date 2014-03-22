@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-#include "input_output.h"
+#include "io/io.h"
 
 #include "sys/profiler.h"
 #include "sys/platform.h"
@@ -18,7 +18,7 @@
 
 using namespace gfx;
 using namespace game;
-
+using namespace io;
 
 int safe_main(int argc, char **argv)
 {

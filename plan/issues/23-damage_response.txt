@@ -1,0 +1,11 @@
+- falls [3h]
+  - actors can move a bit when falling
+  - actors can be unconscious
+- squirting blood [2h]
+- trails of blood [3h]
+- dodging melee attacks [2h]
+
++ESTIMATED_TIME: 10h
++TIME_SPENT: 0h
+
++WORK_LOG:

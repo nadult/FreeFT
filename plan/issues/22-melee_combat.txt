@@ -1,0 +1,9 @@
+- Figting unarmed and with melee weapons [4h]
+- Different weapons and attacks have different ranges [1h]
+- collision tests [3h]
+
+
++ESTIMATED_TIME: 11h
++TIME_SPENT: 0h
+
++WORK_LOG:
