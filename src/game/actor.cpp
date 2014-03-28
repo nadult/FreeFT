@@ -232,6 +232,11 @@ namespace game {
 
 		handleOrder(ActorEvent::sound);
 	}
+		
+	bool Actor::isDead() const {
+		return m_order && m_order->typeId() == OrderTypeId::die &&
+				static_cast<DieOrder*>(m_order.get())->m_is_dead;
+	}
 
 	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
 		if(isClient())

@@ -40,6 +40,7 @@ namespace game {
 		EntityRef(int index) :m_index(index), m_unique_id(-1) { DASSERT(index >= -1); }
 		EntityRef() :m_index(-1), m_unique_id(-1) { }
 		bool isEmpty() const { return m_index == -1; }
+		operator ObjectRef() const { return ObjectRef(m_index, true); }
 		explicit operator bool() const { return !isEmpty(); }
 
 		void operator=(const EntityRef &rhs) {
@@ -55,6 +56,7 @@ namespace game {
 		void save(Stream&) const;
 		void load(Stream&);
 		int index() const { return m_index; }
+		bool operator<(const EntityRef &rhs) const { return m_index < rhs.m_index; }
 		
 	private:
 		EntityRef(int index, int unique_id) :m_index(index), m_unique_id(unique_id) { }
@@ -139,10 +141,10 @@ namespace game {
 		virtual Entity *clone() const = 0;
 
 		virtual ColliderFlags colliderType() const = 0;
-		virtual EntityId::Type entityType() const = 0; //TODO: change to typeId
+		virtual EntityId::Type typeId() const = 0; //TODO: change to typeId
 		virtual bool renderAsOverlay() const { return false; }
 
-		virtual void addToRender(gfx::SceneRenderer&) const;
+		virtual void addToRender(gfx::SceneRenderer&, Color color = Color::white) const;
 		virtual void interact(const Entity *interactor) { }
 		virtual void onImpact(DeathTypeId::Type, float damage) { }
 
@@ -255,7 +257,7 @@ namespace game {
 		virtual Entity *clone() const {
 			return new Type(*static_cast<const Type*>(this));
 		}
-		virtual EntityId::Type entityType() const {
+		virtual EntityId::Type typeId() const {
 			return EntityId::Type(type_id_);
 		}
 		virtual void save(Stream &sr) const {
@@ -280,7 +282,7 @@ namespace game {
 	template <class TEntity>
 	TEntity *EntityWorldProxy::refEntity(EntityRef ref) {
 		Entity *entity = refEntity(ref);
-		if(entity && entity->entityType() == (EntityId::Type)TEntity::type_id)
+		if(entity && entity->typeId() == (EntityId::Type)TEntity::type_id)
 			return static_cast<TEntity*>(entity);
 		return nullptr;
 	}

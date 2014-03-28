@@ -134,7 +134,7 @@ public:
 					TempPacket temp;
 
 					if(entity) {
-						temp << entity->entityType() << *entity;
+						temp << entity->typeId() << *entity;
 					}
 
 					if(host.enqueUChunk(temp, entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))

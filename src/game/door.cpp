@@ -121,10 +121,6 @@ namespace game {
 		m_bbox = computeBBox(m_state);
 	}
 	
-	Entity *Door::clone() const {
-		return new Door(*this);
-	}
-	
 	void Door::setKey(const Item &key) {
 		DASSERT(key.type() == ItemType::other);
 		m_key = key;

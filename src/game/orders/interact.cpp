@@ -36,7 +36,7 @@ namespace game {
 				return false;
 
 			if(order.m_mode == InteractionMode::undefined) {
-				if(target->entityType() == EntityId::item)
+				if(target->typeId() == EntityId::item)
 					order.m_mode = InteractionMode::pickup;
 				else
 					order.m_mode = InteractionMode::normal;

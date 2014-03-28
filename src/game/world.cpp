@@ -10,9 +10,9 @@
 #include "game/tile.h"
 #include "gfx/scene_renderer.h"
 #include "navi_heightmap.h"
-#include <cstdio>
 #include "audio/device.h"
 #include "game/actor.h"
+#include <algorithm>
 
 namespace game {
 
@@ -98,22 +98,26 @@ namespace game {
 		index = m_entity_map.add(std::move(ptr), index);
 		entity->hook(this, index);
 		replicate(index);
-		return entity->ref();
+
+		EntityRef ref = entity->ref();
+		for(int n = 0; n < (int)m_listeners.size(); n++)
+			m_listeners[n]->onAddEntity(ref);
+		return ref;
 	}
 
-	void World::addToRender(gfx::SceneRenderer &renderer) {
+	void World::addToRender(gfx::SceneRenderer &renderer, int flags) {
 		PROFILE("World::addToRender");
 
 		vector<int> inds;
 		inds.reserve(8192);
-		m_tile_map.findAll(inds, renderer.targetRect(), collider_all|visibility_flag);
+		m_tile_map.findAll(inds, renderer.targetRect(), flags);
 		for(int n = 0; n < (int)inds.size(); n++) {
 			const auto &obj = m_tile_map[inds[n]];
 			obj.ptr->addToRender(renderer, (int3)obj.bbox.min);
 		}
 
 		inds.clear();
-		m_entity_map.findAll(inds, renderer.targetRect(), collider_all|visibility_flag);
+		m_entity_map.findAll(inds, renderer.targetRect(), flags);
 
 		for(int n = 0; n < (int)inds.size(); n++) {
 			const auto &obj = m_entity_map[inds[n]];
@@ -179,8 +183,23 @@ namespace game {
 		m_replace_list.clear();
 
 		m_last_time = current_time;
+		
+		for(int n = 0; n < (int)m_listeners.size(); n++)
+			m_listeners[n]->onSimulate(time_diff);
 	}
 	
+	const Grid::ObjectDef *World::refDesc(ObjectRef ref) const {
+		if(ref.isTile()) {
+		   	if(ref.m_index >= 0 && ref.m_index < m_tile_map.size())
+				return (const Grid::ObjectDef*)&m_tile_map[ref.m_index];
+		}
+		else {
+		   	if(ref.m_index >= 0 && ref.m_index < m_entity_map.size())
+				return (const Grid::ObjectDef*)&m_entity_map[ref.m_index];
+		}
+
+		return nullptr;
+	}
 	
 	const FBox World::refBBox(ObjectRef ref) const {
 		if(ref.isTile()) {
@@ -337,6 +356,16 @@ namespace game {
 		if( Actor *entity = refEntity<Actor>(actor_ref) )
 			return entity->setOrder(std::move(order_ptr));
 		return false;
+	}
+		
+	void World::addListener(WorldListener *listener) {
+		DASSERT(listener);
+		m_listeners.push_back(listener);
+	}
+
+	void World::removeListener(WorldListener *listener) {
+		m_listeners.resize(
+				std::remove(m_listeners.begin(), m_listeners.end(), listener) - m_listeners.begin());
 	}
 
 }

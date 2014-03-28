@@ -63,7 +63,8 @@ namespace game {
 		actor,
 		item,
 		projectile,
-		impact
+		impact,
+		shadow
 	)
 
 	DECLARE_ENUM(TileId,

@@ -140,6 +140,7 @@ namespace game {
 		
 		bool canEquipItem(int item_id) const;
 		bool canChangeStance() const;
+		bool isDead() const;
 
 	private:
 		void think();

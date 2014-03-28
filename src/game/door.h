@@ -55,8 +55,6 @@ namespace game
 		Door(const DoorProto &proto);
 
 		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
-		virtual EntityId::Type entityType() const { return EntityId::door; }
-		virtual Entity *clone() const;
 		
 		virtual void interact(const Entity*);
 		virtual void onSoundEvent();

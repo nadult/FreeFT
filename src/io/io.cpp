@@ -9,6 +9,7 @@
 #include "game/actor.h"
 #include "game/item.h"
 #include "game/container.h"
+#include "game/visibility.h"
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -21,7 +22,7 @@ namespace io {
 
 	IO::IO(const int2 &resolution, PWorld world, EntityRef actor_ref, bool show_stats)
 		:m_console(resolution), m_world(world), m_actor_ref(actor_ref), m_resolution(resolution),
-		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats) {
+		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats), m_vis_info(world, actor_ref)  {
 			DASSERT(world);
 			const Actor *actor = m_world->refEntity<Actor>(actor_ref);
 			if(actor)
@@ -43,6 +44,8 @@ namespace io {
 		if(m_isect.isEmpty() || m_isect.isTile())
 			m_isect = m_world->trace(ray, actor, collider_tile_walkable|collider_entities|visibility_flag);
 		
+		//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
+		// has to intersect bounding box of the object
 		m_full_isect = m_world->pixelIntersect(mouse_pos + m_view_pos, collider_all|visibility_flag);
 		if(m_full_isect.isEmpty())
 			m_full_isect = m_world->trace(ray, actor, collider_all|visibility_flag);
@@ -64,12 +67,14 @@ namespace io {
 
 		m_console.processInput();
 
-		if(!m_isect.isEmpty()) {
+		if(!m_full_isect.isEmpty()) {
 			//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
-			float3 look_at = ray.at(m_isect.distance());
-			if(look_at != m_last_look_at) {
-				m_world->sendOrder(new LookAtOrder(look_at), m_actor_ref);
-				m_last_look_at = look_at;
+			if(m_full_isect.distance() < constant::inf && m_full_isect.distance() > -constant::inf) {
+				float3 look_at = ray.at(m_full_isect.distance());
+				if(look_at != m_last_look_at) {
+					m_world->sendOrder(new LookAtOrder(look_at), m_actor_ref);
+					m_last_look_at = look_at;
+				}
 			}
 		}
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
@@ -165,7 +170,8 @@ namespace io {
 
 		if(actor)
 			m_world->updateVisibility(actor->boundingBox());
-		m_world->addToRender(renderer);
+		m_world->addToRender(renderer, collider_tiles | collider_static | visibility_flag);
+		m_vis_info.addToRender(renderer);
 
 		renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 

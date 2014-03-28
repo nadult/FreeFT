@@ -26,11 +26,13 @@ namespace game
 	}
 
 	int Sprite::MultiPalette::size(int layer) const {
+		DASSERT(layer >= 0 && layer < layer_count);
 		int next = layer == layer_count - 1? (int)colors.size() : offset[layer + 1];
 		return next - offset[layer];
 	}
 
 	const Color *Sprite::MultiPalette::access(int layer) const {
+		DASSERT(layer >= 0 && layer < layer_count);
 		return colors.data() + offset[layer];
 	}
 

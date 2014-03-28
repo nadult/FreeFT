@@ -17,9 +17,16 @@ namespace game {
 
 	class Replicator {
 	public:
-		virtual ~Replicator() { }
+		virtual ~Replicator() = default;
 		virtual void replicateEntity(int entity_id) { }
 		virtual void replicateOrder(POrder&&, EntityRef) { }
+	};
+
+	class WorldListener {
+	public:
+		virtual ~WorldListener() = default;
+		virtual void onAddEntity(EntityRef) { }
+		virtual void onSimulate(double time_diff) { }
 	};
 
 	class World: public RefCounter {
@@ -53,7 +60,7 @@ namespace game {
 
 		void updateNaviMap(bool full_recompute);
 	
-		void addToRender(gfx::SceneRenderer&);
+		void addToRender(gfx::SceneRenderer&, int flags = collider_all|visibility_flag);
 
 		double timeDelta() const { return m_time_delta; }
 		double currentTime() const { return m_current_time; }
@@ -63,7 +70,8 @@ namespace game {
 		const TileMap &tileMap() const { return m_level.tile_map; }
 		const NaviMap &naviMap() const { return m_navi_map; }
 		NaviMap &naviMap() { return m_navi_map; }
-	
+
+		const Grid::ObjectDef *refDesc(ObjectRef) const;
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
 		Entity *refEntity(EntityRef);
@@ -71,7 +79,7 @@ namespace game {
 		template <class TEntity>
 		TEntity *refEntity(EntityRef ref) {
 			Entity *entity = refEntity(ref);
-			if(entity && entity->entityType() == (EntityId::Type)TEntity::type_id)
+			if(entity && entity->typeId() == (EntityId::Type)TEntity::type_id)
 				return static_cast<TEntity*>(entity);
 			return nullptr;
 		}
@@ -98,6 +106,9 @@ namespace game {
 
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
 
+		void addListener(WorldListener*);
+		void removeListener(WorldListener*);
+
 	private:
 		const Mode m_mode;
 		string m_map_name;
@@ -118,6 +129,7 @@ namespace game {
 		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
 
 		Replicator *m_replicator;
+		vector<WorldListener*> m_listeners;
 		friend class EntityWorldProxy;
 	};
 

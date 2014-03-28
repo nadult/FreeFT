@@ -19,6 +19,7 @@ namespace game {
 		void save(Stream&) const;
 		
 		DeathTypeId::Type m_death_id;
+		bool m_is_dead;
 	};
 
 }

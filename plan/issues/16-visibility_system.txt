@@ -1,16 +1,19 @@
 - Visibility tests (what our character can see)
   - done on the client side, throws 8-16 rays toward the target  (2h)
-  - vis tests done only for dynamic targets (characters, projectiles, etc.)  (1h)
-  - blending in/out when visiblity status changes  (4h)
+  - vis tests done only for dynamic targets (characters, projectiles, etc.)  (1h)  DONE
+  - blending in/out when visiblity status changes  (4h)  DONE
 - More control over occlusion system  (6h)
   - if he's under occluder, then it should be disabled
   - using shift key to look inside?
 - Properly computing bounding box of actors (depending on actor's stance) (2h)
-- Blending in / out objects (2h)
 
 
-+ESTIMATED_TIME: 15h
++ESTIMATED_TIME: 13h
 +TIME_SPENT:
 
 +WORK_LOG:
-22.03.14: 19:00 - 
+22.03.14: 19:00 - 21:30
+23.03.14: 11:30 - 13:00
+26.03.14: 7:45 - 9:15
+27.03.14: 8:00 - 9:15
+28.03.14: 11:00 - 13:00

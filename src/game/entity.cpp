@@ -40,7 +40,7 @@ namespace game {
 	}
 
 	XMLNode Entity::save(XMLNode &parent) const {
-		XMLNode node = parent.addChild(EntityId::toString(entityType()));
+		XMLNode node = parent.addChild(EntityId::toString(typeId()));
 		node.addAttrib("pos", m_pos);
 		node.addAttrib("angle", m_dir_angle);
 		return node;
@@ -141,7 +141,7 @@ namespace game {
 		return  rect + (int2)worldToScreen(pos());
 	}
 
-	void Entity::addToRender(gfx::SceneRenderer &out) const {
+	void Entity::addToRender(gfx::SceneRenderer &out, Color color) const {
 		//PROFILE("Entity::addToRender");
 		IRect rect = m_sprite.getRect(m_seq_idx, m_frame_idx, m_dir_idx);
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))
@@ -155,13 +155,13 @@ namespace game {
 
 		FRect tex_rect;
 		PTexture tex = m_sprite.getFrame(m_seq_idx, m_frame_idx, m_dir_idx, tex_rect);
-		bool added = out.add(tex, rect, m_pos, bbox, Color::white, tex_rect, as_overlay);
+		bool added = out.add(tex, rect, m_pos, bbox, color, tex_rect, as_overlay);
 	
 	 	if(added && m_oseq_idx != -1 && m_oframe_idx != -1) {
 			//TODO: overlay may be visible, while normal sprite is not!
 			rect = m_sprite.getRect(m_oseq_idx, m_oframe_idx, m_dir_idx);
 			PTexture ov_tex = m_sprite.getFrame(m_oseq_idx, m_oframe_idx, m_dir_idx, tex_rect);
-			out.add(ov_tex, rect, m_pos, bbox, Color::white, tex_rect, true);
+			out.add(ov_tex, rect, m_pos, bbox, color, tex_rect, true);
 		}
 
 	//	bbox += pos();
