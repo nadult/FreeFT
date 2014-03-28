@@ -6,12 +6,8 @@
 ## Introduction
 FreeFT is an open-source, real-time, isometric action game engine
 inspired by Fallout Tactics, a game from 2001 done by Australian company,
-Micro Forte. Initially the goal was to make an RPG engine, which every
-modder could use to create his own game in post-apocalyptic world. However,
-because of lack of interest, I've decided that it would be better first to
-create a simple, but playable game and only after it gains some interest,
-more advanced features and RPG elements will be added.
-
+Micro Forte.
+ 
 More information about this project, screensots and compiled binaries can be found here:
 [http://freeft.net](http://freeft.net)
 
