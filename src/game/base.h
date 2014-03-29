@@ -97,6 +97,7 @@ namespace game {
 		burst,
 		thrust,
 		slash,
+		swing,
 		throwing,
 		punch,
 		kick
@@ -112,6 +113,7 @@ namespace game {
 			burst		= toFlags(AttackMode::burst),
 			thrust		= toFlags(AttackMode::thrust),
 			slash		= toFlags(AttackMode::slash),
+			swing		= toFlags(AttackMode::swing),
 			throwing	= toFlags(AttackMode::throwing),
 			punch		= toFlags(AttackMode::punch),
 			kick		= toFlags(AttackMode::kick)
@@ -162,6 +164,7 @@ namespace game {
 		SoundId() :m_id(-1) { }
 		SoundId(const char *sound_name);
 		operator int() const { return m_id; }
+		bool isValid() const { return m_id != -1; }
 
 	protected:
 		int m_id;

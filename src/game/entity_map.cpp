@@ -70,7 +70,7 @@ namespace game
 			index = findFreeObject();
 		Entity *entity = ptr.get();
 
-		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()));
+		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()|visibility_flag));
 		updateOccluderId(index);
 		ptr.release();
 

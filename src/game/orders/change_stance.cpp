@@ -33,7 +33,8 @@ namespace game {
 		if(m_stance == target_stance)
 			order.finish();
 		else
-			animate(m_stance < target_stance? Action::stance_up : Action::stance_down);
+			if(!animate(m_stance < target_stance? Action::stance_up : Action::stance_down))
+				return false;
 
 		return true;
 	}

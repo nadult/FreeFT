@@ -103,6 +103,7 @@ namespace game {
 
 		void connect();
 
+		ProtoRef<WeaponProto> unarmed_weapon;
 		string sound_prefix;
 		bool is_heavy;
 		bool is_alive;
@@ -113,6 +114,7 @@ namespace game {
 		//TODO: add sound variations, each actor instance will have different sound set
 		SoundId death_sounds[DeathTypeId::count];
 		SoundId human_death_sounds[DeathTypeId::count];
+		SoundId kick_sound;
 	};
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {

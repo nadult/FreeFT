@@ -1,7 +1,3 @@
-- reaction to damage  3h
-  - if its a hard hit, it will force player to stop current action
-  - projectiles can inflict critical damage
-
 - possibility to shoot on target (when it's moving, there should be some compenstation)
   and off target (in the specific direction, where player thinks the enemy will be,
   or as a support fire  6h
@@ -21,11 +17,6 @@
   - no skills for now
 
 - respawning when dead  4h
-
-- explosions?  SECONDARY
-
-+REQUIREMENTS:
-issues/6-basic_shooting
 
 +ESTIMATED_TIME: 27h
 +TIME_SPENT:

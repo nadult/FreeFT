@@ -211,13 +211,14 @@ void Grid::findAll(vector<int> &out, const IRect &view_rect, int flags) const {
 			const Object *objects[node.size];
 			int count = extractObjects(node_id, objects, -1, flags);
 
-			for(int n = 0; n < count; n++)
+			for(int n = 0; n < count; n++) {
 				if(areOverlapping(view_rect, objects[n]->rect())) {
 					if(objects[n]->node_id == -1)
 						disableOverlap(objects[n]);
 					out.push_back(objects[n] - &m_objects[0]);
 					anything_found = true;
 				}
+			}
 
 			if(!anything_found && node.is_dirty)
 				updateNode(node_id);	

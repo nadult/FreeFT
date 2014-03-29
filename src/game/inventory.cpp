@@ -116,13 +116,9 @@ namespace game {
 		return true;
 	}
 
-	ActorInventory::ActorInventory()
-		:m_weapon(dummyWeapon()), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} { }
+	ActorInventory::ActorInventory(Weapon dummy_weapon)
+		:m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} { }
 		
-	const Weapon ActorInventory::dummyWeapon() {
-		return Weapon(findProto("_dummy_weapon", ProtoId::item_weapon));
-	}
-
 	const Armour ActorInventory::dummyArmour() {
 		return Armour(findProto("_dummy_armour", ProtoId::item_armour));
 	}
@@ -148,7 +144,7 @@ namespace game {
 		if(item_type == ItemType::weapon) {
 			if(!m_weapon.isDummy()) {
 				ret = add(m_weapon, 1);
-				m_weapon = dummyWeapon();
+				m_weapon = m_dummy_weapon;
 			}
 		}
 		else if(item_type == ItemType::armour) {
@@ -160,7 +156,7 @@ namespace game {
 		else if(item_type == ItemType::ammo) {
 			if(!m_ammo.item.isDummy()) {
 				ret = add(m_ammo.item, m_ammo.count);
-				m_ammo.item = dummyWeapon();
+				m_ammo.item = dummyAmmo();
 				m_ammo.count = 0;
 			}
 		}
@@ -218,7 +214,7 @@ namespace game {
 		u8 flags;
 		sr >> flags;
 
-		m_weapon = flags & 1? Weapon(Item(sr)) : dummyWeapon();
+		m_weapon = flags & 1? Weapon(Item(sr)) : m_dummy_weapon;
 		m_armour = flags & 2? Armour(Item(sr)) : dummyArmour();
 		m_ammo.item = flags & 4? Item(sr) : dummyAmmo();
 		m_ammo.count = flags & 4? sr.decodeInt() : 0;

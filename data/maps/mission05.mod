@@ -109,7 +109,7 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="69">
+<entity_map size="1056 936" entity_count="72">
 	<container pos="162 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<container pos="165 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<actor pos="167 147 405" angle="0" proto_type="actor" proto_id="mutant"/>
@@ -135,6 +135,9 @@ CRC32 d1c72fa9
 	<actor pos="221 128 307" angle="0.785398" proto_type="actor" proto_id="mutant"/>
 	<door pos="228 115 270" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<door pos="228 115 324" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
+	<item pos="233 128 331" angle="0" proto_type="weapon" proto_id="club" item_count="1"/>
+	<item pos="236 128 338" angle="0" proto_type="weapon" proto_id="finger_claws" item_count="1"/>
+	<item pos="237 128 335" angle="0" proto_type="weapon" proto_id="knife" item_count="1"/>
 	<item pos="238 128 366" angle="3.141593" proto_type="armour" proto_id="leather_armour" item_count="1"/>
 	<item pos="238 128 373" angle="3.141593" proto_type="armour" proto_id="metal_armour" item_count="1"/>
 	<item pos="243 128 370" angle="3.141593" proto_type="armour" proto_id="power_armour" item_count="1"/>

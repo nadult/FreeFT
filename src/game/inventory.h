@@ -44,17 +44,15 @@ namespace game {
 
 	class ActorInventory: public Inventory {
 	public:
-		ActorInventory();
+		ActorInventory(Weapon dummy_weapon);
 
 		bool equip(int id, int count = 1);
 		bool isEquipped(ItemType::Type);
 		int unequip(ItemType::Type);
 
-
 		const string printMenu(int select) const;
 		float weight() const;
 
-		static const Weapon dummyWeapon();
 		static const Armour dummyArmour();
 		static const Item   dummyAmmo();
 
@@ -67,7 +65,7 @@ namespace game {
 		void load(Stream&);
 
 	protected:
-		Weapon m_weapon;
+		Weapon m_weapon, m_dummy_weapon;
 		Armour m_armour;
 		Entry  m_ammo;
 	};

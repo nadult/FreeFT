@@ -65,6 +65,7 @@ namespace game {
 	
 		vector<int3> findPath(const int3 &start, const int3 &end) const;
 
+		TileMap &tileMap() { return m_level.tile_map; }
 		const TileMap &tileMap() const { return m_level.tile_map; }
 		const NaviMap &naviMap() const { return m_navi_map; }
 		NaviMap &naviMap() { return m_navi_map; }

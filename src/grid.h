@@ -8,6 +8,8 @@
 
 #include "base.h"
 
+class OccluderStatus;
+
 // When accessing objects directly, you have to check ptr for null,
 // because some of the objects may be invalid; you don't have to check
 // if you're accesing object at index returned from one of the interection

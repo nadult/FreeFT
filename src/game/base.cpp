@@ -99,6 +99,7 @@ namespace game {
 		"burst",
 		"thrust",
 		"slash",
+		"swing",
 		"throw",
 		"punch",
 		"kick"
@@ -122,7 +123,7 @@ namespace game {
 	Proto::Proto(const TupleParser &parser) {
 		id = parser("id");
 		idx = -1;
-		is_dummy = strncmp(id.c_str(), "_dummy", 6) == 0;
+		is_dummy = id[0] == '_';
 	}
 
 	struct ProtoDef {

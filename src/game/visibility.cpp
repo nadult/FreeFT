@@ -12,7 +12,7 @@
 namespace game {
 
 	WorldViewer::WorldViewer(PWorld world, EntityRef spectator)
-		:m_world(world), m_spectator(spectator) {
+		:m_world(world), m_spectator(spectator), m_occluder_config(world->tileMap().occluderMap()) {
 		DASSERT(m_world);
 		m_world->addListener(this);
 	}
@@ -186,9 +186,9 @@ namespace game {
 				}
 			}
 		}
-		const OccluderMap &occmap = m_world->tileMap().occluderMap();
-		if(occmap.updateVisibility(spectator->boundingBox(), m_occluders_info)) {
-		}
+
+		if(m_occluder_config.update(spectator->boundingBox()))
+			m_world->tileMap().updateVisibility(m_occluder_config);
 	}
 		
 	const FBox WorldViewer::refBBox(ObjectRef ref) const {
@@ -222,13 +222,10 @@ namespace game {
 		inds.reserve(8192);
 
 		const TileMap &tile_map = m_world->tileMap();
-		tile_map.findAll(inds, renderer.targetRect());
+		tile_map.findAll(inds, renderer.targetRect(), collider_all | visibility_flag);
 
-		for(int n = 0; n < (int)inds.size(); n++) {
-			const auto &obj = tile_map[inds[n]];
-			if(testOccluder(obj.occluder_id))
-				obj.ptr->addToRender(renderer, (int3)obj.bbox.min);
-		}
+		for(int n = 0; n < (int)inds.size(); n++)
+			tile_map[inds[n]].ptr->addToRender(renderer, (int3)tile_map[inds[n]].bbox.min);
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			const VisEntity &vis_entity = m_entities[n];
@@ -244,7 +241,7 @@ namespace game {
 			const Entity *entity = vis_entity.mode == VisEntity::shadowed?
 				vis_entity.shadow.get() : m_world->refEntity(vis_entity.ref);
 
-			if(entity && testOccluder(vis_entity.occluder_id))
+			if(entity && m_occluder_config.isVisible(vis_entity.occluder_id))
 				entity->addToRender(renderer, Color(1.0f, 1.0f, 1.0f, blend_value));
 		}
 	}
@@ -256,12 +253,10 @@ namespace game {
 		if(flags & collider_tiles) {
 			const TileMap &tile_map = m_world->tileMap();
 			vector<int> inds;
-			tile_map.findAll(inds, IRect(screen_pos, screen_pos + int2(1, 1)), flags);
+			tile_map.findAll(inds, IRect(screen_pos, screen_pos + int2(1, 1)), flags | visibility_flag);
 
 			for(int i = 0; i < (int)inds.size(); i++) {
 				const auto &desc = tile_map[inds[i]];
-				if(!testOccluder(desc.occluder_id))
-					continue;
 				
 				FBox bbox = desc.bbox;
 				
@@ -275,7 +270,7 @@ namespace game {
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			const Entity *entity = refEntity(n);
-			if(!entity || !testOccluder(m_entities[n].occluder_id) || !(entity->colliderType() & flags))
+			if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !(entity->colliderType() & flags))
 				continue;
 			FBox bbox = entity->boundingBox();
 
@@ -294,25 +289,13 @@ namespace game {
 	Intersection WorldViewer::trace(const Segment &segment, const Entity *ignore, int flags) const {
 		Intersection out;
 
-		if(flags & collider_tiles) {
-			const TileMap &tile_map = m_world->tileMap();
-			vector<pair<int, float> > inds;
-			tile_map.traceAll(inds, segment, -1, flags);
-
-			for(int i = 0; i < (int)inds.size(); i++) {
-				const auto &desc = tile_map[inds[i].first];
-				if(!testOccluder(desc.occluder_id))
-					continue;
-				
-				if(out.isEmpty() || inds[i].second < out.distance())
-					out = Intersection(ObjectRef(inds[i].first, false), inds[i].second);
-			}
-		}
+		if(flags & collider_tiles)
+			out = m_world->trace(segment, nullptr, (flags & collider_tiles) | visibility_flag);
 
 		if(flags & collider_entities)
 			for(int n = 0; n < (int)m_entities.size(); n++) {
 				const Entity *entity = refEntity(n);
-				if(!entity || !testOccluder(m_entities[n].occluder_id) || !(entity->colliderType() & flags))
+				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !(entity->colliderType() & flags))
 					continue;
 
 				float distance = intersection(segment, entity->boundingBox());
@@ -321,12 +304,6 @@ namespace game {
 			}
 
 		return out;
-	}
-		
-	bool WorldViewer::testOccluder(int occluder_id) const {
-		if(occluder_id < 0 || occluder_id >= (int)m_occluders_info.size())
-			return true;
-		return m_occluders_info[occluder_id].is_visible;
 	}
 
 }

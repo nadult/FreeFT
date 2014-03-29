@@ -8,6 +8,7 @@
 #define EDITOR_VIEW_H
 
 #include "base.h"
+#include "occluder_map.h"
 
 namespace ui {
 
@@ -28,6 +29,8 @@ namespace ui {
 
 	private:
 		game::TileMap &m_tile_map;
+		OccluderConfig m_occluder_config;
+
 		int m_height, m_cell_size;
 		bool m_is_visible;
 		int2 m_view_pos;

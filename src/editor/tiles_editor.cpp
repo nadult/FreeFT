@@ -407,7 +407,8 @@ namespace ui {
 		{
 			vector<int> visible_ids;
 			visible_ids.reserve(1024 * 8);
-			m_tile_map.findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
+			m_tile_map.findAll(visible_ids, renderer.targetRect(), collider_all | visibility_flag);
+
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 			vector<Color> tile_colors(visible_ids.size(), Color::white);
 

@@ -34,7 +34,7 @@ namespace game {
 		IRect rect = tile->rect() + worldToScreen(pos);
 		ASSERT(findAny(bbox) == -1);
 		int index = findFreeObject();
-		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())));
+		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type()) | visibility_flag));
 		return index;
 	}
 
@@ -141,6 +141,11 @@ namespace game {
 		}
 
 		m_occluder_map.saveToXML(tile_ids, doc);
+	}
+		
+	void TileMap::updateVisibility(const OccluderConfig &config) {
+		config.setVisibilityFlag(*(Grid*)this, visibility_flag);
+		updateNodes();
 	}
 
 }

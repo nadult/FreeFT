@@ -56,10 +56,9 @@ namespace game {
 
 		bool isMovable(const Entity&) const;
 		bool isVisible(const FBox &box, int index, bool is_movable) const;
-		bool testOccluder(int occluder_id) const;
 
 		vector<VisEntity> m_entities;
-		vector<OccluderStatus> m_occluders_info;
+		OccluderConfig m_occluder_config;
 
 		PWorld m_world;
 

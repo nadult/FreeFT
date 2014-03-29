@@ -14,6 +14,7 @@ namespace game {
 	//TODO: melee sounds
 
 	DECLARE_ENUM(WeaponSoundType,
+		normal,
 		fire_single,
 		fire_burst,
 		reload,

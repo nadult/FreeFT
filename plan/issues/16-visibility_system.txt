@@ -1,11 +1,12 @@
 - Visibility tests (what our character can see)
-  - done on the client side, throws 8-16 rays toward the target  (2h)
+  - done on the client side, throws 8-16 rays toward the target  (2h)  DONE
   - vis tests done only for dynamic targets (characters, projectiles, etc.)  (1h)  DONE
   - blending in/out when visiblity status changes  (4h)  DONE
 - More control over occlusion system  (6h)
   - if he's under occluder, then it should be disabled
   - using shift key to look inside?
-- Properly computing bounding box of actors (depending on actor's stance) (2h)
+- Properly computing bounding box of actors (depending on actor's stance) (2h)  DONE
+- Fix visibility system in editor (editor/view.cpp)
 
 
 +ESTIMATED_TIME: 13h
@@ -17,4 +18,4 @@
 26.03.14: 7:45 - 9:15
 27.03.14: 8:00 - 9:15
 28.03.14: 11:00 - 14:00, 15:00 - 17:30, 21:00 - 22:30
-29.03.14: 11:00 - 
+29.03.14: 11:00 - 12:15

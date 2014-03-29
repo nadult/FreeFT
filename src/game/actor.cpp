@@ -16,7 +16,8 @@
 
 namespace game {
 
-	Actor::Actor(Stream &sr) :EntityImpl(sr), m_actor(*m_proto.actor) {
+	Actor::Actor(Stream &sr)
+	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)) {
 		u8 flags;
 		sr.unpack(flags, m_stance, m_action);
 		if(flags & 1) {
@@ -37,13 +38,14 @@ namespace game {
 		sr >> m_inventory;
 	}
 
-	Actor::Actor(const XMLNode &node) :EntityImpl(node), m_actor(*m_proto.actor), m_stance(Stance::stand), m_target_angle(dirAngle()) {
+	Actor::Actor(const XMLNode &node)
+	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
 		animate(Action::idle);
 		updateOrderFunc();
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
-		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()) {
+		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
 		animate(Action::idle);
 		updateOrderFunc();
 	}

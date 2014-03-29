@@ -67,7 +67,8 @@ static const char *s_load_dialog_names[] = {
 class EditorWindow: public Window
 {
 public:
-	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
+	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::transparent),
+	  m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
 		m_left_width = width() / 5;
 
 		m_mode = editing_tiles;

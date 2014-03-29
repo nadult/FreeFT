@@ -8,6 +8,7 @@
 namespace game {
 
 	DEFINE_ENUM(WeaponSoundType,
+		"",
 		"single",
 		"burst",
 		"reload",
@@ -29,6 +30,8 @@ namespace game {
 			snprintf(name, sizeof(name), "%s%s", sound_prefix, WeaponSoundType::toString(n));
 			sound_ids[n] = SoundId(name);
 		}
+		if(!sound_ids[WeaponSoundType::normal].isValid())
+			sound_ids[WeaponSoundType::normal] = sound_ids[WeaponSoundType::fire_single];
 	}
 		
 	void WeaponProto::connect() {

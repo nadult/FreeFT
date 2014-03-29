@@ -16,7 +16,6 @@ namespace ui
 		DTexture::bind0();
 		float3 fcolor = (float3)color;
 		float falpha = float(color.a) * (1.0f / 255.0f);
-		printf("al: %f\n", falpha);
 
 		Color lighter(fcolor * 1.2f, falpha);
 		Color darker(fcolor * 0.8f, falpha);

@@ -145,6 +145,7 @@ namespace game {
 		}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
+		unarmed_weapon = parser("unarmed_weapon");
 		sound_prefix = parser("sound_prefix");
 		is_heavy = toBool(parser("is_heavy"));
 		is_alive = toBool(parser("is_alive"));
@@ -158,6 +159,7 @@ namespace game {
 
 	void ActorProto::connect() {
 		ActorArmourProto::connect();
+		unarmed_weapon.connect();
 
 		for(int d = 0; d < DeathTypeId::count; d++) {
 			char text[256];
@@ -168,6 +170,8 @@ namespace game {
 			snprintf(text, sizeof(text), "human%s", death_name);
 			human_death_sounds[d] = SoundId(text);
 		}
+
+		kick_sound = SoundId("kick");
 	}
 
 	enum { invalid_id = 255 };

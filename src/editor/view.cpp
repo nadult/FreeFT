@@ -14,14 +14,16 @@ using namespace gfx;
 namespace ui {
 
 	View::View(game::TileMap &tile_map, const int2 &view_size)
-		:m_tile_map(tile_map), m_height(1), m_cell_size(1), m_is_visible(false), m_view_size(view_size), m_view_pos(-200, 300) { }
+		:m_tile_map(tile_map), m_occluder_config(tile_map.occluderMap()), m_height(1), m_cell_size(1),
+		m_is_visible(false), m_view_size(view_size), m_view_pos(-200, 300) {
+		updateVisibility();
+	}
 
 	void View::drawGrid() const {
 		if(!m_is_visible)
 			return;
 
 		const int2 tile_map_size = m_tile_map.dimensions();
-
 
 		int2 p[4] = {
 			screenToWorld(m_view_pos + int2(0, 0)),
@@ -94,20 +96,14 @@ namespace ui {
 	}
 
 	void View::updateVisibility(int cursor_height) {
-		//TODO: rewrite me pls
-	/*	OccluderMap &occmap = m_tile_map.occluderMap();
 		float max_pos = m_height + cursor_height;
-		bool has_changed = false;
 
-		for(int n = 0; n < occmap.size(); n++) {
-			bool is_visible =occmap[n].bbox.min.y <= max_pos;
-			has_changed |= is_visible != occmap[n].is_visible;
-			occmap[n].is_visible = is_visible;
-		}
+		const OccluderMap &occmap = m_tile_map.occluderMap();
+		m_occluder_config.update();
 
-		if(has_changed) {
-			m_tile_map.updateVisibility();
-		}*/
+		for(int n = 0; n < (int)occmap.size(); n++)
+			m_occluder_config.setVisible(n, occmap[n].bbox.min.y <= max_pos);
+		m_tile_map.updateVisibility(m_occluder_config);
 	}
 
 }

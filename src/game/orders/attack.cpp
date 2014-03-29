@@ -75,9 +75,12 @@ namespace game {
 		if(event == ActorEvent::sound) {
 			const Weapon &weapon = m_inventory.weapon();
 			//TODO: select firing mode in attack order
-			world()->playSound(order.m_mode == AttackMode::burst?
-						weapon.soundId(WeaponSoundType::fire_burst) :
-						weapon.soundId(WeaponSoundType::fire_single), pos());
+			SoundId sound_id = weapon.soundId(order.m_mode == AttackMode::burst? WeaponSoundType::fire_burst : WeaponSoundType::normal);
+
+			if(order.m_mode == AttackMode::kick)
+				sound_id = m_actor.kick_sound;
+
+			world()->playSound(sound_id, pos());
 		}
 
 		return true;

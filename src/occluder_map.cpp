@@ -272,89 +272,6 @@ void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) con
 		}
 	}
 }
-
-bool OccluderMap::updateVisibility(const FBox &bbox, vector<OccluderStatus> &vis_map) const {
-	//TODO: hiding when close to a door/window
-	FBox test_box(bbox.min.x, bbox.min.y + 1.0f, bbox.min.z, bbox.max.x, 256, bbox.max.z);
-	float3 mid_point = asXZY(test_box.center().xz(), bbox.min.y + 2.0f);
-
-	bool vis_changed = false;
-	vector<int> temp;
-	temp.reserve(256);
-	IRect test_rect = (IRect)worldToScreen(bbox);
-	m_grid.findAll(temp, test_rect);
-
-	vector<int> temp2;
-	temp2.reserve(256);
-
-	PodArray<int> overlaps(m_occluders.size());
-	memset(overlaps.data(), 0, m_occluders.size() * sizeof(int));
-
-	if((int)vis_map.size() != size()) {
-		vis_map.resize(size());
-		vis_changed = true;
-	}
-
-	for(int i = 0; i < (int)temp.size(); i++) {
-		const auto &object = m_grid[temp[i]];
-		if(object.occluder_id == -1)
-			continue;
-
-		const Occluder &occluder = m_occluders[object.occluder_id];
-		int order = drawingOrder(object.bbox, bbox);
-		if(order == 1)
-			overlaps[object.occluder_id] = order;
-	}
-
-	for(int n = 0; n < size(); n++) {
-		bool is_overlapping = false;
-		const Occluder &occluder = m_occluders[n];
-
-		if(overlaps[n] == 1) {
-			FBox bbox_around(bbox.min - int3(16, 0, 16), bbox.max + int3(16, 0, 16));
-			bbox_around.min.y = 0;
-			bbox_around.max.y = Grid::max_height;
-
-			temp2.clear();
-			m_grid.findAll(temp2, bbox_around);
-			FBox local_box = FBox::empty();
-
-			for(int i = 0; i < (int)temp2.size(); i++) {
-				const auto &object = m_grid[temp2[i]];
-				if(object.occluder_id == n)
-					local_box = local_box.isEmpty()? object.bbox : sum(local_box, object.bbox);
-			}
-
-			is_overlapping = local_box.min.y > mid_point.y;
-		}
-
-		if(is_overlapping != vis_map[n].is_overlapping) {
-			vis_map[n].is_overlapping = is_overlapping;
-			vis_changed = true;
-		}
-	}
-
-	if(!vis_changed)
-		return false;
-
-	for(int n= 0; n < size(); n++)
-		vis_map[n].is_visible =  !vis_map[n].is_overlapping;
-
-//TODO: isUnder can be precomputed
-	for(int n = 0; n < size(); n++) {
-		if(!vis_map[n].is_visible)
-			continue;
-
-		for(int i = 0; i < size(); i++)
-			if(!vis_map[i].is_visible && isUnder(i, n)) {
-				vis_map[n].is_visible = false;
-				break;
-			}
-	}
-
-	return true;
-}
-
 bool OccluderMap::isUnder(int lower_id, int upper_id) const {
 	DASSERT(upper_id >= 0 && upper_id < size());
 	DASSERT(lower_id >= 0 && lower_id < size());
@@ -382,5 +299,106 @@ bool OccluderMap::isUnder(int lower_id, int upper_id) const {
 		if(m_grid[temp[n]].occluder_id == lower_id)
 			return true;
 	return false;
+}
+	
+OccluderConfig::OccluderConfig(const OccluderMap &map)
+	:m_map(map) {
+	update();
+}
+	
+bool OccluderConfig::update() {
+	if((int)m_states.size() != m_map.size()) {
+		m_states.resize(m_map.size());
+		return true;
+	}
+
+	return false;
+}
+
+bool OccluderConfig::update(const FBox &bbox) {
+	//TODO: hiding when close to a door/window
+	FBox test_box(bbox.min.x, bbox.min.y + 1.0f, bbox.min.z, bbox.max.x, 256, bbox.max.z);
+	float3 mid_point = asXZY(test_box.center().xz(), bbox.min.y + 2.0f);
+
+	bool vis_changed = update();
+	vector<int> temp;
+	temp.reserve(256);
+	IRect test_rect = (IRect)worldToScreen(bbox);
+	const Grid &grid = m_map.m_grid;
+	grid.findAll(temp, test_rect);
+
+	vector<int> temp2;
+	temp2.reserve(256);
+
+	PodArray<int> overlaps(m_map.size());
+	memset(overlaps.data(), 0, m_map.size() * sizeof(int));
+
+	for(int i = 0; i < (int)temp.size(); i++) {
+		const auto &object = grid[temp[i]];
+		if(object.occluder_id == -1)
+			continue;
+
+		const OccluderMap::Occluder &occluder = m_map[object.occluder_id];
+		int order = drawingOrder(object.bbox, bbox);
+		if(order == 1)
+			overlaps[object.occluder_id] = order;
+	}
+
+	for(int n = 0; n < (int)m_states.size(); n++) {
+		bool is_overlapping = false;
+		const OccluderMap::Occluder &occluder = m_map[n];
+
+		if(overlaps[n] == 1) {
+			FBox bbox_around(bbox.min - int3(16, 0, 16), bbox.max + int3(16, 0, 16));
+			bbox_around.min.y = 0;
+			bbox_around.max.y = Grid::max_height;
+
+			temp2.clear();
+			grid.findAll(temp2, bbox_around);
+			FBox local_box = FBox::empty();
+
+			for(int i = 0; i < (int)temp2.size(); i++) {
+				const auto &object = grid[temp2[i]];
+				if(object.occluder_id == n)
+					local_box = local_box.isEmpty()? object.bbox : sum(local_box, object.bbox);
+			}
+
+			is_overlapping = local_box.min.y > mid_point.y;
+		}
+
+		if(is_overlapping != m_states[n].is_overlapping) {
+			m_states[n].is_overlapping = is_overlapping;
+			vis_changed = true;
+		}
+	}
+
+	if(!vis_changed)
+		return false;
+
+	for(int n= 0; n < (int)m_states.size(); n++)
+		m_states[n].is_visible = !m_states[n].is_overlapping;
+
+//TODO: isUnder can be precomputed
+	for(int n = 0; n < (int)m_states.size(); n++) {
+		if(!m_states[n].is_visible)
+			continue;
+
+		for(int i = 0; i < (int)m_states.size(); i++)
+			if(!m_states[i].is_visible && m_map.isUnder(i, n)) {
+				m_states[n].is_visible = false;
+				break;
+			}
+	}
+
+	return true;
+}
+
+bool OccluderConfig::isVisible(int occluder_id) const {
+	return occluder_id < 0 || occluder_id >= (int)m_states.size() || m_states[occluder_id].is_visible;
+}
+
+void OccluderConfig::setVisible(int occluder_id, bool is_visible) {
+	if(occluder_id >= 0 && occluder_id < (int)m_states.size())
+	   m_states[occluder_id].is_visible = is_visible;
 }
 
