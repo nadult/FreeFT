@@ -273,7 +273,7 @@ void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) con
 	}
 }
 
-bool OccluderMap::updateVisibility(const FBox &bbox) {
+bool OccluderMap::updateVisibility(const FBox &bbox, vector<OccluderStatus> &vis_map) const {
 	//TODO: hiding when close to a door/window
 	FBox test_box(bbox.min.x, bbox.min.y + 1.0f, bbox.min.z, bbox.max.x, 256, bbox.max.z);
 	float3 mid_point = asXZY(test_box.center().xz(), bbox.min.y + 2.0f);
@@ -290,6 +290,11 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 	PodArray<int> overlaps(m_occluders.size());
 	memset(overlaps.data(), 0, m_occluders.size() * sizeof(int));
 
+	if((int)vis_map.size() != size()) {
+		vis_map.resize(size());
+		vis_changed = true;
+	}
+
 	for(int i = 0; i < (int)temp.size(); i++) {
 		const auto &object = m_grid[temp[i]];
 		if(object.occluder_id == -1)
@@ -303,7 +308,7 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 
 	for(int n = 0; n < size(); n++) {
 		bool is_overlapping = false;
-		Occluder &occluder = m_occluders[n];
+		const Occluder &occluder = m_occluders[n];
 
 		if(overlaps[n] == 1) {
 			FBox bbox_around(bbox.min - int3(16, 0, 16), bbox.max + int3(16, 0, 16));
@@ -323,8 +328,8 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 			is_overlapping = local_box.min.y > mid_point.y;
 		}
 
-		if(is_overlapping != occluder.is_overlapping) {
-			occluder.is_overlapping = is_overlapping;
+		if(is_overlapping != vis_map[n].is_overlapping) {
+			vis_map[n].is_overlapping = is_overlapping;
 			vis_changed = true;
 		}
 	}
@@ -333,19 +338,20 @@ bool OccluderMap::updateVisibility(const FBox &bbox) {
 		return false;
 
 	for(int n= 0; n < size(); n++)
-		m_occluders[n].is_visible = !m_occluders[n].is_overlapping;
+		vis_map[n].is_visible =  !vis_map[n].is_overlapping;
 
 //TODO: isUnder can be precomputed
 	for(int n = 0; n < size(); n++) {
-		if(!m_occluders[n].is_visible)
+		if(!vis_map[n].is_visible)
 			continue;
 
 		for(int i = 0; i < size(); i++)
-			if(!m_occluders[i].is_visible && isUnder(i, n)) {
-				m_occluders[n].is_visible = false;
+			if(!vis_map[i].is_visible && isUnder(i, n)) {
+				vis_map[n].is_visible = false;
 				break;
 			}
 	}
+
 	return true;
 }
 
@@ -377,3 +383,4 @@ bool OccluderMap::isUnder(int lower_id, int upper_id) const {
 			return true;
 	return false;
 }
+

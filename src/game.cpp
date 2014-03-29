@@ -59,8 +59,8 @@ int safe_main(int argc, char **argv)
 
 		io.draw();
 
-		swapBuffers();
 		TextureCache::main_cache.nextFrame();
+		swapBuffers();
 	}
 
 /*	PTexture atlas = TextureCache::main_cache.atlas();

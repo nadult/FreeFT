@@ -63,8 +63,7 @@ namespace game {
 		actor,
 		item,
 		projectile,
-		impact,
-		shadow
+		impact
 	)
 
 	DECLARE_ENUM(TileId,
@@ -301,6 +300,7 @@ namespace game {
 		bool isEmpty() const { return m_index == -1; }
 		bool isEntity() const { return !isEmpty() && m_is_entity; }
 		bool isTile() const { return !isEmpty() && !m_is_entity; }
+		int index() const { return m_index; }
 
 	private:
 		ObjectRef(int index, bool is_entity) :m_index(index), m_is_entity(is_entity? 1 : 0) { }
@@ -309,6 +309,7 @@ namespace game {
 		int m_is_entity: 1;
 		friend class World;
 		friend class EntityRef;
+		friend class WorldViewer;
 	};
 
 	class Intersection {

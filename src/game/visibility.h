@@ -9,64 +9,64 @@
 #include "game/world.h"
 #include "game/actor.h"
 #include "game/entity_map.h"
+#include "occluder_map.h"
 
 namespace gfx { class SceneRenderer; }
 
 namespace game {
 
-	// Shadow is used to render dynamic entities that were once visible
-	class EntityShadow: public Entity {
+	class WorldViewer: public WorldListener {
 	public:
-		EntityShadow(const Entity&, int occluder_id, EntityRef true_ref);
-		EntityShadow(const EntityShadow&) = default;
+		WorldViewer(PWorld, EntityRef spectator = EntityRef());
+		~WorldViewer();
+		WorldViewer(const WorldViewer&) = delete;
+		void operator=(const WorldViewer&) = delete;
 
-		Entity *clone() const { return new EntityShadow(*this); }
-		EntityId::Type typeId() const { return EntityId::shadow; }
-		ColliderFlags colliderType() const { return collider_none; }
+		struct VisEntity {
+			VisEntity() :mode(invisible), occluder_id(-1) { }
 
-		int occluderId() const { return m_occluder_id; }
-		EntityRef trueRef() const { return m_true_ref; }
-
-	private:
-		int m_occluder_id;
-		EntityRef m_true_ref;
-	};
-
-	class WorldVisInfo: public WorldListener {
-	public:
-		WorldVisInfo(PWorld, EntityRef source);
-		~WorldVisInfo();
-		WorldVisInfo(const WorldVisInfo&) = delete;
-		void operator=(const WorldVisInfo&) = delete;
-
-		struct EntityVisInfo {
+			unique_ptr<Entity> shadow;
 			EntityRef ref;
-			double vis_time; // >= 0: time visible, < 0: time invisible
 
-			bool operator<(const EntityVisInfo &rhs) const { return ref < rhs.ref; }
+			enum Mode {
+				blending_out,
+				blending_in,
+				pre_blending_out,
+				visible,
+				invisible,
+				shadowed,
+			} mode;
+
+			float blend_value;
+			int occluder_id;
 		};
 
 		void addToRender(gfx::SceneRenderer&);
+		
+		const FBox refBBox(ObjectRef) const;
+		const Tile *refTile(ObjectRef) const;
+		const Entity *refEntity(EntityRef) const;
+
+		//TODO: option to ignore entities
+		Intersection pixelIntersect(const int2 &screen_pos, int flags = collider_all) const;
+		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
 
 	protected:
 		void onSimulate(double time_diff) override;
-		void onAddEntity(EntityRef) override;
 
 		bool isMovable(const Entity&) const;
-		bool isVisible(const FBox &box) const;
-		bool canAddShadow(EntityRef);
-		void addShadow(EntityRef);
+		bool isVisible(const FBox &box, int index, bool is_movable) const;
+		bool testOccluder(int occluder_id) const;
 
-		vector<EntityVisInfo> m_infos;
-		std::map<int, EntityShadow> m_memory;
+		vector<VisEntity> m_entities;
+		vector<OccluderStatus> m_occluders_info;
+
 		PWorld m_world;
 
-		EntityRef m_source;
-		float3 m_cur_pos;
+		const EntityRef m_spectator;
+		float3 m_cur_pos, m_eye_pos;
 		float3 m_cur_dir;
 		float m_cur_fov;
-
-		bool m_initial_update;
 	};
 
 }

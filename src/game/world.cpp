@@ -8,7 +8,6 @@
 #include "sys/xml.h"
 #include "sys/profiler.h"
 #include "game/tile.h"
-#include "gfx/scene_renderer.h"
 #include "navi_heightmap.h"
 #include "audio/device.h"
 #include "game/actor.h"
@@ -77,14 +76,6 @@ namespace game {
 		}
 	}
 
-	void World::updateVisibility(const FBox &bbox) {
-		PROFILE("World::updateVisibility");
-		if(m_tile_map.occluderMap().updateVisibility(bbox)) {
-			m_tile_map.updateVisibility();
-			m_entity_map.updateVisibility();
-		}
-	}
-		
 	void World::removeEntity(EntityRef ref) {
 		if( Entity *entity = refEntity(ref) ) {
 			m_entity_map.remove(ref.index());
@@ -99,30 +90,7 @@ namespace game {
 		entity->hook(this, index);
 		replicate(index);
 
-		EntityRef ref = entity->ref();
-		for(int n = 0; n < (int)m_listeners.size(); n++)
-			m_listeners[n]->onAddEntity(ref);
-		return ref;
-	}
-
-	void World::addToRender(gfx::SceneRenderer &renderer, int flags) {
-		PROFILE("World::addToRender");
-
-		vector<int> inds;
-		inds.reserve(8192);
-		m_tile_map.findAll(inds, renderer.targetRect(), flags);
-		for(int n = 0; n < (int)inds.size(); n++) {
-			const auto &obj = m_tile_map[inds[n]];
-			obj.ptr->addToRender(renderer, (int3)obj.bbox.min);
-		}
-
-		inds.clear();
-		m_entity_map.findAll(inds, renderer.targetRect(), flags);
-
-		for(int n = 0; n < (int)inds.size(); n++) {
-			const auto &obj = m_entity_map[inds[n]];
-			obj.ptr->addToRender(renderer);
-		}
+		return entity->ref();
 	}
 
 	void World::simulate(double time_diff) {
@@ -245,34 +213,9 @@ namespace game {
 
 		if(flags & collider_entities) {
 			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->index() : -1, flags);
-			if(isect.first != -1 && isect.second < out.distance()) {
+			if(isect.first != -1 && isect.second <= out.distance()) {
 				const auto &obj = m_entity_map[isect.first];
 				out = Intersection(ObjectRef(isect.first, true), isect.second);
-			}
-		}
-
-		return out;
-	}
-	
-	Intersection World::pixelIntersect(const int2 &screen_pos, int flags) const {
-		//PROFILE("world::pixelIntersect");
-		Intersection out;
-		Ray ray = screenRay(screen_pos);
-
-		if(flags & collider_tiles) {
-			int index = m_tile_map.pixelIntersect(screen_pos, flags);
-			if(index != -1) {
-				const auto &obj = m_tile_map[index];
-				out = Intersection(ObjectRef(index, false), intersection(ray, obj.bbox));
-			}
-		}
-
-		if(flags & collider_entities) {
-			int index = m_entity_map.pixelIntersect(screen_pos, flags);
-			if(index != -1) {
-				const auto *object = &m_entity_map[index];
-				if(out.isEmpty() || drawingOrder(object->bbox, refBBox(out)) == 1)
-					out = Intersection(ObjectRef(index, true), intersection(ray, object->bbox));
 			}
 		}
 

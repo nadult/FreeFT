@@ -70,8 +70,7 @@ namespace game
 			index = findFreeObject();
 		Entity *entity = ptr.get();
 
-		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(),
-					entity->colliderType() | visibility_flag));
+		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()));
 		updateOccluderId(index);
 		ptr.release();
 
@@ -92,22 +91,6 @@ namespace game
 
 		if(Grid::update(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), object.flags)))
 			updateOccluderId(index);
-	}
-
-	void EntityMap::updateVisibility() {
-		const OccluderMap &occmap = m_tile_map.occluderMap();
-
-		for(int n = 0; n < size(); n++) {
-			auto &object = Grid::operator[](n);
-
-			if(object.occluder_id != -1) {
-				bool is_visible = occmap[object.occluder_id].is_visible;
-				if(is_visible)
-					object.flags |= visibility_flag;
-				else
-					object.flags &= ~visibility_flag;
-			}
-		}
 	}
 
 	void EntityMap::loadFromXML(const XMLDocument &doc) {

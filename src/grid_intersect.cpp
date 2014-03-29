@@ -131,6 +131,67 @@ pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) 
 	return make_pair(out, out_dist);
 }
 
+void Grid::traceAll(vector<pair<int, float>> &out, const Segment &segment, int ignored_id, int flags) const {
+	float tmin = max(segment.min, intersection(segment, m_bounding_box));
+	float tmax = min(segment.max, -intersection(-segment, m_bounding_box));
+	
+	float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
+	int2 pos = worldToGrid((int2)p1.xz()), end = worldToGrid((int2)p2.xz());
+	
+	if(!isInsideGrid(pos) || !isInsideGrid(end))
+		return;
+
+	// Algorithm idea from: RTCD by Christer Ericson
+	int dx = end.x > pos.x? 1 : end.x < pos.x? -1 : 0;
+	int dz = end.y > pos.y? 1 : end.y < pos.y? -1 : 0;
+
+	float cell_size = (float)node_size;
+	float inv_cell_size = 1.0f / cell_size;
+	float lenx = fabs(p2.x - p1.x);
+	float lenz = fabs(p2.z - p1.z);
+
+	float minx = float(node_size) * floorf(p1.x * inv_cell_size), maxx = minx + cell_size;
+	float minz = float(node_size) * floorf(p1.z * inv_cell_size), maxz = minz + cell_size;
+	float tx = (p1.x > p2.x? p1.x - minx : maxx - p1.x) / lenx;
+	float tz = (p1.z > p2.z? p1.z - minz : maxz - p1.z) / lenz;
+
+	float deltax = cell_size / lenx;
+	float deltaz = cell_size / lenz;
+
+	while(true) {
+		int node_id = nodeAt(pos);
+		const Node &node = m_nodes[node_id];
+
+		if(flagTest(node.obj_flags, flags)) {
+			const Object *objects[node.size];
+			int count = extractObjects(node_id, objects, ignored_id, flags);
+
+			for(int n = 0; n < count; n++) {
+				float dist = intersection(segment, objects[n]->bbox);
+				if(dist != constant::inf)
+					out.push_back(make_pair((int)(objects[n] - &m_objects[0]), dist));
+			}	
+			
+			if(node.is_dirty)
+				updateNode(node_id);
+		}
+
+		if(tx <= tz || dz == 0) {
+			if(pos.x == end.x)
+				break;
+			tx += deltax;
+			pos.x += dx;
+		}
+		else {
+			if(pos.y == end.y)
+				break;
+			tz += deltaz;
+			pos.y += dz;
+		}
+		float ray_pos = tmin + max((tx - deltax) * lenx, (tz - deltaz) * lenz);
+	}
+}
+
 void Grid::findAll(vector<int> &out, const IRect &view_rect, int flags) const {
 	IRect grid_box(0, 0, m_size.x, m_size.y);
 

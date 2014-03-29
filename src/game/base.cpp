@@ -66,8 +66,7 @@ namespace game {
 		"actor",
 		"item",
 		"projectile",
-		"impact",
-		"shadow"
+		"impact"
 	)
 
 	DEFINE_ENUM(TileId,

@@ -34,7 +34,7 @@ namespace game {
 		IRect rect = tile->rect() + worldToScreen(pos);
 		ASSERT(findAny(bbox) == -1);
 		int index = findFreeObject();
-		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())|visibility_flag));
+		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type())));
 		return index;
 	}
 
@@ -65,22 +65,6 @@ namespace game {
 			[](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); },
 			   flags);
-	}
-
-	void TileMap::updateVisibility() {
-		//TODO: update only occluders that has changed
-		for(int n = 0; n < size(); n++) {
-			Object &object = m_objects[n];
-			if(object.ptr && object.occluder_id != -1) {
-				if(m_occluder_map[object.occluder_id].is_visible)
-					object.flags |= visibility_flag;
-				else
-					object.flags &= ~visibility_flag;
-			}
-		}
-
-		//TODO: use dirty flags to update nodes lazily?
-		updateNodes();
 	}
 
 	void TileMap::loadFromXML(const XMLDocument &doc) {

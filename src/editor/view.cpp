@@ -94,7 +94,8 @@ namespace ui {
 	}
 
 	void View::updateVisibility(int cursor_height) {
-		OccluderMap &occmap = m_tile_map.occluderMap();
+		//TODO: rewrite me pls
+	/*	OccluderMap &occmap = m_tile_map.occluderMap();
 		float max_pos = m_height + cursor_height;
 		bool has_changed = false;
 
@@ -106,7 +107,7 @@ namespace ui {
 
 		if(has_changed) {
 			m_tile_map.updateVisibility();
-		}
+		}*/
 	}
 
 }

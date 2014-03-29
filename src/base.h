@@ -681,6 +681,13 @@ struct Box
 		}
 	}
 
+	const Type3 closestPoint(const Type3 &point) const {
+		return Type3(
+			point.x < min.x? min.x : point.x > max.x? max.x : point.x,
+			point.y < min.y? min.y : point.y > max.y? max.y : point.y,
+			point.z < min.z? min.z : point.z > max.z? max.z : point.z);
+	}
+
 	bool operator==(const Box &rhs) const { return min == rhs.min && max == rhs.max; }
 
 	Type3 min, max;

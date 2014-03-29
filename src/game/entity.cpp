@@ -148,7 +148,7 @@ namespace game {
 			return;
 
 		FBox bbox = boundingBox() - pos();
-		if(shrinkRenderedBBox())
+		if(shrinkRenderedBBox() && bbox.height() >= 2.0f)
 			bbox.min.y = min(bbox.min.y + 1.0f, bbox.max.y - 0.5f);
 
 		bool as_overlay = renderAsOverlay();

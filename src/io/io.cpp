@@ -22,7 +22,7 @@ namespace io {
 
 	IO::IO(const int2 &resolution, PWorld world, EntityRef actor_ref, bool show_stats)
 		:m_console(resolution), m_world(world), m_actor_ref(actor_ref), m_resolution(resolution),
-		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats), m_vis_info(world, actor_ref)  {
+		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats), m_viewer(world, actor_ref)  {
 			DASSERT(world);
 			const Actor *actor = m_world->refEntity<Actor>(actor_ref);
 			if(actor)
@@ -40,15 +40,15 @@ namespace io {
 		int2 mouse_pos = getMousePos();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
-		m_isect = m_world->pixelIntersect(mouse_pos + m_view_pos, collider_tile_walkable|collider_entities|visibility_flag);
+		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, collider_tile_walkable|collider_entities);
 		if(m_isect.isEmpty() || m_isect.isTile())
-			m_isect = m_world->trace(ray, actor, collider_tile_walkable|collider_entities|visibility_flag);
+			m_isect = m_viewer.trace(ray, actor, collider_tile_walkable|collider_entities);
 		
 		//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 		// has to intersect bounding box of the object
-		m_full_isect = m_world->pixelIntersect(mouse_pos + m_view_pos, collider_all|visibility_flag);
+		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, collider_all);
 		if(m_full_isect.isEmpty())
-			m_full_isect = m_world->trace(ray, actor, collider_all|visibility_flag);
+			m_full_isect = m_viewer.trace(ray, actor, collider_all);
 
 		if(!m_full_isect.isEmpty() && actor) {
 			float3 target = ray.at(m_full_isect.distance());
@@ -168,10 +168,7 @@ namespace io {
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		Ray ray = screenRay(getMousePos() + m_view_pos);
 
-		if(actor)
-			m_world->updateVisibility(actor->boundingBox());
-		m_world->addToRender(renderer, collider_tiles | collider_static | visibility_flag);
-		m_vis_info.addToRender(renderer);
+		m_viewer.addToRender(renderer);
 
 		renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
@@ -189,7 +186,7 @@ namespace io {
 
 		DTexture::bind0();
 		lookAt({0, -m_console.size().y});
-		drawQuad(0, 0, 280, m_show_stats? 220 : 50, Color(0, 0, 0, 80));
+		drawQuad(0, 0, 280, m_show_stats? 250 : 50, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
 		float3 isect_pos = ray.at(m_isect.distance());

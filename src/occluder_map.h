@@ -9,6 +9,13 @@
 #include "base.h"
 #include "grid.h"
 
+struct OccluderStatus {
+	OccluderStatus() :is_visible(false), is_overlapping(false) { }
+
+	bool is_visible : 1;
+	bool is_overlapping : 1;
+};
+
 class OccluderMap {
 public:
 	enum { max_occluders = 32000 };
@@ -23,12 +30,8 @@ public:
 	void saveToXML(const PodArray<int> &tile_ids, XMLDocument&) const;
 
 	struct Occluder {
-		Occluder() :is_visible(true), is_overlapping(false) { }
-
 		FBox bbox;
 		vector<int> objects;
-		bool is_visible;
-		bool is_overlapping;
 	};
 
 	const Occluder &operator[](int id) const { return m_occluders[id]; }
@@ -36,7 +39,7 @@ public:
 	int size() const { return (int)m_occluders.size(); }
 
 	// returns true if anything has changed
-	bool updateVisibility(const FBox &main_bbox);
+	bool updateVisibility(const FBox &main_bbox, vector<OccluderStatus> &vis_map) const;
 
 	bool isUnder(int lower_id, int upper_id) const;
 

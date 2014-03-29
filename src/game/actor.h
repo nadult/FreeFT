@@ -123,6 +123,7 @@ namespace game {
 		Actor(const Actor &rhs, const Proto &new_proto);
 
 		ColliderFlags colliderType() const { return collider_dynamic; }
+		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&);
 		void onImpact(DeathTypeId::Type, float damage);

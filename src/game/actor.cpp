@@ -77,6 +77,18 @@ namespace game {
 			sr << m_target_angle;
 		sr << m_inventory;
 	}
+		
+	const FBox Actor::boundingBox() const {
+		int3 bbox_size = sprite().bboxSize();
+		if(m_stance == Stance::crouch)
+			bbox_size.y = 5;
+		if(m_stance == Stance::prone)
+			bbox_size.y = 2;
+		if(isDead())
+			bbox_size.y = 0;
+
+		return FBox(pos(), pos() + float3(bbox_size));
+	}
 
 	SurfaceId::Type Actor::surfaceUnder() const {
 		DASSERT(world());

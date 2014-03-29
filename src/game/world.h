@@ -60,8 +60,6 @@ namespace game {
 
 		void updateNaviMap(bool full_recompute);
 	
-		void addToRender(gfx::SceneRenderer&, int flags = collider_all|visibility_flag);
-
 		double timeDelta() const { return m_time_delta; }
 		double currentTime() const { return m_current_time; }
 	
@@ -88,11 +86,7 @@ namespace game {
 		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
 		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
 
-		//TODO: option to ignore entities
-		Intersection pixelIntersect(const int2 &screen_pos, int flags = collider_all) const;
-
 		bool isInside(const FBox&) const;
-		void updateVisibility(const FBox &main_bbox);
 
 		Mode mode() const { return m_mode; }
 		bool isClient() const { return m_mode == Mode::client; }

@@ -26,3 +26,5 @@
 - Entities shouldn't break order of tiles when rendering
 
 - Sometimes death sounds are not played (in multiplayer mode)
+
+- Visible tearing when vsync (glfwSwapInterval(1)) is on

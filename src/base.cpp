@@ -318,7 +318,7 @@ float intersection(const Segment &segment, const Box<float3> &box) {
 	lmin = max(lmin, segment.min);
 	lmax = min(lmax, segment.max);
 
-	return lmin < lmax? lmin : constant::inf;
+	return lmin <= lmax? lmin : constant::inf;
 }
 
 const Ray screenRay(const int2 &screen_pos) {
