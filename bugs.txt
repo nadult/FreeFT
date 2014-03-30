@@ -30,3 +30,5 @@
 - Visible tearing when vsync (glfwSwapInterval(1)) is on
 
 - Mutants cannot use rifles
+
+- Support for ethereal tiles

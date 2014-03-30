@@ -253,17 +253,21 @@ int safe_main(int argc, char **argv)
 		sleep(0.01);
 	}
 
-	IO io(config.resolution, world, host->actorRef(), config.profiler_enabled);
+	WorldViewer viewer(world, host->actorRef());
+	IO io(config.resolution, world, viewer, host->actorRef(), config.profiler_enabled);
 
 	double last_time = getTime();
 	while(pollEvents() && !isKeyDown(Key_esc) && host->mode() == Client::Mode::connected) {
 		double time = getTime();
-		io.processInput();
+
+		io.update();
 		host->beginFrame();
 
 		audio::tick();
-		world->simulate((time - last_time) * config.time_multiplier);
+		double time_diff = (time - last_time) * config.time_multiplier;
+		world->simulate(time_diff);
 		host->finishFrame();
+		viewer.update(time_diff);
 		last_time = time;
 
 		io.draw();

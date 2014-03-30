@@ -405,6 +405,25 @@ protected:
 	int m_size;
 };
 
+template <class T>
+class ClonablePtr: public unique_ptr<T> {
+public:
+	ClonablePtr(const ClonablePtr &rhs) :unique_ptr<T>(rhs? rhs->clone() : nullptr) { }
+	ClonablePtr(ClonablePtr &&rhs) :unique_ptr<T>(std::move(rhs)) { }
+	ClonablePtr(T *ptr) :unique_ptr<T>(ptr) { }
+	ClonablePtr() { }
+
+	explicit operator bool() const { return unique_ptr<T>::operator bool(); }
+	bool isValid() const { return unique_ptr<T>::operator bool(); }
+
+	void operator=(ClonablePtr &&rhs) { unique_ptr<T>::operator=(std::move(rhs)); }
+	void operator=(const ClonablePtr &rhs) {
+		if(&rhs == this)
+			return;
+		T *clone = rhs? rhs->clone() : nullptr;
+		unique_ptr<T>::reset(clone);
+	}
+};
 
 struct int2
 {

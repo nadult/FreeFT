@@ -44,17 +44,37 @@ int safe_main(int argc, char **argv)
 		map_name = string("data/maps/") + argv[1];
 	PWorld world(new World(map_name.c_str(), World::Mode::single_player));
 
+/*	double time = getTime();
+	vector<int3> path;
+	for(int n = 0; n < 1000; n++)
+		path = world->naviMap().findPath(int3(160, 128, 328), int3(230, 128, 350));
+	printf("Short: %.f usec\n", (getTime() - time) * 1000.0);
+
+	time = getTime();
+	for(int n = 0; n < 1000; n++)
+		path = world->naviMap().findPath(int3(160, 128, 328), int3(430, 128, 476));
+	printf(" Long: %.f usec\n", (getTime() - time) * 1000.0);*/
+
+	for(int n = 0; n < world->entityCount(); n++) {
+		Actor *actor = world->refEntity<Actor>(n);
+		if(actor && actor->factionId() != 0)
+			actor->attachAI<SimpleAI>();
+	}
+
 	EntityRef actor_ref = world->addNewEntity<Actor>(float3(245, 128, 335), getProto("male", ProtoId::actor));
 
-	IO io(config.resolution, world, actor_ref, config.profiler_enabled);
+	game::WorldViewer viewer(world, actor_ref);
+	IO io(config.resolution, world, viewer, actor_ref, config.profiler_enabled);
 
 	double last_time = getTime();
 	while(pollEvents() && !isKeyDown(Key_esc)) {
 		double time = getTime();
-		io.processInput();
+		io.update();
 
 		audio::tick();
-		world->simulate((time - last_time) * config.time_multiplier);
+		double time_diff = (time - last_time) * config.time_multiplier;
+		world->simulate(time_diff);
+		viewer.update(time_diff);
 		last_time = time;
 
 		io.draw();

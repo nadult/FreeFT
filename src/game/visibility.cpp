@@ -14,11 +14,9 @@ namespace game {
 	WorldViewer::WorldViewer(PWorld world, EntityRef spectator)
 		:m_world(world), m_spectator(spectator), m_occluder_config(world->tileMap().occluderMap()) {
 		DASSERT(m_world);
-		m_world->addListener(this);
 	}
 
 	WorldViewer::~WorldViewer() {
-		m_world->removeListener(this);
 	}
 
 	static bool isInsideFrustum(const FBox &box, const float3 &pos, const float3 &dir, float min_dot) {
@@ -80,7 +78,7 @@ namespace game {
 		return type_id == EntityId::projectile || type_id == EntityId::impact;
 	}
 
-	void WorldViewer::onSimulate(double time_diff) {
+	void WorldViewer::update(double time_diff) {
 		PROFILE("WorldViewer::update");
 		Entity *spectator = m_world->refEntity(m_spectator);
 
@@ -299,7 +297,7 @@ namespace game {
 					continue;
 
 				float distance = intersection(segment, entity->boundingBox());
-				if(out.isEmpty() || distance < out.distance())
+				if(distance < out.distance())
 					out = Intersection(ObjectRef(n, true), distance);
 			}
 

@@ -37,10 +37,10 @@ namespace game
 		void remove(int index);
 		
 		int pixelIntersect(const int2 &pos, int flags = collider_flags) const;
-		void updateVisibility();
 		
 		void loadFromXML(const XMLDocument&);
 		void saveToXML(XMLDocument&) const;
+		void updateVisibility(const OccluderConfig&);
 
 	protected:
 		void updateOccluderId(int object_id);

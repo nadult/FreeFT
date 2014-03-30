@@ -47,17 +47,9 @@ namespace game {
 		bool step_is_left;
 	};
 
-	class POrder: public unique_ptr<Order> {
+	class POrder: public ClonablePtr<Order> {
 	public:
-		POrder(const POrder&);
-		POrder(POrder &&rhs) :unique_ptr(std::move(rhs)) { }
-		POrder(Order *order) :unique_ptr(order) { }
-		POrder() { }
-		explicit operator bool() const { return unique_ptr::operator bool(); }
-		bool isValid() const { return unique_ptr::operator bool(); }
-
-		void operator=(POrder &&rhs) { unique_ptr::operator=(std::move(rhs)); }
-		void operator=(const POrder&);
+		using ClonablePtr<Order>::ClonablePtr;
 
 		void save(Stream&) const;
 		void load(Stream&);

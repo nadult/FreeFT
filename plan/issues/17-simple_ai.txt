@@ -1,24 +1,9 @@
-- possibility to shoot on target (when it's moving, there should be some compenstation)
-  and off target (in the specific direction, where player thinks the enemy will be,
-  or as a support fire  6h
+- Quick visibility tests
+- Simple factions
+- Simple AI
 
-- AI for critters
-  - moving to a random close location from time to time (in idle mode)  4h
-  - when seeing enemy, turn to attack mode: move towards enemy, attack  4h
-  - when close to death, may turn to coward mode  ?  2h
-  - for human-like critters: hiding behind occluders, etc.  SECONDARY
-
-- Is it supposed to be RPG-like?  NO!!
-
-- different firing modes (single / burst)  2h
-
-- Hit Points, simple skills?  2h
-  - simple HP system, simple armor system
-  - no skills for now
-
-- respawning when dead  4h
-
-+ESTIMATED_TIME: 27h
++ESTIMATED_TIME:
 +TIME_SPENT:
 
 +WORK_LOG:
+30.03.14: 12:30 - 14:00, 15:30 - 

@@ -12,8 +12,6 @@
 
 NaviMap::NaviMap(int extend) :m_size(0, 0), m_agent_size(extend) { }
 
-enum { sector_size = 256 };
-
 	
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) __attribute__((noinline));
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) {
@@ -21,11 +19,11 @@ static IRect findBestRect(const short *counts, const short *skip_list, int2 size
 	int best_score = -1;
 
 	for(int sy = 0; sy < size.y; sy++) {
-		struct Element { int sx, height; } stack[sector_size];
+		struct Element { int sx, height; } stack[NaviMap::sector_size];
 		int sp = 0;
 
 		for(int sx = 0; sx <= size.x;) {
-			int offset = sx + sy * sector_size;
+			int offset = sx + sy * NaviMap::sector_size;
 			int height = sx == size.x? 0 : counts[offset];
 			int min_sx = sx;
 
@@ -260,7 +258,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 			addAdjacencyInfo(i, j);
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		m_quads[n].static_ncount = (int)m_quads[n].neighbours.size();
-	printf(" %.2f seconds\n", getTime() - time);
+	printf(" %.2f seconds (%d quads)\n", getTime() - time, (int)m_quads.size());
 }
 
 void NaviMap::addCollider(int parent_id, const IRect &rect) {
@@ -688,9 +686,13 @@ void NaviMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
 		const IRect &rect = m_quads[n].rect;
 		int height = m_quads[n].max_height;
 
-		renderer.addBox(IBox(asXZY(rect.min, height), asXZY(rect.max, height)), Color(70, 220, 200, 80), true);
+		FBox bbox(asXZY(rect.min, height), asXZY(rect.max, height));
+		bbox.min.x += 0.5f;
+		bbox.min.z += 0.5f;
+
+		renderer.addBox(bbox, Color(70, 220, 200, 80), true);
 		if(borders)
-			renderer.addBox(IBox(asXZY(rect.min, height), asXZY(rect.max, height)), Color(255, 255, 255, 100));
+			renderer.addBox(bbox, Color(255, 255, 255, 100));
 	}
 }
 

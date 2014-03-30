@@ -20,9 +20,9 @@ using namespace game;
 
 namespace io {
 
-	IO::IO(const int2 &resolution, PWorld world, EntityRef actor_ref, bool show_stats)
-		:m_console(resolution), m_world(world), m_actor_ref(actor_ref), m_resolution(resolution),
-		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats), m_viewer(world, actor_ref)  {
+	IO::IO(const int2 &resolution, PWorld world, WorldViewer &viewer, EntityRef actor_ref, bool show_stats)
+		:m_console(resolution), m_world(world), m_viewer(viewer), m_actor_ref(actor_ref), m_resolution(resolution),
+		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats)  {
 			DASSERT(world);
 			const Actor *actor = m_world->refEntity<Actor>(actor_ref);
 			if(actor)
@@ -32,7 +32,7 @@ namespace io {
 			m_last_look_at = float3(0, 0, 0);
 		}
 
-	void IO::processInput() {
+	void IO::update() {
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 		
@@ -170,14 +170,17 @@ namespace io {
 
 		m_viewer.addToRender(renderer);
 
-		renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
+		if(!m_isect.isEmpty())
+			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
 		if(!m_shoot_isect.isEmpty()) {
 			FBox box = m_world->refBBox(m_shoot_isect);
 			renderer.addBox(box, Color(255, 0, 0, 100));
 		}
 
+	//	m_world->naviMap().visualize(renderer, false);
 		renderer.render();
+
 		lookAt(m_view_pos);
 			
 		lookAt({0, 0});

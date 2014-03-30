@@ -15,7 +15,7 @@ namespace gfx { class SceneRenderer; }
 
 namespace game {
 
-	class WorldViewer: public WorldListener {
+	class WorldViewer {
 	public:
 		WorldViewer(PWorld, EntityRef spectator = EntityRef());
 		~WorldViewer();
@@ -41,8 +41,10 @@ namespace game {
 			int occluder_id;
 		};
 
+		// WorldViewer has to be updated after each world simulation
+		void update(double time_diff);
 		void addToRender(gfx::SceneRenderer&);
-		
+
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
 		const Entity *refEntity(EntityRef) const;
@@ -52,8 +54,6 @@ namespace game {
 		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
 
 	protected:
-		void onSimulate(double time_diff) override;
-
 		bool isMovable(const Entity&) const;
 		bool isVisible(const FBox &box, int index, bool is_movable) const;
 

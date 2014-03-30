@@ -10,6 +10,7 @@
 #include "game/inventory.h"
 #include "game/weapon.h"
 #include "game/orders.h"
+#include "game/actor_ai.h"
 
 namespace game {
 
@@ -145,6 +146,17 @@ namespace game {
 		bool canChangeStance() const;
 		bool isDead() const;
 
+		int factionId() const { return m_faction_id; }
+		void setFactionId(int faction_id) { m_faction_id = faction_id; }
+
+		template <class TAI, class ...Args>
+		void attachAI(const Args&... args) {
+			m_ai = new TAI(PWorld(world()), ref(), args...);
+		}
+		void detachAI() {
+			m_ai.reset();
+		}
+
 	private:
 		void think();
 
@@ -197,6 +209,8 @@ namespace game {
 
 		const ActorProto &m_actor;
 
+		PActorAI m_ai;
+
 		POrder m_order;
 		vector<POrder> m_following_orders;
 		HandleFunc m_order_func;
@@ -204,6 +218,7 @@ namespace game {
 		float m_target_angle;
 		Stance::Type m_stance;
 		Action::Type m_action;
+		int m_faction_id;
 
 		ActorInventory m_inventory;
 	};

@@ -286,17 +286,20 @@ int safe_main(int argc, char **argv)
 	host->createWorld(map_name);
 	PWorld world = host->world();
 
-	IO io(config.resolution, world, EntityRef(), config.profiler_enabled);
+	WorldViewer viewer(world);
+	IO io(config.resolution, world, viewer, EntityRef(), config.profiler_enabled);
 
 	double last_time = getTime();
 	while(pollEvents() && !isKeyDown(Key_esc)) {
 		double time = getTime();
 
-		io.processInput();
+		io.update();
 		host->beginFrame();
 
-		world->simulate((time - last_time) * config.time_multiplier);
+		double time_diff = (time - last_time) * config.time_multiplier;
+		world->simulate(time_diff);
 		host->finishFrame();
+		viewer.update(time_diff);
 		last_time = time;
 
 		io.draw();

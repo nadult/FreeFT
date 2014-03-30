@@ -138,5 +138,11 @@ namespace game
 		for(int n = 0; n < (int)indices.size(); n++)
 			(*this)[indices[n]].ptr->save(main_node);
 	}
+		
+	void EntityMap::updateVisibility(const OccluderConfig &config) {
+		config.setVisibilityFlag(*(Grid*)this, visibility_flag);
+		updateNodes();
+	}
+
 }
 

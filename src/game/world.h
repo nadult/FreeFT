@@ -22,13 +22,6 @@ namespace game {
 		virtual void replicateOrder(POrder&&, EntityRef) { }
 	};
 
-	class WorldListener {
-	public:
-		virtual ~WorldListener() = default;
-		virtual void onAddEntity(EntityRef) { }
-		virtual void onSimulate(double time_diff) { }
-	};
-
 	class World: public RefCounter {
 	public:
 		enum class Mode {
@@ -101,9 +94,6 @@ namespace game {
 
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
 
-		void addListener(WorldListener*);
-		void removeListener(WorldListener*);
-
 	private:
 		const Mode m_mode;
 		string m_map_name;
@@ -124,7 +114,6 @@ namespace game {
 		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
 
 		Replicator *m_replicator;
-		vector<WorldListener*> m_listeners;
 		friend class EntityWorldProxy;
 	};
 

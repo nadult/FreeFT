@@ -14,6 +14,10 @@ class NaviHeightmap;
 // with varying ceiling height we can provide ceiling heightmaps
 class NaviMap {
 public:
+	enum {
+		sector_size = 32,
+	};
+
 	NaviMap(int agent_size);
 
 	void update(const NaviHeightmap&);

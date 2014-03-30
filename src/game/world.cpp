@@ -55,11 +55,11 @@ namespace game {
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes);
-		//	heightmap.saveLevels();
-		//	heightmap.printInfo();
+			heightmap.saveLevels();
+			heightmap.printInfo();
 
 			m_navi_map.update(heightmap);
-		//	m_navi_map.printInfo();
+			m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();
@@ -151,9 +151,6 @@ namespace game {
 		m_replace_list.clear();
 
 		m_last_time = current_time;
-		
-		for(int n = 0; n < (int)m_listeners.size(); n++)
-			m_listeners[n]->onSimulate(time_diff);
 	}
 	
 	const Grid::ObjectDef *World::refDesc(ObjectRef ref) const {
@@ -299,16 +296,6 @@ namespace game {
 		if( Actor *entity = refEntity<Actor>(actor_ref) )
 			return entity->setOrder(std::move(order_ptr));
 		return false;
-	}
-		
-	void World::addListener(WorldListener *listener) {
-		DASSERT(listener);
-		m_listeners.push_back(listener);
-	}
-
-	void World::removeListener(WorldListener *listener) {
-		m_listeners.resize(
-				std::remove(m_listeners.begin(), m_listeners.end(), listener) - m_listeners.begin());
 	}
 
 }

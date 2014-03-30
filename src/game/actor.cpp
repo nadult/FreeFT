@@ -40,12 +40,14 @@ namespace game {
 
 	Actor::Actor(const XMLNode &node)
 	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
+		 m_faction_id = node.intAttrib("faction_id");
 		animate(Action::idle);
 		updateOrderFunc();
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
 		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
+		m_faction_id = 0;
 		animate(Action::idle);
 		updateOrderFunc();
 	}
@@ -54,10 +56,13 @@ namespace game {
 		setPos(rhs.pos());
 		setDirAngle(m_target_angle = rhs.dirAngle());
 		m_inventory = rhs.m_inventory;
+		m_faction_id = rhs.m_faction_id;
+		m_ai = rhs.m_ai;
 	}
 	
 	XMLNode Actor::save(XMLNode &parent) const {
 		XMLNode node = EntityImpl::save(parent);
+		node.addAttrib("faction_id", m_faction_id);
 		return node;
 	}
 
@@ -106,6 +111,9 @@ namespace game {
 	void Actor::onImpact(DeathTypeId::Type death_id, float damage) {
 		//TODO: immediate order cancel
 		setOrder(new DieOrder(death_id));
+		
+		if(m_ai)
+			m_ai->onImpact(death_id, damage);
 	}
 		
 	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
@@ -201,6 +209,9 @@ namespace game {
 			replicate();
 
 		handleOrder(ActorEvent::think);
+
+		if(m_ai)
+			m_ai->think();
 	}
 
 	// sets direction

@@ -25,16 +25,6 @@ namespace game {
 		"die"
 	);
 
-
-	POrder::POrder(const POrder &rhs) :unique_ptr(rhs? rhs->clone() : nullptr) { }
-
-	void POrder::operator=(const POrder &rhs) {
-		if(&rhs == this)
-			return;
-		Order *clone = rhs? rhs->clone() : nullptr;
-		reset(clone);
-	}
-		
 	void POrder::save(Stream &sr) const {
 		sr << (isValid()? get()->typeId() : OrderTypeId::invalid);
 		if(isValid())
