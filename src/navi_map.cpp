@@ -160,17 +160,42 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 	printf("Creating navigation map: "); fflush(stdout);
 	double time = getTime();
 
-	for(int l = 0; l < heightmap.levelCount(); l++) {
-		PodArray<u8> bitmap(m_size.x * m_size.y);
+	int level_count = heightmap.levelCount();
+
+	enum { max_levels = 256 };
+
+	vector<PodArray<u8>> bitmaps(level_count);
+	vector<int> level_pixels(max_levels, 0);
+
+	for(int l = 0; l < level_count; l++) {
+		bitmaps[l].resize(m_size.x * m_size.y);
+		PodArray<u8> &bitmap = bitmaps[l];
 		memset(bitmap.data(), 0, bitmap.dataSize());
-		int pixel_count = 0;
 
 		for(int y = 0; y < m_size.y; y++)
 			for(int x = 0; x < m_size.x; x++)
 				if(heightmap.test(x, y, l, m_agent_size)) {
-					pixel_count++;
-					bitmap[x + y * m_size.x] = heightmap(x, y, l);
+					u8 height = heightmap(x, y, l);
+					bitmap[x + y * m_size.x] = height;
+					level_pixels[height]++;
 				}
+	}
+
+	for(int h = 1; h < max_levels; h++) {
+		int pixel_count = level_pixels[h];
+		if(!pixel_count)
+			continue;
+
+		PodArray<u8> bitmap(m_size.x * m_size.y);
+		memset(bitmap.data(), 0, bitmap.dataSize());
+
+		for(int l = 0; l < level_count; l++) {
+			const PodArray<u8> &lbitmap = bitmaps[l];
+			for(int i = 0; i < bitmap.size(); i++)
+				if(lbitmap[i] == h)
+					bitmap[i] = h;
+		}
+
 		PodArray<u8> subbitmap = bitmap;
 		memset(subbitmap.data(), 0, subbitmap.dataSize());
 
@@ -248,8 +273,6 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 			for(int y = subrect.min.y; y < subrect.max.y; y++)
 				memset(subbitmap.data() + y * m_size.x + subrect.min.x, 0, subrect.width());
 		}
-
-		printf("."); fflush(stdout);
 	}
 	m_static_count = (int)m_quads.size();
 
@@ -258,7 +281,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 			addAdjacencyInfo(i, j);
 	for(int n = 0; n < (int)m_quads.size(); n++)
 		m_quads[n].static_ncount = (int)m_quads[n].neighbours.size();
-	printf(" %.2f seconds (%d quads)\n", getTime() - time, (int)m_quads.size());
+	printf("%d quads (%.2f seconds)\n", (int)m_quads.size(), getTime() - time);
 }
 
 void NaviMap::addCollider(int parent_id, const IRect &rect) {
