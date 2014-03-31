@@ -87,7 +87,7 @@ namespace gfx
 			THROW("Error while initializing window with glfwOpenGLWindow");
 
 		glfwDisable(GLFW_AUTO_POLL_EVENTS);
-		glfwSwapInterval(0);
+		glfwSwapInterval(1);
 		glfwSetWindowPos(0, 24);
 
 		s_want_close = 0;

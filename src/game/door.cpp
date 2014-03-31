@@ -152,13 +152,13 @@ namespace game {
 
 		//TODO: open direction should depend on interactor's position		
 		FBox bbox = computeBBox(result);
-		bool is_colliding = (bool)world()->findAny(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+		bool is_colliding = (bool)world()->findAny(bbox + pos(), this, collider_dynamic);
 
 		if(is_colliding && classId() == DoorClassId::rotating && m_state == DoorState::closed && target == DoorState::opened_in) {
 			target = DoorState::opened_out;
 			result = DoorState::opening_out;
 			bbox = computeBBox(result);
-			is_colliding = (bool)world()->findAny(bbox + pos(), this, collider_dynamic | collider_dynamic_nv);
+			is_colliding = (bool)world()->findAny(bbox + pos(), this, collider_dynamic);
 		}
 		if(!is_colliding) {
 			m_bbox = bbox;
@@ -209,7 +209,7 @@ namespace game {
 		}
 		if(classId() == DoorClassId::sliding && m_state == DoorState::opened_in && world->currentTime() > m_close_time) {
 			FBox bbox = computeBBox(DoorState::closed);
-			if((bool)world->findAny(bbox + pos(), this, collider_dynamic | collider_dynamic_nv)) {
+			if((bool)world->findAny(bbox + pos(), this, collider_dynamic)) {
 				m_close_time = world->currentTime() + 1.5;
 			}
 			else {

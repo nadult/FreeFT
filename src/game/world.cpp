@@ -40,7 +40,7 @@ namespace game {
 	}
 		
 	void World::updateNaviMap(bool full_recompute) {
-		//PROFILE("updateNaviMap");
+		PROFILE("updateNaviMap");
 
 		if(full_recompute) {
 			vector<IBox> bboxes;
@@ -50,16 +50,16 @@ namespace game {
 				if(m_tile_map[n].ptr)
 					bboxes.push_back((IBox)m_tile_map[n].bbox);
 			for(int n = 0; n < m_entity_map.size(); n++)
-				if(m_entity_map[n].ptr && m_entity_map[n].flags & collider_static)
+				if(m_entity_map[n].ptr && (m_entity_map[n].flags & collider_static))
 					bboxes.push_back(enclosingIBox(m_entity_map[n].ptr->boundingBox()));
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes);
-			heightmap.saveLevels();
-			heightmap.printInfo();
+			//heightmap.saveLevels();
+			//heightmap.printInfo();
 
 			m_navi_map.update(heightmap);
-			m_navi_map.printInfo();
+			//m_navi_map.printInfo();
 		}
 
 		m_navi_map.removeColliders();
@@ -69,9 +69,9 @@ namespace game {
 			if(!object.ptr)
 				continue;
 
-			if(object.flags & collider_dynamic_nv) {
+			if(object.flags & collider_dynamic) {
 				const IBox &box = enclosingIBox(object.ptr->boundingBox());
-				m_navi_map.addCollider(IRect(box.min.xz(), box.max.xz()));
+				m_navi_map.addCollider(box, n);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ namespace game {
 				continue;
 
 			object.ptr->think();
-			if(object.flags & (collider_dynamic | collider_dynamic_nv | collider_projectile))
+			if(object.flags & (collider_dynamic | collider_projectile))
 				m_entity_map.update(n);
 
 			for(int f = 0; f < frame_skip; f++)
@@ -151,6 +151,7 @@ namespace game {
 		m_replace_list.clear();
 
 		m_last_time = current_time;
+		updateNaviMap(false);
 	}
 	
 	const Grid::ObjectDef *World::refDesc(ObjectRef ref) const {
@@ -257,9 +258,9 @@ namespace game {
 		return m_tile_map.isInside(box);
 	}
 		
-	vector<int3> World::findPath(const int3 &start, const int3 &end) const {
+	vector<int3> World::findPath(const int3 &start, const int3 &end, EntityRef filter_collider) const {
 		PROFILE_RARE("world::findPath");
-		return m_navi_map.findPath(start, end);
+		return m_navi_map.findPath(start, end, filter_collider.index());
 	}
 	
 	void World::replicate(const Entity *entity) {

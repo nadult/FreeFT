@@ -52,7 +52,7 @@ namespace game {
 			new_pos = max(new_pos, int3(0, 0, 0)); //TODO: clamp to map extents
 
 			int3 cur_pos = (int3)pos();
-			vector<int3> tmp_path = world()->findPath(cur_pos, new_pos);
+			vector<int3> tmp_path = world()->findPath(cur_pos, new_pos, ref());
 
 			if(cur_pos == new_pos || tmp_path.empty())
 				return false;
@@ -137,7 +137,11 @@ namespace game {
 				}
 			}
 
-			if(findAny(boundingBox() + new_pos - pos(), this, collider_dynamic | collider_dynamic_nv)) {
+			FBox bbox = boundingBox() + new_pos - pos();
+			bbox.min += float3(0.1, 0.1, 0.1);
+			bbox.max -= float3(0.1, 0.1, 0.1);
+
+			if(findAny(bbox, this, collider_dynamic)) {
 				//TODO: response to collision
 				order.finish();
 			}

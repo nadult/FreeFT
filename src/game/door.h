@@ -54,7 +54,7 @@ namespace game
 		Door(const XMLNode&);
 		Door(const DoorProto &proto);
 
-		virtual ColliderFlags colliderType() const { return collider_dynamic_nv; }
+		virtual ColliderFlags colliderType() const { return collider_dynamic; }
 		
 		virtual void interact(const Entity*);
 		virtual void onSoundEvent();

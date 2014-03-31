@@ -29,7 +29,7 @@ issues/20-multiplayer_game_modes.txt
 issues/22-melee_combat.txt
 issues/23-damage_response.txt
 issues/24-aiming_and_shooting.txt
-
+issues/25-fixed_navigation.txt
 
 +ESTIMATED_TIME:  163h + ?
 +TIME_SPENT:

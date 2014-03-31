@@ -56,7 +56,7 @@ namespace game {
 		double timeDelta() const { return m_time_delta; }
 		double currentTime() const { return m_current_time; }
 	
-		vector<int3> findPath(const int3 &start, const int3 &end) const;
+		vector<int3> findPath(const int3 &start, const int3 &end, EntityRef filter_collider = EntityRef()) const;
 
 		TileMap &tileMap() { return m_level.tile_map; }
 		const TileMap &tileMap() const { return m_level.tile_map; }

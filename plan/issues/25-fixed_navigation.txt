@@ -1,0 +1,11 @@
+- make it fast for short paths  DONE
+- quick quad finding  DONE
+- quick updating for dynamic objects  DONE (good enough for now)
+- test in practice (AI)
+
++ESTIMATED_TIME: 
++TIME_SPENT:
+
++WORK_LOG:
+30.03.14: 18:00 - 24:00
+31.03.14: 20:30 - 21:45
