@@ -2,6 +2,10 @@
 - quick quad finding  DONE
 - quick updating for dynamic objects  DONE (good enough for now)
 - test in practice (AI)
+- returning quickly when some noe is unreachable (avoid searching
+  the whole graph)
+  Do some preprocessing in each frame after updateNaviMap?
+
 
 +ESTIMATED_TIME: 
 +TIME_SPENT:

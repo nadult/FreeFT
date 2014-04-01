@@ -157,6 +157,8 @@ namespace game {
 			m_ai.reset();
 		}
 
+		vector<int3> getPath() const;
+
 	private:
 		void think();
 

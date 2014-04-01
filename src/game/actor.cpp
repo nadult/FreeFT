@@ -309,4 +309,10 @@ namespace game {
 		return true;
 	}
 
+	vector<int3> Actor::getPath() const {
+		if(m_order && m_order->typeId() == OrderTypeId::move)
+			return static_cast<MoveOrder*>(m_order.get())->m_path;
+		return vector<int3>();
+	}
+
 }

@@ -40,6 +40,8 @@ namespace io {
 		game::Intersection m_shoot_isect;
 		float3 m_target_pos;
 		float3 m_last_look_at;
+
+		vector<int3> m_last_path;
 	};
 
 }

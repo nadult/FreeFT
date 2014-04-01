@@ -411,7 +411,7 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider) const {
 	if(sector_pos.x < 0 || sector_pos.y < 0 || sector_pos.x >= m_size.x || sector_pos.y >= m_size.y)
 		return -1;
 
-	int node = m_sectors[sector_pos.x + sector_pos.y * m_size.x].head;
+	int node = m_sectors[sector_pos.x + sector_pos.y * m_size.x].tail;
 
 	while(node != -1) {
 		const Quad &quad = m_quads[node];
@@ -426,8 +426,9 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider) const {
 				best_quad = node;
 			}
 		}
-		node = quad.node.next;
+		node = quad.node.prev;
 	}
+
 
 	return best_quad;
 }
@@ -624,7 +625,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 #endif
 
 			float dist = distance(closest_pos, data1.entry_pos) + data1.dist;
-			float est_dist = distance(closest_pos, end) * 2.0f;
+			float est_dist = distance(closest_pos, end);
 
 			if(quad2_id == end_id) {
 				end_reached = true;
@@ -652,6 +653,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 	}
 	std::reverse(out.begin(), out.end());
 	
+	//TODO: it's very costly
 	if(do_refining) {
 		for(int n = 0; n < (int)out.size() - 3; n++) {
 			float dist =	distance(out[n + 0].point, out[n + 1].point) +
@@ -751,25 +753,23 @@ vector<int3> NaviMap::findPath(const int3 &start, const int3 &end, int filter_co
 
 	vector<int3> simplified;
 	simplified.push_back(path[0]);
-	int2 prev(0, 0);
-	int prev_height = 0;
-	bool height_changed = false;
+	simplified.push_back(path[1]);
+	int2 last_vec = MoveVector(simplified[0].xz(), simplified[1].xz()).vec;
 
-	for(int n = 1; n < (int)path.size(); n++) {
-		int2 vec = MoveVector(simplified.back().xz(), path[n].xz()).vec;
-		if(vec == int2(0, 0))
+	for(int n = 2; n < (int)path.size(); n++) {
+		const int3 &cur = path[n];
+		int3 &prev = simplified.back();
+
+		int2 cur_vec = MoveVector(prev.xz(), cur.xz()).vec;
+		if(cur_vec == int2(0, 0))
 			continue;
 
-		if(vec == prev && path[n].y == prev_height && !height_changed) {
-			simplified.back() = path[n];
-			height_changed = false;
+		if(cur_vec != last_vec || cur.y != prev.y) {
+			simplified.push_back(cur);
+			last_vec = cur_vec;
 		}
-		else {
-			prev_height = path[n].y;
-			prev = vec;
-			height_changed = true;
-			simplified.push_back(path[n]);
-		}
+		else
+			prev = cur;
 	}
 
 	return std::move(simplified);

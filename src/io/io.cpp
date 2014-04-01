@@ -125,6 +125,10 @@ namespace io {
 					m_inventory_sel++;
 			}
 
+			m_last_path = actor->getPath();
+			if(!m_isect.isEmpty() && m_last_path.empty())
+				m_last_path = m_world->findPath((int3)actor->pos(), (int3)ray.at(m_isect.distance()), m_actor_ref);
+
 			m_inventory_sel = clamp(m_inventory_sel, -3, actor->inventory().size() - 1);
 			m_container_sel = clamp(m_container_sel, 0, container? container->inventory().size() - 1 : 0);
 
@@ -178,7 +182,9 @@ namespace io {
 			renderer.addBox(box, Color(255, 0, 0, 100));
 		}
 
-	//	m_world->naviMap().visualize(renderer, false);
+		m_world->naviMap().visualize(renderer, false);
+		if(!m_last_path.empty())
+			m_world->naviMap().visualizePath(m_last_path, 3, renderer);
 		renderer.render();
 
 		lookAt(m_view_pos);
