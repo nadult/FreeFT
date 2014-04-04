@@ -161,8 +161,8 @@ namespace game {
 			out.add(ov_tex, rect, m_pos, bbox, color, tex_rect, true);
 		}
 
-		if(world() && world()->findAny(boundingBox(), this))
-			out.addBox(bbox + pos(), Color::red);
+	//	if(world() && world()->findAny(boundingBox(), this))
+	//		out.addBox(bbox + pos(), Color::red);
 	}
 		
 	bool Entity::testPixel(const int2 &screen_pos) const {

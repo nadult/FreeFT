@@ -43,7 +43,7 @@ namespace game
 		Container(const XMLNode&);
 		Container(const ContainerProto&);
 
-		virtual ColliderFlags colliderType() const { return collider_static; }
+		virtual ColliderFlags colliderType() const { return collider_static | collider_occluding_entity; }
 
 		void open();
 		void close();

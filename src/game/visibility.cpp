@@ -62,9 +62,11 @@ namespace game {
 						box.min.z + box.depth() * (0.1f + float(z) * 0.4f) );
 					float3 dir = target - m_eye_pos;
 					float len = length(dir);
+
 					Segment segment(Ray(m_eye_pos, dir / len), 0.0f, len);
-					Intersection isect = m_world->trace(segment, spectator, collider_all);
-					if(isect.isEntity() && ((ObjectRef)isect).index() == index)
+					Intersection isect = m_world->trace(segment, spectator, collider_tiles | collider_occluding_entity);
+
+					if(isect.isEmpty() || isect.distance() > len)
 						return true;
 				}
 

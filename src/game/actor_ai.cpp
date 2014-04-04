@@ -28,7 +28,7 @@ namespace game {
 		m_delay -= m_world->timeDelta();
 		if(m_delay > 0.0f)
 			return;
-		m_delay = 0.5f;
+		m_delay = 0.25f;
 
 		if(actor->currentOrder() == OrderTypeId::idle) {
 			vector<ObjectRef> close_ents;

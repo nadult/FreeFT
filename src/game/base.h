@@ -133,6 +133,8 @@ namespace game {
 
 		collider_static			= 0x0002, // updates NavigationMap when its being fully recomputed
 		collider_dynamic		= 0x0004, // does not update NavigationMap
+		
+		collider_occluding_entity = 0x0008,
 
 		collider_item			= 0x0100,
 		collider_projectile		= 0x0200,

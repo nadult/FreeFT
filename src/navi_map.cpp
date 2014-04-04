@@ -460,7 +460,7 @@ bool NaviMap::isReachable(const int3 &source, const int3 &target) const {
 bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, const IBox &target_box) const {
 	IBox enlarged_box = target_box;
 	enlarged_box.min -= int3(1, source_height - 1, 1);
-	enlarged_box.max += int3(1, source_height - 1, 1);
+	enlarged_box.max += int3(1, -1, 1);
 
 	vector<int> quads;
 	findQuads(enlarged_box, quads);

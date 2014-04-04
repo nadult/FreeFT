@@ -25,6 +25,7 @@ namespace game {
 	bool Actor::handleOrder(TrackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order || event == ActorEvent::think) {
 			order.m_time_for_update -= timeDelta();
+
 			if(order.m_time_for_update < 0.0f) {
 				fixPosition();
 
@@ -44,14 +45,16 @@ namespace game {
 				order.m_path_pos = PathPos();
 				if(!world()->findPath(order.m_path, cur_pos, target_pos, ref()))
 					return false;
-				order.m_time_for_update = 0.1f;
+				order.m_time_for_update = 0.5f;
 			}
 			
-			if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
-				order.m_please_run = 0;
+			if(event == ActorEvent::init_order) {
+				if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
+					order.m_please_run = 0;
 
-			if(!animate(order.m_please_run? Action::run : Action::walk))
-				return false;
+				if(!animate(order.m_please_run? Action::run : Action::walk))
+					return false;
+			}
 
 			FollowPathResult result = order.needCancel()? FollowPathResult::finished :
 				followPath(order.m_path, order.m_path_pos, order.m_please_run);

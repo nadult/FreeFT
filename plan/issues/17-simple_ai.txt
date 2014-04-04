@@ -1,6 +1,8 @@
 - Quick visibility tests
-- Simple factions
-- Simple AI
+- Simple factions  DONE
+- Simple tracking  DONE
+- Attacking, losing interest, looking for enemies
+- Random movement from time to time
 
 +ESTIMATED_TIME:
 +TIME_SPENT:
@@ -10,4 +12,4 @@
 01.04.14: 7:30 - 9:00
 02.04.14: 18:00 - 19:30
 03.04.14: 7:30 - 9:15
-04.04.14: 9:45 - 12:45, 15:00 - 
+04.04.14: 9:45 - 12:45, 15:00 - 18:30, 19:00 - 
