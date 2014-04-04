@@ -57,17 +57,7 @@ namespace game {
 					order.finish();
 				}
 				else {
-					int3 target_pos = my_box.min;
-					if(my_box.max.x < other_box.min.x)
-						target_pos.x = other_box.min.x - my_box.width();
-					else if(my_box.min.x > other_box.max.x)
-						target_pos.x = other_box.max.x;
-					if(my_box.max.z < other_box.min.z)
-						target_pos.z = other_box.min.z - my_box.depth();
-					else if(my_box.min.z > other_box.max.z)
-						target_pos.z = other_box.max.z;
-					
-					target_pos = world()->naviMap().findClosestCorrectPos(target_pos, other_box);
+					int3 target_pos = world()->naviMap().findClosestCorrectPos((int3)pos(), boundingBox().height(), other_box);
 
 					order.m_is_followup = true;
 					POrder move_order = new MoveOrder(target_pos, true);

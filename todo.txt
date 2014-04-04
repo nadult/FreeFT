@@ -5,3 +5,7 @@
   won't crash, but will re-create all sprites automaticly.
 
 - use librocket instead of my own UI?
+
+- Remove event filters from orders (unnecessary)
+
+- Preloading sprites not so fast on non-SSD drives

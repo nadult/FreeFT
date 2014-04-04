@@ -41,7 +41,7 @@ namespace io {
 		float3 m_target_pos;
 		float3 m_last_look_at;
 
-		vector<int3> m_last_path;
+		game::Path m_last_path;
 	};
 
 }

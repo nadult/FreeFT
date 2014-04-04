@@ -100,7 +100,8 @@ int fromString(const char *str, const char **strings, int count);
 
 #define DEFINE_ENUM(type, ...) \
 	namespace type { \
-		static const char *s_strings[count] = { __VA_ARGS__ }; \
+		static const char *s_strings[] = { __VA_ARGS__ }; \
+		static_assert(COUNTOF(s_strings) == count, "String count does not match enum count"); \
 		const char *toString(int value) { \
 			DASSERT(value >= 0 && value < count); \
 			return s_strings[value]; \
@@ -254,7 +255,7 @@ template <class T>
 class PodArray {
 public:
 	PodArray() :m_data(nullptr), m_size(0) { }
-	PodArray(int size) :m_data(nullptr), m_size(0) { resize(size); }
+	explicit PodArray(int size) :m_data(nullptr), m_size(0) { resize(size); }
 	PodArray(const PodArray &rhs) :m_size(rhs.m_size) {
 		m_data = (T*)sys::alloc(m_size * sizeof(T));
 		memcpy(m_data, rhs.m_data, sizeof(T) * m_size);

@@ -135,6 +135,7 @@ namespace game {
 		void save(Stream&) const;
 
 		SurfaceId::Type surfaceUnder() const;
+
 		WeaponClass::Type equippedWeaponClass() const;
 		OrderTypeId::Type currentOrder() const;
 
@@ -157,7 +158,9 @@ namespace game {
 			m_ai.reset();
 		}
 
-		vector<int3> getPath() const;
+		const Path currentPath() const;
+		void followPath(const Path &path, PathPos &pos);
+		void roundPos();
 
 	private:
 		void think();
@@ -179,9 +182,18 @@ namespace game {
 
 		bool animateDeath(DeathTypeId::Type);
 		bool animate(Action::Type);
+
 		
 	private:
 		bool shrinkRenderedBBox() const { return true; }
+
+		enum class FollowPathResult {
+			moved,
+			finished,
+			collided,
+		};
+
+		FollowPathResult followPath(const Path&, PathPos&, bool run);
 
 		typedef void (Actor::*HandleFunc)(Order*, ActorEvent::Type, const ActorEventParams&);
 
@@ -200,6 +212,7 @@ namespace game {
 		bool handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(LookAtOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(MoveOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(TrackOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(AttackOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(ChangeStanceOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(InteractOrder&, ActorEvent::Type, const ActorEventParams&);

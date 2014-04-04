@@ -151,7 +151,6 @@ namespace game {
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially
 		// after creation it makes no sense to change it
-		void roundPos();
 		void setPos(const float3&);
 		const float3 &pos() const { return m_pos; }
 

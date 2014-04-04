@@ -16,7 +16,7 @@
 namespace game {
 
 	// TODO: multiple navigation maps (2, 3, 4 at least)
-	enum { agent_size = 3 };
+	enum { agent_size = 4 };
 
 	World::World(const string &file_name, Mode mode, Replicator *replicator)
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
@@ -74,6 +74,7 @@ namespace game {
 				m_navi_map.addCollider(box, n);
 			}
 		}
+		m_navi_map.updateReachability();
 	}
 
 	void World::removeEntity(EntityRef ref) {
@@ -259,7 +260,6 @@ namespace game {
 	}
 		
 	vector<int3> World::findPath(const int3 &start, const int3 &end, EntityRef filter_collider) const {
-		PROFILE_RARE("world::findPath");
 		return m_navi_map.findPath(start, end, filter_collider.index());
 	}
 	

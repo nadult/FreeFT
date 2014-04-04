@@ -23,11 +23,11 @@ SHARED_SRC=\
 	net/socket net/chunk net/host io/io io/console \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
-	game/world game/entity game/entity_world_proxy game/container game/level game/visibility \
+	game/world game/entity game/entity_world_proxy game/container game/level game/visibility game/path \
 	game/door game/projectile game/item game/weapon game/armour game/inventory game/base game/entities \
 	game/actor game/actor_ai game/actor_proto game/orders \
 	game/orders/attack game/orders/change_stance game/orders/die game/orders/idle game/orders/interact \
-	game/orders/inventory game/orders/move game/orders/look_at \
+	game/orders/inventory game/orders/move game/orders/look_at game/orders/track \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\

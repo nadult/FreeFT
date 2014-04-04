@@ -18,6 +18,7 @@ namespace game {
 		idle = 0,
 		look_at,
 		move,
+		track,
 		attack,
 		change_stance,
 		interact,
@@ -105,6 +106,7 @@ namespace game {
 #include "game/orders/idle.h"
 #include "game/orders/look_at.h"
 #include "game/orders/move.h"
+#include "game/orders/track.h"
 #include "game/orders/attack.h"
 #include "game/orders/change_stance.h"
 #include "game/orders/interact.h"

@@ -14,7 +14,9 @@ namespace game {
 
 	DEFINE_ENUM(OrderTypeId,
 		"idle",
+		"look_at",
 		"move",
+		"track",
 		"attack",
 		"change_stance",
 		"interact",
@@ -45,6 +47,7 @@ namespace game {
 		case OrderTypeId::idle:				return new IdleOrder(sr);
 		case OrderTypeId::look_at:			return new LookAtOrder(sr);
 		case OrderTypeId::move:				return new MoveOrder(sr);
+		case OrderTypeId::track:			return new TrackOrder(sr);
 		case OrderTypeId::attack:			return new AttackOrder(sr);
 		case OrderTypeId::change_stance:	return new ChangeStanceOrder(sr);
 		case OrderTypeId::interact:			return new InteractOrder(sr);
@@ -86,6 +89,7 @@ namespace game {
 			&Actor::handleOrder<IdleOrder>,
 			&Actor::handleOrder<LookAtOrder>,
 			&Actor::handleOrder<MoveOrder>,
+			&Actor::handleOrder<TrackOrder>,
 			&Actor::handleOrder<AttackOrder>,
 			&Actor::handleOrder<ChangeStanceOrder>,
 			&Actor::handleOrder<InteractOrder>,

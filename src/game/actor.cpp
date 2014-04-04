@@ -309,10 +309,60 @@ namespace game {
 		return true;
 	}
 
-	vector<int3> Actor::getPath() const {
+	const Path Actor::currentPath() const {
 		if(m_order && m_order->typeId() == OrderTypeId::move)
-			return static_cast<MoveOrder*>(m_order.get())->m_path;
-		return vector<int3>();
+			return Path(static_cast<MoveOrder*>(m_order.get())->m_path);
+
+		return Path();
 	}
+
+	Actor::FollowPathResult Actor::followPath(const Path &path, PathPos &path_pos, bool run) {
+		float speed = m_actor.speeds[run && m_stance == Stance::stand? 3 : m_stance];
+		float dist = speed * timeDelta();
+		float max_step = 1.0f;
+		bool has_finished = false;
+
+		while(dist > 0.0f && !has_finished) {
+			float step = min(dist, max_step);
+			dist -= step;
+			if(path.follow(path_pos, step))
+				has_finished = true;
+
+			float3 new_pos = path.pos(path_pos);
+			FBox bbox = boundingBox() + new_pos - pos();
+
+			ObjectRef tile_ref = findAny(bbox, this, collider_tiles);
+			if(tile_ref) {
+				const FBox tile_bbox = refBBox(tile_ref);
+				float diff = bbox.min.y - tile_bbox.max.y;
+				if(diff > 1.0f)
+					return FollowPathResult::collided;
+				if(diff > 0.0f) {
+					new_pos.y += diff;
+					bbox.min.y += diff;
+					bbox.max.y += diff;
+				}
+			}
+			
+			bbox.min += float3(0.1, 0.1, 0.1);
+			bbox.max -= float3(0.1, 0.1, 0.1);
+
+			if(findAny(bbox, this, collider_dynamic))
+				//TODO: response to collision
+				return FollowPathResult::collided;
+				
+			lookAt(new_pos);
+			setPos(new_pos);
+		}
+
+		return has_finished? FollowPathResult::finished : FollowPathResult::moved;
+	}
+		
+	void Actor::roundPos() {
+		int3 new_pos(pos() + float3(0.5f, 0, 0.5f));
+		setPos(new_pos);
+		//TODO: verify if colliding?
+	}
+
 
 }

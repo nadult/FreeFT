@@ -86,7 +86,9 @@ namespace io {
 			else if(m_isect.isTile()) {
 				//TODO: pixel intersect always returns distance == 0
 				int3 wpos = int3(ray.at(m_isect.distance()) + float3(0, 0.5f, 0));
-				m_world->sendOrder(new MoveOrder(wpos, !isKeyPressed(Key_lshift)), m_actor_ref);
+				
+				bool run = actor && !isKeyPressed(Key_lshift) && distance(float3(wpos), actor->pos()) > 10.0f;
+				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
 		}
 		if(isMouseKeyDown(1)) {
@@ -125,8 +127,8 @@ namespace io {
 					m_inventory_sel++;
 			}
 
-			m_last_path = actor->getPath();
-			if(!m_isect.isEmpty() && m_last_path.empty())
+			m_last_path = actor->currentPath();
+			if(!m_isect.isEmpty() && m_last_path.isEmpty())
 				m_last_path = m_world->findPath((int3)actor->pos(), (int3)ray.at(m_isect.distance()), m_actor_ref);
 
 			m_inventory_sel = clamp(m_inventory_sel, -3, actor->inventory().size() - 1);
@@ -183,8 +185,7 @@ namespace io {
 		}
 
 		m_world->naviMap().visualize(renderer, false);
-		if(!m_last_path.empty())
-			m_world->naviMap().visualizePath(m_last_path, 3, renderer);
+		m_last_path.visualize(3, renderer);
 		renderer.render();
 
 		lookAt(m_view_pos);

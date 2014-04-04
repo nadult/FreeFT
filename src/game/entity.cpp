@@ -116,10 +116,6 @@ namespace game {
 		}
 	}
 
-	void Entity::roundPos() {
-		m_pos = (int3)(m_pos + float3(0.5f, 0, 0.5f));
-	}
-
 	void Entity::setPos(const float3 &new_pos) {
 		m_pos = new_pos;
 	}

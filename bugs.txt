@@ -32,3 +32,10 @@
 - Mutants cannot use rifles
 
 - Support for ethereal tiles
+
+- When changing armour, it should happen on event pickup, not when animation has finished
+
+- Something is wrong when calculating looking direction; Especially when trying to aim at other entity,
+  player can sometimes rotate in place
+
+- When two entities are moving at the same time, they might end up in an overlapping positions
