@@ -17,7 +17,6 @@ namespace game {
 	}
 
 	SimpleAI::SimpleAI(PWorld world, EntityRef ref) :ActorAI(world, ref), m_delay(0.0f) {
-		printf("%d %s\n", m_actor_ref.index(), actor()->proto().id.c_str());
 	}
 
 	void SimpleAI::think() {

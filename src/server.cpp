@@ -286,6 +286,12 @@ int safe_main(int argc, char **argv)
 	host->createWorld(map_name);
 	PWorld world = host->world();
 
+	for(int n = 0; n < world->entityCount(); n++) {
+		Actor *actor = world->refEntity<Actor>(n);
+		if(actor && actor->factionId() != 0)
+			actor->attachAI<SimpleAI>();
+	}
+
 	WorldViewer viewer(world);
 	IO io(config.resolution, world, viewer, EntityRef(), config.profiler_enabled);
 

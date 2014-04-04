@@ -366,11 +366,11 @@ namespace game {
 	}
 		
 	void Actor::fixPosition() {
-		int3 new_pos(pos() + float3(0.5f, 0.5f, 0.5f));
+		int3 new_pos(pos() + float3(0.5f, -0.5f, 0.5f));
 		setPos(new_pos);
-		if(findAny(boundingBox(), this))
+
+		for(int i = 0; i < 2 && findAny(boundingBox(), this, collider_tiles); i++)
 			setPos(pos() + float3(0.0f, 1.0f, 0.0f));
-		//TODO: verify if colliding?
 	}
 
 
