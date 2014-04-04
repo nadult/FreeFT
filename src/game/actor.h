@@ -160,7 +160,7 @@ namespace game {
 
 		const Path currentPath() const;
 		void followPath(const Path &path, PathPos &pos);
-		void roundPos();
+		void fixPosition();
 
 	private:
 		void think();

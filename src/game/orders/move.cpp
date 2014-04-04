@@ -30,8 +30,7 @@ namespace game {
 			if(cur_pos == order.m_target_pos)
 				return false;
 
-			order.m_path = world()->findPath(cur_pos, order.m_target_pos, ref());
-			if(order.m_path.isEmpty())
+			if(!world()->findPath(order.m_path, cur_pos, order.m_target_pos, ref()))
 				return false;
 		
 			if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
@@ -41,13 +40,12 @@ namespace game {
 				return false;
 		}
 		if(event == ActorEvent::think) {
-			FollowPathResult result = order.needCancel()? FollowPathResult::finished :
-				followPath(order.m_path, order.m_path_pos, order.m_please_run);
-
-			if(result != FollowPathResult::moved) {
-				roundPos();
+			if(order.needCancel()) {
+				fixPosition();
 				return false;
 			}
+			if(followPath(order.m_path, order.m_path_pos, order.m_please_run) != FollowPathResult::moved)
+				return false;
 		}
 		if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
 			animate(m_action);

@@ -22,6 +22,7 @@
 using namespace gfx;
 using namespace game;
 using namespace ui;
+using namespace sys;
 
 namespace ResType {
 	enum Type {
@@ -66,8 +67,9 @@ public:
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 			auto &seq = (*sprite)[m_seq_id];
 
-			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\n",
-					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count);
+			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: (%d, %d, %d)",
+					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count,
+					sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z);
 
 			m_font->drawShadowed(pos, Color::white, Color::black, buffer);
 			pos.y += m_font->evalExtents(buffer).height();
@@ -377,7 +379,7 @@ public:
 	}
 
 	vector<FileEntry> m_entries;
-	Path m_current_dir;
+	sys::Path m_current_dir;
 
 	PListBox			m_dir_view;
 	Ptr<ResourceView>	m_res_view;

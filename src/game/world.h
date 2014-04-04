@@ -56,12 +56,13 @@ namespace game {
 		double timeDelta() const { return m_time_delta; }
 		double currentTime() const { return m_current_time; }
 	
-		vector<int3> findPath(const int3 &start, const int3 &end, EntityRef filter_collider = EntityRef()) const;
+		bool findClosestPos(int3 &out, const int3 &source, const IBox &target_box, EntityRef agent) const;
+		bool findPath(Path &out, const int3 &start, const int3 &end, EntityRef agent) const;
 
 		TileMap &tileMap() { return m_level.tile_map; }
 		const TileMap &tileMap() const { return m_level.tile_map; }
-		const NaviMap &naviMap() const { return m_navi_map; }
-		NaviMap &naviMap() { return m_navi_map; }
+		
+		const NaviMap *naviMap(int agent_size) const;
 
 		const Grid::ObjectDef *refDesc(ObjectRef) const;
 		const FBox refBBox(ObjectRef) const;
@@ -105,11 +106,15 @@ namespace game {
 		double m_last_anim_frame_time;
 		int m_anim_frame;
 
+		//TODO: updating navi map on demand
+		const NaviMap *accessNaviMap(const FBox &agent_box) const;
+
 		//TODO: remove level
 		Level		m_level;
 		TileMap		&m_tile_map;
 		EntityMap	&m_entity_map;
-		NaviMap		m_navi_map;
+
+		vector<NaviMap> m_navi_maps;
 		
 		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
 

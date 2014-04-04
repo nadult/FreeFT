@@ -353,6 +353,7 @@ namespace game {
 		void load(Stream&);
 
 		// Returns true if finished
+		// TODO: take current position (actual position, not computed from PathPos) into consideration
 		bool follow(PathPos &pos, float step) const;
 		float3 pos(const PathPos &pos) const;
 

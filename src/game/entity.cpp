@@ -117,6 +117,7 @@ namespace game {
 	}
 
 	void Entity::setPos(const float3 &new_pos) {
+	//	DASSERT(!(bool)findAny(boundingBox() - pos() + new_pos, this, collider_entities));
 		m_pos = new_pos;
 	}
 
@@ -160,9 +161,8 @@ namespace game {
 			out.add(ov_tex, rect, m_pos, bbox, color, tex_rect, true);
 		}
 
-	//	bbox += pos();
-	//	if(world() && world()->findAny(bbox, this))
-	//		out.addBox(bbox, Color::red);
+		if(world() && world()->findAny(boundingBox(), this))
+			out.addBox(bbox + pos(), Color::red);
 	}
 		
 	bool Entity::testPixel(const int2 &screen_pos) const {

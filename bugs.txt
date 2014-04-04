@@ -37,5 +37,3 @@
 
 - Something is wrong when calculating looking direction; Especially when trying to aim at other entity,
   player can sometimes rotate in place
-
-- When two entities are moving at the same time, they might end up in an overlapping positions

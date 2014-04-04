@@ -9,3 +9,5 @@
 - Remove event filters from orders (unnecessary)
 
 - Preloading sprites not so fast on non-SSD drives
+
+- Looking through some of the entities (look-through flag?)

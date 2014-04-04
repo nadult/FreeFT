@@ -54,16 +54,17 @@ namespace game {
 			else {
 				if(order.m_is_followup) {
 					printf("Cannot get there!\n");
-					order.finish();
+					return false;
 				}
 				else {
-					int3 target_pos = world()->naviMap().findClosestCorrectPos((int3)pos(), boundingBox().height(), other_box);
-
-					order.m_is_followup = true;
-					POrder move_order = new MoveOrder(target_pos, true);
-					move_order->setFollowup(order.clone());
-					setOrder(std::move(move_order));
-					order.finish();
+					int3 target_pos;
+				   	if(world()->findClosestPos(target_pos, (int3)pos(), other_box, ref())) {
+						order.m_is_followup = true;
+						POrder move_order = new MoveOrder(target_pos, true);
+						move_order->setFollowup(order.clone());
+						setOrder(std::move(move_order));
+					}
+					return false;
 				}
 			}
 		}

@@ -13,6 +13,8 @@
 #include "audio/sound.h"
 #include "sys/platform.h"
 
+using namespace sys;
+
 namespace audio
 {
 	const string vendorName() {

@@ -55,7 +55,7 @@ public:
 	bool isReachable(const int3 &source, const int3 &target) const;
 	bool isReachable(int source_id, int target_id) const;
 
-	int3 findClosestCorrectPos(const int3 &source, int source_height, const IBox &target_box) const;
+	bool findClosestPos(int3 &out, const int3 &source, int source_height, const IBox &target_box) const;
 	int findQuad(const int3 &pos, int filter_collider = -1, bool find_disabled = false) const;
 	void findQuads(const IBox &box, vector<int> &out, bool cheap_filter = true) const;
 
@@ -63,7 +63,7 @@ public:
 	void removeColliders();
 	void updateReachability();
 
-	vector<int3> findPath(const int3 &start, const int3 &end, int filter_collider = -1) const;
+	bool findPath(vector<int3> &out, const int3 &start, const int3 &end, int filter_collider = -1) const;
 
 	int quadCount() const { return (int)m_quads.size(); }
 	const Quad &operator[](int idx) const { return m_quads[idx]; }

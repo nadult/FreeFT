@@ -10,6 +10,7 @@
 #include "sys/platform.h"
 
 using namespace gfx;
+using namespace sys;
 
 namespace game {
 

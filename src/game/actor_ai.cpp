@@ -16,7 +16,7 @@ namespace game {
 		return m_world->refEntity<Actor>(m_actor_ref);
 	}
 
-	SimpleAI::SimpleAI(PWorld world, EntityRef ref) :ActorAI(world, ref) {
+	SimpleAI::SimpleAI(PWorld world, EntityRef ref) :ActorAI(world, ref), m_delay(0.0f) {
 		printf("%d %s\n", m_actor_ref.index(), actor()->proto().id.c_str());
 	}
 
@@ -25,7 +25,12 @@ namespace game {
 		if(!actor)
 			return;
 
-		if(actor->currentOrder() == OrderTypeId::idle && m_actor_ref.index() == 46) {
+		m_delay -= m_world->timeDelta();
+		if(m_delay > 0.0f)
+			return;
+		m_delay = 0.5f;
+
+		if(actor->currentOrder() == OrderTypeId::idle) {
 			vector<ObjectRef> close_ents;
 			FBox close_prox = actor->boundingBox();
 			close_prox.min -= float3(100, 0, 100);

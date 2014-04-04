@@ -7,6 +7,8 @@
 #include "ui/text_box.h"
 #include <algorithm>
 
+using namespace sys;
+
 namespace ui {
 
 	static const char *s_ok_label[] = {

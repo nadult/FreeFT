@@ -47,6 +47,7 @@ namespace game {
 	protected:
 		Mode m_mode;
 		EntityRef m_target;
+		float m_delay;
 	};
 
 }

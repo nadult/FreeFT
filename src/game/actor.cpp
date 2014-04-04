@@ -329,14 +329,16 @@ namespace game {
 				has_finished = true;
 
 			float3 new_pos = path.pos(path_pos);
-			FBox bbox = boundingBox() + new_pos - pos();
+			FBox bbox = (FBox)enclosingIBox(boundingBox() + new_pos - pos());
 
 			ObjectRef tile_ref = findAny(bbox, this, collider_tiles);
 			if(tile_ref) {
 				const FBox tile_bbox = refBBox(tile_ref);
 				float diff = bbox.min.y - tile_bbox.max.y;
-				if(diff > 1.0f)
+				if(diff > 1.0f) {
+					fixPosition();
 					return FollowPathResult::collided;
+				}
 				if(diff > 0.0f) {
 					new_pos.y += diff;
 					bbox.min.y += diff;
@@ -344,23 +346,30 @@ namespace game {
 				}
 			}
 			
-			bbox.min += float3(0.1, 0.1, 0.1);
-			bbox.max -= float3(0.1, 0.1, 0.1);
+			bbox.min += float3(0.05, 0.05, 0.05);
+			bbox.max -= float3(0.05, 0.05, 0.05);
 
-			if(findAny(bbox, this, collider_dynamic))
+			if(findAny(bbox, this, collider_dynamic)) {
+				fixPosition();
 				//TODO: response to collision
 				return FollowPathResult::collided;
+			}
 				
 			lookAt(new_pos);
 			setPos(new_pos);
 		}
 
+		if(has_finished)
+			fixPosition();
+
 		return has_finished? FollowPathResult::finished : FollowPathResult::moved;
 	}
 		
-	void Actor::roundPos() {
-		int3 new_pos(pos() + float3(0.5f, 0, 0.5f));
+	void Actor::fixPosition() {
+		int3 new_pos(pos() + float3(0.5f, 0.5f, 0.5f));
 		setPos(new_pos);
+		if(findAny(boundingBox(), this))
+			setPos(pos() + float3(0.0f, 1.0f, 0.0f));
 		//TODO: verify if colliding?
 	}
 

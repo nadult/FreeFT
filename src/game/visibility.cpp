@@ -35,7 +35,7 @@ namespace game {
 	}
 	
 	static const double blend_time = 0.5;
-	static const float feel_distance = 10.0;
+	static const float feel_distance = 50.0;
 	static const float max_distance = 200.0;
 		
 	bool WorldViewer::isVisible(const FBox &box, int index, bool is_movable) const {

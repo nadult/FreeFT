@@ -307,6 +307,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 	rects[1] = IRect(int2(crect.max.x, prect.min.y), int2(prect.max.x, crect.max.y));
 	rects[2] = IRect(int2(prect.min.x, crect.min.y), int2(crect.min.x, prect.max.y));
 	rects[3] = IRect(int2(crect.min.x, crect.max.y), prect.max);
+
 	parent->is_disabled = true;
 	parent->collider_id = collider_id;
 
@@ -337,7 +338,7 @@ void NaviMap::addCollider(const IBox &box, int collider_id) {
 	IBox ext_box(box.min - int3(m_agent_size - 1, 2, m_agent_size - 1), box.max);
 	IRect ext_rect(ext_box.min.xz(), ext_box.max.xz());
 	vector<int> indices;
-
+	
 	findQuads(ext_box, indices);
 	for(int n = 0; n < (int)indices.size(); n++) {
 		const Quad &quad = m_quads[indices[n]];
@@ -414,23 +415,41 @@ bool NaviMap::isReachable(int src_id, int target_id) const {
 
 	for(int p = 0; p < 2; p++) {
 		const Quad &quad = m_quads[quad_id[p]];
-		if(quad.is_disabled)
-			for(int n = 0; n < (int)quad.neighbours.size(); n++) {
-				const Quad &neighbour = m_quads[quad.neighbours[n]];
-				if(!neighbour.is_disabled)
-					groups[p].push_back(neighbour.group_id);
+		if(quad.is_disabled) {
+			vector<int> to_visit;
+			to_visit.push_back(quad_id[p]);
+			int collider_id = quad.collider_id;
+
+			// Visiting all disabled quads with same collider
+			for(int i = 0; i < (int)to_visit.size(); i++) {
+				const Quad tquad = m_quads[to_visit[i]];
+
+				for(int n = 0; n < (int)tquad.neighbours.size(); n++) {
+					const Quad &neighbour = m_quads[tquad.neighbours[n]];
+					if(neighbour.is_disabled) {
+						bool found = false;
+						for(int j = 0; j < to_visit.size(); j++)
+							if(to_visit[j] == tquad.neighbours[n]) {
+								found = true;
+								break;
+							}
+						if(!found)
+							to_visit.push_back(tquad.neighbours[n]);
+					}
+					else
+						groups[p].push_back(neighbour.group_id);
+				}
 			}
+		}
 		else
 			groups[p].push_back(quad.group_id);
 	}
-
-	
 
 	for(int i = 0; i < (int)groups[0].size(); i++)
 		for(int j = 0; j < (int)groups[1].size(); j++)
 			if(groups[0][i] == groups[1][j])
 				return true;
-
+	
 	return false;
 }
 
@@ -438,7 +457,7 @@ bool NaviMap::isReachable(const int3 &source, const int3 &target) const {
 	return isReachable(findQuad(source, -1, true), findQuad(target, -1, true));
 }
 
-int3 NaviMap::findClosestCorrectPos(const int3 &pos, int source_height, const IBox &target_box) const {
+bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, const IBox &target_box) const {
 	IBox enlarged_box = target_box;
 	enlarged_box.min -= int3(1, source_height - 1, 1);
 	enlarged_box.max += int3(1, source_height - 1, 1);
@@ -447,7 +466,7 @@ int3 NaviMap::findClosestCorrectPos(const int3 &pos, int source_height, const IB
 	findQuads(enlarged_box, quads);
 	
 	int3 closest_pos = pos;
-	float min_distance = 1.0f / 0.0f, min_distance2 = 0.0f;
+	float min_distance = constant::inf, min_distance2 = 0.0f;
 	FRect ftarget_rect(target_box.min.xz(), target_box.max.xz());
 
 	int3 clip_pos = pos;
@@ -482,7 +501,8 @@ int3 NaviMap::findClosestCorrectPos(const int3 &pos, int source_height, const IB
 		}
 	}
 
-	return closest_pos;
+	out = closest_pos;
+	return min_distance < constant::inf;
 }
 
 void NaviMap::findQuads(const IBox &box, vector<int> &out, bool cheap_filter) const {
@@ -514,7 +534,7 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 	while(node != -1) {
 		const Quad &quad = m_quads[node];
 		if(quad.rect.isInside(pos.xz()) && (!quad.is_disabled || quad.collider_id == filter_collider || find_disabled)
-				&& pos.y >= quad.min_height && pos.y <= quad.max_height + 2.0f) {
+				&& pos.y >= quad.min_height && pos.y <= int(quad.max_height) + 2) {
 
 			if(pos.y <= quad.max_height)
 				return node;
@@ -526,7 +546,6 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 		}
 		node = quad.node.prev;
 	}
-
 
 	return best_quad;
 }
@@ -787,13 +806,14 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 	return std::move(out);
 }
 
-vector<int3> NaviMap::findPath(const int3 &start, const int3 &end, int filter_collider) const {
+bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, int filter_collider) const {
 	PROFILE_RARE("NaviMap::findPath");
 
 	int start_id = findQuad(start, filter_collider);
 	int end_id = findQuad(end, filter_collider);
+
 	if(!isReachable(start_id, end_id))
-		return vector<int3>();
+		return false;
 
 	vector<PathNode> input = findPath(start.xz(), end.xz(), start_id, end_id, true, filter_collider);
 	
@@ -801,7 +821,7 @@ vector<int3> NaviMap::findPath(const int3 &start, const int3 &end, int filter_co
 	path.reserve(input.size() * 3);
 
 	if(input.empty())
-		return path;
+		return false;
 
 	for(int n = 0; n < (int)input.size() - 1; n++) {
 		const IRect &src_quad = m_quads[input[n + 0].quad_id].rect;
@@ -852,8 +872,6 @@ vector<int3> NaviMap::findPath(const int3 &start, const int3 &end, int filter_co
 		path.push_back(asXZY(pdst, max(src_height, dst_height)));
 	}
 	path.push_back(asXZY(input.back().point, m_quads[input.back().quad_id].max_height));
-	if(path.size() <= 2)
-		return std::move(path);
 
 	vector<int3> simplified;
 	simplified.push_back(path[0]);
@@ -875,7 +893,8 @@ vector<int3> NaviMap::findPath(const int3 &start, const int3 &end, int filter_co
 			prev = cur;
 	}
 
-	return std::move(simplified);
+	out = std::move(simplified);
+	return true;
 }
 
 void NaviMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {

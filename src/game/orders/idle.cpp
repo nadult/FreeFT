@@ -29,7 +29,6 @@ namespace game {
 			return false;
 		if(event == ActorEvent::anim_finished || event==ActorEvent::init_order) {
 			animate(Action::idle);
-			roundPos();
 		}
 
 		return true;

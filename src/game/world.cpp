@@ -15,12 +15,9 @@
 
 namespace game {
 
-	// TODO: multiple navigation maps (2, 3, 4 at least)
-	enum { agent_size = 4 };
-
 	World::World(const string &file_name, Mode mode, Replicator *replicator)
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
-		m_anim_frame(0), m_navi_map(agent_size) ,m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map),
+		m_anim_frame(0), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map),
 	   	m_replicator(replicator) {
 		DASSERT(m_mode == Mode::single_player || m_replicator != nullptr);
 
@@ -30,6 +27,10 @@ namespace game {
 			if(obj.ptr)
 				obj.ptr->hook(this, n);
 		}
+
+		int agent_sizes[] = { 3, 4, 7 };
+		for(int n = 0; n < COUNTOF(agent_sizes); n++)
+			m_navi_maps.emplace_back(agent_sizes[n]);
 
 //		m_tile_map.printInfo();
 		m_map_name = file_name;
@@ -58,23 +59,28 @@ namespace game {
 			//heightmap.saveLevels();
 			//heightmap.printInfo();
 
-			m_navi_map.update(heightmap);
-			//m_navi_map.printInfo();
-		}
-
-		m_navi_map.removeColliders();
-
-		for(int n = 0; n < m_entity_map.size(); n++) {
-			auto &object = m_entity_map[n];
-			if(!object.ptr)
-				continue;
-
-			if(object.flags & collider_dynamic) {
-				const IBox &box = enclosingIBox(object.ptr->boundingBox());
-				m_navi_map.addCollider(box, n);
+			for(int m = 0; m < (int)m_navi_maps.size(); m++) {
+				m_navi_maps[m].update(heightmap);
+				//m_navi_maps[m].printInfo();
 			}
 		}
-		m_navi_map.updateReachability();
+
+		for(int m = 0; m < (int)m_navi_maps.size(); m++) {
+			NaviMap &navi_map = m_navi_maps[m];
+			navi_map.removeColliders();
+
+			for(int n = 0; n < m_entity_map.size(); n++) {
+				auto &object = m_entity_map[n];
+				if(!object.ptr)
+					continue;
+
+				if(object.flags & collider_dynamic) {
+					const IBox &box = enclosingIBox(object.ptr->boundingBox());
+					navi_map.addCollider(box, n);
+				}
+			}
+			navi_map.updateReachability();
+		}
 	}
 
 	void World::removeEntity(EntityRef ref) {
@@ -259,8 +265,46 @@ namespace game {
 		return m_tile_map.isInside(box);
 	}
 		
-	vector<int3> World::findPath(const int3 &start, const int3 &end, EntityRef filter_collider) const {
-		return m_navi_map.findPath(start, end, filter_collider.index());
+	const NaviMap *World::naviMap(int agent_size) const {
+		for(int n = 0; n < (int)m_navi_maps.size(); n++)
+			if(m_navi_maps[n].agentSize() == agent_size)
+				return &m_navi_maps[n];
+
+		printf("not for: %d\n", agent_size);
+		return nullptr;
+	}
+		
+	const NaviMap *World::accessNaviMap(const FBox &bbox) const {
+		int agent_size = round(max(bbox.width(), bbox.depth()));
+		return naviMap(agent_size);
+	}
+		
+	bool World::findClosestPos(int3 &out, const int3 &source, const IBox &target_box, EntityRef agent_ref) const {
+		const Entity *agent = const_cast<World*>(this)->refEntity(agent_ref);
+		if(agent) {
+			FBox bbox = agent->boundingBox();
+			const NaviMap *navi_map = accessNaviMap(bbox);
+			if(navi_map)
+				return navi_map->findClosestPos(out, source, bbox.height(), target_box);
+		}
+
+		return false;
+	}
+		
+	bool World::findPath(Path &out, const int3 &start, const int3 &end, EntityRef agent_ref) const {
+		const Entity *agent = const_cast<World*>(this)->refEntity(agent_ref);
+		if(agent) {
+			const NaviMap *navi_map = accessNaviMap(agent->boundingBox());
+			if(navi_map) {
+				vector<int3> path;
+				if(navi_map->findPath(path, start, end, agent_ref.index())) {
+					out = Path(path);
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 	
 	void World::replicate(const Entity *entity) {

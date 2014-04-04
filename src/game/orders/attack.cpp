@@ -32,7 +32,6 @@ namespace game {
 				return false;
 			}
 
-			roundPos();
 			lookAt(order.m_target_pos);
 	
 			AttackMode::Type mode = order.m_mode;
