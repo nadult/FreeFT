@@ -13,7 +13,7 @@ namespace game {
 		impact = parser("impact_id");
 		blend_angles = toBool(parser("blend_angles"));
 		speed = toFloat(parser("speed"));
-		death_id = DeathTypeId::fromString(parser("death_id"));
+		death_id = DeathId::fromString(parser("death_id"));
 	}
 		
 	ImpactProto::ImpactProto(const TupleParser &parser) :ProtoImpl(parser) {
@@ -66,7 +66,7 @@ namespace game {
 		if(m_frame_count < 2)
 			return;
 
-		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), refEntity(m_spawner), collider_solid);
+		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), refEntity(m_spawner), Flags::all | Flags::colliding);
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		setPos(new_pos);
 

@@ -9,7 +9,7 @@
 
 namespace game {
 
-	DieOrder::DieOrder(DeathTypeId::Type death_id) :m_death_id(death_id), m_is_dead(false) {
+	DieOrder::DieOrder(DeathId::Type death_id) :m_death_id(death_id), m_is_dead(false) {
 	}
 
 	DieOrder::DieOrder(Stream &sr) :OrderImpl(sr) {
@@ -24,12 +24,12 @@ namespace game {
 	bool Actor::handleOrder(DieOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order) {
 			if(!animateDeath(order.m_death_id))
-				animateDeath(DeathTypeId::normal);
+				animateDeath(DeathId::normal);
 		}
 		if(event == ActorEvent::sound) {
 			SoundId sound_id = m_actor.death_sounds[order.m_death_id];
 			if(sound_id == -1)
-				sound_id = m_actor.death_sounds[DeathTypeId::normal];
+				sound_id = m_actor.death_sounds[DeathId::normal];
 			world()->playSound(sound_id, pos());
 
 			if(m_actor.is_alive)

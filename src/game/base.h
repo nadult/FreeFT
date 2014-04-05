@@ -38,7 +38,7 @@ namespace game {
 		power
 	)
 
-	DECLARE_ENUM(ProjectileTypeId,
+	DECLARE_ENUM(ProjectileId,
 		bullet,
 		plasma,
 		electric,
@@ -46,7 +46,7 @@ namespace game {
 		rocket
 	)
 
-	DECLARE_ENUM(DeathTypeId,
+	DECLARE_ENUM(DeathId,
 		normal,
 		big_hole,
 		cut_in_half,
@@ -124,41 +124,56 @@ namespace game {
 		AttackMode::Type getFirst(uint flags);
 	};
 	
+	namespace Flags { enum Type : unsigned; };
 
-	inline constexpr int tileIdToFlag(TileId::Type id) { return 1 << (16 + id); }
+	inline constexpr Flags::Type entityIdToFlag(EntityId::Type id) { return (Flags::Type)(1u << (4 + id)); }
+	inline constexpr Flags::Type tileIdToFlag(TileId::Type id) { return (Flags::Type)(1u << (16 + id)); }
 
-	//TODO: better name
-	enum ColliderFlags {
-		collider_none			= 0x0000,
+	static_assert(EntityId::count <= 12, "Flag limit reached");
+	static_assert(TileId::count <= 8, "Flag limit reached");
 
-		collider_static			= 0x0002, // updates NavigationMap when its being fully recomputed
-		collider_dynamic		= 0x0004, // does not update NavigationMap
-		
-		collider_occluding_entity = 0x0008,
+	namespace Flags {
+		enum Type :unsigned {
+			//Generic flags: when testing, at least one flag must match
+			static_entity	= 0x0001,
+			dynamic_entity	= 0x0002, // can change position and/or bounding box
 
-		collider_item			= 0x0100,
-		collider_projectile		= 0x0200,
+			container		= entityIdToFlag(EntityId::container),
+			door			= entityIdToFlag(EntityId::door),
+			actor			= entityIdToFlag(EntityId::actor),
+			item			= entityIdToFlag(EntityId::item),
+			projectile		= entityIdToFlag(EntityId::projectile),
+			impact			= entityIdToFlag(EntityId::impact),
 
-		collider_entities		= 0x00ffff,
+			entity			= 0xffff,
 
-		collider_tile_walls		= tileIdToFlag(TileId::wall),
-		collider_tile_floors	= tileIdToFlag(TileId::floor),
-		collider_tile_objects	= tileIdToFlag(TileId::object),
-		collider_tile_stairs	= tileIdToFlag(TileId::stairs),
-		collider_tile_roofs		= tileIdToFlag(TileId::roof),
-		collider_tile_walkable	= collider_tile_floors | collider_tile_stairs | collider_tile_roofs,
-		collider_tiles			= 0xff0000,
+			wall_tile		= tileIdToFlag(TileId::wall),
+			floor_tile		= tileIdToFlag(TileId::floor),
+			object_tile		= tileIdToFlag(TileId::object),
+			stairs_tile		= tileIdToFlag(TileId::stairs),
+			roof_tile		= tileIdToFlag(TileId::roof),
+			walkable_tile	= floor_tile | stairs_tile | roof_tile,
 
-		collider_solid			= 0xff00ff,
-		collider_all			= 0xffffff,
-	};
+			tile			= 0xff0000,
+
+			all				= 0xffffff,
 	
-	enum FunctionalFlags {
-		visibility_flag			= 0x80000000,
-	};
+			//Functional flags: when testing, all of the selected flags must match	
+			visible			= 0x01000000,
+			occluding		= 0x02000000,
+			colliding		= 0x04000000,
+		};
+
+		inline constexpr Type operator|(Type a, Type b) { return (Type)((unsigned)a | (unsigned)b); }
+		inline constexpr Type operator&(Type a, Type b) { return (Type)((unsigned)a & (unsigned)b); }
+		inline constexpr Type operator~(Type a) { return (Type)(~(unsigned)a); }
+
+		inline constexpr bool test(unsigned object_flags, Type test) {
+			return (object_flags & test & 0xffffff) && ((object_flags & test & 0xff000000) == (test & 0xff000000));
+		}
 	
-	inline constexpr ColliderFlags operator|(ColliderFlags a, ColliderFlags b)
-			{ return (ColliderFlags)((int)a | (int)b); }
+	}
+	
 
 	class SoundId {
 	public:

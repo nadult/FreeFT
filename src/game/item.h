@@ -83,7 +83,7 @@ namespace game {
 		ItemEntity(const XMLNode&);
 		ItemEntity(const Item &item, int count);
 
-		ColliderFlags colliderType() const { return collider_item; }
+		Flags::Type flags() const { return Flags::item | Flags::static_entity; }
 
 		gfx::PTexture guiImage(bool small, FRect &tex_image) const;
 		const Item &item() const { return m_item; }

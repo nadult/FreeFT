@@ -16,8 +16,7 @@ public:
 
 	NaviHeightmap(const int2 &size);
 
-	//TODO: support for non-walkable objects
-	void update(const vector<IBox> &boxes);
+	void update(const vector<IBox> &walkable, const vector<IBox> &blockers);
 
 	int2 dimensions() const { return m_size; }
 

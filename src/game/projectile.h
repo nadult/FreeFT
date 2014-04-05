@@ -22,7 +22,7 @@ namespace game {
 		void connect();
 
 		ProtoRef<ImpactProto> impact;
-		DeathTypeId::Type death_id;
+		DeathId::Type death_id;
 		float speed;
 		bool blend_angles;
 	};
@@ -35,7 +35,7 @@ namespace game {
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
 
-		ColliderFlags colliderType() const { return collider_projectile; }
+		Flags::Type flags() const { return Flags::projectile | Flags::dynamic_entity; }
 
 	protected:
 		virtual void think();
@@ -56,7 +56,7 @@ namespace game {
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
 
-		ColliderFlags colliderType() const { return collider_projectile; }
+		Flags::Type flags() const { return Flags::impact | Flags::dynamic_entity; }
 	
 	protected:
 		void onAnimFinished() override;

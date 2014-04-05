@@ -51,11 +51,10 @@ namespace game
 		
 		static ResourceMgr<Tile> mgr;
 
+		Flags::Type flags() const;
+
 		TileId::Type type() const { return m_type_id; }
-		void setType(TileId::Type type) { m_type_id = type; }
-		
 		SurfaceId::Type surfaceId() const { return m_surface_id; }
-		void setType(SurfaceId::Type id) { m_surface_id = id; }
 
 		const IRect rect(int frame_id) const;
 		const IRect &rect() const { return m_max_rect; }
@@ -87,6 +86,8 @@ namespace game
 
 		TileId::Type m_type_id;
 		SurfaceId::Type m_surface_id;
+		bool m_see_through;
+		bool m_walk_through;
 	};
 
 	typedef Ptr<Tile> PTile;

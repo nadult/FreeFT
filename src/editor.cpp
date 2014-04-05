@@ -37,7 +37,12 @@
 
 using namespace gfx;
 using namespace ui;
-using namespace game;
+using namespace sys;
+using game::Tile;
+using game::Sprite;
+using game::TileMap;
+using game::EntityMap;
+using game::Level;
 
 enum EditorMode {
 	editing_tiles,

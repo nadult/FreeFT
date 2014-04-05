@@ -96,9 +96,9 @@ namespace game {
 		double timeDelta() const;
 		double currentTime() const;
 		
-		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
-		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
+		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
 	
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
@@ -140,13 +140,13 @@ namespace game {
 
 		virtual Entity *clone() const = 0;
 
-		virtual ColliderFlags colliderType() const = 0;
-		virtual EntityId::Type typeId() const = 0; //TODO: change to typeId
+		virtual Flags::Type flags() const = 0;
+		virtual EntityId::Type typeId() const = 0;
 		virtual bool renderAsOverlay() const { return false; }
 
 		virtual void addToRender(gfx::SceneRenderer&, Color color = Color::white) const;
 		virtual void interact(const Entity *interactor) { }
-		virtual void onImpact(DeathTypeId::Type, float damage) { }
+		virtual void onImpact(DeathId::Type, float damage) { }
 
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially
@@ -212,7 +212,6 @@ namespace game {
 		bool m_is_seq_finished;
 	};
 
-	//TODO: collider also
 	template <class Type, class ProtoType, int type_id_>
 	class EntityImpl: public Entity
 	{

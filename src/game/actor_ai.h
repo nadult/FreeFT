@@ -18,7 +18,7 @@ namespace game {
 		virtual ~ActorAI() = default;
 
 		virtual void think() = 0;
-		virtual void onImpact(DeathTypeId::Type, float damage) { }
+		virtual void onImpact(DeathId::Type, float damage) { }
 		virtual ActorAI *clone() = 0;
 
 		Actor *actor() const;

@@ -50,8 +50,8 @@ namespace game {
 		const Entity *refEntity(EntityRef) const;
 
 		//TODO: option to ignore entities
-		Intersection pixelIntersect(const int2 &screen_pos, int flags = collider_all) const;
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
+		Intersection pixelIntersect(const int2 &screen_pos, Flags::Type flags = Flags::all) const;
+		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
 
 	protected:
 		bool isMovable(const Entity&) const;

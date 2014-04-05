@@ -55,7 +55,7 @@ namespace game {
 		{ "pickup", 		"pickup", 			"pickup" }
 	};
 
-	static const char *s_death_names[DeathTypeId::count] = {
+	static const char *s_death_names[DeathId::count] = {
 		"",
 		"bighole",
 		"cutinhalf",
@@ -161,9 +161,9 @@ namespace game {
 		ActorArmourProto::connect();
 		unarmed_weapon.connect();
 
-		for(int d = 0; d < DeathTypeId::count; d++) {
+		for(int d = 0; d < DeathId::count; d++) {
 			char text[256];
-			const char *death_name = d == DeathTypeId::normal? "death" : s_death_names[d];
+			const char *death_name = d == DeathId::normal? "death" : s_death_names[d];
 			snprintf(text, sizeof(text), "%s%s", sound_prefix.c_str(), death_name);
 
 			death_sounds[d] = SoundId(text);
@@ -186,7 +186,7 @@ namespace game {
 
 		char text[256];
 
-		for(int d = 0; d < DeathTypeId::count; d++) {
+		for(int d = 0; d < DeathId::count; d++) {
 			snprintf(text, sizeof(text), "death%s", s_death_names[d]);
 			auto it = name_map.find(text);
 			m_death_idx[d] = it == name_map.end()? invalid_id : it->second;
@@ -252,8 +252,8 @@ namespace game {
 		return anim_id == invalid_id? -1 : anim_id;
 	}
 
-	int ActorArmourProto::deathAnimId(DeathTypeId::Type id) const {
-		DASSERT(DeathTypeId::isValid(id));
+	int ActorArmourProto::deathAnimId(DeathId::Type id) const {
+		DASSERT(DeathId::isValid(id));
 
 		int anim_id = m_death_idx[id];
 		return anim_id == invalid_id? -1 : anim_id;

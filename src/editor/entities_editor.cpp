@@ -78,11 +78,11 @@ namespace ui {
 
 		Ray ray = screenRay(start);
 
-		int flags = collider_all;
+		Flags::Type flags = Flags::all;
 		if(isKeyPressed(Key_lshift))
-			flags &= ~(collider_tile_walls | collider_tile_objects);
+			flags = flags & ~(Flags::wall_tile | Flags::object_tile);
 
-		auto isect = m_tile_map.trace(ray, -1, flags|visibility_flag);
+		auto isect = m_tile_map.trace(ray, -1, flags | Flags::visible);
 		float3 pos = isect.first == -1? (float3)asXZ(screenToWorld(start)) : ray.at(isect.second);
 
 		m_cursor_pos = (float3)round(pos);
@@ -96,7 +96,7 @@ namespace ui {
 			if(m_mode == mode_selecting && is_final && is_final != -1) {
 				m_selected_ids.clear();
 
-				m_entity_map.findAll(m_selected_ids, m_selection, collider_all|visibility_flag);
+				m_entity_map.findAll(m_selected_ids, m_selection, Flags::all | Flags::visible);
 				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
 					auto &object = m_entity_map[m_selected_ids[n]];
 					//TODO: FIX: you can select invisible (on lower level, for example) entities
@@ -147,7 +147,7 @@ namespace ui {
 		{
 			vector<int> visible_ids;
 			visible_ids.reserve(1024);
-			m_tile_map.findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
+			m_tile_map.findAll(visible_ids, renderer.targetRect(), Flags::all | Flags::visible);
 
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
 				auto &object = m_tile_map[visible_ids[i]];
@@ -158,7 +158,7 @@ namespace ui {
 			}
 
 			visible_ids.clear();
-			m_entity_map.findAll(visible_ids, renderer.targetRect(), collider_all|visibility_flag);
+			m_entity_map.findAll(visible_ids, renderer.targetRect(), Flags::all | Flags::visible);
 			for(int n = 0; n < (int)visible_ids.size(); n++) {
 				auto &object = m_entity_map[visible_ids[n]];
 				object.ptr->addToRender(renderer);

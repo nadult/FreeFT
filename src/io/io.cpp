@@ -40,15 +40,15 @@ namespace io {
 		int2 mouse_pos = getMousePos();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
-		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, collider_tile_walkable|collider_entities);
+		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, Flags::walkable_tile | Flags::entity);
 		if(m_isect.isEmpty() || m_isect.isTile())
-			m_isect = m_viewer.trace(ray, actor, collider_tile_walkable|collider_entities);
+			m_isect = m_viewer.trace(ray, actor, Flags::walkable_tile | Flags::entity);
 		
 		//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 		// has to intersect bounding box of the object
-		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, collider_all);
+		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos);
 		if(m_full_isect.isEmpty())
-			m_full_isect = m_viewer.trace(ray, actor, collider_all);
+			m_full_isect = m_viewer.trace(ray, actor);
 
 		if(!m_full_isect.isEmpty() && actor) {
 			float3 target = ray.at(m_full_isect.distance());
@@ -186,7 +186,7 @@ namespace io {
 			renderer.addBox(box, Color(255, 0, 0, 100));
 		}
 
-//		const NaviMap *navi_map = m_world->naviMap(4);
+//		const NaviMap *navi_map = m_world->naviMap(3);
 //		if(navi_map)
 //			navi_map->visualize(renderer, false);
 //		m_last_path.visualize(3, renderer);

@@ -34,7 +34,7 @@ namespace game {
 		IRect rect = tile->rect() + worldToScreen(pos);
 		ASSERT(findAny(bbox) == -1);
 		int index = findFreeObject();
-		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tileIdToFlag(tile->type()) | visibility_flag));
+		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tile->flags() | Flags::visible));
 		return index;
 	}
 
@@ -60,7 +60,7 @@ namespace game {
 		THROW("WRITE ME");
 	}
 		
-	int TileMap::pixelIntersect(const int2 &pos, int flags) const {
+	int TileMap::pixelIntersect(const int2 &pos, Flags::Type flags) const {
 		return Grid::pixelIntersect(pos,
 			[](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); },
@@ -144,7 +144,7 @@ namespace game {
 	}
 		
 	void TileMap::updateVisibility(const OccluderConfig &config) {
-		config.setVisibilityFlag(*(Grid*)this, visibility_flag);
+		config.setVisibilityFlag(*(Grid*)this, Flags::visible);
 		updateNodes();
 	}
 

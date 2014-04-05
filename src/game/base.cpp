@@ -41,7 +41,7 @@ namespace game {
 		"power"
 	)
 
-	DEFINE_ENUM(ProjectileTypeId,
+	DEFINE_ENUM(ProjectileId,
 		"bullet",
 		"plasma",
 		"electric",
@@ -49,7 +49,7 @@ namespace game {
 		"rocket"
 	)
 
-	DEFINE_ENUM(DeathTypeId,
+	DEFINE_ENUM(DeathId,
 		"normal",
 		"big_hole",
 		"cut_in_half",

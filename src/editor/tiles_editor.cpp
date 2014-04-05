@@ -84,7 +84,7 @@ namespace ui {
 		int2 screen_pos = mouse_pos + m_view.pos();
 		Ray screen_ray = screenRay(screen_pos);
 		
-		m_mouseover_tile_id = m_tile_map.pixelIntersect(screen_pos, collider_all|visibility_flag);
+		m_mouseover_tile_id = m_tile_map.pixelIntersect(screen_pos, Flags::all | Flags::visible);
 		if(m_mouseover_tile_id == -1)
 			m_mouseover_tile_id = m_tile_map.trace(screen_ray).first;
 			
@@ -407,7 +407,7 @@ namespace ui {
 		{
 			vector<int> visible_ids;
 			visible_ids.reserve(1024 * 8);
-			m_tile_map.findAll(visible_ids, renderer.targetRect(), collider_all | visibility_flag);
+			m_tile_map.findAll(visible_ids, renderer.targetRect(), Flags::all | Flags::visible);
 
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 			vector<Color> tile_colors(visible_ids.size(), Color::white);

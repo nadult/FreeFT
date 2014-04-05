@@ -29,7 +29,7 @@ namespace game
 		Grid::swap(new_map);
 	}
 
-	int EntityMap::pixelIntersect(const int2 &pos, int flags) const {
+	int EntityMap::pixelIntersect(const int2 &pos, Flags::Type flags) const {
 		return Grid::pixelIntersect(pos, [](const Grid::ObjectDef &object, const int2 &pos)
 			{ return ((const Entity*)object.ptr)->testPixel(pos); },  flags);
 	}
@@ -70,7 +70,7 @@ namespace game
 			index = findFreeObject();
 		Entity *entity = ptr.get();
 
-		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->colliderType()|visibility_flag));
+		Grid::add(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->flags() | Flags::visible));
 		updateOccluderId(index);
 		ptr.release();
 
@@ -89,7 +89,7 @@ namespace game
 		Entity *entity = object.ptr;
 		DASSERT(entity);
 
-		if(Grid::update(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), object.flags)))
+		if(Grid::update(index, Grid::ObjectDef(entity, entity->boundingBox(), entity->screenRect(), entity->flags() | Flags::visible)))
 			updateOccluderId(index);
 	}
 
@@ -140,7 +140,7 @@ namespace game
 	}
 		
 	void EntityMap::updateVisibility(const OccluderConfig &config) {
-		config.setVisibilityFlag(*(Grid*)this, visibility_flag);
+		config.setVisibilityFlag(*(Grid*)this, Flags::visible);
 		updateNodes();
 	}
 

@@ -72,7 +72,7 @@ namespace game {
 
 		int climbAnimId(Action::Type);
 		int attackAnimId(AttackMode::Type, Stance::Type, WeaponClass::Type) const;
-		int deathAnimId(DeathTypeId::Type) const;
+		int deathAnimId(DeathId::Type) const;
 		int simpleAnimId(Action::Type, Stance::Type) const;
 		int animId(Action::Type, Stance::Type, WeaponClass::Type) const;
 
@@ -89,7 +89,7 @@ namespace game {
 		void initAnims();
 
 		u8 m_climb_idx[3];
-		u8 m_death_idx[DeathTypeId::count];
+		u8 m_death_idx[DeathId::count];
 		u8 m_simple_idx[Action::_special - Action::_simple][Stance::count];
 		u8 m_normal_idx[Action::_simple  - Action::_normal][Stance::count][WeaponClass::count];
 		u8 m_attack_idx[WeaponClass::count][AttackMode::count][Stance::count];
@@ -113,8 +113,8 @@ namespace game {
 		float speeds[Stance::count + 1];
 		
 		//TODO: add sound variations, each actor instance will have different sound set
-		SoundId death_sounds[DeathTypeId::count];
-		SoundId human_death_sounds[DeathTypeId::count];
+		SoundId death_sounds[DeathId::count];
+		SoundId human_death_sounds[DeathId::count];
 		SoundId kick_sound;
 	};
 
@@ -125,11 +125,11 @@ namespace game {
 		Actor(const Proto &proto, Stance::Type stance = Stance::stand);
 		Actor(const Actor &rhs, const Proto &new_proto);
 
-		ColliderFlags colliderType() const { return collider_dynamic; }
+		Flags::Type flags() const;
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&);
-		void onImpact(DeathTypeId::Type, float damage);
+		void onImpact(DeathId::Type, float damage);
 
 		XMLNode save(XMLNode&) const;
 		void save(Stream&) const;
@@ -180,7 +180,7 @@ namespace game {
 		void fireProjectile(const int3 &offset, const float3 &target, const Weapon &weapon,
 								float random_val = 0.0f);
 
-		bool animateDeath(DeathTypeId::Type);
+		bool animateDeath(DeathId::Type);
 		bool animate(Action::Type);
 
 		

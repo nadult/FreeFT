@@ -26,7 +26,7 @@ namespace game {
 		void remove(int idx);
 		void update(int idx);
 		
-		int pixelIntersect(const int2 &pos, int flags = collider_flags) const;
+		int pixelIntersect(const int2 &pos, Flags::Type flags = Flags::all) const;
 
 		void loadFromXML(const XMLDocument&);
 		void saveToXML(XMLDocument&) const;

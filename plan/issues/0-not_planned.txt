@@ -45,3 +45,6 @@
 
 - Refactoring Actor's: protos & orders, working armours, added death animations & sounds,
   rocket launcher, minor improvements in networking code, added basic I/O class  (3 days)
+
+- Refactoring collider flags, support for ethereal tiles
+  05.04.14: 10:00 - 12:30

@@ -17,13 +17,13 @@ NaviHeightmap::NaviHeightmap(const int2 &size) {
 	m_level_count = 0;
 }
 
-void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
+void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blockers) {
 	m_level_count = 0;
 	m_data.clear();
 
-	PodArray<IBox> bboxes(unsorted_bboxes.size());
-	for(int n = 0; n < (int)unsorted_bboxes.size(); n++) {
-		IBox bbox = unsorted_bboxes[n];
+	PodArray<IBox> bboxes(walkable.size());
+	for(int n = 0; n < bboxes.size(); n++) {
+		IBox bbox = walkable[n];
 		bbox.min = max(bbox.min, int3(0, 0, 0));
 		bbox.max = min(bbox.max, int3(m_size.x, 255, m_size.y));
 		bboxes[n] = bbox;
@@ -35,7 +35,7 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 		
 	for(int n = 0; n < bboxes.size(); n++) {
 		const IBox &bbox = bboxes[n];
-		u8 min_y = bbox.min.y, max_y = bbox.max.y;
+		int min_y = bbox.min.y, max_y = bbox.max.y;
 
 		for(int z = 0; z < bbox.depth(); z++)
 			for(int x = 0; x < bbox.width(); x++) {
@@ -44,7 +44,7 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 				int pz = z + bbox.min.z;
 
 				while(level < m_level_count) {
-					u8 value = m_data[index(px, pz, level)];
+					int value = m_data[index(px, pz, level)];
 					if(value == invalid_value || value >= min_y - 4)
 						break;
 					level++;
@@ -56,6 +56,26 @@ void NaviHeightmap::update(const vector<IBox> &unsorted_bboxes) {
 				}
 
 				m_data[index(px, pz, level)] = max_y;
+			}
+	}
+
+	for(int n = 0; n < (int)blockers.size(); n++) {
+		IBox blocker(
+				max(blockers[n].min, int3(0, 0, 0)),
+				min(blockers[n].max, int3(m_size.x, 255, m_size.y)));
+		u8 min_y = max(0, blocker.min.y - 4), max_y = blocker.max.y;
+
+		for(int z = 0; z < blocker.depth(); z++)
+			for(int x = 0; x < blocker.width(); x++) {
+				int level = 0;
+				int px = x + blocker.min.x;
+				int pz = z + blocker.min.z;
+
+				while(level < m_level_count) {
+					u8 &value = m_data[index(px, pz, level++)];
+					if(value >= min_y && value <= max_y)
+						value = invalid_value;
+				}
 			}
 	}
 }

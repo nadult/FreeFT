@@ -14,6 +14,11 @@
 #include <set>
 #include <zip.h>
 
+using namespace sys;
+using game::Sprite;
+using game::Tile;
+using game::TileMap;
+
 static bool verifyFTPath(string path) {
 	return access(Path(path) / "core");
 }
@@ -93,9 +98,6 @@ static const string locateFTPath() {
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif
-
-using namespace game;
-
 
 
 struct TileMapProxy: public TileMap {

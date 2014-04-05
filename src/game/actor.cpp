@@ -85,6 +85,10 @@ namespace game {
 		sr << m_inventory;
 	}
 		
+	Flags::Type Actor::flags() const {
+		return Flags::actor | Flags::dynamic_entity | (isDead()? (Flags::Type)0 : Flags::colliding);
+	}
+		
 	const FBox Actor::boundingBox() const {
 		int3 bbox_size = sprite().bboxSize();
 		if(m_stance == Stance::crouch)
@@ -98,17 +102,21 @@ namespace game {
 	}
 
 	SurfaceId::Type Actor::surfaceUnder() const {
-		DASSERT(world());
-
 		//TODO: make it more robust
 		FBox box_under = boundingBox();
 		box_under.max.y = box_under.min.y;
-		box_under.min.y -= 2.0f;
-		const Tile *tile = refTile(world()->findAny(box_under, nullptr, collider_tiles));
+		box_under.min.y -= 1.0f;
+		const Tile *tile = nullptr;
+		for(int i = 0; i < 2 && !tile; i++) {
+			tile = refTile(findAny(box_under, nullptr, Flags::tile | Flags::colliding));
+			box_under.min.y -= 1.0f;
+			box_under.max.y -= 1.0f;
+		}
+
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 
-	void Actor::onImpact(DeathTypeId::Type death_id, float damage) {
+	void Actor::onImpact(DeathId::Type death_id, float damage) {
 		//TODO: immediate order cancel
 		setOrder(new DieOrder(death_id));
 		
@@ -300,7 +308,7 @@ namespace game {
 		return true;
 	}
 		
-	bool Actor::animateDeath(DeathTypeId::Type death_type) {
+	bool Actor::animateDeath(DeathId::Type death_type) {
 		int anim_id = m_proto.deathAnimId(death_type);
 		if(anim_id == -1)
 			return false;
@@ -331,7 +339,7 @@ namespace game {
 			float3 new_pos = path.pos(path_pos);
 			FBox bbox = (FBox)enclosingIBox(boundingBox() + new_pos - pos());
 
-			ObjectRef tile_ref = findAny(bbox, this, collider_tiles);
+			ObjectRef tile_ref = findAny(bbox, this, Flags::tile | Flags::colliding);
 			if(tile_ref) {
 				const FBox tile_bbox = refBBox(tile_ref);
 				float diff = bbox.min.y - tile_bbox.max.y;
@@ -349,7 +357,7 @@ namespace game {
 			bbox.min += float3(0.05, 0.05, 0.05);
 			bbox.max -= float3(0.05, 0.05, 0.05);
 
-			if(findAny(bbox, this, collider_dynamic)) {
+			if(findAny(bbox, this, Flags::dynamic_entity | Flags::colliding)) {
 				fixPosition();
 				//TODO: response to collision
 				return FollowPathResult::collided;
@@ -369,9 +377,8 @@ namespace game {
 		int3 new_pos(pos() + float3(0.5f, -0.5f, 0.5f));
 		setPos(new_pos);
 
-		for(int i = 0; i < 2 && findAny(boundingBox(), this, collider_tiles); i++)
+		for(int i = 0; i < 2 && findAny(boundingBox(), this, Flags::tile | Flags::colliding); i++)
 			setPos(pos() + float3(0.0f, 1.0f, 0.0f));
 	}
-
 
 }

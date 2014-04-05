@@ -428,7 +428,7 @@ bool NaviMap::isReachable(int src_id, int target_id) const {
 					const Quad &neighbour = m_quads[tquad.neighbours[n]];
 					if(neighbour.is_disabled) {
 						bool found = false;
-						for(int j = 0; j < to_visit.size(); j++)
+						for(int j = 0; j < (int)to_visit.size(); j++)
 							if(to_visit[j] == tquad.neighbours[n]) {
 								found = true;
 								break;

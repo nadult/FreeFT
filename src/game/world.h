@@ -77,9 +77,10 @@ namespace game {
 			return nullptr;
 		}
 
-		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
-		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, ColliderFlags flags = collider_all) const;
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, int flags = collider_all) const;
+		//TODO: change Entity *ignore to EntityRef
+		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
 
 		bool isInside(const FBox&) const;
 

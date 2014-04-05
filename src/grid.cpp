@@ -19,7 +19,7 @@ Grid::Node::Node()
 	
 bool Grid::flagTest(int object, int test) {
 	int func_test = test & functional_flags;
-	return (object & collider_flags & test) && ((object & func_test) == func_test);
+	return (object & object_flags & test) && ((object & func_test) == func_test);
 }
 
 Grid::Grid(const int2 &size) {

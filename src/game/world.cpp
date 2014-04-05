@@ -42,20 +42,31 @@ namespace game {
 		
 	void World::updateNaviMap(bool full_recompute) {
 		PROFILE("updateNaviMap");
+			
+		//TODO: what about static entities that are added during the game?
 
 		if(full_recompute) {
-			vector<IBox> bboxes;
+			vector<IBox> bboxes, blockers;
 			bboxes.reserve(m_tile_map.size() + m_entity_map.size());
 
-			for(int n = 0; n < m_tile_map.size(); n++)
-				if(m_tile_map[n].ptr)
-					bboxes.push_back((IBox)m_tile_map[n].bbox);
+			for(int n = 0; n < m_tile_map.size(); n++) {
+				const Tile *tile = m_tile_map[n].ptr;
+				if(!tile || !Flags::test(tile->flags(), Flags::all | Flags::colliding))
+					continue;
+
+				bool is_walkable = Flags::test(tile->flags(), Flags::walkable_tile | Flags::wall_tile);
+				(is_walkable? bboxes : blockers).push_back((IBox)m_tile_map[n].bbox);
+			}
+
+
 			for(int n = 0; n < m_entity_map.size(); n++)
-				if(m_entity_map[n].ptr && (m_entity_map[n].flags & collider_static))
-					bboxes.push_back(enclosingIBox(m_entity_map[n].ptr->boundingBox()));
+				if(m_entity_map[n].ptr && Flags::test(m_entity_map[n].flags, Flags::static_entity | Flags::colliding))
+					blockers.push_back(enclosingIBox(m_entity_map[n].ptr->boundingBox()));
+			
+			printf("%d %d\n", (int)blockers.size(), (int)bboxes.size());
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
-			heightmap.update(bboxes);
+			heightmap.update(bboxes, blockers);
 			//heightmap.saveLevels();
 			//heightmap.printInfo();
 
@@ -74,7 +85,7 @@ namespace game {
 				if(!object.ptr)
 					continue;
 
-				if(object.flags & collider_dynamic) {
+				if(Flags::test(object.flags, Flags::dynamic_entity | Flags::colliding)) {
 					const IBox &box = enclosingIBox(object.ptr->boundingBox());
 					navi_map.addCollider(box, n);
 				}
@@ -129,7 +140,7 @@ namespace game {
 				continue;
 
 			object.ptr->think();
-			if(object.flags & (collider_dynamic | collider_projectile))
+			if(object.flags & Flags::dynamic_entity)
 				m_entity_map.update(n);
 
 			for(int f = 0; f < frame_skip; f++)
@@ -204,11 +215,11 @@ namespace game {
 		return nullptr;
 	}
 
-	Intersection World::trace(const Segment &segment, const Entity *ignore, int flags) const {
+	Intersection World::trace(const Segment &segment, const Entity *ignore, Flags::Type flags) const {
 		PROFILE("World::trace");
 		Intersection out;
 
-		if(flags & collider_tiles) {
+		if(flags & Flags::tile) {
 			pair<int, float> isect = m_tile_map.trace(segment, -1, flags);
 			if(isect.first != -1) {
 				const auto &obj = m_tile_map[isect.first];
@@ -216,7 +227,7 @@ namespace game {
 			}
 		}
 
-		if(flags & collider_entities) {
+		if(flags & Flags::entity) {
 			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->index() : -1, flags);
 			if(isect.first != -1 && isect.second <= out.distance()) {
 				const auto &obj = m_entity_map[isect.first];
@@ -227,14 +238,14 @@ namespace game {
 		return out;
 	}
 
-	ObjectRef World::findAny(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
-		if((flags & collider_tiles)) {
+	ObjectRef World::findAny(const FBox &box, const Entity *ignore, Flags::Type flags) const {
+		if((flags & Flags::tile)) {
 			int index = m_tile_map.findAny(box, flags);
 			if(index != -1)
 				return ObjectRef(index, false);
 		}
 
-		if(flags & collider_entities) {
+		if(flags & Flags::entity) {
 			int index = m_entity_map.findAny(box, ignore? ignore->index() : -1, flags);
 			if(index != -1)
 				return ObjectRef(index, true);
@@ -243,18 +254,18 @@ namespace game {
 		return ObjectRef();
 	}
 
-	void World::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, ColliderFlags flags) const {
+	void World::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, Flags::Type flags) const {
 		vector<int> inds;
 		inds.reserve(1024);
 
-		if(flags & collider_tiles) {
+		if(flags & Flags::tile) {
 			m_tile_map.findAll(inds, box, flags);
 			for(int n = 0; n < (int)inds.size(); n++)
 				out.emplace_back(ObjectRef(inds[n], false));
 			inds.clear();
 		}
 
-		if(flags & collider_entities) {
+		if(flags & Flags::entity) {
 			m_entity_map.findAll(inds, box, ignore? ignore->index() : -1, flags);
 			for(int n = 0; n < (int)inds.size(); n++)
 				out.emplace_back(ObjectRef(inds[n], true));

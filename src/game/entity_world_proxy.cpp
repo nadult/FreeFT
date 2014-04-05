@@ -78,16 +78,16 @@ namespace game {
 		m_world->m_replace_list.emplace_back(std::move(new_entity), -1);
 	}
 		
-	ObjectRef EntityWorldProxy::findAny(const FBox &box, const Entity *ignore, ColliderFlags flags) const {
+	ObjectRef EntityWorldProxy::findAny(const FBox &box, const Entity *ignore, Flags::Type flags) const {
 		return m_world? m_world->findAny(box, ignore, flags) : ObjectRef();
 	}
 
-	void EntityWorldProxy::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, ColliderFlags flags) const {
+	void EntityWorldProxy::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, Flags::Type flags) const {
 		if(m_world)
 			m_world->findAll(out, box, ignore, flags);
 	}
 
-	Intersection EntityWorldProxy::trace(const Segment &segment, const Entity *ignore, int flags) const {
+	Intersection EntityWorldProxy::trace(const Segment &segment, const Entity *ignore, Flags::Type flags) const {
 		return m_world? m_world->trace(segment, ignore, flags) : Intersection();
 	}
 

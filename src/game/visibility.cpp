@@ -64,7 +64,7 @@ namespace game {
 					float len = length(dir);
 
 					Segment segment(Ray(m_eye_pos, dir / len), 0.0f, len);
-					Intersection isect = m_world->trace(segment, spectator, collider_tiles | collider_occluding_entity);
+					Intersection isect = m_world->trace(segment, spectator, Flags::all | Flags::occluding);
 
 					if(isect.isEmpty() || isect.distance() > len)
 						return true;
@@ -222,7 +222,7 @@ namespace game {
 		inds.reserve(8192);
 
 		const TileMap &tile_map = m_world->tileMap();
-		tile_map.findAll(inds, renderer.targetRect(), collider_all | visibility_flag);
+		tile_map.findAll(inds, renderer.targetRect(), Flags::all | Flags::visible);
 
 		for(int n = 0; n < (int)inds.size(); n++)
 			tile_map[inds[n]].ptr->addToRender(renderer, (int3)tile_map[inds[n]].bbox.min);
@@ -246,14 +246,14 @@ namespace game {
 		}
 	}
 		
-	Intersection WorldViewer::pixelIntersect(const int2 &screen_pos, int flags) const {
+	Intersection WorldViewer::pixelIntersect(const int2 &screen_pos, Flags::Type flags) const {
 		Intersection out;
 		FBox out_bbox;
 
-		if(flags & collider_tiles) {
+		if(flags & Flags::tile) {
 			const TileMap &tile_map = m_world->tileMap();
 			vector<int> inds;
-			tile_map.findAll(inds, IRect(screen_pos, screen_pos + int2(1, 1)), flags | visibility_flag);
+			tile_map.findAll(inds, IRect(screen_pos, screen_pos + int2(1, 1)), flags | Flags::visible);
 
 			for(int i = 0; i < (int)inds.size(); i++) {
 				const auto &desc = tile_map[inds[i]];
@@ -268,9 +268,9 @@ namespace game {
 			}
 		}
 
-		for(int n = 0; n < (int)m_entities.size(); n++) {
+		if(flags & Flags::entity) for(int n = 0; n < (int)m_entities.size(); n++) {
 			const Entity *entity = refEntity(n);
-			if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !(entity->colliderType() & flags))
+			if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags))
 				continue;
 			FBox bbox = entity->boundingBox();
 
@@ -286,16 +286,16 @@ namespace game {
 		return Intersection(out, intersection(screenRay(screen_pos), out_bbox));
 	}
 
-	Intersection WorldViewer::trace(const Segment &segment, const Entity *ignore, int flags) const {
+	Intersection WorldViewer::trace(const Segment &segment, const Entity *ignore, Flags::Type flags) const {
 		Intersection out;
 
-		if(flags & collider_tiles)
-			out = m_world->trace(segment, nullptr, (flags & collider_tiles) | visibility_flag);
+		if(flags & Flags::tile)
+			out = m_world->trace(segment, nullptr, (flags & ~Flags::entity) | Flags::visible);
 
-		if(flags & collider_entities)
+		if(flags & Flags::entity)
 			for(int n = 0; n < (int)m_entities.size(); n++) {
 				const Entity *entity = refEntity(n);
-				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !(entity->colliderType() & flags))
+				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags))
 					continue;
 
 				float distance = intersection(segment, entity->boundingBox());
