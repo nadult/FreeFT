@@ -35,13 +35,11 @@ namespace game {
 	{
 	public:
 		EntityRef(const EntityRef &rhs) :m_index(rhs.m_index), m_unique_id(rhs.m_unique_id) { }
-		EntityRef(const ObjectRef &rhs) :m_index(rhs.isEntity()? rhs.m_index : -1), m_unique_id(-1) { }
-		EntityRef(const Intersection &isect) :EntityRef((ObjectRef)isect) { }
-		EntityRef(int index) :m_index(index), m_unique_id(-1) { DASSERT(index >= -1); }
 		EntityRef() :m_index(-1), m_unique_id(-1) { }
-		bool isEmpty() const { return m_index == -1; }
+
+		bool isValid() const { return m_index != -1 && m_unique_id != -1; }
 		operator ObjectRef() const { return ObjectRef(m_index, true); }
-		explicit operator bool() const { return !isEmpty(); }
+		explicit operator bool() const { return isValid(); }
 
 		void operator=(const EntityRef &rhs) {
 			m_index = rhs.m_index;
@@ -65,6 +63,24 @@ namespace game {
 		int m_unique_id;
 		friend class World;
 		friend class EntityWorldProxy;
+	};
+
+	//TODO: it shouldnt be here...
+	class FindFilter {
+	public:
+		FindFilter(Flags::Type flags, EntityRef ignore) :m_flags(flags), m_ignore_entity_ref(ignore) { }
+		FindFilter(Flags::Type flags, ObjectRef ignore) :m_flags(flags), m_ignore_object_ref(ignore) { DASSERT(ignore.isEntity()); }
+		FindFilter(EntityRef ignore) :m_flags(Flags::all), m_ignore_entity_ref(ignore) { }
+		FindFilter(ObjectRef ignore) :m_flags(Flags::all), m_ignore_object_ref(ignore) { DASSERT(ignore.isEntity()); }
+		FindFilter(Flags::Type flags = Flags::all) :m_flags(flags) { }
+
+		Flags::Type flags() const { return m_flags; }
+
+	protected:
+		Flags::Type m_flags;
+		EntityRef m_ignore_entity_ref;
+		ObjectRef m_ignore_object_ref;
+		friend class World;
 	};
 
 
@@ -96,15 +112,16 @@ namespace game {
 		double timeDelta() const;
 		double currentTime() const;
 		
-		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
-		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
+		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;
+		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 	
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
+		Entity *refEntity(ObjectRef) const;
 		Entity *refEntity(EntityRef) const;
 	
-		template <class TEntity> TEntity *refEntity(EntityRef ref);
+		template <class TEntity, class TRef> TEntity *refEntity(TRef ref);
 
 		bool isClient() const;
 		bool isServer() const;
@@ -277,8 +294,8 @@ namespace game {
 
 	bool areAdjacent(const Entity&, const Entity&);
 
-	template <class TEntity>
-	TEntity *EntityWorldProxy::refEntity(EntityRef ref) {
+	template <class TEntity, class TRef>
+	TEntity *EntityWorldProxy::refEntity(TRef ref) {
 		Entity *entity = refEntity(ref);
 		if(entity && entity->typeId() == (EntityId::Type)TEntity::type_id)
 			return static_cast<TEntity*>(entity);

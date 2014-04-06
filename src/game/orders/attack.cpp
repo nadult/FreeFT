@@ -37,7 +37,6 @@ namespace game {
 			}
 
 			//TODO: get target ptr
-
 			if(order.m_target)
 				order.m_target_pos = refBBox(order.m_target).center();
 			lookAt(order.m_target_pos);

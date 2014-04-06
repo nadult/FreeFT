@@ -11,6 +11,7 @@
 #include "game/weapon.h"
 #include "game/orders.h"
 #include "game/actor_ai.h"
+#include "game/path.h"
 
 namespace game {
 

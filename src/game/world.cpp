@@ -62,8 +62,6 @@ namespace game {
 			for(int n = 0; n < m_entity_map.size(); n++)
 				if(m_entity_map[n].ptr && Flags::test(m_entity_map[n].flags, Flags::static_entity | Flags::colliding))
 					blockers.push_back(enclosingIBox(m_entity_map[n].ptr->boundingBox()));
-			
-			printf("%d %d\n", (int)blockers.size(), (int)bboxes.size());
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes, blockers);
@@ -94,13 +92,6 @@ namespace game {
 		}
 	}
 
-	void World::removeEntity(EntityRef ref) {
-		if( Entity *entity = refEntity(ref) ) {
-			m_entity_map.remove(ref.index());
-			replicate(ref.index());
-		}
-	}
-
 	EntityRef World::addEntity(PEntity &&ptr, int index) {
 		DASSERT(ptr);
 		Entity *entity = ptr.get();
@@ -109,6 +100,14 @@ namespace game {
 		replicate(index);
 
 		return entity->ref();
+	}
+		
+	void World::removeEntity(EntityRef ref) {
+		Entity *entity = refEntity(ref);
+		if(entity) {
+			m_entity_map.remove(ref.index());
+			replicate(ref.index());
+		}
 	}
 
 	void World::simulate(double time_diff) {
@@ -156,7 +155,7 @@ namespace game {
 				const Entity *entity = m_entity_map[index].ptr;
 				if(entity)
 					old_uid = entity->m_unique_id;
-				removeEntity(index);
+				m_entity_map.remove(index);
 			}
 
 			if(pair.first.get()) {
@@ -171,18 +170,22 @@ namespace game {
 		m_last_time = current_time;
 		updateNaviMap(false);
 	}
+		
+	const EntityMap::ObjectDef *World::refEntityDesc(int index) const {
+	   	if(index >= 0 && index < m_entity_map.size())
+			return &m_entity_map[index];
+		return nullptr;
+	}
+
+	const TileMap::ObjectDef *World::refTileDesc(int index) const {
+	   	if(index >= 0 && index < m_tile_map.size())
+			return &m_tile_map[index];
+		return nullptr;
+	}
 	
 	const Grid::ObjectDef *World::refDesc(ObjectRef ref) const {
-		if(ref.isTile()) {
-		   	if(ref.m_index >= 0 && ref.m_index < m_tile_map.size())
-				return (const Grid::ObjectDef*)&m_tile_map[ref.m_index];
-		}
-		else {
-		   	if(ref.m_index >= 0 && ref.m_index < m_entity_map.size())
-				return (const Grid::ObjectDef*)&m_entity_map[ref.m_index];
-		}
-
-		return nullptr;
+		return ref.isTile()? (const Grid::ObjectDef*)refTileDesc(ref.m_index) :
+			ref.isEntity()? (const Grid::ObjectDef*)refEntityDesc(ref.m_index) : nullptr;
 	}
 	
 	const FBox World::refBBox(ObjectRef ref) const {
@@ -199,8 +202,20 @@ namespace game {
 	}
 
 	const Tile *World::refTile(ObjectRef ref) const {
-		if(ref.isTile() && ref.m_index >= 0 && ref.m_index < m_tile_map.size())
+		if(!ref.m_is_entity && ref.m_index >= 0 && ref.m_index < m_tile_map.size())
 			return m_tile_map[ref.m_index].ptr;
+		return nullptr;
+	}
+	
+	Entity *World::refEntity(int index) {
+		if(index >= 0 && index < m_entity_map.size())
+			return m_entity_map[index].ptr;
+		return nullptr;
+	}
+	
+	Entity *World::refEntity(ObjectRef ref) {
+		if(ref.m_is_entity && ref.m_index >= 0 && ref.m_index < m_entity_map.size())
+			return m_entity_map[ref.m_index].ptr;
 		return nullptr;
 	}
 	
@@ -209,26 +224,47 @@ namespace game {
 			return nullptr;
 
 		Entity *entity = m_entity_map[ref.m_index].ptr;
-		if(entity && (ref.m_unique_id == -1 || entity->m_unique_id == ref.m_unique_id))
+		if(entity && (entity->m_unique_id == ref.m_unique_id))
 			return entity;
 
 		return nullptr;
 	}
+		
+	EntityRef World::toEntityRef(ObjectRef ref) const {
+		Entity *entity = const_cast<World*>(this)->refEntity(ref);
+		return entity? entity->ref() : EntityRef();
+	}
+	
+	EntityRef World::toEntityRef(int index) const {
+		Entity *entity = const_cast<World*>(this)->refEntity(index);
+		return entity? entity->ref() : EntityRef();
+	}
+		
+	int World::filterIgnoreIndex(const FindFilter &filter) const {
+		if(filter.m_ignore_entity_ref.isValid()) {
+			if(const_cast<World*>(this)->refEntity(filter.m_ignore_entity_ref))
+				return filter.m_ignore_entity_ref.m_index;
+		}
+		
+		return filter.m_ignore_object_ref.m_is_entity? filter.m_ignore_object_ref.m_index : -1;
+	}
 
-	Intersection World::trace(const Segment &segment, const Entity *ignore, Flags::Type flags) const {
+	Intersection World::trace(const Segment &segment, const FindFilter &filter) const {
 		PROFILE("World::trace");
 		Intersection out;
 
-		if(flags & Flags::tile) {
-			pair<int, float> isect = m_tile_map.trace(segment, -1, flags);
+		if(filter.m_flags & Flags::tile) {
+			pair<int, float> isect = m_tile_map.trace(segment, -1, filter.m_flags);
 			if(isect.first != -1) {
 				const auto &obj = m_tile_map[isect.first];
 				out = Intersection(ObjectRef(isect.first, false), isect.second);
 			}
 		}
 
-		if(flags & Flags::entity) {
-			pair<int, float> isect = m_entity_map.trace(segment, ignore? ignore->index() : -1, flags);
+		if(filter.m_flags & Flags::entity) {
+			int ignore_index = filterIgnoreIndex(filter);
+
+			pair<int, float> isect = m_entity_map.trace(segment, ignore_index, filter.m_flags);
 			if(isect.first != -1 && isect.second <= out.distance()) {
 				const auto &obj = m_entity_map[isect.first];
 				out = Intersection(ObjectRef(isect.first, true), isect.second);
@@ -238,15 +274,16 @@ namespace game {
 		return out;
 	}
 
-	ObjectRef World::findAny(const FBox &box, const Entity *ignore, Flags::Type flags) const {
-		if((flags & Flags::tile)) {
-			int index = m_tile_map.findAny(box, flags);
+	ObjectRef World::findAny(const FBox &box, const FindFilter &filter) const {
+		if((filter.m_flags & Flags::tile)) {
+			int index = m_tile_map.findAny(box, filter.m_flags);
 			if(index != -1)
 				return ObjectRef(index, false);
 		}
 
-		if(flags & Flags::entity) {
-			int index = m_entity_map.findAny(box, ignore? ignore->index() : -1, flags);
+		if(filter.m_flags & Flags::entity) {
+			int ignore_index = filterIgnoreIndex(filter);
+			int index = m_entity_map.findAny(box, ignore_index, filter.m_flags);
 			if(index != -1)
 				return ObjectRef(index, true);
 		}
@@ -254,19 +291,20 @@ namespace game {
 		return ObjectRef();
 	}
 
-	void World::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, Flags::Type flags) const {
+	void World::findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter) const {
 		vector<int> inds;
 		inds.reserve(1024);
 
-		if(flags & Flags::tile) {
-			m_tile_map.findAll(inds, box, flags);
+		if(filter.m_flags & Flags::tile) {
+			m_tile_map.findAll(inds, box, filter.m_flags);
 			for(int n = 0; n < (int)inds.size(); n++)
 				out.emplace_back(ObjectRef(inds[n], false));
 			inds.clear();
 		}
 
-		if(flags & Flags::entity) {
-			m_entity_map.findAll(inds, box, ignore? ignore->index() : -1, flags);
+		if(filter.m_flags & Flags::entity) {
+			int ignore_index = filterIgnoreIndex(filter);
+			m_entity_map.findAll(inds, box, ignore_index, filter.m_flags);
 			for(int n = 0; n < (int)inds.size(); n++)
 				out.emplace_back(ObjectRef(inds[n], true));
 		}
@@ -281,7 +319,6 @@ namespace game {
 			if(m_navi_maps[n].agentSize() == agent_size)
 				return &m_navi_maps[n];
 
-		printf("not for: %d\n", agent_size);
 		return nullptr;
 	}
 		

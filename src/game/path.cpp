@@ -5,6 +5,7 @@
 
 #include "game/base.h"
 #include "gfx/scene_renderer.h"
+#include "game/path.h"
 #include "net/socket.h"
 
 namespace game {
@@ -132,6 +133,19 @@ namespace game {
 		float out = 0.0f;
 		for(int n = 1; n < (int)m_nodes.size(); n++)
 			out += distance((float3)m_nodes[n - 1], (float3)m_nodes[n]);
+		return out;
+	}
+
+	float Path::length(const PathPos &pos) const {
+		if(!isValid(pos))
+			return 0.0f;
+
+		float out = 0.0f;
+		for(int n = 1; n < (int)pos.node_id; n++)
+			out += distance((float3)m_nodes[n - 1], (float3)m_nodes[n]);
+
+		if(pos.node_id < (int)m_nodes.size() - 1)
+			out += distance(m_nodes[pos.node_id], m_nodes[pos.node_id + 1]) * pos.delta;
 		return out;
 	}
 

@@ -6,7 +6,7 @@
 #include "net/host.h"
 #include <algorithm>
 
-#define LOGGING
+//#define LOGGING
 
 namespace net {
 

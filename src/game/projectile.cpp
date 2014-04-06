@@ -62,7 +62,7 @@ namespace game {
 		if(m_frame_count < 2)
 			return;
 
-		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), refEntity(m_spawner), Flags::all | Flags::colliding);
+		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), {Flags::all | Flags::colliding, m_spawner});
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		m_distance += length(new_pos - pos());
 		setPos(new_pos);
@@ -72,8 +72,10 @@ namespace game {
 			remove();
 
 		if(isect.distance() < ray_pos) {
-			if(m_proto.impact.isValid() && !isClient())
-				addNewEntity<Impact>(new_pos, *m_proto.impact, m_spawner, EntityRef(isect), m_damage_mod);
+			if(m_proto.impact.isValid() && !isClient()) {
+				EntityRef ref = world()->toEntityRef(isect);
+				addNewEntity<Impact>(new_pos, *m_proto.impact, m_spawner, ref, m_damage_mod);
+			}
 			remove();
 		}
 	}

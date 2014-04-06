@@ -88,7 +88,7 @@ public:
 
 					m_world = new World(map_name.c_str(), World::Mode::client, this);
 					for(int n = 0; n < m_world->entityCount(); n++)
-						m_world->removeEntity(n);
+						m_world->removeEntity(m_world->toEntityRef(n));
 					m_mode = Mode::connected;
 
 					host->enqueChunk("", 0, ChunkType::join_complete, 0);
@@ -150,13 +150,11 @@ protected:
 	void entityUpdate(InChunk &chunk) {
 		DASSERT(chunk.type() == ChunkType::entity_full || chunk.type() == ChunkType::entity_delete);
 
-		EntityRef ref(chunk.chunkId());
-
-		m_world->removeEntity(ref);
+		m_world->removeEntity(m_world->toEntityRef(chunk.chunkId()));
 
 		if(chunk.type() == ChunkType::entity_full) {
 			Entity *new_entity = Entity::construct(chunk);
-			m_world->addEntity(PEntity(new_entity), ref.index());
+			m_world->addEntity(PEntity(new_entity), chunk.chunkId());
 
 			if(new_entity->ref() == m_actor_ref) {
 				Actor *actor = static_cast<Actor*>(new_entity);

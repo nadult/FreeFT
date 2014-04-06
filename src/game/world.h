@@ -10,8 +10,8 @@
 #include "game/tile_map.h"
 #include "game/entity_map.h"
 #include "game/level.h"
+#include "game/path.h"
 #include "navi_map.h"
-#include <unordered_map>
 
 namespace game {
 
@@ -35,10 +35,12 @@ namespace game {
 
 		const char *mapName() const { return m_map_name.c_str(); }
 
+		// Use safer versions (with EntityRef & ObjectRef)
+		Entity *refEntity(int index);
+
+		int tileCount() const { return m_tile_map.size(); }
 		int entityCount() const { return m_entity_map.size(); }
 	
-		void removeEntity(EntityRef);
-
 		template <class TEntity, class ...Args>
 		EntityRef addNewEntity(const float3 &pos, const Args&... args) {
 			PEntity entity(new TEntity(args...));
@@ -48,6 +50,8 @@ namespace game {
 
 		// Takes ownership of entity
 		EntityRef addEntity(PEntity&&, int index = -1);
+
+		void removeEntity(EntityRef);
 
 		void simulate(double time_diff);
 
@@ -65,22 +69,28 @@ namespace game {
 		const NaviMap *naviMap(int agent_size) const;
 
 		const Grid::ObjectDef *refDesc(ObjectRef) const;
+		const EntityMap::ObjectDef *refEntityDesc(int index) const;
+		const TileMap::ObjectDef   *refTileDesc  (int index) const;
+
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
+		Entity *refEntity(ObjectRef);
 		Entity *refEntity(EntityRef);
 
-		template <class TEntity>
-		TEntity *refEntity(EntityRef ref) {
+		EntityRef toEntityRef(ObjectRef) const;
+		EntityRef toEntityRef(int index) const;
+
+		template <class TEntity, class TRef>
+		TEntity *refEntity(TRef ref) {
 			Entity *entity = refEntity(ref);
 			if(entity && entity->typeId() == (EntityId::Type)TEntity::type_id)
 				return static_cast<TEntity*>(entity);
 			return nullptr;
 		}
 
-		//TODO: change Entity *ignore to EntityRef
-		ObjectRef findAny(const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
-		void findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
+		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;
+		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 
 		bool isInside(const FBox&) const;
 
@@ -95,6 +105,8 @@ namespace game {
 		void playSound(const char*, const float3 &pos);
 
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
+		
+		int filterIgnoreIndex(const FindFilter &filter) const;
 
 	private:
 		const Mode m_mode;

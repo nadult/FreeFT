@@ -48,10 +48,12 @@ namespace game {
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
 		const Entity *refEntity(EntityRef) const;
+		const Entity *refEntity(int index) const; //TODO: meh
 
-		//TODO: option to ignore entities
-		Intersection pixelIntersect(const int2 &screen_pos, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
-		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
+		//TODO: make it impossible to reference shadows? (only getting their type & bbox)
+
+		Intersection pixelIntersect(const int2 &screen_pos, const FindFilter &filter = FindFilter()) const;
+		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 
 	protected:
 		bool isMovable(const Entity&) const;

@@ -111,7 +111,7 @@ namespace game {
 		box_under.min.y -= 1.0f;
 		const Tile *tile = nullptr;
 		for(int i = 0; i < 2 && !tile; i++) {
-			tile = refTile(findAny(box_under, nullptr, Flags::tile | Flags::colliding));
+			tile = refTile(findAny(box_under, Flags::tile | Flags::colliding));
 			box_under.min.y -= 1.0f;
 			box_under.max.y -= 1.0f;
 		}
@@ -285,7 +285,7 @@ namespace game {
 		
 	bool Actor::isDead() const {
 		return m_order && m_order->typeId() == OrderTypeId::die &&
-				static_cast<DieOrder*>(m_order.get())->m_is_dead;
+					static_cast<DieOrder*>(m_order.get())->m_is_dead;
 	}
 
 	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
@@ -367,7 +367,7 @@ namespace game {
 			float3 new_pos = path.pos(path_pos);
 			FBox bbox = (FBox)enclosingIBox(boundingBox() + new_pos - pos());
 
-			ObjectRef tile_ref = findAny(bbox, this, Flags::tile | Flags::colliding);
+			ObjectRef tile_ref = findAny(bbox, Flags::tile | Flags::colliding);
 			if(tile_ref) {
 				const FBox tile_bbox = refBBox(tile_ref);
 				float diff = bbox.min.y - tile_bbox.max.y;
@@ -385,7 +385,7 @@ namespace game {
 			bbox.min += float3(0.05, 0.05, 0.05);
 			bbox.max -= float3(0.05, 0.05, 0.05);
 
-			if(findAny(bbox, this, Flags::dynamic_entity | Flags::colliding)) {
+			if(findAny(bbox, {Flags::dynamic_entity | Flags::colliding, ref()})) {
 				fixPosition();
 				//TODO: response to collision
 				return FollowPathResult::collided;
@@ -405,7 +405,7 @@ namespace game {
 		int3 new_pos(pos() + float3(0.5f, -0.5f, 0.5f));
 		setPos(new_pos);
 
-		for(int i = 0; i < 2 && findAny(boundingBox(), this, Flags::tile | Flags::colliding); i++)
+		for(int i = 0; i < 2 && findAny(boundingBox(), Flags::tile | Flags::colliding); i++)
 			setPos(pos() + float3(0.0f, 1.0f, 0.0f));
 	}
 

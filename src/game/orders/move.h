@@ -7,6 +7,7 @@
 #define GAME_ORDERS_MOVE_H
 
 #include "game/orders.h"
+#include "game/path.h"
 
 namespace game {
 

@@ -7,6 +7,7 @@
 #define GAME_ORDERS_TRACK_H
 
 #include "game/orders.h"
+#include "game/path.h"
 
 namespace game {
 

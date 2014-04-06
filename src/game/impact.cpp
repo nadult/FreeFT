@@ -57,17 +57,17 @@ namespace game {
 				FBox bbox(center - float3(1.0f, 1.0f, 1.0f) * m_proto.range, center + float3(1.0f, 1.0f, 1.0f) * m_proto.range);
 
 				vector<ObjectRef> entities;
-				findAll(entities, bbox, nullptr, Flags::entity);
+				findAll(entities, bbox, Flags::entity);
 
 				for(int n = 0; n < (int)entities.size(); n++) {
-					Entity *entity = refEntity((EntityRef)entities[n]);
+					Entity *entity = refEntity(entities[n]);
 					float dist = distance(FBox(center, center), entity->boundingBox()) / m_proto.range;
 					float strength = dist < 0.0f? 0.0f : (1 - dist) * (1.0f - dist);
 
 					if(strength > 0.0f) {
 						Segment segment(center, entity->boundingBox().center());
 
-						if(!trace(segment, entity, Flags::tile | Flags::colliding)) {
+						if(!trace(segment, {Flags::tile | Flags::colliding, entities[n]})) {
 							//TODO: decrease damage if blocked by another entity	
 							//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
 							float3 force = segment.dir() * m_proto.force * strength;

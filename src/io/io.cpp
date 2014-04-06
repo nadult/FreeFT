@@ -43,15 +43,15 @@ namespace io {
 		int2 mouse_pos = getMousePos();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
-		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, actor, Flags::walkable_tile | Flags::entity);
+		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, {Flags::walkable_tile | Flags::entity, m_actor_ref});
 		if(m_isect.isEmpty() || m_isect.isTile())
-			m_isect = m_viewer.trace(ray, actor, Flags::walkable_tile | Flags::entity);
+			m_isect = m_viewer.trace(ray, {Flags::walkable_tile | Flags::entity, m_actor_ref});
 		
 		//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 		// has to intersect bounding box of the object
-		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, actor);
+		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, m_actor_ref);
 		if(m_full_isect.isEmpty())
-			m_full_isect = m_viewer.trace(ray, actor);
+			m_full_isect = m_viewer.trace(ray, m_actor_ref);
 
 		if(!m_full_isect.isEmpty() && actor) {
 			float3 target = ray.at(m_full_isect.distance());
@@ -59,7 +59,7 @@ namespace io {
 			float3 dir = target - origin;
 
 			Ray shoot_ray(origin, dir / length(dir));
-			m_shoot_isect = m_world->trace(Segment(shoot_ray, 0.0f), actor, Flags::all | Flags::colliding);
+			m_shoot_isect = m_world->trace(Segment(shoot_ray, 0.0f), {Flags::all | Flags::colliding, m_actor_ref});
 		}
 
 		if(isKeyDown('T') && !m_isect.isEmpty() && actor) {
@@ -107,7 +107,7 @@ namespace io {
 			}
 
 			if(!m_isect.isEmpty()) {
-				Entity *entity = m_world->refEntity((EntityRef)m_isect);
+				Entity *entity = m_world->refEntity(m_isect);
 				if(entity) {
 					m_world->sendOrder(new AttackOrder(mode, entity->ref()), m_actor_ref);
 				}

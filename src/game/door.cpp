@@ -180,13 +180,13 @@ namespace game {
 		bbox.min += float3(1.1f, 0.1f, 1.1f);
 		bbox.max -= float3(1.1f, 0.1f, 1.1f);
 
-		bool is_colliding = (bool)world()->findAny(bbox + pos(), this, Flags::entity | Flags::colliding);
+		bool is_colliding = (bool)world()->findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
 
 		if(is_colliding && classId() == DoorClassId::rotating && m_state == DoorState::closed && target == DoorState::opened_in) {
 			target = DoorState::opened_out;
 			result = DoorState::opening_out;
 			bbox = computeBBox(result);
-			is_colliding = (bool)world()->findAny(bbox + pos(), this, Flags::entity | Flags::colliding);
+			is_colliding = (bool)world()->findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
 		}
 		if(!is_colliding) {
 			m_bbox = bbox;
@@ -237,7 +237,7 @@ namespace game {
 		}
 		if(classId() == DoorClassId::sliding && m_state == DoorState::opened_in && world->currentTime() > m_close_time) {
 			FBox bbox = computeBBox(DoorState::closed);
-			if((bool)world->findAny(bbox + pos(), this, Flags::entity | Flags::colliding)) {
+			if((bool)world->findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()})) {
 				m_close_time = world->currentTime() + 1.5;
 			}
 			else {

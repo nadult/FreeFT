@@ -64,7 +64,7 @@ namespace game {
 		if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
 			animate(m_action);
 		}
-		if(event == ActorEvent::step) {
+		if(event == ActorEvent::step && order.m_path.length(order.m_path_pos) > 1.0f) {
 			SurfaceId::Type standing_surface = surfaceUnder();
 			world()->playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 		}

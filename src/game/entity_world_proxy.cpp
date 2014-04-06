@@ -58,6 +58,10 @@ namespace game {
 	Entity *EntityWorldProxy::refEntity(EntityRef ref) const {
 		return m_world? m_world->refEntity(ref) : nullptr;
 	}
+	
+	Entity *EntityWorldProxy::refEntity(ObjectRef ref) const {
+		return m_world? m_world->refEntity(ref) : nullptr;
+	}
 
 	void EntityWorldProxy::save(Stream &sr) const {
 		sr.encodeInt(m_unique_id);
@@ -78,17 +82,17 @@ namespace game {
 		m_world->m_replace_list.emplace_back(std::move(new_entity), -1);
 	}
 		
-	ObjectRef EntityWorldProxy::findAny(const FBox &box, const Entity *ignore, Flags::Type flags) const {
-		return m_world? m_world->findAny(box, ignore, flags) : ObjectRef();
+	ObjectRef EntityWorldProxy::findAny(const FBox &box, const FindFilter &filter) const {
+		return m_world? m_world->findAny(box, filter) : ObjectRef();
 	}
 
-	void EntityWorldProxy::findAll(vector<ObjectRef> &out, const FBox &box, const Entity *ignore, Flags::Type flags) const {
+	void EntityWorldProxy::findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter) const {
 		if(m_world)
-			m_world->findAll(out, box, ignore, flags);
+			m_world->findAll(out, box, filter);
 	}
 
-	Intersection EntityWorldProxy::trace(const Segment &segment, const Entity *ignore, Flags::Type flags) const {
-		return m_world? m_world->trace(segment, ignore, flags) : Intersection();
+	Intersection EntityWorldProxy::trace(const Segment &segment, const FindFilter &filter) const {
+		return m_world? m_world->trace(segment, filter) : Intersection();
 	}
 
 	double EntityWorldProxy::timeDelta() const {

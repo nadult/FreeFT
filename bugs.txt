@@ -31,8 +31,6 @@
 
 - Projectiles that are out of range do not blend out
 
-- Step sounds should only be played in close proximity
-
 - Some problems with tracking, when player wants to attack a scorpion moving towards him
   (sometimes tracking ends too early)
 

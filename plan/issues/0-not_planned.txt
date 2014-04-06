@@ -48,3 +48,6 @@
 
 - Refactoring collider flags, support for ethereal tiles
   05.04.14: 10:00 - 12:30
+
+- Refactoring find parameters, EntityRefs and game/base
+  06.04.14: 19:30 - 21:30

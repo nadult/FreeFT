@@ -67,7 +67,7 @@ namespace game {
 					float len = length(dir);
 
 					Segment segment(Ray(m_eye_pos, dir / len), 0.0f, len);
-					Intersection isect = m_world->trace(segment, spectator, Flags::all | Flags::occluding);
+					Intersection isect = m_world->trace(segment, {Flags::all | Flags::occluding, m_spectator});
 
 					if(isect.isEmpty() || isect.distance() > len)
 						return true;
@@ -116,7 +116,7 @@ namespace game {
 				continue;
 			}
 			
-			const auto *desc = m_world->refDesc(EntityRef(n));
+			const auto *desc = m_world->refEntityDesc(n);
 			DASSERT(desc);
 
 			bool is_visible = isVisible(entity->boundingBox(), n, isMovable(*entity));
@@ -208,6 +208,18 @@ namespace game {
 		return m_world->refTile(ref);
 	}
 
+	const Entity *WorldViewer::refEntity(int index) const {
+		if(index >= 0 && index < (int)m_entities.size()) {
+			if(m_entities[index].mode == VisEntity::shadowed)
+				return m_entities[index].shadow.get();
+			if(m_entities[index].mode == VisEntity::invisible)
+				return nullptr;
+			return m_world->refEntity(index);
+		}
+
+		return nullptr;
+	}
+
 	const Entity *WorldViewer::refEntity(EntityRef ref) const {
 		int index = ref.index();
 		if(index >= 0 && index < (int)m_entities.size()) {
@@ -215,9 +227,10 @@ namespace game {
 				return m_entities[index].shadow.get();
 			if(m_entities[index].mode == VisEntity::invisible)
 				return nullptr;
+			return m_world->refEntity(ref);
 		}
 
-		return m_world->refEntity(ref);
+		return nullptr;
 	}
 
 	void WorldViewer::addToRender(gfx::SceneRenderer &renderer) {
@@ -249,14 +262,14 @@ namespace game {
 		}
 	}
 		
-	Intersection WorldViewer::pixelIntersect(const int2 &screen_pos, const Entity *ignore, Flags::Type flags) const {
+	Intersection WorldViewer::pixelIntersect(const int2 &screen_pos, const FindFilter &filter) const {
 		Intersection out;
 		FBox out_bbox;
 
-		if(flags & Flags::tile) {
+		if(filter.flags() & Flags::tile) {
 			const TileMap &tile_map = m_world->tileMap();
 			vector<int> inds;
-			tile_map.findAll(inds, IRect(screen_pos, screen_pos + int2(1, 1)), flags | Flags::visible);
+			tile_map.findAll(inds, IRect(screen_pos, screen_pos + int2(1, 1)), filter.flags() | Flags::visible);
 
 			for(int i = 0; i < (int)inds.size(); i++) {
 				const auto &desc = tile_map[inds[i]];
@@ -271,19 +284,21 @@ namespace game {
 			}
 		}
 
-		EntityRef ref = ignore? const_cast<Entity*>(ignore)->ref() : EntityRef();
+		if(filter.flags() & Flags::entity) {
+			int ignore_index = m_world->filterIgnoreIndex(filter);
 
-		if(flags & Flags::entity) for(int n = 0; n < (int)m_entities.size(); n++) {
-			const Entity *entity = refEntity(n);
-			if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags) || ref.index() == n)
-				continue;
-			FBox bbox = entity->boundingBox();
+			for(int n = 0; n < (int)m_entities.size(); n++) {
+				const Entity *entity = refEntity(n);
+				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), filter.flags()) || n == ignore_index)
+					continue;
+				FBox bbox = entity->boundingBox();
 
-			if(out.isEmpty() || drawingOrder(bbox, out_bbox) == 1)
-				if(entity->testPixel(screen_pos)) {
+				//TODO: check this
+				if(out.isEmpty() || (drawingOrder(bbox, out_bbox) == 1 && entity->testPixel(screen_pos))) {
 					out = ObjectRef(n, true);
 					out_bbox = bbox;
 				}
+			}
 		}
 
 		if(out.isEmpty())
@@ -291,24 +306,25 @@ namespace game {
 		return Intersection(out, intersection(screenRay(screen_pos), out_bbox));
 	}
 
-	Intersection WorldViewer::trace(const Segment &segment, const Entity *ignore, Flags::Type flags) const {
+	Intersection WorldViewer::trace(const Segment &segment, const FindFilter &filter) const {
 		Intersection out;
 
-		if(flags & Flags::tile)
-			out = m_world->trace(segment, nullptr, (flags & ~Flags::entity) | Flags::visible);
+		if(filter.flags() & Flags::tile)
+			out = m_world->trace(segment, (filter.flags() & ~Flags::entity) | Flags::visible);
 
-		EntityRef ref = ignore? const_cast<Entity*>(ignore)->ref() : EntityRef();
+		if(filter.flags() & Flags::entity) {
+			int ignore_index = m_world->filterIgnoreIndex(filter);
 
-		if(flags & Flags::entity)
 			for(int n = 0; n < (int)m_entities.size(); n++) {
 				const Entity *entity = refEntity(n);
-				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags) || ref.index() == n)
+				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), filter.flags()) || n == ignore_index)
 					continue;
 
 				float distance = intersection(segment, entity->boundingBox());
 				if(distance < out.distance())
 					out = Intersection(ObjectRef(n, true), distance);
 			}
+		}
 
 		return out;
 	}

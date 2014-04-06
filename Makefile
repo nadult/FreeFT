@@ -25,7 +25,7 @@ SHARED_SRC=\
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/entity game/entity_world_proxy game/container game/level game/visibility game/path \
 	game/door game/projectile game/impact game/item game/weapon game/armour game/inventory game/base game/entities \
-	game/actor game/actor_ai game/actor_proto game/orders \
+	game/actor game/actor_ai game/actor_proto game/orders game/proto \
 	game/orders/attack game/orders/change_stance game/orders/die game/orders/idle game/orders/interact \
 	game/orders/inventory game/orders/move game/orders/look_at game/orders/track \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
