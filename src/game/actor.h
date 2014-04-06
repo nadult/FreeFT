@@ -68,7 +68,7 @@ namespace game {
 	struct ActorArmourProto: public ProtoImpl<ActorArmourProto, EntityProto, ProtoId::actor_armour> {
 		ActorArmourProto(const TupleParser&, bool is_actor = false);
 
-		void connect();
+		void link();
 
 		int climbAnimId(Action::Type);
 		int attackAnimId(AttackMode::Type, Stance::Type, WeaponClass::Type) const;
@@ -102,9 +102,10 @@ namespace game {
 	struct ActorProto: public ProtoImpl<ActorProto, ActorArmourProto, ProtoId::actor> {
 		ActorProto(const TupleParser&);
 
-		void connect();
+		void link();
 
-		ProtoRef<WeaponProto> unarmed_weapon;
+		ProtoRef<WeaponProto> punch_weapon;
+		ProtoRef<WeaponProto> kick_weapon;
 		string sound_prefix;
 		bool is_heavy;
 		bool is_alive;
@@ -115,7 +116,6 @@ namespace game {
 		//TODO: add sound variations, each actor instance will have different sound set
 		SoundId death_sounds[DeathId::count];
 		SoundId human_death_sounds[DeathId::count];
-		SoundId kick_sound;
 	};
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
@@ -129,7 +129,7 @@ namespace game {
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&);
-		void onImpact(DeathId::Type, float damage);
+		void onImpact(DamageType::Type, float damage, float force);
 
 		XMLNode save(XMLNode&) const;
 		void save(Stream&) const;
@@ -172,6 +172,7 @@ namespace game {
 		void nextFrame();
 		void onAnimFinished();
 
+		void onHitEvent();
 		void onFireEvent(const int3&);
 		void onSoundEvent();
 		void onStepEvent(bool left_foot);
@@ -179,6 +180,7 @@ namespace game {
 
 		void fireProjectile(const int3 &offset, const float3 &target, const Weapon &weapon,
 								float random_val = 0.0f);
+		void makeImpact(EntityRef target, const Weapon &weapon);
 
 		bool animateDeath(DeathId::Type);
 		bool animate(Action::Type);

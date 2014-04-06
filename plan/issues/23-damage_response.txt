@@ -1,3 +1,4 @@
+- different deaths for different attack types [2h]
 - falls [3h]
   - actors can move a bit when falling
   - actors can be unconscious
@@ -5,7 +6,7 @@
 - trails of blood [3h]
 - dodging melee attacks [2h]
 
-+ESTIMATED_TIME: 10h
++ESTIMATED_TIME: 12h
 +TIME_SPENT: 0h
 
 +WORK_LOG:

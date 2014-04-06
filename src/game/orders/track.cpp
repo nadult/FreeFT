@@ -25,27 +25,23 @@ namespace game {
 	bool Actor::handleOrder(TrackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(event == ActorEvent::init_order || event == ActorEvent::think) {
 			order.m_time_for_update -= timeDelta();
+			const Entity *target = refEntity(order.m_target);
+			if(!target)
+				return false;
 
 			if(order.m_time_for_update < 0.0f) {
 				fixPosition();
 
 				int3 cur_pos = (int3)pos();
-				const Entity *target = refEntity(order.m_target);
-				if(!target)
-					return false;
 
 				int3 target_pos;
 				if(!world()->findClosestPos(target_pos, cur_pos, enclosingIBox(target->boundingBox()), ref()))
 					return false;
 
-				//TODO: bbox distance
-				if(distance((float3)cur_pos, (float3)target_pos) <= order.m_min_distance)
-					return false;
-
 				order.m_path_pos = PathPos();
 				if(!world()->findPath(order.m_path, cur_pos, target_pos, ref()))
 					return false;
-				order.m_time_for_update = 0.5f;
+				order.m_time_for_update = 0.25f;
 			}
 			
 			if(event == ActorEvent::init_order) {
@@ -58,6 +54,9 @@ namespace game {
 
 			FollowPathResult result = order.needCancel()? FollowPathResult::finished :
 				followPath(order.m_path, order.m_path_pos, order.m_please_run);
+				
+			if(distance(boundingBox(), target->boundingBox()) <= order.m_min_distance)
+				return false;
 
 			if(result != FollowPathResult::moved)
 				return false;

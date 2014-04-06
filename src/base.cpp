@@ -40,6 +40,10 @@ bool toBool(const char *input) {
 
 int toInt(const char *str) {
 	DASSERT(str);
+
+	if(!str[0])
+		return 0;
+
 	int out;
 	if(sscanf(str, "%d", &out) != 1)
 		THROW("Error while converting string \"%s\" to int", str);
@@ -48,6 +52,11 @@ int toInt(const char *str) {
 
 static void toFloat(const char *input, int count, float *out) {
 	DASSERT(input);
+	if(!input[0]) {
+		for(int i = 0; i < count; i++)
+			out[i] = 0.0f;
+		return;
+	}
 	if(sscanf(input, "%f %f %f %f" + (4 - count) * 3, out + 0, out + 1, out + 2, out + 3) != count)
 		THROW("Error while converting string \"%s\" to float%d", input, count);
 }
@@ -374,6 +383,12 @@ bool areAdjacent(const IRect &a, const IRect &b) {
 float distanceSq(const Rect<float2> &a, const Rect<float2> &b) {
 	float2 p1 = clamp(b.center(), a.min, a.max);
 	float2 p2 = clamp(p1, b.min, b.max);
+	return distanceSq(p1, p2);
+}
+
+float distanceSq(const Box<float3> &a, const Box<float3> &b) {
+	float3 p1 = clamp(b.center(), a.min, a.max);
+	float3 p2 = clamp(p1, b.min, b.max);
 	return distanceSq(p1, p2);
 }
 

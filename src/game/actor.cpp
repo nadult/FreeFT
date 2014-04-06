@@ -17,7 +17,7 @@
 namespace game {
 
 	Actor::Actor(Stream &sr)
-	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)) {
+	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)) {
 		u8 flags;
 		sr.unpack(flags, m_stance, m_action);
 		if(flags & 1) {
@@ -39,14 +39,14 @@ namespace game {
 	}
 
 	Actor::Actor(const XMLNode &node)
-	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
+	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
 		 m_faction_id = node.intAttrib("faction_id");
 		animate(Action::idle);
 		updateOrderFunc();
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
-		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.unarmed_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
+		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
 		m_faction_id = 0;
 		animate(Action::idle);
 		updateOrderFunc();
@@ -116,8 +116,10 @@ namespace game {
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 
-	void Actor::onImpact(DeathId::Type death_id, float damage) {
+	void Actor::onImpact(DamageType::Type damage_type, float damage, float force) {
+
 		//TODO: immediate order cancel
+		DeathId::Type death_id = DeathId::cut_in_half;
 		setOrder(new DieOrder(death_id));
 		
 		if(m_ai)
@@ -224,9 +226,13 @@ namespace game {
 
 	// sets direction
 	void Actor::lookAt(const float3 &pos, bool at_once) { //TODO: rounding
-		float3 cur_pos = this->pos();
-		float2 dir(pos.x - cur_pos.x, pos.z - cur_pos.z);
-		dir = dir / length(dir);
+		float3 center = boundingBox().center();
+		float2 dir(pos.x - center.x, pos.z - center.z);
+		float len = length(dir);
+		if(len < constant::epsilon)
+			return;
+
+		dir = dir / len;
 		m_target_angle = vectorToAngle(dir);
 		if(at_once)
 			setDirAngle(m_target_angle);
@@ -251,6 +257,10 @@ namespace game {
 		
 	void Actor::onFireEvent(const int3 &off) {
 		handleOrder(ActorEvent::fire, ActorEventParams{off, false});
+	}
+		
+	void Actor::onHitEvent() {
+		handleOrder(ActorEvent::hit, ActorEventParams());
 	}
 		
 	void Actor::onStepEvent(bool left_foot) {
@@ -279,17 +289,28 @@ namespace game {
 		float3 pos = boundingBox().center();
 		pos.y = this->pos().y;
 		float3 offset = asXZY(rotateVector(float2(off.x, off.z), actualDirAngle() - constant::pi * 0.5f), off.y);
+		pos += offset;
 
-		float3 dir = float3(target) - (pos + offset);
+		float3 dir = float3(target) - pos;
 		float len = length(dir);
 		dir *= 1.0f / len;
-		float2 horiz = angleToVector(vectorToAngle(float2(dir.x, dir.z)) + frand() * constant::pi * random_val);
-		dir.x = horiz.x; dir.z = horiz.y;
-		dir.y += frand() * random_val;
-		dir *= 1.0f / length(dir); //TODO: yea.. do this properly
+
+		if(random_val > 0.0f) {
+			float2 horiz = angleToVector(vectorToAngle(float2(dir.x, dir.z)) + frand() * constant::pi * random_val);
+			dir.x = horiz.x; dir.z = horiz.y;
+			dir.y += frand() * random_val;
+			dir *= 1.0f / length(dir); //TODO: yea.. do this properly
+		}
 
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
-			addNewEntity<Projectile>(pos + offset, *proj_proto, actualDirAngle(), dir * len, ref());
+			addNewEntity<Projectile>(pos, *proj_proto, actualDirAngle(), dir * len, ref(), weapon.proto().damage_mod);
+	}
+		
+	void Actor::makeImpact(EntityRef target, const Weapon &weapon) {
+		DASSERT(weapon.proto().impact.isValid());
+
+		if(target)
+			addNewEntity<Impact>(pos(), *weapon.proto().impact, ref(), target, weapon.proto().damage_mod);
 	}
 
 	bool Actor::animate(Action::Type action) {
@@ -363,7 +384,7 @@ namespace game {
 				return FollowPathResult::collided;
 			}
 				
-			lookAt(new_pos);
+			lookAt(new_pos + bboxSize() * 0.5f);
 			setPos(new_pos);
 		}
 

@@ -1,6 +1,6 @@
-- Figting unarmed and with melee weapons [4h]
-- Different weapons and attacks have different ranges [1h]
-- collision tests [3h]
+- Figting unarmed and with melee weapons [4h]  DONE
+- Different weapons and attacks have different ranges [1h]  DONE
+- collision tests [3h]  DONE
 
 
 +ESTIMATED_TIME: 11h
@@ -8,3 +8,5 @@
 
 +WORK_LOG:
 29.03.14: 15:00 - 16:00, 18:00 - 19:15
+05.04.14: 14:30 - 16:00
+06.04.14: 9:00 - 12:00, 12:30 - 15:00

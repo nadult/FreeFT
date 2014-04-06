@@ -5,7 +5,7 @@ namespace game
 
 	ArmourProto::ArmourProto(const TupleParser &parser) :ProtoImpl(parser) {
 		damage_resistance = toFloat(parser("damage_resistance"));
-		class_id = ArmourClassId::fromString(parser("class_id"));
+		class_id = ArmourClass::fromString(parser("class_id"));
 		sound_prefix = parser("sound_prefix");
 	}
 

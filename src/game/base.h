@@ -28,23 +28,28 @@ namespace game {
 		rocket,
 		smg,
 		spear
-	)
+	);
 
-	DECLARE_ENUM(ArmourClassId,
+	DECLARE_ENUM(ArmourClass,
 		none,
 		leather,
 		metal,
 		environmental,
 		power
-	)
+	);
 
-	DECLARE_ENUM(ProjectileId,
+	DECLARE_ENUM(DamageType,
+		undefined = -1,
+		bludgeoning,
+		slashing,
+		piercing,
 		bullet,
+		fire,
 		plasma,
-		electric,
 		laser,
-		rocket
-	)
+		electric,
+		explosive
+	);
 
 	DECLARE_ENUM(DeathId,
 		normal,
@@ -55,7 +60,7 @@ namespace game {
 		fire,
 		melt,
 		riddled
-	)
+	);
 
 	DECLARE_ENUM(EntityId,
 		container,
@@ -64,7 +69,7 @@ namespace game {
 		item,
 		projectile,
 		impact
-	)
+	);
 
 	DECLARE_ENUM(TileId,
 		wall,
@@ -73,7 +78,7 @@ namespace game {
 		stairs,
 		roof,
 		unknown
-	)
+	);
 
 	DECLARE_ENUM(SurfaceId,
 		stone,
@@ -104,6 +109,8 @@ namespace game {
 	);
 	
 	namespace AttackMode {
+		inline constexpr bool isRanged(Type t) { return t == single || t == burst || t == throwing; }
+		inline constexpr bool isMelee(Type t) { return !isRanged(t); }
 		inline constexpr uint toFlags(Type t) { return t == undefined? 0 : 1 << t; }
 	};
 
@@ -242,7 +249,7 @@ namespace game {
 		Proto(const TupleParser&);
 
 		virtual ~Proto() { }
-		virtual void connect() { }
+		virtual void link() { }
 		virtual ProtoId::Type protoId() const = 0;
 		virtual bool validProtoId(ProtoId::Type type) const { return false; }
 		ProtoIndex index() const { return ProtoIndex(idx, protoId()); }
@@ -286,7 +293,7 @@ namespace game {
 
 		bool isValid() const { return m_index.isValid(); }
 
-		void connect() {
+		void link() {
 			if(m_id.empty())
 				return;
 			m_index = findProto(m_id, (ProtoId::Type)ProtoType::proto_id);

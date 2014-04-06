@@ -126,12 +126,12 @@ namespace game {
 		return m_can_change_stance;
 	}
 
-	void ActorArmourProto::connect() {
+	void ActorArmourProto::link() {
 		if(m_is_actor)
 			actor = index();
 		else
-			actor.connect();
-		armour.connect();
+			actor.link();
+		armour.link();
 
 		for(int st = 0; st < Stance::count; st++)
 			for(int su = 0; su < SurfaceId::count; su++) {
@@ -145,7 +145,8 @@ namespace game {
 		}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
-		unarmed_weapon = parser("unarmed_weapon");
+		punch_weapon = parser("punch_weapon");
+		kick_weapon = parser("kick_weapon");
 		sound_prefix = parser("sound_prefix");
 		is_heavy = toBool(parser("is_heavy"));
 		is_alive = toBool(parser("is_alive"));
@@ -157,9 +158,10 @@ namespace game {
 		speeds[3] = speed_vec.w;
 	}
 
-	void ActorProto::connect() {
-		ActorArmourProto::connect();
-		unarmed_weapon.connect();
+	void ActorProto::link() {
+		ActorArmourProto::link();
+		punch_weapon.link();
+		kick_weapon.link();
 
 		for(int d = 0; d < DeathId::count; d++) {
 			char text[256];
@@ -170,8 +172,6 @@ namespace game {
 			snprintf(text, sizeof(text), "human%s", death_name);
 			human_death_sounds[d] = SoundId(text);
 		}
-
-		kick_sound = SoundId("kick");
 	}
 
 	enum { invalid_id = 255 };

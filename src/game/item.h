@@ -44,7 +44,7 @@ namespace game {
 		AmmoProto(const TupleParser&);
 
 		string class_id;
-		float damage_multiplier;
+		float damage_mod;
 	};
 
 	struct Item

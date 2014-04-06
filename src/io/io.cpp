@@ -40,45 +40,45 @@ namespace io {
 		int2 mouse_pos = getMousePos();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
-		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, Flags::walkable_tile | Flags::entity);
+		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, actor, Flags::walkable_tile | Flags::entity);
 		if(m_isect.isEmpty() || m_isect.isTile())
 			m_isect = m_viewer.trace(ray, actor, Flags::walkable_tile | Flags::entity);
 		
 		//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 		// has to intersect bounding box of the object
-		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos);
+		m_full_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, actor);
 		if(m_full_isect.isEmpty())
 			m_full_isect = m_viewer.trace(ray, actor);
 
 		if(!m_full_isect.isEmpty() && actor) {
 			float3 target = ray.at(m_full_isect.distance());
-			float3 origin = actor->pos() + ((float3)actor->bboxSize()) * 0.5f;
+			float3 origin = actor->boundingBox().center();
 			float3 dir = target - origin;
 
 			Ray shoot_ray(origin, dir / length(dir));
-			m_shoot_isect = m_world->trace(Segment(shoot_ray, 0.0f), actor);
-
-			if(!m_shoot_isect.isEmpty())
-				m_target_pos = shoot_ray.at(m_shoot_isect.distance());
+			m_shoot_isect = m_world->trace(Segment(shoot_ray, 0.0f), actor, Flags::all | Flags::colliding);
 		}
 
 		if(isKeyDown('T') && !m_isect.isEmpty() && actor) {
 			float3 pos = ray.at(m_isect.distance());
 			actor->setPos(int3(pos + float3(0.5f, 0.5f, 0.5f)));
+			actor->fixPosition();
 		}
 
 		m_console.processInput();
+			
 
 		if(!m_full_isect.isEmpty()) {
 			//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
 			if(m_full_isect.distance() < constant::inf && m_full_isect.distance() > -constant::inf) {
 				float3 look_at = ray.at(m_full_isect.distance());
-				if(look_at != m_last_look_at) {
+				if(look_at != m_last_look_at && distance(look_at.xz(), actor->boundingBox().center().xz()) > 1.0f) {
 					m_world->sendOrder(new LookAtOrder(look_at), m_actor_ref);
 					m_last_look_at = look_at;
 				}
 			}
 		}
+
 		if(isMouseKeyDown(0) && !isKeyPressed(Key_lctrl)) {
 			Entity *entity = m_world->refEntity(m_isect);
 
@@ -99,10 +99,16 @@ namespace io {
 				const Weapon &weapon = actor->inventory().weapon();
 				if(weapon.proto().attack_modes & AttackModeFlags::burst)
 					mode = AttackMode::burst;
-				else if(weapon.proto().attack_modes & AttackModeFlags::kick)
+				else if(weapon.canKick())
 					mode = AttackMode::kick;
 			}
-			m_world->sendOrder(new AttackOrder(mode, (int3)m_target_pos), m_actor_ref);
+
+			if(!m_isect.isEmpty()) {
+				if(m_isect.isEntity())
+					m_world->sendOrder(new AttackOrder(mode, (EntityRef)m_isect), m_actor_ref);
+				else
+					m_world->sendOrder(new AttackOrder(mode, ray.at(m_isect.distance())), m_actor_ref);
+			}
 		}
 		if(isKeyDown(Key_kp_add) || isKeyDown(Key_kp_subtract)) {
 			Stance::Type stance = (Stance::Type)(actor->stance() + (isKeyDown(Key_kp_add)? 1 : -1));

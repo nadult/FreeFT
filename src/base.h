@@ -773,6 +773,8 @@ int drawingOrder(const Box<Type3> &a, const Box<Type3> &b) {
 
 bool areAdjacent(const Rect<int2>&, const Rect<int2>&);
 float distanceSq(const Rect<float2>&, const Rect<float2>&);
+float distanceSq(const Box<float3>&, const Box<float3>&);
+inline float distance(const Box<float3> &a, const Box<float3> &b) { return sqrtf(distanceSq(a, b)); }
 
 typedef Rect<int2> IRect;
 typedef Rect<float2> FRect;

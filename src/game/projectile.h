@@ -7,29 +7,23 @@
 #define GAME_PROJECTILE_H
 
 #include "game/entity.h"
+#include "game/impact.h"
 #include "sys/data_sheet.h"
 
 namespace game {
 	
-	struct ImpactProto: public ProtoImpl<ImpactProto, EntityProto, ProtoId::impact> {
-		ImpactProto(const TupleParser &parser);
-
-		SoundId sound_idx;
-	};
-
 	struct ProjectileProto: public ProtoImpl<ProjectileProto, EntityProto, ProtoId::projectile> {
 		ProjectileProto(const TupleParser &parser);
-		void connect();
+		void link();
 
 		ProtoRef<ImpactProto> impact;
-		DeathId::Type death_id;
-		float speed;
+		float speed, max_range;
 		bool blend_angles;
 	};
 
 	class Projectile: public EntityImpl<Projectile, ProjectileProto, EntityId::projectile> {
 	public:
-		Projectile(const ProjectileProto &Proto, float initial_ang, const float3 &dir, EntityRef spawner);
+		Projectile(const ProjectileProto &Proto, float initial_ang, const float3 &dir, EntityRef spawner, float damage_mod);
 		Projectile(Stream&);
 		
 		void save(Stream&) const;
@@ -44,27 +38,9 @@ namespace game {
 	private:
 		EntityRef m_spawner;
 		float3 m_dir;
-		float m_speed, m_target_angle;
+		float m_speed, m_distance, m_target_angle;
+		float m_damage_mod;
 		int m_frame_count;
-	};
-
-	class Impact: public EntityImpl<Impact, ImpactProto, EntityId::impact> {
-	public:
-		Impact(const ImpactProto&);
-		Impact(Stream&);
-
-		void save(Stream&) const;
-		XMLNode save(XMLNode& parent) const;
-
-		Flags::Type flags() const { return Flags::impact | Flags::dynamic_entity; }
-	
-	protected:
-		void onAnimFinished() override;
-		void think() override;
-
-		//TODO: Ugly hack; Add possibility to create entity with world as a parameter,
-		//this way we will be able to play sounds that should be played on the first frame
-		bool m_played_sound;
 	};
 
 }

@@ -17,12 +17,15 @@ namespace game {
 
 	WeaponProto::WeaponProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ammo_class_id = parser("ammo_class_id");
+		impact = parser("impact_id");
 		projectile = parser("projectile_id");
 		class_id = WeaponClass::fromString(parser("class_id"));
-		damage = toFloat(parser("damage"));
+		damage_mod = toFloat(parser("damage_mod"));
 		attack_modes = AttackModeFlags::fromString(parser("attack_modes"));
 		max_ammo = toInt(parser("max_ammo"));
 		burst_ammo = toInt(parser("burst_ammo"));
+
+		ranged_range = melee_range = 0.0f;
 
 		const char *sound_prefix = parser("sound_prefix");
 		for(int n = 0; n < WeaponSoundType::count; n++) {
@@ -34,10 +37,31 @@ namespace game {
 			sound_ids[WeaponSoundType::normal] = sound_ids[WeaponSoundType::fire_single];
 	}
 		
-	void WeaponProto::connect() {
-		projectile.connect();
-		if(attack_modes & (AttackModeFlags::single | AttackModeFlags::burst))
+	void WeaponProto::link() {
+		projectile.link();
+		impact.link();
+
+		int projectile_modes = AttackModeFlags::single | AttackModeFlags::burst | AttackModeFlags::throwing;
+
+		if(attack_modes & projectile_modes) {
 			ASSERT(projectile.isValid());
+			ranged_range = projectile->max_range;
+		}
+
+		if(attack_modes & ~projectile_modes) {
+			ASSERT(impact.isValid());
+			melee_range = impact->range;
+		}
+	}
+		
+	float Weapon::range(AttackMode::Type mode) const {
+		return AttackMode::isRanged(mode)? proto().ranged_range : proto().melee_range;
+	}
+
+	bool Weapon::canKick() const {
+		WeaponClass::Type class_id = classId();
+		return	class_id == WeaponClass::unarmed || class_id == WeaponClass::knife ||
+				class_id == WeaponClass::pistol || class_id == WeaponClass::club;
 	}
 
 }

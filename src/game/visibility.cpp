@@ -246,7 +246,7 @@ namespace game {
 		}
 	}
 		
-	Intersection WorldViewer::pixelIntersect(const int2 &screen_pos, Flags::Type flags) const {
+	Intersection WorldViewer::pixelIntersect(const int2 &screen_pos, const Entity *ignore, Flags::Type flags) const {
 		Intersection out;
 		FBox out_bbox;
 
@@ -268,9 +268,11 @@ namespace game {
 			}
 		}
 
+		EntityRef ref = ignore? const_cast<Entity*>(ignore)->ref() : EntityRef();
+
 		if(flags & Flags::entity) for(int n = 0; n < (int)m_entities.size(); n++) {
 			const Entity *entity = refEntity(n);
-			if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags))
+			if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags) || ref.index() == n)
 				continue;
 			FBox bbox = entity->boundingBox();
 
@@ -292,10 +294,12 @@ namespace game {
 		if(flags & Flags::tile)
 			out = m_world->trace(segment, nullptr, (flags & ~Flags::entity) | Flags::visible);
 
+		EntityRef ref = ignore? const_cast<Entity*>(ignore)->ref() : EntityRef();
+
 		if(flags & Flags::entity)
 			for(int n = 0; n < (int)m_entities.size(); n++) {
 				const Entity *entity = refEntity(n);
-				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags))
+				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), flags) || ref.index() == n)
 					continue;
 
 				float distance = intersection(segment, entity->boundingBox());

@@ -24,12 +24,18 @@ namespace game {
 	struct WeaponProto: public ProtoImpl<WeaponProto, ItemProto, ProtoId::item_weapon> {
 		ItemType::Type itemType() const { return ItemType::weapon; }
 		WeaponProto(const TupleParser&);
-		void connect();
+		void link();
 
 		string ammo_class_id;
+
+		float melee_range;
+		float ranged_range;
+
 		ProtoRef<ProjectileProto> projectile;
+		ProtoRef<ImpactProto> impact;
+
 		WeaponClass::Type class_id;
-		float damage;
+		float damage_mod;
 		uint attack_modes;
 		int max_ammo, burst_ammo;
 
@@ -43,6 +49,9 @@ namespace game {
 		Weapon(const Item &item) :Item((DASSERT(item.type() == ItemType::weapon), item)) { }
 
 		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
+
+		float range(AttackMode::Type mode) const;
+		bool canKick() const;
 
 		WeaponClass::Type classId() const						{ return proto().class_id; }
 		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }

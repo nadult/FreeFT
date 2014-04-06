@@ -50,7 +50,7 @@ namespace game {
 		const Entity *refEntity(EntityRef) const;
 
 		//TODO: option to ignore entities
-		Intersection pixelIntersect(const int2 &screen_pos, Flags::Type flags = Flags::all) const;
+		Intersection pixelIntersect(const int2 &screen_pos, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
 		Intersection trace(const Segment &segment, const Entity *ignore = nullptr, Flags::Type flags = Flags::all) const;
 
 	protected:

@@ -1,7 +1,3 @@
-- after teleport player is sometimes stuck
-- Player can start rotating in a circle after interaction with an object with empty bbox (like opened sliding door)
-- Player can sometimes stuck on the stairs
-
 - In res_viewer when popup is visible, you can still select objects behind it by
   clicking on screen (outside of popup area)
 
@@ -31,9 +27,6 @@
 
 - Mutants cannot use rifles
 
-- Support for ethereal tiles
-
 - When changing armour, it should happen on event pickup, not when animation has finished
 
-- Something is wrong when calculating looking direction; Especially when trying to aim at other entity,
-  player can sometimes rotate in place
+- Projectiles that are out of range do not blend out

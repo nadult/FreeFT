@@ -13,19 +13,15 @@ namespace game {
 		impact = parser("impact_id");
 		blend_angles = toBool(parser("blend_angles"));
 		speed = toFloat(parser("speed"));
-		death_id = DeathId::fromString(parser("death_id"));
-	}
-		
-	ImpactProto::ImpactProto(const TupleParser &parser) :ProtoImpl(parser) {
-		sound_idx = SoundId(parser("sound_id"));
+		max_range = toFloat(parser("max_range"));
 	}
 
-	void ProjectileProto::connect() {
-		impact.connect();
+	void ProjectileProto::link() {
+		impact.link();
 	}
 
-	Projectile::Projectile(const ProjectileProto &proto, float initial_angle, const float3 &dir, EntityRef spawner)
-		:EntityImpl(proto), m_dir(dir), m_spawner(spawner) {
+	Projectile::Projectile(const ProjectileProto &proto, float initial_angle, const float3 &dir, EntityRef spawner, float damage_mod)
+		:EntityImpl(proto), m_dir(dir), m_spawner(spawner), m_distance(0.0f), m_damage_mod(damage_mod) {
 			m_dir *= 1.0f / length(m_dir);
 			setDirAngle(initial_angle);
 			m_target_angle = vectorToAngle(m_dir.xz());
@@ -33,18 +29,18 @@ namespace game {
 				setDirAngle(m_target_angle);
 			m_speed = proto.speed;
 			m_frame_count = 0;
-//			printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
-//					this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
+	//		printf("Spawning projectile at: (%.0f %.0f %.0f) -> %.2f %.2f\n",
+	//				this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}
 
 	Projectile::Projectile(Stream &sr) :EntityImpl(sr) {
-		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle);
+		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod);
 		sr >> m_spawner;
 	}
 
 	void Projectile::save(Stream &sr) const {
 		EntityImpl::save(sr);
-		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle);
+		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod);
 		sr << m_spawner;
 	}
 		
@@ -68,43 +64,17 @@ namespace game {
 
 		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), refEntity(m_spawner), Flags::all | Flags::colliding);
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
+		m_distance += length(new_pos - pos());
 		setPos(new_pos);
 
-		if(isect.distance() < ray_pos) {
-			if(m_proto.impact.isValid() && !isClient()) {
-				addNewEntity<Impact>(new_pos, *m_proto.impact);
-				if( Entity *entity = refEntity(isect) ) {
-					float damage = 100.0f;
-					entity->onImpact(m_proto.death_id, damage);
-				}
-			}
+		//TODO: also remove when is out of map
+		if(m_distance > m_proto.max_range)
 			remove();
-		}
-	}
 
-	Impact::Impact(const ImpactProto &proto)
-		:EntityImpl(proto), m_played_sound(false) {
-	}
-	
-	Impact::Impact(Stream &sr) :EntityImpl(sr), m_played_sound(false) { }
-
-	void Impact::save(Stream &sr) const {
-		EntityImpl::save(sr);
-	}
-	
-	XMLNode Impact::save(XMLNode& parent) const {
-		return Entity::save(parent);
-	}
-
-	void Impact::onAnimFinished() {
-		remove();
-	}
-
-	void Impact::think() {
-		if(!m_played_sound) {
-			world()->playSound(m_proto.sound_idx, pos());
-			m_played_sound = true;
-			return;
+		if(isect.distance() < ray_pos) {
+			if(m_proto.impact.isValid() && !isClient())
+				addNewEntity<Impact>(new_pos, *m_proto.impact, m_spawner, EntityRef(isect), m_damage_mod);
+			remove();
 		}
 	}
 

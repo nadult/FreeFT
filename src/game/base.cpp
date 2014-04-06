@@ -33,7 +33,7 @@ namespace game {
 		"spear"
 	)
 
-	DEFINE_ENUM(ArmourClassId,
+	DEFINE_ENUM(ArmourClass,
 		"none",
 		"leather",
 		"metal",
@@ -41,12 +41,16 @@ namespace game {
 		"power"
 	)
 
-	DEFINE_ENUM(ProjectileId,
+	DEFINE_ENUM(DamageType,
+		"bludgeoning",
+		"slashing",
+		"piercing",
 		"bullet",
+		"fire",
 		"plasma",
-		"electric",
 		"laser",
-		"rocket"
+		"electric",
+		"explosive",
 	)
 
 	DEFINE_ENUM(DeathId,
@@ -325,8 +329,15 @@ namespace game {
 
 		for(int p = 0; p < ProtoId::count; p++) {
 			ProtoDef &def = s_protos[p];
-			for(int n = 0; n < def.count; n++)
-				s_protos[p].get_func(n).connect();
+			for(int n = 0; n < def.count; n++) {
+				Proto &proto = s_protos[p].get_func(n);
+				try {
+					proto.link();
+				}
+				catch(const Exception &ex) {
+					THROW("Error when linking proto: %s (table: %s):\n%s", proto.id.c_str(), def.table_name, ex.what());
+				}
+			}
 		}
 	}
 
