@@ -56,29 +56,34 @@ namespace game
 
 		Flags::Type flags() const { return Flags::door | Flags::dynamic_entity | Flags::occluding | Flags::colliding; }
 		
-		virtual void interact(const Entity*);
-		virtual void onSoundEvent();
+		void interact(const Entity*) override;
+		void onSoundEvent() override;
 
 		bool isOpened() const { return m_state == DoorState::opened_in || m_state == DoorState::opened_out; }
 		DoorClassId::Type classId() const { return m_proto.class_id; }
 		void setKey(const Item&);
-		virtual void setDirAngle(float angle);
+		void setDirAngle(float angle);
 
-		virtual XMLNode save(XMLNode&) const;
-		virtual void save(Stream&) const;
-		virtual const FBox boundingBox() const;
+		XMLNode save(XMLNode&) const override;
+		void save(Stream&) const override;
+		const FBox boundingBox() const override;
+
+		void onImpact(DamageType::Type damage_type, float damage, const float3 &force)  override;
 		
 	private:
 		void initialize();
+		void initializeOpenDir();
 
-		virtual void think();
-		virtual void onAnimFinished();
+		void think() override;
+		void onAnimFinished() override;
 		FBox computeBBox(DoorState::Type) const;
+		void changeState(DoorState::Type);
 
 		FBox m_bbox;
 		Item m_key;
 		DoorState::Type m_state;
 		double m_close_time;
+		float2 m_open_in_dir;
 		bool m_update_anim;
 	};
 };

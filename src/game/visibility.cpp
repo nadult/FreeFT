@@ -46,12 +46,15 @@ namespace game {
 
 		if(dist > feel_distance && !isInsideFrustum(box, m_cur_pos, m_cur_dir, m_cur_fov))
 			return false;
+		
+		const Actor *spectator = m_world->refEntity<Actor>(m_spectator);
+		if(!spectator || spectator->isDead())
+			return false;
 
 		if(!is_movable || m_spectator.index() == index)
 			return true;
 
 		enum { num_rays = 16 };
-		const Entity *spectator = m_world->refEntity(m_spectator);
 
 		for(int x = 0; x < 3; x++)
 			for(int y = 0; y < 3; y++)

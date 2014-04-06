@@ -30,3 +30,17 @@
 - When changing armour, it should happen on event pickup, not when animation has finished
 
 - Projectiles that are out of range do not blend out
+
+- Step sounds should only be played in close proximity
+
+- Some problems with tracking, when player wants to attack a scorpion moving towards him
+  (sometimes tracking ends too early)
+
+- Make sure that it's impossible to impact an object behind a wall
+
+- Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)
+
+- findClosestPos could return multiple points, if for some reason on of them is unreachable
+  (think this through). Problems arise when were trying to get to some door when lot's of AI's are running around
+
+- Door sounds don't work in multiplayer

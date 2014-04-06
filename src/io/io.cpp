@@ -37,6 +37,9 @@ namespace io {
 			m_view_pos -= getMouseMove();
 		
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
+		if(actor && actor->isDead())
+			actor = nullptr;
+
 		int2 mouse_pos = getMousePos();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
@@ -68,7 +71,7 @@ namespace io {
 		m_console.processInput();
 			
 
-		if(!m_full_isect.isEmpty()) {
+		if(!m_full_isect.isEmpty() && actor) {
 			//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
 			if(m_full_isect.distance() < constant::inf && m_full_isect.distance() > -constant::inf) {
 				float3 look_at = ray.at(m_full_isect.distance());
@@ -104,8 +107,10 @@ namespace io {
 			}
 
 			if(!m_isect.isEmpty()) {
-				if(m_isect.isEntity())
-					m_world->sendOrder(new AttackOrder(mode, (EntityRef)m_isect), m_actor_ref);
+				Entity *entity = m_world->refEntity((EntityRef)m_isect);
+				if(entity) {
+					m_world->sendOrder(new AttackOrder(mode, entity->ref()), m_actor_ref);
+				}
 				else
 					m_world->sendOrder(new AttackOrder(mode, ray.at(m_isect.distance())), m_actor_ref);
 			}

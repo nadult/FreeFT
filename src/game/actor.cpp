@@ -19,7 +19,7 @@ namespace game {
 	Actor::Actor(Stream &sr)
 	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)) {
 		u8 flags;
-		sr.unpack(flags, m_stance, m_action);
+		sr.unpack(flags, m_stance, m_action, m_hit_points);
 		if(flags & 1) {
 			sr >> m_order;
 			updateOrderFunc();
@@ -40,7 +40,8 @@ namespace game {
 
 	Actor::Actor(const XMLNode &node)
 	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
-		 m_faction_id = node.intAttrib("faction_id");
+		m_faction_id = node.intAttrib("faction_id");
+		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
 		updateOrderFunc();
 	}
@@ -48,6 +49,7 @@ namespace game {
 	Actor::Actor(const Proto &proto, Stance::Type stance)
 		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
 		m_faction_id = 0;
+		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
 		updateOrderFunc();
 	}
@@ -57,6 +59,7 @@ namespace game {
 		setDirAngle(m_target_angle = rhs.dirAngle());
 		m_inventory = rhs.m_inventory;
 		m_faction_id = rhs.m_faction_id;
+		m_hit_points = rhs.m_hit_points;
 		m_ai = rhs.m_ai;
 	}
 	
@@ -72,7 +75,7 @@ namespace game {
 					(!m_following_orders.empty()? 2 : 0) |
 					(m_target_angle != dirAngle()? 4 : 0);
 
-		sr.pack(flags, m_stance, m_action);
+		sr.pack(flags, m_stance, m_action, m_hit_points);
 		if(flags & 1)
 			sr << m_order;
 		if(flags & 2) {
@@ -116,14 +119,18 @@ namespace game {
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 
-	void Actor::onImpact(DamageType::Type damage_type, float damage, float force) {
+	void Actor::onImpact(DamageType::Type damage_type, float damage, const float3 &force) {
+		m_hit_points -= damage;
+		//TODO: immediately stop the animation?
 
-		//TODO: immediate order cancel
-		DeathId::Type death_id = DeathId::cut_in_half;
-		setOrder(new DieOrder(death_id));
+		if(m_hit_points <= 0.0f) {
+			//TODO: immediate order cancel
+			DeathId::Type death_id = DeathId::cut_in_half;
+			setOrder(new DieOrder(death_id));
+		}
 		
 		if(m_ai)
-			m_ai->onImpact(death_id, damage);
+			m_ai->onImpact(damage_type, damage, force);
 	}
 		
 	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {

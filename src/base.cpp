@@ -255,6 +255,14 @@ float mat[3][3] = {
  *
  */
 
+Segment::Segment(const float3 &source, const float3 &target) {
+	float3 dir = target - source;
+	float len = length(dir);
+	*((Ray*)this) = Ray(source, dir / len);
+	min = 0.0f;
+	max = len;
+}
+
 const float2 worldToScreen(const float3 &pos) {
 	return float2(	6.0f * (pos.x - pos.z),
 					3.0f * (pos.x + pos.z) - 7.0f * pos.y);

@@ -146,7 +146,7 @@ namespace game {
 
 		virtual void addToRender(gfx::SceneRenderer&, Color color = Color::white) const;
 		virtual void interact(const Entity *interactor) { }
-		virtual void onImpact(DamageType::Type, float damage, float force) { }
+		virtual void onImpact(DamageType::Type, float damage, const float3 &force) { }
 
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially

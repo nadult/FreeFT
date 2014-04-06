@@ -41,6 +41,12 @@
  - simple sound system
    issues/finished/9-simple_audio.txt (10.5 / 8)
 
+ - melee combat
+   issues/finished/22-melee_combat.txt (9 / 11)
+
+ - damage response
+   issues/23-damage_response.txt
+
  - scripting  SECONDARY
    issues/19-scripting.txt
 

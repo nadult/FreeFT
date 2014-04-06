@@ -87,6 +87,7 @@ namespace game {
 	Door::Door(Stream &sr) :EntityImpl(sr) {
 		sr.unpack(m_close_time, m_update_anim, m_state);
 		m_bbox = computeBBox(m_state);
+		initializeOpenDir();
 	}
 
 	Door::Door(const XMLNode &node) :EntityImpl(node) {
@@ -114,6 +115,17 @@ namespace game {
 		m_state = DoorState::closed;
 		playSequence(m_proto.seq_ids[m_state], false);
 		m_bbox = computeBBox(m_state);
+		initializeOpenDir();
+	}
+		
+	void Door::initializeOpenDir() {
+		float3 center = computeBBox(DoorState::closed).center();
+		
+		if(classId() == DoorClassId::rotating_in)
+			m_open_in_dir = (computeBBox(DoorState::opening_in).center() - center).xz();
+		else
+			m_open_in_dir = -(computeBBox(DoorState::opening_out).center() - center).xz();
+		m_open_in_dir = m_open_in_dir / length(m_open_in_dir);
 	}
 		
 	void Door::setDirAngle(float angle) {
@@ -127,7 +139,8 @@ namespace game {
 	}
 
 	void Door::interact(const Entity *interactor) {
-		DoorState::Type target, result = m_state;
+		DoorState::Type target;
+
 		if(isOpened())
 			target = DoorState::closed;
 		else {
@@ -140,7 +153,20 @@ namespace game {
 			}
 
 			target = classId() == DoorClassId::rotating_out? DoorState::opened_out : DoorState::opened_in;
+			if(classId() == DoorClassId::rotating && interactor) {
+				float3 interactor_pos = interactor->boundingBox().center();
+				float3 dir = boundingBox().center() - interactor_pos;
+				if(dot(dir.xz(), m_open_in_dir) < 0.0f)
+					target = DoorState::opened_out;
+			}
 		}
+		
+		changeState(target);
+		//TODO: open direction should depend on interactor's position		
+	}
+		
+	void Door::changeState(DoorState::Type target) {
+		DoorState::Type result = m_state;
 
 		for(int n = 0; n < COUNTOF(s_transitions); n++)
 			if(s_transitions[n].current == m_state && s_transitions[n].target == target) {
@@ -150,8 +176,10 @@ namespace game {
 		if(result == m_state)
 			return;
 
-		//TODO: open direction should depend on interactor's position		
 		FBox bbox = computeBBox(result);
+		bbox.min += float3(1.1f, 0.1f, 1.1f);
+		bbox.max -= float3(1.1f, 0.1f, 1.1f);
+
 		bool is_colliding = (bool)world()->findAny(bbox + pos(), this, Flags::entity | Flags::colliding);
 
 		if(is_colliding && classId() == DoorClassId::rotating && m_state == DoorState::closed && target == DoorState::opened_in) {
@@ -230,6 +258,22 @@ namespace game {
 					m_close_time = world()->currentTime() + 3.0;
 				break;
 			}
+	}
+		
+	void Door::onImpact(DamageType::Type damage_type, float damage, const float3 &force) {
+		if(!isOpened()) {
+			float door_force = dot(force.xz(), m_open_in_dir);
+			if(fabs(door_force) >= 1.5f && classId() != DoorClassId::sliding) {
+				bool opening_in = door_force > 0.0f;
+
+				if(classId() == DoorClassId::rotating_in && !opening_in)
+					return;
+				if(classId() == DoorClassId::rotating_out && opening_in)
+					return;
+
+				changeState(opening_in? DoorState::opened_in : DoorState::opened_out);
+			}
+		}
 	}
 
 }

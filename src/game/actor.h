@@ -112,6 +112,8 @@ namespace game {
 
 		// prone, crouch, walk, run
 		float speeds[Stance::count + 1];
+
+		float hit_points;
 		
 		//TODO: add sound variations, each actor instance will have different sound set
 		SoundId death_sounds[DeathId::count];
@@ -129,7 +131,7 @@ namespace game {
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&);
-		void onImpact(DamageType::Type, float damage, float force);
+		void onImpact(DamageType::Type, float damage, const float3 &force);
 
 		XMLNode save(XMLNode&) const;
 		void save(Stream&) const;
@@ -238,6 +240,8 @@ namespace game {
 		int m_faction_id;
 
 		ActorInventory m_inventory;
+
+		float m_hit_points;
 	};
 
 

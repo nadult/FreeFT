@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rpt="http://openoffice.org/2005/report" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:grddl="http://www.w3.org/2003/g/data-view#" xmlns:tableooo="http://openoffice.org/2009/table" xmlns:drawooo="http://openoffice.org/2010/draw" xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0" xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0" xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0" xmlns:css3t="http://www.w3.org/TR/css3-text/" office:version="1.2" office:mimetype="application/vnd.oasis.opendocument.spreadsheet">
- <office:meta><meta:initial-creator>Krzysztof Jakubowski</meta:initial-creator><meta:creation-date>2014-02-18T23:07:37.672132448</meta:creation-date><meta:generator>LibreOffice/4.1.3.2$Linux_X86_64 LibreOffice_project/410m0$Build-2</meta:generator><dc:date>2014-04-05T16:17:07.576716165</dc:date><dc:creator>Krzysztof Jakubowski</dc:creator><meta:document-statistic meta:table-count="11" meta:cell-count="532" meta:object-count="0"/></office:meta>
+ <office:meta><meta:initial-creator>Krzysztof Jakubowski</meta:initial-creator><meta:creation-date>2014-02-18T23:07:37.672132448</meta:creation-date><meta:generator>LibreOffice/4.1.3.2$Linux_X86_64 LibreOffice_project/410m0$Build-2</meta:generator><dc:date>2014-04-05T16:17:07.576716165</dc:date><dc:creator>Krzysztof Jakubowski</dc:creator><meta:document-statistic meta:table-count="11" meta:cell-count="538" meta:object-count="0"/></office:meta>
  <office:settings>
   <config:config-item-set config:name="ooo:view-settings">
    <config:config-item config:name="VisibleAreaTop" config:type="int">0</config:config-item>
    <config:config-item config:name="VisibleAreaLeft" config:type="int">0</config:config-item>
-   <config:config-item config:name="VisibleAreaWidth" config:type="int">21999</config:config-item>
-   <config:config-item config:name="VisibleAreaHeight" config:type="int">2988</config:config-item>
+   <config:config-item config:name="VisibleAreaWidth" config:type="int">20963</config:config-item>
+   <config:config-item config:name="VisibleAreaHeight" config:type="int">5122</config:config-item>
    <config:config-item-map-indexed config:name="Views">
     <config:config-item-map-entry>
      <config:config-item config:name="ViewId" config:type="string">view1</config:config-item>
@@ -30,8 +30,8 @@
        <config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item>
       </config:config-item-map-entry>
       <config:config-item-map-entry config:name="Actors">
-       <config:config-item config:name="CursorPositionX" config:type="int">6</config:config-item>
-       <config:config-item config:name="CursorPositionY" config:type="int">4</config:config-item>
+       <config:config-item config:name="CursorPositionX" config:type="int">1</config:config-item>
+       <config:config-item config:name="CursorPositionY" config:type="int">51</config:config-item>
        <config:config-item config:name="HorizontalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="VerticalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="HorizontalSplitPosition" config:type="int">0</config:config-item>
@@ -116,7 +116,7 @@
       </config:config-item-map-entry>
       <config:config-item-map-entry config:name="Impacts">
        <config:config-item config:name="CursorPositionX" config:type="int">2</config:config-item>
-       <config:config-item config:name="CursorPositionY" config:type="int">5</config:config-item>
+       <config:config-item config:name="CursorPositionY" config:type="int">7</config:config-item>
        <config:config-item config:name="HorizontalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="VerticalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="HorizontalSplitPosition" config:type="int">0</config:config-item>
@@ -231,7 +231,7 @@
    <config:config-item config:name="IsKernAsianPunctuation" config:type="boolean">false</config:config-item>
    <config:config-item config:name="ApplyUserData" config:type="boolean">true</config:config-item>
    <config:config-item config:name="CharacterCompressionType" config:type="short">0</config:config-item>
-   <config:config-item config:name="PrinterSetup" config:type="base64Binary">jAH+/0dlbmVyaWMgUHJpbnRlcgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU0dFTlBSVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWAAMAsgAAAAAAAAAEAAhSAAAEdAAASm9iRGF0YSAxCnByaW50ZXI9R2VuZXJpYyBQcmludGVyCm9yaWVudGF0aW9uPVBvcnRyYWl0CmNvcGllcz0xCm1hcmdpbmRhanVzdG1lbnQ9MCwwLDAsMApjb2xvcmRlcHRoPTI0CnBzbGV2ZWw9MApwZGZkZXZpY2U9MApjb2xvcmRldmljZT0wClBQRENvbnRleERhdGEKRHVwbGV4Ok5vbmUAUGFnZVNpemU6QTQAABIAQ09NUEFUX0RVUExFWF9NT0RFCgBEVVBMRVhfT0ZG</config:config-item>
+   <config:config-item config:name="PrinterSetup" config:type="base64Binary">jAH+/0dlbmVyaWMgUHJpbnRlcgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU0dFTlBSVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWAAMAsgAAAAAAAAAEAAhSAAAEdAAASm9iRGF0YSAxCnByaW50ZXI9R2VuZXJpYyBQcmludGVyCm9yaWVudGF0aW9uPVBvcnRyYWl0CmNvcGllcz0xCm1hcmdpbmRhanVzdG1lbnQ9MCwwLDAsMApjb2xvcmRlcHRoPTI0CnBzbGV2ZWw9MApwZGZkZXZpY2U9MApjb2xvcmRldmljZT0wClBQRENvbnRleERhdGEKUGFnZVNpemU6QTQARHVwbGV4Ok5vbmUAABIAQ09NUEFUX0RVUExFWF9NT0RFCgBEVVBMRVhfT0ZG</config:config-item>
    <config:config-item config:name="PrinterName" config:type="string">Generic Printer</config:config-item>
    <config:config-item config:name="UpdateFromTemplate" config:type="boolean">true</config:config-item>
    <config:config-item config:name="AutoCalculate" config:type="boolean">true</config:config-item>
@@ -323,10 +323,10 @@
    <style:table-column-properties fo:break-before="auto" style:column-width="1.6402in"/>
   </style:style>
   <style:style style:name="co7" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="1.9618in"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="0.8146in"/>
   </style:style>
   <style:style style:name="co8" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="1.8008in"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="1.9618in"/>
   </style:style>
   <style:style style:name="co9" style:family="table-column">
    <style:table-column-properties fo:break-before="auto" style:column-width="1.6291in"/>
@@ -338,13 +338,13 @@
    <style:table-column-properties fo:break-before="auto" style:column-width="1.8437in"/>
   </style:style>
   <style:style style:name="co12" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="1.3937in"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="1.8008in"/>
   </style:style>
   <style:style style:name="co13" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="2.1764in"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="1.3937in"/>
   </style:style>
   <style:style style:name="co14" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="0.8146in"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="2.1764in"/>
   </style:style>
   <style:style style:name="co15" style:family="table-column">
    <style:table-column-properties fo:break-before="auto" style:column-width="1.3189in"/>
@@ -481,7 +481,7 @@
      <text:p><text:sheet-name>???</text:sheet-name> (<text:title>???</text:title>)</text:p>
     </style:region-left>
     <style:region-right>
-     <text:p><text:date style:data-style-name="N2" text:date-value="2014-04-06">00/00/0000</text:date>, <text:time style:data-style-name="N2" text:time-value="0000-00-00T00:00:03.468833851">00:00:00</text:time></text:p>
+     <text:p><text:date style:data-style-name="N2" text:date-value="2014-04-06">00/00/0000</text:date>, <text:time style:data-style-name="N2" text:time-value="0000-00-00T00:00:03.637873919">00:00:00</text:time></text:p>
     </style:region-right>
    </style:header>
    <style:header-left style:display="false"/>
@@ -497,52 +497,43 @@
     <table:content-validation table:name="val1" table:base-cell-address="Actors.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val2" table:base-cell-address="Actors.G1">
+    <table:content-validation table:name="val2" table:condition="of:cell-content-is-in-list([$Weapons.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actors.F1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val3" table:condition="of:cell-content-is-in-list([$Weapons.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actors.F1">
+    <table:content-validation table:name="val3" table:condition="of:cell-content-is-in-list([$Weapons.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actors.G1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val4" table:condition="of:cell-content-is-in-list([$Weapons.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actors.G1">
+    <table:content-validation table:name="val4" table:condition="of:cell-content-is-in-list([$Armours.$A$2:.$A$50])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actor_armours.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val5" table:condition="of:cell-content-is-in-list([$Armours.$A$2:.$A$50])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actor_armours.D1">
+    <table:content-validation table:name="val5" table:condition="of:cell-content-is-in-list([$Actors.$A$2:.$A$51])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actor_armours.E1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val6" table:condition="of:cell-content-is-in-list([$Actors.$A$2:.$A$51])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Actor_armours.E1">
+    <table:content-validation table:name="val6" table:condition="of:cell-content-is-in-list([$_Strings.$B$2:.$B$50])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Ammo.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val7" table:condition="of:cell-content-is-in-list([$_Strings.$B$2:.$B$50])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Ammo.D1">
+    <table:content-validation table:name="val7" table:condition="of:cell-content-is-in-list([$_Strings.$A$2:.$A$40])" table:allow-empty-cell="true" table:display-list="sorted-ascending" table:base-cell-address="Containers.C2">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val8" table:condition="of:cell-content-is-in-list([$_Strings.$A$2:.$A$40])" table:allow-empty-cell="true" table:display-list="sorted-ascending" table:base-cell-address="Containers.C2">
+    <table:content-validation table:name="val8" table:condition="of:cell-content-is-in-list([$Projectiles.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Weapons.F1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val9" table:base-cell-address="Weapons.F1">
+    <table:content-validation table:name="val9" table:condition="of:cell-content-is-in-list([$Impacts.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Weapons.G1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val10" table:condition="of:cell-content-is-in-list([$Projectiles.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Weapons.F1">
+    <table:content-validation table:name="val10" table:condition="of:cell-content-is-in-list([$_Strings.$F$2:.$F$50])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Impacts.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val11" table:condition="of:cell-content-is-in-list([$Impacts.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Weapons.G1">
+    <table:content-validation table:name="val11" table:condition="of:cell-content-is-in-list([$_Strings.$E$2:.$E$48])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Impacts.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val12" table:base-cell-address="Impacts.D1">
+    <table:content-validation table:name="val12" table:condition="of:cell-content-is-in-list([$Impacts.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Projectiles.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val13" table:condition="of:cell-content-is-in-list([$_Strings.$F$2:.$F$50])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Impacts.D1">
+    <table:content-validation table:name="val13" table:condition="of:cell-content-is-in-list([$Impacts.$A$2:.$A$51])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Projectiles.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
-    <table:content-validation table:name="val14" table:condition="of:cell-content-is-in-list([$_Strings.$E$2:.$E$48])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Impacts.D1">
-     <table:error-message table:message-type="stop" table:display="true"/>
-    </table:content-validation>
-    <table:content-validation table:name="val15" table:condition="of:cell-content-is-in-list([$Impacts.$A$2:.$A$100])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Projectiles.D1">
-     <table:error-message table:message-type="stop" table:display="true"/>
-    </table:content-validation>
-    <table:content-validation table:name="val16" table:condition="of:cell-content-is-in-list([$Impacts.$A$2:.$A$51])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Projectiles.D1">
-     <table:error-message table:message-type="stop" table:display="true"/>
-    </table:content-validation>
-    <table:content-validation table:name="val17" table:condition="of:cell-content-is-in-list([$_Strings.$C$2:.$C$49])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Containers.D1">
+    <table:content-validation table:name="val14" table:condition="of:cell-content-is-in-list([$_Strings.$C$2:.$C$49])" table:allow-empty-cell="true" table:display-list="unsorted" table:base-cell-address="Containers.D1">
      <table:error-message table:message-type="stop" table:display="true"/>
     </table:content-validation>
    </table:content-validations>
@@ -572,16 +563,18 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>is_alive</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>punch_weapon</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>kick_weapon</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="string" calcext:value-type="string">
+      <text:p>hit_points</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>sound_prefix</text:p>
      </table:table-cell>
-     <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -599,16 +592,18 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>_punch_light</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
       <text:p>_kick_light</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="float" office:value="100" calcext:value-type="float">
+      <text:p>100</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>normalm1</text:p>
      </table:table-cell>
-     <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -626,16 +621,18 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>_punch_light</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
       <text:p>_kick_light</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="float" office:value="100" calcext:value-type="float">
+      <text:p>100</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>normalf1</text:p>
      </table:table-cell>
-     <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -653,16 +650,18 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>_punch_heavy</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
       <text:p>_kick_heavy</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="float" office:value="140" calcext:value-type="float">
+      <text:p>140</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>mutantm1</text:p>
      </table:table-cell>
-     <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -680,16 +679,18 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>_scorpion_claws</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
       <text:p>_scorpion_tail</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="float" office:value="60" calcext:value-type="float">
+      <text:p>60</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>scorpion</text:p>
      </table:table-cell>
-     <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -707,31 +708,33 @@
      <table:table-cell office:value-type="float" office:value="0" calcext:value-type="float">
       <text:p>0</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>_punch_light</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val3" office:value-type="string" calcext:value-type="string">
       <text:p>_kick_light</text:p>
+     </table:table-cell>
+     <table:table-cell office:value-type="float" office:value="200" calcext:value-type="float">
+      <text:p>200</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>rbthum</text:p>
      </table:table-cell>
-     <table:table-cell/>
     </table:table-row>
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048569">
      <table:table-cell table:number-columns-repeated="3"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell/>
+     <table:table-cell table:content-validation-name="val2"/>
      <table:table-cell table:content-validation-name="val3"/>
-     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="2"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="3"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell/>
+     <table:table-cell table:content-validation-name="val2"/>
      <table:table-cell table:content-validation-name="val3"/>
-     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="2"/>
     </table:table-row>
    </table:table>
@@ -743,7 +746,7 @@
     <table:table-column table:style-name="co10" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co11" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co10" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co8" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co1" table:number-columns-repeated="1015" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:style-name="ce2" office:value-type="string" calcext:value-type="string">
@@ -771,16 +774,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>characters/LeatherMale</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
       <text:p>leather_armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
       <text:p>male</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -790,16 +793,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>characters/MetalMale</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
       <text:p>metal_armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
       <text:p>male</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -809,16 +812,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>characters/Power</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
       <text:p>power_armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
       <text:p>male</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -828,16 +831,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>characters/LeatherFemale</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
       <text:p>leather_armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
       <text:p>female</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -847,43 +850,43 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>characters/MutantArmour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val4" office:value-type="string" calcext:value-type="string">
       <text:p>mutant_armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val5" office:value-type="string" calcext:value-type="string">
       <text:p>mutant</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048569">
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val5"/>
-     <table:table-cell table:content-validation-name="val6"/>
-     <table:table-cell/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:content-validation-name="val5"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
+     <table:table-cell/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val5"/>
-     <table:table-cell table:content-validation-name="val6"/>
-     <table:table-cell/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:content-validation-name="val5"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val5"/>
+     <table:table-cell table:content-validation-name="val4"/>
+     <table:table-cell/>
+     <table:table-cell table:content-validation-name="val4"/>
      <table:table-cell table:number-columns-repeated="1016"/>
     </table:table-row>
    </table:table>
    <table:table table:name="Other_items" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:number-columns-repeated="2" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="10" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="2" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co14" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="10" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>
@@ -935,12 +938,12 @@
     </table:table-row>
    </table:table>
    <table:table table:name="Armours" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:number-columns-repeated="2" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="2" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co14" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co7" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co15" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co16" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="8" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="8" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>
@@ -973,7 +976,7 @@
       <text:p>_dummy_armour</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
       <text:p>none</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="0" calcext:value-type="float">
@@ -994,7 +997,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>armour/Leather Armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
       <text:p>leather</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="0.1" calcext:value-type="float">
@@ -1018,7 +1021,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>armour/Metal Armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
       <text:p>metal</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="0.2" calcext:value-type="float">
@@ -1042,7 +1045,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>armour/Power Armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
       <text:p>power</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="0.4" calcext:value-type="float">
@@ -1066,7 +1069,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>armour/SuperMutant Armour</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val6" office:value-type="string" calcext:value-type="string">
       <text:p>metal</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="float" office:value="0.2" calcext:value-type="float">
@@ -1082,24 +1085,24 @@
     </table:table-row>
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048569">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val7"/>
+     <table:table-cell table:content-validation-name="val6"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell table:number-columns-repeated="9"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val7"/>
+     <table:table-cell table:content-validation-name="val6"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell table:number-columns-repeated="9"/>
     </table:table-row>
    </table:table>
    <table:table table:name="Ammo" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:number-columns-repeated="2" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="2" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co14" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co17" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co18" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="7" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="7" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>
@@ -1275,9 +1278,9 @@
     </table:table-row>
    </table:table>
    <table:table table:name="Weapons" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co19" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co19" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co14" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co20" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co19" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co21" table:default-cell-style-name="Default"/>
@@ -1288,7 +1291,7 @@
     <table:table-column table:style-name="co26" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co27" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co28" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co28" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1306,10 +1309,10 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>ammo_class_id</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>projectile_id</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>impact_id</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1340,12 +1343,12 @@
       <text:p>_punch_light</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>punch_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1365,12 +1368,12 @@
       <text:p>_punch_heavy</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>punch_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1390,12 +1393,12 @@
       <text:p>_scorpion_claws</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>scorpion_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1415,12 +1418,12 @@
       <text:p>_scorpion_tail</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>scorpion_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1440,12 +1443,12 @@
       <text:p>_kick_light</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>kick_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1465,12 +1468,12 @@
       <text:p>_kick_heavy</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>kick_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1495,16 +1498,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Heavy/M-60</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>heavy</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>762mm</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>bullet</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>burst single</text:p>
      </table:table-cell>
@@ -1535,16 +1538,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Rifles/Laser Rifle</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>rifle</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>fusion_cell</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>laser</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>single</text:p>
      </table:table-cell>
@@ -1575,16 +1578,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Rifles/Plasma Rifle</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>rifle</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>fusion_cell</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>plasma</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>single</text:p>
      </table:table-cell>
@@ -1615,16 +1618,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Rifles/Pulse Rifle</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>rifle</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>fusion_cell</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>electric</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>single</text:p>
      </table:table-cell>
@@ -1655,16 +1658,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Miniguns/Gatling Laser</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>minigun</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>fusion_cell</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>laser</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>burst</text:p>
      </table:table-cell>
@@ -1695,16 +1698,16 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Rocket/RocketLauncher</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>rocket</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>rocket</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>rocket</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>single</text:p>
      </table:table-cell>
@@ -1729,12 +1732,12 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Melee/Club</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>club</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>club_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1762,12 +1765,12 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Blades/Knife</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>knife</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>knife_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1795,12 +1798,12 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Unarmed/Finger Claws</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>unarmed</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>punch_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1828,14 +1831,14 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>weapons/Spears/Barbed Spear</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val7" office:value-type="string" calcext:value-type="string">
       <text:p>spear</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val8" office:value-type="string" calcext:value-type="string">
       <text:p>spear</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val9" office:value-type="string" calcext:value-type="string">
       <text:p>spear_attack</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -1855,23 +1858,23 @@
     </table:table-row>
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048558">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val7"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell table:number-columns-repeated="8"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val7"/>
      <table:table-cell/>
-     <table:table-cell table:content-validation-name="val10"/>
-     <table:table-cell table:content-validation-name="val11"/>
+     <table:table-cell table:content-validation-name="val8"/>
+     <table:table-cell table:content-validation-name="val9"/>
      <table:table-cell table:number-columns-repeated="8"/>
     </table:table-row>
    </table:table>
    <table:table table:name="Impacts" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co29" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co30" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co31" table:default-cell-style-name="Default"/>
@@ -1879,7 +1882,7 @@
     <table:table-column table:style-name="co32" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co33" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co10" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="5" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="5" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>
@@ -1890,7 +1893,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>range</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val12" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>type_id</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
@@ -1915,10 +1918,10 @@
       <text:p>impactfx/RobotSparks</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:style-name="ce1" table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce1" table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>ranged</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>bullet</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="25" calcext:value-type="float">
@@ -1934,10 +1937,10 @@
       <text:p>impactfx/Impact Plasma</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:style-name="ce1" table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce1" table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>ranged</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>plasma</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="40" calcext:value-type="float">
@@ -1953,10 +1956,10 @@
       <text:p>impactfx/Impact Electric</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:style-name="ce1" table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce1" table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>ranged</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>electric</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="30" calcext:value-type="float">
@@ -1972,10 +1975,10 @@
       <text:p>impactfx/Impact Laser</text:p>
      </table:table-cell>
      <table:table-cell/>
-     <table:table-cell table:style-name="ce1" table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce1" table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>ranged</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>laser</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="30" calcext:value-type="float">
@@ -1990,17 +1993,17 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>impactfx/Explosion</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="20" calcext:value-type="float">
-      <text:p>20</text:p>
+     <table:table-cell office:value-type="float" office:value="30" calcext:value-type="float">
+      <text:p>30</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce3" table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce3" table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>area</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>explosive</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="100" calcext:value-type="float">
-      <text:p>100</text:p>
+     <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="250" calcext:value-type="float">
+      <text:p>250</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="float" office:value="10" calcext:value-type="float">
       <text:p>10</text:p>
@@ -2020,10 +2023,10 @@
      <table:table-cell office:value-type="float" office:value="2" calcext:value-type="float">
       <text:p>2</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>melee</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>bludgeoning</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="10" calcext:value-type="float">
@@ -2041,10 +2044,10 @@
      <table:table-cell office:value-type="float" office:value="4" calcext:value-type="float">
       <text:p>4</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>melee</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>bludgeoning</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="15" calcext:value-type="float">
@@ -2065,10 +2068,10 @@
      <table:table-cell office:value-type="float" office:value="2" calcext:value-type="float">
       <text:p>2</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>melee</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>piercing</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="10" calcext:value-type="float">
@@ -2086,10 +2089,10 @@
      <table:table-cell office:value-type="float" office:value="4" calcext:value-type="float">
       <text:p>4</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>melee</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>bludgeoning</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="20" calcext:value-type="float">
@@ -2110,10 +2113,10 @@
      <table:table-cell office:value-type="float" office:value="3" calcext:value-type="float">
       <text:p>3</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>melee</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>slashing</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="20" calcext:value-type="float">
@@ -2131,10 +2134,10 @@
      <table:table-cell office:value-type="float" office:value="6" calcext:value-type="float">
       <text:p>6</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val10" office:value-type="string" calcext:value-type="string">
       <text:p>melee</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val11" office:value-type="string" calcext:value-type="string">
       <text:p>piercing</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="20" calcext:value-type="float">
@@ -2144,33 +2147,33 @@
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val13"/>
-     <table:table-cell table:content-validation-name="val14"/>
+     <table:table-cell table:content-validation-name="val10"/>
+     <table:table-cell table:content-validation-name="val11"/>
      <table:table-cell table:number-columns-repeated="8"/>
     </table:table-row>
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048562">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val13"/>
-     <table:table-cell table:content-validation-name="val14"/>
+     <table:table-cell table:content-validation-name="val10"/>
+     <table:table-cell table:content-validation-name="val11"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell table:number-columns-repeated="7"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val13"/>
-     <table:table-cell table:content-validation-name="val14"/>
+     <table:table-cell table:content-validation-name="val10"/>
+     <table:table-cell table:content-validation-name="val11"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell table:number-columns-repeated="7"/>
     </table:table-row>
    </table:table>
    <table:table table:name="Projectiles" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co34" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co20" table:default-cell-style-name="ce3"/>
     <table:table-column table:style-name="co35" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co36" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co37" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="7" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="7" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>
@@ -2181,7 +2184,7 @@
      <table:table-cell table:style-name="Default" table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>blend_angles</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val12" office:value-type="string" calcext:value-type="string">
       <text:p>impact_id</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
@@ -2200,7 +2203,7 @@
       <text:p>impactfx/Projectile Invisi</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1"/>
-     <table:table-cell table:content-validation-name="val16" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
       <text:p>bullet</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="300" calcext:value-type="float">
@@ -2221,7 +2224,7 @@
      <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>true</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val16" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
       <text:p>plasma</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="100" calcext:value-type="float">
@@ -2242,7 +2245,7 @@
      <table:table-cell table:content-validation-name="val1" office:value-type="string" calcext:value-type="string">
       <text:p>true</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val16" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
       <text:p>electric</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="150" calcext:value-type="float">
@@ -2261,7 +2264,7 @@
       <text:p>impactfx/Projectile Laser</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1"/>
-     <table:table-cell table:content-validation-name="val16" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
       <text:p>laser</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="200" calcext:value-type="float">
@@ -2280,7 +2283,7 @@
       <text:p>impactfx/Projectile Rocket</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1"/>
-     <table:table-cell table:content-validation-name="val16" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
       <text:p>explosion</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="200" calcext:value-type="float">
@@ -2299,7 +2302,7 @@
       <text:p>weapons/Spear Anims/Spear Action</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1"/>
-     <table:table-cell table:content-validation-name="val16" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val13" office:value-type="string" calcext:value-type="string">
       <text:p>spear_attack</text:p>
      </table:table-cell>
      <table:table-cell table:content-validation-name="val1" office:value-type="float" office:value="150" calcext:value-type="float">
@@ -2313,24 +2316,24 @@
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048568">
      <table:table-cell table:number-columns-repeated="2"/>
      <table:table-cell table:content-validation-name="val1"/>
-     <table:table-cell table:content-validation-name="val16"/>
+     <table:table-cell table:content-validation-name="val13"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell table:number-columns-repeated="8"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="2"/>
      <table:table-cell table:content-validation-name="val1"/>
-     <table:table-cell table:content-validation-name="val16"/>
+     <table:table-cell table:content-validation-name="val13"/>
      <table:table-cell table:content-validation-name="val1"/>
      <table:table-cell table:number-columns-repeated="8"/>
     </table:table-row>
    </table:table>
    <table:table table:name="Doors" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co38" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co39" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co13" table:default-cell-style-name="ce3"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="9" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co14" table:default-cell-style-name="ce3"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="9" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>
@@ -2359,7 +2362,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>doors/BOS DOORS/BOS InteriorDoor1</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val17" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
       <text:p>rotating</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -2377,7 +2380,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>doors/Vault DOORS/VaultInteriorDoor</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val17" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
       <text:p>sliding</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -2395,7 +2398,7 @@
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>doors/Village DOORS/Fence</text:p>
      </table:table-cell>
-     <table:table-cell table:content-validation-name="val17" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:content-validation-name="val14" office:value-type="string" calcext:value-type="string">
       <text:p>rotating</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
@@ -2405,20 +2408,20 @@
     </table:table-row>
     <table:table-row table:style-name="ro1" table:number-rows-repeated="1048571">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val17"/>
+     <table:table-cell table:content-validation-name="val14"/>
      <table:table-cell table:number-columns-repeated="9"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="3"/>
-     <table:table-cell table:content-validation-name="val17"/>
+     <table:table-cell table:content-validation-name="val14"/>
      <table:table-cell table:number-columns-repeated="9"/>
     </table:table-row>
    </table:table>
    <table:table table:name="Containers" table:style-name="ta1">
-    <table:table-column table:style-name="co12" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co38" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co39" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co12" table:number-columns-repeated="10" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co13" table:number-columns-repeated="10" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>id</text:p>

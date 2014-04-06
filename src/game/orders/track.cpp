@@ -44,6 +44,9 @@ namespace game {
 				order.m_time_for_update = 0.25f;
 			}
 			
+			if(distance(boundingBox(), target->boundingBox()) <= order.m_min_distance)
+				return false;
+
 			if(event == ActorEvent::init_order) {
 				if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
 					order.m_please_run = 0;
@@ -53,10 +56,7 @@ namespace game {
 			}
 
 			FollowPathResult result = order.needCancel()? FollowPathResult::finished :
-				followPath(order.m_path, order.m_path_pos, order.m_please_run);
-				
-			if(distance(boundingBox(), target->boundingBox()) <= order.m_min_distance)
-				return false;
+				followPath(order.m_path, order.m_path_pos, order.m_please_run);	
 
 			if(result != FollowPathResult::moved)
 				return false;

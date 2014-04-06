@@ -17,16 +17,17 @@ Secondary:
 - ? Mines
 - Fix problems with rendering explosions, sparks, etc. (mainly)
 - Improve projectiles: separate muzzle flash from projectile and link muzzle flash to weapon
+- Grenades
 
 +REQUIREMENTS:
 issues/finished/9-simple_audio.txt
 issues/finished/14-replication.txt
+issues/finished/22-melee_combat.txt
 
 issues/16-visibility_system.txt
 issues/17-simple_ai.txt
 issues/18-game_ui.txt
 issues/20-multiplayer_game_modes.txt
-issues/22-melee_combat.txt
 issues/23-damage_response.txt
 issues/24-aiming_and_shooting.txt
 issues/25-fixed_navigation.txt

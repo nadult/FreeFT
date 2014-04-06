@@ -156,6 +156,8 @@ namespace game {
 		speeds[1] = speed_vec.y;
 		speeds[2] = speed_vec.z;
 		speeds[3] = speed_vec.w;
+
+		hit_points = toFloat(parser("hit_points"));
 	}
 
 	void ActorProto::link() {

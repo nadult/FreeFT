@@ -609,7 +609,7 @@ private:
 struct Segment: public Ray {
 	Segment(const Ray &ray, float min = -constant::inf, float max = constant::inf)
 		:Ray(ray), min(min), max(max) { }
-	const Segment operator-() const { return Segment(Ray::operator-(), -max, -min); }
+	Segment(const float3 &source, const float3 &target);
 
 	float min, max;
 };
