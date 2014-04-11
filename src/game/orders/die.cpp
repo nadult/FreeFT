@@ -27,9 +27,9 @@ namespace game {
 				animateDeath(DeathId::normal);
 		}
 		if(event == ActorEvent::sound) {
-			SoundId sound_id = m_actor.death_sounds[order.m_death_id];
+			SoundId sound_id = m_actor.sounds[m_sound_variation].death[order.m_death_id];
 			if(sound_id == -1)
-				sound_id = m_actor.death_sounds[DeathId::normal];
+				sound_id = m_actor.sounds[m_sound_variation].death[DeathId::normal];
 			world()->playSound(sound_id, pos());
 
 			if(m_actor.is_alive)

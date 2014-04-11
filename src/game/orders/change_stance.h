@@ -10,9 +10,7 @@
 
 namespace game {
 
-	class ChangeStanceOrder:
-		public OrderImpl<ChangeStanceOrder, OrderTypeId::change_stance,
-						ActorEvent::init_order | ActorEvent::anim_finished> {
+	class ChangeStanceOrder: public OrderImpl<ChangeStanceOrder, OrderTypeId::change_stance> {
 	public:
 		ChangeStanceOrder(Stance::Type target_stance);
 		ChangeStanceOrder(Stream&);

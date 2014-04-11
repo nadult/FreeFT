@@ -10,8 +10,7 @@
 
 namespace game {
 
-	class LookAtOrder: public OrderImpl<LookAtOrder, OrderTypeId::look_at,
-			ActorEvent::init_order> {
+	class LookAtOrder: public OrderImpl<LookAtOrder, OrderTypeId::look_at> {
 	public:
 		LookAtOrder(float3);
 		LookAtOrder(Stream&);

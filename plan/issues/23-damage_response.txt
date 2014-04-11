@@ -1,13 +1,15 @@
-- different deaths for different attack types [2h]
+- different deaths for different attack types [2h]  DONE
 - falls [3h]
   - actors can move a bit when falling
-  - actors can be unconscious
+  - actors can be unconscious  DONE
 - squirting blood [2h]
 - trails of blood [3h]
-- dodging melee attacks [2h]
+- dodging melee attacks [2h]  DONE
 
 +ESTIMATED_TIME: 12h
 +TIME_SPENT: 0h
 
 +WORK_LOG:
 06.04.14: 17:00 - 19:30
+09.04.14: 7:30 - 9:00
+11.04.14: 7:30 - 11:00

@@ -55,17 +55,6 @@ namespace game {
 		{ "pickup", 		"pickup", 			"pickup" }
 	};
 
-	static const char *s_death_names[DeathId::count] = {
-		"",
-		"bighole",
-		"cutinhalf",
-		"electrify",
-		"explode",
-		"fire",
-		"melt",
-		"riddled"
-	};
-
 	ActorArmourProto::ActorArmourProto(const TupleParser &parser, bool is_actor)
 		:ProtoImpl(parser), m_is_actor(is_actor) {
 		ASSERT(!is_dummy);
@@ -131,6 +120,7 @@ namespace game {
 			actor = index();
 		else
 			actor.link();
+		ASSERT(actor);
 		armour.link();
 
 		for(int st = 0; st < Stance::count; st++)
@@ -142,7 +132,17 @@ namespace game {
 				step_sounds[st][su] = SoundId(name);
 			}
 
+		{
+			ArmourClass::Type class_id = armour? armour->class_id : ArmourClass::none;
+			const char *postfix =
+				class_id == ArmourClass::leather? "leath" :
+				class_id == ArmourClass::metal? "metal" :
+				class_id == ArmourClass::power || class_id == ArmourClass::environmental? "pow" : "cloth";
+			char fall_sound_name[256];
+			snprintf(fall_sound_name, sizeof(fall_sound_name), "bfall_%s_%s", actor->is_heavy? "heavy" : "normal", postfix);
+			fall_sound = fall_sound_name;
 		}
+	}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
 		punch_weapon = parser("punch_weapon");
@@ -160,20 +160,67 @@ namespace game {
 		hit_points = toFloat(parser("hit_points"));
 	}
 
+
+	static const char *s_death_names[DeathId::count] = {
+		"",
+		"bighole",
+		"cutinhalf",
+		"electrify",
+		"explode",
+		"fire",
+		"melt",
+		"riddled"
+	};
+
+	static const char *deathName(int death) {
+		return death == DeathId::normal? "death" : s_death_names[death];
+	}
+
 	void ActorProto::link() {
 		ActorArmourProto::link();
 		punch_weapon.link();
 		kick_weapon.link();
-
+		
+		char text[256];
 		for(int d = 0; d < DeathId::count; d++) {
-			char text[256];
-			const char *death_name = d == DeathId::normal? "death" : s_death_names[d];
-			snprintf(text, sizeof(text), "%s%s", sound_prefix.c_str(), death_name);
-
-			death_sounds[d] = SoundId(text);
-			snprintf(text, sizeof(text), "human%s", death_name);
+			snprintf(text, sizeof(text), "human%s", deathName(d));
 			human_death_sounds[d] = SoundId(text);
 		}
+
+		snprintf(text, sizeof(text), "%srun", sound_prefix.c_str());
+		run_sound = text;
+		
+		snprintf(text, sizeof(text), "%swalk", sound_prefix.c_str());
+		walk_sound = text;
+
+		for(int n = 0;; n++) {
+			char var_name[128];
+			snprintf(var_name, sizeof(var_name), n == 0? "%s" : "%s%d", sound_prefix.c_str(), n);
+
+			Sounds sounds;
+
+			bool any_sound = false;
+
+			for(int d = 0; d < DeathId::count; d++) {
+				snprintf(text, sizeof(text), "%s%s", var_name, deathName(d));
+				sounds.death[d] = SoundId(text);
+				any_sound |= sounds.death[d].isValid();
+			}
+		
+			snprintf(text, sizeof(text), "%sgetup", var_name);
+			sounds.get_up = text;
+			snprintf(text, sizeof(text), "%shit", var_name);
+			sounds.hit = text;
+
+			any_sound |= sounds.get_up.isValid() | sounds.hit.isValid();
+
+			if(!any_sound && n >= 1)
+				break;
+			if(any_sound)
+				this->sounds.emplace_back(sounds);
+		}
+		if(sounds.empty())
+			sounds.emplace_back(Sounds());
 	}
 
 	enum { invalid_id = 255 };

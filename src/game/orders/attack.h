@@ -12,8 +12,7 @@
 namespace game {
 
 
-	class AttackOrder: public OrderImpl<AttackOrder, OrderTypeId::attack,
-			ActorEvent::init_order | ActorEvent::anim_finished | ActorEvent::fire | ActorEvent::hit | ActorEvent::sound | ActorEvent::next_frame> {
+	class AttackOrder: public OrderImpl<AttackOrder, OrderTypeId::attack> {
 	public:
 		AttackOrder(AttackMode::Type mode, EntityRef target);
 		AttackOrder(AttackMode::Type mode, const float3 &target_pos);

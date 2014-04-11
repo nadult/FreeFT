@@ -10,14 +10,13 @@
 
 namespace game {
 
-	class IdleOrder: public OrderImpl<IdleOrder, OrderTypeId::idle,
-			ActorEvent::init_order | ActorEvent::anim_finished> {
+	class IdleOrder: public OrderImpl<IdleOrder, OrderTypeId::idle> {
 	public:
 		IdleOrder();
 		IdleOrder(Stream&);
 
 		void save(Stream&) const;
-		void cancel();
+		void cancel() override;
 
 		// last breathe time, etc.
 	};

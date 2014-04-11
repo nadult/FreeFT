@@ -24,6 +24,7 @@ namespace game {
 		"equip_item",
 		"unequip_item",
 		"transfer_item",
+		"get_hit",
 		"die"
 	);
 
@@ -97,6 +98,7 @@ namespace game {
 			&Actor::handleOrder<EquipItemOrder>,
 			&Actor::handleOrder<UnequipItemOrder>,
 			&Actor::handleOrder<TransferItemOrder>,
+			&Actor::handleOrder<GetHitOrder>,
 			&Actor::handleOrder<DieOrder>
 		};
 		static_assert(COUNTOF(s_handle_funcs) == OrderTypeId::count, "");

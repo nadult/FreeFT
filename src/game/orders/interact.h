@@ -18,8 +18,7 @@ namespace game {
 		use_item
 	);
 
-	class InteractOrder: public OrderImpl<InteractOrder, OrderTypeId::interact,
-			ActorEvent::init_order | ActorEvent::anim_finished | ActorEvent::pickup> {
+	class InteractOrder: public OrderImpl<InteractOrder, OrderTypeId::interact> {
 	public:
 		InteractOrder(EntityRef target, InteractionMode::Type mode = InteractionMode::undefined);
 		InteractOrder(Stream&);

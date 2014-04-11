@@ -11,8 +11,7 @@
 
 namespace game {
 
-	class MoveOrder: public OrderImpl<MoveOrder, OrderTypeId::move,
-			ActorEvent::init_order | ActorEvent::think | ActorEvent::step | ActorEvent::anim_finished> {
+	class MoveOrder: public OrderImpl<MoveOrder, OrderTypeId::move> {
 	public:
 		MoveOrder(const int3 &target_pos, bool run);
 		MoveOrder(Stream&);

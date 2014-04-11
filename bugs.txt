@@ -21,7 +21,7 @@
 - Still some problems with drawing order when lots of entities & explosions
 - Entities shouldn't break order of tiles when rendering
 
-- Sometimes death sounds are not played (in multiplayer mode)
+- Often death sounds are not played (in multiplayer mode)
 
 - Visible tearing when vsync (glfwSwapInterval(1)) is on
 
@@ -42,3 +42,5 @@
   (think this through). Problems arise when were trying to get to some door when lot's of AI's are running around
 
 - Door sounds don't work in multiplayer
+
+- Robots have no hit sounds

@@ -12,12 +12,13 @@ namespace game {
 	  :m_target(target), m_min_distance(min_distance), m_please_run(run), m_time_for_update(0.0f) {
 	}
 
-	TrackOrder::TrackOrder(Stream &sr) {
+	TrackOrder::TrackOrder(Stream &sr) :OrderImpl(sr) {
 		sr >> m_target >> m_min_distance >> m_please_run;
 		sr >> m_path >> m_path_pos >> m_time_for_update;
 	}
 
 	void TrackOrder::save(Stream &sr) const {
+		Order::save(sr);
 		sr << m_target << m_min_distance << m_please_run;
 		sr << m_path << m_path_pos << m_time_for_update;
 	}
@@ -61,14 +62,19 @@ namespace game {
 			if(result != FollowPathResult::moved)
 				return false;
 		}
-		if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
-			animate(m_action);
+		
+		if(order.m_path.length(order.m_path_pos) > 1.0f) {
+			if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
+				animate(m_action);
+			}
+			if(event == ActorEvent::step) {
+				SurfaceId::Type standing_surface = surfaceUnder();
+				world()->playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
+			}
+			if(event == ActorEvent::sound) {
+				printf("sound\n");
+			}
 		}
-		if(event == ActorEvent::step && order.m_path.length(order.m_path_pos) > 1.0f) {
-			SurfaceId::Type standing_surface = surfaceUnder();
-			world()->playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
-		}
-
 
 		return true;
 	}

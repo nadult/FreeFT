@@ -15,14 +15,10 @@
 
 namespace game {
 
-	// Two types of actions:
+	// Three types of actions:
 	// normal which have different animations for different weapon types
 	// simple which have same animations for different weapon types
-	//
-	// TODO: additional actions: breathe, fall, dodge, getup, recoil?
-	
-	//TODO: deaths with overlays
-
+	// special handled separately by different functions
 	namespace Action {
 		enum Type: char {
 			_normal, // Normal anims: (stance x weapon)
@@ -85,6 +81,7 @@ namespace game {
 		ProtoRef<ActorProto> actor;
 
 		SoundId step_sounds[Stance::count][SurfaceId::count];
+		SoundId fall_sound;
 
 	private:
 		void initAnims();
@@ -115,10 +112,17 @@ namespace game {
 		float speeds[Stance::count + 1];
 
 		float hit_points;
-		
-		//TODO: add sound variations, each actor instance will have different sound set
-		SoundId death_sounds[DeathId::count];
+
+		struct Sounds {
+			SoundId death[DeathId::count];
+			SoundId hit;
+			SoundId get_up;
+		};
+
+		// Different sound variations; At least one is always present
+		vector<Sounds> sounds;
 		SoundId human_death_sounds[DeathId::count];
+		SoundId run_sound, walk_sound;
 	};
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
@@ -131,7 +135,7 @@ namespace game {
 		Flags::Type flags() const;
 		const FBox boundingBox() const override;
 
-		bool setOrder(POrder&&);
+		bool setOrder(POrder&&, bool force = false);
 		void onImpact(DamageType::Type, float damage, const float3 &force);
 
 		XMLNode save(XMLNode&) const;
@@ -148,6 +152,7 @@ namespace game {
 		
 		bool canEquipItem(int item_id) const;
 		bool canChangeStance() const;
+		bool isDying() const;
 		bool isDead() const;
 
 		int factionId() const { return m_faction_id; }
@@ -164,6 +169,10 @@ namespace game {
 		const Path currentPath() const;
 		void followPath(const Path &path, PathPos &pos);
 		void fixPosition();
+
+		float dodgeChance(DamageType::Type, float damage) const;
+		float fallChance(DamageType::Type, float damage, const float3 &force) const;
+		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
 
 	private:
 		void think();
@@ -188,7 +197,6 @@ namespace game {
 		bool animateDeath(DeathId::Type);
 		bool animate(Action::Type);
 
-		
 	private:
 		bool shrinkRenderedBBox() const { return true; }
 
@@ -208,7 +216,7 @@ namespace game {
 		template <class TOrder>
 		void handleOrder(Order *order, ActorEvent::Type event, const ActorEventParams &params) {
 			DASSERT(order && order->typeId() == (OrderTypeId::Type)TOrder::type_id);
-			if((TOrder::event_flags & event) && !order->isFinished())
+			if(!order->isFinished())
 				if(!handleOrder(*static_cast<TOrder*>(order), event, params))
 					order->finish();
 		}
@@ -225,6 +233,7 @@ namespace game {
 		bool handleOrder(EquipItemOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(UnequipItemOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(TransferItemOrder&, ActorEvent::Type, const ActorEventParams&);
+		bool handleOrder(GetHitOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(DieOrder&, ActorEvent::Type, const ActorEventParams&);
 
 		const ActorProto &m_actor;
@@ -239,6 +248,7 @@ namespace game {
 		Stance::Type m_stance;
 		Action::Type m_action;
 		int m_faction_id;
+		int m_sound_variation;
 
 		ActorInventory m_inventory;
 

@@ -26,6 +26,7 @@ namespace game {
 		equip_item,
 		unequip_item,
 		transfer_item,
+		get_hit,
 		die
 	);
 
@@ -40,6 +41,7 @@ namespace game {
 			pickup			= 0x040,
 			fire			= 0x080,
 			hit				= 0x100,
+			impact			= 0x200,
 		};
 	};
 
@@ -56,6 +58,7 @@ namespace game {
 		void load(Stream&);
 	};
 
+	// Order can be cancelled forcefully without any notification
 	class Order {
 	public:
 		Order();
@@ -84,12 +87,11 @@ namespace game {
 		bool m_please_cancel;
 	};
 
-	template <class TOrder,  OrderTypeId::Type type_id_, uint event_flags_>
+	template <class TOrder,  OrderTypeId::Type type_id_>
 	class OrderImpl: public Order {
 	public:
 		enum {
 			type_id = type_id_,
-	   		event_flags = event_flags_ //TODO: maybe event flags aren't really needed
 		};
 
 		OrderImpl() { }
@@ -112,5 +114,6 @@ namespace game {
 #include "game/orders/interact.h"
 #include "game/orders/inventory.h"
 #include "game/orders/die.h"
+#include "game/orders/get_hit.h"
 
 

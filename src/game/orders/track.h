@@ -11,8 +11,7 @@
 
 namespace game {
 
-	class TrackOrder: public OrderImpl<TrackOrder, OrderTypeId::track,
-			ActorEvent::init_order | ActorEvent::think | ActorEvent::step | ActorEvent::anim_finished> {
+	class TrackOrder: public OrderImpl<TrackOrder, OrderTypeId::track> {
 	public:
 		TrackOrder(EntityRef target, float min_distance, bool run);
 		TrackOrder(Stream&);

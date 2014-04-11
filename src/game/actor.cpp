@@ -20,6 +20,8 @@ namespace game {
 	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)) {
 		u8 flags;
 		sr.unpack(flags, m_stance, m_action, m_hit_points);
+		m_sound_variation = sr.decodeInt();
+
 		if(flags & 1) {
 			sr >> m_order;
 			updateOrderFunc();
@@ -40,6 +42,12 @@ namespace game {
 
 	Actor::Actor(const XMLNode &node)
 	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
+		if( const char *attrib = node.hasAttrib("sound_variation") )
+			m_sound_variation = toInt(attrib);
+		else
+			m_sound_variation = rand();
+		m_sound_variation %= m_actor.sounds.size();
+
 		m_faction_id = node.intAttrib("faction_id");
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
@@ -48,6 +56,7 @@ namespace game {
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
 		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
+		m_sound_variation = rand() % m_actor.sounds.size();
 		m_faction_id = 0;
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
@@ -59,6 +68,7 @@ namespace game {
 		setDirAngle(m_target_angle = rhs.dirAngle());
 		m_inventory = rhs.m_inventory;
 		m_faction_id = rhs.m_faction_id;
+		m_sound_variation = rhs.m_sound_variation;
 		m_hit_points = rhs.m_hit_points;
 		m_ai = rhs.m_ai;
 	}
@@ -66,6 +76,7 @@ namespace game {
 	XMLNode Actor::save(XMLNode &parent) const {
 		XMLNode node = EntityImpl::save(parent);
 		node.addAttrib("faction_id", m_faction_id);
+		node.addAttrib("sound_variation", m_sound_variation);
 		return node;
 	}
 
@@ -76,6 +87,8 @@ namespace game {
 					(m_target_angle != dirAngle()? 4 : 0);
 
 		sr.pack(flags, m_stance, m_action, m_hit_points);
+		sr.encodeInt(m_sound_variation);
+
 		if(flags & 1)
 			sr << m_order;
 		if(flags & 2) {
@@ -118,15 +131,75 @@ namespace game {
 
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
+		
+	float Actor::dodgeChance(DamageType::Type type, float damage) const {
+		return	type == DamageType::bludgeoning ||
+				type == DamageType::slashing ||
+				type == DamageType::piercing? 0.2f : 0.0f;
+	}
+
+	float Actor::fallChance(DamageType::Type type, float damage, const float3 &force_vec) const {
+		float force = length(force_vec) * (m_action == Action::walk? 1.25f : m_action == Action::run? 1.5f : 1.0f) - 0.5f;
+		if(type == DamageType::bludgeoning || type == DamageType::explosive)
+			force *= 1.25f;
+
+		if(force <= 0.0f)
+			return 0.0f;
+		return pow(force / (force + 1.0f), 2.0f);
+	}
+
+	DeathId::Type Actor::deathType(DamageType::Type damage_type, float damage, const float3 &force_vec) const {
+		float damage_rate = damage / float(m_actor.hit_points);
+		
+		if(damage_type == DamageType::plasma || damage_type == DamageType::laser)
+			return DeathId::melt;
+		if(damage_type == DamageType::electric)
+			return DeathId::electrify;
+		if(damage_type == DamageType::fire)
+			return DeathId::fire;
+		if(damage_type == DamageType::explosive && damage_rate > 0.3f)
+			return DeathId::explode;
+		if(damage_type == DamageType::slashing && damage_rate > 0.2f)
+			return DeathId::cut_in_half;
+		if(damage_type == DamageType::bullet && damage_rate > 0.2f)
+			return DeathId::big_hole;
+
+		//TODO: riddled & big_hole
+
+		return DeathId::normal;	
+	}
 
 	void Actor::onImpact(DamageType::Type damage_type, float damage, const float3 &force) {
-		m_hit_points -= damage;
-		//TODO: immediately stop the animation?
+		if(isDying()) {
+			m_hit_points -= damage;
+			return;
+		}
+			
+		GetHitOrder *current = m_order && m_order->typeId() == OrderTypeId::get_hit? static_cast<GetHitOrder*>(m_order.get()) : nullptr;
+
+		bool is_fallen = current && (current->mode == GetHitOrder::Mode::fall || current->mode == GetHitOrder::Mode::fallen);
+		bool will_dodge = !is_fallen && frand() <= dodgeChance(damage_type, damage);
+		bool will_fall = !will_dodge && frand() <= fallChance(damage_type, damage, force);
+		
+		if(!will_dodge)
+			m_hit_points -= damage;
 
 		if(m_hit_points <= 0.0f) {
-			//TODO: immediate order cancel
-			DeathId::Type death_id = DeathId::cut_in_half;
-			setOrder(new DieOrder(death_id));
+			DeathId::Type death_id = deathType(damage_type, damage, force);
+			setOrder(new DieOrder(death_id), true);
+		}
+		else {
+			if(will_fall) {
+				float fall_time = (damage / float(m_actor.hit_points)) * length(force);
+
+				if(is_fallen && current)
+					current->fall_time += fall_time;
+				else
+					setOrder(new GetHitOrder(force, fall_time), true);
+			}
+			else if(!is_fallen) {
+				setOrder(new GetHitOrder(will_dodge), true);
+			}
 		}
 		
 		if(m_ai)
@@ -177,8 +250,10 @@ namespace game {
 			(this->*m_order_func)(m_order.get(), event, params);
 	}
 
-	bool Actor::setOrder(POrder &&order) {
-		if(!world() || isClient())
+	bool Actor::setOrder(POrder &&order, bool force) {
+		DASSERT(order);
+
+		if(!world() || isClient() || !order)
 			return false;
 
 		if(order->typeId() == OrderTypeId::look_at) {
@@ -188,6 +263,8 @@ namespace game {
 
 		if(m_order)
 			m_order->cancel();
+		if(force)
+			m_order.reset(nullptr);
 
 		m_following_orders.clear();
 		m_following_orders.emplace_back(std::move(order));
@@ -281,6 +358,10 @@ namespace game {
 			return;
 
 		handleOrder(ActorEvent::sound);
+	}
+		
+	bool Actor::isDying() const {
+		return m_order && m_order->typeId() == OrderTypeId::die;
 	}
 		
 	bool Actor::isDead() const {

@@ -11,8 +11,7 @@
 
 namespace game {
 
-	class DropItemOrder: public OrderImpl<DropItemOrder, OrderTypeId::drop_item,
-			ActorEvent::init_order | ActorEvent::anim_finished | ActorEvent::pickup> {
+	class DropItemOrder: public OrderImpl<DropItemOrder, OrderTypeId::drop_item> {
 	public:
 		DropItemOrder(int inventory_id);
 		DropItemOrder(Stream&);
@@ -22,8 +21,7 @@ namespace game {
 		int m_inventory_id;
 	};
 
-	class EquipItemOrder: public OrderImpl<EquipItemOrder, OrderTypeId::equip_item,
-			ActorEvent::init_order | ActorEvent::anim_finished> {
+	class EquipItemOrder: public OrderImpl<EquipItemOrder, OrderTypeId::equip_item> {
 	public:
 		EquipItemOrder(int inventory_id);
 		EquipItemOrder(Stream&);
@@ -33,8 +31,7 @@ namespace game {
 		int m_inventory_id;
 	};
 
-	class UnequipItemOrder: public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item,
-			ActorEvent::init_order | ActorEvent::anim_finished> {
+	class UnequipItemOrder: public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item> {
 	public:
 		UnequipItemOrder(ItemType::Type);
 		UnequipItemOrder(Stream&);
@@ -49,8 +46,7 @@ namespace game {
 		transfer_from,
 	};
 
-	class TransferItemOrder: public OrderImpl<TransferItemOrder, OrderTypeId::transfer_item,
-			ActorEvent::init_order | ActorEvent::anim_finished> {
+	class TransferItemOrder: public OrderImpl<TransferItemOrder, OrderTypeId::transfer_item> {
 	public:
 		TransferItemOrder(EntityRef target, TransferMode mode, int src_inventory_id, int count);
 		TransferItemOrder(Stream&);
