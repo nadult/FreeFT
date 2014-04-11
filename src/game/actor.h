@@ -155,6 +155,7 @@ namespace game {
 		bool isDying() const;
 		bool isDead() const;
 
+		int hitPoints() const { return (int)std::ceil(m_hit_points); }
 		int factionId() const { return m_faction_id; }
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
 

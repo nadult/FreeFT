@@ -74,7 +74,7 @@ namespace game {
 						if(!trace(segment, {Flags::tile | Flags::colliding, entities[n]})) {
 							//TODO: decrease damage if blocked by another entity	
 							//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
-							float3 force = segment.dir() * m_proto.force * strength;
+							float3 force = segment.dir() * m_proto.force * strength * m_damage_mod;
 
 							entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force);
 						}

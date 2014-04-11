@@ -197,6 +197,8 @@ namespace io {
 			renderer.addBox(box, Color(255, 0, 0, 100));
 		}
 
+		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
+
 //		const NaviMap *navi_map = m_world->naviMap(3);
 //		if(navi_map)
 //			navi_map->visualize(renderer, false);
@@ -221,8 +223,12 @@ namespace io {
 				m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
 		if(actor) {
 			float3 actor_pos = actor->pos();
-			font->drawShadowed(int2(0, font->lineHeight() * 2), Color::white, Color::black,
-					"Actor:(%.2f %.2f %.2f)", actor_pos.x, actor_pos.y, actor_pos.z);
+			char text[512], *ptr = text;
+			ptr += snprintf(ptr, sizeof(text) - (ptr - text), "Actor:(%.0f %.0f %.0f) HP: %d", actor_pos.x, actor_pos.y, actor_pos.z, actor->hitPoints());
+
+			if(target_actor)
+				snprintf(ptr, sizeof(text) - (ptr - text), " THP: %d", target_actor->hitPoints());
+			font->drawShadowed(int2(0, font->lineHeight() * 2), Color::white, Color::black, text);
 		}
 
 		if(m_show_stats)

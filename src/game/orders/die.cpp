@@ -33,6 +33,8 @@ namespace game {
 				play_sound = true;
 				if(m_stance == Stance::prone && !is_fallen)
 					animate(Action::fall_forward);
+				else
+					order.m_is_dead = true;
 			}
 			else if(!animateDeath(order.m_death_id))
 				animateDeath(DeathId::normal);

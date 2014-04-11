@@ -165,6 +165,9 @@ namespace game {
 	}
 
 	void Actor::onImpact(DamageType::Type damage_type, float damage, const float3 &force) {
+		float damage_res = clamp(1.0f - m_inventory.armour().proto().damage_resistance, 0.0f, 1.0f);
+		damage *= damage_res;
+
 		if(isDying()) {
 			m_hit_points -= damage;
 			return;
@@ -401,8 +404,11 @@ namespace game {
 	void Actor::makeImpact(EntityRef target, const Weapon &weapon) {
 		DASSERT(weapon.proto().impact.isValid());
 
-		if(target)
-			addNewEntity<Impact>(pos(), *weapon.proto().impact, ref(), target, weapon.proto().damage_mod);
+		if(target) {
+			const Armour &armour = m_inventory.armour();
+			float damage_mod = weapon.proto().damage_mod * armour.proto().melee_mod;
+			addNewEntity<Impact>(pos(), *weapon.proto().impact, ref(), target, damage_mod);
+		}
 	}
 
 	bool Actor::animate(Action::Type action) {

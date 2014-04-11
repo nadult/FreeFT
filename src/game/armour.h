@@ -17,6 +17,7 @@ namespace game {
 
 		ArmourClass::Type class_id;
 		float damage_resistance;
+		float melee_mod;
 		string sound_prefix;
 	};
 
