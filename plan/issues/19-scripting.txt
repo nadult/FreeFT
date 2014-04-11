@@ -7,9 +7,6 @@
 
 
 
-
-
-+FINISHED
 +ESTIMATED_TIME:
 +TIME_SPENT:
 

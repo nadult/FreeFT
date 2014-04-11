@@ -193,7 +193,12 @@ namespace game {
 					setOrder(new GetHitOrder(force, fall_time), true);
 			}
 			else if(!current) {
-				setOrder(new GetHitOrder(will_dodge), true);
+				OrderTypeId::Type current_type_id = m_order? m_order->typeId() : OrderTypeId::invalid;
+
+				if(current_type_id == OrderTypeId::idle || frand() > 0.5f)
+					setOrder(new GetHitOrder(will_dodge), true);
+				else if(!will_dodge)
+					world()->playSound(m_actor.sounds[m_sound_variation].hit, pos());
 			}
 		}
 		
@@ -258,11 +263,15 @@ namespace game {
 
 		if(m_order)
 			m_order->cancel();
-		if(force)
-			m_order.reset(nullptr);
 
-		m_following_orders.clear();
-		m_following_orders.emplace_back(std::move(order));
+		if(force) {
+			m_order.reset(nullptr);
+			m_following_orders.insert(m_following_orders.begin(), std::move(order));
+		}
+		else {
+			m_following_orders.clear();
+			m_following_orders.emplace_back(std::move(order));
+		}
 
 		replicate();
 

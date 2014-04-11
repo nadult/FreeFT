@@ -400,6 +400,21 @@ float distanceSq(const Box<float3> &a, const Box<float3> &b) {
 	return distanceSq(p1, p2);
 }
 
+bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const FBox &box) {
+	float3 corners[8];
+	box.getCorners(corners);
+
+	for(int n = 0; n < COUNTOF(corners); n++) {
+		float3 cvector = corners[n] - eye_pos;
+		float len = length(cvector);
+
+		if(dot(cvector, eye_dir) >= min_dot * len)
+			return true;
+	}
+
+	return false;
+}
+
 MoveVector::MoveVector(const int2 &start, const int2 &end) {
 	int2 diff = end - start;
 	vec.x = diff.x < 0? -1 : diff.x > 0? 1 : 0;

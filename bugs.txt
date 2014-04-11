@@ -49,3 +49,5 @@
 
 - Bullets shouldnt create sparks when actors are hit
 - Problem with direction of flamer's projectile
+
+- Attacking on stairs may caus player to get stuck

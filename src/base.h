@@ -31,6 +31,14 @@ int strcasecmp(const char *a, const char *b);
 
 #endif
 
+template <class T, class Arg1>
+inline constexpr bool isOneOf(const T &value, const Arg1 &arg1) { return value == arg1; }
+
+template <class T, class Arg1, class ...Args>
+inline constexpr bool isOneOf(const T &value, const Arg1 &arg1, const Args&... args) { return value == arg1 || isOneOf(value, args...); }
+
+
+
 // TODO: finish me
 class CString {
 public:
@@ -775,6 +783,8 @@ bool areAdjacent(const Rect<int2>&, const Rect<int2>&);
 float distanceSq(const Rect<float2>&, const Rect<float2>&);
 float distanceSq(const Box<float3>&, const Box<float3>&);
 inline float distance(const Box<float3> &a, const Box<float3> &b) { return sqrtf(distanceSq(a, b)); }
+	
+bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
 
 typedef Rect<int2> IRect;
 typedef Rect<float2> FRect;

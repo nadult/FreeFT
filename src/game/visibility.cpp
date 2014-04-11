@@ -19,21 +19,6 @@ namespace game {
 	WorldViewer::~WorldViewer() {
 	}
 
-	static bool isInsideFrustum(const FBox &box, const float3 &pos, const float3 &dir, float min_dot) {
-		float3 corners[8];
-		box.getCorners(corners);
-
-		for(int n = 0; n < COUNTOF(corners); n++) {
-			float3 cvector = corners[n] - pos;
-			float len = length(cvector);
-
-			if(dot(cvector, dir) >= min_dot * len)
-				return true;
-		}
-
-		return false;
-	}
-	
 	static const double blend_time = 0.5;
 	static const float feel_distance = 50.0;
 	static const float max_distance = 200.0;
@@ -44,7 +29,7 @@ namespace game {
 		if(dist > max_distance)
 			return false;
 
-		if(dist > feel_distance && !isInsideFrustum(box, m_cur_pos, m_cur_dir, m_cur_fov))
+		if(dist > feel_distance && !isInsideFrustum(m_cur_pos, m_cur_dir, m_cur_fov, box))
 			return false;
 		
 		const Actor *spectator = m_world->refEntity<Actor>(m_spectator);
@@ -54,26 +39,7 @@ namespace game {
 		if(!is_movable || m_spectator.index() == index)
 			return true;
 
-		enum { num_rays = 16 };
-
-		for(int x = 0; x < 3; x++)
-			for(int y = 0; y < 3; y++)
-				for(int z = 0; z < 3; z++) {
-					float3 target(
-						box.min.x + box.width() * (0.1f + float(x) * 0.4f),
-						box.min.y + box.height() * (0.1f + float(y) * 0.4f),
-						box.min.z + box.depth() * (0.1f + float(z) * 0.4f) );
-					float3 dir = target - m_eye_pos;
-					float len = length(dir);
-
-					Segment segment(Ray(m_eye_pos, dir / len), 0.0f, len);
-					Intersection isect = m_world->trace(segment, {Flags::all | Flags::occluding, m_spectator});
-
-					if(isect.isEmpty() || isect.distance() > len)
-						return true;
-				}
-
-		return false;
+		return m_world->isVisible(m_eye_pos, box, m_spectator, 3);
 	}
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {

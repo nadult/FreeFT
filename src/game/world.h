@@ -93,6 +93,7 @@ namespace game {
 		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 
 		bool isInside(const FBox&) const;
+		bool isVisible(const float3 &eye_pos, const FBox &target, EntityRef ignore, int density) const;
 
 		Mode mode() const { return m_mode; }
 		bool isClient() const { return m_mode == Mode::client; }

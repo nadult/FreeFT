@@ -1,8 +1,9 @@
-- Quick visibility tests
+- Quick visibility tests  DONE
 - Simple factions  DONE
 - Simple tracking  DONE
-- Attacking, losing interest, looking for enemies
-- Random movement from time to time
+- Attacking, looking for enemies  DONE
+- Random movement from time to time  (not really needed)
+- Using ranged weapons, using melee weapons
 
 +ESTIMATED_TIME:
 +TIME_SPENT:
@@ -10,3 +11,4 @@
 +WORK_LOG:
 30.03.14: 12:30 - 14:00, 15:30 - 18:00
 04.04.14: 9:45 - 12:45, 15:00 - 18:30, 19:00 - 19:45
+11.04.14: 14:00 - 15:15

@@ -22,11 +22,23 @@ namespace game {
 	}
 
 	bool Actor::handleOrder(DieOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		bool play_sound = event == ActorEvent::sound;
+
 		if(event == ActorEvent::init_order) {
-			if(!animateDeath(order.m_death_id))
+			bool is_fallen = isOneOf(m_action, Action::fall_forward, Action::fall_back, Action::fallen_back, Action::fallen_forward);
+			bool special_death = isOneOf(order.m_death_id, DeathId::explode, DeathId::fire, DeathId::electrify, DeathId::melt);
+
+			if((is_fallen || m_stance == Stance::prone) && !special_death) {
+				order.m_death_id = DeathId::normal;
+				play_sound = true;
+				if(m_stance == Stance::prone && !is_fallen)
+					animate(Action::fall_forward);
+			}
+			else if(!animateDeath(order.m_death_id))
 				animateDeath(DeathId::normal);
 		}
-		if(event == ActorEvent::sound) {
+
+		if(play_sound) {
 			SoundId sound_id = m_actor.sounds[m_sound_variation].death[order.m_death_id];
 			if(sound_id == -1)
 				sound_id = m_actor.sounds[m_sound_variation].death[DeathId::normal];

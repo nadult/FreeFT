@@ -24,6 +24,7 @@ namespace game {
 		if(!actor)
 			return;
 
+		//TODO: basic visibility
 		m_delay -= m_world->timeDelta();
 		if(m_delay > 0.0f)
 			return;
@@ -35,15 +36,34 @@ namespace game {
 			close_prox.min -= float3(100, 0, 100);
 			close_prox.max += float3(100, 0, 100);
 
+			float3 eye_pos = actor->boundingBox().center();
+
+			EntityRef new_target;
+			Actor *target = nullptr;
+
 			m_world->findAll(close_ents, close_prox, {Flags::actor, m_actor_ref});
 			for(int n = 0; n < (int)close_ents.size(); n++) {
 				Actor *nearby = m_world->refEntity<Actor>(close_ents[n]);
-				if(nearby && nearby->factionId() != actor->factionId()) {
-					m_target = nearby->ref();
+
+				if(nearby && nearby->factionId() != actor->factionId() && !nearby->isDying()) {
+					target = nearby;
+					new_target = nearby->ref();
+					if(nearby->ref() == m_target)
+						break;
 				}
 			}
 
-			m_world->sendOrder(new TrackOrder(m_target, 3.0f, true), m_actor_ref);
+			m_target = new_target;
+			if(target) {
+				FBox target_box = target->boundingBox();
+				if(distance(actor->boundingBox(), target_box) <= 3.0f) {
+					AttackMode::Type mode = rand() % 4 == 0? AttackMode::kick : AttackMode::undefined;
+					m_world->sendOrder(new AttackOrder(mode, m_target), m_actor_ref);
+				}
+				else {
+					m_world->sendOrder(new TrackOrder(m_target, 3.0f, true), m_actor_ref);
+				}
+			}
 		}
 
 	}

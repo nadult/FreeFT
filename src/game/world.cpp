@@ -309,6 +309,29 @@ namespace game {
 				out.emplace_back(ObjectRef(inds[n], true));
 		}
 	}
+		
+	bool World::isVisible(const float3 &eye_pos, const FBox &box, EntityRef ignore, int density) const {
+		float step = 0.8f * (density == 1? 0.0f : 1.0f / float(density - 1));
+
+		for(int x = 0; x < density; x++)
+			for(int y = 0; y < density; y++)
+				for(int z = 0; z < density; z++) {
+					float3 target(
+						box.min.x + box.width() * (0.1f + float(x) * step),
+						box.min.y + box.height() * (0.1f + float(y) * step),
+						box.min.z + box.depth() * (0.1f + float(z) * step) );
+					float3 dir = target - eye_pos;
+					float len = length(dir);
+
+					Segment segment(Ray(eye_pos, dir / len), 0.0f, len);
+					Intersection isect = trace(segment, {Flags::all | Flags::occluding, ignore});
+
+					if(isect.isEmpty() || isect.distance() > len)
+						return true;
+				}
+
+		return false;
+	}
 
 	bool World::isInside(const FBox &box) const {
 		return m_tile_map.isInside(box);
