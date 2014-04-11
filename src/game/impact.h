@@ -14,7 +14,8 @@ namespace game {
 	DECLARE_ENUM(ImpactType,
 		ranged,
 		melee,
-		area
+		area,
+		area_safe // Safe for spawner
 	);
 
 	struct ImpactProto: public ProtoImpl<ImpactProto, EntityProto, ProtoId::impact> {

@@ -33,6 +33,7 @@ namespace game {
 		Mode mode;
 		float fall_time;
 		float force_angle;
+		float force;
 	};
 
 }

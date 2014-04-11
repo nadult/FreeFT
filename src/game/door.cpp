@@ -263,7 +263,7 @@ namespace game {
 	void Door::onImpact(DamageType::Type damage_type, float damage, const float3 &force) {
 		if(!isOpened() && damage_type == DamageType::bludgeoning) {
 			float door_force = dot(force.xz(), m_open_in_dir);
-			if(fabs(door_force) >= 1.5f && classId() != DoorClassId::sliding) {
+			if(fabs(door_force) >= 8.0f && classId() != DoorClassId::sliding) {
 				bool opening_in = door_force > 0.0f;
 
 				if(classId() == DoorClassId::rotating_in && !opening_in)

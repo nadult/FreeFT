@@ -101,7 +101,7 @@ namespace game {
 			if(event == ActorEvent::next_frame && order.m_burst_mode) {
 				order.m_burst_mode++;
 				fireProjectile(order.m_burst_off, (float3)order.m_target_pos, weapon, 0.05f);
-				if(order.m_burst_mode > 15)
+				if(order.m_burst_mode > weapon.proto().burst_ammo)
 					order.m_burst_mode = 0;
 			}
 

@@ -43,7 +43,7 @@ namespace game {
 				}
 			}
 
-			m_world->sendOrder(new TrackOrder(m_target, 2.0f, true), m_actor_ref);
+			m_world->sendOrder(new TrackOrder(m_target, 3.0f, true), m_actor_ref);
 		}
 
 	}

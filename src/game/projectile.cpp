@@ -21,7 +21,7 @@ namespace game {
 	}
 
 	Projectile::Projectile(const ProjectileProto &proto, float initial_angle, const float3 &dir, EntityRef spawner, float damage_mod)
-		:EntityImpl(proto), m_dir(dir), m_spawner(spawner), m_distance(0.0f), m_damage_mod(damage_mod) {
+		:EntityImpl(proto), m_dir(dir), m_spawner(spawner), m_distance(0.0f), m_damage_mod(damage_mod), m_impact_created(false) {
 			m_dir *= 1.0f / length(m_dir);
 			setDirAngle(initial_angle);
 			m_target_angle = vectorToAngle(m_dir.xz());
@@ -34,13 +34,13 @@ namespace game {
 	}
 
 	Projectile::Projectile(Stream &sr) :EntityImpl(sr) {
-		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod);
+		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_impact_created);
 		sr >> m_spawner;
 	}
 
 	void Projectile::save(Stream &sr) const {
 		EntityImpl::save(sr);
-		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod);
+		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_impact_created);
 		sr << m_spawner;
 	}
 		
@@ -56,11 +56,15 @@ namespace game {
 
 	void Projectile::think() {
 		float time_delta = timeDelta();
+		//TODO: position in the middle of bbox?
+		
 		Ray ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
-		if(m_frame_count < 2)
+		if(m_speed == 0.0f) {
+			makeImpact(pos());
 			return;
+		}
 
 		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), {Flags::all | Flags::colliding, m_spawner});
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
@@ -72,11 +76,20 @@ namespace game {
 			remove();
 
 		if(isect.distance() < ray_pos) {
-			if(m_proto.impact.isValid() && !isClient()) {
-				EntityRef ref = world()->toEntityRef(isect);
-				addNewEntity<Impact>(new_pos, *m_proto.impact, m_spawner, ref, m_damage_mod);
-			}
+			makeImpact(new_pos, isect);
 			remove();
+		}
+	}
+
+	void Projectile::onAnimFinished() {
+		remove();
+	}
+
+	void Projectile::makeImpact(float3 new_pos, ObjectRef hit) {
+		if(!m_impact_created && m_proto.impact.isValid() && !isClient()) {
+			EntityRef ref = world()->toEntityRef(hit);
+			addNewEntity<Impact>(new_pos, *m_proto.impact, m_spawner, ref, m_damage_mod);
+			m_impact_created = true;
 		}
 	}
 

@@ -1,6 +1,6 @@
 - different deaths for different attack types [2h]  DONE
 - falls [3h]
-  - actors can move a bit when falling
+  - actors can move a bit when falling  DONE
   - actors can be unconscious  DONE
 - squirting blood [2h]
 - trails of blood [3h]
@@ -12,4 +12,4 @@
 +WORK_LOG:
 06.04.14: 17:00 - 19:30
 09.04.14: 7:30 - 9:00
-11.04.14: 7:30 - 11:00
+11.04.14: 7:30 - 12:30

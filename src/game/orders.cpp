@@ -56,6 +56,7 @@ namespace game {
 		case OrderTypeId::equip_item:		return new EquipItemOrder(sr);
 		case OrderTypeId::unequip_item:		return new UnequipItemOrder(sr);
 		case OrderTypeId::transfer_item:	return new TransferItemOrder(sr);
+		case OrderTypeId::get_hit:			return new GetHitOrder(sr);
 		case OrderTypeId::die:				return new DieOrder(sr);
 		default: ASSERT(0);
 		}

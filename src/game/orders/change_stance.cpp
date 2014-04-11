@@ -29,12 +29,13 @@ namespace game {
 			m_stance = (Stance::Type)(target_stance > m_stance? m_stance + 1 : m_stance - 1);
 			m_stance = min(max(m_stance, Stance::prone), Stance::stand);
 		}
-
-		if(m_stance == target_stance)
-			order.finish();
-		else
-			if(!animate(m_stance < target_stance? Action::stance_up : Action::stance_down))
-				return false;
+		if(event == ActorEvent::anim_finished || event == ActorEvent::init_order) {
+			if(m_stance == target_stance)
+				order.finish();
+			else
+				if(!animate(m_stance < target_stance? Action::stance_up : Action::stance_down))
+					return false;
+		}
 
 		return true;
 	}

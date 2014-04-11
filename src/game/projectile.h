@@ -34,6 +34,8 @@ namespace game {
 	protected:
 		virtual void think();
 		void nextFrame();
+		void onAnimFinished();
+		void makeImpact(float3 new_pos, ObjectRef hit = ObjectRef());
 
 	private:
 		EntityRef m_spawner;
@@ -41,6 +43,7 @@ namespace game {
 		float m_speed, m_distance, m_target_angle;
 		float m_damage_mod;
 		int m_frame_count;
+		bool m_impact_created;
 	};
 
 }

@@ -42,12 +42,7 @@ namespace game {
 
 	Actor::Actor(const XMLNode &node)
 	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
-		if( const char *attrib = node.hasAttrib("sound_variation") )
-			m_sound_variation = toInt(attrib);
-		else
-			m_sound_variation = rand();
-		m_sound_variation %= m_actor.sounds.size();
-
+		m_sound_variation = node.intAttrib("sound_variation") % m_actor.sounds.size();
 		m_faction_id = node.intAttrib("faction_id");
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
@@ -139,7 +134,7 @@ namespace game {
 	}
 
 	float Actor::fallChance(DamageType::Type type, float damage, const float3 &force_vec) const {
-		float force = length(force_vec) * (m_action == Action::walk? 1.25f : m_action == Action::run? 1.5f : 1.0f) - 0.5f;
+		float force = length(force_vec) * (m_action == Action::walk? 1.25f : m_action == Action::run? 1.5f : 1.0f) * 0.2f - 0.5f;
 		if(type == DamageType::bludgeoning || type == DamageType::explosive)
 			force *= 1.25f;
 
@@ -190,14 +185,14 @@ namespace game {
 		}
 		else {
 			if(will_fall) {
-				float fall_time = (damage / float(m_actor.hit_points)) * length(force);
+				float fall_time = (damage / float(m_actor.hit_points)) * length(force) * frand();
 
 				if(is_fallen && current)
 					current->fall_time += fall_time;
 				else
 					setOrder(new GetHitOrder(force, fall_time), true);
 			}
-			else if(!is_fallen) {
+			else if(!current) {
 				setOrder(new GetHitOrder(will_dodge), true);
 			}
 		}

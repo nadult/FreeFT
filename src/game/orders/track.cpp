@@ -36,7 +36,9 @@ namespace game {
 				int3 cur_pos = (int3)pos();
 
 				int3 target_pos;
-				if(!world()->findClosestPos(target_pos, cur_pos, enclosingIBox(target->boundingBox()), ref()))
+				FBox target_box = target->boundingBox();
+
+				if(!world()->findClosestPos(target_pos, cur_pos, enclosingIBox(target_box), ref()))
 					return false;
 
 				order.m_path_pos = PathPos();
@@ -70,9 +72,6 @@ namespace game {
 			if(event == ActorEvent::step) {
 				SurfaceId::Type standing_surface = surfaceUnder();
 				world()->playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
-			}
-			if(event == ActorEvent::sound) {
-				printf("sound\n");
 			}
 		}
 

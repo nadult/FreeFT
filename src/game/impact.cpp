@@ -12,7 +12,8 @@ namespace game {
 	DEFINE_ENUM(ImpactType,
 		"ranged",
 		"melee",
-		"area"
+		"area",
+		"area_safe"
 	);
 
 	ImpactProto::ImpactProto(const TupleParser &parser) :ProtoImpl(parser) {
@@ -52,7 +53,7 @@ namespace game {
 		if(!m_applied_damage) {
 			Entity *source = refEntity(m_source);
 
-			if(m_proto.type == ImpactType::area) {
+			if(m_proto.type == ImpactType::area || m_proto.type == ImpactType::area_safe) {
 				float3 center = boundingBox().center();
 				FBox bbox(center - float3(1.0f, 1.0f, 1.0f) * m_proto.range, center + float3(1.0f, 1.0f, 1.0f) * m_proto.range);
 
@@ -61,6 +62,9 @@ namespace game {
 
 				for(int n = 0; n < (int)entities.size(); n++) {
 					Entity *entity = refEntity(entities[n]);
+					if(m_proto.type == ImpactType::area_safe && entity->ref() == m_source)
+						continue;
+
 					float dist = distance(FBox(center, center), entity->boundingBox()) / m_proto.range;
 					float strength = dist < 0.0f? 0.0f : (1 - dist) * (1.0f - dist);
 

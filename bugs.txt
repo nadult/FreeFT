@@ -44,3 +44,8 @@
 - Door sounds don't work in multiplayer
 
 - Robots have no hit sounds
+
+- Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
+
+- Bullets shouldnt create sparks when actors are hit
+- Problem with direction of flamer's projectile
