@@ -250,28 +250,44 @@ namespace game {
 	}
 
 	Intersection World::trace(const Segment &segment, const FindFilter &filter) const {
-		PROFILE("World::trace");
 		Intersection out;
 
 		if(filter.m_flags & Flags::tile) {
 			pair<int, float> isect = m_tile_map.trace(segment, -1, filter.m_flags);
-			if(isect.first != -1) {
-				const auto &obj = m_tile_map[isect.first];
+			if(isect.first != -1)
 				out = Intersection(ObjectRef(isect.first, false), isect.second);
-			}
 		}
 
 		if(filter.m_flags & Flags::entity) {
 			int ignore_index = filterIgnoreIndex(filter);
 
 			pair<int, float> isect = m_entity_map.trace(segment, ignore_index, filter.m_flags);
-			if(isect.first != -1 && isect.second <= out.distance()) {
-				const auto &obj = m_entity_map[isect.first];
+			if(isect.first != -1 && isect.second <= out.distance())
 				out = Intersection(ObjectRef(isect.first, true), isect.second);
-			}
 		}
 
 		return out;
+	}
+		
+	void World::traceCoherent(const vector<Segment> &segments, vector<Intersection> &out, const FindFilter &filter) const {
+		out.resize(segments.size());
+		vector<pair<int, float>> results;
+
+		if(filter.m_flags & Flags::tile) {
+			m_tile_map.traceCoherent(segments, results, -1, filter.m_flags);
+			for(int n = 0; n < (int)out.size(); n++)
+				if(results[n].first != -1)
+					out[n] = Intersection(ObjectRef(results[n].first, false), results[n].second);
+		}
+
+		if(filter.m_flags & Flags::entity) {
+			int ignore_index = filterIgnoreIndex(filter);
+
+			m_entity_map.traceCoherent(segments, results, ignore_index, filter.m_flags);
+			for(int n = 0; n < (int)out.size(); n++)
+				if(results[n].first != -1 && results[n].second <= out[n].distance())
+					out[n] = Intersection(ObjectRef(results[n].first, true), results[n].second);
+		}
 	}
 
 	ObjectRef World::findAny(const FBox &box, const FindFilter &filter) const {
@@ -310,25 +326,27 @@ namespace game {
 		}
 	}
 		
-	bool World::isVisible(const float3 &eye_pos, const FBox &box, EntityRef ignore, int density) const {
+	bool World::isVisible(const float3 &eye_pos, EntityRef target_ref, EntityRef ignore, int density) const {
 		float step = 0.8f * (density == 1? 0.0f : 1.0f / float(density - 1));
 
-		for(int x = 0; x < density; x++)
-			for(int y = 0; y < density; y++)
-				for(int z = 0; z < density; z++) {
-					float3 target(
-						box.min.x + box.width() * (0.1f + float(x) * step),
-						box.min.y + box.height() * (0.1f + float(y) * step),
-						box.min.z + box.depth() * (0.1f + float(z) * step) );
-					float3 dir = target - eye_pos;
-					float len = length(dir);
+		const Entity *target = const_cast<World*>(this)->refEntity(target_ref);
+		if(!target)
+			return false;
+		const FBox &box = target->boundingBox();
 
-					Segment segment(Ray(eye_pos, dir / len), 0.0f, len);
-					Intersection isect = trace(segment, {Flags::all | Flags::occluding, ignore});
+		vector<float3> points = genPointsOnPlane(box, normalized(eye_pos - box.center()), density, false);
+		vector<Segment> segments(points.size());
+		for(int n = 0; n < (int)points.size(); n++)
+			segments[n] = Segment(eye_pos, points[n]);
 
-					if(isect.isEmpty() || isect.distance() > len)
-						return true;
-				}
+		vector<Intersection> isects;
+		traceCoherent(segments, isects, {Flags::all | Flags::occluding, ignore});
+
+		for(int n = 0; n < (int)points.size(); n++) {
+			const Intersection &isect = isects[n];
+			if(isect.isEmpty() || (ObjectRef)isect == ObjectRef(target_ref))
+				return true;
+		}
 
 		return false;
 	}

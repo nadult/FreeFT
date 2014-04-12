@@ -53,6 +53,13 @@ namespace game {
 		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi * 0.01f));
 		m_frame_count++;
 	}
+		
+	void Projectile::addToRender(gfx::SceneRenderer &out, Color color) const {
+		float4 fcolor(color);
+		float alpha = m_speed == 0.0f? 1.0f : clamp((m_distance - 10.0f) * 0.05f, 0.0f, 1.0f);
+		fcolor.w *= alpha;
+		Entity::addToRender(out, Color(fcolor));
+	}
 
 	void Projectile::think() {
 		float time_delta = timeDelta();

@@ -61,7 +61,14 @@ int safe_main(int argc, char **argv)
 			actor->attachAI<SimpleAI>();
 	}
 
-	EntityRef actor_ref = world->addNewEntity<Actor>(float3(245, 128, 335), getProto("male", ProtoId::actor));
+	EntityRef actor_ref = world->addNewEntity<Actor>(float3(295, 142, 292), getProto("male", ProtoId::actor));
+	if( Actor *actor = world->refEntity<Actor>(actor_ref) ) {
+		auto &inventory = actor->inventory();
+		inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
+		inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
+		inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
+	}
+	
 
 	game::WorldViewer viewer(world, actor_ref);
 	IO io(config.resolution, world, viewer, actor_ref, config.profiler_enabled);

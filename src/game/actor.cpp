@@ -13,6 +13,10 @@
 #include "net/socket.h"
 #include <cmath>
 #include <cstdio>
+#include "sys/profiler.h"
+#include "gfx/scene_renderer.h"
+
+#define DEBUG_SHOOTING
 
 namespace game {
 
@@ -176,6 +180,8 @@ namespace game {
 		GetHitOrder *current = m_order && m_order->typeId() == OrderTypeId::get_hit? static_cast<GetHitOrder*>(m_order.get()) : nullptr;
 
 		bool is_fallen = current && (current->mode == GetHitOrder::Mode::fall || current->mode == GetHitOrder::Mode::fallen);
+
+		//TODO: randomization provided by world class
 		bool will_dodge = !is_fallen && frand() <= dodgeChance(damage_type, damage);
 		bool will_fall = !will_dodge && frand() <= fallChance(damage_type, damage, force);
 		
@@ -376,29 +382,16 @@ namespace game {
 					static_cast<DieOrder*>(m_order.get())->m_is_dead;
 	}
 
-	void Actor::fireProjectile(const int3 &off, const float3 &target, const Weapon &weapon, float random_val) {
+	void Actor::fireProjectile(const int3 &off, const FBox &target_box, const Weapon &weapon, float random_val) {
 		if(isClient())
 			return;
 
-		//	printf("off: %d %d %d   ang: %.2f\n", off.x, off.y, off.z, dirAngle());
-		float3 pos = boundingBox().center();
-		pos.y = this->pos().y;
-		float3 offset = asXZY(rotateVector(float2(off.x, off.z), actualDirAngle() - constant::pi * 0.5f), off.y);
-		pos += offset;
+		//TODO: problems when targeting ground
+		Ray best_ray = computeBestShootingRay(target_box);
 
-		float3 dir = float3(target) - pos;
-		float len = length(dir);
-		dir *= 1.0f / len;
-
-		if(random_val > 0.0f) {
-			float2 horiz = angleToVector(vectorToAngle(float2(dir.x, dir.z)) + frand() * constant::pi * random_val);
-			dir.x = horiz.x; dir.z = horiz.y;
-			dir.y += frand() * random_val;
-			dir *= 1.0f / length(dir); //TODO: yea.. do this properly
-		}
-
+		//TODO: spawned projectiles should be centered
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
-			addNewEntity<Projectile>(pos, *proj_proto, actualDirAngle(), dir * len, ref(), weapon.proto().damage_mod);
+			addNewEntity<Projectile>(best_ray.origin(), *proj_proto, actualDirAngle(), best_ray.dir(), ref(), weapon.proto().damage_mod);
 	}
 		
 	void Actor::makeImpact(EntityRef target, const Weapon &weapon) {
@@ -498,6 +491,139 @@ namespace game {
 
 		for(int i = 0; i < 2 && findAny(boundingBox(), Flags::tile | Flags::colliding); i++)
 			setPos(pos() + float3(0.0f, 1.0f, 0.0f));
+	}
+	
+	static vector<float3> genPoints(const FBox &bbox, int density) {
+		float3 offset = bbox.min;
+		float3 mul = bbox.size() * (1.0f / (density - 1));
+		vector<float3> out;
+
+		//TODO: gen points on a plane, not inside a box
+		for(int x = 0; x < density; x++)
+			for(int y = 0; y < density; y++)
+				for(int z = 0; z < density; z++)
+					out.push_back(offset + float3(x * mul.x, y * mul.y, z * mul.z));
+		return std::move(out);
+	}
+		
+	const FBox Actor::shootingBox() const {
+		FBox bbox = boundingBox();
+		float3 center = bbox.center();
+		float3 size = bbox.size();
+		center.y += size.y * 0.3f;
+		size.y *= 0.4f;
+
+		return FBox(center - size * 0.5f, center + size * 0.5f);
+	}
+
+	const Ray Actor::computeBestShootingRay(EntityRef target_ref) {
+		const Entity *target = refEntity(target_ref);
+		if(!target)
+			return Ray();
+		return computeBestShootingRay(target->boundingBox());
+	}
+
+	void Actor::addToRender(gfx::SceneRenderer &out, Color color) const {
+		Entity::addToRender(out, color);
+
+#ifdef DEBUG_SHOOTING
+		for(int n = 0; n < (int)m_aiming_points.size(); n++)
+			out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), Color::red, true);
+#endif
+	}
+
+	const Ray Actor::computeBestShootingRay(const FBox &target_box) {
+		PROFILE_RARE("Actor::shootingRay");
+
+		FBox shooting_box = shootingBox();
+		float3 center = shooting_box.center();
+		float3 dir = normalized(target_box.center() - center);
+
+		float3 source; {
+			vector<float3> sources = genPointsOnPlane(shooting_box, dir, 5, true);
+			vector<float3> targets = genPointsOnPlane(target_box, -dir, 5, false);
+
+			int best_source = -1, best_hits = 0;
+			float best_dist = 0.0f;
+
+			vector<Segment> segments;
+			for(int s = 0; s < (int)sources.size(); s++)
+				for(int t = 0; t < (int)targets.size(); t++)
+					segments.push_back(Segment(sources[s], targets[t]));
+
+			vector<Intersection> results;
+			world()->traceCoherent(segments, results, {Flags::all | Flags::colliding, ref()});
+
+			int errors = 0, ok = 0;
+			for(int s = 0; s < (int)sources.size(); s++) {
+				int num_hits = 0;
+		
+				for(int t = 0; t < (int)targets.size(); t++) {
+					const Segment &segment = segments[s * targets.size() + t];
+					const Intersection &isect = results[s * targets.size() + t];
+
+					if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
+						num_hits++;
+				}
+
+				float dist = distance(sources[s], center);
+				if(best_source == -1 || num_hits > best_hits || (num_hits == best_hits && dist < best_dist)) {
+					best_source = s;
+					best_hits = num_hits;
+					best_dist = dist;
+				}
+			}
+			
+#ifdef DEBUG_SHOOTING
+			m_aiming_points.clear();
+			m_aiming_points.insert(m_aiming_points.begin(), sources.begin(), sources.end());
+#endif
+
+			source = sources[best_source];
+		}
+
+		float3 best_target = target_box.center(); {
+			PROFILE_RARE("Actor::shootingRay::target");
+
+			float best_score = -constant::inf;
+		
+			vector<float3> targets = genPointsOnPlane(target_box, normalized(source - target_box.center()), 8, false);
+			vector<int> target_hits(targets.size(), 0);
+
+			vector<Segment> segments;
+			for(int t = 0; t < (int)targets.size(); t++)
+				segments.push_back(Segment(source, targets[t]));
+
+			vector<Intersection> isects;
+			world()->traceCoherent(segments, isects, {Flags::all | Flags::colliding, ref()});
+
+			for(int t = 0; t < (int)targets.size(); t++) {
+				const Intersection &isect = isects[t];
+				const Segment &segment = segments[t];
+				if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
+					target_hits[t] = 1;
+			}
+
+			for(int t = 0; t < (int)targets.size(); t++) {
+				float score = 0.0f;
+				float3 current = targets[t];
+				if(!target_hits[t])
+					continue;
+
+#ifdef DEBUG_SHOOTING
+				m_aiming_points.push_back(targets[t]);
+#endif
+
+				for(int i = 0; i < (int)targets.size(); i++)
+					score += (target_hits[i]? 1.0f : 0.0f) / (1.0f + distanceSq(current, targets[i]));
+				if(score > best_score) {
+					best_score = score;
+					best_target = current;
+				}
+			}
+		}
+
+		return (Ray)Segment(source, best_target);
 	}
 
 }

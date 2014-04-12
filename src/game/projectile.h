@@ -26,6 +26,8 @@ namespace game {
 		Projectile(const ProjectileProto &Proto, float initial_ang, const float3 &dir, EntityRef spawner, float damage_mod);
 		Projectile(Stream&);
 		
+		void addToRender(gfx::SceneRenderer &out, Color color) const override;
+
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
 

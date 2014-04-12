@@ -29,6 +29,9 @@ namespace game {
 	}
 
 	bool Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		const Entity *target = refEntity(order.m_target);
+		const FBox target_box = target? target->boundingBox() : FBox(order.m_target_pos, order.m_target_pos);
+
 		if(event == ActorEvent::init_order) {
 			Weapon weapon = m_inventory.weapon();
 			if(!m_proto.canUseWeapon(weapon.classId(), m_stance)) {
@@ -36,10 +39,7 @@ namespace game {
 				return false;
 			}
 
-			//TODO: get target ptr
-			if(order.m_target)
-				order.m_target_pos = refBBox(order.m_target).center();
-			lookAt(order.m_target_pos);
+			lookAt(target_box.center());
 	
 			AttackMode::Type mode = order.m_mode;
 
@@ -60,7 +60,6 @@ namespace game {
 				order.m_mode = mode;
 			
 			float max_range = weapon.range(order.m_mode);
-			FBox target_box = order.m_target? refBBox(order.m_target) : FBox(order.m_target_pos, order.m_target_pos);
 			float dist = distance(boundingBox(), target_box);
 
 			if(dist > max_range * 0.9f && order.m_target && !order.m_is_followup) {
@@ -84,8 +83,6 @@ namespace game {
 		if(AttackMode::isRanged(order.m_mode)) {
 			if(event == ActorEvent::fire) {
 				AttackMode::Type mode = order.m_mode;
-				if(order.m_target)
-					order.m_target_pos = refBBox(order.m_target).center();
 
 				if(mode != AttackMode::single && mode != AttackMode::burst)
 					return true;
@@ -95,12 +92,12 @@ namespace game {
 					order.m_burst_off = params.fire_offset;
 				}
 				else {
-					fireProjectile(params.fire_offset, order.m_target_pos, weapon, 0.0f);
+					fireProjectile(params.fire_offset, target_box, weapon, 0.0f);
 				}
 			}
 			if(event == ActorEvent::next_frame && order.m_burst_mode) {
 				order.m_burst_mode++;
-				fireProjectile(order.m_burst_off, (float3)order.m_target_pos, weapon, 0.05f);
+				fireProjectile(order.m_burst_off, target_box, weapon, 0.05f);
 				if(order.m_burst_mode > weapon.proto().burst_ammo)
 					order.m_burst_mode = 0;
 			}

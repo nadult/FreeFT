@@ -20,10 +20,11 @@ namespace game {
 	}
 
 	static const double blend_time = 0.5;
-	static const float feel_distance = 50.0;
+	static const float feel_distance = 20.0;
 	static const float max_distance = 200.0;
 		
-	bool WorldViewer::isVisible(const FBox &box, int index, bool is_movable) const {
+	bool WorldViewer::isVisible(Entity &entity, int index, bool is_movable) const {
+		const FBox &box = entity.boundingBox();
 		float dist = distance(box.closestPoint(m_cur_pos), m_cur_pos);
 
 		if(dist > max_distance)
@@ -39,7 +40,7 @@ namespace game {
 		if(!is_movable || m_spectator.index() == index)
 			return true;
 
-		return m_world->isVisible(m_eye_pos, box, m_spectator, 3);
+		return m_world->isVisible(m_eye_pos, entity.ref(), m_spectator, 4);
 	}
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {
@@ -85,7 +86,7 @@ namespace game {
 			const auto *desc = m_world->refEntityDesc(n);
 			DASSERT(desc);
 
-			bool is_visible = isVisible(entity->boundingBox(), n, isMovable(*entity));
+			bool is_visible = isVisible(*entity, n, isMovable(*entity));
 
 			if(vis_entity.ref != entity->ref()) {
 				vis_entity = VisEntity();
@@ -257,10 +258,12 @@ namespace game {
 				const Entity *entity = refEntity(n);
 				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), filter.flags()) || n == ignore_index)
 					continue;
+				if(!entity->testPixel(screen_pos))
+					continue;
 				FBox bbox = entity->boundingBox();
 
 				//TODO: check this
-				if(out.isEmpty() || (drawingOrder(bbox, out_bbox) == 1 && entity->testPixel(screen_pos))) {
+				if(out.isEmpty() || drawingOrder(bbox, out_bbox) == 1) {
 					out = ObjectRef(n, true);
 					out_bbox = bbox;
 				}

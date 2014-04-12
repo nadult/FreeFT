@@ -148,7 +148,9 @@ namespace game {
 
 		Stance::Type stance() const { return m_stance; }
 		Action::Type action() const { return m_action; }
+
 		const ActorInventory &inventory() const { return m_inventory; }
+		ActorInventory &inventory() { return m_inventory; }
 		
 		bool canEquipItem(int item_id) const;
 		bool canChangeStance() const;
@@ -175,6 +177,10 @@ namespace game {
 		float fallChance(DamageType::Type, float damage, const float3 &force) const;
 		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
 
+		const FBox shootingBox() const;
+		const Ray computeBestShootingRay(EntityRef target);
+		const Ray computeBestShootingRay(const FBox &bbox);
+
 	private:
 		void think();
 
@@ -184,15 +190,16 @@ namespace game {
 
 		void nextFrame();
 		void onAnimFinished();
+		
+		void addToRender(gfx::SceneRenderer &out, Color color) const override;
 
-		void onHitEvent();
-		void onFireEvent(const int3&);
-		void onSoundEvent();
-		void onStepEvent(bool left_foot);
-		void onPickupEvent();
+		void onHitEvent() override;
+		void onFireEvent(const int3&) override;
+		void onSoundEvent() override;
+		void onStepEvent(bool left_foot) override;
+		void onPickupEvent() override;
 
-		void fireProjectile(const int3 &offset, const float3 &target, const Weapon &weapon,
-								float random_val = 0.0f);
+		void fireProjectile(const int3 &offset, const FBox &target_box, const Weapon &weapon, float random_val = 0.0f);
 		void makeImpact(EntityRef target, const Weapon &weapon);
 
 		bool animateDeath(DeathId::Type);
@@ -254,6 +261,8 @@ namespace game {
 		ActorInventory m_inventory;
 
 		float m_hit_points;
+
+		vector<float3> m_aiming_points;
 	};
 
 

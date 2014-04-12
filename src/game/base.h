@@ -200,6 +200,9 @@ namespace game {
 		ObjectRef() :m_index(-1) { }
 		explicit operator bool() const { return !isEmpty(); }
 
+		bool operator==(const ObjectRef &rhs) const
+			{ return m_index == rhs.m_index && m_is_entity == rhs.m_is_entity; }
+
 		bool isEmpty() const { return m_index == -1; }
 		bool isEntity() const { return !isEmpty() && m_is_entity; }
 		bool isTile() const { return !isEmpty() && !m_is_entity; }
@@ -220,6 +223,8 @@ namespace game {
 		Intersection(ObjectRef ref = ObjectRef(), float distance = constant::inf)
 			:m_ref(ref), m_distance(distance) { }
 		explicit operator bool() const { return !isEmpty(); }
+		bool operator==(const Intersection &rhs) const
+			{ return isEmpty()? rhs.isEmpty() : m_ref == rhs.m_ref && m_distance == rhs.m_distance; }
 
 		operator const ObjectRef() const { return m_ref; }
 		bool isEmpty() const { return m_ref.isEmpty(); }

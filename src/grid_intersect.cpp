@@ -89,7 +89,7 @@ pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) 
 	float deltaz = cell_size / lenz;
 
 	int out = -1;
-	float out_dist = tmax;
+	float out_dist = tmax + constant::epsilon;
 
 	while(true) {
 		int node_id = nodeAt(pos);
@@ -131,64 +131,75 @@ pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) 
 	return make_pair(out, out_dist);
 }
 
-void Grid::traceAll(vector<pair<int, float>> &out, const Segment &segment, int ignored_id, int flags) const {
-	float tmin = max(segment.min, intersection(segment, m_bounding_box));
-	float tmax = min(segment.max, -intersection(-segment, m_bounding_box));
-	
-	float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
-	int2 pos = worldToGrid((int2)p1.xz()), end = worldToGrid((int2)p2.xz());
-	
-	if(!isInsideGrid(pos) || !isInsideGrid(end))
+void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float>> &out, int ignored_id, int flags) const {
+	out.resize(segments.size(), make_pair(-1, constant::inf));
+
+	if(segments.empty())
 		return;
 
-	// Algorithm idea from: RTCD by Christer Ericson
-	int dx = end.x > pos.x? 1 : end.x < pos.x? -1 : 0;
-	int dz = end.y > pos.y? 1 : end.y < pos.y? -1 : 0;
+	int2 start, end; {
+		float3 pmin(constant::inf, constant::inf, constant::inf);
+		float3 pmax(-constant::inf, -constant::inf, -constant::inf);
 
-	float cell_size = (float)node_size;
-	float inv_cell_size = 1.0f / cell_size;
-	float lenx = fabs(p2.x - p1.x);
-	float lenz = fabs(p2.z - p1.z);
+		for(int s = 0; s < (int)segments.size(); s++) {
+			const Segment &segment = segments[s];
+			float tmin = max(segment.min, intersection(segment, m_bounding_box));
+			float tmax = min(segment.max, -intersection(-segment, m_bounding_box));
 
-	float minx = float(node_size) * floorf(p1.x * inv_cell_size), maxx = minx + cell_size;
-	float minz = float(node_size) * floorf(p1.z * inv_cell_size), maxz = minz + cell_size;
-	float tx = (p1.x > p2.x? p1.x - minx : maxx - p1.x) / lenx;
-	float tz = (p1.z > p2.z? p1.z - minz : maxz - p1.z) / lenz;
+			float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
+			pmin = min(pmin, min(p1, p2));
+			pmax = max(pmax, max(p1, p2));
+		}
 
-	float deltax = cell_size / lenx;
-	float deltaz = cell_size / lenz;
+		start = worldToGrid((int2)pmin.xz());
+		end = worldToGrid((int2)pmax.xz());
+		start = max(start, int2(0, 0));
+		end = min(end, int2(m_size.x - 1, m_size.y - 1));
+	}
 
-	while(true) {
-		int node_id = nodeAt(pos);
+	float max_dist = -constant::inf;	
+	Interval idir[3], origin[3]; {
+		const Segment &first = segments.front();
+		idir  [0] = first.invDir().x; idir  [1] = first.invDir().y; idir  [2] = first.invDir().z;
+		origin[0] = first.origin().x; origin[1] = first.origin().y; origin[2] = first.origin().z;
+
+		for(int s = 1; s < (int)segments.size(); s++) {
+			const Segment &segment = segments[s];
+			float tidir[3] = { segment.invDir().x, segment.invDir().y, segment.invDir().z };
+			float torigin[3] = { segment.origin().x, segment.origin().y, segment.origin().z };
+
+			max_dist = max(max_dist, segment.max);
+			for(int i = 0; i < 3; i++) {
+				idir  [i] = Interval(min(idir  [i].min, tidir  [i]), max(idir  [i].max, tidir  [i]));
+				origin[i] = Interval(min(origin[i].min, torigin[i]), max(origin[i].max, torigin[i]));
+			}
+		}
+	}
+
+	for(int x = start.x; x <= end.x; x++) for(int z = start.y; z <= end.y; z++) {
+		int node_id = nodeAt(int2(x, z));
 		const Node &node = m_nodes[node_id];
 
-		if(flagTest(node.obj_flags, flags)) {
+		if(flagTest(node.obj_flags, flags) && intersection(idir, origin, node.bbox) < max_dist) {
 			const Object *objects[node.size];
 			int count = extractObjects(node_id, objects, ignored_id, flags);
 
 			for(int n = 0; n < count; n++) {
-				float dist = intersection(segment, objects[n]->bbox);
-				if(dist != constant::inf)
-					out.push_back(make_pair((int)(objects[n] - &m_objects[0]), dist));
-			}	
+				if(intersection(idir, origin, objects[n]->bbox) < max_dist) {
+					for(int s = 0; s < (int)segments.size(); s++) {
+						const Segment &segment = segments[s];
+						float dist = intersection(segment, objects[n]->bbox);
+						if(dist < out[s].second) {
+							out[s].second = dist;
+							out[s].first = objects[n] - &m_objects[0];
+						}
+					}
+				}
+			}
 			
 			if(node.is_dirty)
 				updateNode(node_id);
 		}
-
-		if(tx <= tz || dz == 0) {
-			if(pos.x == end.x)
-				break;
-			tx += deltax;
-			pos.x += dx;
-		}
-		else {
-			if(pos.y == end.y)
-				break;
-			tz += deltaz;
-			pos.y += dz;
-		}
-		float ray_pos = tmin + max((tx - deltax) * lenx, (tz - deltaz) * lenz);
 	}
 }
 
