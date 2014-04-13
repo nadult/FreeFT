@@ -1,4 +1,4 @@
-- Estimating hit chance by throwing multiple rays (brute force) [4h]
+- Estimating hit chance by throwing multiple rays (brute force) [4h]  DONE
 - Ricochets, shooting through objects [3h]
 - two modes of aiming: automatic and manual [3h]
   - tracing targets for auto mode
@@ -10,4 +10,4 @@
 +WORK_LOG:
 11.04.14: 17:00 - 18:00, 18:40 - 19:10
 12.04.14: 9:30 - 13:00, 19:00 - 23:45
-13.04.15: 9:00 - 11:00
+13.04.15: 9:00 - 11:00, 13:00 - 15:00

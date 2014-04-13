@@ -495,7 +495,8 @@ const Rect<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
 }
 
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
-	
+
+// Plane touches the sphere which encloses the box
 vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density, bool outside);
 vector<float3> genPoints(const FBox &bbox, int density);
 

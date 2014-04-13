@@ -11,7 +11,6 @@
 
 namespace game {
 
-
 	class AttackOrder: public OrderImpl<AttackOrder, OrderTypeId::attack> {
 	public:
 		AttackOrder(AttackMode::Type mode, EntityRef target);
@@ -28,7 +27,6 @@ namespace game {
 		
 		int m_burst_mode;
 	};
-
 
 }
 

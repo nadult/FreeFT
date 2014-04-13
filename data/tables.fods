@@ -166,8 +166,8 @@
        <config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item>
       </config:config-item-map-entry>
       <config:config-item-map-entry config:name="Weapons">
-       <config:config-item config:name="CursorPositionX" config:type="int">12</config:config-item>
-       <config:config-item config:name="CursorPositionY" config:type="int">22</config:config-item>
+       <config:config-item config:name="CursorPositionX" config:type="int">11</config:config-item>
+       <config:config-item config:name="CursorPositionY" config:type="int">18</config:config-item>
        <config:config-item config:name="HorizontalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="VerticalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="HorizontalSplitPosition" config:type="int">0</config:config-item>
@@ -1547,8 +1547,8 @@
      <table:table-cell office:value-type="float" office:value="10" calcext:value-type="float">
       <text:p>10</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="100" calcext:value-type="float">
-      <text:p>100</text:p>
+     <table:table-cell office:value-type="float" office:value="70" calcext:value-type="float">
+      <text:p>70</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>heavy</text:p>
@@ -1590,8 +1590,8 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="200" calcext:value-type="float">
-      <text:p>200</text:p>
+     <table:table-cell office:value-type="float" office:value="100" calcext:value-type="float">
+      <text:p>100</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>laser</text:p>
@@ -1633,8 +1633,8 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="150" calcext:value-type="float">
-      <text:p>150</text:p>
+     <table:table-cell office:value-type="float" office:value="80" calcext:value-type="float">
+      <text:p>80</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>plasma</text:p>
@@ -1676,8 +1676,8 @@
      <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="150" calcext:value-type="float">
-      <text:p>150</text:p>
+     <table:table-cell office:value-type="float" office:value="80" calcext:value-type="float">
+      <text:p>80</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>emp</text:p>
@@ -1719,8 +1719,8 @@
      <table:table-cell office:value-type="float" office:value="30" calcext:value-type="float">
       <text:p>30</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="50" calcext:value-type="float">
-      <text:p>50</text:p>
+     <table:table-cell office:value-type="float" office:value="40" calcext:value-type="float">
+      <text:p>40</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>minigunlaser</text:p>
@@ -1756,8 +1756,8 @@
      <table:table-cell table:number-columns-repeated="3" office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="150" calcext:value-type="float">
-      <text:p>150</text:p>
+     <table:table-cell office:value-type="float" office:value="70" calcext:value-type="float">
+      <text:p>70</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>rocketlauncher</text:p>
@@ -1893,8 +1893,8 @@
       <text:p>1</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell office:value-type="float" office:value="50" calcext:value-type="float">
-      <text:p>50</text:p>
+     <table:table-cell office:value-type="float" office:value="40" calcext:value-type="float">
+      <text:p>40</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>spearstab</text:p>
@@ -1928,8 +1928,8 @@
      <table:table-cell table:number-columns-repeated="3" office:value-type="float" office:value="1" calcext:value-type="float">
       <text:p>1</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="100" calcext:value-type="float">
-      <text:p>100</text:p>
+     <table:table-cell office:value-type="float" office:value="20" calcext:value-type="float">
+      <text:p>20</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>flamer</text:p>
@@ -1964,8 +1964,8 @@
       <text:p>0.5</text:p>
      </table:table-cell>
      <table:table-cell table:number-columns-repeated="2"/>
-     <table:table-cell office:value-type="float" office:value="1" calcext:value-type="float">
-      <text:p>1</text:p>
+     <table:table-cell office:value-type="float" office:value="30" calcext:value-type="float">
+      <text:p>30</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>pistollight</text:p>
@@ -2005,8 +2005,8 @@
      <table:table-cell office:value-type="float" office:value="25" calcext:value-type="float">
       <text:p>25</text:p>
      </table:table-cell>
-     <table:table-cell office:value-type="float" office:value="50" calcext:value-type="float">
-      <text:p>50</text:p>
+     <table:table-cell office:value-type="float" office:value="40" calcext:value-type="float">
+      <text:p>40</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
       <text:p>smgheavy</text:p>

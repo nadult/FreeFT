@@ -20,3 +20,11 @@
 - Add sound attenuation
 
 - Add looped walk / run sounds
+
+- when projectiles are being shot vertically, their angle could be altered a bit
+
+
+REFACTORING:
+- move EntityWorldProxy, EntityRef to separate files?
+- make EntityWorldProxy::ref() const
+- make Entity access functions both const and non-const (it's ok to do them with const-casts)

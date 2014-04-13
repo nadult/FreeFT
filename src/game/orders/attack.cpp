@@ -44,8 +44,13 @@ namespace game {
 
 	bool Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		const Entity *target = refEntity(order.m_target);
-		const FBox target_box = target? target->boundingBox() : FBox(order.m_target_pos, order.m_target_pos);
-		order.m_target_pos = target_box.center();
+		FBox target_box;
+		if(target) {
+			target_box = target->boundingBox();
+			order.m_target_pos = target_box.center();
+		}
+		else
+			target_box = FBox(order.m_target_pos, order.m_target_pos);
 
 		if(event == ActorEvent::init_order) {
 			Weapon weapon = m_inventory.weapon();
@@ -96,7 +101,7 @@ namespace game {
 		Weapon weapon = order.m_is_kick_weapon? Weapon(*m_actor.kick_weapon) : m_inventory.weapon();
 
 		if(AttackMode::isRanged(order.m_mode)) {
-			float inaccuracy = 1.0f / max(10.0f, weapon.proto().accuracy);
+			float inaccuracy = this->inaccuracy(weapon);
 
 			if(event == ActorEvent::fire) {
 				AttackMode::Type mode = order.m_mode;

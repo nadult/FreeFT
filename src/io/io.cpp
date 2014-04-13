@@ -41,6 +41,7 @@ namespace io {
 			actor = nullptr;
 
 		int2 mouse_pos = getMousePos();
+		bool console_mode = m_console.isOpened();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
 		Flags::Type flags = Flags::walkable_tile | (Flags::entity & ~(Flags::projectile | Flags::impact));
@@ -63,7 +64,7 @@ namespace io {
 			m_shoot_isect = m_world->trace(Segment(shoot_ray, 0.0f), {Flags::all | Flags::colliding, m_actor_ref});
 		}
 
-		if(isKeyDown('T') && !m_isect.isEmpty() && actor) {
+		if(!console_mode && isKeyDown('T') && !m_isect.isEmpty() && actor) {
 			float3 pos = ray.at(m_isect.distance());
 			actor->setPos(int3(pos + float3(0.5f, 0.5f, 0.5f)));
 			actor->fixPosition();
@@ -116,7 +117,7 @@ namespace io {
 					m_world->sendOrder(new AttackOrder(mode, ray.at(m_isect.distance())), m_actor_ref);
 			}
 		}
-		if(isKeyDown(Key_kp_add) || isKeyDown(Key_kp_subtract)) {
+		if(!console_mode && (isKeyDown(Key_kp_add) || isKeyDown(Key_kp_subtract))) {
 			Stance::Type stance = (Stance::Type)(actor->stance() + (isKeyDown(Key_kp_add)? 1 : -1));
 			if(Stance::isValid(stance))
 				m_world->sendOrder(new ChangeStanceOrder(stance), m_actor_ref);
@@ -229,11 +230,17 @@ namespace io {
 
 			if(target_actor)
 				snprintf(ptr, sizeof(text) - (ptr - text), " THP: %d", target_actor->hitPoints());
+
+			if(!m_isect.isEmpty()) {
+				FBox bbox = m_viewer.refBBox(m_isect);
+				float hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
+				snprintf(ptr, sizeof(text) - (ptr - text), "\nHit chance: %.0f%%", hit_chance * 100.0f);
+			}
 			font->drawShadowed(int2(0, font->lineHeight() * 2), Color::white, Color::black, text);
 		}
 
 		if(m_show_stats)
-			font->drawShadowed(int2(0, 60), Color::white, Color::black, "%s", m_profiler_stats.c_str());
+			font->drawShadowed(int2(0, 70), Color::white, Color::black, "%s", m_profiler_stats.c_str());
 
 		lookAt({0, 0});
 		if(actor) {

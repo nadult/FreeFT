@@ -178,7 +178,10 @@ namespace game {
 		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
 
 		const FBox shootingBox(const Weapon &weapon) const;
-		const Ray computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
+		const Segment computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
+
+		float inaccuracy(const Weapon &weapon) const;
+		float estimateHitChance(const Weapon &weapon, const FBox &bbox);
 
 	private:
 		void think();
@@ -262,7 +265,7 @@ namespace game {
 		float m_hit_points;
 
 		vector<float3> m_aiming_points;
-		pair<float3, float3> m_aiming_line;
+		vector<float3> m_aiming_lines;
 	};
 
 

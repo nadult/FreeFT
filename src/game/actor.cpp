@@ -16,7 +16,7 @@
 #include "sys/profiler.h"
 #include "gfx/scene_renderer.h"
 
-#define DEBUG_SHOOTING
+//#define DEBUG_SHOOTING
 
 namespace game {
 
@@ -475,7 +475,7 @@ namespace game {
 		if(isClient())
 			return;
 
-		Ray best_ray = computeBestShootingRay(target_box, weapon);
+		Segment best_ray = computeBestShootingRay(target_box, weapon);
 
 		if(randomness > 0.0f) {
 			float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);
@@ -483,9 +483,15 @@ namespace game {
 		}
 
 #ifdef DEBUG_SHOOTING
-		Intersection isect = trace(best_ray, {Flags::all | Flags::colliding, ref()});
-		m_aiming_line = make_pair(best_ray.origin(), best_ray.dir() * isect.distance() + best_ray.origin());
+		{
+			m_aiming_lines.clear();
+			m_aiming_lines.push_back(best_ray.origin());
+			Intersection isect = trace(best_ray, {Flags::all | Flags::colliding, ref()});
+			m_aiming_lines.push_back(best_ray.origin() + best_ray.dir() * isect.distance());
+		}
 #endif
+
+
 
 		//TODO: spawned projectiles should be centered
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
@@ -524,11 +530,12 @@ namespace game {
 #ifdef DEBUG_SHOOTING
 		for(int n = 0; n < (int)m_aiming_points.size(); n++)
 			out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), Color::red, true);
-		out.addLine((int3)m_aiming_line.first, (int3)m_aiming_line.second, Color::red);
+		for(int n = 0; n < (int)m_aiming_lines.size(); n+=2)
+			out.addLine((int3)m_aiming_lines[n], (int3)m_aiming_lines[n + 1], Color::red);
 #endif
 	}
 
-	const Ray Actor::computeBestShootingRay(const FBox &target_box, const Weapon &weapon) {
+	const Segment Actor::computeBestShootingRay(const FBox &target_box, const Weapon &weapon) {
 		PROFILE_RARE("Actor::shootingRay");
 
 		FBox shooting_box = shootingBox(weapon);
@@ -582,7 +589,7 @@ namespace game {
 			float best_score = -constant::inf;
 		
 			vector<float3> targets = genPointsOnPlane(target_box, normalized(source - target_box.center()), 8, false);
-			vector<int> target_hits(targets.size(), 0);
+			vector<char> target_hits(targets.size(), 0);
 
 			vector<Segment> segments;
 			for(int t = 0; t < (int)targets.size(); t++)
@@ -591,11 +598,14 @@ namespace game {
 			vector<Intersection> isects;
 			world()->traceCoherent(segments, isects, {Flags::all | Flags::colliding, ref()});
 
+			int num_hits = 0;
 			for(int t = 0; t < (int)targets.size(); t++) {
 				const Intersection &isect = isects[t];
 				const Segment &segment = segments[t];
-				if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
+				if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box)) {
 					target_hits[t] = 1;
+					num_hits++;
+				}
 			}
 
 			for(int t = 0; t < (int)targets.size(); t++) {
@@ -617,7 +627,46 @@ namespace game {
 			}
 		}
 
-		return (Ray)Segment(source, best_target);
+		return Segment(source, best_target);
+	}
+		
+	float Actor::inaccuracy(const Weapon &weapon) const {
+		float accuracy = weapon.proto().accuracy;
+		if(m_stance == Stance::crouch)
+			accuracy *= 1.25f;
+		else if(m_stance == Stance::prone)
+			accuracy *= 1.5f;
+
+		return 1.0f / max(10.0f, accuracy);
+	}
+		
+	float Actor::estimateHitChance(const Weapon &weapon, const FBox &target_bbox) {
+	//	PROFILE_RARE("Actor::estimateHitChance");
+
+		Segment segment = computeBestShootingRay(target_bbox, weapon);
+
+		float inaccuracy = this->inaccuracy(weapon);
+		vector<Segment> segments;
+		int density = 32;
+
+		for(int x = 0; x < density; x++)
+			for(int y = 0; y < density; y++) {
+				float mul = 1.0f / (density - 1);
+				Ray ray(segment.origin(), perturbVector(segment.dir(), float(x) * mul, float(y) *mul, inaccuracy));
+				float dist = intersection(ray, target_bbox);
+				if(dist < constant::inf)
+					segments.push_back(Segment(ray, 0.0f, dist));
+			}
+
+		vector<Intersection> isects;
+		world()->traceCoherent(segments, isects, {Flags::all | Flags::colliding, ref()});
+
+		int num_hits = 0;
+		for(int n = 0; n < (int)isects.size(); n++)
+			if(isects[n].isEmpty() || isects[n].distance() + constant::epsilon >= intersection(segments[n], target_bbox))
+			   num_hits++;	
+
+		return float(num_hits) / (density * density);
 	}
 
 }
