@@ -43,9 +43,10 @@ namespace io {
 		int2 mouse_pos = getMousePos();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
-		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, {Flags::walkable_tile | Flags::entity, m_actor_ref});
+		Flags::Type flags = Flags::walkable_tile | (Flags::entity & ~(Flags::projectile | Flags::impact));
+		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, {flags, m_actor_ref});
 		if(m_isect.isEmpty() || m_isect.isTile())
-			m_isect = m_viewer.trace(ray, {Flags::walkable_tile | Flags::entity, m_actor_ref});
+			m_isect = m_viewer.trace(ray, {flags, m_actor_ref});
 		
 		//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 		// has to intersect bounding box of the object

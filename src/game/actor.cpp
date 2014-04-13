@@ -182,8 +182,8 @@ namespace game {
 		bool is_fallen = current && (current->mode == GetHitOrder::Mode::fall || current->mode == GetHitOrder::Mode::fallen);
 
 		//TODO: randomization provided by world class
-		bool will_dodge = !is_fallen && frand() <= dodgeChance(damage_type, damage);
-		bool will_fall = !will_dodge && frand() <= fallChance(damage_type, damage, force);
+		bool will_dodge = !is_fallen && random() <= dodgeChance(damage_type, damage);
+		bool will_fall = !will_dodge && random() <= fallChance(damage_type, damage, force);
 		
 		if(!will_dodge)
 			m_hit_points -= damage;
@@ -194,7 +194,7 @@ namespace game {
 		}
 		else {
 			if(will_fall) {
-				float fall_time = (damage / float(m_actor.hit_points)) * length(force) * frand();
+				float fall_time = (damage / float(m_actor.hit_points)) * length(force) * random();
 
 				if(is_fallen && current)
 					current->fall_time += fall_time;
@@ -204,7 +204,7 @@ namespace game {
 			else if(!current) {
 				OrderTypeId::Type current_type_id = m_order? m_order->typeId() : OrderTypeId::invalid;
 
-				if(current_type_id == OrderTypeId::idle || frand() > 0.5f)
+				if(current_type_id == OrderTypeId::idle || random() > 0.5f)
 					setOrder(new GetHitOrder(will_dodge), true);
 				else if(!will_dodge)
 					world()->playSound(m_actor.sounds[m_sound_variation].hit, pos());
@@ -382,28 +382,6 @@ namespace game {
 					static_cast<DieOrder*>(m_order.get())->m_is_dead;
 	}
 
-	void Actor::fireProjectile(const int3 &off, const FBox &target_box, const Weapon &weapon, float random_val) {
-		if(isClient())
-			return;
-
-		//TODO: problems when targeting ground
-		Ray best_ray = computeBestShootingRay(target_box);
-
-		//TODO: spawned projectiles should be centered
-		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
-			addNewEntity<Projectile>(best_ray.origin(), *proj_proto, actualDirAngle(), best_ray.dir(), ref(), weapon.proto().damage_mod);
-	}
-		
-	void Actor::makeImpact(EntityRef target, const Weapon &weapon) {
-		DASSERT(weapon.proto().impact.isValid());
-
-		if(target) {
-			const Armour &armour = m_inventory.armour();
-			float damage_mod = weapon.proto().damage_mod * armour.proto().melee_mod;
-			addNewEntity<Impact>(pos(), *weapon.proto().impact, ref(), target, damage_mod);
-		}
-	}
-
 	bool Actor::animate(Action::Type action) {
 		DASSERT(!Action::isSpecial(action));
 
@@ -493,34 +471,51 @@ namespace game {
 			setPos(pos() + float3(0.0f, 1.0f, 0.0f));
 	}
 	
-	static vector<float3> genPoints(const FBox &bbox, int density) {
-		float3 offset = bbox.min;
-		float3 mul = bbox.size() * (1.0f / (density - 1));
-		vector<float3> out;
+	void Actor::fireProjectile(const FBox &target_box, const Weapon &weapon, float randomness) {
+		if(isClient())
+			return;
 
-		//TODO: gen points on a plane, not inside a box
-		for(int x = 0; x < density; x++)
-			for(int y = 0; y < density; y++)
-				for(int z = 0; z < density; z++)
-					out.push_back(offset + float3(x * mul.x, y * mul.y, z * mul.z));
-		return std::move(out);
+		Ray best_ray = computeBestShootingRay(target_box, weapon);
+
+		if(randomness > 0.0f) {
+			float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);
+			best_ray = Ray(best_ray.origin(), dir);
+		}
+
+#ifdef DEBUG_SHOOTING
+		Intersection isect = trace(best_ray, {Flags::all | Flags::colliding, ref()});
+		m_aiming_line = make_pair(best_ray.origin(), best_ray.dir() * isect.distance() + best_ray.origin());
+#endif
+
+		//TODO: spawned projectiles should be centered
+		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
+			addNewEntity<Projectile>(best_ray.origin(), *proj_proto, actualDirAngle(), best_ray.dir(), ref(), weapon.proto().damage_mod);
 	}
 		
-	const FBox Actor::shootingBox() const {
+	void Actor::makeImpact(EntityRef target, const Weapon &weapon) {
+		DASSERT(weapon.proto().impact.isValid());
+
+		if(target) {
+			const Armour &armour = m_inventory.armour();
+			float damage_mod = weapon.proto().damage_mod * armour.proto().melee_mod;
+			addNewEntity<Impact>(pos(), *weapon.proto().impact, ref(), target, damage_mod);
+		}
+	}
+
+	const FBox Actor::shootingBox(const Weapon &weapon) const {
 		FBox bbox = boundingBox();
 		float3 center = bbox.center();
 		float3 size = bbox.size();
-		center.y += size.y * 0.3f;
-		size.y *= 0.4f;
+
+		if(weapon.classId() == WeaponClass::minigun) {
+			size.y *= 0.4f;
+		}
+		else {
+			center.y += size.y * 0.3f;
+			size.y *= 0.4f;
+		}
 
 		return FBox(center - size * 0.5f, center + size * 0.5f);
-	}
-
-	const Ray Actor::computeBestShootingRay(EntityRef target_ref) {
-		const Entity *target = refEntity(target_ref);
-		if(!target)
-			return Ray();
-		return computeBestShootingRay(target->boundingBox());
 	}
 
 	void Actor::addToRender(gfx::SceneRenderer &out, Color color) const {
@@ -529,13 +524,14 @@ namespace game {
 #ifdef DEBUG_SHOOTING
 		for(int n = 0; n < (int)m_aiming_points.size(); n++)
 			out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), Color::red, true);
+		out.addLine((int3)m_aiming_line.first, (int3)m_aiming_line.second, Color::red);
 #endif
 	}
 
-	const Ray Actor::computeBestShootingRay(const FBox &target_box) {
+	const Ray Actor::computeBestShootingRay(const FBox &target_box, const Weapon &weapon) {
 		PROFILE_RARE("Actor::shootingRay");
 
-		FBox shooting_box = shootingBox();
+		FBox shooting_box = shootingBox(weapon);
 		float3 center = shooting_box.center();
 		float3 dir = normalized(target_box.center() - center);
 
@@ -583,8 +579,6 @@ namespace game {
 		}
 
 		float3 best_target = target_box.center(); {
-			PROFILE_RARE("Actor::shootingRay::target");
-
 			float best_score = -constant::inf;
 		
 			vector<float3> targets = genPointsOnPlane(target_box, normalized(source - target_box.center()), 8, false);

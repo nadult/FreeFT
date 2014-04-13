@@ -47,7 +47,7 @@ const Interval max(const Interval&, const Interval&);
 struct int2
 {
 	int2(int x, int y) : x(x), y(y) { }
-	int2() { }
+	int2() :x(0), y(0) { }
 
 	int2 operator+(const int2 &rhs) const { return int2(x + rhs.x, y + rhs.y); }
 	int2 operator-(const int2 &rhs) const { return int2(x - rhs.x, y - rhs.y); }
@@ -67,7 +67,7 @@ struct short2
 {
 	short2(short x, short y) : x(x), y(y) { }
 	short2(const int2 &rhs) :x(rhs.x), y(rhs.y) { }
-	short2() { }
+	short2() :x(0), y(0) { }
 	operator const int2() const { return int2(x, y); }
 
 	short2 operator+(const short2 &rhs) const { return short2(x + rhs.x, y + rhs.y); }
@@ -86,7 +86,7 @@ struct short2
 struct int3
 {
 	int3(int x, int y, int z) : x(x), y(y), z(z) { }
-	int3() { }
+	int3() :x(0), y(0), z(0) { }
 
 	int3 operator+(const int3 &rhs) const { return int3(x + rhs.x, y + rhs.y, z + rhs.z); }
 	int3 operator-(const int3 &rhs) const { return int3(x - rhs.x, y - rhs.y, z - rhs.z); }
@@ -108,7 +108,7 @@ struct int3
 struct int4
 {
 	int4(int x, int y, int z, int w) : x(x), y(y), z(z), w(w) { }
-	int4() { }
+	int4() :x(0), y(0), z(0), w(0) { }
 
 	int4 operator+(const int4 rhs) const { return int4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); }
 	int4 operator-(const int4 rhs) const { return int4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
@@ -126,7 +126,7 @@ struct float2
 {
 	float2(float x, float y) : x(x), y(y) { }
 	float2(const int2 &xy) :x(xy.x), y(xy.y) { }
-	float2() { }
+	float2() :x(0.0f), y(0.0f) { }
 	explicit operator int2() const { return int2((int)x, (int)y); }
 
 	float2 operator+(const float2 &rhs) const { return float2(x + rhs.x, y + rhs.y); }
@@ -150,7 +150,7 @@ struct float3
 {
 	float3(float x, float y, float z) : x(x), y(y), z(z) { }
 	float3(const int3 &xyz) :x(xyz.x), y(xyz.y), z(xyz.z) { }
-	float3() { }
+	float3() :x(0.0f), y(0.0f), z(0.0f) { }
 	explicit operator int3() const { return int3((int)x, (int)y, (int)z); }
 
 	float3 operator+(const float3 &rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.z); }
@@ -174,7 +174,7 @@ struct float3
 struct float4
 {
 	float4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { }
-	float4() { }
+	float4() :x(0.0f), y(0.0f), z(0.0f), w(0.0f) { }
 
 	float4 operator+(const float4 &rhs) const { return float4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); }
 	float4 operator-(const float4 &rhs) const { return float4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
@@ -243,10 +243,13 @@ private:
 struct Segment: public Ray {
 	Segment(const Ray &ray, float min = -constant::inf, float max = constant::inf);
 	Segment(const float3 &source, const float3 &target);
-	Segment() { }
+	Segment() :m_min(0.0f), m_max(constant::inf) { }
 
-	//TODO: proper naming and accessors
-	float min, max;
+	float min() const { return m_min; }
+	float max() const { return m_max; }
+
+protected:
+	float m_min, m_max;
 };
 
 class Plane {
@@ -494,6 +497,10 @@ const Rect<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
 	
 vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density, bool outside);
+vector<float3> genPoints(const FBox &bbox, int density);
+
+void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3);
+const float3 perturbVector(const float3 &vec, float rand1, float rand2, float strength);
 
 #endif
 

@@ -111,6 +111,7 @@ namespace game {
 
 		double timeDelta() const;
 		double currentTime() const;
+		float random() const;
 		
 		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
 		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;

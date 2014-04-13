@@ -103,6 +103,10 @@ namespace game {
 		return m_world? m_world->currentTime() : 0.0f;
 	}
 
+	float EntityWorldProxy::random() const {
+		return m_world? m_world->random() : 0.0f;
+	}
+
 	bool EntityWorldProxy::isClient() const {
 		return m_world && m_world->isClient();
 	}

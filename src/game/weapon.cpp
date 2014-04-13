@@ -26,6 +26,7 @@ namespace game {
 		burst_ammo = toInt(parser("burst_ammo"));
 
 		ranged_range = melee_range = 0.0f;
+		accuracy = toFloat(parser("accuracy"));
 
 		const char *sound_prefix = parser("sound_prefix");
 		for(int n = 0; n < WeaponSoundType::count; n++) {

@@ -51,3 +51,5 @@
 - Problem with direction of flamer's projectile
 
 - Attacking on stairs may caus player to get stuck
+
+- Fix flamer

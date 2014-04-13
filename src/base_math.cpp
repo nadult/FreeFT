@@ -149,14 +149,14 @@ const Matrix3 inverse(const Matrix3 &mat) {
 }
 
 Segment::Segment(const Ray &ray, float min, float max)
-	:Ray(ray), min(min), max(max) { }
+	:Ray(ray), m_min(min), m_max(max) { }
 
 Segment::Segment(const float3 &source, const float3 &target) {
 	float3 dir = target - source;
 	float len = length(dir);
 	*((Ray*)this) = Ray(source, dir / len);
-	min = 0.0f;
-	max = len;
+	m_min = 0.0f;
+	m_max = len;
 }
 
 
@@ -260,7 +260,6 @@ float intersection(const Interval idir[3], const Interval origin[3], const Box<f
 	l2   = idir[2] * (Interval(box.max.z) - origin[2]);
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
-//	printf("%f %f   %f %f\n", lmin.min, lmin.max, lmax.min, lmax.max);
 
 	return lmin.min <= lmax.max? lmin.min : constant::inf;
 }
@@ -284,8 +283,8 @@ float intersection(const Segment &segment, const Box<float3> &box) {
 	l2   = inv_dir.z * (box.max.z - origin.z);
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
-	lmin = max(lmin, segment.min);
-	lmax = min(lmax, segment.max);
+	lmin = max(lmin, segment.min());
+	lmax = min(lmax, segment.max());
 
 	return lmin <= lmax? lmin : constant::inf;
 }
@@ -421,5 +420,34 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 
 	return std::move(out);
 }
+
+vector<float3> genPoints(const FBox &bbox, int density) {
+	float3 offset = bbox.min;
+	float3 mul = bbox.size() * (1.0f / (density - 1));
+	vector<float3> out;
+
+	//TODO: gen points on a plane, not inside a box
+	for(int x = 0; x < density; x++)
+		for(int y = 0; y < density; y++)
+			for(int z = 0; z < density; z++)
+				out.push_back(offset + float3(x * mul.x, y * mul.y, z * mul.z));
+
+	return std::move(out);
+}
+		
+
+void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3) {
+	DASSERT(lengthSq(v1) > constant::epsilon);
+
+	v2 = float3(-v1.y, v1.z, v1.x);
+	v3 = cross(v1, v2);
+}
 	
+const float3 perturbVector(const float3 &v1, float rand1, float rand2, float strength) {
+	float3 v2, v3;
+	findPerpendicular(v1, v2, v3);
+
+	float3 dir = normalized(float3(1.0f, (2.0f * rand1 - 1.0f) * strength, (2.0f * rand2 - 1.0f) * strength));
+	return v1 * dir.x + v2 * dir.y + v3 * dir.z;
+}
 

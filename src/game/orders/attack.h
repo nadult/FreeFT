@@ -27,7 +27,6 @@ namespace game {
 		bool m_is_followup;
 		
 		int m_burst_mode;
-		int3 m_burst_off;
 	};
 
 

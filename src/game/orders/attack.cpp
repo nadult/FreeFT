@@ -10,27 +10,42 @@
 namespace game {
 
 	AttackOrder::AttackOrder(AttackMode::Type mode, EntityRef target)
-		:m_mode(mode), m_target(target), m_target_pos(0, 0, 0), m_burst_mode(0), m_burst_off(0, 0, 0), m_is_kick_weapon(false), m_is_followup(false) {
+		:m_mode(mode), m_target(target), m_target_pos(0, 0, 0), m_burst_mode(0), m_is_kick_weapon(false), m_is_followup(false) {
 	}
 
 	AttackOrder::AttackOrder(AttackMode::Type mode, const float3 &target_pos)
-		:m_mode(mode), m_target_pos(target_pos), m_burst_mode(0), m_burst_off(0, 0, 0), m_is_kick_weapon(false), m_is_followup(false) {
+		:m_mode(mode), m_target_pos(target_pos), m_burst_mode(0), m_is_kick_weapon(false), m_is_followup(false) {
 	}
 
 	AttackOrder::AttackOrder(Stream &sr) :OrderImpl(sr) {
-		sr >> m_mode >> m_target >> m_target_pos >> m_is_kick_weapon >> m_is_followup;
-		sr >> m_burst_mode >> m_burst_off;
+		u8 flags;
+		sr.unpack(flags, m_mode);
+		m_burst_mode = sr.decodeInt();
+		m_is_kick_weapon = flags & 1;
+		m_is_followup = flags & 2;
+		if(flags & 4)
+			sr >> m_target;
+		else
+			sr >> m_target_pos;
 	}
 
 	void AttackOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_mode << m_target << m_target_pos << m_is_kick_weapon << m_is_followup;
-		sr << m_burst_mode << m_burst_off;
+		u8 flags =	(m_is_kick_weapon? 1 : 0) |
+					(m_is_followup? 2 : 0) |
+					(m_target? 4 : 0);
+		sr.pack(flags, m_mode);
+		sr.encodeInt(m_burst_mode);
+		if(m_target)
+			sr << m_target;
+		else
+			sr << m_target_pos;
 	}
 
 	bool Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		const Entity *target = refEntity(order.m_target);
 		const FBox target_box = target? target->boundingBox() : FBox(order.m_target_pos, order.m_target_pos);
+		order.m_target_pos = target_box.center();
 
 		if(event == ActorEvent::init_order) {
 			Weapon weapon = m_inventory.weapon();
@@ -81,6 +96,8 @@ namespace game {
 		Weapon weapon = order.m_is_kick_weapon? Weapon(*m_actor.kick_weapon) : m_inventory.weapon();
 
 		if(AttackMode::isRanged(order.m_mode)) {
+			float inaccuracy = 1.0f / max(10.0f, weapon.proto().accuracy);
+
 			if(event == ActorEvent::fire) {
 				AttackMode::Type mode = order.m_mode;
 
@@ -89,15 +106,14 @@ namespace game {
 
 				if(mode == AttackMode::burst) {
 					order.m_burst_mode = 1;
-					order.m_burst_off = params.fire_offset;
 				}
 				else {
-					fireProjectile(params.fire_offset, target_box, weapon, 0.0f);
+					fireProjectile(target_box, weapon, inaccuracy);
 				}
 			}
 			if(event == ActorEvent::next_frame && order.m_burst_mode) {
 				order.m_burst_mode++;
-				fireProjectile(order.m_burst_off, target_box, weapon, 0.05f);
+				fireProjectile(target_box, weapon, inaccuracy * (1.0f + 0.05f * order.m_burst_mode));
 				if(order.m_burst_mode > weapon.proto().burst_ammo)
 					order.m_burst_mode = 0;
 			}

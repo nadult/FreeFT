@@ -177,9 +177,8 @@ namespace game {
 		float fallChance(DamageType::Type, float damage, const float3 &force) const;
 		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
 
-		const FBox shootingBox() const;
-		const Ray computeBestShootingRay(EntityRef target);
-		const Ray computeBestShootingRay(const FBox &bbox);
+		const FBox shootingBox(const Weapon &weapon) const;
+		const Ray computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
 
 	private:
 		void think();
@@ -199,7 +198,7 @@ namespace game {
 		void onStepEvent(bool left_foot) override;
 		void onPickupEvent() override;
 
-		void fireProjectile(const int3 &offset, const FBox &target_box, const Weapon &weapon, float random_val = 0.0f);
+		void fireProjectile(const FBox &target_box, const Weapon &weapon, float randomness = 0.0f);
 		void makeImpact(EntityRef target, const Weapon &weapon);
 
 		bool animateDeath(DeathId::Type);
@@ -263,6 +262,7 @@ namespace game {
 		float m_hit_points;
 
 		vector<float3> m_aiming_points;
+		pair<float3, float3> m_aiming_line;
 	};
 
 

@@ -30,6 +30,7 @@ namespace game {
 
 		float melee_range;
 		float ranged_range;
+		float accuracy;
 
 		ProtoRef<ProjectileProto> projectile;
 		ProtoRef<ImpactProto> impact;

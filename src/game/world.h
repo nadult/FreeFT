@@ -59,6 +59,7 @@ namespace game {
 	
 		double timeDelta() const { return m_time_delta; }
 		double currentTime() const { return m_current_time; }
+		float random();
 	
 		bool findClosestPos(int3 &out, const int3 &source, const IBox &target_box, EntityRef agent) const;
 		bool findPath(Path &out, const int3 &start, const int3 &end, EntityRef agent) const;

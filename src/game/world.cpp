@@ -40,6 +40,10 @@ namespace game {
 	World::~World() {
 	}
 		
+	float World::random() {
+		return frand();
+	}
+		
 	void World::updateNaviMap(bool full_recompute) {
 		PROFILE("updateNaviMap");
 			
