@@ -1,3 +1,5 @@
+- ADD SPAWN POINTS
+
 - think about handling orders on client / server and replication
 
 - convert should be run automaticly by game or editor. Some text file should also be created

@@ -43,12 +43,16 @@ Where path\_to\_ft is simply a path to the original game, for example:
 * RMB: attack (shift: secondary attack)
 * Middle mouse dragging: change view
 * keypad + / -: change stance
-* t: teleport to cursor
+* T key: teleport to cursor
+
+Inventory (bottom left corner):
+
 * up / down: select item
 * up / down + CTRL: select item in container
 * left / right: move item to / from container
+* E key: equip / unequip selected item
 
-## Used libraries and resources:
+## Used libraries and resources
 * Liberation fonts (licensed under SIL Open Font License)
 
 * fonts converted to bitmaps using BMFont
@@ -83,5 +87,5 @@ Early version of game editor:
 First tech-demo:
 ![](http://freeft.pl/wp-content/uploads/2014/03/techdemo1b.jpg "Tech-demo #1")
 
-Second tech-demo:
-![](http://freeft.pl/wp-content/uploads/2014/03/techdemo2b.jpg "Tech-demo #2")
+Third tech-demo:
+![](http://freeft.pl/wp-content/uploads/2014/04/techdemo3a.jpg "Tech-demo #3")
