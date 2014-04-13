@@ -56,15 +56,22 @@ namespace game {
 			inventory.equip(best_id);
 	}
 		
-	void SimpleAI::onImpact(DamageType::Type, float damage, const float3 &force) {
+	void SimpleAI::onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) {
+		Actor *actor = this->actor();
+		if(!actor)
+			return;
 
+		if(source && actor->canSee(source)) {
+			m_target = source;
+			informBuddies(source);
+		}
 	}
 
 	void SimpleAI::onFailed(OrderTypeId::Type) {
 		m_failed_orders++;
 	}
 		
-	void SimpleAI::findEnemies(const float3 &range, vector<EntityRef> &out) {
+	void SimpleAI::findActors(int faction_id, const float3 &range, vector<EntityRef> &out) {
 		Actor *actor = this->actor();
 		if(!actor)
 			return;
@@ -78,9 +85,26 @@ namespace game {
 		for(int n = 0; n < (int)close_ents.size(); n++) {
 			Actor *nearby = m_world->refEntity<Actor>(close_ents[n]);
 
-			if(nearby && nearby->factionId() != actor->factionId() && !nearby->isDying())
+			if(nearby && (faction_id == nearby->factionId() || nearby->factionId() != actor->factionId()) && !nearby->isDying())
 				if(actor->canSee(nearby->ref()))
 					out.push_back(nearby->ref());
+		}
+	}
+		
+	void SimpleAI::informBuddies(EntityRef enemy) {
+		Actor *actor = this->actor();
+		if(!actor)
+			return;
+
+		vector<EntityRef> buddies;
+		findActors(actor->factionId(), float3(50, 20, 50), buddies);
+		for(int n = 0; n < (int)buddies.size(); n++) {
+			Actor *buddy = m_world->refEntity<Actor>(buddies[n]);
+			if(buddy && buddy != actor) {
+				SimpleAI *ai = dynamic_cast<SimpleAI*>(buddy->AI());
+				if(ai && !ai->m_target)
+					ai->m_target = enemy;
+			}
 		}
 	}
 
@@ -98,12 +122,12 @@ namespace game {
 		if(m_failed_orders >= 2)
 			m_target = EntityRef();
 
-		if(actor->currentOrder() == OrderTypeId::idle) {
+		if(actor->currentOrder() == OrderTypeId::idle || actor->currentOrder() == OrderTypeId::track) {
 			tryEquipItems();
 
 			if(!m_target) {
 				vector<EntityRef> enemies;
-				findEnemies(float3(100, 30, 100), enemies);
+				findActors(-1, float3(100, 30, 100), enemies);
 			
 				EntityRef best;
 				float best_dist = constant::inf;
@@ -120,7 +144,8 @@ namespace game {
 				m_target = best;
 			}
 
-			if(actor->canSee(m_target))
+			bool can_see = actor->canSee(m_target);
+			if(can_see)
 				m_last_time_visible = m_world->currentTime();
 			else if(m_world->currentTime() - m_last_time_visible > 5.0f)
 				m_target = EntityRef();
@@ -129,12 +154,15 @@ namespace game {
 			if(target && !target->isDying()) {
 				const Weapon &weapon = actor->inventory().weapon();
 
-				if(weapon.hasRangedAttack()) {
+				if(weapon.hasRangedAttack() && can_see) {
 					AttackMode::Type mode = weapon.attackModes() & AttackMode::toFlags(AttackMode::burst)?
 						AttackMode::burst : AttackMode::undefined;
 
-					if(actor->estimateHitChance(weapon, target->boundingBox()) > 0.5)
+					if(actor->estimateHitChance(weapon, target->boundingBox()) > 0.3)
 						m_world->sendOrder(new AttackOrder(mode, m_target), m_actor_ref);
+					else {
+						m_world->sendOrder(new TrackOrder(m_target, 10.0f, true), m_actor_ref);
+					}
 				}
 				else {
 					FBox target_box = target->boundingBox();

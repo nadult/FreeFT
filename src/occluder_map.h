@@ -15,7 +15,7 @@ public:
 
 	OccluderMap(Grid&);
 
-	int addOccluder(int representative_id);
+	int addOccluder(int representative_id, int min_height);
 	void removeOccluder(int occluder_id);
 	void clear();
 

@@ -22,6 +22,12 @@ namespace game {
 		DASSERT(m_mode == Mode::single_player || m_replicator != nullptr);
 
 		m_level.load(file_name.c_str());
+		for(int n = 0; n < m_tile_map.size(); n++) {
+			//TODO: leave them and use them
+			if(m_tile_map[n].ptr->isInvisible())
+				m_tile_map.remove(n);
+		}
+
 		for(int n = 0; n < m_entity_map.size(); n++) {
 			auto &obj = m_entity_map[n];
 			if(obj.ptr)

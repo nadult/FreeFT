@@ -136,7 +136,7 @@ namespace game {
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&, bool force = false);
-		void onImpact(DamageType::Type, float damage, const float3 &force);
+		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
 		XMLNode save(XMLNode&) const;
 		void save(Stream&) const;
@@ -171,6 +171,7 @@ namespace game {
 		void detachAI() {
 			m_ai.reset();
 		}
+		ActorAI *AI() const { return m_ai.get(); }
 
 		const Path currentPath() const;
 		void followPath(const Path &path, PathPos &pos);

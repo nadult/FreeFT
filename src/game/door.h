@@ -68,7 +68,7 @@ namespace game
 		void save(Stream&) const override;
 		const FBox boundingBox() const override;
 
-		void onImpact(DamageType::Type damage_type, float damage, const float3 &force)  override;
+		void onImpact(DamageType::Type damage_type, float damage, const float3 &force, EntityRef source) override;
 		
 	private:
 		void initialize();

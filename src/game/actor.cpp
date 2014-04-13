@@ -171,7 +171,7 @@ namespace game {
 		return DeathId::normal;	
 	}
 
-	void Actor::onImpact(DamageType::Type damage_type, float damage, const float3 &force) {
+	void Actor::onImpact(DamageType::Type damage_type, float damage, const float3 &force, EntityRef source) {
 		float damage_res = clamp(1.0f - m_inventory.armour().proto().damage_resistance, 0.0f, 1.0f);
 		damage *= damage_res;
 
@@ -215,7 +215,7 @@ namespace game {
 		}
 		
 		if(m_ai)
-			m_ai->onImpact(damage_type, damage, force);
+			m_ai->onImpact(damage_type, damage, force, source);
 	}
 		
 	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {

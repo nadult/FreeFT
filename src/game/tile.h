@@ -70,6 +70,7 @@ namespace game
 		mutable uint m_temp;
 
 		bool isAnimated() const { return !m_frames.empty(); }
+		bool isInvisible() const { return m_is_invisible; }
 		
 		const TileFrame &accessFrame(int frame_counter) const;
 		int frameCount() const { return 1 + (int)m_frames.size(); }
@@ -88,6 +89,7 @@ namespace game
 		SurfaceId::Type m_surface_id;
 		bool m_see_through;
 		bool m_walk_through;
+		bool m_is_invisible;
 	};
 
 	typedef Ptr<Tile> PTile;

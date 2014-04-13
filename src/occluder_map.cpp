@@ -10,7 +10,7 @@
 
 OccluderMap::OccluderMap(Grid &grid) :m_grid(grid) { }
 
-int OccluderMap::addOccluder(int representative_id) {
+int OccluderMap::addOccluder(int representative_id, int min_height) {
 	DASSERT(representative_id >= 0 && representative_id < m_grid.size());
 	auto &representative = m_grid[representative_id];
 	DASSERT(representative.occluder_id == -1);
@@ -27,7 +27,7 @@ int OccluderMap::addOccluder(int representative_id) {
 	representative.occluder_id = occluder_id;
 	objects.push_back(representative_id);
 	occluder.bbox = representative.bbox;
-	int min_height = representative.bbox.min.y;
+	min_height = max(min_height, (int)representative.bbox.min.y);
 
 	while(!objects.empty()) {
 		int object_id = objects.back();

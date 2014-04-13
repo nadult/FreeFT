@@ -93,7 +93,7 @@ namespace ui {
 		if(isChangingOccluders()) {
 			if(isMouseKeyDown(0)) {
 				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
-					m_current_occluder = occmap.addOccluder(m_mouseover_tile_id);
+					m_current_occluder = occmap.addOccluder(m_mouseover_tile_id, m_view.gridHeight());
 				else {
 					occmap.removeOccluder(m_current_occluder);
 					m_current_occluder = -1;
@@ -417,7 +417,7 @@ namespace ui {
 
 				int new_occluder = -1;
 				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
-					new_occluder = occmap.addOccluder(m_mouseover_tile_id);
+					new_occluder = occmap.addOccluder(m_mouseover_tile_id, m_view.gridHeight());
 
 				Color colors[] = {
 					Color(255, 200, 200),

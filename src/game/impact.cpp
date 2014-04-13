@@ -76,7 +76,7 @@ namespace game {
 							//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
 							float3 force = segment.dir() * m_proto.force * strength * m_damage_mod;
 
-							entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force);
+							entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force, m_source);
 						}
 					}
 				}
@@ -91,7 +91,7 @@ namespace game {
 						float3 force = target->boundingBox().center() - source->boundingBox().center();
 						force = force * m_proto.force / length(force);
 
-						target->onImpact(m_proto.damage_type, m_proto.damage * m_damage_mod, force);
+						target->onImpact(m_proto.damage_type, m_proto.damage * m_damage_mod, force, m_source);
 					}
 				}
 			}

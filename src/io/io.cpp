@@ -98,7 +98,7 @@ namespace io {
 				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
 		}
-		if(isMouseKeyDown(1)) {
+		if(isMouseKeyDown(1) && actor) {
 			AttackMode::Type mode = AttackMode::undefined;
 			if(isKeyPressed(Key_lshift)) {
 				const Weapon &weapon = actor->inventory().weapon();

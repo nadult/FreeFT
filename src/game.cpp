@@ -39,7 +39,7 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	string map_name = "data/maps/mission05.mod";
+	string map_name = "data/maps/mission02.mod";
 	if(argc > 1)
 		map_name = string("data/maps/") + argv[1];
 	PWorld world(new World(map_name.c_str(), World::Mode::single_player));
@@ -61,13 +61,16 @@ int safe_main(int argc, char **argv)
 			actor->attachAI<SimpleAI>();
 	}
 
-	EntityRef actor_ref = world->addNewEntity<Actor>(float3(295, 142, 292), getProto("male", ProtoId::actor));
+	EntityRef actor_ref = world->addNewEntity<Actor>(float3(300, 2, 702), getProto("male", ProtoId::actor));
 	if( Actor *actor = world->refEntity<Actor>(actor_ref) ) {
 		auto &inventory = actor->inventory();
 		inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
 		inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
-		inventory.add(findProto("beretta", ProtoId::item_weapon), 1);
+		inventory.add(findProto("heavy_laser_rifle", ProtoId::item_weapon), 1);
 		inventory.add(findProto("uzi", ProtoId::item_weapon), 1);
+		inventory.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
+		inventory.add(findProto("flamer", ProtoId::item_weapon), 1);
+		inventory.add(findProto("ak47", ProtoId::item_weapon), 1);
 		inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
 	}
 	

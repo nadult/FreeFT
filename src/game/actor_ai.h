@@ -19,7 +19,7 @@ namespace game {
 		virtual ~ActorAI() = default;
 
 		virtual void think() = 0;
-		virtual void onImpact(DamageType::Type, float damage, const float3 &force) { }
+		virtual void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) { }
 		virtual void onFailed(OrderTypeId::Type) { }
 		virtual ActorAI *clone() = 0;
 
@@ -42,9 +42,10 @@ namespace game {
 		void tryEquipItems();
 
 		ActorAI *clone() { return new SimpleAI(*this); }
-		void onImpact(DamageType::Type, float damage, const float3 &force) override;
+		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 		void onFailed(OrderTypeId::Type) override;
-		void findEnemies(const float3 &range, vector<EntityRef> &out);
+		void findActors(int faction_id, const float3 &range, vector<EntityRef> &out);
+		void informBuddies(EntityRef enemy);
 
 		enum class Mode {
 			idle,
