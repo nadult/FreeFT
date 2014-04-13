@@ -116,6 +116,8 @@ namespace audio
 		int s_free_sources[max_sources] = {0, };
 		int s_num_free_sources = 0;
 
+		float3 s_listener_pos;
+
 		bool s_is_initialized = false;
 	}
 	
@@ -216,7 +218,7 @@ namespace audio
 			}
 			throw;
 		}
-			
+		
 		tick();
 	}
 
@@ -269,6 +271,7 @@ namespace audio
 	}
 
 	void setListenerPos(const float3 &v) {
+		s_listener_pos = v;
 		alListener3f(AL_POSITION,v.x, v.y, v.z);
 	}
 
@@ -345,6 +348,9 @@ namespace audio
 
 		uint source_id = s_sources[s_free_sources[--s_num_free_sources]];
 		alSourcei(source_id, AL_BUFFER, sound->m_id);
+		alSourcef(source_id, AL_ROLLOFF_FACTOR, 0.02f);
+		alSourcef(source_id, AL_MIN_GAIN, 10.0f);
+		alSourcef(source_id, AL_MAX_GAIN, 20.0f);
 		return (int)source_id;
 	}
 
@@ -352,10 +358,8 @@ namespace audio
 		uint source_id = prepSource(sound_id);
 		if(!source_id)
 			return;
-
-		alSourcef(source_id, AL_MIN_GAIN, 50.0f);
-		alSourcef(source_id, AL_MAX_GAIN, 50.0f);
-		alSourcef(source_id, AL_GAIN, 50.0f);
+		
+		alSourcef(source_id, AL_GAIN, 1.0f);
 		
 		alSource3f(source_id, AL_POSITION, pos.x, pos.y, pos.z);
 		alSource3f(source_id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
@@ -368,8 +372,6 @@ namespace audio
 		if(!source_id)
 			return;
 		
-		alSourcef(source_id, AL_MIN_GAIN, 50.0f);
-		alSourcef(source_id, AL_MAX_GAIN, 50.0f);
 		alSourcef(source_id, AL_GAIN, 50.0f);
 		
 		alSource3f(source_id, AL_POSITION, 0.0f, 0.0f, 0.0f);

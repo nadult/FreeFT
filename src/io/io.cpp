@@ -14,6 +14,7 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "gfx/scene_renderer.h"
+#include "audio/device.h"
 
 using namespace gfx;
 using namespace game;
@@ -30,6 +31,12 @@ namespace io {
 		
 			m_last_time = m_stats_update_time = getTime();
 			m_last_look_at = float3(0, 0, 0);
+	
+			if(audio::isInitialized()) {
+				audio::setListenerPos(float3(0, 0, 0));
+				audio::setListenerVelocity(float3(0, 0, 0));
+				audio::setUnits(16.66666666);
+			}
 		}
 
 	void IO::update() {
@@ -39,6 +46,8 @@ namespace io {
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor && actor->isDead())
 			actor = nullptr;
+		if(actor)
+			audio::setListenerPos(actor->pos());
 
 		int2 mouse_pos = getMousePos();
 		bool console_mode = m_console.isOpened();

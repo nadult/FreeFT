@@ -354,7 +354,7 @@ namespace game {
 
 		for(int n = 0; n < (int)points.size(); n++) {
 			const Intersection &isect = isects[n];
-			if(isect.isEmpty() || (ObjectRef)isect == ObjectRef(target_ref))
+			if(isect.isEmpty() || isect.distance() >= intersection(segments[n], box) - constant::epsilon)
 				return true;
 		}
 

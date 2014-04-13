@@ -40,7 +40,7 @@ namespace game {
 		if(!is_movable || m_spectator.index() == index)
 			return true;
 
-		return m_world->isVisible(m_eye_pos, entity.ref(), m_spectator, 4);
+		return m_world->isVisible(m_eye_pos, entity.ref(), m_spectator, entity.typeId() == EntityId::actor? 4 : 3);
 	}
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {

@@ -54,4 +54,6 @@
 
 - Preparing new map for techdemo #3
   - added support for invisible tiles
-  13.04.14: 18:45 - 
+  - some necessary improvements in AI
+  - fixed audio: volume depends on distance from the player
+  13.04.14: 18:45 - 21:00

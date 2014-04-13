@@ -218,12 +218,7 @@ int safe_main(int argc, char **argv)
 	audio::initSoundMap();
 	Config config = loadConfig("client");
 	game::loadData();
-
 	audio::initDevice();
-
-	audio::setListenerPos(float3(0, 0, 0));
-	audio::setListenerVelocity(float3(0, 0, 0));
-	audio::setUnits(16.66666666);
 
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
