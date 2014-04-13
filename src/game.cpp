@@ -66,6 +66,8 @@ int safe_main(int argc, char **argv)
 		auto &inventory = actor->inventory();
 		inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
 		inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
+		inventory.add(findProto("beretta", ProtoId::item_weapon), 1);
+		inventory.add(findProto("uzi", ProtoId::item_weapon), 1);
 		inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
 	}
 	

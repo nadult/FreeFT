@@ -39,11 +39,11 @@ namespace game {
 				FBox target_box = target->boundingBox();
 
 				if(!world()->findClosestPos(target_pos, cur_pos, enclosingIBox(target_box), ref()))
-					return false;
+					return failOrder();
 
 				order.m_path_pos = PathPos();
 				if(!world()->findPath(order.m_path, cur_pos, target_pos, ref()))
-					return false;
+					return failOrder();
 				order.m_time_for_update = 0.25f;
 			}
 			
@@ -55,7 +55,7 @@ namespace game {
 					order.m_please_run = 0;
 
 				if(!animate(order.m_please_run? Action::run : Action::walk))
-					return false;
+					return failOrder();
 			}
 
 			FollowPathResult result = order.needCancel()? FollowPathResult::finished :

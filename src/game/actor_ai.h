@@ -7,6 +7,7 @@
 #define GAME_ACTOR_AI_H
 
 #include "game/world.h"
+#include "game/orders.h"
 
 namespace game {
 
@@ -19,6 +20,7 @@ namespace game {
 
 		virtual void think() = 0;
 		virtual void onImpact(DamageType::Type, float damage, const float3 &force) { }
+		virtual void onFailed(OrderTypeId::Type) { }
 		virtual ActorAI *clone() = 0;
 
 		Actor *actor() const;
@@ -37,17 +39,25 @@ namespace game {
 
 	public:
 		void think() override;
+		void tryEquipItems();
+
 		ActorAI *clone() { return new SimpleAI(*this); }
+		void onImpact(DamageType::Type, float damage, const float3 &force) override;
+		void onFailed(OrderTypeId::Type) override;
+		void findEnemies(const float3 &range, vector<EntityRef> &out);
 
 		enum class Mode {
 			idle,
-			attacking,
+			attacking_melee,
+			attacking_ranged,
 		};
 
 	protected:
 		Mode m_mode;
 		EntityRef m_target;
+		float m_last_time_visible;
 		float m_delay;
+		int m_failed_orders;
 	};
 
 }

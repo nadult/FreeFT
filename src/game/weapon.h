@@ -54,6 +54,10 @@ namespace game {
 		float range(AttackMode::Type mode) const;
 		bool canKick() const;
 
+		bool hasMeleeAttack() const;
+		bool hasRangedAttack() const;
+		float estimateDamage() const;
+
 		WeaponClass::Type classId() const						{ return proto().class_id; }
 		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }
 		uint attackModes() const								{ return proto().attack_modes; }

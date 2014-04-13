@@ -5,6 +5,8 @@
 
 #include "base.h"
 #include <cstdlib>
+#include <ext/vstring.h>
+#include <cstdarg>
 
 const char* strcasestr(const char *a, const char *b) {
 	DASSERT(a && b);
@@ -147,6 +149,18 @@ void BitVector::resize(int new_size, bool clear_value) {
 	
 void BitVector::clear(bool value) {
 	memset(m_data.data(), value? 0xff : 0, m_data.size() * sizeof(base_type));
+}
+
+TextFormatter::TextFormatter(int size) :m_data(size), m_offset(0) {
+	DASSERT(size > 0);
+	m_data[0] = 0;
+}
+
+void TextFormatter::operator()(const char *format, ...) {
+	va_list ap;
+	va_start(ap, format);
+	m_offset += vsnprintf(&m_data[m_offset], m_data.size() - m_offset, format, ap);
+	va_end(ap);
 }
 
 MoveVector::MoveVector(const int2 &start, const int2 &end) {

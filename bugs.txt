@@ -53,3 +53,5 @@
 - Attacking on stairs may caus player to get stuck
 
 - Fix flamer
+
+- In multiplayer mode, player can get kicked into doors and get stuck

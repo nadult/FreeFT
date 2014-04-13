@@ -215,32 +215,37 @@ namespace io {
 
 		DTexture::bind0();
 		lookAt({0, -m_console.size().y});
-		drawQuad(0, 0, 280, m_show_stats? 250 : 50, Color(0, 0, 0, 80));
 		
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
 		float3 isect_pos = ray.at(m_isect.distance());
 
-		font->drawShadowed(int2(0, 0), Color::white, Color::black,
-				"View:(%d %d)\nRay:(%.2f %.2f %.2f)",
-				m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
+		TextFormatter fmt(4096);
+
+		fmt("View:(%d %d) Ray:(%.2f %.2f %.2f)\n", m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
+
 		if(actor) {
 			float3 actor_pos = actor->pos();
-			char text[512], *ptr = text;
-			ptr += snprintf(ptr, sizeof(text) - (ptr - text), "Actor:(%.0f %.0f %.0f) HP: %d", actor_pos.x, actor_pos.y, actor_pos.z, actor->hitPoints());
-
+			fmt("Actor pos:(%.0f %.0f %.0f)\nHP: %d ", actor_pos.x, actor_pos.y, actor_pos.z, actor->hitPoints());
 			if(target_actor)
-				snprintf(ptr, sizeof(text) - (ptr - text), " THP: %d", target_actor->hitPoints());
+				fmt("Target HP: %d", target_actor->hitPoints());
 
-			if(!m_isect.isEmpty()) {
+			const Weapon &weapon = actor->inventory().weapon();
+			if(!m_isect.isEmpty() && weapon.hasRangedAttack()) {
 				FBox bbox = m_viewer.refBBox(m_isect);
 				float hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
-				snprintf(ptr, sizeof(text) - (ptr - text), "\nHit chance: %.0f%%", hit_chance * 100.0f);
+				fmt("\nHit chance: %.0f%%", hit_chance * 100.0f);
 			}
-			font->drawShadowed(int2(0, font->lineHeight() * 2), Color::white, Color::black, text);
+			fmt("\n");
+			fmt("\n");
 		}
 
 		if(m_show_stats)
-			font->drawShadowed(int2(0, 70), Color::white, Color::black, "%s", m_profiler_stats.c_str());
+			fmt("%s", m_profiler_stats.c_str());
+		
+		int2 extents = font->evalExtents(fmt.text()).size();
+		extents.y = (extents.y + 19) / 20 * 20;
+		drawQuad(0, 0, extents.x + 4, extents.y + 4, Color(0, 0, 0, 80));
+		font->drawShadowed(int2(2, 2), Color::white, Color::black,fmt.text());
 
 		lookAt({0, 0});
 		if(actor) {

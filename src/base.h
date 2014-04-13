@@ -40,8 +40,6 @@ inline constexpr bool isOneOf(const T &value, const Arg1 &arg1) { return value =
 template <class T, class Arg1, class ...Args>
 inline constexpr bool isOneOf(const T &value, const Arg1 &arg1, const Args&... args) { return value == arg1 || isOneOf(value, args...); }
 
-
-
 // TODO: finish me
 class CString {
 public:
@@ -398,6 +396,19 @@ public:
 protected:
 	PodArray<base_type> m_data;
 	int m_size;
+};
+
+class TextFormatter {
+public:
+	TextFormatter(int size);
+
+	void operator()(const char *format, ...);
+	const char *text() const { return m_data.data(); }
+	int length() const { return m_offset; }
+
+private:
+	PodArray<char> m_data;
+	uint m_offset;
 };
 
 template <class T>

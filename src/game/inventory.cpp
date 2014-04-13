@@ -4,9 +4,36 @@
  */
 
 #include "game/inventory.h"
+#include "sys/xml.h"
 #include <cstdio>
 
 namespace game {
+
+	Inventory::Inventory(const XMLNode &node) {
+		if(!node)
+			return;
+
+		m_entries.reserve(node.intAttrib("count"));
+		XMLNode child = node.child("item");
+
+		while(child) {
+			Entry new_entry;
+			new_entry.item = Item(ProtoIndex(child));
+			new_entry.count = child.intAttrib("count");
+			m_entries.push_back(new_entry);
+			child = child.sibling("item");
+		}
+	}
+
+	void Inventory::save(XMLNode node) const {
+		node.addAttrib("count", (int)m_entries.size());
+
+		for(int n = 0; n < (int)m_entries.size(); n++) {
+			XMLNode item_node = node.addChild("item");
+			m_entries[n].item.index().save(item_node);
+			item_node.addAttrib("count", m_entries[n].count);
+		}
+	}
 
 	int Inventory::find(const Item &item) const {
 		for(int n = 0; n < size(); n++)
@@ -90,6 +117,18 @@ namespace game {
 			m_entries.emplace_back(Entry{item, icount});
 		}
 	}
+		
+	ActorInventory::ActorInventory(Weapon dummy_weapon)
+		:m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} { }
+	
+	ActorInventory::ActorInventory(Weapon dummy_weapon, const XMLNode &node)
+		:Inventory(node), m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} {
+		//TODO: load equipped items
+	}
+		
+	void ActorInventory::save(XMLNode node) const {
+		Inventory::save(node);
+	}
 
 	bool ActorInventory::equip(int id, int count) {
 		DASSERT(isValidId(id) && count > 0);
@@ -116,9 +155,6 @@ namespace game {
 		return true;
 	}
 
-	ActorInventory::ActorInventory(Weapon dummy_weapon)
-		:m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} { }
-		
 	const Armour ActorInventory::dummyArmour() {
 		return Armour(findProto("_dummy_armour", ProtoId::item_armour));
 	}
@@ -177,6 +213,10 @@ namespace game {
 		weight += m_ammo.weight();
 
 		return weight;
+	}
+		
+	bool ActorInventory::isEmpty() const {
+		return Inventory::isEmpty() && m_weapon.isDummy() && m_armour.isDummy() && (m_ammo.item.isDummy() || m_ammo.count == 0);
 	}
 
 	const string ActorInventory::printMenu(int select) const {

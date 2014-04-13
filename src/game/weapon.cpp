@@ -60,9 +60,39 @@ namespace game {
 	}
 
 	bool Weapon::canKick() const {
-		WeaponClass::Type class_id = classId();
-		return	class_id == WeaponClass::unarmed || class_id == WeaponClass::knife ||
-				class_id == WeaponClass::pistol || class_id == WeaponClass::club;
+		return isOneOf(classId(), WeaponClass::unarmed, WeaponClass::knife, WeaponClass::pistol, WeaponClass::club);
+	}
+		
+	bool Weapon::hasMeleeAttack() const {
+		for(uint n = 0; n < AttackMode::count; n++) {
+			AttackMode::Type mode = (AttackMode::Type)n;
+			if(AttackMode::isMelee(mode) && proto().attack_modes & AttackMode::toFlags(mode))
+				return true;
+		}
+		return false;
+	}
+
+	bool Weapon::hasRangedAttack() const {
+		for(uint n = 0; n < AttackMode::count; n++) {
+			AttackMode::Type mode = (AttackMode::Type)n;
+			if(AttackMode::isRanged(mode) && proto().attack_modes & AttackMode::toFlags(mode))
+				return true;
+		}
+		return false;
+	}
+		
+	float Weapon::estimateDamage() const {
+		//TODO: this function should take some parameters to be mor accurate?
+
+		if(proto().projectile) {
+			const ProjectileProto &projectile = *proto().projectile;
+			return projectile.impact->damage * proto().damage_mod * max(1, proto().burst_ammo);
+		}
+		if(proto().impact) {
+			return proto().impact->damage * proto().damage_mod;
+		}
+
+		return 0.0f;
 	}
 
 }

@@ -23,6 +23,7 @@
 
 - when projectiles are being shot vertically, their angle could be altered a bit
 
+- Possibility to explode dead bodies if they are not yet exploded :D
 
 REFACTORING:
 - move EntityWorldProxy, EntityRef to separate files?

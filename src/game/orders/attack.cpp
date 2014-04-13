@@ -56,7 +56,7 @@ namespace game {
 			Weapon weapon = m_inventory.weapon();
 			if(!m_proto.canUseWeapon(weapon.classId(), m_stance)) {
 				printf("Cant use weapon: %s\n", weapon.proto().id.c_str());
-				return false;
+				return failOrder();
 			}
 
 			lookAt(target_box.center());
@@ -74,7 +74,7 @@ namespace game {
 					weapon = Weapon(*m_actor.kick_weapon);
 				}
 				else
-					return false;
+					return failOrder();
 			}
 			else
 				order.m_mode = mode;
@@ -82,7 +82,10 @@ namespace game {
 			float max_range = weapon.range(order.m_mode);
 			float dist = distance(boundingBox(), target_box);
 
-			if(dist > max_range * 0.9f && order.m_target && !order.m_is_followup) {
+			if(dist > max_range * 0.9f && order.m_target) {
+				if(order.m_is_followup)
+					return failOrder();
+
 				order.m_is_followup = true;
 				POrder track_order = new TrackOrder(order.m_target, max_range * 0.9f, true);
 				track_order->setFollowup(order.clone());
@@ -92,7 +95,7 @@ namespace game {
 
 			int anim_id = m_proto.attackAnimId(order.m_mode, m_stance, weapon.classId());
 			if(anim_id == -1)
-				return false;
+				return failOrder();
 
 			playSequence(anim_id);
 			m_action = Action::attack;

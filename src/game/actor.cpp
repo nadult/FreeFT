@@ -45,7 +45,8 @@ namespace game {
 	}
 
 	Actor::Actor(const XMLNode &node)
-	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(Stance::stand), m_target_angle(dirAngle()) {
+	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon), node.child("inventory")),
+		  m_stance(Stance::stand), m_target_angle(dirAngle()) {
 		m_sound_variation = node.intAttrib("sound_variation") % m_actor.sounds.size();
 		m_faction_id = node.intAttrib("faction_id");
 		m_hit_points = m_actor.hit_points;
@@ -76,6 +77,8 @@ namespace game {
 		XMLNode node = EntityImpl::save(parent);
 		node.addAttrib("faction_id", m_faction_id);
 		node.addAttrib("sound_variation", m_sound_variation);
+		if(!m_inventory.isEmpty())
+			m_inventory.save(node.addChild("inventory"));
 		return node;
 	}
 
@@ -108,7 +111,7 @@ namespace game {
 		int3 bbox_size = sprite().bboxSize();
 		if(m_stance == Stance::crouch)
 			bbox_size.y = 5;
-		if(m_stance == Stance::prone)
+		if(m_stance == Stance::prone || isOneOf(m_action, Action::fallen_back, Action::fallen_forward))
 			bbox_size.y = 2;
 		if(isDead())
 			bbox_size.y = 0;
@@ -237,6 +240,15 @@ namespace game {
 	WeaponClass::Type Actor::equippedWeaponClass() const {
 		return m_inventory.weapon().classId();
 	}
+		
+	bool Actor::canSee(EntityRef target_ref) {
+		//TODO: use the same function that is used in game/visibility.cpp
+		const FBox &bbox = boundingBox();
+		float3 eye_pos = asXZY(bbox.center().xz(), bbox.min.y + bbox.height() * 0.75f);
+		
+		const Entity *entity = refEntity(target_ref);
+		return entity? world()->isVisible(eye_pos, target_ref, ref(), 3) : false;
+	}
 
 	bool Actor::canEquipItem(int item_id) const {
 		DASSERT(item_id >= 0 && item_id < m_inventory.size());
@@ -257,6 +269,12 @@ namespace game {
 	void Actor::handleOrder(ActorEvent::Type event, const ActorEventParams &params) {
 		if(m_order) 
 			(this->*m_order_func)(m_order.get(), event, params);
+	}
+		
+	bool Actor::failOrder() const {
+		if(m_ai && m_order)
+			m_ai->onFailed(m_order->typeId());
+		return false;
 	}
 
 	bool Actor::setOrder(POrder &&order, bool force) {
@@ -636,6 +654,8 @@ namespace game {
 			accuracy *= 1.25f;
 		else if(m_stance == Stance::prone)
 			accuracy *= 1.5f;
+
+		//TODO: increased accuracy, when player is not rotating for some time
 
 		return 1.0f / max(10.0f, accuracy);
 	}

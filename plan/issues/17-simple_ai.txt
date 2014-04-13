@@ -3,7 +3,7 @@
 - Simple tracking  DONE
 - Attacking, looking for enemies  DONE
 - Random movement from time to time  (not really needed)
-- Using ranged weapons, using melee weapons
+- Using ranged weapons, using melee weapons  DONE
 
 +ESTIMATED_TIME:
 +TIME_SPENT:
@@ -12,3 +12,4 @@
 30.03.14: 12:30 - 14:00, 15:30 - 18:00
 04.04.14: 9:45 - 12:45, 15:00 - 18:30, 19:00 - 19:45
 11.04.14: 14:00 - 15:15
+13.04.14: 15:30 - 18:45

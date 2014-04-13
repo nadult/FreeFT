@@ -15,7 +15,11 @@ namespace game {
 
 	class Inventory {
 	public:
+		Inventory() = default;
+		Inventory(const XMLNode&);
 		enum { max_entries = 1024 };
+		
+		void save(XMLNode) const;
 
 		struct Entry {
 			float weight() const { return item.weight() * float(count); }
@@ -31,6 +35,7 @@ namespace game {
 		const string printMenu(int select) const;
 
 		bool isValidId(int id) const { return id >= 0 && id < size(); }
+		bool isEmpty() const { return m_entries.empty(); }
 
 		int size() const { return (int)m_entries.size(); }
 		const Entry &operator[](int idx) const { return m_entries[idx]; }
@@ -45,14 +50,19 @@ namespace game {
 	class ActorInventory: public Inventory {
 	public:
 		ActorInventory(Weapon dummy_weapon);
+		ActorInventory(Weapon dummy_weapon, const XMLNode&);
+
+		void save(XMLNode) const;
 
 		bool equip(int id, int count = 1);
 		bool isEquipped(ItemType::Type);
 		int unequip(ItemType::Type);
+		bool isEmpty() const;
 
 		const string printMenu(int select) const;
 		float weight() const;
 
+		const Weapon &dummyWeapon() const { return m_dummy_weapon; }
 		static const Armour dummyArmour();
 		static const Item   dummyAmmo();
 

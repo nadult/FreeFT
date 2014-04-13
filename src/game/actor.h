@@ -149,9 +149,12 @@ namespace game {
 		Stance::Type stance() const { return m_stance; }
 		Action::Type action() const { return m_action; }
 
+		// TODO: only const access to inventory,
+		// use orders for equipping / unequipping
 		const ActorInventory &inventory() const { return m_inventory; }
 		ActorInventory &inventory() { return m_inventory; }
 		
+		bool canSee(EntityRef ref);
 		bool canEquipItem(int item_id) const;
 		bool canChangeStance() const;
 		bool isDying() const;
@@ -231,6 +234,7 @@ namespace game {
 					order->finish();
 		}
 		void emptyHandleFunc(Order*, ActorEvent::Type, const ActorEventParams&) { }
+		bool failOrder() const;
 		
 		bool handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
 		bool handleOrder(LookAtOrder&, ActorEvent::Type, const ActorEventParams&);
