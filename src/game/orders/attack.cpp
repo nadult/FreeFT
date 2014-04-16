@@ -44,13 +44,6 @@ namespace game {
 
 	bool Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		const Entity *target = refEntity(order.m_target);
-		FBox target_box;
-		if(target) {
-			target_box = target->boundingBox();
-			order.m_target_pos = target_box.center();
-		}
-		else
-			target_box = FBox(order.m_target_pos, order.m_target_pos);
 
 		if(event == ActorEvent::init_order) {
 			Weapon weapon = m_inventory.weapon();
@@ -59,8 +52,6 @@ namespace game {
 				return failOrder();
 			}
 
-			lookAt(target_box.center());
-	
 			AttackMode::Type mode = order.m_mode;
 
 			uint modes = weapon.attackModes();
@@ -78,9 +69,32 @@ namespace game {
 			}
 			else
 				order.m_mode = mode;
+		}
 			
+		Weapon weapon = order.m_is_kick_weapon? Weapon(*m_actor.kick_weapon) : m_inventory.weapon();
+
+
+		FBox target_box;
+		if(target) {
+			target_box = target->boundingBox();
+
+			//TODO: this is a skill, should be randomized a bit
+			if( const Actor *atarget = refEntity<Actor>(order.m_target) ) {
+				for(int n = 0; n < 4; n++) {
+					float dist = distance(boundingBox(), target_box);
+					float tdist = weapon.estimateProjectileTime(dist);
+					target_box = target->boundingBox() + atarget->estimateMove(tdist);
+				}
+			}
+			order.m_target_pos = target_box.center();
+		}
+		else
+			target_box = FBox(order.m_target_pos, order.m_target_pos);
+
+		if(event == ActorEvent::init_order) {
 			float max_range = weapon.range(order.m_mode);
 			float dist = distance(boundingBox(), target_box);
+			lookAt(target_box.center());
 
 			if(dist > max_range * 0.9f && order.m_target) {
 				if(order.m_is_followup)
@@ -100,8 +114,6 @@ namespace game {
 			playSequence(anim_id);
 			m_action = Action::attack;
 		}
-			
-		Weapon weapon = order.m_is_kick_weapon? Weapon(*m_actor.kick_weapon) : m_inventory.weapon();
 
 		if(AttackMode::isRanged(order.m_mode)) {
 			float inaccuracy = this->inaccuracy(weapon);

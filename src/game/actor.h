@@ -154,13 +154,13 @@ namespace game {
 		const ActorInventory &inventory() const { return m_inventory; }
 		ActorInventory &inventory() { return m_inventory; }
 		
-		bool canSee(EntityRef ref);
+		bool canSee(EntityRef ref, bool simple_test = false);
 		bool canEquipItem(int item_id) const;
 		bool canChangeStance() const;
 		bool isDying() const;
 		bool isDead() const;
 
-		int hitPoints() const { return (int)std::ceil(m_hit_points); }
+		int hitPoints() const { return m_hit_points; }
 		int factionId() const { return m_faction_id; }
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
 
@@ -174,11 +174,13 @@ namespace game {
 		ActorAI *AI() const { return m_ai.get(); }
 
 		const Path currentPath() const;
+		const float3 estimateMove(float time_advance) const;
 		void followPath(const Path &path, PathPos &pos);
 		void fixPosition();
 
 		float dodgeChance(DamageType::Type, float damage) const;
 		float fallChance(DamageType::Type, float damage, const float3 &force) const;
+		float interruptChance(DamageType::Type, float damage, const float3 &force) const;
 		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
 
 		const FBox shootingBox(const Weapon &weapon) const;
@@ -267,7 +269,9 @@ namespace game {
 
 		ActorInventory m_inventory;
 
-		float m_hit_points;
+		int m_hit_points;
+		
+		float3 m_move_vec;
 
 		vector<float3> m_aiming_points;
 		vector<float3> m_aiming_lines;

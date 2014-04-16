@@ -57,6 +57,7 @@ namespace game {
 		bool hasMeleeAttack() const;
 		bool hasRangedAttack() const;
 		float estimateDamage() const;
+		float estimateProjectileTime(float distance) const;
 
 		WeaponClass::Type classId() const						{ return proto().class_id; }
 		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }

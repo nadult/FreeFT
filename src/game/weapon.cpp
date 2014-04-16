@@ -94,5 +94,16 @@ namespace game {
 
 		return 0.0f;
 	}
+		
+	float Weapon::estimateProjectileTime(float distance) const {
+		float time = 0.0f;
+
+		if(proto().projectile) {
+			const ProjectileProto &projectile = *proto().projectile;
+			time += distance / projectile.speed;
+		}
+
+		return time;
+	}
 
 }

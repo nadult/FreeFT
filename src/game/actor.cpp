@@ -23,7 +23,8 @@ namespace game {
 	Actor::Actor(Stream &sr)
 	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)) {
 		u8 flags;
-		sr.unpack(flags, m_stance, m_action, m_hit_points);
+		sr.unpack(flags, m_stance, m_action);
+		m_hit_points = sr.decodeInt();
 		m_sound_variation = sr.decodeInt();
 
 		if(flags & 1) {
@@ -88,7 +89,8 @@ namespace game {
 					(!m_following_orders.empty()? 2 : 0) |
 					(m_target_angle != dirAngle()? 4 : 0);
 
-		sr.pack(flags, m_stance, m_action, m_hit_points);
+		sr.pack(flags, m_stance, m_action);
+		sr.encodeInt(m_hit_points);
 		sr.encodeInt(m_sound_variation);
 
 		if(flags & 1)
@@ -110,7 +112,7 @@ namespace game {
 	const FBox Actor::boundingBox() const {
 		int3 bbox_size = sprite().bboxSize();
 		if(m_stance == Stance::crouch)
-			bbox_size.y = 5;
+			bbox_size.y = 6;
 		if(m_stance == Stance::prone || isOneOf(m_action, Action::fallen_back, Action::fallen_forward))
 			bbox_size.y = 2;
 		if(isDead())
@@ -147,7 +149,17 @@ namespace game {
 
 		if(force <= 0.0f)
 			return 0.0f;
+		// A guy in power armour shouldn't be so easy to knock down
 		return pow(force / (force + 1.0f), 2.0f);
+	}
+	
+	float Actor::interruptChance(DamageType::Type type, float damage, const float3 &force_vec) const {
+		//TODO: work on it
+		if(damage < m_actor.hit_points * 0.05f && length(force_vec) < 1.0f)
+			return 0.25f;
+		if(damage < m_actor.hit_points * 0.1f && length(force_vec) < 2.0f)
+			return 0.4f;
+		return 0.5f;
 	}
 
 	DeathId::Type Actor::deathType(DamageType::Type damage_type, float damage, const float3 &force_vec) const {
@@ -176,7 +188,7 @@ namespace game {
 		damage *= damage_res;
 
 		if(isDying()) {
-			m_hit_points -= damage;
+			m_hit_points -= int(damage);
 			return;
 		}
 			
@@ -187,9 +199,10 @@ namespace game {
 		//TODO: randomization provided by world class
 		bool will_dodge = !is_fallen && random() <= dodgeChance(damage_type, damage);
 		bool will_fall = !will_dodge && random() <= fallChance(damage_type, damage, force);
+		bool will_interrupt = random() <= interruptChance(damage_type, damage, force);
 		
 		if(!will_dodge)
-			m_hit_points -= damage;
+			m_hit_points -= int(damage);
 
 		if(m_hit_points <= 0.0f) {
 			DeathId::Type death_id = deathType(damage_type, damage, force);
@@ -206,6 +219,7 @@ namespace game {
 			}
 			else if(!current) {
 				OrderTypeId::Type current_type_id = m_order? m_order->typeId() : OrderTypeId::invalid;
+
 
 				if(current_type_id == OrderTypeId::idle || random() > 0.5f)
 					setOrder(new GetHitOrder(will_dodge), true);
@@ -241,13 +255,29 @@ namespace game {
 		return m_inventory.weapon().classId();
 	}
 		
-	bool Actor::canSee(EntityRef target_ref) {
-		//TODO: use the same function that is used in game/visibility.cpp
-		const FBox &bbox = boundingBox();
-		float3 eye_pos = asXZY(bbox.center().xz(), bbox.min.y + bbox.height() * 0.75f);
+	static const float feel_distance = 30.0;
+	static const float max_distance = 300.0;
+
+	bool Actor::canSee(EntityRef target_ref, bool simple_test) {
+		const Entity *target = refEntity(target_ref);
+		if(!target || isDead())
+			return false;
+
+		const FBox &box = boundingBox();
+		const FBox &target_box = target->boundingBox();
+		float dist = distance(box, target_box);
+		float3 eye_pos = asXZY(box.center().xz(), box.min.y + box.height() * 0.75f);
+
+		if(dist > max_distance)
+			return false;
+
+		if(dist > feel_distance && !isInsideFrustum(eye_pos, asXZY(dir(), 0.0f), 0.1f, target_box))
+			return false;
 		
-		const Entity *entity = refEntity(target_ref);
-		return entity? world()->isVisible(eye_pos, target_ref, ref(), 3) : false;
+		if(simple_test)
+			return true;
+
+		return world()->isVisible(eye_pos, target_ref, ref(), target->typeId() == EntityId::actor? 4 : 3);
 	}
 
 	bool Actor::canEquipItem(int item_id) const {
@@ -286,6 +316,16 @@ namespace game {
 		if(order->typeId() == OrderTypeId::look_at) {
 			if((m_order && m_order->typeId() != OrderTypeId::idle) || !m_following_orders.empty())
 				return false;
+		}
+
+		//TODO: instead add option to attack target which is closest to the cursor?
+		if(order->typeId() == OrderTypeId::attack) {
+			if(m_order && m_order->typeId() == OrderTypeId::attack) {
+				AttackOrder *attack = static_cast<AttackOrder*>(m_order.get());
+				AttackOrder *new_attack = static_cast<AttackOrder*>(order.get());
+				if(new_attack->m_target)
+					attack->m_target = new_attack->m_target;
+			}
 		}
 
 		if(m_order)
@@ -333,6 +373,7 @@ namespace game {
 		if(need_replicate)	
 			replicate();
 
+		m_move_vec = float3(0, 0, 0);
 		handleOrder(ActorEvent::think);
 
 		if(m_ai)
@@ -431,6 +472,10 @@ namespace game {
 
 		return Path();
 	}
+		
+	const float3 Actor::estimateMove(float time_advance) const {
+		return m_move_vec * time_advance;
+	}
 
 	Actor::FollowPathResult Actor::followPath(const Path &path, PathPos &path_pos, bool run) {
 		float speed = m_actor.speeds[run && m_stance == Stance::stand? 3 : m_stance];
@@ -471,6 +516,7 @@ namespace game {
 				return FollowPathResult::collided;
 			}
 				
+			m_move_vec = (new_pos - pos()) * speed / step;
 			lookAt(new_pos + bboxSize() * 0.5f);
 			setPos(new_pos);
 		}
@@ -546,10 +592,19 @@ namespace game {
 		Entity::addToRender(out, color);
 
 #ifdef DEBUG_SHOOTING
-		for(int n = 0; n < (int)m_aiming_points.size(); n++)
-			out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), Color::red, true);
-		for(int n = 0; n < (int)m_aiming_lines.size(); n+=2)
-			out.addLine((int3)m_aiming_lines[n], (int3)m_aiming_lines[n + 1], Color::red);
+	//	for(int n = 0; n < (int)m_aiming_points.size(); n++)
+	//		out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), Color::red, true);
+	//	for(int n = 0; n < (int)m_aiming_lines.size(); n+=2)
+	//		out.addLine((int3)m_aiming_lines[n], (int3)m_aiming_lines[n + 1], Color::red);
+
+		const AttackOrder *attack = m_order && m_order->typeId() == OrderTypeId::attack? static_cast<AttackOrder*>(m_order.get()) : nullptr;
+		if(attack) {
+			const Actor *target = const_cast<Actor*>(this)->refEntity<Actor>(attack->m_target);
+			if(target) {
+				FBox bounding_box = target->boundingBox() + attack->m_target_pos - target->boundingBox().center();
+				out.addBox(bounding_box, Color(255, 0, 0, 100), false);
+			}
+		}
 #endif
 	}
 

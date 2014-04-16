@@ -200,13 +200,16 @@ namespace io {
 
 		m_viewer.addToRender(renderer);
 
+	//	if(actor)
+	//		renderer.addBox(actor->boundingBox() + actor->estimateMove(1.0f), Color(0, 0, 255, 100));
+
 		if(!m_isect.isEmpty())
 			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
-		if(!m_shoot_isect.isEmpty()) {
+	/*	if(!m_shoot_isect.isEmpty()) {
 			FBox box = m_world->refBBox(m_shoot_isect);
 			renderer.addBox(box, Color(255, 0, 0, 100));
-		}
+		}*/
 
 		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 

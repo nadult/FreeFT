@@ -55,9 +55,8 @@ namespace game {
 		Intersection pixelIntersect(const int2 &screen_pos, const FindFilter &filter = FindFilter()) const;
 		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 
-	protected:
-		bool isMovable(const Entity&) const;
-		bool isVisible(Entity&, int index, bool is_movable) const;
+	protected:		
+		bool isMovable(const Entity &entity) const;
 
 		vector<VisEntity> m_entities;
 		OccluderConfig m_occluder_config;
@@ -66,8 +65,6 @@ namespace game {
 
 		const EntityRef m_spectator;
 		float3 m_cur_pos, m_eye_pos;
-		float3 m_cur_dir;
-		float m_cur_fov;
 	};
 
 }

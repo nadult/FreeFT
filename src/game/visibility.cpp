@@ -20,28 +20,6 @@ namespace game {
 	}
 
 	static const double blend_time = 0.5;
-	static const float feel_distance = 30.0;
-	static const float max_distance = 400.0;
-		
-	bool WorldViewer::isVisible(Entity &entity, int index, bool is_movable) const {
-		const FBox &box = entity.boundingBox();
-		float dist = distance(box.closestPoint(m_cur_pos), m_cur_pos);
-
-		if(dist > max_distance)
-			return false;
-
-		if(dist > feel_distance && !isInsideFrustum(m_cur_pos, m_cur_dir, m_cur_fov, box))
-			return false;
-		
-		const Actor *spectator = m_world->refEntity<Actor>(m_spectator);
-		if(!spectator || spectator->isDead())
-			return false;
-
-		if(!is_movable || m_spectator.index() == index)
-			return true;
-
-		return m_world->isVisible(m_eye_pos, entity.ref(), m_spectator, entity.typeId() == EntityId::actor? 4 : 3);
-	}
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {
 		EntityId::Type type_id = entity.typeId();
@@ -52,7 +30,7 @@ namespace game {
 
 	void WorldViewer::update(double time_diff) {
 		PROFILE("WorldViewer::update");
-		Entity *spectator = m_world->refEntity(m_spectator);
+		Actor *spectator = m_world->refEntity<Actor>(m_spectator);
 
 		if((int)m_entities.size() != m_world->entityCount())
 			m_entities.resize(m_world->entityCount());
@@ -71,8 +49,6 @@ namespace game {
 		FBox bbox = spectator->boundingBox();
 		m_cur_pos = bbox.center();
 		m_eye_pos = asXZY(m_cur_pos.xz(), bbox.min.y + bbox.height() * 0.75f);
-		m_cur_dir = asXZY(spectator->dir(), 0.0f);
-		m_cur_fov = 0.1f;
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			Entity *entity = m_world->refEntity(n);
@@ -86,7 +62,7 @@ namespace game {
 			const auto *desc = m_world->refEntityDesc(n);
 			DASSERT(desc);
 
-			bool is_visible = isVisible(*entity, n, isMovable(*entity));
+			bool is_visible = spectator == entity || spectator->canSee(entity->ref(), !isMovable(*entity));
 
 			if(vis_entity.ref != entity->ref()) {
 				vis_entity = VisEntity();
