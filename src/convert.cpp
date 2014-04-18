@@ -271,6 +271,7 @@ static ResPath s_paths[] = {
 		{ "sprites/", ResTypeId::sprite },
 		{ "campaigns/missions/core/", ResTypeId::map },
 		{ "campaigns/missions/tutorials/", ResTypeId::map },
+		{ "missions/", ResTypeId::map },
 		{ "sound/game/", ResTypeId::sound },
 		{ "", ResTypeId::archive }
 };
