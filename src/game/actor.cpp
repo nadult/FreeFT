@@ -220,8 +220,7 @@ namespace game {
 			else if(!current) {
 				OrderTypeId::Type current_type_id = m_order? m_order->typeId() : OrderTypeId::invalid;
 
-
-				if(current_type_id == OrderTypeId::idle || random() > 0.5f)
+				if(current_type_id != OrderTypeId::change_stance && (current_type_id == OrderTypeId::idle || random() > 0.5f))
 					setOrder(new GetHitOrder(will_dodge), true);
 				else if(!will_dodge)
 					world()->playSound(m_actor.sounds[m_sound_variation].hit, pos());

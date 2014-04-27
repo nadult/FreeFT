@@ -86,6 +86,7 @@ namespace game
 		float2 m_open_in_dir;
 		bool m_update_anim;
 	};
+
 };
 
 #endif

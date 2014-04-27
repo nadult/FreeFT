@@ -11,6 +11,7 @@
 #include "game/tile_map.h"
 #include "game/entity_map.h"
 #include "game/tile.h"
+#include "game/trigger.h"
 #include <algorithm>
 #include <cstdlib>
 
@@ -19,34 +20,34 @@ using namespace game;
 
 namespace ui {
 
-	static const char *s_mode_strings[EntitiesEditor::mode_count] = {
+	DEFINE_ENUM(EntitiesEditorMode,
 		"[S]electing entities",
-		"[P]lacing entities",
-	};
-	const char **EntitiesEditor::modeStrings() { return s_mode_strings; }
+		"[P]lacing entities"
+	);
 
 	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, View &view, IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map), m_proto(nullptr) {
+		:ui::Window(rect, Color(0, 0, 0)), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map) {
 		m_is_selecting = false;
-		m_mode = mode_selecting;
+		m_mode = Mode::selecting;
 		m_selection = IRect::empty();
 		m_cursor_pos = float3(0, 0, 0);
 		m_proto_angle = 0;
+		m_trigger_mode = 0;
 	}
 		
-	void EntitiesEditor::setProto(game::Entity *proto) {
-		m_proto = proto;
+	void EntitiesEditor::setProto(game::PEntity proto) {
+		m_proto = std::move(proto);
 	}
 
 	void EntitiesEditor::onInput(int2 mouse_pos) {
 		computeCursor(mouse_pos, mouse_pos);
 
 		if(isKeyDown('S')) {
-			m_mode = mode_selecting;
+			m_mode = Mode::selecting;
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 		if(isKeyDown('P')) {
-			m_mode = mode_placing;
+			m_mode = Mode::placing;
 			sendEvent(this, Event::button_clicked, m_mode);
 		}
 
@@ -93,10 +94,12 @@ namespace ui {
 		if(key == 0 && !isKeyPressed(Key_lctrl)) {
 			computeCursor(start, current);
 			m_is_selecting = !is_final;
-			if(m_mode == mode_selecting && is_final && is_final != -1) {
+
+			if(m_mode == Mode::selecting && is_final && is_final != -1) {
 				m_selected_ids.clear();
 
 				m_entity_map.findAll(m_selected_ids, m_selection, Flags::all | Flags::visible);
+
 				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
 					auto &object = m_entity_map[m_selected_ids[n]];
 					//TODO: FIX: you can select invisible (on lower level, for example) entities
@@ -109,8 +112,42 @@ namespace ui {
 				std::sort(m_selected_ids.begin(), m_selected_ids.end());
 				computeCursor(current, current);
 			}
-			else if(m_mode == mode_placing && is_final)
-				m_entity_map.add(PEntity(m_proto->clone()));
+			else if(m_mode == Mode::placing) {
+				if(m_proto->typeId() == EntityId::trigger) {
+					Trigger *trigger = static_cast<Trigger*>(m_proto.get());
+
+					if(m_trigger_mode == 0) {
+						m_trigger_box = m_view.computeCursor(start, current, int3(1, 1, 1), m_cursor_pos.y, 0);
+					
+						if(isMouseKeyDown(1)) {
+							m_trigger_mode = 1;
+							m_trigger_offset = current;
+						}
+					}
+
+					IBox new_box = m_trigger_box;
+					if(m_trigger_mode == 1) {
+						int offset = screenToWorld(int2(0, m_trigger_offset.y - current.y)).y;
+						if(offset < 0)
+							new_box.min.y += offset;
+						else
+							new_box.max.y += offset;
+					}
+					
+					trigger->setBox((FBox)new_box);
+					m_cursor_pos = trigger->pos();
+			
+					if(is_final > 0) {
+						m_entity_map.add(PEntity(m_proto->clone()));
+					}
+					if(is_final) {
+						m_trigger_mode = 0;
+						trigger->setBox(FBox(0, 0, 0, 1, 1, 1) + trigger->pos());
+					}
+				}
+				else if(is_final > 0)
+					m_entity_map.add(PEntity(m_proto->clone()));
+			}
 
 			return true;
 		}
@@ -162,9 +199,18 @@ namespace ui {
 			for(int n = 0; n < (int)visible_ids.size(); n++) {
 				auto &object = m_entity_map[visible_ids[n]];
 				object.ptr->addToRender(renderer);
-				
+
 				if(m_tile_map.findAny(object.bbox) != -1 || m_entity_map.findAny(object.bbox, visible_ids[n]) != -1)
 					renderer.addBox(object.bbox, Color::red);
+			}
+
+			for(int n = 0; n < m_entity_map.size(); n++) {
+				auto &object = m_entity_map[n];
+				if(!object.ptr || object.ptr->typeId() != EntityId::trigger)
+					continue;
+
+				renderer.addBox(object.bbox, Color(Color::yellow, 64), true);
+				renderer.addBox(object.bbox, Color::yellow);
 			}
 
 			for(int n = 0; n < (int)m_selected_ids.size(); n++) {
@@ -173,7 +219,7 @@ namespace ui {
 			}
 		}
 
-		if(m_proto && m_mode == mode_placing) {
+		if(m_proto && m_mode == Mode::placing) {
 			m_proto->setPos(m_cursor_pos);
 			m_proto->addToRender(renderer);
 			FBox bbox = m_proto->boundingBox();
@@ -193,7 +239,7 @@ namespace ui {
 		}
 
 		renderer.render();
-		if(m_mode == mode_selecting && m_is_selecting)
+		if(m_mode == Mode::selecting && m_is_selecting)
 			drawRect(m_selection, Color::white);
 
 
@@ -209,7 +255,7 @@ namespace ui {
 
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
-				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_strings[m_mode]);
+				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), EntitiesEditorMode::toString(m_mode));
 	}
 
 }

@@ -44,7 +44,7 @@ namespace ui {
 		m_is_selecting = false;
 		m_mode = mode_selecting_normal;
 
-		m_cursor_height = 0;
+		m_cursor_offset = 0;
 		m_dirty_percent = 0.0f;
 
 		m_current_occluder = -1;
@@ -63,9 +63,9 @@ namespace ui {
 		m_selection = computeCursor(mouse_pos, mouse_pos);
 
 		if(isKeyDown(Key_kp_add))
-			m_cursor_height++;
+			m_cursor_offset++;
 		if(isKeyDown(Key_kp_subtract))
-			m_cursor_height--;
+			m_cursor_offset--;
 
 		m_view.update();
 
@@ -108,57 +108,6 @@ namespace ui {
 				m_selected_ids.clear();
 			}
 		}
-	}
-
-	IBox TilesEditor::computeCursor(int2 start, int2 end) const {
-		float2 height_off = worldToScreen(int3(0, m_view.gridHeight(), 0));
-		int3 gbox(m_view.cellSize(), 1, m_view.cellSize());
-
-		int3 bbox = m_new_tile && !isSelecting()? m_new_tile->bboxSize() : gbox;
-
-		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + m_view.pos()) - height_off) + float2(0.5f, 0.5f)));
-		int3 end_pos   = asXZ((int2)( screenToWorld(float2(end   + m_view.pos()) - height_off) + float2(0.5f, 0.5f)));
-
-		start_pos.y = end_pos.y = m_view.gridHeight() + m_cursor_height;
-		
-		{
-			int apos1 = start_pos.x % gbox.x;
-			int apos2 = apos1 - gbox.x + bbox.x;
-			start_pos.x -= apos1 < gbox.x - apos1 || bbox.x >= gbox.x? apos1 : apos2;
-		}
-		{
-			int apos1 = start_pos.z % gbox.z;
-			int apos2 = apos1 - gbox.z + bbox.z;
-			start_pos.z -= apos1 < gbox.z - apos1 || bbox.z >= gbox.z? apos1 : apos2;
-		}
-		if(end == start)
-			end_pos = start_pos;
-		
-		int3 dir(end_pos.x >= start_pos.x? 1 : -1, 1, end_pos.z >= start_pos.z? 1 : -1);
-		int3 size(abs(end_pos.x - start_pos.x), 1, abs(end_pos.z - start_pos.z));
-		size += bbox - int3(1, 1, 1);
-		size.x -= size.x % bbox.x;
-		size.z -= size.z % bbox.z;
-		size = max(bbox, size);
-
-		if(dir.x < 0)
-			start_pos.x += bbox.x;
-		if(dir.z < 0)
-			start_pos.z += bbox.z;
-		end_pos = start_pos + dir * size;
-
-		if(start_pos.x > end_pos.x) swap(start_pos.x, end_pos.x);
-		if(start_pos.z > end_pos.z) swap(start_pos.z, end_pos.z);
-		
-		int2 dims = m_tile_map.dimensions();
-		start_pos = asXZY(clamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
-		  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
-
-		if(isSelecting())
-			end_pos.y = start_pos.y;
-
-		return IBox(start_pos, end_pos);
-
 	}
 
 	void TilesEditor::removeAll(const IBox &box) {
@@ -401,7 +350,7 @@ namespace ui {
 	}
 	
 	void TilesEditor::drawContents() const {
-		m_view.updateVisibility(m_cursor_height);
+		m_view.updateVisibility(m_cursor_offset);
 		SceneRenderer renderer(clippedRect(), m_view.pos());
 
 		{
@@ -530,6 +479,19 @@ namespace ui {
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]);
+	}
+		
+	const IBox TilesEditor::computeCursor(const int2 &start, const int2 &end) const {
+		int3 bbox(m_view.cellSize(), 1, m_view.cellSize());
+		
+		if(m_new_tile && !isSelecting())
+			bbox = m_new_tile->bboxSize();
+		IBox out = m_view.computeCursor(start, end, bbox, m_view.gridHeight(), m_cursor_offset);
+
+		if(isSelecting())
+			out.max.y = out.min.y;
+
+		return out;
 	}
 
 }

@@ -14,7 +14,7 @@ namespace io {
 	class ConsoleEditBox: public ui::EditBox {
 	public:
 		ConsoleEditBox(const IRect &rect, int max_size, Color col)
-			:EditBox(rect, max_size, col), m_new_command(false) { }
+			:EditBox(rect, max_size, "", col), m_new_command(false) { }
 
 		void onInput(int2 mouse_pos) override {
 			m_new_command = false;

@@ -9,12 +9,13 @@
 
 #include "base.h"
 #include "occluder_map.h"
+#include "game/entity_map.h"
 
 namespace ui {
 
 	class View {
 	public:
-		View(game::TileMap&, const int2 &view_size);
+		View(game::TileMap&, game::EntityMap&, const int2 &view_size);
 
 		void drawGrid() const;
 		void update();
@@ -26,9 +27,11 @@ namespace ui {
 
 		const int2 &pos() const { return m_view_pos; }
 		void updateVisibility(int cursor_height = 0);
+		const IBox computeCursor(const int2 &start, const int2 &end, const int3 &bbox, int height, int offset) const;
 
 	private:
 		game::TileMap &m_tile_map;
+		game::EntityMap &m_entity_map;
 		OccluderConfig m_occluder_config;
 
 		int m_height, m_cell_size;

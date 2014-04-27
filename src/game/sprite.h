@@ -146,6 +146,7 @@ namespace game {
 		static const Sprite &get(int idx);
 		static const Sprite &get(const string &name);
 		static const Sprite &getPartial(const string &name);
+		static const Sprite &getDummy();
 		static bool isValidIndex(int idx);
 
 		bool isFullyLoaded() const { return m_is_fully_loaded; }

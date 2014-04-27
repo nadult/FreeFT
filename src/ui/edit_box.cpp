@@ -10,8 +10,8 @@ using namespace gfx;
 
 namespace ui {
 
-	EditBox::EditBox(const IRect &rect, int max_size, Color col)
-		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_last_key(0), m_max_size(max_size) {
+	EditBox::EditBox(const IRect &rect, int max_size, const char *label, Color col)
+		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_last_key(0), m_max_size(max_size), m_label(label) {
 		m_font = gfx::Font::mgr[s_font_names[0]];
 	}
 
@@ -25,11 +25,11 @@ namespace ui {
 		int line_height = m_font->lineHeight();
 
 		int2 pos(5, height() / 2 - line_height / 2);
-		m_font->drawShadowed(pos, Color::white, Color::black, "%s", m_text.c_str());
+		m_font->drawShadowed(pos, Color::white, Color::black, "%s%s", m_label.c_str(), m_text.c_str());
 
 		DTexture::bind0();
 		if(m_is_editing) {
-			IRect ext = m_font->evalExtents(m_text.substr(0, m_cursor_pos).c_str());
+			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
 			drawLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), Color(255, 255, 255, 180));
 			drawRect(IRect(2, 1, width() - 1, height() - 2), Color(255, 255, 255, 80));	
 		}
@@ -41,7 +41,7 @@ namespace ui {
 
 		//TODO: speed up
 		for(int n = 0; n < (int)m_text.size(); n++) {
-			string text = m_text.substr(0, n);
+			string text = m_label + m_text.substr(0, n);
 			IRect ext = m_font->evalExtents(text.c_str());
 			if(ext.max.x + 8 > rect_pos.x) {
 				m_cursor_pos = max(0, n);

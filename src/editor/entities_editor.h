@@ -14,28 +14,26 @@ namespace ui {
 
 	class View;
 
+	DECLARE_ENUM(EntitiesEditorMode,
+		selecting,
+		placing
+	);
+
 	class EntitiesEditor: public ui::Window
 	{
 	public:
+		typedef EntitiesEditorMode::Type Mode;
+
 		EntitiesEditor(game::TileMap&, game::EntityMap&, View&, IRect rect);
 
 		virtual void drawContents() const;
 		virtual void onInput(int2 mouse_pos);
 		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
 
-		enum Mode {
-			mode_selecting,
-			mode_placing,
-
-			mode_count,
-		};
-
 		Mode mode() const { return m_mode; }
 		void setMode(Mode mode) { m_mode = mode; }
-		
-		static const char **modeStrings();
 
-		void setProto(game::Entity *proto);
+		void setProto(game::PEntity);
 
 	private:
 		Mode m_mode;
@@ -44,21 +42,24 @@ namespace ui {
 		game::TileMap &m_tile_map;
 		vector<int> m_selected_ids;
 
-		game::Entity *m_proto;
+		game::PEntity m_proto;
 		int m_proto_angle;
 		
 		void drawBoxHelpers(const IBox &box) const;
 		void computeCursor(int2 start, int2 end);
-	
+
 		IRect m_selection;
 		float3 m_cursor_pos;	
 		bool m_is_selecting;
+
+		IBox m_trigger_box;
+		int2 m_trigger_offset;
+		int m_trigger_mode;
 	};
 
 	typedef Ptr<EntitiesEditor> PEntitiesEditor;
 
 }
-
 
 #endif
 

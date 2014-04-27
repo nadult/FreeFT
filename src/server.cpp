@@ -14,6 +14,7 @@
 #include "sys/platform.h"
 #include "game/actor.h"
 #include "game/world.h"
+#include "game/trigger.h"
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/host.h"
@@ -53,9 +54,24 @@ public:
 	};
 
 
-	EntityRef spawnActor(const float3 &pos) {
+	EntityRef spawnActor(const Trigger *spawn_zone) {
 		DASSERT(m_world);
-		return m_world->addNewEntity<Actor>(pos, getProto("male", ProtoId::actor));
+
+		PEntity actor = (PEntity)new Actor(getProto("male", ProtoId::actor));
+
+		FBox spawn_box = spawn_zone->boundingBox();
+		float3 spawn_pos = spawn_box.center();
+
+		actor->setPos(spawn_pos);
+		while(!m_world->findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
+			spawn_pos.y -= 1.0f;
+			actor->setPos(spawn_pos);
+		}
+
+		spawn_pos.y += 1.0f;
+		actor->setPos(spawn_pos);
+
+		return m_world->addEntity(std::move(actor));
 	}
 
 	void disconnectClient(int client_id) {
@@ -72,7 +88,14 @@ public:
 			InChunk chunk(*chunk_ptr);
 
 			if(chunk.type() == ChunkType::join) {
-				client.actor_ref = spawnActor(float3(245 + frand() * 10.0f, 128, 335 + frand() * 10.0f));
+				vector<Trigger*> spawn_zones;
+				for(int n = 0; n < m_world->entityCount(); n++) {
+					Trigger *trigger = m_world->refEntity<Trigger>(n);
+					if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
+						spawn_zones.push_back(trigger);
+				}
+
+				client.actor_ref = spawnActor(spawn_zones[rand() % spawn_zones.size()]);
 //				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
 				client.update_map.resize(m_world->entityCount() * 2);

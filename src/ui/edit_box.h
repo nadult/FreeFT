@@ -15,7 +15,7 @@ namespace ui {
 	class EditBox: public Window
 	{
 	public:
-		EditBox(const IRect &rect, int max_size, Color col = Color::transparent);
+		EditBox(const IRect &rect, int max_size, const char *label = "", Color col = Color::transparent);
 		virtual const char *typeName() const { return "EditBox"; }
 
 		void setText(const char *text);
@@ -37,6 +37,7 @@ namespace ui {
 
 		gfx::PFont m_font;
 		string m_text, m_old_text;
+		string m_label;
 		int m_cursor_pos;
 		bool m_is_editing;
 	};

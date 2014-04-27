@@ -11,6 +11,7 @@
 #include "sys/platform.h"
 #include "game/actor.h"
 #include "game/world.h"
+#include "game/trigger.h"
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "audio/device.h"
@@ -50,13 +51,38 @@ int safe_main(int argc, char **argv)
 		path = world->naviMap().findPath(int3(160, 128, 328), int3(430, 128, 476));
 	printf(" Long: %.f usec\n", (getTime() - time) * 1000.0);*/
 
+	Trigger *spawn_zone = nullptr;
+
 	for(int n = 0; n < world->entityCount(); n++) {
 		Actor *actor = world->refEntity<Actor>(n);
 		if(actor && actor->factionId() != 0)
 			actor->attachAI<SimpleAI>();
+
+		Trigger *trigger = world->refEntity<Trigger>(n);
+		if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
+			spawn_zone = trigger;
 	}
 
-	EntityRef actor_ref = world->addNewEntity<Actor>(float3(300, 2, 702), getProto("male", ProtoId::actor));
+	if(!spawn_zone)
+		THROW("Spawn zone not found!\n");
+
+	EntityRef actor_ref; {
+		PEntity actor = (PEntity)new Actor(getProto("male", ProtoId::actor));
+
+		FBox spawn_box = spawn_zone->boundingBox();
+		float3 spawn_pos = spawn_box.center();
+
+		actor->setPos(spawn_pos);
+		while(!world->findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
+			spawn_pos.y -= 1.0f;
+			actor->setPos(spawn_pos);
+		}
+
+		spawn_pos.y += 1.0f;
+		actor->setPos(spawn_pos);
+		actor_ref = world->addEntity(std::move(actor));
+	}
+
 	if( Actor *actor = world->refEntity<Actor>(actor_ref) ) {
 		auto &inventory = actor->inventory();
 		inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);

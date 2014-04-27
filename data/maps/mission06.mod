@@ -340,7 +340,8 @@ CRC32 201bbbc2
 		<box min="517 128 584" max="534 151 660"/>
 	</occluder>
 </occluders>
-<entity_map size="1896 1896" entity_count="0">
+<entity_map size="1896 1896" entity_count="1">
+	<trigger pos="758 127 701" class="spawn_zone" box_size="25 8 24"/>
 </entity_map>
 .
 61684,61685d

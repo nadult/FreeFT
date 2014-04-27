@@ -68,7 +68,8 @@ namespace game {
 		actor,
 		item,
 		projectile,
-		impact
+		impact,
+		trigger
 	);
 
 	DECLARE_ENUM(TileId,
@@ -151,6 +152,7 @@ namespace game {
 			item			= entityIdToFlag(EntityId::item),
 			projectile		= entityIdToFlag(EntityId::projectile),
 			impact			= entityIdToFlag(EntityId::impact),
+			trigger			= entityIdToFlag(EntityId::trigger),
 
 			entity			= 0xffff,
 

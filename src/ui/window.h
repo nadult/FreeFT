@@ -38,6 +38,11 @@ namespace ui
 	class Window: public RefCounter
 	{
 	public:
+		//TODO: move to config object
+		enum {
+			line_height = 24
+		};
+
 		Window(IRect rect, Color background = Color::transparent);
 		virtual ~Window() { }
 		virtual const char *typeName() const { return "Window"; }

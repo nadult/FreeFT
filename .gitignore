@@ -16,4 +16,5 @@
 /data/sprites
 /data/sounds
 /data/maps/*.xml
+/data/maps/*/*.xml
 /media

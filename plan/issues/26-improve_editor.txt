@@ -1,0 +1,10 @@
+- Moving entities around  3h
+- Placing triggers  2h  DONE
+- Showing / hiding triggers  1h
+- 
+
++ESTIMATED_TIME:
++TIME_SPENT:
+
++WORK_LOG:
+27.04.14: 11:45 - 14:15, 15:00 - 17:15

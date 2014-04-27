@@ -20,6 +20,7 @@ namespace game {
 
 		std::map<string, int> s_sprite_map;
 		vector<Sprite> s_sprites;
+		Sprite s_dummy;
 	}
 
 	static void loadSprite(int idx, bool full) {
@@ -81,6 +82,10 @@ namespace game {
 		if(idx == -1)
 			THROW("Sprite not found: %s", name.c_str());
 		return get(idx);
+	}
+
+	const Sprite &Sprite::getDummy() {
+		return get("impactfx/Projectile Invisi");
 	}
 		
 	const Sprite &Sprite::getPartial(const string &name) {

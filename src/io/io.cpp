@@ -53,7 +53,7 @@ namespace io {
 		bool console_mode = m_console.isOpened();
 
 		Ray ray = screenRay(mouse_pos + m_view_pos);
-		Flags::Type flags = Flags::walkable_tile | (Flags::entity & ~(Flags::projectile | Flags::impact));
+		Flags::Type flags = Flags::walkable_tile | (Flags::entity & ~(Flags::projectile | Flags::impact | Flags::trigger));
 		m_isect = m_viewer.pixelIntersect(mouse_pos + m_view_pos, {flags, m_actor_ref});
 		if(m_isect.isEmpty() || m_isect.isTile())
 			m_isect = m_viewer.trace(ray, {flags, m_actor_ref});
@@ -200,16 +200,13 @@ namespace io {
 
 		m_viewer.addToRender(renderer);
 
-	//	if(actor)
-	//		renderer.addBox(actor->boundingBox() + actor->estimateMove(1.0f), Color(0, 0, 255, 100));
-
 		if(!m_isect.isEmpty())
 			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
-	/*	if(!m_shoot_isect.isEmpty()) {
+		if(!m_shoot_isect.isEmpty()) {
 			FBox box = m_world->refBBox(m_shoot_isect);
 			renderer.addBox(box, Color(255, 0, 0, 100));
-		}*/
+		}
 
 		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 

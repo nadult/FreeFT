@@ -124,7 +124,7 @@ public:
 		freeEditors();
 
 		IRect rect(m_left_width, 0, width(), height());
-		m_view = PView(new View(m_tile_map, rect.size()));
+		m_view = PView(new View(m_tile_map, m_entity_map, rect.size()));
 		m_tiles_editor = new TilesEditor(m_tile_map, *m_view.get(), rect);
 		m_entities_editor = new EntitiesEditor(m_tile_map, m_entity_map, *m_view.get(), rect);
 		m_tiles_editor->setTileGroup(&m_group);

@@ -175,8 +175,8 @@ namespace game {
 		virtual const FBox boundingBox() const;
 		const float3 bboxSize() const { return boundingBox().size(); }
 
-		const IRect screenRect() const;
-		const IRect currentScreenRect() const;
+		virtual const IRect screenRect() const;
+		virtual const IRect currentScreenRect() const;
 
 		float dirAngle() const { return m_dir_angle; }
 		float actualDirAngle() const;

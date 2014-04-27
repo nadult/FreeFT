@@ -82,10 +82,10 @@ namespace ui {
 		int findAt(const int3 &pos) const;
 
 		void drawBoxHelpers(const IBox &box) const;
-		IBox computeCursor(int2 start, int2 end) const;
+		const IBox computeCursor(const int2 &start, const int2 &end) const;
 		
 		IBox m_selection;
-		int m_cursor_height;
+		int m_cursor_offset;
 		int m_current_occluder;
 		int m_mouseover_tile_id;
 		bool m_is_selecting;

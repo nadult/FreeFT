@@ -10,6 +10,7 @@
 #include "game/door.h"
 #include "game/container.h"
 #include "game/projectile.h"
+#include "game/trigger.h"
 #include <sys/xml.h>
 
 namespace game {
@@ -26,6 +27,8 @@ namespace game {
 			out = new Container(node);
 		else if(entity_type == EntityId::item)
 			out = new ItemEntity(node);
+		else if(entity_type == EntityId::trigger)
+			out = new Trigger(node);
 			
 		if(!out)
 			THROW("Unknown entity id: %s\n", (int)entity_type);
@@ -53,6 +56,8 @@ namespace game {
 			out = new Projectile(sr);
 		else if(entity_type == EntityId::impact)
 			out = new Impact(sr);
+		else if(entity_type == EntityId::trigger)
+			out = new Trigger(sr);
 
 		if(!out)
 			THROW("Unknown entity id: %d\n", (int)entity_type);

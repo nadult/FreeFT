@@ -27,6 +27,11 @@
 
 - Possibility to explode dead bodies if they are not yet exploded :D
 
+- Add damage_def class which is defined in xml:
+ damage="bullet(10) fire(100)"
+ damage_mod="all(1.5)"
+ damage_res="all(0.1) fire(0.2)"
+
 REFACTORING:
 - move EntityWorldProxy, EntityRef to separate files?
 - make EntityWorldProxy::ref() const

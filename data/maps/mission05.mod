@@ -109,17 +109,17 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="76">
+<entity_map size="1056 936" entity_count="77">
 	<container pos="162 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<container pos="165 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
-	<actor pos="167 147 405" angle="0" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
+	<actor pos="167 147 405" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
 		<inventory count="2">
 			<item proto_type="weapon" proto_id="spear" count="1"/>
 			<item proto_type="armour" proto_id="mutant_armour" count="1"/>
 		</inventory>
 	</actor>
 	<container pos="168 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
-	<actor pos="169 147 394" angle="0" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
+	<actor pos="169 147 394" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
 		<inventory count="1">
 			<item proto_type="weapon" proto_id="spear" count="1"/>
 		</inventory>
@@ -131,17 +131,17 @@ CRC32 d1c72fa9
 	<container pos="183 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<container pos="186 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<container pos="189 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
-	<actor pos="192 128 410" angle="0" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
+	<actor pos="192 128 410" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
 		<inventory count="1">
 			<item proto_type="weapon" proto_id="club" count="1"/>
 		</inventory>
 	</actor>
-	<actor pos="194 147 303" angle="0" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
+	<actor pos="194 147 303" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
 		<inventory count="1">
 			<item proto_type="weapon" proto_id="club" count="1"/>
 		</inventory>
 	</actor>
-	<actor pos="194 147 313" angle="0" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
+	<actor pos="194 147 313" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
 		<inventory count="1">
 			<item proto_type="weapon" proto_id="club" count="1"/>
 		</inventory>
@@ -164,41 +164,42 @@ CRC32 d1c72fa9
 	</actor>
 	<door pos="228 115 270" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<door pos="228 115 324" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
-	<item pos="231 128 326" angle="0" proto_type="weapon" proto_id="spear" item_count="1"/>
-	<item pos="231 128 343" angle="0" proto_type="weapon" proto_id="flamer" item_count="1"/>
-	<item pos="233 128 331" angle="0" proto_type="weapon" proto_id="club" item_count="1"/>
-	<item pos="233 128 350" angle="0" proto_type="weapon" proto_id="beretta" item_count="1"/>
-	<item pos="236 128 338" angle="0" proto_type="weapon" proto_id="finger_claws" item_count="1"/>
-	<item pos="236 128 349" angle="0" proto_type="weapon" proto_id="uzi" item_count="1"/>
-	<item pos="237 128 335" angle="0" proto_type="weapon" proto_id="knife" item_count="1"/>
+	<item pos="231 128 326" proto_type="weapon" proto_id="spear" item_count="1"/>
+	<item pos="231 128 343" proto_type="weapon" proto_id="flamer" item_count="1"/>
+	<item pos="233 128 331" proto_type="weapon" proto_id="club" item_count="1"/>
+	<item pos="233 128 350" proto_type="weapon" proto_id="beretta" item_count="1"/>
+	<item pos="236 128 338" proto_type="weapon" proto_id="finger_claws" item_count="1"/>
+	<item pos="236 128 349" proto_type="weapon" proto_id="uzi" item_count="1"/>
+	<item pos="237 128 335" proto_type="weapon" proto_id="knife" item_count="1"/>
 	<item pos="238 128 366" angle="3.141593" proto_type="armour" proto_id="leather_armour" item_count="1"/>
 	<item pos="238 128 373" angle="3.141593" proto_type="armour" proto_id="metal_armour" item_count="1"/>
 	<item pos="243 128 370" angle="3.141593" proto_type="armour" proto_id="power_armour" item_count="1"/>
 	<door pos="248 115 220" angle="4.712389" proto_type="door" proto_id="bos_interior"/>
-	<door pos="246 115 303" angle="0" proto_type="door" proto_id="vault_interior"/>
+	<door pos="246 115 303" proto_type="door" proto_id="vault_interior"/>
 	<door pos="249 115 250" angle="4.712389" proto_type="door" proto_id="bos_interior"/>
 	<actor pos="249 128 291" angle="1.570796" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0"/>
-	<door pos="250 128 423" angle="0" proto_type="door" proto_id="fence"/>
+	<door pos="250 128 423" proto_type="door" proto_id="fence"/>
 	<item pos="251 128 359" angle="1.570796" proto_type="weapon" proto_id="rocket_launcher" item_count="1"/>
 	<actor pos="256 128 437" angle="4.712389" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
 	<actor pos="258 128 288" angle="1.570796" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0"/>
 	<actor pos="265 128 438" angle="4.712389" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
-	<container pos="269 128 363" angle="0" proto_type="container" proto_id="pot"/>
+	<container pos="269 128 363" proto_type="container" proto_id="pot"/>
 	<door pos="270 115 210" angle="3.141593" proto_type="door" proto_id="bos_interior"/>
 	<actor pos="270 128 293" angle="1.570796" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0"/>
-	<container pos="270 128 360" angle="0" proto_type="container" proto_id="pot"/>
-	<container pos="272 115 279" angle="0" proto_type="container" proto_id="safe"/>
-	<container pos="272 128 363" angle="0" proto_type="container" proto_id="pot"/>
+	<container pos="270 128 360" proto_type="container" proto_id="pot"/>
+	<container pos="272 115 279" proto_type="container" proto_id="safe"/>
+	<container pos="272 128 363" proto_type="container" proto_id="pot"/>
 	<actor pos="272 128 437" angle="4.712389" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
-	<item pos="276 128 356" angle="0" proto_type="weapon" proto_id="m60" item_count="1"/>
-	<item pos="277 128 362" angle="0" proto_type="weapon" proto_id="plasma_rifle" item_count="1"/>
-	<item pos="279 128 359" angle="0" proto_type="weapon" proto_id="laser_rifle" item_count="1"/>
+	<item pos="276 128 356" proto_type="weapon" proto_id="m60" item_count="1"/>
+	<item pos="277 128 362" proto_type="weapon" proto_id="plasma_rifle" item_count="1"/>
+	<item pos="279 128 359" proto_type="weapon" proto_id="laser_rifle" item_count="1"/>
 	<item pos="279 128 370" angle="1.570796" proto_type="weapon" proto_id="gatling_laser" item_count="1"/>
-	<item pos="281 128 366" angle="0" proto_type="weapon" proto_id="pulse_rifle" item_count="1"/>
+	<item pos="281 128 366" proto_type="weapon" proto_id="pulse_rifle" item_count="1"/>
 	<actor pos="281 128 438" angle="4.712389" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
-	<door pos="296 128 432" angle="0" proto_type="door" proto_id="fence"/>
+	<door pos="296 128 432" proto_type="door" proto_id="fence"/>
 	<actor pos="297 128 421" angle="3.926991" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
 	<actor pos="310 134 420" angle="3.926991" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
+	<trigger pos="325 142 409" class="spawn_zone" box_size="30 4 26"/>
 	<actor pos="362 128 365" angle="3.141593" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="366 128 380" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="367 128 338" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>

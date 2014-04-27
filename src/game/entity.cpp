@@ -27,22 +27,25 @@ namespace game {
 		
 	Entity::Entity(const Sprite &sprite)
 		:m_sprite(sprite), m_pos(0.0f, 0.0f, 0.0f) {
-		DASSERT(m_sprite.isFullyLoaded());
 		resetAnimState();
 	}
 
 	//TODO: redundant initialization?
 	Entity::Entity(const Sprite &sprite, const XMLNode &node) :m_sprite(sprite) {
-		DASSERT(m_sprite.isFullyLoaded());
 		m_pos = node.float3Attrib("pos");
 		resetAnimState();
-		setDirAngle(node.floatAttrib("angle"));
+
+		float angle = 0.0f;
+		if( const char *angle_attr = node.hasAttrib("angle") )
+			angle = toFloat(angle_attr);
+		setDirAngle(angle);
 	}
 
 	XMLNode Entity::save(XMLNode &parent) const {
 		XMLNode node = parent.addChild(EntityId::toString(typeId()));
 		node.addAttrib("pos", m_pos);
-		node.addAttrib("angle", m_dir_angle);
+		if(m_dir_angle != 0.0f)
+			node.addAttrib("angle", m_dir_angle);
 		return node;
 	}
 	
@@ -87,6 +90,8 @@ namespace game {
 		m_dir_angle = 0.0f;
 		m_seq_idx = -1;
 		m_oseq_idx = -1;
+
+		DASSERT(m_sprite.isFullyLoaded());
 		playSequence(0, false);
 	}
 

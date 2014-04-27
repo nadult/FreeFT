@@ -24,7 +24,7 @@ namespace ui {
 		title_box->setFont(s_font_names[1]);
 
 		m_list_box = new ListBox(IRect(5, 25, w - 25, h - 50));
-		m_edit_box = new EditBox(IRect(5, h - 49, w - 5, h - 26), 30, Color::gui_light);
+		m_edit_box = new EditBox(IRect(5, h - 49, w - 5, h - 26), 30, "", Color::gui_light);
 		m_ok_button = new Button(IRect(w - 110, h - 25, w - 55, h - 5), s_ok_label[mode], 1);
 		PButton cancel_button = new Button(IRect(w - 55 , h - 25, w - 5, h - 5), "cancel", 0);
 
