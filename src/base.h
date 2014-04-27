@@ -467,6 +467,7 @@ struct Color
 		gray		= 0xff7f7f7fu,
 		yellow		= 0xff00ffffu,
 		red			= 0xff0000ffu,
+		green		= 0xff00ff00u,
 		black 		= 0xff000000u,
 		gui_dark	= 0xffe86f25u,
 		gui_medium	= 0xffe77738u,

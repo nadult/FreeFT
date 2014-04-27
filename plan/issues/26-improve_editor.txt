@@ -1,4 +1,4 @@
-- Moving entities around  3h
+- Moving entities around  3h  DONE
 - Placing triggers  2h  DONE
 - Showing / hiding triggers  1h
 - 
@@ -7,4 +7,4 @@
 +TIME_SPENT:
 
 +WORK_LOG:
-27.04.14: 11:45 - 14:15, 15:00 - 17:15
+27.04.14: 11:45 - 14:15, 15:00 - 17:15, 20:00 - 22:45

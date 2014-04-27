@@ -34,6 +34,8 @@ namespace ui {
 		void setMode(Mode mode) { m_mode = mode; }
 
 		void setProto(game::PEntity);
+		void findVisible(vector<int> &out, const IRect &rect) const;
+		FBox computeOvergroundBox(const FBox &bbox) const;
 
 	private:
 		Mode m_mode;
@@ -55,6 +57,10 @@ namespace ui {
 		IBox m_trigger_box;
 		int2 m_trigger_offset;
 		int m_trigger_mode;
+
+		int3 m_move_offset;
+		bool m_is_moving_vertically;
+		bool m_is_moving;
 	};
 
 	typedef Ptr<EntitiesEditor> PEntitiesEditor;

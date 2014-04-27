@@ -17,10 +17,6 @@
 Grid::Node::Node()
 	:size(0), is_dirty(false), bbox(FBox::empty()), rect(IRect::empty()), obj_flags(0) { }
 	
-bool Grid::flagTest(int object, int test) {
-	int func_test = test & functional_flags;
-	return (object & object_flags & test) && ((object & func_test) == func_test);
-}
 
 Grid::Grid(const int2 &size) {
 	m_bounding_box = FBox::empty();

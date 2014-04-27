@@ -14,6 +14,7 @@
 #include "game/trigger.h"
 #include <algorithm>
 #include <cstdlib>
+#include <set>
 
 using namespace gfx;
 using namespace game;
@@ -28,6 +29,8 @@ namespace ui {
 	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, View &view, IRect rect)
 		:ui::Window(rect, Color(0, 0, 0)), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map) {
 		m_is_selecting = false;
+		m_is_moving = false;
+
 		m_mode = Mode::selecting;
 		m_selection = IRect::empty();
 		m_cursor_pos = float3(0, 0, 0);
@@ -89,6 +92,64 @@ namespace ui {
 		m_cursor_pos = (float3)round(pos);
 		m_selection = IRect(min(start, end), max(start, end));
 	}
+		
+	void EntitiesEditor::findVisible(vector<int> &out, const IRect &rect) const {
+		out.clear();
+
+		std::set<int> indices;
+		vector<int> temp;
+		temp.reserve(100);
+
+		enum { block_size = 64 };
+
+		for(int gy = m_selection.min.y; gy <= m_selection.max.y; gy += block_size)
+			for(int gx = m_selection.min.x; gx <= m_selection.max.x; gx += block_size) {
+				temp.clear();
+
+				IRect block_rect(int2(gx, gy), min(int2(gx + block_size, gy + block_size), m_selection.max));
+				m_entity_map.findAll(temp, block_rect, Flags::all | Flags::visible);
+				for(int n = 0; n < (int)temp.size(); n++)
+					if(indices.find(temp[n]) != indices.end()) {
+						temp[n--] = temp.back();
+						temp.pop_back();
+					}
+
+				for(int y = gy, endy = min(m_selection.max.y, gy + block_size); y <= endy; y += 2)
+					for(int x = m_selection.min.x, endx = min(gx + block_size, m_selection.max.x); x <= endx; x += 2) {
+						int2 point(x, y);
+						if(point.x + 1 <= m_selection.max.x && (y & 1))
+							point.x++;
+
+						bool tile_isected = false;
+						int tile_idx = -1;
+
+						for(int i = 0; i < (int)temp.size(); i++) {
+							const auto &object = m_entity_map[temp[i]];
+							bool is_trigger = object.ptr->typeId() == EntityId::trigger;
+
+							if(!is_trigger && !object.ptr->testPixel(point))
+								continue;
+							if(is_trigger && !object.ptr->currentScreenRect().isInside(point))
+								continue;
+
+							if(!tile_isected) {
+								tile_idx = m_tile_map.pixelIntersect(int2(x, y), Flags::walkable_tile | Flags::visible);
+								tile_isected = true;
+							}
+							if(tile_idx != -1) {
+								if(drawingOrder(m_tile_map[tile_idx].bbox, m_entity_map[temp[i]].bbox) == 1)
+									continue;
+							}
+						
+							indices.insert(temp[i]);
+							temp[i--] = temp.back();
+							temp.pop_back();
+						}
+					}
+			}
+
+		out.insert(out.begin(), indices.begin(), indices.end());
+	}
 
 	bool EntitiesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
 		if(key == 0 && !isKeyPressed(Key_lctrl)) {
@@ -96,20 +157,7 @@ namespace ui {
 			m_is_selecting = !is_final;
 
 			if(m_mode == Mode::selecting && is_final && is_final != -1) {
-				m_selected_ids.clear();
-
-				m_entity_map.findAll(m_selected_ids, m_selection, Flags::all | Flags::visible);
-
-				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
-					auto &object = m_entity_map[m_selected_ids[n]];
-					//TODO: FIX: you can select invisible (on lower level, for example) entities
-					//TODO: remove hack with grid height
-					if(object.bbox.max.y < m_view.gridHeight() || !areOverlapping(m_selection, object.ptr->currentScreenRect())) {
-						m_selected_ids[n--] = m_selected_ids.back();
-						m_selected_ids.pop_back();
-					}
-				}
-				std::sort(m_selected_ids.begin(), m_selected_ids.end());
+				findVisible(m_selected_ids, m_selection);
 				computeCursor(current, current);
 			}
 			else if(m_mode == Mode::placing) {
@@ -151,6 +199,30 @@ namespace ui {
 
 			return true;
 		}
+		else if(key == 1 && m_mode == Mode::selecting) {
+			if(!m_is_moving) {
+				m_is_moving_vertically = isKeyPressed(Key_lshift);
+				m_is_moving = true;
+			}
+
+			if(m_is_moving_vertically)
+				m_move_offset = int3(0, screenToWorld(int2(0, start.y - current.y)).y, 0);
+			else
+				m_move_offset = asXZY(screenToWorld(current - start), 0);
+
+			if(is_final)
+				m_is_moving = false;
+
+			if(is_final > 0) {
+				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
+					auto &object = m_entity_map[m_selected_ids[n]];
+					object.ptr->setPos(object.ptr->pos() + float3(m_move_offset));
+					m_entity_map.update(m_selected_ids[n]);
+				}
+			}
+
+			return true;
+		}
 
 		return false;
 	}
@@ -176,11 +248,24 @@ namespace ui {
 		drawLine(int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
 		drawLine(int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
 	}
+		
+	FBox EntitiesEditor::computeOvergroundBox(const FBox &bbox) const {
+		int over_ground = 0;
+		FBox test_box = bbox;
+		test_box.max.y = test_box.min.y + 1.0f;
+
+		while(over_ground < 16 && m_tile_map.findAny(test_box - float3(0, 1 + over_ground, 0)) == -1)
+			over_ground++;
+
+		if(over_ground)
+			return FBox(asXZY(bbox.min.xz(), bbox.min.y - over_ground), asXZY(bbox.max.xz(), bbox.min.y));
+		return FBox::empty();
+	}
 	
 	void EntitiesEditor::drawContents() const {
 		m_view.updateVisibility();
 		SceneRenderer renderer(clippedRect(), m_view.pos());
-
+		
 		{
 			vector<int> visible_ids;
 			visible_ids.reserve(1024);
@@ -189,33 +274,61 @@ namespace ui {
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
 				auto &object = m_tile_map[visible_ids[i]];
 				int3 pos(object.bbox.min);
-				
 				object.ptr->addToRender(renderer, pos, Color::white);
-			
 			}
 
 			visible_ids.clear();
 			m_entity_map.findAll(visible_ids, renderer.targetRect(), Flags::all | Flags::visible);
-			for(int n = 0; n < (int)visible_ids.size(); n++) {
-				auto &object = m_entity_map[visible_ids[n]];
-				object.ptr->addToRender(renderer);
-
-				if(m_tile_map.findAny(object.bbox) != -1 || m_entity_map.findAny(object.bbox, visible_ids[n]) != -1)
-					renderer.addBox(object.bbox, Color::red);
-			}
-
-			for(int n = 0; n < m_entity_map.size(); n++) {
-				auto &object = m_entity_map[n];
-				if(!object.ptr || object.ptr->typeId() != EntityId::trigger)
-					continue;
-
-				renderer.addBox(object.bbox, Color(Color::yellow, 64), true);
-				renderer.addBox(object.bbox, Color::yellow);
-			}
+			
+			vector<char> selection_map(m_entity_map.size(), 0);
+			vector<float3> old_positions(m_selected_ids.size());
 
 			for(int n = 0; n < (int)m_selected_ids.size(); n++) {
+				selection_map[m_selected_ids[n]] = 1;
+				visible_ids.push_back(m_selected_ids[n]);
+
+				if(m_is_moving) {
+					auto &object = m_entity_map[m_selected_ids[n]];
+					old_positions[n] = object.ptr->pos();
+					object.ptr->setPos(old_positions[n] + float3(m_move_offset));
+					m_entity_map.update(m_selected_ids[n]);
+				}
+			}
+
+			sort(visible_ids.begin(), visible_ids.end());
+			visible_ids.resize(std::unique(visible_ids.begin(), visible_ids.end()) - visible_ids.begin());
+		
+			for(int n = 0; n < (int)visible_ids.size(); n++) {
+				auto &object = m_entity_map[visible_ids[n]];
+				float3 old_pos = object.ptr->pos();
+				bool is_selected = selection_map[visible_ids[n]];
+
+				FBox bbox = object.ptr->boundingBox();
+
+				if(object.ptr->typeId() == EntityId::trigger) {
+					renderer.addBox(bbox, Color(Color::green, 64), true);
+					renderer.addBox(FBox(bbox.min + float3(0.1, 0.1, 0.1), bbox.max - float3(0.1, 0.1, 0.1)), Color::green);
+				}
+				else {
+					object.ptr->addToRender(renderer);
+				}
+
+				bool is_colliding = m_tile_map.findAny(bbox) != -1 || m_entity_map.findAny(bbox, visible_ids[n]) != -1;
+				if(is_colliding)
+					renderer.addBox(bbox, Color::red);
+				if(is_selected) {
+					if(!is_colliding)
+						renderer.addBox(bbox, Color::white);
+					FBox overground_box = computeOvergroundBox(bbox);
+					if(!overground_box.isEmpty())
+						renderer.addBox(overground_box, Color::yellow);
+				}
+			}
+
+			if(m_is_moving) for(int n = 0; n < (int)m_selected_ids.size(); n++) {
 				auto &object = m_entity_map[m_selected_ids[n]];
-				renderer.addBox(object.bbox, Color::white);
+				object.ptr->setPos(old_positions[n]);
+				m_entity_map.update(m_selected_ids[n]);
 			}
 		}
 
@@ -229,13 +342,9 @@ namespace ui {
 			if(bbox.max.y == bbox.min.y)
 				bbox.max.y += 1.0f;
 
-			int over_ground = 0;
-			while(over_ground < 16 && m_tile_map.findAny(bbox - float3(0, 1 + over_ground, 0)) == -1)
-				over_ground++;
-
-			if(over_ground)
-				renderer.addBox(FBox(asXZY(bbox.min.xz(), bbox.min.y - over_ground), asXZY(bbox.max.xz(), bbox.min.y)),
-						Color::yellow);
+			FBox overground_box = computeOvergroundBox(bbox);
+			if(!overground_box.isEmpty())
+				renderer.addBox(overground_box, Color::yellow);
 		}
 
 		renderer.render();

@@ -49,7 +49,10 @@ public:
 		short occluded_by;
 	};
 
-	static bool flagTest(int obj_flags, int test_flags);
+	static inline bool flagTest(int object, int test) {
+		int func_test = test & functional_flags;
+		return (object & object_flags & test) && ((object & func_test) == func_test);
+	}
 
 	typedef TObjectDef<void> ObjectDef;
 
