@@ -26,6 +26,7 @@ namespace game {
 	static void loadSprite(int idx, bool full) {
 		DASSERT(idx >= 0 && idx < (int)s_sprites.size());
 		Sprite &sprite = s_sprites[idx];
+		sprite.setIndex(idx);
 
 		char file_name[1024];
 		snprintf(file_name, sizeof(file_name), "%s%s%s", s_prefix, sprite.resourceName(), s_suffix);
@@ -52,12 +53,8 @@ namespace game {
 		}
 
 		s_sprites.resize(sprite_count);
-		for(auto it = s_sprite_map.begin(); it != s_sprite_map.end(); ++it) {
+		for(auto it = s_sprite_map.begin(); it != s_sprite_map.end(); ++it)
 			s_sprites[it->second].setResourceName(it->first.c_str());
-			s_sprites[it->second].setIndex(it->second);
-			loadSprite(it->second, false);
-		}
-
 	}
 
 	int Sprite::count() {
@@ -92,7 +89,10 @@ namespace game {
 		int idx = find(name);
 		if(idx == -1)
 			THROW("Sprite not found: %s", name.c_str());
-		return s_sprites[idx];
+		Sprite &sprite = s_sprites[idx];
+		if(sprite.index() == -1)
+			loadSprite(idx, false);
+		return sprite;
 	}
 		
 	bool Sprite::isValidIndex(int idx) {

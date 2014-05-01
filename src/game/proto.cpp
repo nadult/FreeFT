@@ -237,16 +237,9 @@ namespace game {
 
 	void loadData(bool verbose) {
 		double time;
-
-		if(verbose) {
-			printf("Preloading sprites: ");
-			fflush(stdout);
-			time = getTime();
-		}
 		Sprite::initMap();
 
 		if(verbose) {
-			printf(" %d sprites preloaded (%.0f msec)\n", Sprite::count(), (getTime() - time) * 1000.0);
 			time = getTime();
 			printf("Loading tables: ");
 		}

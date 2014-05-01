@@ -39,7 +39,6 @@ namespace gfx {
 		const char *strings = (const char*)glGetString(GL_EXTENSIONS);
 		for(int n = 0; n < OpenglExtension::count; n++)
 			s_is_extension_supported[n] = strstr(strings, OpenglExtension::toString((OpenglExtension::Type)n)) != nullptr;
-		printf("OpenGL extensions:\n%s\n\n", strings);
 
 #ifdef _WIN32
 #define LOAD(func)		(func = (decltype(func)) loadFunction(#func));
