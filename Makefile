@@ -1,4 +1,4 @@
-all: editor game res_viewer convert client server \
+all: editor game res_viewer convert client server lobby_server \
 	 convert.exe game.exe editor.exe res_viewer.exe client.exe server.exe
 
 BUILD=build
@@ -17,7 +17,7 @@ _dummy := $(shell [ -d $(BUILD)/editor ] || mkdir -p $(BUILD)/editor)
 _dummy := $(shell [ -d $(BUILD)/lz4 ] || mkdir -p $(BUILD)/lz4)
 
 SHARED_SRC=\
-	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font \
+	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font gfx/opengl \
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/scene_renderer gfx/packed_texture \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/data_sheet \
 	net/socket net/chunk net/host io/io io/console \
@@ -36,7 +36,7 @@ SHARED_SRC=\
 
 LIBS_SRC=lz4/lz4 lz4/lz4hc
 
-PROGRAM_SRC=editor game res_viewer convert client server
+PROGRAM_SRC=editor game res_viewer convert client server lobby_server
 
 ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC) sys/platform_linux sys/platform_windows
 

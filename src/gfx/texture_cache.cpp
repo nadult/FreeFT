@@ -6,6 +6,7 @@
 #include "gfx/texture_cache.h"
 #include "gfx/device.h"
 #include "sys/profiler.h"
+#include "gfx/opengl.h"
 #include <GL/gl.h>
 #include <limits.h>
 #include <algorithm>
@@ -244,12 +245,26 @@ namespace gfx {
 				INSERT(m_atlas_queue, atlas, res_id);
 		}
 
+
 		if(!res.device_texture) {
 			DASSERT(res.res_ptr);
 			Texture temp_tex;
 			res.res_ptr->cacheUpload(temp_tex);
 			res.device_texture = new DTexture;
-			res.device_texture->set(temp_tex);
+			res.size = int2(temp_tex.width(), temp_tex.height());
+
+			if(isExtensionSupported(OpenglExtension::arb_texture_non_power_of_two)) {
+				res.device_texture->set(temp_tex);
+			}
+			else {
+				int2 p2size(1, 1);
+				while(p2size.x < res.size.x)
+					p2size.x *= 2;
+				while(p2size.y < res.size.y)
+					p2size.y *= 2;
+				res.device_texture->resize(temp_tex.format(), p2size.x, p2size.y);
+				res.device_texture->upload(temp_tex);
+			}
 
 			int new_size = textureMemorySize(res.device_texture);
 #ifdef LOGGING
@@ -266,7 +281,7 @@ namespace gfx {
 			INSERT(m_main_list, main, res_id);
 		}
 
-		tex_rect = FRect(0, 0, 1, 1);
+		tex_rect = FRect(0, 0, float(res.size.x) / res.device_texture->width(), float(res.size.y) / res.device_texture->height());
 		return res.device_texture;
 	}
 	

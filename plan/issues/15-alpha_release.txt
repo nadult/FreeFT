@@ -1,4 +1,3 @@
-- Lobby server    6h
 - prepare few maps (add entities to maps already created for tactics)   8h
 - testing & bug fixing  20h
 
@@ -28,6 +27,7 @@ issues/23-damage_response.txt
 issues/24-aiming_and_shooting.txt
 issues/25-fixed_navigation.txt
 issues/26-improve_editor.txt
+issues/27-lobby_server.txt
 
 +ESTIMATED_TIME:  163h + ?
 +TIME_SPENT:

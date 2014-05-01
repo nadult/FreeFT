@@ -60,6 +60,7 @@ namespace
 namespace gfx
 {
 
+	void loadExtensions();
 	void initViewport(int2 size);
 
 	static void initDevice() {
@@ -154,6 +155,8 @@ namespace gfx
 		s_key_map[Key_kp_decimal]  = GLFW_KEY_KP_DECIMAL;
 		s_key_map[Key_kp_equal]    = GLFW_KEY_KP_EQUAL;
 		s_key_map[Key_kp_enter]    = GLFW_KEY_KP_ENTER;
+
+		loadExtensions();
 
 		initDevice();
 		initViewport(size);

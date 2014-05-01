@@ -4,29 +4,13 @@
  */
 
 #include "gfx/device.h"
+#include "gfx/opengl.h"
 #include "gfx/texture.h"
 #include <GL/gl.h>
 #include "sys/profiler.h"
 
 namespace gfx
 {
-	void testGlError(const char *msg) {
-		int err = glGetError();
-		if(err == GL_NO_ERROR)
-			return;
-
-		switch(err) {
-	#define CASE(e) case e: THROW("%s: " #e, msg);
-			CASE(GL_INVALID_ENUM)
-			CASE(GL_INVALID_VALUE)
-			CASE(GL_INVALID_OPERATION)
-			CASE(GL_STACK_OVERFLOW)
-			CASE(GL_STACK_UNDERFLOW)
-			CASE(GL_OUT_OF_MEMORY)
-			default: THROW(msg);
-	#undef CASE
-		}
-	}
 	
 	static int s_current_tex = 0;
 

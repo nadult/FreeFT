@@ -210,10 +210,10 @@ namespace io {
 
 		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 
-//		const NaviMap *navi_map = m_world->naviMap(3);
-//		if(navi_map)
-//			navi_map->visualize(renderer, false);
-//		m_last_path.visualize(3, renderer);
+		/*const NaviMap *navi_map = m_world->naviMap(3);
+		if(navi_map)
+			navi_map->visualize(renderer, false);
+		m_last_path.visualize(3, renderer);*/
 		renderer.render();
 
 		lookAt(m_view_pos);
