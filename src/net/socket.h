@@ -47,6 +47,7 @@ namespace net {
 
 		bool isValid() const { return ip != 0 || port != 0; }
 		bool operator==(const Address &rhs) const { return ip == rhs.ip && port == rhs.port; }
+		bool operator<(const Address &rhs) const { return ip == rhs.ip? port < rhs.port : ip < rhs.ip; }
 
 		const string toString() const;
 
@@ -54,6 +55,8 @@ namespace net {
 		u16 port;
 	};
 
+	class InPacket;
+	class OutPacket;
 
 	class Socket {
 	public:
@@ -67,7 +70,13 @@ namespace net {
 		Socket(Socket&&);
 
 		int receive(char *buffer, int buffer_size, Address &source);
+
+		// returns: -1 for invalid packet, 0 for no packets in queue, >0: valid packet
+		int receive(InPacket &packet, Address &source);
+
 		void send(const char *data, int size, const Address &target);
+		void send(const OutPacket &packet, const Address &target);
+
 		void close();
 
 	protected:
@@ -92,7 +101,7 @@ namespace net {
 			flag_first = 1,		// first packet for given frame, contains ack's
 			flag_encrypted = 2,
 			flag_compressed = 4,
-			flag_connecting = 8,
+			flag_lobby = 8,		// doesn't contain chunks, have to be handled differently
 		};
 
 		void save(Stream &sr) const;
@@ -119,8 +128,7 @@ namespace net {
 	protected:
 		virtual void v_load(void *ptr, int size) final;
 		void ready(int new_size);
-		friend class LocalHost;
-		friend class RemoteHost;
+		friend class Socket;
 		
 		char m_data[PacketInfo::max_size];
 		PacketInfo m_info;
@@ -136,8 +144,7 @@ namespace net {
 	protected:
 		virtual void v_save(const void *ptr, int size) final;
 
-		friend class RemoteHost;
-		friend class LocalHost;
+		friend class Socket;
 		char m_data[PacketInfo::max_size];
 	};
 
@@ -145,10 +152,6 @@ namespace net {
 	public:
 		OutPacket() { }
 		OutPacket(SeqNumber packet_id, int current_id, int remote_id, int flags);
-	};
-
-	enum class RefuseReason: char {
-		too_many_clients,
 	};
 
 }

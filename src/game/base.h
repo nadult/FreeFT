@@ -108,6 +108,10 @@ namespace game {
 		punch,
 		kick
 	);
+
+	DECLARE_ENUM(GameMode,
+		death_match
+	);
 	
 	namespace AttackMode {
 		inline constexpr bool isRanged(Type t) { return t == single || t == burst || t == throwing; }

@@ -18,6 +18,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/host.h"
+#include "net/lobby.h"
 #include <list>
 #include <algorithm>
 
@@ -28,7 +29,19 @@ using namespace io;
 
 class Server: public net::LocalHost, game::Replicator {
 public:
-	Server(int port) :LocalHost(Address(port)), m_timestamp(0), m_client_count(0) { }
+	Server(int port) :LocalHost(Address(port)), m_client_count(0) {
+		m_lobby_timeout = m_current_time = getTime();
+	}
+	~Server() {
+		//TODO: inform clients that server is closing
+
+		try {
+			OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
+			out << LobbyChunkId::server_down;
+			sendLobbyPacket(out);
+		}
+		catch(...) { }
+	}
 
 	enum {
 		max_clients = 32,
@@ -182,6 +195,8 @@ public:
 
 		LocalHost::receive();
 
+		//TODO: handle lobby packets
+
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
@@ -244,8 +259,19 @@ public:
 		
 		m_replication_list.clear();
 
-		//TODO: check timeouts
-		m_timestamp++;
+		if(m_current_time >= m_lobby_timeout) {
+			OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
+			ServerStatusChunk chunk;
+			chunk.address = Address();
+			chunk.map_name = "map_name";
+			chunk.server_name = "test_serv";
+			chunk.num_players = m_client_count;
+			chunk.max_players = max_remote_hosts;
+			chunk.game_mode = GameMode::death_match;
+			out << LobbyChunkId::server_status << chunk;
+			sendLobbyPacket(out);
+			m_lobby_timeout = m_current_time + 10.0;
+		}
 	}
 
 	void createWorld(const string &file_name) {
@@ -264,9 +290,9 @@ private:
 	vector<Client> m_clients;
 
 	PWorld m_world;
-	int m_timestamp;
 	int m_client_count;
 	double m_current_time;
+	double m_lobby_timeout;
 };
 
 int safe_main(int argc, char **argv)

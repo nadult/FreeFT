@@ -99,6 +99,10 @@ namespace game {
 		"kick"
 	)
 
+	DEFINE_ENUM(GameMode,
+		"death_match"
+	)
+
 	namespace AttackModeFlags {
 		uint fromString(const char *string) {
 			return ::toFlags(string, AttackMode::s_strings, AttackMode::count, 1);

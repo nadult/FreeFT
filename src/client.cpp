@@ -16,6 +16,8 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/host.h"
+#include "net/lobby.h"
+#include "net/socket.h"
 #include "audio/device.h"
 
 using namespace gfx;
@@ -36,11 +38,11 @@ public:
 			m_order_type = OrderTypeId::invalid;
 		}
 		
-	void connect(const char *server_name, int server_port) {
+	void connect(Address address) {
 		if(m_mode != Mode::disconnected)
 			disconnect();
 
-		m_server_address = Address(resolveName(server_name), server_port);
+		m_server_address = address;
 		m_server_id = addRemoteHost(m_server_address, -1);
 		if(m_server_id != -1) {
 			RemoteHost *host = getRemoteHost(m_server_id);
@@ -189,6 +191,68 @@ private:
 	double m_order_send_time;
 };
 
+void parseServerList(std::map<Address, net::ServerStatusChunk> &servers, InPacket &packet) {
+	while(packet.pos() < packet.size()) {
+		ServerStatusChunk chunk;
+		packet >> chunk;
+
+		if(chunk.address.isValid())
+			servers[chunk.address] = chunk;
+	}
+}
+
+Address findServer(int local_port) {
+	using namespace net;
+
+	Address local_addr((u16)local_port);
+	Socket socket(local_addr);
+	Address lobby_address = lobbyServerAddress();
+
+	OutPacket request(0, -1, -1, PacketInfo::flag_lobby);
+	request << LobbyChunkId::server_list_request;
+	socket.send(request, lobby_address);
+
+	double start_time = getTime();
+
+	while(getTime() - start_time < 5.0) {
+		InPacket packet;
+		Address source;
+		int ret = socket.receive(packet, source);
+		if(ret <= 0) {
+			sleep(0.01);
+			continue;
+		}
+
+		try {
+			LobbyChunkId::Type chunk_id;
+			packet >> chunk_id;
+
+			if(chunk_id == LobbyChunkId::server_list) {
+				std::map<Address, ServerStatusChunk> servers;
+				parseServerList(servers, packet);
+
+				if(servers.empty()) {
+					printf("No servers currently active\n");
+					return Address();
+				}
+				else {
+					auto it = servers.begin();
+					//TODO: punch through
+					return it->second.address;
+				}
+			}
+		}
+		catch(...) {
+			continue;
+		}
+
+
+	}
+			
+	printf("Timeout when connecting to lobby server\n");
+	return Address();
+}
+
 int safe_main(int argc, char **argv)
 {
 	int port = 0, server_port = 0;;
@@ -208,8 +272,14 @@ int safe_main(int argc, char **argv)
 		}
 	}
 	
-	if(!port || !server_port || !server_name) {
-		printf("Port, server port or server name not specified!\n");
+	if(!port) {
+		printf("Port not specified!\n");
+		return 0;
+	}
+
+	Address server_address = server_name? Address(resolveName(server_name), server_port) : findServer(port);
+	if(!server_address.isValid()) {
+		printf("Invalid server address\n");
 		return 0;
 	}
 
@@ -230,7 +300,7 @@ int safe_main(int argc, char **argv)
 
 	setBlendingMode(bmNormal);
 
-	host->connect(server_name, server_port);
+	host->connect(server_address);
 	
 	while(host->mode() != Client::Mode::connected) {
 		host->beginFrame();

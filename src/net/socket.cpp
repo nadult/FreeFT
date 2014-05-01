@@ -157,6 +157,21 @@ namespace net {
 		//TODO: handle errors
 		return len < 0? 0 : len;
 	}
+		
+	int Socket::receive(InPacket &packet, Address &source) {
+		int new_size = receive(packet.m_data, sizeof(packet.m_data), source);
+		if(new_size == 0)
+			return 0;
+
+		if(new_size < PacketInfo::header_size)
+			return -1;
+
+		packet.ready(new_size);
+		if(packet.info().protocol_id != PacketInfo::valid_protocol_id)
+			return -1;
+
+		return new_size;
+	}
 
 	void Socket::send(const char *data, int size, const Address &target) {
 		sockaddr_in addr;
@@ -165,6 +180,10 @@ namespace net {
 		if(ret < 0) {
 			//TODO: handle errors
 		}
+	}
+
+	void Socket::send(const OutPacket &packet, const Address &target) {
+		send(packet.m_data, packet.size(), target);
 	}
 		
 	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, int flags_)

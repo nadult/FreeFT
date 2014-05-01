@@ -4,6 +4,7 @@
  */
 
 #include "net/host.h"
+#include "net/lobby.h"
 #include <algorithm>
 
 //#define LOGGING
@@ -82,7 +83,7 @@ namespace net {
 
 	void RemoteHost::sendPacket() {
 		logEnd(m_out_packet.size());
-		m_socket->send(m_out_packet.m_data, m_out_packet.size(), m_address);
+		m_socket->send(m_out_packet, m_address);
 	}
 
 	void RemoteHost::newPacket(bool is_first) {
@@ -509,6 +510,18 @@ ERROR:;
 		:m_socket(address), m_current_id(-1), m_unverified_count(0), m_timestamp(0) {
 		}
 
+	bool LocalHost::getLobbyPacket(InPacket &out) {
+		if(m_lobby_packets.empty())
+			return false;
+		out = m_lobby_packets.front();
+		m_lobby_packets.pop_front();
+		return true;
+	}
+		
+	void LocalHost::sendLobbyPacket(const OutPacket &out) {
+		m_socket.send(out, lobbyServerAddress());
+	}
+
 	void LocalHost::receive() {
 		double current_time = getTime();
 
@@ -527,16 +540,16 @@ ERROR:;
 			InPacket packet;
 			Address source;
 
-			int new_size = m_socket.receive(packet.m_data, sizeof(packet.m_data), source);
-			if(new_size == 0)
+			int ret = m_socket.receive(packet, source);
+			if(ret == 0)
 				break;
-
-			if(new_size < PacketInfo::header_size)
+			if(ret < 0)
 				continue;
 
-			packet.ready(new_size);
-			if(packet.info().protocol_id != PacketInfo::valid_protocol_id)
+			if(packet.flags() & PacketInfo::flag_lobby) {
+				m_lobby_packets.emplace_back(packet);
 				continue;
+			}
 
 			int remote_id = packet.currentId();
 			int current_id = packet.remoteId();

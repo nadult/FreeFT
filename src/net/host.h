@@ -9,6 +9,7 @@
 #include "net/socket.h"
 #include "net/chunk.h"
 #include "sys/aligned_allocator.h"
+#include <list>
 
 namespace net {
 
@@ -143,6 +144,9 @@ namespace net {
 
 		void receive();
 
+		bool getLobbyPacket(InPacket &out);
+		void sendLobbyPacket(const OutPacket &out);
+
 		// Returns -1 if cannot add more hosts
 		int addRemoteHost(const Address &address, int remote_id);
 		const RemoteHost *getRemoteHost(int id) const;
@@ -169,6 +173,7 @@ namespace net {
 	protected:
 		net::Socket m_socket;
 		vector<unique_ptr<RemoteHost>> m_remote_hosts;
+		std::list<InPacket> m_lobby_packets;
 		int m_unverified_count, m_remote_count;
 
 		int m_current_id;
