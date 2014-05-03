@@ -531,6 +531,13 @@ namespace game {
 	typedef std::unique_ptr<Entity> PEntity;
 }
 
+namespace net {
+	class Client;
+	class Server;
+	typedef std::unique_ptr<Client> PClient;
+	typedef std::unique_ptr<Server> PServer;
+}
+
 class TupleParser;
 
 // These functions expect valid strings and throw on error

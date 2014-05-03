@@ -38,7 +38,7 @@ namespace ui
 	class Window: public RefCounter
 	{
 	public:
-		//TODO: move to config object
+		//TODO: move to config/style object
 		enum {
 			line_height = 24
 		};

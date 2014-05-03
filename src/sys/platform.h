@@ -25,6 +25,7 @@ namespace sys {
 
 		bool isRoot() const;
 		bool isAbsolute() const;
+		bool isEmpty() const { return m_path.empty(); }
 
 		const string fileName() const;
 		bool isDirectory() const;

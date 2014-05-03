@@ -20,7 +20,6 @@ namespace game {
 
 		std::map<string, int> s_sprite_map;
 		vector<Sprite> s_sprites;
-		Sprite s_dummy;
 	}
 
 	static void loadSprite(int idx, bool full) {

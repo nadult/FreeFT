@@ -36,7 +36,6 @@ namespace ui
 
 	typedef Ptr<Button> PButton;
 
-
 }
 
 

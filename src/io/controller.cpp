@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "io/io.h"
+#include "io/controller.h"
 #include "sys/profiler.h"
 
 #include "game/actor.h"
@@ -16,13 +16,15 @@
 #include "gfx/scene_renderer.h"
 #include "audio/device.h"
 
+#include "gfx/texture.h"
+
 using namespace gfx;
 using namespace game;
 
 namespace io {
 
-	IO::IO(const int2 &resolution, PWorld world, WorldViewer &viewer, EntityRef actor_ref, bool show_stats)
-		:m_console(resolution), m_world(world), m_viewer(viewer), m_actor_ref(actor_ref), m_resolution(resolution),
+	Controller::Controller(const int2 &resolution, PWorld world, EntityRef actor_ref, bool show_stats)
+		:m_console(resolution), m_world(world), m_viewer(world, actor_ref), m_actor_ref(actor_ref), m_resolution(resolution),
 		 m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats)  {
 			DASSERT(world);
 			const Actor *actor = m_world->refEntity<Actor>(actor_ref);
@@ -39,7 +41,7 @@ namespace io {
 			}
 		}
 
-	void IO::update() {
+	void Controller::update() {
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 		
@@ -191,7 +193,11 @@ namespace io {
 		}
 	}
 
-	void IO::draw() {
+	void Controller::updateView(double time_diff) {
+		m_viewer.update(time_diff);
+	}
+
+	void Controller::draw() {
 		clear(Color(128, 64, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), m_resolution), m_view_pos);
 
@@ -217,12 +223,12 @@ namespace io {
 		renderer.render();
 
 		lookAt(m_view_pos);
-			
+
 		lookAt({0, 0});
+		DTexture::bind0();
 		drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
 		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 
-		DTexture::bind0();
 		lookAt({0, -m_console.size().y});
 		
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
@@ -276,7 +282,7 @@ namespace io {
 		m_console.draw();
 	}
 
-	void IO::drawVisibility(game::EntityRef ref) {
+	void Controller::drawVisibility(game::EntityRef ref) {
 	}
 
 }

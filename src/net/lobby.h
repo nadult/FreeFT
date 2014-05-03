@@ -3,6 +3,9 @@
    This file is part of FreeFT.
  */
 
+#ifndef NET_LOBBY_H
+#define NET_LOBBY_H
+
 #include "net/socket.h"
 #include "game/base.h"
 
@@ -32,3 +35,5 @@ namespace net {
 	};
 
 }
+
+#endif

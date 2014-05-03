@@ -194,5 +194,7 @@ private:
 		PodArray<Color> m_data;
 		int m_width, m_height;
 	};
+
 }
+
 #endif

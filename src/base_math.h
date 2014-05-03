@@ -468,6 +468,12 @@ float length(const float3&);
 float distance(const float3&, const float3&);
 float distance(const float2&, const float2&);
 
+template <class TVector, class TScalar>
+inline const TVector lerp(const TVector &a, const TVector &b, const TScalar &delta) {
+	DASSERT(delta >= TScalar(0) && delta <= TScalar(1));
+	return (b - a) * delta + a;
+}
+
 template <class Vec>
 const Vec normalized(const Vec &vec) { return vec / length(vec); }
 

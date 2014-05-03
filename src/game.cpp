@@ -3,118 +3,54 @@
    This file is part of FreeFT.
  */
 
-#include <cstdio>
-
-#include "io/io.h"
-
 #include "sys/profiler.h"
 #include "sys/platform.h"
-#include "game/actor.h"
-#include "game/world.h"
-#include "game/trigger.h"
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "audio/device.h"
 #include "gfx/device.h"
+#include "gfx/texture_cache.h"
+#include "game/base.h"
+
+#include "io/main_menu_loop.h"
 
 using namespace gfx;
 using namespace game;
 using namespace io;
 
+
 int safe_main(int argc, char **argv)
 {
-	audio::initSoundMap();
 	Config config = loadConfig("game");
+
+	audio::initSoundMap();
 	game::loadData(true);
 	audio::initDevice();
 
-	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
+	int2 resolution = max(config.resolution, int2(800, 500));
+	createWindow(resolution, config.fullscreen);
+	setWindowTitle("FreeFT  (built " __DATE__ " " __TIME__ ")");
 
 	grabMouse(false);
-
 	setBlendingMode(bmNormal);
 
-	string map_name = "data/maps/mission02.mod";
-	if(argc > 1)
-		map_name = string("data/maps/") + argv[1];
-	PWorld world(new World(map_name.c_str(), World::Mode::single_player));
+	io::PLoop main_loop(new io::MainMenuLoop);
 
-/*	double time = getTime();
-	vector<int3> path;
-	for(int n = 0; n < 1000; n++)
-		path = world->naviMap().findPath(int3(160, 128, 328), int3(230, 128, 350));
-	printf("Short: %.f usec\n", (getTime() - time) * 1000.0);
-
-	time = getTime();
-	for(int n = 0; n < 1000; n++)
-		path = world->naviMap().findPath(int3(160, 128, 328), int3(430, 128, 476));
-	printf(" Long: %.f usec\n", (getTime() - time) * 1000.0);*/
-
-	Trigger *spawn_zone = nullptr;
-
-	for(int n = 0; n < world->entityCount(); n++) {
-		Actor *actor = world->refEntity<Actor>(n);
-		if(actor && actor->factionId() != 0)
-			actor->attachAI<SimpleAI>();
-
-		Trigger *trigger = world->refEntity<Trigger>(n);
-		if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
-			spawn_zone = trigger;
-	}
-
-	if(!spawn_zone)
-		THROW("Spawn zone not found!\n");
-
-	EntityRef actor_ref; {
-		PEntity actor = (PEntity)new Actor(getProto("male", ProtoId::actor));
-
-		FBox spawn_box = spawn_zone->boundingBox();
-		float3 spawn_pos = spawn_box.center();
-
-		actor->setPos(spawn_pos);
-		while(!world->findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
-			spawn_pos.y -= 1.0f;
-			actor->setPos(spawn_pos);
-		}
-
-		spawn_pos.y += 1.0f;
-		actor->setPos(spawn_pos);
-		actor_ref = world->addEntity(std::move(actor));
-	}
-
-	if( Actor *actor = world->refEntity<Actor>(actor_ref) ) {
-		auto &inventory = actor->inventory();
-		inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
-		inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
-		inventory.add(findProto("heavy_laser_rifle", ProtoId::item_weapon), 1);
-		inventory.add(findProto("uzi", ProtoId::item_weapon), 1);
-		inventory.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
-		inventory.add(findProto("flamer", ProtoId::item_weapon), 1);
-		inventory.add(findProto("ak47", ProtoId::item_weapon), 1);
-		inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
-	}
-	
-
-	game::WorldViewer viewer(world, actor_ref);
-	IO io(config.resolution, world, viewer, actor_ref, config.profiler_enabled);
-
-	double last_time = getTime();
-	while(pollEvents() && !isKeyDown(Key_esc)) {
+	double last_time = getTime() - 1.0 / 60.0;
+	while(pollEvents()) {
 		double time = getTime();
-		io.update();
-
-		audio::tick();
-		double time_diff = (time - last_time) * config.time_multiplier;
-		world->simulate(time_diff);
-		viewer.update(time_diff);
+		double time_diff = (time - last_time);
 		last_time = time;
 
-		io.draw();
+		if(!main_loop->tick(time_diff))
+			break;
 
 		TextureCache::main_cache.nextFrame();
 		swapBuffers();
+		audio::tick();
 	}
+
+	main_loop.reset(nullptr);
 
 /*	PTexture atlas = TextureCache::main_cache.atlas();
 	Texture tex;

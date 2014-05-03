@@ -12,8 +12,6 @@
 
 - Remove event filters from orders (unnecessary)
 
-- Preloading sprites not so fast on non-SSD drives
-
 - Looking through some of the entities (look-through flag?)
 
 - Blending in/out entities when getting out of/into invisible occluder
@@ -33,6 +31,14 @@
  damage="bullet(10) fire(100)"
  damage_mod="all(1.5)"
  damage_res="all(0.1) fire(0.2)"
+
+- verification of resources on client side, because they might be different than on server side
+
+- better camera work
+
+- add main menu music
+
+- 9Patch images for GUI
 
 REFACTORING:
 - move EntityWorldProxy, EntityRef to separate files?

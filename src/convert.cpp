@@ -6,6 +6,7 @@
 #include "game/tile.h"
 #include "game/sprite.h"
 #include "game/tile_map.h"
+#include "gfx/texture.h"
 #include "sys/platform.h"
 #include "sys/xml.h"
 #include "audio/sound.h"
@@ -120,6 +121,7 @@ namespace ResTypeId {
 		tile,
 		map,
 		sound,
+		image,
 		archive,
 
 		count
@@ -130,6 +132,7 @@ namespace ResTypeId {
 		".til",
 		".mis",
 		".wav",
+		".zar",
 		".bos"
 	};
 
@@ -138,6 +141,7 @@ namespace ResTypeId {
 		".tile",
 		".xml",
 		".wav",
+		".zar",
 		nullptr
 	};
 
@@ -146,6 +150,7 @@ namespace ResTypeId {
 		"data/tiles/",
 		"data/maps/",
 		"data/sounds/",
+		"data/gui/",
 		nullptr,
 	};
 };
@@ -167,6 +172,12 @@ void convert(ResTypeId::Type type, Stream &ldr, Stream &svr) {
 		else if(type == ResTypeId::map) {
 			TileMapProxy res;
 			res.legacyConvert(ldr, svr);
+		}
+		else if(type == ResTypeId::image) {
+			vector<char> buffer;
+			buffer.resize(ldr.size());
+			ldr.loadData(buffer.data(), buffer.size());
+			svr.saveData(buffer.data(), buffer.size());
 		}
 		else if(type == ResTypeId::sound) {
 			SoundProxy res;
@@ -273,6 +284,7 @@ static ResPath s_paths[] = {
 		{ "campaigns/missions/tutorials/", ResTypeId::map },
 		{ "missions/", ResTypeId::map },
 		{ "sound/game/", ResTypeId::sound },
+		{ "gui/", ResTypeId::image },
 		{ "", ResTypeId::archive }
 };
 

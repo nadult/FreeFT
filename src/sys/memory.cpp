@@ -9,6 +9,7 @@
 #include <memory.h>
 #include <cstdio>
 #include <cstdlib>
+#include <csignal>
 
 namespace sys {
 
@@ -29,6 +30,10 @@ namespace sys {
 			//TODO: backtrace
 			printf("Allocation error (requested bytes: %lu)!\nTODO: save proper out of memory handler.\n",
 					(unsigned long)size);
+#ifndef _WIN32
+			raise(SIGINT);
+#endif
+
 			exit(0);
 		}
 

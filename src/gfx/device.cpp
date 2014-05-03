@@ -96,6 +96,7 @@ namespace gfx
 
 		memset(&lastInput, 0, sizeof(lastInput));
 		memset(&activeInput, 0, sizeof(activeInput));
+		glfwGetMousePos(&activeInput.MousePosX, &activeInput.MousePosY);
 
 		for(int n = 0; n < Key_special; n++)
 			s_key_map[n] = n;
@@ -207,11 +208,10 @@ namespace gfx
 
 		lastInput = activeInput;
 		memcpy(&activeInput, &_glfwInput, sizeof(_glfwInput));
+		glfwGetMousePos(&activeInput.MousePosX, &activeInput.MousePosY);
 
 		mouseDX = activeInput.MousePosX - lastInput.MousePosX;
 		mouseDY = activeInput.MousePosY - lastInput.MousePosY;
-		activeInput.MousePosX = clamp(activeInput.MousePosX, 0, width - 1);
-		activeInput.MousePosY = clamp(activeInput.MousePosY, 0, height - 1);
 		//glfwSetMousePos(activeInput.MousePosX, activeInput.MousePosY);
 
 		double time = getTime();
@@ -230,15 +230,13 @@ namespace gfx
 		return !s_want_close;
 	}
 
-
-	void setWindowSize(int2 size) { glfwSetWindowSize(size.x, size.y); }
-	int2 getWindowSize() {
-		int x, y;
-		glfwGetWindowSize(&x, &y);
-		return int2(x, y);
+	const int2 getWindowSize() {
+		int2 out;
+		glfwGetWindowSize(&out.x, &out.y);
+		return out;
 	}
 
-	void setWindowPos(int2 pos) {
+	void setWindowPos(const int2 &pos) {
 		glfwSetWindowPos(pos.x, pos.y);
 	}
 
@@ -247,16 +245,14 @@ namespace gfx
 		glfwPollEvents(); //TODO: remove, set window on creation
 	}
 
-	void grabMouse(bool grab)
-	{
+	void grabMouse(bool grab) {
 		if(grab)
 			glfwDisable(GLFW_MOUSE_CURSOR);
 		else
 			glfwEnable(GLFW_MOUSE_CURSOR);
 	}
 
-	void showCursor(bool flag)
-	{
+	void showCursor(bool flag) {
 		if(flag)
 			glfwEnable(GLFW_MOUSE_CURSOR);
 		else
@@ -323,10 +319,20 @@ namespace gfx
 	bool isMouseKeyDown(int k) { return activeInput.MouseButton[k] && (!lastInput.MouseButton[k]); }
 	bool isMouseKeyUp(int k) { return (!activeInput.MouseButton[k]) && lastInput.MouseButton[k]; }
 
-	int2 getMousePos() { return int2(activeInput.MousePosX, activeInput.MousePosY); }
-	int2 getMouseMove() { return int2(mouseDX, mouseDY); }
+	int2 getMousePos() {
+		return int2(activeInput.MousePosX, activeInput.MousePosY);
+	}
 
-	int getMouseWheelPos() { return activeInput.WheelPos; }
-	int getMouseWheelMove() { return activeInput.WheelPos - lastInput.WheelPos; }
+	int2 getMouseMove() {
+		return int2(mouseDX, mouseDY);
+	}
+
+	int getMouseWheelPos() {
+		return activeInput.WheelPos;
+	}
+
+	int getMouseWheelMove() {
+		return activeInput.WheelPos - lastInput.WheelPos;
+	}
 
 }

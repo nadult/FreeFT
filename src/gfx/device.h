@@ -45,6 +45,8 @@ namespace gfx
 		int id() const { return m_id; }
 		bool isValid() const { return m_id > 0; }
 
+		static ResourceMgr<DTexture> gui_mgr;
+
 	private:
 		int m_id;
 		int m_width, m_height;
@@ -119,10 +121,8 @@ namespace gfx
 	bool pollEvents();
 	void swapBuffers();
 
-	void setWindowSize(int2 size);
-	int2 getWindowSize();
-	void setWindowPos(int2 pos);
-
+	const int2 getWindowSize();
+	void setWindowPos(const int2 &pos);
 	void setWindowTitle(const char *title);
 
 	void grabMouse(bool);

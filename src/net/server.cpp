@@ -6,33 +6,28 @@
 #include <memory.h>
 #include <cstdio>
 
-#include "gfx/device.h"
-#include "io/io.h"
-
 #include "navi_map.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/trigger.h"
-#include "sys/config.h"
-#include "sys/xml.h"
-#include "net/host.h"
 #include "net/lobby.h"
+#include "net/server.h"
 #include <list>
 #include <algorithm>
 
 using namespace gfx;
 using namespace game;
 using namespace net;
-using namespace io;
 
-class Server: public net::LocalHost, game::Replicator {
-public:
-	Server(int port) :LocalHost(Address(port)), m_client_count(0) {
+namespace net {
+
+	Server::Server(int port) :LocalHost(Address(port)), m_client_count(0) {
 		m_lobby_timeout = m_current_time = getTime();
 	}
-	~Server() {
+
+	Server::~Server() {
 		//TODO: inform clients that server is closing
 
 		try {
@@ -43,32 +38,11 @@ public:
 		catch(...) { }
 	}
 
-	enum {
-		max_clients = 32,
-		client_timeout = 10,
-	};
-
-	enum class ClientMode {
-		invalid,
-		connecting,
-		connected,
-		to_be_removed,
-	};
-
-	struct Client {
-		Client() :mode(ClientMode::invalid), host_id(-1) { }
-
-		bool isValid() const { return host_id != -1 && mode != ClientMode::invalid; }
-
-		ClientMode mode;
-		BitVector update_map;
-		EntityRef actor_ref;
-		int host_id;
-	};
-
-
-	EntityRef spawnActor(const Trigger *spawn_zone) {
+	EntityRef Server::spawnActor(EntityRef spawn_zone_ref) {
 		DASSERT(m_world);
+
+		const Trigger *spawn_zone = m_world->refEntity<Trigger>(spawn_zone_ref);
+		DASSERT(spawn_zone);
 
 		PEntity actor = (PEntity)new Actor(getProto("male", ProtoId::actor));
 
@@ -87,12 +61,12 @@ public:
 		return m_world->addEntity(std::move(actor));
 	}
 
-	void disconnectClient(int client_id) {
+	void Server::disconnectClient(int client_id) {
 		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
 		m_clients[client_id].mode = ClientMode::to_be_removed;
 	}
 
-	void handleHostReceiving(RemoteHost &host, Client &client) {
+	void Server::handleHostReceiving(RemoteHost &host, Client &client) {
 		DASSERT(client.isValid());
 
 		const Chunk *chunk = nullptr;
@@ -108,7 +82,7 @@ public:
 						spawn_zones.push_back(trigger);
 				}
 
-				client.actor_ref = spawnActor(spawn_zones[rand() % spawn_zones.size()]);
+				client.actor_ref = spawnActor(spawn_zones[rand() % spawn_zones.size()]->ref());
 //				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
 
 				client.update_map.resize(m_world->entityCount() * 2);
@@ -141,7 +115,7 @@ public:
 		}
 	}
 
-	void handleHostSending(RemoteHost &host, Client &client) {
+	void Server::handleHostSending(RemoteHost &host, Client &client) {
 		DASSERT(client.isValid());
 		beginSending(client.host_id);
 
@@ -186,7 +160,7 @@ public:
 		finishSending();
 	}
 
-	void beginFrame() {
+	void Server::beginFrame() {
 		InPacket packet;
 		Address source;
 
@@ -217,7 +191,7 @@ public:
 		}
 	}
 
-	void finishFrame() {
+	void Server::finishFrame() {
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
@@ -274,109 +248,14 @@ public:
 		}
 	}
 
-	void createWorld(const string &file_name) {
+	void Server::createWorld(const string &file_name) {
 		//TODO: update clients
 		m_world = new World(file_name, World::Mode::server, this);
 	}
 
-	PWorld world() { return m_world; }
-
-	void replicateEntity(int entity_id) {
+	void Server::replicateEntity(int entity_id) {
 		m_replication_list.emplace_back(entity_id);
 	}
 
-private:
-	vector<int> m_replication_list;
-	vector<Client> m_clients;
-
-	PWorld m_world;
-	int m_client_count;
-	double m_current_time;
-	double m_lobby_timeout;
-};
-
-int safe_main(int argc, char **argv)
-{
-	int port = 0;
-	string map_name = "data/maps/mission05.mod";
-	
-	srand((int)getTime());
-
-	for(int n = 1; n < argc; n++) {
-		if(strcmp(argv[n], "-p") == 0) {
-			ASSERT(n + 1 < argc);
-			port = atoi(argv[++n]);
-		}
-		else if(strcmp(argv[n], "-m") == 0) {
-			ASSERT(n + 1 < argc);
-			map_name = string("data/maps/") + argv[++n];
-		}
-	}
-	if(!port) {
-		printf("Port unspecified\n");
-		return 0;
-	}
-
-	unique_ptr<Server> host(new Server(port));
-	
-	Config config = loadConfig("server");
-	game::loadData();
-
-	createWindow(config.resolution, config.fullscreen);
-	setWindowTitle("FreeFT::game; built " __DATE__ " " __TIME__);
-	setWindowPos(config.window_pos);
-	pollEvents();
-
-	printDeviceInfo();
-	grabMouse(false);
-
-	setBlendingMode(bmNormal);
-
-	host->createWorld(map_name);
-	PWorld world = host->world();
-
-	for(int n = 0; n < world->entityCount(); n++) {
-		Actor *actor = world->refEntity<Actor>(n);
-		if(actor && actor->factionId() != 0)
-			actor->attachAI<SimpleAI>();
-	}
-
-	WorldViewer viewer(world);
-	IO io(config.resolution, world, viewer, EntityRef(), config.profiler_enabled);
-
-	double last_time = getTime();
-	while(pollEvents() && !isKeyDown(Key_esc)) {
-		double time = getTime();
-
-		io.update();
-		host->beginFrame();
-
-		double time_diff = (time - last_time) * config.time_multiplier;
-		world->simulate(time_diff);
-		host->finishFrame();
-		viewer.update(time_diff);
-		last_time = time;
-
-		io.draw();
-
-		swapBuffers();
-		TextureCache::main_cache.nextFrame();
-	}
-
-	delete host.release();
-	destroyWindow();
-
-	return 0;
-}
-
-int main(int argc, char **argv) {
-	try {
-		return safe_main(argc, argv);
-	}
-	catch(const Exception &ex) {
-		destroyWindow();
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
-		return 1;
-	}
 }
 

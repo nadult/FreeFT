@@ -1,3 +1,7 @@
+TODO: prioritize bugs
+
+- Wrong mouse position before moving it for the first time
+
 - In res_viewer when popup is visible, you can still select objects behind it by
   clicking on screen (outside of popup area)
 
@@ -51,3 +55,5 @@
 - Fix flamer
 
 - In multiplayer mode, player can get kicked into doors and get stuck
+
+- When trying to teleport in client, AIs react (for a single frame)

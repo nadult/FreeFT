@@ -10,6 +10,7 @@
 /refs
 /res_viewer
 /convert
+/lobby_server
 /*.exe
 /data/config.xml
 /data/tiles
@@ -17,4 +18,5 @@
 /data/sounds
 /data/maps/*.xml
 /data/maps/*/*.xml
+/data/gui
 /media

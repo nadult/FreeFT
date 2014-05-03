@@ -12,11 +12,12 @@
 
 namespace io {
 
-	class IO {
+	class Controller {
 	public:
-		IO(const int2 &resolution, game::PWorld world, game::WorldViewer &viewer, game::EntityRef actor_ref, bool show_stats);
+		Controller(const int2 &resolution, game::PWorld world, game::EntityRef actor_ref, bool show_stats);
 
 		void update();
+		void updateView(double time_diff);
 		void draw();
 
 		void drawVisibility(game::EntityRef);
@@ -24,7 +25,7 @@ namespace io {
 	protected:
 		Console m_console;
 		game::PWorld m_world;
-		game::WorldViewer &m_viewer;
+		game::WorldViewer m_viewer;
 
 		game::EntityRef m_actor_ref;
 		game::EntityRef m_container_ref;
@@ -43,6 +44,8 @@ namespace io {
 
 		game::Path m_last_path;
 	};
+
+	typedef unique_ptr<Controller> PController;
 
 }
 
