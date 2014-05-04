@@ -10,6 +10,7 @@
 #include "io/multi_player_loop.h"
 #include "io/server_loop.h"
 #include "gfx/device.h"
+#include "audio/device.h"
 
 namespace io {
 
@@ -25,6 +26,13 @@ namespace io {
 		return new ImageButton(pos, proto, title, ImageButton::mode_normal);
 	}
 
+	const char *music_files[] = {
+		"data/music/gui/MX_ENV_MENU_MAIN1.mp3",
+		"data/music/gui/MX_ENV_MENU_MAIN2.mp3",
+		"data/music/gui/MX_MENU_WORLDMAP1.mp3",
+		"data/music/gui/MX_MENU_WORLDMAP2.mp3"
+	};
+
 	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal), m_timer(0.0) {
 		m_back = gfx::DTexture::gui_mgr["back/flaminghelmet"];
 
@@ -39,6 +47,8 @@ namespace io {
 		m_options		= makeButton(m_back_rect.min + int2(500, 205), "Options");
 		m_credits		= makeButton(m_back_rect.min + int2(500, 250), "Credits");
 		m_exit			= makeButton(m_back_rect.min + int2(500, 295), "Exit");
+
+		m_music	= audio::playMusic(music_files[rand() % COUNTOF(music_files)], 1.0f);
 
 		attach(m_single_player.get());
 		attach(m_multi_player.get());

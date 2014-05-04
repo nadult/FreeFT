@@ -3,8 +3,10 @@
 - Menu: creating game sessions, joining game sessions, single player mode?   4h   
 - InGame Menu: quit, vote for map change?   2h
 - InGame Chat: team chat, global chat   2h
+- Main Menu 8h
 
-+ESTIMATED_TIME: 15h
++ESTIMATED_TIME: 23h
 +TIME_SPENT
 
 +WORK_LOG:
+03.05.14: 8:30 - 16:30

@@ -122,6 +122,7 @@ namespace ResTypeId {
 		map,
 		sound,
 		image,
+		music,
 		archive,
 
 		count
@@ -133,6 +134,7 @@ namespace ResTypeId {
 		".mis",
 		".wav",
 		".zar",
+		".mp3",
 		".bos"
 	};
 
@@ -142,6 +144,7 @@ namespace ResTypeId {
 		".xml",
 		".wav",
 		".zar",
+		".mp3",
 		nullptr
 	};
 
@@ -151,6 +154,7 @@ namespace ResTypeId {
 		"data/maps/",
 		"data/sounds/",
 		"data/gui/",
+		"data/music/",
 		nullptr,
 	};
 };
@@ -173,7 +177,7 @@ void convert(ResTypeId::Type type, Stream &ldr, Stream &svr) {
 			TileMapProxy res;
 			res.legacyConvert(ldr, svr);
 		}
-		else if(type == ResTypeId::image) {
+		else if(type == ResTypeId::image || type == ResTypeId::music) {
 			vector<char> buffer;
 			buffer.resize(ldr.size());
 			ldr.loadData(buffer.data(), buffer.size());
@@ -278,14 +282,15 @@ struct ResPath {
 };
 
 static ResPath s_paths[] = {
-		{ "tiles/", ResTypeId::tile },
-		{ "sprites/", ResTypeId::sprite },
-		{ "campaigns/missions/core/", ResTypeId::map },
-		{ "campaigns/missions/tutorials/", ResTypeId::map },
-		{ "missions/", ResTypeId::map },
-		{ "sound/game/", ResTypeId::sound },
-		{ "gui/", ResTypeId::image },
-		{ "", ResTypeId::archive }
+	{ "tiles/", ResTypeId::tile },
+	{ "sprites/", ResTypeId::sprite },
+	{ "campaigns/missions/core/", ResTypeId::map },
+	{ "campaigns/missions/tutorials/", ResTypeId::map },
+	{ "missions/", ResTypeId::map },
+	{ "sound/game/", ResTypeId::sound },
+	{ "gui/", ResTypeId::image },
+	{ "music/", ResTypeId::music },
+	{ "", ResTypeId::archive }
 };
 
 class Archive {

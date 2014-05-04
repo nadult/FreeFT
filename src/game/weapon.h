@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef FREEFT_GAME_WEAPON_H
-#define FREEFT_GAME_WEAPON_H
+#ifndef GAME_WEAPON_H
+#define GAME_WEAPON_H
 
 #include "game/item.h"
 #include "game/projectile.h"

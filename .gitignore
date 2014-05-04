@@ -16,6 +16,7 @@
 /data/tiles
 /data/sprites
 /data/sounds
+/data/music
 /data/maps/*.xml
 /data/maps/*/*.xml
 /data/gui

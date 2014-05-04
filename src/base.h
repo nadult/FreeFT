@@ -538,6 +538,11 @@ namespace net {
 	typedef std::unique_ptr<Server> PServer;
 }
 
+namespace audio {
+	class Playback;
+	typedef Ptr<Playback> PPlayback;
+}
+
 class TupleParser;
 
 // These functions expect valid strings and throw on error

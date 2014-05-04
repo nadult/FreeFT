@@ -3,13 +3,9 @@
    This file is part of FreeFT.
  */
 
-#include "audio/device.h"
-#ifdef _WIN32
-#define AL_LIBTYPE_STATIC
-#endif
-#include <AL/alc.h>
-#include <AL/al.h>
 #include <string.h>
+#include "audio/device.h"
+#include "audio/internals.h"
 #include "audio/sound.h"
 #include "sys/platform.h"
 
@@ -17,13 +13,10 @@ using namespace sys;
 
 namespace audio
 {
-	const string vendorName() {
-		return string(alGetString(AL_VENDOR));
-	}
 
-	const string OpenalErrorString(int id) {
+	const char *errorToString(int id) {
 		switch(id) {
-#define CASE(e)	case e: return string(#e);
+#define CASE(e)	case e: return #e;
 		CASE(AL_NO_ERROR)
 		CASE(AL_INVALID_NAME)
 		CASE(AL_INVALID_ENUM)
@@ -32,7 +25,24 @@ namespace audio
 		CASE(AL_OUT_OF_MEMORY)
 #undef CASE
 		}
-		return string("UNKNOWN_ERROR");
+		return "UNKNOWN_ERROR";
+	}
+
+	void testError(const char *message) {
+		int last_error = alGetError();
+		if(last_error != AL_NO_ERROR)
+			THROW("%s. %s", message, errorToString(last_error));
+	}
+
+	void uploadToBuffer(const Sound &sound, unsigned buffer_id) {
+		DASSERT(sound.bits() == 8 || sound.bits() == 16);
+		u32 format = sound.bits() == 8?
+			sound.isStereo()? AL_FORMAT_STEREO8  : AL_FORMAT_MONO8 :
+			sound.isStereo()? AL_FORMAT_STEREO16 :AL_FORMAT_MONO16;
+
+		alGetError();
+		alBufferData(buffer_id, format, sound.data(), sound.size(), sound.frequency());
+		testError("Error while loading data to audio buffer.");
 	}
 	
 	namespace {
@@ -70,26 +80,18 @@ namespace audio
 					Loader(path) >> sound;
 				}
 
-				DASSERT(sound.bits() == 8 || sound.bits() == 16);
-				u32 format = sound.bits() == 8?
-					sound.isStereo()? AL_FORMAT_STEREO8  : AL_FORMAT_MONO8 :
-					sound.isStereo()? AL_FORMAT_STEREO16 :AL_FORMAT_MONO16;
-
 				if(m_id == 0) {
 					alGetError();
 					alGenBuffers(1, &m_id);
-					int last_error = alGetError();
-					if(last_error != AL_NO_ERROR)
-						THROW("Error while creating audio buffer. %s", OpenalErrorString(last_error).c_str());
+					testError("Error while creating audio buffer.");
 				}
 
-				alGetError();
-				alBufferData(m_id, format, sound.data(), sound.size(), sound.frequency());
-				uint error = alGetError();
-				if(error != AL_NO_ERROR) {
+				try {
+					uploadToBuffer(sound, m_id);
+				}
+				catch(...) {
 					alDeleteBuffers(1, &m_id);
-					m_id = 0;
-					THROW("Error while loading data to audio::Buffer. %s", OpenalErrorString(error).c_str());
+					throw;
 				}
 			}
 
@@ -200,11 +202,11 @@ namespace audio
 
 			alGetError();
 			alGenSources(max_sources, (ALuint*)s_sources);
-			int error = alGetError();
-			if(error != AL_NO_ERROR)
-				THROW("Error while creating audio source: %s", OpenalErrorString(error).c_str());
+			testError("Error while creating audio source.");
 	
 			initSoundMap();
+			initMusicDevice();
+
 			s_is_initialized = true;
 		}
 		catch(...) {
@@ -225,6 +227,8 @@ namespace audio
 	void freeDevice() {
 		if(!s_is_initialized)
 			return;
+
+		freeMusicDevice();
 
 		alDeleteSources(max_sources, s_sources);
 		memset(s_sources, 0, sizeof(s_sources));
@@ -255,13 +259,15 @@ namespace audio
 			if(state != AL_PLAYING)
 				s_free_sources[s_num_free_sources++] = n;
 		}
+
+		tickMusic();
 	}
 
-	void printExtensions() {
+	void printInfo() {
 		if(!s_is_initialized)
 			return;
 
-		printf("OpenAL extensions:\n");
+		printf("OpenAL vendor: %s\nOpenAL extensions:\n", alGetString(AL_VENDOR));
 		const char *text = alcGetString(s_device, ALC_EXTENSIONS);
 		while(*text) {
 			putc(*text == ' '? '\n' : *text, stdout);
@@ -371,12 +377,12 @@ namespace audio
 		uint source_id = prepSource(sound_id);
 		if(!source_id)
 			return;
-		
-		alSourcef(source_id, AL_GAIN, 50.0f);
-		
-		alSource3f(source_id, AL_POSITION, 0.0f, 0.0f, 0.0f);
-		alSource3f(source_id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
-
+	
+		alSource3f(source_id, AL_POSITION,			0.0f, 0.0f, 0.0f);
+		alSource3f(source_id, AL_VELOCITY,			0.0f, 0.0f, 0.0f);
+		alSource3f(source_id, AL_DIRECTION,			0.0f, 0.0f, 0.0f);
+		alSourcef (source_id, AL_ROLLOFF_FACTOR,	0.0f);
+		alSourcei (source_id, AL_SOURCE_RELATIVE, AL_TRUE);	
 		alSourcePlay(source_id);
 	}
 

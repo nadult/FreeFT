@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef FREEFT_IO_IO_H
-#define FREEFT_IO_IO_H
+#ifndef IO_CONTROLLER_H
+#define IO_CONTROLLER_H
 
 #include "game/world.h"
 #include "io/console.h"

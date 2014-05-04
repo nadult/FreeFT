@@ -16,7 +16,7 @@ More information about this project, screensots and compiled binaries can be fou
 For compilation, G++ in version 4.7 is required (many C++11 features are
 used), and following libraries:
 
-* GLFW, libpng, zlib, OpenAL:  
+* GLFW, libpng, zlib, OpenAL, libmad:
 	these should be available in your distro's package repositories
 
 * baselib:  
@@ -53,31 +53,37 @@ Inventory (bottom left corner):
 * E key: equip / unequip selected item
 
 ## Used libraries and resources
-* Liberation fonts (licensed under SIL Open Font License)
-
-* fonts converted to bitmaps using BMFont
-
-* GLFW  
+* **GLFW**  
 	[http://glfw.sourceforge.net/](http://glfw.sourceforge.net/)
 
-* libpng  
-	[http://libpng.org](http://libpng.org)
-
-* zlib  
-	[http://www.gzip.org/zlib/](http://www.gzip.org/zlib/)
-
-* libzip  
-	[http://www.nih.at/libzip/](http://www.nih.at/libzip/)
-
-* rapidxml  
+* **rapidxml**  
 	included in libs/rapidxml*/, licensed under Boost Software License  
 	[http://www.nih.at/libzip/](http://rapidxml.sourceforge.net/)
 
-* lz4  
+* **libpng**  
+	[http://libpng.org](http://libpng.org)
+
+* **mpg123**  
+	[http://www.mpg123.de/index.shtml](http://www.mpg123.de/index.shtml)
+
+* **zlib**  
+	[http://www.gzip.org/zlib/](http://www.gzip.org/zlib/)
+
+* **libzip**  
+	[http://www.nih.at/libzip/](http://www.nih.at/libzip/)
+
+* **lz4**  
 	included in libs/lz4/, licensed under BSD license  
 	[http://fastcompression.blogspot.com/p/lz4.html](http://fastcompression.blogspot.com/p/lz4.html)
 
-* OpenAL
+* **OpenAL**
+
+* **Fonts**  
+  Liberation (licensed under SIL Open Font License)  
+  Transformers (freeware)  
+
+  BMFont was used to convert fonts to bitmaps  
+  [http://www.angelcode.com/products/bmfont/](http://www.angelcode.com/products/bmfont/)
 
 ## Screenshots
 

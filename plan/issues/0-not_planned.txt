@@ -57,3 +57,7 @@
   - some necessary improvements in AI
   - fixed audio: volume depends on distance from the player
   13.04.14: 18:45 - 21:00
+
+- Playing music (in MP3 format, because sadly, FT used MP3's)
+  03.05.14: 17:00 - 18:00
+  04.05.14: 8:00 - 13:30

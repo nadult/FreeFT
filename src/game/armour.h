@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef FREEFT_GAME_ARMOUR_H
-#define FREEFT_GAME_ARMOUR_H
+#ifndef GAME_ARMOUR_H
+#define GAME_ARMOUR_H
 
 #include "game/item.h"
 

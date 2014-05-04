@@ -33,7 +33,7 @@ SHARED_SRC=\
 	io/controller io/console io/main_menu_loop io/single_player_loop io/multi_player_loop io/server_loop \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
-	audio/device audio/sound
+	audio/device audio/sound audio/device_music audio/mp3_decoder
 
 LIBS_SRC=lz4/lz4 lz4/lz4hc
 
@@ -55,7 +55,7 @@ MINGW_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD)/%_.o) $(LIBS_SRC:%=$(BUILD)/%_.o)
 LINUX_PROGRAMS:=$(PROGRAM_SRC:%=%)
 MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
-LIBS=-lglfw -lbaselib -lpng -lz
+LIBS=-lglfw -lbaselib -lpng -lz -lmpg123
 LINUX_LIBS=$(LIBS) -lopenal -lGL -lGLU -lrt -fopenmp 
 MINGW_LIBS=$(LIBS) -lOpenAL32 -ldsound -lole32 -lwinmm -lglu32 -lopengl32 -lws2_32
 

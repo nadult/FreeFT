@@ -41,6 +41,8 @@ namespace io {
 			mode_quit,
 		} m_mode;
 
+		audio::PPlayback m_music;
+
 		gfx::PTexture m_back;
 		IRect m_back_rect;
 		PLoop m_sub_loop;

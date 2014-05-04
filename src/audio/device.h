@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef FREEFT_AUDIO_DEVICE_H
-#define FREEFT_AUDIO_DEVICE_H
+#ifndef AUDIO_DEVICE_H
+#define AUDIO_DEVICE_H
 
 #include "base.h"
 
@@ -24,11 +24,7 @@ namespace audio {
 
 	enum {
 		max_sources = 16,
-		max_sound_size = 16 * 1024 * 1024,
 	};
-
-	const string vendorName();	
-	const string OpenalErrorString(int id);
 
 	bool isInitialized();
 
@@ -36,7 +32,7 @@ namespace audio {
 	void initDevice();
 	void freeDevice();
 
-	void printExtensions();
+	void printInfo();
 
 	void setListenerPos(const float3&);
 	void setListenerVelocity(const float3&);
@@ -73,6 +69,38 @@ namespace audio {
 	
 	void playSound(const char *locase_name, const float3 &pos);
 	void playSound(const char *locase_name, float volume);
+
+	class MP3Decoder;
+
+	class Playback: public RefCounter {
+	public:
+		Playback(const string &file_name, float volume);
+		~Playback();
+		
+		Playback(const Playback&) = delete;
+		void operator=(const Playback&) = delete;
+
+		void stop(float blend_out = 0.0f);
+		void update();
+		void free();
+		
+		bool isPlaying() const;
+
+	private:
+		enum {
+			max_buffers = 2,
+	   		max_samples = 64 * 1024,
+		};
+
+		string m_file_name;
+		unique_ptr<MP3Decoder> m_decoder;
+		uint m_buffer_ids[max_buffers];
+		uint m_source_id;
+	};
+
+	typedef Ptr<Playback> PPlayback;
+
+	const PPlayback playMusic(const string &file_name, float volume);
 
 }
 

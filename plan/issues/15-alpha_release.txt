@@ -13,6 +13,7 @@ Secondary:
 - Fix problems with rendering explosions, sparks, etc. (mainly)
 - Improve projectiles: separate muzzle flash from projectile and link muzzle flash to weapon
 - Grenades
+- Music
 
 +REQUIREMENTS:
 issues/finished/9-simple_audio.txt

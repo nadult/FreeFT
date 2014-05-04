@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef FREEFT_AUDIO_SOUND_H
-#define FREEFT_AUDIO_SOUND_H
+#ifndef AUDIO_SOUND_H
+#define AUDIO_SOUND_H
 
 #include "base.h"
 
@@ -30,6 +30,7 @@ namespace audio {
 
 	protected:
 		PodArray<char> m_data;
+
 		int m_frequency;
 		int m_bits;
 		bool m_is_stereo;

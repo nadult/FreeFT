@@ -4,7 +4,6 @@
  */
 
 #include "audio/sound.h"
-#include "audio/device.h"
 
 namespace audio
 {
@@ -56,7 +55,7 @@ namespace audio
 		sr.signature("data", 4);
 		sr >> size;
 
-		ASSERT(size >= 0 && size <= max_sound_size);
+		ASSERT(size >= 0);
 		if(channels > 2 || (bits != 8 && bits != 16))
 			THROW("Unknown format (bits: %d channels: %d)", bits, channels);
 
@@ -72,7 +71,7 @@ namespace audio
 	}
 
 	void Sound::setData(const char *data, int size, int frequency, int bits, bool is_stereo) {
-		DASSERT(size >= 0 && size <= max_sound_size);
+		DASSERT(size >= 0);
 		DASSERT(bits == 8 || bits == 16);
 
 		m_data.resize(size);

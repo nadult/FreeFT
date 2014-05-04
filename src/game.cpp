@@ -23,6 +23,7 @@ int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("game");
 
+	srand((int)getTime());
 	audio::initSoundMap();
 	game::loadData(true);
 	audio::initDevice();

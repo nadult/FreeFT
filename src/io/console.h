@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef FREEFT_IO_CONSOLE_H
-#define FREEFT_IO_CONSOLE_H
+#ifndef IO_CONSOLE_H
+#define IO_CONSOLE_H
 
 #include "base.h"
 
