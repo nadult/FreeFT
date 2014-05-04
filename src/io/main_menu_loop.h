@@ -22,6 +22,9 @@ namespace io {
 		void drawContents() const override;
 		bool onEvent(const ui::Event &ev) override;
 
+		void stopMusic();
+		void startMusic();
+
 	private:
 		ui::PImageButton m_single_player;
 		ui::PImageButton m_multi_player;
@@ -46,7 +49,8 @@ namespace io {
 		gfx::PTexture m_back;
 		IRect m_back_rect;
 		PLoop m_sub_loop;
-		double m_timer;
+		double m_timer, m_blend_time;
+		double m_start_music_time;
 	};
 
 }

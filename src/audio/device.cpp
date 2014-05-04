@@ -117,6 +117,7 @@ namespace audio
 		uint s_sources[max_sources] = { 0, };
 		int s_free_sources[max_sources] = {0, };
 		int s_num_free_sources = 0;
+		double s_last_time = 0.0;
 
 		float3 s_listener_pos;
 
@@ -220,7 +221,8 @@ namespace audio
 			}
 			throw;
 		}
-		
+
+		s_last_time = getTime() - 1.0 /  60.0;		
 		tick();
 	}
 
@@ -260,7 +262,10 @@ namespace audio
 				s_free_sources[s_num_free_sources++] = n;
 		}
 
-		tickMusic();
+		double time = getTime();
+		double time_delta = time - s_last_time;
+		s_last_time = time;
+		tickMusic(time_delta);
 	}
 
 	void printInfo() {

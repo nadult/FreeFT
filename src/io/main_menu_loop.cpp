@@ -26,15 +26,11 @@ namespace io {
 		return new ImageButton(pos, proto, title, ImageButton::mode_normal);
 	}
 
-	const char *music_files[] = {
-		"data/music/gui/MX_ENV_MENU_MAIN1.mp3",
-		"data/music/gui/MX_ENV_MENU_MAIN2.mp3",
-		"data/music/gui/MX_MENU_WORLDMAP1.mp3",
-		"data/music/gui/MX_MENU_WORLDMAP2.mp3"
-	};
-
-	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal), m_timer(0.0) {
+	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal) {
 		m_back = gfx::DTexture::gui_mgr["back/flaminghelmet"];
+
+		m_blend_time = 1.0;
+		m_timer = 0.0;
 
 		IRect rect = localRect();
 		m_back_rect = (IRect)FRect(
@@ -48,14 +44,34 @@ namespace io {
 		m_credits		= makeButton(m_back_rect.min + int2(500, 250), "Credits");
 		m_exit			= makeButton(m_back_rect.min + int2(500, 295), "Exit");
 
-		m_music	= audio::playMusic(music_files[rand() % COUNTOF(music_files)], 1.0f);
-
 		attach(m_single_player.get());
 		attach(m_multi_player.get());
 		attach(m_create_server.get());
 		attach(m_options.get());
 		attach(m_credits.get());
 		attach(m_exit.get());
+
+		startMusic();
+	}
+		
+	void MainMenuLoop::stopMusic() {
+		m_music->stop(m_blend_time);
+		m_music.reset();
+	}
+
+	void MainMenuLoop::startMusic() {
+		if(m_music && m_music->isPlaying())
+			return;
+
+		const char *music_files[] = {
+			"data/music/gui/MX_ENV_MENU_MAIN1.mp3",
+			"data/music/gui/MX_ENV_MENU_MAIN2.mp3",
+			"data/music/gui/MX_MENU_WORLDMAP1.mp3",
+			"data/music/gui/MX_MENU_WORLDMAP2.mp3"
+		};
+
+		m_music	= audio::playMusic(music_files[rand() % COUNTOF(music_files)], 1.0f);
+		m_start_music_time = -1.0;
 	}
 		
 	void MainMenuLoop::drawContents() const {
@@ -64,8 +80,8 @@ namespace io {
 		m_back->bind();
 		drawQuad(m_back_rect.min, m_back_rect.size());
 
-		gfx::PFont title_font = gfx::Font::mgr["transformers_48"];
-		title_font->drawShadowed(m_back_rect.min + int2(140, 90), Color(255, 200, 50), Color::black, "FreeFT");
+	//	gfx::PFont title_font = gfx::Font::mgr["transformers_48"];
+	//	title_font->drawShadowed(m_back_rect.min + int2(140, 90), Color(255, 200, 50), Color::black, "FreeFT");
 	}
 		
 	bool MainMenuLoop::onEvent(const Event &ev) {
@@ -88,6 +104,7 @@ namespace io {
 				m_sub_loop.reset(new MultiPlayerLoop("", 20001));
 			}
 			else if(ev.source == m_exit.get()) {
+				stopMusic();
 				m_mode = mode_quitting;
 				m_timer = 1.0;
 			}
@@ -97,12 +114,15 @@ namespace io {
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(m_mode == mode_starting_single && ev.value) {
 				m_sub_loop.reset(new SinglePlayerLoop(m_file_dialog->path()));
+				stopMusic();
 			}
 			else if(m_mode == mode_starting_server && ev.value) {
 				m_sub_loop.reset(new ServerLoop(m_file_dialog->path()));
+				stopMusic();
 			}
 			else if(m_mode == mode_starting_multi && ev.value) {
 				m_sub_loop.reset(new MultiPlayerLoop("", 20001));
+				stopMusic();
 			}
 			
 			m_mode = mode_normal;	
@@ -118,6 +138,15 @@ namespace io {
 			return true;
 		}
 
+		if((!m_music || !m_music->isPlaying()) && m_start_music_time < 0.0)
+			m_start_music_time = 5.0;
+
+		if(m_start_music_time > 0.0) {
+			m_start_music_time -= time_diff;
+			if(m_start_music_time <= 0.0)
+				startMusic();
+		}
+
 		if(m_mode != mode_quitting)
 			process();
 
@@ -129,7 +158,7 @@ namespace io {
 		lookAt({0, 0});
 		if(m_mode == mode_quitting) {
 			DTexture::bind0();
-			m_timer -= time_diff * 2.0;
+			m_timer -= time_diff / m_blend_time;
 			if(m_timer < 0.0) {
 				m_timer = 0.0;
 				m_mode = mode_quit;

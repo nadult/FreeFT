@@ -21,7 +21,7 @@ namespace audio {
 
 	void uploadToBuffer(const Sound &sound, unsigned buffer_id);
 
-	void tickMusic();
+	void tickMusic(double time_delta);
 	void freeMusicDevice();
 	void initMusicDevice();
 

@@ -22,14 +22,18 @@ namespace audio {
 		MP3Decoder(const MP3Decoder&) = delete;
 		void operator=(const MP3Decoder&) = delete;
 
-		bool decode(Sound &out, int input_size);
+		bool decode(Sound &out, int max_size);
 		bool isFinished() const { return m_is_finished; }
+
+		int bytesPerSecond() const;
 		
+		//TODO: preloading data? (to avoid reading from disk while playing)
+		//alternative: move audio device to separate thread
 	private:
 		std::unique_ptr<Stream> m_stream;
 		mpg123_handle *m_handle;
 		int m_sample_rate, m_num_channels;
-		bool m_is_finished;
+		bool m_is_finished, m_need_data;
 	};
 
 }

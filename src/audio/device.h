@@ -72,6 +72,7 @@ namespace audio {
 
 	class MP3Decoder;
 
+	//TODO: make audio device multithreaded?
 	class Playback: public RefCounter {
 	public:
 		Playback(const string &file_name, float volume);
@@ -81,21 +82,28 @@ namespace audio {
 		void operator=(const Playback&) = delete;
 
 		void stop(float blend_out = 0.0f);
-		void update();
+		void update(double time_delta);
 		void free();
 		
 		bool isPlaying() const;
 
 	private:
-		enum {
-			max_buffers = 2,
-	   		max_samples = 64 * 1024,
-		};
+		enum { max_buffers = 4 };
+
+		enum Mode {
+			mode_playing,
+			mode_blending_in,
+			mode_blending_out,
+			mode_stopped,
+		} m_mode;
+
+		void feedMoreData(uint buffer_id);
 
 		string m_file_name;
 		unique_ptr<MP3Decoder> m_decoder;
 		uint m_buffer_ids[max_buffers];
 		uint m_source_id;
+		float m_blend_time, m_blend_pos;
 	};
 
 	typedef Ptr<Playback> PPlayback;

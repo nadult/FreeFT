@@ -30,7 +30,7 @@ int safe_main(int argc, char **argv)
 
 	int2 resolution = max(config.resolution, int2(800, 500));
 	createWindow(resolution, config.fullscreen);
-	setWindowTitle("FreeFT  (built " __DATE__ " " __TIME__ ")");
+	setWindowTitle("FreeFT alpha (built " __DATE__ " " __TIME__ ")");
 
 	grabMouse(false);
 	setBlendingMode(bmNormal);

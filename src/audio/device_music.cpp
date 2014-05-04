@@ -11,11 +11,12 @@
 namespace audio
 {
 
+	//TODO: limit number of streams played at once (for ambient sounds)
 	vector<PPlayback> s_playbacks;
 
-	void tickMusic() {
+	void tickMusic(double time_delta) {
 		for(int n = 0; n < (int)s_playbacks.size(); n++) {
-			s_playbacks[n]->update();
+			s_playbacks[n]->update(time_delta);
 			if(!s_playbacks[n]->isPlaying()) {
 				s_playbacks[n--] = s_playbacks.back();
 				s_playbacks.pop_back();
@@ -33,7 +34,7 @@ namespace audio
 
 	}
 
-		//TODO: make it robust
+	//TODO: make it robust
 	Playback::Playback(const string &file_name, float volume) :m_file_name(file_name) {
 		DASSERT(isInitialized());
 
@@ -41,6 +42,8 @@ namespace audio
 		m_source_id = 0;
 
 		try {
+			alGetError();
+
 			alGenBuffers(max_buffers, (ALuint*)m_buffer_ids);
 			testError("Error while creating buffers for music playback.");
 
@@ -48,22 +51,17 @@ namespace audio
 			testError("Error while creating source for music playback.");
 		
 			m_decoder.reset(new MP3Decoder(m_file_name));
-			for(int n = 0; n < max_buffers; n++) {
-				Sound sound;
-				m_decoder->decode(sound, max_samples / 4);
-				printf("Enquing %d bytes\n", sound.size());
-				uploadToBuffer(sound, m_buffer_ids[n]);
-			}
+			for(int n = 0; n < max_buffers; n++)
+				feedMoreData(m_buffer_ids[n]);
 
 			alSource3f(m_source_id, AL_POSITION,		0.0f, 0.0f, 0.0f);
 			alSource3f(m_source_id, AL_VELOCITY,		0.0f, 0.0f, 0.0f);
 			alSource3f(m_source_id, AL_DIRECTION,		0.0f, 0.0f, 0.0f);
 			alSourcef (m_source_id, AL_ROLLOFF_FACTOR,	0.0f);
 			alSourcei (m_source_id, AL_SOURCE_RELATIVE, AL_TRUE);
-
-			alSourceQueueBuffers(m_source_id, max_buffers, (ALuint*)m_buffer_ids);
 			
 			alSourcePlay(m_source_id);
+			m_mode = mode_playing;
 		}
 		catch(...) {
 			free();
@@ -76,7 +74,15 @@ namespace audio
 	}
 
 	void Playback::stop(float blend_out) {
-		alSourceStop(m_source_id);
+		if(blend_out <= 0.0f) {
+			m_mode = mode_stopped;
+			alSourceStop(m_source_id);
+		}
+		else {
+			m_mode = mode_blending_out;
+			m_blend_time = blend_out;
+			m_blend_pos = 0.0f;
+		}
 	}
 
 	void Playback::free() {
@@ -90,11 +96,40 @@ namespace audio
 				alDeleteBuffers(1, (ALuint*)(m_buffer_ids + n));
 	}
 
-	void Playback::update() {
+	void Playback::feedMoreData(uint buffer_id) {
+		Sound sound;
+		m_decoder->decode(sound, m_decoder->bytesPerSecond() / 2);
+		uploadToBuffer(sound, buffer_id);
+				
+		alSourceQueueBuffers(m_source_id, 1, &buffer_id);
+		testError("Error while enqueing buffers.");
+	}
+
+	void Playback::update(double time_delta) {
 		if(!m_source_id)
 			return;
 
 		alGetError();
+		float blend = 1.0f;
+
+		if(m_mode == mode_blending_out) {
+			blend = 1.0f - m_blend_pos / m_blend_time;
+			m_blend_pos += time_delta;
+			if(m_blend_pos > m_blend_time) {
+				m_mode = mode_stopped;
+				alSourceStop(m_source_id);
+				return;
+			}
+		}
+		else if(m_mode == mode_blending_in) {
+			blend = m_blend_pos / m_blend_time;
+			m_blend_pos += time_delta;
+			if(m_blend_pos > m_blend_time)
+				m_mode = mode_playing;
+		}
+
+		alSourcef(m_source_id, AL_GAIN, blend);
+
 		ALint num_processed = 0;
     	alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &num_processed);
 
@@ -103,18 +138,12 @@ namespace audio
 			alSourceUnqueueBuffers(m_source_id, 1, &buffer_id);
 			testError("Error when dequing buffers.");
 
-			if(!m_decoder->isFinished()) {
-				Sound sound;
-				m_decoder->decode(sound, max_samples / 4);
-				printf("Enquing %d bytes\n", sound.size());
-
-				uploadToBuffer(sound, buffer_id);
-				alSourceQueueBuffers(m_source_id, 1, &buffer_id);
-				testError("Error while enqueing buffers.");
-			}
+			if(!m_decoder->isFinished())
+				feedMoreData(buffer_id);
 		}
 
 		alGetError();
+		
 	}
 
 	bool Playback::isPlaying() const {
