@@ -10,6 +10,7 @@
 #include "io/multi_player_loop.h"
 #include "io/server_loop.h"
 #include "gfx/device.h"
+#include "gfx/opengl.h"
 #include "audio/device.h"
 
 namespace io {
@@ -28,7 +29,9 @@ namespace io {
 
 	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal) {
 		m_back = gfx::DTexture::gui_mgr["back/flaminghelmet"];
+		m_loading = gfx::DTexture::gui_mgr["misc/worldm/OLD_moving"];
 
+		m_anim_pos = 0.0;
 		m_blend_time = 1.0;
 		m_timer = 0.0;
 
@@ -55,8 +58,10 @@ namespace io {
 	}
 		
 	void MainMenuLoop::stopMusic() {
-		m_music->stop(m_blend_time);
-		m_music.reset();
+		if(m_music) {
+			m_music->stop(m_blend_time);
+			m_music.reset();
+		}
 	}
 
 	void MainMenuLoop::startMusic() {
@@ -72,16 +77,6 @@ namespace io {
 
 		m_music	= audio::playMusic(music_files[rand() % COUNTOF(music_files)], 1.0f);
 		m_start_music_time = -1.0;
-	}
-		
-	void MainMenuLoop::drawContents() const {
-		using namespace gfx;
-
-		m_back->bind();
-		drawQuad(m_back_rect.min, m_back_rect.size());
-
-	//	gfx::PFont title_font = gfx::Font::mgr["transformers_48"];
-	//	title_font->drawShadowed(m_back_rect.min + int2(140, 90), Color(255, 200, 50), Color::black, "FreeFT");
 	}
 		
 	bool MainMenuLoop::onEvent(const Event &ev) {
@@ -112,31 +107,69 @@ namespace io {
 			return true;
 		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
+			string path = m_file_dialog->path();
+
 			if(m_mode == mode_starting_single && ev.value) {
-				m_sub_loop.reset(new SinglePlayerLoop(m_file_dialog->path()));
-				stopMusic();
+				m_future_loop = std::async(std::launch::async, [path]() { return PLoop(new SinglePlayerLoop(path)); } );
 			}
 			else if(m_mode == mode_starting_server && ev.value) {
-				m_sub_loop.reset(new ServerLoop(m_file_dialog->path()));
-				stopMusic();
+				m_future_loop = std::async(std::launch::async, [path]() { return PLoop(new ServerLoop(path)); } );
 			}
 			else if(m_mode == mode_starting_multi && ev.value) {
-				m_sub_loop.reset(new MultiPlayerLoop("", 20001));
-				stopMusic();
+				m_future_loop = std::async(std::launch::async, []() { return PLoop(new MultiPlayerLoop("", 20001)); } );
 			}
 			
-			m_mode = mode_normal;	
+			m_mode = mode_normal;
+			stopMusic();
 		}
 
 		return false;
 	}
 
+	void MainMenuLoop::drawLoading(const int2 &pos, float alpha) const {
+		const char *text = "Loading";
+		gfx::PFont font = gfx::Font::mgr["transformers_30"];
+		Color color(1.0f, 0.8f, 0.2f, alpha);
+
+		lookAt(-pos);
+
+		int2 dims(m_loading->dimensions());
+		float2 center = float2(dims.x * 0.49f, dims.y * 0.49f);
+
+		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * constant::pi * 2.0), 8.0) * 0.1;
+
+		IRect extents = font->evalExtents(text);
+		font->drawShadowed(int2(0, -extents.height()), color, Color::black, text);
+
+		glPushMatrix();
+		glTranslatef(extents.width() + 8.0f + center.x, 0.0f, 0.0f);
+
+		glScalef(scale, scale, scale);
+		glRotated(m_anim_pos * 360.0, 0, 0, 1);
+		glTranslatef(-center.x, -center.y, 0);
+
+		m_loading->bind();
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		drawQuad(int2(0, 0), dims, color);
+		glPopMatrix();
+	}
+
 	bool MainMenuLoop::tick(double time_diff) {
+		using namespace gfx;
+
 		if(m_sub_loop) {
 			if(!m_sub_loop->tick(time_diff))
 				m_sub_loop.reset(nullptr);
 			return true;
 		}
+
+		if(m_future_loop.valid()) {
+			if(m_future_loop.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+				m_sub_loop = std::move(m_future_loop.get());
+			}
+		}
+
 
 		if((!m_music || !m_music->isPlaying()) && m_start_music_time < 0.0)
 			m_start_music_time = 5.0;
@@ -151,9 +184,14 @@ namespace io {
 			process();
 
 		clear(Color(0, 0, 0));
-
+		m_back->bind();
+		drawQuad(m_back_rect.min, m_back_rect.size());
+	
 		lookAt({0, 0});
 		draw();
+
+		if(m_future_loop.valid())
+			drawLoading(gfx::getWindowSize() - int2(180, 50), 1.0);
 
 		lookAt({0, 0});
 		if(m_mode == mode_quitting) {
@@ -165,6 +203,10 @@ namespace io {
 			}
 			drawQuad({0, 0}, gfx::getWindowSize(), Color(1.0f, 1.0f, 1.0f, 1.0f - m_timer));
 		}
+
+		m_anim_pos += time_diff;
+		if(m_anim_pos > 1.0)
+			m_anim_pos -= 1.0;
 
 		return m_mode != mode_quit;
 	}

@@ -10,6 +10,8 @@
 #include "ui/window.h"
 #include "ui/image_button.h"
 #include "ui/file_dialog.h"
+#include <future>
+#include <thread>
 
 namespace io {
 
@@ -18,12 +20,11 @@ namespace io {
 		MainMenuLoop();
 
 		bool tick(double time_diff) override;
-
-		void drawContents() const override;
 		bool onEvent(const ui::Event &ev) override;
 
 		void stopMusic();
 		void startMusic();
+		void drawLoading(const int2 &pos, float alpha = 1.0f) const;
 
 	private:
 		ui::PImageButton m_single_player;
@@ -46,9 +47,13 @@ namespace io {
 
 		audio::PPlayback m_music;
 
-		gfx::PTexture m_back;
+		gfx::PTexture m_back, m_loading;
 		IRect m_back_rect;
+		
+		std::future<PLoop> m_future_loop;
 		PLoop m_sub_loop;
+
+		double m_anim_pos;
 		double m_timer, m_blend_time;
 		double m_start_music_time;
 	};

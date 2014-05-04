@@ -12,6 +12,7 @@
 #include "game/level.h"
 #include "game/path.h"
 #include "navi_map.h"
+#include <thread>
 
 namespace game {
 
