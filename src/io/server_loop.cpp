@@ -14,13 +14,18 @@ using namespace game;
 
 namespace io {
 
-	ServerLoop::ServerLoop(const string &map_name, int port) {
+	net::PServer createServer(const string &map_name, int port) {
+		net::PServer server(new net::Server(port));
+		server->createWorld(map_name);
+		return server;
+	}
+
+	ServerLoop::ServerLoop(net::PServer server) {
+		DASSERT(server && server->world());
+		m_server = std::move(server);
+		m_world = server->world();
 		Config config = loadConfig("server");
 		
-		m_server.reset(new net::Server(port));
-		m_server->createWorld(map_name);
-		m_world = m_server->world();
-	
 		for(int n = 0; n < m_world->entityCount(); n++) {
 			Actor *actor = m_world->refEntity<Actor>(n);
 			if(actor && actor->factionId() != 0)

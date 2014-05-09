@@ -10,6 +10,7 @@
 #include "ui/window.h"
 #include "ui/image_button.h"
 #include "ui/file_dialog.h"
+#include "game/world.h"
 #include <future>
 #include <thread>
 
@@ -41,6 +42,7 @@ namespace io {
 			mode_starting_single,
 			mode_starting_multi,
 			mode_starting_server,
+			mode_loading,
 			mode_quitting,
 			mode_quit,
 		} m_mode;
@@ -49,8 +51,10 @@ namespace io {
 
 		gfx::PTexture m_back, m_loading;
 		IRect m_back_rect;
-		
-		std::future<PLoop> m_future_loop;
+	
+		std::future<game::PWorld> m_future_world;
+		std::future<net::PClient> m_future_client;
+		std::future<net::PServer> m_future_server;	
 		PLoop m_sub_loop;
 
 		double m_anim_pos;

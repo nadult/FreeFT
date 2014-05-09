@@ -510,6 +510,12 @@ SERIALIZE_AS_POD(IBox)
 SERIALIZE_AS_POD(FBox)
 SERIALIZE_AS_POD(Color)
 
+namespace ui {
+	class Window;
+	class HUD;
+	typedef Ptr<Window> PWindow;
+	typedef Ptr<HUD> PHUD;
+};
 
 namespace gfx {
 	class SceneRenderer;
@@ -527,7 +533,9 @@ namespace game {
 	class Entity;
 	class TileMap;
 	class EntityMap;
+	class World;
 	typedef Ptr<Sprite> PSprite;
+	typedef Ptr<World> PWorld;
 	typedef std::unique_ptr<Entity> PEntity;
 }
 

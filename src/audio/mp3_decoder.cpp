@@ -80,7 +80,13 @@ namespace audio {
 			size_t size = 0;
 
 			if(m_need_data) {
-				PodArray<u8> input(min(4096, (int)(m_stream->size() - m_stream->pos())));
+				int bytes_left = m_stream->size() - m_stream->pos();
+				if(!bytes_left) {
+					ret = MPG123_DONE;
+					break;
+				}
+				PodArray<u8> input(min(4096, bytes_left));
+
 				m_stream->loadData(input.data(), input.size());
 				ret = mpg123_decode(m_handle, input.data(), input.size(), temp.data() + out_pos, max_size - out_pos, &size);
 			}

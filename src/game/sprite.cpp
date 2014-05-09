@@ -48,7 +48,7 @@ namespace game
 		return 0;
 	}
 
-	Sprite::Sprite() :m_bbox(0, 0, 0), m_offset(0, 0), m_is_fully_loaded(false), m_index(-1) { }
+	Sprite::Sprite() :m_bbox(0, 0, 0), m_offset(0, 0), m_is_partial(false), m_index(-1) { }
 
 	void Sprite::Sequence::load(Stream &sr) {
 		sr >> name;
@@ -140,7 +140,7 @@ namespace game
 		sr.unpack(m_offset, m_bbox);
 		sr >> m_sequences >> m_frames >> m_max_rect;
 
-		m_is_fully_loaded = full_load;
+		m_is_partial = !full_load;
 		if(full_load) {
 	 		sr >> m_palettes >> m_images;
 		}
@@ -191,11 +191,15 @@ namespace game
 	}
 
 	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const {
+		DASSERT(!isPartial());
+
 		const MultiPalette &palette = m_palettes[m_sequences[seq_id].palette_id];
 		return m_images[imageIndex(seq_id, frame_id, dir_id)].toTexture(palette, tex_rect);
 	}
 
 	IRect Sprite::getRect(int seq_id, int frame_id, int dir_id) const {
+		DASSERT(!isPartial());
+
 		return m_images[imageIndex(seq_id, frame_id, dir_id)].rect - m_offset;
 	}
 

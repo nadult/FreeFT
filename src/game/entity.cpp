@@ -91,7 +91,7 @@ namespace game {
 		m_seq_idx = -1;
 		m_oseq_idx = -1;
 
-		DASSERT(m_sprite.isFullyLoaded());
+		DASSERT(!m_sprite.isPartial());
 		playSequence(0, false);
 	}
 

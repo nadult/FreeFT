@@ -149,7 +149,7 @@ namespace game {
 		static const Sprite &getDummy();
 		static bool isValidIndex(int idx);
 
-		bool isFullyLoaded() const { return m_is_fully_loaded; }
+		bool isPartial() const { return m_is_partial; }
 		int index() const { return m_index; }
 		void setIndex(int index) { m_index = index; }
 
@@ -163,7 +163,7 @@ namespace game {
 		int2 m_offset;
 		int3 m_bbox; //TODO: naming
 
-		bool m_is_fully_loaded;
+		bool m_is_partial;
 		int m_index;
 	};
 

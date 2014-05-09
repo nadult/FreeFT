@@ -12,10 +12,11 @@
 
 namespace io {
 
+	game::PWorld createWorld(const string &map_name);
+
 	class SinglePlayerLoop: public Loop {
 	public:
-		SinglePlayerLoop(const string &map_name);
-
+		SinglePlayerLoop(game::PWorld world);
 		bool tick(double time_diff) override;
 
 	private:

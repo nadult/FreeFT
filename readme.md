@@ -13,10 +13,10 @@ More information about this project, screensots and compiled binaries can be fou
 
 
 ## Building
-For compilation, G++ in version 4.7 is required (many C++11 features are
+For compilation, G++ in version 4.8 is required (many C++11 features are
 used), and following libraries:
 
-* GLFW, libpng, zlib, OpenAL, libmad:
+* GLFW, libpng, zlib, OpenAL, mpg123, libzip:  
 	these should be available in your distro's package repositories
 
 * baselib:  

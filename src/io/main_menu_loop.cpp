@@ -12,6 +12,8 @@
 #include "gfx/device.h"
 #include "gfx/opengl.h"
 #include "audio/device.h"
+#include "net/client.h"
+#include "net/server.h"
 
 namespace io {
 
@@ -96,7 +98,8 @@ namespace io {
 				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_multi_player.get()) {
-				m_sub_loop.reset(new MultiPlayerLoop("", 20001));
+				m_future_client = std::async(std::launch::async, []() { return createClient("", 20001); } );
+				m_mode = mode_loading;
 			}
 			else if(ev.source == m_exit.get()) {
 				stopMusic();
@@ -110,17 +113,13 @@ namespace io {
 			string path = m_file_dialog->path();
 
 			if(m_mode == mode_starting_single && ev.value) {
-				m_future_loop = std::async(std::launch::async, [path]() { return PLoop(new SinglePlayerLoop(path)); } );
+				m_future_world = std::async(std::launch::async, [path]() { return createWorld(path); } );
 			}
 			else if(m_mode == mode_starting_server && ev.value) {
-				m_future_loop = std::async(std::launch::async, [path]() { return PLoop(new ServerLoop(path)); } );
-			}
-			else if(m_mode == mode_starting_multi && ev.value) {
-				m_future_loop = std::async(std::launch::async, []() { return PLoop(new MultiPlayerLoop("", 20001)); } );
+				m_future_server = std::async(std::launch::async, [path]() { return createServer(path); } );
 			}
 			
-			m_mode = mode_normal;
-			stopMusic();
+			m_mode = ev.value? mode_loading : mode_normal;
 		}
 
 		return false;
@@ -164,12 +163,21 @@ namespace io {
 			return true;
 		}
 
-		if(m_future_loop.valid()) {
-			if(m_future_loop.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-				m_sub_loop = std::move(m_future_loop.get());
+		if(m_mode == mode_loading) {
+			PLoop new_loop;
+			if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+				new_loop.reset( new SinglePlayerLoop(m_future_world.get()) );
+			if(m_future_server.valid() && m_future_server.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+				new_loop.reset( new ServerLoop(std::move(m_future_server.get())) );
+			if(m_future_client.valid() && m_future_client.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+				new_loop.reset( new MultiPlayerLoop(std::move(m_future_client.get())) );
+			
+			if(new_loop) {
+				m_sub_loop = std::move(new_loop);	
+				m_mode = mode_normal;
+				stopMusic();
 			}
 		}
-
 
 		if((!m_music || !m_music->isPlaying()) && m_start_music_time < 0.0)
 			m_start_music_time = 5.0;
@@ -190,7 +198,9 @@ namespace io {
 		lookAt({0, 0});
 		draw();
 
-		if(m_future_loop.valid())
+		std::thread thr;
+
+		if(m_mode == mode_loading)
 			drawLoading(gfx::getWindowSize() - int2(180, 50), 1.0);
 
 		lookAt({0, 0});

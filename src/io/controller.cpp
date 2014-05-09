@@ -39,6 +39,8 @@ namespace io {
 				audio::setListenerVelocity(float3(0, 0, 0));
 				audio::setUnits(16.66666666);
 			}
+				
+			m_hud = new ui::HUD();
 		}
 
 	void Controller::update() {
@@ -82,7 +84,8 @@ namespace io {
 		}
 
 		m_console.processInput();
-			
+		if(!console_mode)
+			m_hud->process();
 
 		if(!m_full_isect.isEmpty() && actor) {
 			//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
@@ -280,6 +283,7 @@ namespace io {
 		}
 
 		m_console.draw();
+		m_hud->draw();
 	}
 
 	void Controller::drawVisibility(game::EntityRef ref) {

@@ -11,10 +11,11 @@
 
 namespace io {
 
+	net::PClient createClient(const string &server_name, int port);
+
 	class MultiPlayerLoop: public Loop {
 	public:
-		MultiPlayerLoop(const string &server_address, int port);
-
+		MultiPlayerLoop(net::PClient client);
 		bool tick(double time_diff) override;
 
 	private:

@@ -12,12 +12,18 @@
 using namespace game;
 
 namespace io {
+	
+	game::PWorld createWorld(const string &map_name) {
+		game::PWorld world(new World(map_name, World::Mode::single_player));
+		return world;
+	}
 
-	SinglePlayerLoop::SinglePlayerLoop(const string &map_name) {
+	SinglePlayerLoop::SinglePlayerLoop(game::PWorld world) {
+		DASSERT(world && world->mode() == World::Mode::single_player);
+		m_world = world;
+
 		Config config = loadConfig("game");
 		m_time_multiplier = config.time_multiplier;
-
-		m_world = new World(map_name, World::Mode::single_player);
 
 		Trigger *spawn_zone = nullptr;
 

@@ -74,24 +74,32 @@ namespace io {
 		return Address();
 	}
 
-	MultiPlayerLoop::MultiPlayerLoop(const string &server_name, int port) {
-		Config config = loadConfig("client");
-
+	net::PClient createClient(const string &server_name, int port) {
 		Address server_address = findServer(port);
 		//Address server_address = server_name.empty()? findServer(port) : Address(resolveName(server_name.c_str()), server_port);
+
 		if(!server_address.isValid())
 			THROW("Invalid server address\n");
 
-		m_client.reset(new Client(port));
-		m_client->connect(server_address);
+		net::PClient client(new net::Client(port));
+		client->connect(server_address);
 		
-		while(m_client->mode() != Client::Mode::connected) {
-			m_client->beginFrame();
-			m_client->finishFrame();
+		while(client->mode() != Client::Mode::connected) {
+			client->beginFrame();
+			client->finishFrame();
 			sleep(0.05);
 		}
 
+		return client;
+	}
+
+	MultiPlayerLoop::MultiPlayerLoop(net::PClient client) {
+		DASSERT(client && client->mode() == Client::Mode::connected);
+		m_client = std::move(client);
 		m_world = m_client->world();
+
+		Config config = loadConfig("client");
+
 		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_client->actorRef(), config.profiler_enabled));
 	}
 

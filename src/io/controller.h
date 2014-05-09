@@ -9,6 +9,7 @@
 #include "game/world.h"
 #include "io/console.h"
 #include "game/visibility.h"
+#include "gameui/hud.h"
 
 namespace io {
 
@@ -26,6 +27,8 @@ namespace io {
 		Console m_console;
 		game::PWorld m_world;
 		game::WorldViewer m_viewer;
+
+		ui::PHUD m_hud;
 
 		game::EntityRef m_actor_ref;
 		game::EntityRef m_container_ref;

@@ -68,7 +68,7 @@ namespace game {
 	const Sprite &Sprite::get(int idx) {
 		DASSERT(isValidIndex(idx));
 		Sprite &sprite = s_sprites[idx];
-		if(!sprite.isFullyLoaded())
+		if(sprite.isPartial())
 			loadSprite(idx, true);
 		return sprite;
 	}

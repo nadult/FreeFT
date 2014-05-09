@@ -20,7 +20,7 @@ const char* strcasestr(const char *a, const char *b) {
 	return nullptr;
 }
 
-int strcasecmp(const char *a, const char *b) {
+/*int strcasecmp(const char *a, const char *b) {
 	DASSERT(a && b);
 	while(*a && tolower(*a) == tolower(*b)) {
 		a++;
@@ -28,7 +28,7 @@ int strcasecmp(const char *a, const char *b) {
 	}
 
 	return *a < *b? -1 : *a == *b? 0 : 1;
-}
+}*/
 
 bool toBool(const char *input) {
 	CString str(input);
