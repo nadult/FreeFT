@@ -87,6 +87,12 @@ public:
 				pos.y += m_font->textBase();
 			}
 		}
+		else if(m_type == ResType::texture) {
+			const DTexture *texture = static_cast<const DTexture*>(m_resource.get());
+			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)",
+					texture->width(), texture->height());
+			m_font->drawShadowed(pos, Color::white, Color::black, buffer);
+		}
 	}
 
 	void draw(int2 pos, bool is_selected) const {
@@ -113,6 +119,17 @@ public:
 			drawQuad({0, 0}, m_rect_size);
 			DTexture::bind0();
 			drawRect(IRect({0, 0}, m_rect_size), outline_col);
+
+			if(isKeyDown('E')) {
+				string name = sys::Path(texture->resourceName()).relative();
+				removeSuffix(name, ".zar");
+				name += ".tga";
+				printf("Exporting: %s\n", name.c_str());
+				gfx::Texture tex;
+				texture->download(tex);
+				Saver svr(name);
+				tex.save(svr);
+			}
 		}
 		else if(m_type == ResType::sprite) {
 			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
@@ -166,7 +183,8 @@ public:
 			if(isKeyDown(Key_right))
 				m_dir_id++;
 			if(isKeyDown('P')) {
-				printf("Sequences for: %s\n", sprite->resourceName());
+				Path path(sprite->resourceName());
+				printf("Sequences for: %s\n", path.relative().c_str());
 				for(int s = 0; s < sprite->size(); s++)
 					printf("Seq %3d: %s\n", s, (*sprite)[s].name.c_str());
 				printf("\n");
@@ -279,12 +297,14 @@ public:
 			//	printf("Loading image: %s\n", file_name);
 				Loader(file_name) >> *tex;
 				res = ::Resource(tex, id);
+				tex->setResourceName(file_name);
 			}
 			else if(strcasecmp(file_name + len - 5, ".tile") == 0) {
 				PTile tile = new Tile;
 			//	printf("Loading tile: %s\n", file_name);
 				Loader(file_name) >> *tile;
 				res = ::Resource(tile, id);
+				tile->setResourceName(file_name);
 			}
 			else if(strcasecmp(file_name + len - 7, ".sprite") == 0) {
 				PSprite sprite = new Sprite;

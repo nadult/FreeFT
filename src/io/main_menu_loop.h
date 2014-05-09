@@ -8,9 +8,6 @@
 
 #include "io/loop.h"
 #include "ui/window.h"
-#include "ui/image_button.h"
-#include "ui/file_dialog.h"
-#include "game/world.h"
 #include <future>
 #include <thread>
 
@@ -19,6 +16,7 @@ namespace io {
 	class MainMenuLoop: public ui::Window, public Loop {
 	public:
 		MainMenuLoop();
+		~MainMenuLoop();
 
 		bool tick(double time_diff) override;
 		bool onEvent(const ui::Event &ev) override;

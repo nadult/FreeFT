@@ -12,10 +12,6 @@
 namespace ui
 {
 
-	class Window;
-
-	typedef Ptr<Window> PWindow;
-
 	struct Event {
 		enum Type {
 			window_closed,		// value: return value		sending down
@@ -53,7 +49,8 @@ namespace ui
 	class Window: public RefCounter
 	{
 	public:
-		Window(IRect rect, Color background = Color::transparent);
+		Window(const IRect &rect, Color background = Color::transparent);
+
 		virtual ~Window() { }
 		virtual const char *typeName() const { return "Window"; }
 		Window(const Window&) = delete;
@@ -83,6 +80,9 @@ namespace ui
 
 		Color backgroundColor() const { return m_background_color; }
 		void setBackgroundColor(Color col);
+
+		void setBackground(gfx::PTexture);
+		gfx::PTexture background() const { return m_background; }
 
 		Window *parent() const { return m_parent; }
 		Window *mainWindow() { return m_parent? m_parent->mainWindow() : this; }
@@ -133,6 +133,7 @@ namespace ui
 
 		Window *m_parent;
 		vector<PWindow> m_children;
+		gfx::PTexture m_background;
 
 		IRect  m_inner_rect;	// if its bigger than m_rect then progress bars will be added
 		IRect m_rect;			// coordinates relative to parent window

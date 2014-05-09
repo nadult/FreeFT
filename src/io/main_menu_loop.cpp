@@ -3,7 +3,9 @@
    This file is part of FreeFT.
  */
 
+#include "game/world.h"
 #include "ui/file_dialog.h"
+#include "ui/message_box.h"
 #include "ui/image_button.h"
 #include "io/main_menu_loop.h"
 #include "io/single_player_loop.h"
@@ -14,6 +16,10 @@
 #include "audio/device.h"
 #include "net/client.h"
 #include "net/server.h"
+
+#ifdef MessageBox // Yea.. TODO: remove windows.h from includes
+#undef MessageBox
+#endif
 
 namespace io {
 
@@ -57,6 +63,9 @@ namespace io {
 		attach(m_exit.get());
 
 		startMusic();
+	}
+		
+	MainMenuLoop::~MainMenuLoop() {
 	}
 		
 	void MainMenuLoop::stopMusic() {
@@ -165,12 +174,22 @@ namespace io {
 
 		if(m_mode == mode_loading) {
 			PLoop new_loop;
-			if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-				new_loop.reset( new SinglePlayerLoop(m_future_world.get()) );
-			if(m_future_server.valid() && m_future_server.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-				new_loop.reset( new ServerLoop(std::move(m_future_server.get())) );
-			if(m_future_client.valid() && m_future_client.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-				new_loop.reset( new MultiPlayerLoop(std::move(m_future_client.get())) );
+
+			try {
+				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+					new_loop.reset( new SinglePlayerLoop(m_future_world.get()) );
+				if(m_future_server.valid() && m_future_server.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+					new_loop.reset( new ServerLoop(std::move(m_future_server.get())) );
+				if(m_future_client.valid() && m_future_client.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+					new_loop.reset( new MultiPlayerLoop(std::move(m_future_client.get())) );
+			}
+			catch(const Exception &ex) {
+				int2 pos = rect().center(), size(600, 150);
+				PMessageBox message_box(new ui::MessageBox(IRect(pos - size / 2, pos + size / 2), ex.what(), MessageBoxMode::ok));
+				attach(message_box.get());
+				new_loop.reset(nullptr);
+				m_mode = mode_normal;
+			}
 			
 			if(new_loop) {
 				m_sub_loop = std::move(new_loop);	
@@ -184,7 +203,7 @@ namespace io {
 
 		if(m_start_music_time > 0.0) {
 			m_start_music_time -= time_diff;
-			if(m_start_music_time <= 0.0)
+			if(m_start_music_time <= 0.0 && m_mode != mode_quitting && m_mode != mode_loading)
 				startMusic();
 		}
 

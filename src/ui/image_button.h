@@ -42,6 +42,8 @@ namespace ui
 
 		bool isEnabled() const { return m_is_enabled; }
 		void enable(bool);
+
+		void setId(int id) { m_id = id; }
 		int id() const { return m_id; }
 
 	protected:
@@ -55,8 +57,6 @@ namespace ui
 		bool m_is_pressed;
 		bool m_mouse_press;
 	};
-
-	typedef Ptr<ImageButton> PImageButton;
 
 }
 

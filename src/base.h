@@ -508,9 +508,17 @@ SERIALIZE_AS_POD(Color)
 
 namespace ui {
 	class Window;
+	class Button;
+	class ImageButton;
+	class FileDialog;
+	class MessageBox;
 	class HUD;
 	typedef Ptr<Window> PWindow;
+	typedef Ptr<Button> PButton;
+	typedef Ptr<ImageButton> PImageButton;
 	typedef Ptr<HUD> PHUD;
+	typedef Ptr<FileDialog> PFileDialog;
+	typedef Ptr<MessageBox> PMessageBox;
 };
 
 namespace gfx {
@@ -530,6 +538,7 @@ namespace game {
 	class TileMap;
 	class EntityMap;
 	class World;
+	class Actor;
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;
 	typedef std::unique_ptr<Entity> PEntity;

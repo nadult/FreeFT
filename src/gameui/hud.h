@@ -7,6 +7,8 @@
 #define GAMEUI_HUD_H
 
 #include "ui/window.h"
+#include "gameui/bottom_menu.h"
+#include "gameui/inventory_menu.h"
 
 namespace ui
 {
@@ -14,13 +16,14 @@ namespace ui
 	class HUD: public Window {
 	public:
 		HUD();
-		void drawContents() const override;
+
+		void update(game::Actor&);
+		bool isMouseOver() const;
 
 	private:
-		gfx::PTexture m_back;
+		PBottomMenu m_bottom_menu;
+		PInventoryMenu m_inventory_menu;
 	};
-
-	typedef Ptr<HUD> PHUD;
 
 }
 

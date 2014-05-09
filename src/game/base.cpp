@@ -88,6 +88,12 @@ namespace game {
 		"stand"
 	)
 
+	DEFINE_ENUM(SentryMode,
+		"passive",
+		"aggresive",
+		"defensive"
+	)
+
 	DEFINE_ENUM(AttackMode,
 		"single",
 		"burst",

@@ -97,6 +97,12 @@ namespace game {
 		stand
 	);
 
+	DECLARE_ENUM(SentryMode,
+		passive,
+		defensive,
+		aggresive
+	);
+
 	DECLARE_ENUM(AttackMode,
 		undefined = -1,
 		single = 0,

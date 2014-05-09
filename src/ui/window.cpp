@@ -53,7 +53,7 @@ namespace ui
 		drawQuad(rect.min + int2(aoutline, aoutline), rect.size() - int2(aoutline, aoutline) * 2, color);
 	}
 
-	Window::Window(IRect rect, Color background_color)
+	Window::Window(const IRect &rect, Color background_color)
 		:m_parent(nullptr), m_is_visible(true), m_is_popup(false), m_is_closing(false),
 			m_is_focused(false), m_has_hard_focus(false), m_is_mouse_over(false) {
 		m_drag_start = int2(0, 0);
@@ -61,6 +61,10 @@ namespace ui
 
 		setBackgroundColor(background_color);
 		setRect(rect);
+	}
+
+	void Window::setBackground(gfx::PTexture background) {
+		m_background = background;
 	}
 
 	void Window::setBackgroundColor(Color col) {
@@ -191,13 +195,18 @@ namespace ui
 		lookAt(-m_clipped_rect.min);
 		setScissorRect(m_clipped_rect);
 
-		if(m_background_color.a > 0) {
+		if(m_background_color.a > 0 && !(m_background && m_background->dimensions() == m_rect.size())) {
 			if(m_background_color.a == 255)
 				clear(m_background_color);
 			else {
 				DTexture::bind0();
 				drawQuad(m_clipped_rect.min, m_clipped_rect.max, m_background_color);
 			}
+		}
+
+		if(m_background) {
+			m_background->bind();
+			drawQuad(int2(0, 0), m_background->dimensions());
 		}
 		
 		drawContents();

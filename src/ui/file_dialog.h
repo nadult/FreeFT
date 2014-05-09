@@ -48,8 +48,6 @@ namespace ui {
 		sys::Path m_dir_path;
 	};
 
-	typedef Ptr<FileDialog> PFileDialog;
-
 }
 
 

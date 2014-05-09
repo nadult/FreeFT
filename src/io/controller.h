@@ -9,13 +9,13 @@
 #include "game/world.h"
 #include "io/console.h"
 #include "game/visibility.h"
-#include "gameui/hud.h"
 
 namespace io {
 
 	class Controller {
 	public:
 		Controller(const int2 &resolution, game::PWorld world, game::EntityRef actor_ref, bool show_stats);
+		~Controller();
 
 		void update();
 		void updateView(double time_diff);

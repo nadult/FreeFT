@@ -56,7 +56,7 @@ int safe_main(int argc, char **argv)
 /*	PTexture atlas = TextureCache::main_cache.atlas();
 	Texture tex;
 	atlas->download(tex);
-	Saver("atlas.tga") & tex; */
+	Saver("atlas.tga") << tex;*/
 
 	audio::freeDevice();
 	destroyWindow();

@@ -20,7 +20,8 @@ namespace ui
 
 		up = gfx::DTexture::gui_mgr[up_tex];
 		down = gfx::DTexture::gui_mgr[down_tex];
-		font = Font::mgr[font_name];
+		if(font_name)
+			font = Font::mgr[font_name];
 
 		rect = IRect({0, 0}, back? back->dimensions() : max(up->dimensions(), down->dimensions()));
 		text_rect = text_area.isEmpty()? IRect::empty() :
@@ -32,26 +33,26 @@ namespace ui
 
 	ImageButton::ImageButton(const int2 &pos, const ImageButtonProto &proto, const char *text, Mode mode, int id)
 		:Window(IRect(pos, pos + proto.rect.size()), Color::transparent), m_proto(proto), m_id(id), m_mode(mode) {
+		setBackground(proto.back);
 		setText(text);
+
 		m_is_enabled = true;
 		m_is_pressed = false;
 		m_mouse_press = false;
 	}
 
 	void ImageButton::setText(const char *text) {
-		DASSERT(text);
-		m_text = text;
-		m_text_extents = m_proto.font->evalExtents(text);
-		m_text_extents.min.y = 0;
-		m_text_extents.max.y = m_proto.font->lineHeight();
+		if(m_proto.font) {
+			DASSERT(text);
+
+			m_text = text;
+			m_text_extents = m_proto.font->evalExtents(text);
+			m_text_extents.min.y = 0;
+			m_text_extents.max.y = m_proto.font->lineHeight();
+		}
 	}
 
 	void ImageButton::drawContents() const {
-		if(m_proto.back) {
-			m_proto.back->bind();
-			drawQuad(m_proto.rect.min, m_proto.rect.size());
-		}
-
 		bool is_pressed =	m_mode == mode_toggle? m_is_pressed ^ m_mouse_press :
 							m_mode == mode_toggle_on? m_is_pressed || m_mouse_press : m_mouse_press;
 
@@ -64,16 +65,18 @@ namespace ui
 			drawQuad(int2(0, 0), m_proto.up->dimensions());
 		}
 
-		int2 rect_center = size() / 2;
-		int2 pos(m_proto.text_rect.min.x - 1, m_proto.text_rect.center().y - m_text_extents.height() / 2 - 1);
+		if(m_proto.font) {
+			int2 rect_center = size() / 2;
+			int2 pos(m_proto.text_rect.min.x - 1, m_proto.text_rect.center().y - m_text_extents.height() / 2 - 1);
 
-		if(m_mouse_press)
-			pos += int2(2, 2);
-		m_proto.font->drawShadowed(pos, m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black, m_text.c_str());
+			if(m_mouse_press)
+				pos += int2(2, 2);
+			m_proto.font->drawShadowed(pos, m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black, m_text.c_str());
+		}
 	}
 
 	bool ImageButton::onMouseDrag(int2 start, int2 current, int key, int is_final) {
-		if(key == 0 && !m_mouse_press && !m_proto.sound_name.empty())
+		if(key == 0 && !m_mouse_press && !m_proto.sound_name.empty() && !(m_mode == mode_toggle_on && m_is_pressed))
 			audio::playSound(m_proto.sound_name.c_str(), 1.0f);
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;
 
