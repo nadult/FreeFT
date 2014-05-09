@@ -16,7 +16,7 @@ namespace ui {
 	class ListBox: public ui::Window
 	{
 	public:
-		ListBox(const IRect &rect, Color color = Color::gui_dark);
+		ListBox(const IRect &rect, Color color = WindowStyle::gui_dark);
 		virtual const char *typeName() const { return "ListBox"; }
 
 		struct Entry {

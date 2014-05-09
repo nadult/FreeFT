@@ -9,7 +9,7 @@ namespace ui {
 
 	TextBox::TextBox(const IRect &rect, const char *text, bool is_centered, Color col)
 		:Window(rect, col), m_is_centered(is_centered) {
-		m_font = gfx::Font::mgr[s_font_names[0]];
+		m_font = gfx::Font::mgr[WindowStyle::fonts[0]];
 		setText(text);
 	}
 

@@ -21,10 +21,10 @@ namespace ui {
 		int w = width(), h = height();
 
 		PTextBox title_box = new TextBox(IRect(5, 5, w - 5, 25), title);
-		title_box->setFont(s_font_names[1]);
+		title_box->setFont(WindowStyle::fonts[1]);
 
 		m_list_box = new ListBox(IRect(5, 25, w - 25, h - 50));
-		m_edit_box = new EditBox(IRect(5, h - 49, w - 5, h - 26), 30, "", Color::gui_light);
+		m_edit_box = new EditBox(IRect(5, h - 49, w - 5, h - 26), 30, "", WindowStyle::gui_light);
 		m_ok_button = new Button(IRect(w - 110, h - 25, w - 55, h - 5), s_ok_label[mode], 1);
 		PButton cancel_button = new Button(IRect(w - 55 , h - 25, w - 5, h - 5), "cancel", 0);
 
@@ -56,7 +56,7 @@ namespace ui {
 	}
 
 	void FileDialog::drawContents() const {
-		drawWindow(IRect({0, 0}, rect().size()), Color::gui_dark, 3);
+		drawWindow(IRect({0, 0}, rect().size()), WindowStyle::gui_dark, 3);
 	}
 
 	bool FileDialog::onEvent(const Event &event) {

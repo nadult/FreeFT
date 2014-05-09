@@ -360,7 +360,7 @@ namespace ui {
 		DTexture::bind0();
 		
 		lookAt(-clippedRect().min);
-		PFont font = Font::mgr[s_font_names[1]];
+		PFont font = Font::mgr[WindowStyle::fonts[1]];
 
 		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
 				"Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",

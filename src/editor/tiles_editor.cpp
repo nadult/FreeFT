@@ -464,7 +464,7 @@ namespace ui {
 		}
 		
 		lookAt(-clippedRect().min);
-		PFont font = Font::mgr[s_font_names[1]];
+		PFont font = Font::mgr[WindowStyle::fonts[1]];
 
 		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map.size());
 		if(isChangingOccluders() && m_current_occluder != -1) {

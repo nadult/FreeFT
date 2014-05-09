@@ -11,7 +11,7 @@ using game::Tile;
 
 namespace ui {
 
-	TileSelector::TileSelector(IRect rect) :Window(rect, Color::gui_dark),
+	TileSelector::TileSelector(IRect rect) :Window(rect, WindowStyle::gui_dark),
 		m_tile_list(rect.width(), 2), m_selection(nullptr) {
 		update();
 	}

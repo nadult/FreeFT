@@ -25,7 +25,7 @@ namespace ui {
 		template <class TControl, class ...Args>
 		Ptr<TControl> addControl(const Args&... args) {
 			IRect pad_rect = rect();
-			IRect crect(0, pad_rect.height(), pad_rect.width(), pad_rect.height() + line_height);
+			IRect crect(0, pad_rect.height(), pad_rect.width(), pad_rect.height() + WindowStyle::line_height);
 			Ptr<TControl> control(new TControl(crect, args...));
 			addControl((PWindow)control.get());
 			return control;

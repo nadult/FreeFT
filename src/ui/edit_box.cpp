@@ -12,7 +12,7 @@ namespace ui {
 
 	EditBox::EditBox(const IRect &rect, int max_size, const char *label, Color col)
 		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_last_key(0), m_max_size(max_size), m_label(label) {
-		m_font = gfx::Font::mgr[s_font_names[0]];
+		m_font = gfx::Font::mgr[WindowStyle::fonts[0]];
 	}
 
 	void EditBox::setText(const char *text) {

@@ -155,15 +155,15 @@ namespace ui {
 		:Window(rect, Color::transparent), m_editor(editor) {
 		int width = rect.width();
 
-		m_editor_mode_box = new ComboBox(IRect(0, 0, width, line_height), 200, "Editing mode: ");
+		m_editor_mode_box = new ComboBox(IRect(0, 0, width, WindowStyle::line_height), 200, "Editing mode: ");
 		for(int n = 0; n < Mode::count; n++)
 			m_editor_mode_box->addEntry(EntitiesEditorMode::toString(n));
 		m_editor_mode_box->selectEntry(m_editor->mode());
 
 
-		m_entity_type = new ComboBox(IRect(0, line_height, width, line_height * 2), 200, "Entity type: ");
+		m_entity_type = new ComboBox(IRect(0, WindowStyle::line_height, width, WindowStyle::line_height * 2), 200, "Entity type: ");
 		
-		IRect pad_rect(0, line_height * 2, width, line_height * 12);
+		IRect pad_rect(0, WindowStyle::line_height * 2, width, WindowStyle::line_height * 12);
 		m_pads.emplace_back((PEntityPad)new ActorPad(pad_rect));
 		m_pads.emplace_back((PEntityPad)new ContainerPad(pad_rect));
 		m_pads.emplace_back((PEntityPad)new DoorPad(pad_rect));

@@ -11,7 +11,7 @@ namespace ui {
 
 
 	ListBox::ListBox(const IRect &rect, Color color) :Window(rect, color), m_over_id(-1), m_dragging_id(-1) {
-		m_font = Font::mgr[s_font_names[0]];
+		m_font = Font::mgr[WindowStyle::fonts[0]];
 		m_line_height = m_font->lineHeight();
 	}
 		
@@ -25,14 +25,14 @@ namespace ui {
 			const Entry &entry = m_entries[n];
 			IRect rect = entryRect(n) - offset;
 
-			drawLine(int2(rect.min.x, rect.max.y), rect.max, Color::gui_medium);
+			drawLine(int2(rect.min.x, rect.max.y), rect.max, WindowStyle::gui_medium);
 
 			Color col = Color::transparent;
 			
 			if((m_over_id == n && m_dragging_id == -1) || m_dragging_id == n)
-				col = Color::gui_medium;
+				col = WindowStyle::gui_medium;
 			if((m_dragging_id == n && m_over_id == n) || entry.is_selected)
-				col = Color::gui_light;
+				col = WindowStyle::gui_light;
 
 			if(col != Color(Color::transparent))
 				drawQuad(rect.min, rect.size(), col);

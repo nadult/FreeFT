@@ -17,6 +17,7 @@
 #include "audio/device.h"
 
 #include "gfx/texture.h"
+#include "gameui/hud.h"
 
 using namespace gfx;
 using namespace game;

@@ -469,10 +469,6 @@ struct Color
 		red			= 0xff0000ffu,
 		green		= 0xff00ff00u,
 		black 		= 0xff000000u,
-		gui_dark	= 0xffe86f25u,
-		gui_medium	= 0xffe77738u,
-		gui_light	= 0xffe7864cu,
-		gui_popup	= 0xffffa060u,
 		transparent = 0x00000000u,
 	};
 

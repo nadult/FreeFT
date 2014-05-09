@@ -91,7 +91,7 @@ public:
 
 		m_group_pad = new GroupPad(IRect(0, 22, m_left_width, res.y), m_group_editor, &m_group);
 
-		m_left_window = new Window(IRect(0, 0, m_left_width, res.y), Color::gui_dark);
+		m_left_window = new Window(IRect(0, 0, m_left_width, res.y), WindowStyle::gui_dark);
 		m_left_window->attach(m_mode_box.get());
 		m_left_window->attach(m_save_button.get());
 		m_left_window->attach(m_load_button.get());

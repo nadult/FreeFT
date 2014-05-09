@@ -25,7 +25,7 @@ namespace ui {
 	void ProgressBar::setText(const char *text) {
 		m_text = text;
 		if(!m_font)
-			m_font = gfx::Font::mgr[s_font_names[0]];
+			m_font = gfx::Font::mgr[WindowStyle::fonts[0]];
 	}
 
 	float ProgressBar::evalBarSize() const {
@@ -45,8 +45,8 @@ namespace ui {
 	}
 
 	void ProgressBar::drawContents() const {
-		drawWindow(IRect(int2(0, 0), size()), Color::gui_medium, 1);
-		drawWindow(evalBarPos(), isMouseOver()? Color::gui_light : Color::gui_dark, m_mouse_press? -2 : 2);
+		drawWindow(IRect(int2(0, 0), size()), WindowStyle::gui_medium, 1);
+		drawWindow(evalBarPos(), isMouseOver()? WindowStyle::gui_light : WindowStyle::gui_dark, m_mouse_press? -2 : 2);
 
 		if(!m_text.empty()) {
 			IRect extents = m_font->evalExtents(m_text.c_str());

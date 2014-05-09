@@ -35,7 +35,7 @@ namespace ResType {
 
 class Resource {
 	Resource(ResType::Type type, int id) :m_type(type), m_id(id) {
-		m_font = gfx::Font::mgr[ui::Window::s_font_names[0]];
+		m_font = gfx::Font::mgr[ui::WindowStyle::fonts[0]];
 	}
 public:
 	Resource() :Resource(ResType::empty, -1) { }
@@ -311,7 +311,7 @@ private:
 class ResViewerWindow: public Window
 {
 public:
-	ResViewerWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), Color::gui_light) {
+	ResViewerWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), WindowStyle::gui_light) {
 		int left_width = 300;
 
 		m_dir_view = new ListBox(IRect(0, 0, left_width, res.y));

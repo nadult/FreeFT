@@ -40,7 +40,7 @@ namespace io {
 	};
 
 	Console::Console(const int2 &resolution) :m_is_opened(false) {
-		m_font = Font::mgr[Window::s_font_names[0]];
+		m_font = Font::mgr[WindowStyle::fonts[0]];
 		m_edit_box = new ConsoleEditBox(IRect(0, 0, resolution.x, m_font->lineHeight() + 5), 128, Color(80, 140, 80, 200));
 	}
 

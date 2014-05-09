@@ -12,7 +12,7 @@ namespace ui
 
 	Button::Button(IRect rect, const char *text, int id)
 		:Window(rect, Color::transparent), m_mouse_press(false), m_id(id), m_is_enabled(true) {
-		m_font = Font::mgr[s_font_names[0]];
+		m_font = Font::mgr[WindowStyle::fonts[0]];
 		ASSERT(m_font);
 		setText(text);
 	}
@@ -26,7 +26,7 @@ namespace ui
 	}
 
 	void Button::drawContents() const {
-		drawWindow(IRect(int2(0, 0), size()), isMouseOver() && m_is_enabled? Color::gui_light : Color::gui_dark,
+		drawWindow(IRect(int2(0, 0), size()), isMouseOver() && m_is_enabled? WindowStyle::gui_light : WindowStyle::gui_dark,
 					m_mouse_press? -2 : 2);
 
 		int2 rect_center = size() / 2;

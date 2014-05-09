@@ -38,7 +38,7 @@ namespace ui {
 				IRect clip_rect = clippedRect();
 				IRect rect(clip_rect.min, int2(clip_rect.max.x, clip_rect.min.y + popup_size));
 
-				m_popup = new ListBox(rect, Color::gui_popup);
+				m_popup = new ListBox(rect, WindowStyle::gui_popup);
 				for(int n = 0; n < size(); n++) {
 					const ListBox::Entry &entry = (*m_dummy)[n];
 					m_popup->addEntry(entry.text.c_str(), entry.color);

@@ -38,7 +38,7 @@ namespace {
 		m_tile_group = nullptr;
 		m_current_entry = nullptr;
 
-		m_font = Font::mgr[s_font_names[1]];
+		m_font = Font::mgr[WindowStyle::fonts[1]];
 		m_mode = mAddRemove;
 		memset(m_offset, 0, sizeof(m_offset));
 		m_selected_group_id = 0;
@@ -213,7 +213,7 @@ namespace {
 			drawQuad(-edit_rect.size() / 2, edit_rect.size(), Color(80, 80, 80));
 			drawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
-			PFont font = gfx::Font::mgr[s_font_names[0]];
+			PFont font = gfx::Font::mgr[WindowStyle::fonts[0]];
 
 			for(int n = 0; n < TileGroup::Group::side_count; n++) {
 				lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));

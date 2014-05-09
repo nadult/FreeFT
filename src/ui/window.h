@@ -35,14 +35,24 @@ namespace ui
 		int value;
 	};
 
-	class Window: public RefCounter
-	{
-	public:
-		//TODO: move to config/style object
+	//TODO: windows could be customizable with different styles
+	struct WindowStyle {
+		static Color gui_dark;
+		static Color gui_medium;
+		static Color gui_light;
+		static Color gui_popup;
+		
 		enum {
 			line_height = 24
 		};
 
+		// Default font names: small, normal, big
+		static const char *fonts[3];
+	};
+
+	class Window: public RefCounter
+	{
+	public:
 		Window(IRect rect, Color background = Color::transparent);
 		virtual ~Window() { }
 		virtual const char *typeName() const { return "Window"; }
@@ -97,9 +107,6 @@ namespace ui
 		
 		static void drawWindow(IRect rect, Color color, int outline);
 
-		// Default font names: small, normal, big
-		static const char *s_font_names[3];
-		
 		void setInnerOffset(const int2&);
 	
 	protected:

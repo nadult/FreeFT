@@ -12,6 +12,23 @@ using namespace gfx;
 namespace ui
 {
 
+	/*
+	Color WindowStyle::gui_dark  (0x25, 0x6f, 0xfe);
+	Color WindowStyle::gui_medium(0x38, 0x77, 0xfe);
+	Color WindowStyle::gui_light (0x4c, 0x86, 0xfe);
+	Color WindowStyle::gui_popup (0x60, 0xa0, 0xff); */
+	
+	Color WindowStyle::gui_dark  (0.60f, 0.40f, 0.10f);
+	Color WindowStyle::gui_medium(0.65f, 0.45f, 0.15f);
+	Color WindowStyle::gui_light (0.70f, 0.50f, 0.20f);
+	Color WindowStyle::gui_popup (0.70f, 0.55f, 0.30f);
+
+	const char *WindowStyle::fonts[3] = {
+		"liberation_16",
+		"liberation_24",
+		"liberation_32",
+	};
+
 	void Window::drawWindow(IRect rect, Color color, int outline) {
 		DTexture::bind0();
 		float3 fcolor = (float3)color;
@@ -190,8 +207,8 @@ namespace ui
 			int2 rsize = m_rect.size();
 			int2 isize = m_inner_rect.size();
 
-			Color col1 = Color::gui_dark;
-			Color col2 = Color::gui_light;
+			Color col1 = WindowStyle::gui_dark;
+			Color col2 = WindowStyle::gui_light;
 			col1 = Color(int(col1.r) * 4 / 5, int(col1.g) * 4 / 5, int(col1.b) * 4 / 5, 128);
 			col2 = Color(int(col2.r) * 4 / 3, int(col2.g) * 4 / 3, int(col2.b) * 4 / 3, 128);
 
@@ -297,10 +314,5 @@ namespace ui
 			m_children[n]->updateRects();
 	}
 
-	const char *Window::s_font_names[3] = {
-		"liberation_16",
-		"liberation_24",
-		"liberation_32",
-	};
 
 }

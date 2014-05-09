@@ -15,7 +15,7 @@ namespace ui {
 		int w = width(), h = height();
 
 		PTextBox text_box = new TextBox(IRect(5, 5, w - 5, h - 30), message);
-		text_box->setFont(s_font_names[1]);
+		text_box->setFont(WindowStyle::fonts[1]);
 		attach(text_box.get());
 
 		if(mode == MessageBoxMode::ok) {
@@ -41,7 +41,7 @@ namespace ui {
 	}
 
 	void MessageBox::drawContents() const {
-		drawWindow(IRect({0, 0}, rect().size()), Color::gui_dark, 3);
+		drawWindow(IRect({0, 0}, rect().size()), WindowStyle::gui_dark, 3);
 	}
 
 }
