@@ -25,9 +25,16 @@ namespace ui
 		const FRect &targetRect() const { return m_target_rect; }
 		const FRect rect() const;
 
+		void setText(const string &text) { m_text = text; }
+
+	protected:
+		gfx::PFont m_font;
+
 	private:
+		string m_text;
 		FRect m_target_rect;
 		float m_max_offset;
+		float m_focus_time;
 	};
 
 	typedef unique_ptr<HUDButton> PHUDButton;
@@ -80,7 +87,7 @@ namespace ui
 		unique_ptr<HUDWeapon> m_hud_weapon;
 		unique_ptr<HUDCharacter> m_hud_character;
 		vector<PHUDButton> m_hud_stances;
-		vector<PHUDButton> m_hud_options;
+		vector<PHUDButton> m_hud_buttons;
 	};
 
 }

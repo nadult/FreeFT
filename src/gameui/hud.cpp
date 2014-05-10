@@ -15,7 +15,8 @@ using namespace gfx;
 namespace {
 
 	const int2 s_hud_character_size(75, 100);
-	const int2 s_hud_weapon_size(150, 100);
+	const int2 s_hud_weapon_size(210, 100);
+	const int2 s_hud_button_size(60, 15);
 
 	Color s_back_color(30, 255, 60);
 
@@ -67,26 +68,35 @@ namespace {
 		}
 	}
 
-	static void drawBack(const IRect &rect, int off_size) {
-	}
-
 };
 
 namespace ui {
 
 	HUDButton::HUDButton(const FRect &rect, float max_offset)
-		:m_target_rect(rect), m_max_offset(max_offset) {
+		:m_target_rect(rect), m_max_offset(max_offset), m_focus_time(0.0f) {
+		m_font = Font::mgr["transformers_20"];
 	}
 		
 	void HUDButton::update(double time_diff) {
+		m_focus_time += (isMouseOver()? 1.0f - m_focus_time : -m_focus_time) * time_diff * 10.0f;
+		m_focus_time = clamp(m_focus_time, 0.0f, 1.0f);
 	}
 
 	void HUDButton::draw() const {
 		DTexture::bind0();
-		drawQuad(m_target_rect, Color(s_back_color, 127));
+		FRect rect = this->rect();
 
-		drawBorder(m_target_rect, Color::green, float2(m_max_offset, m_max_offset), 20.0f, true);
-		drawBorder(m_target_rect, Color::green, float2(m_max_offset, m_max_offset), 20.0f, false);
+		drawQuad(rect, Color(s_back_color, 127));
+
+		float offset = lerp(m_max_offset, m_max_offset * 0.2f, m_focus_time);
+		drawBorder(rect, Color::green, float2(offset, offset), 20.0f, true);
+		drawBorder(rect, Color::green, float2(offset, offset), 20.0f, false);
+
+		if(!m_text.empty()) {
+			IRect extents = m_font->evalExtents(m_text.c_str());
+			float2 pos = rect.center() - float2(extents.size()) * 0.5f - float2(0, 3);
+			m_font->drawShadowed((int2)pos, Color::white, Color::black, "%s", m_text.c_str());
+		}
 	}
 
 	bool HUDButton::isMouseOver() const {
@@ -119,13 +129,12 @@ namespace ui {
 		drawQuad(FRect(pos, pos + icon_size), color);
 
 		if(m_max_hp) {
-			PFont font = Font::mgr["transformers_20"];
-			char text[256];
-			snprintf(text, sizeof(text), hp_value <= 0.0f? "DEAD" : "%d/%d", m_current_hp, m_max_hp);
-			IRect extents = font->evalExtents(text);
+			TextFormatter fmt(256);
+			fmt(hp_value <= 0.0f? "DEAD" : "%d/%d", m_current_hp, m_max_hp);
+			IRect extents = m_font->evalExtents(fmt.text());
 
 			float2 pos(rect.max.x - extents.width(), rect.min.y);
-			font->drawShadowed((int2)pos, Color::white, Color::black, "%s", text);
+			m_font->drawShadowed((int2)pos, Color::white, Color::black, "%s", fmt.text());
 		}
 	}
 		
@@ -139,7 +148,25 @@ namespace ui {
 
 	void HUDWeapon::draw() const {
 		HUDButton::draw();
+		FRect rect = this->rect();
 
+		if(!m_weapon.isDummy()) {
+			FRect uv_rect;
+			gfx::PTexture texture = m_weapon.guiImage(false, uv_rect);
+			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
+
+			float2 pos = rect.center() - size / 2;
+			texture->bind();
+			drawQuad(FRect(pos, pos + size), uv_rect);
+
+			//TODO: print current attack mode
+			if(m_weapon.proto().max_ammo) {
+				TextFormatter fmt(256);
+				fmt("%d/%d", m_ammo_count, m_weapon.proto().max_ammo);
+				IRect extents = m_font->evalExtents(fmt.text());
+				m_font->drawShadowed(int2(rect.max.x - extents.width(), rect.min.y), Color::white, Color::black, "%s", fmt.text());
+			}
+		}
 	}
 
 	HUD::HUD(PWorld world, EntityRef actor_ref) :m_world(world), m_actor_ref(actor_ref) {
@@ -155,6 +182,26 @@ namespace ui {
 		m_hud_character.reset(new HUDCharacter(char_rect));
 		m_hud_weapon.reset(new HUDWeapon(weapon_rect));
 
+		FRect button_rect({0.0f, 0.0f}, s_hud_button_size);
+
+		button_rect += float2(char_rect.max.x + spacing, bottom - weapon_rect.height() - button_rect.height() - spacing);
+		PHUDButton inv_button(new HUDButton(button_rect, 5.0f));
+
+		button_rect += float2(button_rect.width() + spacing, 0.0f);
+		PHUDButton cha_button(new HUDButton(button_rect, 5.0f));
+		
+		button_rect += float2(button_rect.width() + spacing, 0.0f);
+		PHUDButton opt_button(new HUDButton(button_rect, 5.0f));
+		
+		inv_button->setText("INV");
+		cha_button->setText("CHA");
+		opt_button->setText("OPT");
+
+		m_hud_buttons.emplace_back(std::move(inv_button));
+		m_hud_buttons.emplace_back(std::move(cha_button));
+		m_hud_buttons.emplace_back(std::move(opt_button));
+
+
 	//	m_hud_character.reset(new HUDCharacter(FRect(
 	//	m_rect = IRect(0, res.y - s_rect_size.y, s_rect_size.x, res.y) + s_rect_offset;
 	}
@@ -169,18 +216,31 @@ namespace ui {
 		m_hud_character->setCharacter(actor->character());
 		m_hud_character->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
 
+		m_hud_weapon->setWeapon(actor->inventory().weapon());
+		m_hud_weapon->setAmmoCount(actor->inventory().ammo().count);
+
 		m_hud_character->update(time_diff);
 		m_hud_weapon->update(time_diff);
+		
+		for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+			m_hud_buttons[n]->update(time_diff);
 	}
 
 	void HUD::draw() const {
 		m_hud_character->draw();
 		m_hud_weapon->draw();
+
+		for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+			m_hud_buttons[n]->draw();
 	}
 
 	bool HUD::isMouseOver() const {
-		return	m_hud_character->isMouseOver() ||
-				m_hud_weapon->isMouseOver();
+		if(m_hud_character->isMouseOver() || m_hud_weapon->isMouseOver())
+			return true;
+		for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+			if(m_hud_buttons[n]->isMouseOver())
+				return true;
+		return false;
 	}
 
 }

@@ -52,27 +52,15 @@ namespace game {
 				return failOrder();
 			}
 
-			AttackMode::Type mode = order.m_mode;
-
-			uint modes = weapon.attackModes();
-			if(mode != AttackMode::undefined)	
-				modes &= AttackMode::toFlags(mode);
-			mode = AttackModeFlags::getFirst(modes);
-		
-			if(mode == AttackMode::undefined) {
-				if(weapon.canKick() && order.m_mode == AttackMode::kick && m_actor.kick_weapon.isValid()) {
-					order.m_is_kick_weapon = true;
-					weapon = Weapon(*m_actor.kick_weapon);
-				}
-				else
-					return failOrder();
-			}
-			else
-				order.m_mode = mode;
+			AttackMode::Type mode = validateAttackMode(order.m_mode);
+			if(mode == AttackMode::undefined)
+				return failOrder();
+			
+			order.m_is_kick_weapon = mode == AttackMode::kick;
+			order.m_mode = mode;
 		}
 			
 		Weapon weapon = order.m_is_kick_weapon? Weapon(*m_actor.kick_weapon) : m_inventory.weapon();
-
 
 		FBox target_box;
 		if(target) {

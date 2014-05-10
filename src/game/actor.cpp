@@ -743,5 +743,20 @@ namespace game {
 
 		return float(num_hits) / (density * density);
 	}
+		
+	AttackMode::Type Actor::validateAttackMode(AttackMode::Type in_mode) const {
+		AttackMode::Type mode = in_mode;
+		Weapon weapon = m_inventory.weapon();
+
+		uint modes = weapon.attackModes();
+		if(mode != AttackMode::undefined)	
+			modes &= AttackMode::toFlags(mode);
+		mode = AttackModeFlags::getFirst(modes);
+	
+		if(mode == AttackMode::undefined)
+			if(weapon.canKick() && in_mode == AttackMode::kick && m_actor.kick_weapon.isValid())
+				return AttackMode::kick;
+		return mode;
+	}
 
 }

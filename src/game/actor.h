@@ -193,6 +193,8 @@ namespace game {
 
 		float inaccuracy(const Weapon &weapon) const;
 		float estimateHitChance(const Weapon &weapon, const FBox &bbox);
+		
+		AttackMode::Type validateAttackMode(AttackMode::Type mode) const;
 
 	private:
 		void think();
