@@ -38,10 +38,14 @@ namespace gfx
 		glTranslatef(-pos.x, -pos.y, 0.0f);
 	}
 
+	static void glColor(const Color &color) {
+		glColor4ub(color.r, color.g, color.b, color.a);
+	}
+
 	void drawQuad(int2 pos, int2 size, Color color) {
 		glBegin(GL_QUADS);
 
-		glColor4ub(color.r, color.g, color.b, color.a);
+		glColor(color);
 		glTexCoord2f(0.0f, 0.0f);		glVertex2i(pos.x, pos.y);
 		glTexCoord2f(1.0f, 0.0f);		glVertex2i(pos.x + size.x, pos.y);
 		glTexCoord2f(1.0f, 1.0f);		glVertex2i(pos.x + size.x, pos.y + size.y);
@@ -50,14 +54,37 @@ namespace gfx
 		glEnd();
 	}
 
-	void drawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color) {
+	void drawQuad(int2 pos, int2 size, const float2 &uv0, const float2 &uv1, Color color) {
 		glBegin(GL_QUADS);
 
-		glColor4ub(color.r, color.g, color.b, color.a);
+		glColor(color);
 		glTexCoord2f(uv0.x, uv0.y);		glVertex2i(pos.x, pos.y);
 		glTexCoord2f(uv1.x, uv0.y);		glVertex2i(pos.x + size.x, pos.y);
 		glTexCoord2f(uv1.x, uv1.y);		glVertex2i(pos.x + size.x, pos.y + size.y);
 		glTexCoord2f(uv0.x, uv1.y);		glVertex2i(pos.x, pos.y + size.y);
+
+		glEnd();
+	}
+	
+	void drawQuad(const FRect &rect, const FRect &uv_rect, Color colors[4]) {
+		glBegin(GL_QUADS);
+
+		glColor(colors[0]);	glTexCoord2f(uv_rect.min.x, uv_rect.min.y);	glVertex2f(rect.min.x, rect.min.y);
+		glColor(colors[1]);	glTexCoord2f(uv_rect.max.x, uv_rect.min.y);	glVertex2f(rect.max.x, rect.min.y);
+		glColor(colors[2]);	glTexCoord2f(uv_rect.max.x, uv_rect.max.y);	glVertex2f(rect.max.x, rect.max.y);
+		glColor(colors[3]);	glTexCoord2f(uv_rect.min.x, uv_rect.max.y);	glVertex2f(rect.min.x, rect.max.y);
+
+		glEnd();
+	}
+	
+	void drawQuad(const FRect &rect, const FRect &uv_rect, Color color) {
+		glBegin(GL_QUADS);
+
+		glColor(color);
+		glTexCoord2f(uv_rect.min.x, uv_rect.min.y);	glVertex2f(rect.min.x, rect.min.y);
+		glTexCoord2f(uv_rect.max.x, uv_rect.min.y);	glVertex2f(rect.max.x, rect.min.y);
+		glTexCoord2f(uv_rect.max.x, uv_rect.max.y);	glVertex2f(rect.max.x, rect.max.y);
+		glTexCoord2f(uv_rect.min.x, uv_rect.max.y);	glVertex2f(rect.min.x, rect.max.y);
 
 		glEnd();
 	}

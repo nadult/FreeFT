@@ -119,10 +119,10 @@ namespace game {
 	}
 		
 	ActorInventory::ActorInventory(Weapon dummy_weapon)
-		:m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} { }
+		:m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} { }
 	
 	ActorInventory::ActorInventory(Weapon dummy_weapon, const XMLNode &node)
-		:Inventory(node), m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(dummyArmour()), m_ammo{dummyAmmo(), 0} {
+		:Inventory(node), m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} {
 		//TODO: load equipped items
 	}
 		
@@ -155,14 +155,6 @@ namespace game {
 		return true;
 	}
 
-	const Armour ActorInventory::dummyArmour() {
-		return Armour(findProto("_dummy_armour", ProtoId::item_armour));
-	}
-
-	const Item   ActorInventory::dummyAmmo() {
-		return Item(findProto("_dummy_ammo", ProtoId::item_ammo));
-	}
-
 	bool ActorInventory::isEquipped(ItemType::Type item_type) {
 		if(item_type == ItemType::weapon) 
 			return !m_weapon.isDummy();
@@ -186,13 +178,13 @@ namespace game {
 		else if(item_type == ItemType::armour) {
 			if(!m_armour.isDummy()) {
 				ret = add(m_armour, 1);
-				m_armour = dummyArmour();
+				m_armour = Item::dummyArmour();
 			}
 		}
 		else if(item_type == ItemType::ammo) {
 			if(!m_ammo.item.isDummy()) {
 				ret = add(m_ammo.item, m_ammo.count);
-				m_ammo.item = dummyAmmo();
+				m_ammo.item = Item::dummyAmmo();
 				m_ammo.count = 0;
 			}
 		}
@@ -255,8 +247,8 @@ namespace game {
 		sr >> flags;
 
 		m_weapon = flags & 1? Weapon(Item(sr)) : m_dummy_weapon;
-		m_armour = flags & 2? Armour(Item(sr)) : dummyArmour();
-		m_ammo.item = flags & 4? Item(sr) : dummyAmmo();
+		m_armour = flags & 2? Armour(Item(sr)) : Item::dummyArmour();
+		m_ammo.item = flags & 4? Item(sr) : Item::dummyAmmo();
 		m_ammo.count = flags & 4? sr.decodeInt() : 0;
 	}
 }

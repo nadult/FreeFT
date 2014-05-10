@@ -72,6 +72,7 @@ namespace game {
 		m_sound_variation = rhs.m_sound_variation;
 		m_hit_points = rhs.m_hit_points;
 		m_ai = rhs.m_ai;
+		m_character = rhs.m_character;
 	}
 	
 	XMLNode Actor::save(XMLNode &parent) const {

@@ -36,7 +36,7 @@ namespace io {
 	}
 
 	bool ServerLoop::tick(double time_diff) {
-		m_controller->update();
+		m_controller->update(time_diff);
 		m_server->beginFrame();
 
 		m_world->simulate(time_diff);

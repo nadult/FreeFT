@@ -67,9 +67,14 @@ public:
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 			auto &seq = (*sprite)[m_seq_id];
 
-			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: (%d, %d, %d)",
+			int2 max_frame_size(0, 0);
+			for(int n = 0; n < seq.frame_count; n++)
+				max_frame_size = max(max_frame_size, sprite->getRect(m_seq_id, n, m_dir_id).size());
+
+			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: (%d, %d, %d)\nMax frame size: (%d, %d)",
 					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count,
-					sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z);
+					sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z,
+					max_frame_size.x, max_frame_size.y);
 
 			m_font->drawShadowed(pos, Color::white, Color::black, buffer);
 			pos.y += m_font->evalExtents(buffer).height();
@@ -86,6 +91,8 @@ public:
 				m_font->drawShadowed(pos, col, Color::black, m_events[n].first);
 				pos.y += m_font->textBase();
 			}
+
+		
 		}
 		else if(m_type == ResType::texture) {
 			const DTexture *texture = static_cast<const DTexture*>(m_resource.get());
@@ -232,7 +239,7 @@ public:
 	void drawContents() const {
 		int spacing = 4;
 
-		int2 pos(spacing, spacing), offset = innerOffset() - clippedRect().min;
+		int2 pos(spacing, spacing + 100), offset = innerOffset() - clippedRect().min;
 		int width = clippedRect().width(), cur_height = 0;
 		int2 mouse_pos = getMousePos();
 		bool clicked = isMouseKeyPressed(0) && clippedRect().isInside(mouse_pos);

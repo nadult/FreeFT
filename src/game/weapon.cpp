@@ -54,7 +54,7 @@ namespace game {
 			melee_range = impact->range;
 		}
 	}
-		
+	
 	float Weapon::range(AttackMode::Type mode) const {
 		return AttackMode::isRanged(mode)? proto().ranged_range : proto().melee_range;
 	}

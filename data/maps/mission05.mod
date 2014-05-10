@@ -109,7 +109,7 @@ CRC32 d1c72fa9
 		<box min="25 147 6" max="691 172 450"/>
 	</occluder>
 </occluders>
-<entity_map size="1056 936" entity_count="77">
+<entity_map size="1056 936" entity_count="78">
 	<container pos="162 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<container pos="165 115 320" angle="1.570796" proto_type="container" proto_id="locker01"/>
 	<actor pos="167 147 405" proto_type="actor" proto_id="mutant" faction_id="1" sound_variation="0">
@@ -196,10 +196,11 @@ CRC32 d1c72fa9
 	<item pos="279 128 370" angle="1.570796" proto_type="weapon" proto_id="gatling_laser" item_count="1"/>
 	<item pos="281 128 366" proto_type="weapon" proto_id="pulse_rifle" item_count="1"/>
 	<actor pos="281 128 438" angle="4.712389" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
+	<item pos="288 128 362" proto_type="weapon" proto_id="light_minigun" item_count="1"/>
 	<door pos="296 128 432" proto_type="door" proto_id="fence"/>
 	<actor pos="297 128 421" angle="3.926991" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
 	<actor pos="310 134 420" angle="3.926991" proto_type="actor" proto_id="robot" faction_id="2" sound_variation="0"/>
-	<trigger pos="325 142 409" class="spawn_zone" box_size="30 4 26"/>
+	<trigger pos="325 142 409" box_size="30 4 26" class="spawn_zone"/>
 	<actor pos="362 128 365" angle="3.141593" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="366 128 380" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="367 128 338" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>

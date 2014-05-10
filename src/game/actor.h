@@ -12,6 +12,7 @@
 #include "game/orders.h"
 #include "game/actor_ai.h"
 #include "game/path.h"
+#include "game/character.h"
 
 namespace game {
 
@@ -135,6 +136,10 @@ namespace game {
 		Flags::Type flags() const;
 		const FBox boundingBox() const override;
 
+		//TODO: multiplayer support
+		void setCharacter(PCharacter character) { m_character = character; }
+		PCharacter character() const { return m_character; }
+
 		bool setOrder(POrder&&, bool force = false);
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
@@ -256,6 +261,7 @@ namespace game {
 		const ActorProto &m_actor;
 
 		PActorAI m_ai;
+		PCharacter m_character;
 
 		POrder m_order;
 		vector<POrder> m_following_orders;

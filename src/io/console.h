@@ -23,7 +23,7 @@ namespace io {
 		void close();
 		bool isOpened() const { return m_is_opened; }
 
-		void processInput();
+		void update(double time_diff);
 		void draw() const;
 
 		const string getCommand();

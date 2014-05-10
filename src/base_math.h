@@ -296,7 +296,7 @@ struct Rect
 	Rect operator+(const Rect &rhs) { return Rect(::min(min, rhs.min), ::max(max, rhs.max)); }
 
 	bool isEmpty() const { return max.x <= min.x || max.y <= min.y; }
-	bool isInside(const int2 &point) const {
+	bool isInside(const Type2 &point) const {
 		return	point.x >= min.x && point.x < max.x &&
 				point.y >= min.y && point.y < max.y;
 	}

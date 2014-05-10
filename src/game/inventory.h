@@ -63,9 +63,6 @@ namespace game {
 		float weight() const;
 
 		const Weapon &dummyWeapon() const { return m_dummy_weapon; }
-		static const Armour dummyArmour();
-		static const Item   dummyAmmo();
-
 		const Weapon &weapon() const { return m_weapon; }
 		const Armour &armour() const { return m_armour; }
 		const Entry  &ammo  () const { return m_ammo; }

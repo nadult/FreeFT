@@ -153,7 +153,11 @@ namespace gfx
 	inline void drawQuad(int x, int y, int w, int h, Color col = Color::white)
 		{ drawQuad(int2(x, y), int2(w, h), col); }
 
-	void drawQuad(int2 pos, int2 size, float2 uv0, float2 uv1, Color color = Color::white);
+	void drawQuad(int2 pos, int2 size, const float2 &uv0, const float2 &uv1, Color color = Color::white);
+
+	void drawQuad(const FRect &rect, const FRect &uv_rect, Color colors[4]);
+	void drawQuad(const FRect &rect, const FRect &uv_rect, Color color = Color::white);
+	inline void drawQuad(const FRect &rect, Color color = Color::white) { drawQuad(rect, FRect(0, 0, 1, 1), color); }
 
 	void drawBBox(const FBox &wbox, Color col = Color::white, bool is_filled = false);
 	void drawBBox(const IBox &wbox, Color col = Color::white, bool is_filled = false);

@@ -48,7 +48,8 @@ namespace game {
 	public:
 		Weapon(const WeaponProto &proto) :Item(proto) { }
 		Weapon(const Item &item) :Item((DASSERT(item.type() == ItemType::weapon), item)) { }
-
+		Weapon() { *this = dummyWeapon(); }
+		
 		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
 
 		float range(AttackMode::Type mode) const;

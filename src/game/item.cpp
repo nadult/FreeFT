@@ -46,7 +46,7 @@ namespace game {
 		damage_mod = toFloat(parser("damage_mod"));
 		class_id = parser("class_id");
 	}
-
+	
 	ItemProto::ItemProto(const TupleParser &parser) :ProtoImpl(parser) {
 		name = parser("name");
 		description = parser("description");
@@ -64,9 +64,21 @@ namespace game {
 
 	Item::Item(ProtoIndex index)
 		:m_proto( (ASSERT(ProtoId::isItemId(index.type())), static_cast<const ItemProto*>(&getProto(index))) ) { }
-
-	const Item Item::dummyItem() {
+		
+	const Item Item::dummy() {
 		return Item(findProto("_dummy_item", ProtoId::item));
+	}
+
+	const Item Item::dummyAmmo() {
+		return Item(findProto("_dummy_ammo", ProtoId::item_ammo));
+	}
+
+	const Item Item::dummyArmour() {
+		return Item(findProto("_dummy_armour", ProtoId::item_armour));
+	}
+
+	const Item Item::dummyWeapon() {
+		return Item(findProto("_dummy_weapon", ProtoId::item_weapon));
 	}
 		
 	gfx::PTexture Item::guiImage(bool small, FRect &tex_rect) const {
@@ -82,15 +94,18 @@ namespace game {
 	ItemEntity::ItemEntity(const Item &item, int count)
 			:EntityImpl(item.proto()), m_item(item), m_count(count) {
 		DASSERT(count >= 1);
+		playSequence(m_proto.seq_ids[0], false);
 	}
 
 	ItemEntity::ItemEntity(const XMLNode &node) :EntityImpl(node), m_item(m_proto) {
 		m_count = node.intAttrib("item_count");
+		playSequence(m_proto.seq_ids[0], false);
 	}
 
 	ItemEntity::ItemEntity(Stream &sr) :EntityImpl(sr), m_item(m_proto) {
 		m_count = sr.decodeInt();
 		ASSERT(m_count > 0);
+		playSequence(m_proto.seq_ids[0], false);
 	}
 
 	void ItemEntity::save(Stream &sr) const {

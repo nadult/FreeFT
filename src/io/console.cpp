@@ -59,7 +59,7 @@ namespace io {
 		return m_is_opened? m_edit_box->rect().size() : int2(0, 0);
 	}
 
-	void Console::processInput() {
+	void Console::update(double time_diff) {
 		if(isKeyDown('`')) {
 			if(m_is_opened)
 				close();

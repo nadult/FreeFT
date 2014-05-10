@@ -41,13 +41,13 @@ namespace io {
 			audio::setUnits(16.66666666);
 		}
 				
-		m_hud = new ui::HUD();
+		m_hud = new ui::HUD(world, actor_ref);
 	}
 
 	Controller::~Controller() {
 	}
 
-	void Controller::update() {
+	void Controller::update(double time_diff) {
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 		
@@ -61,12 +61,8 @@ namespace io {
 		bool console_mode = m_console.isOpened();
 		Ray ray = screenRay(mouse_pos + m_view_pos);
 
-		m_console.processInput();
-		if(!console_mode) {
-			m_hud->process();
-			if(actor)
-				m_hud->update(*actor);
-		}
+		m_console.update(time_diff);
+		m_hud->update(time_diff);
 
 		if(m_hud->isMouseOver()) {
 			m_isect = m_full_isect = Intersection();
@@ -280,7 +276,7 @@ namespace io {
 		font->drawShadowed(int2(2, 2), Color::white, Color::black,fmt.text());
 
 		lookAt({0, 0});
-		if(actor) {
+		if(actor && 0) {
 			Container *container = m_world->refEntity<Container>(m_container_ref);
 			string inv_info = actor? actor->inventory().printMenu(m_inventory_sel) : string();
 			string cont_info = container? container->inventory().printMenu(m_container_sel) : string();

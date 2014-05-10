@@ -7,6 +7,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/trigger.h"
+#include "game/character.h"
 #include "sys/config.h"
 
 using namespace game;
@@ -55,9 +56,13 @@ namespace io {
 			spawn_pos.y += 1.0f;
 			actor->setPos(spawn_pos);
 			actor_ref = m_world->addEntity(std::move(actor));
+
 		}
 
 		if( Actor *actor = m_world->refEntity<Actor>(actor_ref) ) {
+			PCharacter character(new Character("Player", "CORE_prefab2"));
+			actor->setCharacter(character);
+
 			auto &inventory = actor->inventory();
 			inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
 			inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
@@ -73,7 +78,7 @@ namespace io {
 	}
 
 	bool SinglePlayerLoop::tick(double time_diff) {
-		m_controller->update();
+		m_controller->update(time_diff);
 
 		time_diff *= m_time_multiplier;
 		m_world->simulate(time_diff);

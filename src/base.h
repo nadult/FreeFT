@@ -539,8 +539,10 @@ namespace game {
 	class EntityMap;
 	class World;
 	class Actor;
+	class Character;
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;
+	typedef Ptr<Character> PCharacter;
 	typedef std::unique_ptr<Entity> PEntity;
 }
 

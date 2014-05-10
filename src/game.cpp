@@ -6,13 +6,13 @@
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "sys/config.h"
-#include "sys/xml.h"
 #include "audio/device.h"
 #include "gfx/device.h"
 #include "gfx/texture_cache.h"
 #include "game/base.h"
 
 #include "io/main_menu_loop.h"
+#include "io/single_player_loop.h"
 
 using namespace gfx;
 using namespace game;
@@ -35,7 +35,21 @@ int safe_main(int argc, char **argv)
 	grabMouse(false);
 	setBlendingMode(bmNormal);
 
-	io::PLoop main_loop(new io::MainMenuLoop);
+	io::PLoop main_loop;
+
+	if(argc > 1) {
+		try {
+			printf("Loading: %s\n", argv[1]);
+			PWorld world = createWorld(string("data/maps/") + argv[1]);
+			main_loop.reset(new io::SinglePlayerLoop(world));
+		}
+		catch(const Exception &ex) {
+			printf("Failed: %s\n", ex.what());
+		}
+	}
+
+	if(!main_loop)
+		main_loop.reset(new io::MainMenuLoop);
 
 	double last_time = getTime() - 1.0 / 60.0;
 	while(pollEvents()) {

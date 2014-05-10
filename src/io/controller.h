@@ -17,7 +17,7 @@ namespace io {
 		Controller(const int2 &resolution, game::PWorld world, game::EntityRef actor_ref, bool show_stats);
 		~Controller();
 
-		void update();
+		void update(double time_diff);
 		void updateView(double time_diff);
 		void draw();
 

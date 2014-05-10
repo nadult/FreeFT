@@ -9,6 +9,8 @@
   won't crash, but will re-create all sprites automaticly.
 
 - use librocket instead of my own UI?
+  Answer: NO: for the editor current UI is good enough, in-game should'nt be based
+  on standard controls like buttons. Use your imagination!
 
 - Remove event filters from orders (unnecessary)
 
@@ -36,12 +38,15 @@
 
 - better camera work
 
-- add main menu music
-
 - 9Patch images for GUI
+
+- When player is moving in one direction for a very short distance, he shouldn't rotate
 
 REFACTORING:
 - move EntityWorldProxy, EntityRef to separate files?
 - make EntityWorldProxy::ref() const
 - make Entity access functions both const and non-const (it's ok to do them with const-casts)
 - If sprites are kept in a big pool, then PSprite is no longer required and sprite doesn't have to inherit from RefCounter?
+- bind0 -> unbind
+- use rects in drawQuads
+- ?? Make rects and boxes store position and size, not min and max

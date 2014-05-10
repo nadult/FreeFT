@@ -106,7 +106,7 @@ namespace io {
 	bool MultiPlayerLoop::tick(double time_diff) {
 		using namespace gfx;
 
-		m_controller->update();
+		m_controller->update(time_diff);
 		m_client->beginFrame();
 
 		m_world->simulate(time_diff);

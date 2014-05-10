@@ -26,6 +26,7 @@ namespace game {
 	public:
 		Armour(const Item &item) :Item((DASSERT(item.type() == ItemType::armour), item)) { }
 		Armour(const ArmourProto &proto) :Item(proto) { }
+		Armour() { *this = dummy(); }
 
 		ArmourClass::Type classId() const		{ return proto().class_id; }
 
