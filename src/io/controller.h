@@ -10,6 +10,8 @@
 #include "io/console.h"
 #include "game/visibility.h"
 
+namespace hud { class Hud; }
+
 namespace io {
 
 	class Controller {
@@ -28,7 +30,7 @@ namespace io {
 		game::PWorld m_world;
 		game::WorldViewer m_viewer;
 
-		ui::PHUD m_hud;
+		Ptr<hud::Hud> m_hud;
 
 		game::EntityRef m_actor_ref;
 		game::EntityRef m_container_ref;

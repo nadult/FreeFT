@@ -44,6 +44,8 @@
 
 - When player is moving in one direction for a very short distance, he shouldn't rotate
 
+- Use shared_ptr<> instead of Ptr<> ? (safety issues in multithreaded environment)
+
 REFACTORING:
 - move EntityWorldProxy, EntityRef to separate files?
 - make EntityWorldProxy::ref() const

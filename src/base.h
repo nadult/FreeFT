@@ -513,11 +513,9 @@ namespace ui {
 	class ImageButton;
 	class FileDialog;
 	class MessageBox;
-	class HUD;
 	typedef Ptr<Window> PWindow;
 	typedef Ptr<Button> PButton;
 	typedef Ptr<ImageButton> PImageButton;
-	typedef Ptr<HUD> PHUD;
 	typedef Ptr<FileDialog> PFileDialog;
 	typedef Ptr<MessageBox> PMessageBox;
 };
@@ -544,14 +542,14 @@ namespace game {
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;
 	typedef Ptr<Character> PCharacter;
-	typedef std::unique_ptr<Entity> PEntity;
+	typedef unique_ptr<Entity> PEntity;
 }
 
 namespace net {
 	class Client;
 	class Server;
-	typedef std::unique_ptr<Client> PClient;
-	typedef std::unique_ptr<Server> PServer;
+	typedef unique_ptr<Client> PClient;
+	typedef unique_ptr<Server> PServer;
 }
 
 namespace audio {

@@ -17,7 +17,7 @@
 #include "audio/device.h"
 
 #include "gfx/texture.h"
-#include "gameui/hud.h"
+#include "hud/hud.h"
 
 using namespace gfx;
 using namespace game;
@@ -41,7 +41,7 @@ namespace io {
 			audio::setUnits(16.66666666);
 		}
 				
-		m_hud = new ui::HUD(world, actor_ref);
+		m_hud = new hud::Hud(world, actor_ref);
 	}
 
 	Controller::~Controller() {

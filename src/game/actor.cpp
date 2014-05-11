@@ -555,8 +555,6 @@ namespace game {
 		}
 #endif
 
-
-
 		//TODO: spawned projectiles should be centered
 		if( const ProjectileProto *proj_proto = weapon.projectileProto() )
 			addNewEntity<Projectile>(best_ray.origin(), *proj_proto, actualDirAngle(), best_ray.dir(), ref(), weapon.proto().damage_mod);
