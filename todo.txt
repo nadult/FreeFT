@@ -40,6 +40,8 @@
 
 - 9Patch images for GUI
 
+- If the last interactor with a door was a player, then he should see when the door closes
+
 - When player is moving in one direction for a very short distance, he shouldn't rotate
 
 REFACTORING:

@@ -30,6 +30,20 @@ const char* strcasestr(const char *a, const char *b) {
 	return *a < *b? -1 : *a == *b? 0 : 1;
 }*/
 
+const Color Color::white		(255, 255, 255);
+const Color Color::gray			(127, 127, 127);
+const Color Color::yellow		(255, 255, 0);
+const Color Color::red			(255, 0, 0);
+const Color Color::green		(0, 255, 0);
+const Color Color::blue			(0, 0, 255);
+const Color Color::black		(0, 0, 0);
+const Color Color::transparent	(0, 0, 0, 0);
+
+
+Color lerp(Color a, Color b, float value) {
+	return Color(lerp((float4)a, (float4)b, value));
+}
+
 bool toBool(const char *input) {
 	CString str(input);
 	if(caseEqual(str, "true"))

@@ -62,7 +62,7 @@ namespace io {
 		Ray ray = screenRay(mouse_pos + m_view_pos);
 
 		m_console.update(time_diff);
-		m_hud->update(time_diff);
+		m_hud->update(!console_mode, time_diff);
 
 		if(m_hud->isMouseOver()) {
 			m_isect = m_full_isect = Intersection();

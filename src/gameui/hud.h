@@ -25,16 +25,27 @@ namespace ui
 		const FRect &targetRect() const { return m_target_rect; }
 		const FRect rect() const;
 
-		void setText(const string &text) { m_text = text; }
+		void setText(const string &text);
+		void setPicture(gfx::PTexture tex, const FRect uv_rect = FRect(0, 0, 1, 1));
+
+		bool testAccelerator() const;
+		void setAccelerator(int key) { m_accelerator = key; }
+		int accelerator() const { return m_accelerator; }
 
 	protected:
 		gfx::PFont m_font;
+		Color m_back_color;
+		Color m_border_color;
 
-	private:
+		gfx::PTexture m_picture;
+		FRect m_uv_rect;
+
 		string m_text;
 		FRect m_target_rect;
 		float m_max_offset;
 		float m_focus_time;
+
+		int m_accelerator;
 	};
 
 	typedef unique_ptr<HUDButton> PHUDButton;
@@ -71,6 +82,28 @@ namespace ui
 		int m_ammo_count;
 	};
 
+	class HUDStance: public HUDButton {
+	public:
+		HUDStance(const FRect &target_rect, game::Stance::Type stance, gfx::PTexture icons);
+
+		void select(bool is_selected) { m_is_selected = is_selected; }
+		bool isSelected() const { return m_is_selected; }
+
+		void update(double time_diff) override;
+		void draw() const override;
+		game::Stance::Type stance() const { return m_stance_id; }
+
+	private:
+		FRect m_uv_rect;
+		game::Stance::Type m_stance_id;
+		gfx::PTexture m_icons;
+
+		float m_selection_time;
+		bool m_is_selected;
+	};
+
+	typedef unique_ptr<HUDStance> PHUDStance;
+
 	class HUD: public RefCounter {
 	public:
 		HUD(game::PWorld world, game::EntityRef actor_ref);
@@ -78,16 +111,23 @@ namespace ui
 
 		bool isMouseOver() const;
 		void draw() const;
-		void update(double time_diff);
+		void update(bool is_active, double time_diff);
 
 	private:
+		void sendOrder(game::POrder&&);
+
 		game::PWorld m_world;
 		game::EntityRef m_actor_ref;
 
+		gfx::PTexture m_icons;
+		vector<HUDButton*> m_all_buttons;
+
 		unique_ptr<HUDWeapon> m_hud_weapon;
 		unique_ptr<HUDCharacter> m_hud_character;
-		vector<PHUDButton> m_hud_stances;
+		vector<unique_ptr<HUDStance>> m_hud_stances;
 		vector<PHUDButton> m_hud_buttons;
+
+		FRect m_back_rect;
 	};
 
 }

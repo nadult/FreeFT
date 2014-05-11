@@ -460,17 +460,15 @@ struct Color
 	operator float4() const { return float4(r, g, b, a) * (1.0f / 255.0f); }
 	operator float3() const { return float3(r, g, b) * (1.0f / 255.0f); }
 
-   	//TODO: endianess...
-
-	enum {
-		white 		= 0xffffffffu,
-		gray		= 0xff7f7f7fu,
-		yellow		= 0xff00ffffu,
-		red			= 0xff0000ffu,
-		green		= 0xff00ff00u,
-		black 		= 0xff000000u,
-		transparent = 0x00000000u,
-	};
+	static const Color
+		white,
+		gray,
+		yellow,
+		red,
+		green,
+		blue,
+		black,
+		transparent;
 
 	enum {
 		alpha_mask	= 0xff000000u,
@@ -483,12 +481,15 @@ struct Color
 	};
 };
 
+Color lerp(Color a, Color b, float value);
+
 inline bool operator==(const Color &lhs, const Color &rhs) { return lhs.rgba == rhs.rgba; }
 inline bool operator!=(const Color &lhs, const Color &rhs) { return lhs.rgba != rhs.rgba; }
 
 inline Color swapBR(Color col) {
 	return ((col.rgba & 0xff) << 16) | ((col.rgba & 0xff0000) >> 16) | (col.rgba & 0xff00ff00);
 }
+
 
 void compress(const PodArray<char> &in, PodArray<char> &out, bool hc);
 void decompress(const PodArray<char> &in, PodArray<char> &out);
