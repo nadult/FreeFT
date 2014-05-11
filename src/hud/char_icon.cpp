@@ -14,16 +14,12 @@ using namespace gfx;
 namespace hud {
 
 	HudCharIcon::HudCharIcon(const FRect &target_rect)
-		:HudButton(target_rect), m_current_hp(0), m_max_hp(0) { }
+		:HudWidget(target_rect), m_current_hp(0), m_max_hp(0) { }
 		
 	HudCharIcon::~HudCharIcon() { }
 
-	void HudCharIcon::update(double time_diff) {
-		HudButton::update(time_diff);
-	}
-
 	void HudCharIcon::draw() const {
-		HudButton::draw();
+		HudWidget::draw();
 		FRect rect = this->rect();
 	
 		PTexture icon = m_character? m_character->icon() : Character::defaultIcon();

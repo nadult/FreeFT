@@ -3,19 +3,17 @@
    This file is part of FreeFT.
  */
 
-#ifndef HUD_INVENTORY_H
-#define HUD_INVENTORY_H
+#ifndef HUD_OPTIONS_H
+#define HUD_OPTIONS_H
 
 #include "hud/layer.h"
 
 namespace hud
 {
 
-	class HudInventory: public HudLayer {
+	class HudOptions: public HudLayer {
 	public:
-		HudInventory(const FRect &target_rect);
-
-		void updateItems(const Actor&);
+		HudOptions(const FRect &target_rect);
 	};
 
 }

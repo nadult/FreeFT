@@ -3,8 +3,8 @@
    This file is part of FreeFT.
  */
 
-#ifndef HUD_BUTTON_H
-#define HUD_BUTTON_H
+#ifndef HUD_WIDGET_H
+#define HUD_WIDGET_H
 
 #include "hud/base.h"
 #include "game/entity.h"
@@ -13,12 +13,12 @@
 namespace hud
 {
 
-	class HudButton {
+	class HudWidget: public RefCounter {
 	public:
-		HudButton(const FRect &target_rect);
-		virtual ~HudButton();
+		HudWidget(const FRect &target_rect);
+		virtual ~HudWidget();
 
-		virtual void update(double time_diff);
+		virtual void update(const float2 &mouse_pos, double time_diff);
 		virtual void draw() const;
 		virtual void setStyle(HudStyle style);
 
@@ -29,11 +29,12 @@ namespace hud
 
 		void setFocus(bool focus) { m_is_focused = focus; }
 		bool isFocused() const { return m_is_focused; }
-		bool isMouseOver() const;
+
+		bool isMouseOver(const float2 &mouse_pos) const;
+		bool isPressed(const float2 &mouse_pos) const;
 
 		void setText(const string &text);
 
-		bool testAccelerator() const;
 		void setAccelerator(int key) { m_accelerator = key; }
 		int accelerator() const { return m_accelerator; }
 

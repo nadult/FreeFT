@@ -27,7 +27,7 @@ namespace hud {
 	}
 
 	HudStance::HudStance(const FRect &target_rect, Stance::Type stance, PTexture icons)
-		:HudButton(target_rect), m_stance_id(stance), m_icons(icons) {
+		:HudWidget(target_rect), m_stance_id(stance), m_icons(icons) {
 		DASSERT(Stance::isValid(stance));
 		DASSERT(m_icons);
 
@@ -38,12 +38,8 @@ namespace hud {
 			}
 	}
 		
-	void HudStance::update(double time_diff) {
-		HudButton::update(time_diff);
-	}
-
 	void HudStance::draw() const {
-		HudButton::draw();
+		HudWidget::draw();
 		m_icons->bind();
 		drawQuad(rect(), m_uv_rect, focusColor());
 	}

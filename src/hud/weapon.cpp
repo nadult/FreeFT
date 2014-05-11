@@ -15,14 +15,10 @@ using namespace gfx;
 namespace hud {
 
 	HudWeapon::HudWeapon(const FRect &target_rect)
-		:HudButton(target_rect), m_attack_mode(AttackMode::undefined), m_ammo_count(0) { }
+		:HudWidget(target_rect), m_attack_mode(AttackMode::undefined), m_ammo_count(0) { }
 		
-	void HudWeapon::update(double time_diff) {
-		HudButton::update(time_diff);
-	}
-
 	void HudWeapon::draw() const {
-		HudButton::draw();
+		HudWidget::draw();
 		FRect rect = this->rect();
 
 		if(!m_weapon.isDummy()) {

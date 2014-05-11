@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "hud/inventory.h"
+#include "hud/options.h"
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/device.h"
@@ -14,12 +14,8 @@ using namespace gfx;
 
 namespace hud {
 
-	HudInventory::HudInventory(const FRect &target_rect)
+	HudOptions::HudOptions(const FRect &target_rect)
 		:HudLayer(target_rect) {
-	}
-
-	void HudInventory::updateItems(const Actor &actor) {
-
 	}
 		
 }

@@ -64,6 +64,9 @@ namespace io {
 		m_console.update(time_diff);
 		m_hud->update(!console_mode, time_diff);
 
+		if(isKeyDown('H'))
+			m_hud->setVisible(m_hud->isVisible() ^ 1);
+
 		if(m_hud->isMouseOver()) {
 			m_isect = m_full_isect = Intersection();
 		}

@@ -58,12 +58,37 @@ namespace hud
 			drawLine(float2(max.x - width, max.y), float2(max.x, max.y), Color::transparent, color);
 		}
 	}
+	
+	const FRect align(const FRect &rect, const FRect &relative_to, Alignment mode, float spacing) {
+		DASSERT(mode >= align_top && mode <= align_down_right);
 
-	void drawLayer(const FRect &rect, Color color) {
-		DTexture::bind0();
-		drawQuad(rect, Color(color, 40));
-		drawBorder(rect, Color(color, 100), float2(0, 0), 100.0f, false);
-		drawBorder(rect, Color(color, 100), float2(0, 0), 100.0f, true);
+		if(mode >= align_top_left) {
+			if(mode == align_top_left)
+				return align(align(rect, relative_to, align_left, spacing), relative_to, align_top, spacing);
+			else if(mode == align_top_right)
+				return align(align(rect, relative_to, align_right, spacing), relative_to, align_top, spacing);
+			else if(mode == align_down_left)
+				return align(align(rect, relative_to, align_left, spacing), relative_to, align_down, spacing);
+			else /*if(mode == align_down_right)*/
+				return align(align(rect, relative_to, align_right, spacing), relative_to, align_down, spacing);
+		}
+
+		if(mode == align_top) {
+			float top = relative_to.min.y - spacing;
+			return FRect(rect.min.x, top - rect.height(), rect.max.x, top);
+		}
+		else if(mode == align_down) {
+			float bottom = relative_to.max.y + spacing;
+			return FRect(rect.min.x, bottom, rect.max.x, bottom + rect.height());
+		}
+		else if(mode == align_left) {
+			float left = relative_to.min.x - spacing;
+			return FRect(left - rect.width(), rect.min.y, left, rect.max.y);
+		}
+		else /*if(mode == align_right)*/ {
+			float right = relative_to.max.x + spacing;
+			return FRect(right, rect.min.y, right + rect.width(), rect.max.y);
+		}
 	}
 
 	DEFINE_ENUM(HudStyleId,

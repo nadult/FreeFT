@@ -4,10 +4,11 @@
  */
 
 #include "hud/hud.h"
-#include "hud/button.h"
 #include "hud/char_icon.h"
 #include "hud/weapon.h"
 #include "hud/stance.h"
+#include "hud/inventory.h"
+#include "hud/options.h"
 
 #include "game/actor.h"
 #include "game/world.h"
@@ -17,34 +18,57 @@
 
 using namespace gfx;
 
-namespace 
-{
-
-	const int2 s_hud_char_icon_size(75, 100);
-	const int2 s_hud_weapon_size(210, 100);
-	const int2 s_hud_button_size(60, 15);
-	const int2 s_hud_stance_size(23, 23);
-	const int2 s_hud_main_rect(365, 155);
-	const float s_spacing = 15.0f;
-
-}
-
 namespace hud {
 
-	Hud::Hud(PWorld world, EntityRef actor_ref) :m_world(world), m_actor_ref(actor_ref) {
-		HudStyle style = getStyle((HudStyleId::Type)0);
+	namespace 
+	{
 
-		int2 res = gfx::getWindowSize();
-		float bottom = res.y - s_spacing;
+		const float2 s_hud_char_icon_size(75, 100);
+		const float2 s_hud_weapon_size(210, 100);
+		const float2 s_hud_button_size(60, 15);
+		const float2 s_hud_stance_size(23, 23);
+		const float2 s_hud_main_size(365, 155);
+		const float2 s_hud_inventory_size(365, 300);
+		const float2 s_hud_options_size(365, 200);
 
-		FRect char_rect({0.0f, 0.0f}, s_hud_char_icon_size);
-		char_rect += float2(s_spacing, bottom - char_rect.height());
+		const float s_spacing = 15.0f;
+		const float s_layer_spacing = 5.0f;
 
-		FRect weapon_rect({0.0f, 0.0f}, s_hud_weapon_size);
-		weapon_rect += float2(char_rect.max.x + s_spacing, bottom - weapon_rect.height());
+		enum ButtonId {
+			button_inventory,
+			button_character,
+			button_options,
+		};
 
-		m_hud_char_icon.reset(new HudCharIcon(char_rect));
-		m_hud_weapon.reset(new HudWeapon(weapon_rect));
+		struct Button {
+			Hud::LayerId id;
+			int accelerator;
+			const char *name;
+		};
+
+		static Button s_buttons[] = {
+			{ Hud::layer_inventory,	'I',	"INV" },
+			{ Hud::layer_character,	'C',	"CHA" },
+			{ Hud::layer_options,	'O',	"OPT" }
+		};
+
+	}
+
+	static FRect targetRect() {
+		return FRect(s_hud_main_size) + float2(s_layer_spacing, gfx::getWindowSize().y - s_hud_main_size.y - s_layer_spacing);
+	}
+
+	Hud::Hud(PWorld world, EntityRef actor_ref) :HudLayer(targetRect()), m_world(world), m_actor_ref(actor_ref), m_selected_layer(layer_none) {
+		float2 bottom_left(s_spacing - s_layer_spacing, rect().height() - s_spacing + s_layer_spacing);
+
+		FRect char_rect(s_hud_char_icon_size);
+		char_rect += bottom_left - float2(0, char_rect.height());
+
+		FRect weapon_rect(s_hud_weapon_size);
+		weapon_rect += float2(char_rect.max.x + s_spacing, bottom_left.y - weapon_rect.height());
+
+		m_hud_char_icon = new HudCharIcon(char_rect);
+		m_hud_weapon = new HudWeapon(weapon_rect);
 
 		m_icons = new DTexture; {
 			Loader ldr("data/icons.png");
@@ -52,8 +76,8 @@ namespace hud {
 		}
 
 		{
-			FRect stance_rect({0.0f, 0.0f}, s_hud_stance_size);
-			stance_rect += float2(weapon_rect.max.x + s_spacing, bottom - s_hud_stance_size.y);
+			FRect stance_rect(s_hud_stance_size);
+			stance_rect += float2(weapon_rect.max.x + s_spacing, bottom_left.y - s_hud_stance_size.y);
 
 			FRect uv_rect(0, 0, 0.25f, 0.25f);
 
@@ -67,64 +91,49 @@ namespace hud {
 		}
 
 		{
-			FRect button_rect({0.0f, 0.0f}, s_hud_button_size);
+			FRect button_rect = align(FRect(s_hud_button_size), weapon_rect, align_top, char_rect, align_right, s_spacing);
 
-			button_rect += float2(char_rect.max.x + s_spacing, bottom - weapon_rect.height() - button_rect.height() - s_spacing);
-			PHudButton inv_button(new HudButton(button_rect));
-
-			button_rect += float2(button_rect.width() + s_spacing, 0.0f);
-			PHudButton cha_button(new HudButton(button_rect));
-		
-			button_rect += float2(button_rect.width() + s_spacing, 0.0f);
-			PHudButton opt_button(new HudButton(button_rect));
-
-			inv_button->setText("INV");
-			cha_button->setText("CHA");
-			opt_button->setText("OPT");
-
-			m_hud_buttons.emplace_back(std::move(inv_button));
-			m_hud_buttons.emplace_back(std::move(cha_button));
-			m_hud_buttons.emplace_back(std::move(opt_button));
+			for(int n = 0; n < COUNTOF(s_buttons); n++) {
+				PHudWidget button(new HudWidget(button_rect));
+				button->setText(s_buttons[n].name);
+				button->setAccelerator(s_buttons[n].accelerator);
+				m_hud_buttons.emplace_back(std::move(button));
+				button_rect += float2(button_rect.width() + s_spacing, 0.0f);
+			}
 		}
 
-		m_all_buttons.push_back(m_hud_weapon.get());
-		m_all_buttons.push_back(m_hud_char_icon.get());
+		attach(m_hud_weapon.get());
+		attach(m_hud_char_icon.get());
 		for(int n = 0; n < (int)m_hud_buttons.size(); n++)
-			m_all_buttons.push_back(m_hud_buttons[n].get());
+			attach(m_hud_buttons[n].get());
 		for(int n = 0; n < (int)m_hud_stances.size(); n++)
-			m_all_buttons.push_back(m_hud_stances[n].get());
+			attach(m_hud_stances[n].get());
 
-		m_back_rect = FRect({0.0f, 0.0f}, s_hud_main_rect);
-		m_back_rect += float2(5.0f, res.y - m_back_rect.height() - 5.0f);
-
-		setStyle(defaultStyle());
-	}
-
-	void Hud::setStyle(HudStyle style) {
-		m_style = style;
-		for(int n = 0; n < (int)m_all_buttons.size(); n++)
-			m_all_buttons[n]->setStyle(style);
+		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(s_layer_spacing, 0.0f), rect(), align_top, s_layer_spacing);
+		m_hud_inventory = new HudInventory(inv_rect);
+		m_hud_inventory->setVisible(false, false);
+		
+		FRect opt_rect = align(FRect(s_hud_options_size) + float2(s_layer_spacing, 0.0f), rect(), align_top, s_layer_spacing);
+		m_hud_options = new HudOptions(opt_rect);
+		m_hud_options->setVisible(false, false);
 	}
 
 	Hud::~Hud() { }
 
 	void Hud::update(bool is_active, double time_diff) {
-		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
-		if(!actor)
-			return;
+		float2 mouse_pos = float2(getMousePos()) - rect().min;
 
-		m_hud_char_icon->setCharacter(actor->character());
-		m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
+		if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
+			m_hud_char_icon->setCharacter(actor->character());
+			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
 
-		m_hud_weapon->setWeapon(actor->inventory().weapon());
-		m_hud_weapon->setAmmoCount(actor->inventory().ammo().count);
-		
+			m_hud_weapon->setWeapon(actor->inventory().weapon());
+			m_hud_weapon->setAmmoCount(actor->inventory().ammo().count);
 
-		{
 			int stance_id = -1, sel_id = -1;
 
 			if(is_active) for(int n = 0; n < (int)m_hud_stances.size(); n++) {
-				if( ( m_hud_stances[n]->isMouseOver() && isMouseKeyDown(0) ) || m_hud_stances[n]->testAccelerator())
+				if(m_hud_stances[n]->isPressed(mouse_pos))
 					stance_id = n;
 				if(m_hud_stances[n]->isFocused())
 					sel_id = n;
@@ -142,8 +151,35 @@ namespace hud {
 					m_hud_stances[n]->setFocus(m_hud_stances[n]->stance() == actor->stance());
 		}
 
-		for(int n = 0; n < (int)m_all_buttons.size(); n++)
-			m_all_buttons[n]->update(time_diff);
+		{
+			int pressed_id = -1;
+
+			if(is_active) for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+				if(m_hud_buttons[n]->isPressed(mouse_pos))
+					pressed_id = n;
+
+			if(pressed_id != -1) {
+				bool is_disabling = pressed_id != -1 && m_selected_layer == s_buttons[pressed_id].id;
+				audio::playSound("butn_pulldown", 1.0f);
+				for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+					m_hud_buttons[n]->setFocus(pressed_id == n && !is_disabling);
+			
+				m_selected_layer = is_disabling? layer_none : s_buttons[pressed_id].id;
+			}
+
+			bool any_other_visible = false;
+
+			any_other_visible |= m_selected_layer != layer_inventory && m_hud_inventory->isVisible();
+			any_other_visible |= m_selected_layer != layer_options   && m_hud_options->isVisible();
+
+			//TODO: add sliding sounds?
+			m_hud_inventory->setVisible(m_selected_layer == layer_inventory && !any_other_visible);
+			m_hud_options->setVisible(m_selected_layer == layer_options && !any_other_visible);
+		}
+
+		HudLayer::update(is_active, time_diff);
+		m_hud_inventory->update(is_active, time_diff);
+		m_hud_options->update(is_active, time_diff);
 	}
 		
 	void Hud::sendOrder(POrder &&order) {
@@ -151,17 +187,13 @@ namespace hud {
 	}
 
 	void Hud::draw() const {
-		drawLayer(m_back_rect, m_style.layer_color);
-
-		for(int n = 0; n < (int)m_all_buttons.size(); n++)
-			m_all_buttons[n]->draw();
+		HudLayer::draw();
+		m_hud_inventory->draw();
+		m_hud_options->draw();
 	}
 
 	bool Hud::isMouseOver() const {
-		for(int n = 0; n < (int)m_all_buttons.size(); n++)
-			if(m_all_buttons[n]->isMouseOver())
-				return true;
-		return m_back_rect.isInside(getMousePos());
+		return HudLayer::isMouseOver() || m_hud_inventory->isMouseOver() || m_hud_options->isMouseOver();
 	}
 
 }

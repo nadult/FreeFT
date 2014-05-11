@@ -7,16 +7,15 @@
 #define HUD_STANCE_H
 
 #include "hud/base.h"
-#include "hud/button.h"
+#include "hud/widget.h"
 
 namespace hud
 {
 
-	class HudStance: public HudButton {
+	class HudStance: public HudWidget {
 	public:
 		HudStance(const FRect &target_rect, Stance::Type stance, gfx::PTexture icons);
 
-		void update(double time_diff) override;
 		void draw() const override;
 
 		Stance::Type stance() const { return m_stance_id; }

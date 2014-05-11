@@ -15,7 +15,22 @@ namespace hud {
 	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical);
 	void drawLine(float2 p1, float2 p2, Color a, Color b);
 	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width, bool is_left);
-	void drawLayer(const FRect &rect, Color color);
+
+	enum Alignment {
+		align_top,
+		align_right,
+		align_left,
+		align_down,
+
+		align_top_left,
+		align_top_right,
+		align_down_left,
+		align_down_right,
+	};
+
+	const FRect align(const FRect &rect, const FRect &relative_to, Alignment mode, float spacing);
+	inline const FRect align(const FRect &rect, const FRect &rel1, Alignment mode1, const FRect &rel2, Alignment mode2, float spacing)
+		{ return align(align(rect, rel1, mode1, spacing), rel2, mode2, spacing); }
 
 	struct HudStyle {
 		Color layer_color;
@@ -35,7 +50,8 @@ namespace hud {
 	inline HudStyle defaultStyle() { return getStyle(HudStyleId::green_blue); }
 
 	class Hud;
-	class HudButton;
+	class HudLayer;
+	class HudWidget;
 	class HudWeapon;
 	class HudStance;
 	class HudCharIcon;
@@ -43,13 +59,13 @@ namespace hud {
 	class HudCharacter;
 	class HudOptions;
 
-	typedef unique_ptr<HudButton> PHudButton;
-	typedef unique_ptr<HudWeapon> PHudWeapon;
-	typedef unique_ptr<HudStance> PHudStance;
-	typedef unique_ptr<HudCharIcon> PHudCharIcon;
-	typedef unique_ptr<HudInventory> PHudInventory;
-	typedef unique_ptr<HudCharacter> PHudCharacter;
-	typedef unique_ptr<HudOptions> PHudOptions;
+	typedef Ptr<HudWidget> PHudWidget;
+	typedef Ptr<HudWeapon> PHudWeapon;
+	typedef Ptr<HudStance> PHudStance;
+	typedef Ptr<HudCharIcon> PHudCharIcon;
+	typedef Ptr<HudInventory> PHudInventory;
+	typedef Ptr<HudCharacter> PHudCharacter;
+	typedef Ptr<HudOptions> PHudOptions;
 	typedef Ptr<Hud> PHud;
 
 }

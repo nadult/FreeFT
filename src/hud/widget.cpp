@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "hud/button.h"
+#include "hud/widget.h"
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/device.h"
@@ -14,34 +14,34 @@ using namespace gfx;
 
 namespace hud {
 
-	HudButton::HudButton(const FRect &rect)
-		:m_target_rect(rect), m_style(defaultStyle()), m_over_time(0.0f), m_focus_time(0.0f), m_accelerator(0) {
+	HudWidget::HudWidget(const FRect &rect)
+		:m_target_rect(rect), m_style(defaultStyle()), m_over_time(0.0f), m_focus_time(0.0f), m_is_focused(false), m_accelerator(0) {
 		setStyle(defaultStyle());
 	}
 
-	HudButton::~HudButton() { }
+	HudWidget::~HudWidget() { }
 		
-	void HudButton::setStyle(HudStyle style) {
+	void HudWidget::setStyle(HudStyle style) {
 		m_style = style;
 		m_font = Font::mgr[style.font_name];
 	}
 		
-	void HudButton::update(double time_diff) {
+	void HudWidget::update(const float2 &mouse_pos, double time_diff) {
 		float anim_speed = 20.0f;
 
 		m_focus_time += (m_is_focused? 1.0f - m_focus_time : -m_focus_time) * time_diff * anim_speed;
 		m_focus_time = clamp(m_focus_time, 0.0f, 1.0f);
 		
-		m_over_time += (isMouseOver()? 1.0f - m_over_time : -m_over_time) * time_diff * anim_speed;
+		m_over_time += (isMouseOver(mouse_pos)? 1.0f - m_over_time : -m_over_time) * time_diff * anim_speed;
 		m_over_time = clamp(m_over_time, 0.0f, 1.0f);
 		m_over_time = max(m_over_time, m_focus_time);
 	}
 
-	Color HudButton::focusColor() const {
+	Color HudWidget::focusColor() const {
 		return lerp(Color(m_style.focus_color, 160), m_style.focus_color, m_focus_time);
 	}
 
-	void HudButton::draw() const {
+	void HudWidget::draw() const {
 		DTexture::bind0();
 		FRect rect = this->rect();
 
@@ -60,19 +60,19 @@ namespace hud {
 		}
 	}
 		
-	bool HudButton::testAccelerator() const {
-		return m_accelerator && isKeyDown(m_accelerator);
-	}
-
-	bool HudButton::isMouseOver() const {
-		return rect().isInside((float2)getMousePos());
+	bool HudWidget::isMouseOver(const float2 &mouse_pos) const {
+		return rect().isInside(mouse_pos);
 	}
 		
-	const FRect HudButton::rect() const {
+	bool HudWidget::isPressed(const float2 &mouse_pos) const {
+		return (isMouseOver(mouse_pos) && isMouseKeyDown(0)) || (m_accelerator && isKeyDown(m_accelerator));
+	}
+		
+	const FRect HudWidget::rect() const {
 		return m_target_rect;
 	}
 		
-	void HudButton::setText(const string &text) {
+	void HudWidget::setText(const string &text) {
 		m_text = text;
 	}
 

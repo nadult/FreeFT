@@ -278,6 +278,7 @@ struct Rect
 
 	template <class TType2>
 	explicit Rect(const Rect<TType2> &other) :min(other.min), max(other.max) { }
+	explicit Rect(const Type2 &size) :min(0, 0), max(size) { }
 	Rect(Type2 min, Type2 max) :min(min), max(max) { }
 	Rect(Type minX, Type minY, Type maxX, Type maxY) :min(minX, minY), max(maxX, maxY) { }
 	Rect() { }
