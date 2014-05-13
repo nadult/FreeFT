@@ -130,8 +130,8 @@ struct float2
 	explicit operator int2() const { return int2((int)x, (int)y); }
 
 	float2 operator+(const float2 &rhs) const { return float2(x + rhs.x, y + rhs.y); }
-	float2 operator*(const float2 &rhs) const { return float2(x * rhs.x, y * rhs.y); }
 	float2 operator-(const float2 &rhs) const { return float2(x - rhs.x, y - rhs.y); }
+	float2 operator*(const float2 &rhs) const { return float2(x * rhs.x, y * rhs.y); }
 	float2 operator*(float s) const { return float2(x * s, y * s); }
 	float2 operator/(float s) const { return *this * (1.0f / s); }
 	float2 operator-() const { return float2(-x, -y); }
@@ -155,6 +155,7 @@ struct float3
 
 	float3 operator+(const float3 &rhs) const { return float3(x + rhs.x, y + rhs.y, z + rhs.z); }
 	float3 operator-(const float3 &rhs) const { return float3(x - rhs.x, y - rhs.y, z - rhs.z); }
+	float3 operator*(const float3 &rhs) const { return float3(x * rhs.x, y * rhs.y, z * rhs.z); }
 	float3 operator*(float s) const { return float3(x * s, y * s, z * s); }
 	float3 operator/(float s) const { return *this * (1.0f / s); }
 	float3 operator-() const { return float3(-x, -y, -z); }
@@ -178,6 +179,7 @@ struct float4
 
 	float4 operator+(const float4 &rhs) const { return float4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); }
 	float4 operator-(const float4 &rhs) const { return float4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
+	float4 operator*(const float4 &rhs) const { return float4(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w); }
 	float4 operator*(float s) const { return float4(x * s, y * s, z * s, w * s); }
 	float4 operator/(float s) const { return *this * (1.0f / s); }
 	float4 operator-() const { return float4(-x, -y, -z, -w); }

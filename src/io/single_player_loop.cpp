@@ -71,7 +71,15 @@ namespace io {
 			inventory.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
 			inventory.add(findProto("flamer", ProtoId::item_weapon), 1);
 			inventory.add(findProto("ak47", ProtoId::item_weapon), 1);
+			inventory.add(findProto("beretta", ProtoId::item_weapon), 1);
+
 			inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
+			inventory.add(findProto("metal_armour", ProtoId::item_armour), 1);
+			
+			inventory.add(findProto("762mm", ProtoId::item_ammo), 250);
+			inventory.add(findProto("9mm_ap", ProtoId::item_ammo), 100);
+			inventory.add(findProto("9mm_ball", ProtoId::item_ammo), 100);
+			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
 		}
 		
 		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, actor_ref, config.profiler_enabled));

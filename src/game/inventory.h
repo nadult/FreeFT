@@ -17,6 +17,8 @@ namespace game {
 	public:
 		Inventory() = default;
 		Inventory(const XMLNode&);
+
+		//TODO: remove this limit
 		enum { max_entries = 1024 };
 		
 		void save(XMLNode) const;

@@ -55,6 +55,8 @@ namespace hud {
 	class HudWeapon;
 	class HudStance;
 	class HudCharIcon;
+	class HudInventoryItem;
+	class HudItemDesc;
 	class HudInventory;
 	class HudCharacter;
 	class HudOptions;
@@ -63,6 +65,8 @@ namespace hud {
 	typedef Ptr<HudWeapon> PHudWeapon;
 	typedef Ptr<HudStance> PHudStance;
 	typedef Ptr<HudCharIcon> PHudCharIcon;
+	typedef Ptr<HudInventoryItem> PHudInventoryItem;
+	typedef Ptr<HudItemDesc> PHudItemDesc;
 	typedef Ptr<HudInventory> PHudInventory;
 	typedef Ptr<HudCharacter> PHudCharacter;
 	typedef Ptr<HudOptions> PHudOptions;

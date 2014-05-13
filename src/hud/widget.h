@@ -23,12 +23,17 @@ namespace hud
 		virtual void setStyle(HudStyle style);
 
 		Color focusColor() const;
+		float alpha() const { return m_visible_time; }
 
+		void setTargetRect(const FRect &rect) { m_target_rect = rect; }
 		const FRect &targetRect() const { return m_target_rect; }
 		const FRect rect() const;
 
 		void setFocus(bool focus) { m_is_focused = focus; }
 		bool isFocused() const { return m_is_focused; }
+
+		void setVisible(bool is_visible, bool animate = true);
+		bool isVisible() const;
 
 		bool isMouseOver(const float2 &mouse_pos) const;
 		bool isPressed(const float2 &mouse_pos) const;
@@ -46,9 +51,11 @@ namespace hud
 		FRect m_target_rect;
 		float m_over_time;
 		float m_focus_time;
+		float m_visible_time;
 
 		int m_accelerator;
 		bool m_is_focused;
+		bool m_is_visible;
 	};
 
 }

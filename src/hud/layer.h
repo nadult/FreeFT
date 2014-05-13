@@ -15,13 +15,16 @@ namespace hud
 		HudLayer(const FRect &target_rect);
 		virtual ~HudLayer();
 
+		void setTargetRect(const FRect &rect);
+		const FRect &targetRect() const { return m_target_rect; }
+
 		const FRect rect() const;
 		virtual void draw() const;
 		virtual void update(bool is_active, double time_diff);
 		virtual bool isMouseOver() const;
 
 		bool isVisible() const;
-		void setVisible(bool is_visible, bool animate = true);
+		virtual void setVisible(bool is_visible, bool animate = true);
 		
 		void setStyle(HudStyle);
 

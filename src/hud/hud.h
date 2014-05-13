@@ -20,7 +20,11 @@ namespace hud
 
 		bool isMouseOver() const override;
 		void draw() const override;
+
+		// Update should always be called before draw in current frame
 		void update(bool is_active, double time_diff) override;
+		
+		void setVisible(bool is_visible, bool animate = true) override;
 
 		enum LayerId {
 			layer_none,

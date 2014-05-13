@@ -54,11 +54,11 @@ namespace hud {
 
 	}
 
-	static FRect targetRect() {
+	static FRect initRect() {
 		return FRect(s_hud_main_size) + float2(s_layer_spacing, gfx::getWindowSize().y - s_hud_main_size.y - s_layer_spacing);
 	}
 
-	Hud::Hud(PWorld world, EntityRef actor_ref) :HudLayer(targetRect()), m_world(world), m_actor_ref(actor_ref), m_selected_layer(layer_none) {
+	Hud::Hud(PWorld world, EntityRef actor_ref) :HudLayer(initRect()), m_world(world), m_actor_ref(actor_ref), m_selected_layer(layer_none) {
 		float2 bottom_left(s_spacing - s_layer_spacing, rect().height() - s_spacing + s_layer_spacing);
 
 		FRect char_rect(s_hud_char_icon_size);
@@ -110,7 +110,7 @@ namespace hud {
 			attach(m_hud_stances[n].get());
 
 		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(s_layer_spacing, 0.0f), rect(), align_top, s_layer_spacing);
-		m_hud_inventory = new HudInventory(inv_rect);
+		m_hud_inventory = new HudInventory(m_world, m_actor_ref, inv_rect);
 		m_hud_inventory->setVisible(false, false);
 		
 		FRect opt_rect = align(FRect(s_hud_options_size) + float2(s_layer_spacing, 0.0f), rect(), align_top, s_layer_spacing);
@@ -180,6 +180,24 @@ namespace hud {
 		HudLayer::update(is_active, time_diff);
 		m_hud_inventory->update(is_active, time_diff);
 		m_hud_options->update(is_active, time_diff);
+
+		{
+			float inv_height = m_hud_inventory->preferredHeight();
+			FRect inv_rect = m_hud_inventory->targetRect();
+			inv_rect.min.y = inv_rect.max.y - inv_height;
+			m_hud_inventory->setTargetRect(inv_rect);
+		}
+	}
+		
+	void Hud::setVisible(bool is_visible, bool animate) {
+		HudLayer::setVisible(is_visible, animate);
+		if(!is_visible) {
+			m_hud_options->setVisible(false, animate);
+			m_hud_inventory->setVisible(false, animate);
+			for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+				m_hud_buttons[n]->setFocus(false);
+			m_selected_layer = layer_none;
+		}
 	}
 		
 	void Hud::sendOrder(POrder &&order) {

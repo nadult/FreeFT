@@ -21,6 +21,10 @@ namespace hud {
 	const FRect HudLayer::rect() const {
 		return m_target_rect - float2((1.0f - m_visible_time) * (m_target_rect.max.x + 5.0f), 0.0f);
 	}
+		
+	void HudLayer::setTargetRect(const FRect &rect) {
+		m_target_rect = rect;
+	}
 
 	void HudLayer::draw() const {
 		if(!isVisible())

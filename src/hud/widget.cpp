@@ -15,7 +15,8 @@ using namespace gfx;
 namespace hud {
 
 	HudWidget::HudWidget(const FRect &rect)
-		:m_target_rect(rect), m_style(defaultStyle()), m_over_time(0.0f), m_focus_time(0.0f), m_is_focused(false), m_accelerator(0) {
+		:m_target_rect(rect), m_style(defaultStyle()), m_over_time(0.0f), m_focus_time(0.0f), m_visible_time(1.0f),
+		 m_is_focused(false), m_is_visible(true), m_accelerator(0) {
 		setStyle(defaultStyle());
 	}
 
@@ -31,6 +32,9 @@ namespace hud {
 
 		m_focus_time += (m_is_focused? 1.0f - m_focus_time : -m_focus_time) * time_diff * anim_speed;
 		m_focus_time = clamp(m_focus_time, 0.0f, 1.0f);
+
+		m_visible_time += (m_is_visible? 1.0f - m_visible_time : -m_visible_time) * time_diff * anim_speed;
+		m_visible_time = clamp(m_visible_time, 0.0f, 1.0f);
 		
 		m_over_time += (isMouseOver(mouse_pos)? 1.0f - m_over_time : -m_over_time) * time_diff * anim_speed;
 		m_over_time = clamp(m_over_time, 0.0f, 1.0f);
@@ -38,16 +42,21 @@ namespace hud {
 	}
 
 	Color HudWidget::focusColor() const {
-		return lerp(Color(m_style.focus_color, 160), m_style.focus_color, m_focus_time);
+		Color out = lerp(Color(m_style.focus_color, 160), m_style.focus_color, m_focus_time);
+		return Color(out, u8(float(out.a) * alpha()));
 	}
 
 	void HudWidget::draw() const {
+		if(!isVisible())
+			return;
+
 		DTexture::bind0();
 		FRect rect = this->rect();
 
-		drawQuad(rect, Color(m_style.back_color, 127));
+		u8 alpha(this->alpha() * 255);
+		drawQuad(rect, Color(m_style.back_color, alpha / 2));
 
-		Color border_color = lerp(Color(m_style.border_color, 127), m_style.border_color, m_focus_time);
+		Color border_color = lerp(Color(m_style.border_color, alpha / 2), Color(m_style.border_color, alpha), m_focus_time);
 		float offset = lerp(m_style.border_offset, 0.0f, m_over_time);
 
 		drawBorder(rect, border_color, float2(offset, offset), 20.0f, true);
@@ -60,11 +69,23 @@ namespace hud {
 		}
 	}
 		
+	void HudWidget::setVisible(bool is_visible, bool animate) {
+		m_is_visible = is_visible;
+		if(!animate)
+			m_visible_time = m_is_visible? 1.0f : 0.0f;
+	}
+	
+	bool HudWidget::isVisible() const {	
+		return m_is_visible || m_visible_time > 0.01f;
+	}
+		
 	bool HudWidget::isMouseOver(const float2 &mouse_pos) const {
-		return rect().isInside(mouse_pos);
+		return m_is_visible && rect().isInside(mouse_pos);
 	}
 		
 	bool HudWidget::isPressed(const float2 &mouse_pos) const {
+		if(!m_is_visible)
+			return false;
 		return (isMouseOver(mouse_pos) && isMouseKeyDown(0)) || (m_accelerator && isKeyDown(m_accelerator));
 	}
 		
