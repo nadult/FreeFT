@@ -39,14 +39,6 @@ namespace game {
 		OtherItemProto(const TupleParser &parser) :ProtoImpl(parser) { }
 	};
 
-	struct AmmoProto: public ProtoImpl<AmmoProto, ItemProto, ProtoId::item_ammo> {
-		ItemType::Type itemType() const { return ItemType::ammo; }
-		AmmoProto(const TupleParser&);
-
-		string class_id;
-		float damage_mod;
-	};
-
 	struct Item
 	{
 	public:

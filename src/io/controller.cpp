@@ -26,7 +26,7 @@ namespace io {
 
 	Controller::Controller(const int2 &resolution, PWorld world, EntityRef actor_ref, bool show_stats)
 	  :m_console(resolution), m_world(world), m_viewer(world, actor_ref), m_actor_ref(actor_ref), m_resolution(resolution),
-	   m_view_pos(0, 0), m_inventory_sel(-1), m_container_sel(-1), m_show_stats(show_stats)  {
+	   m_view_pos(0, 0), m_show_stats(show_stats)  {
 		DASSERT(world);
 		const Actor *actor = m_world->refEntity<Actor>(actor_ref);
 		if(actor)
@@ -144,55 +144,6 @@ namespace io {
 
 		}
 
-		if(!console_mode && (isKeyDown(Key_kp_add) || isKeyDown(Key_kp_subtract))) {
-			Stance::Type stance = (Stance::Type)(actor->stance() + (isKeyDown(Key_kp_add)? 1 : -1));
-			if(Stance::isValid(stance))
-				m_world->sendOrder(new ChangeStanceOrder(stance), m_actor_ref);
-		}
-
-		if(actor) {
-			Container *container = m_world->refEntity<Container>(m_isect);
-			if(container && !(container->isOpened() && areAdjacent(*actor, *container)))
-				container = nullptr;
-			m_container_ref = container? container->ref() : EntityRef();
-
-			if(isKeyPressed(Key_lctrl)) {
-				if(isKeyDown(Key_up))
-					m_container_sel--;
-				if(isKeyDown(Key_down))
-					m_container_sel++;
-			}
-			else {
-				if(isKeyDown(Key_up))
-					m_inventory_sel--;
-				if(isKeyDown(Key_down))
-					m_inventory_sel++;
-			}
-
-			m_last_path = actor->currentPath();
-			if(!m_isect.isEmpty() && m_last_path.isEmpty())
-				m_world->findPath(m_last_path, (int3)actor->pos(), (int3)ray.at(m_isect.distance()), m_actor_ref);
-
-			m_inventory_sel = clamp(m_inventory_sel, -3, actor->inventory().size() - 1);
-			m_container_sel = clamp(m_container_sel, 0, container? container->inventory().size() - 1 : 0);
-
-			if(isKeyDown('D') && m_inventory_sel >= 0)
-				m_world->sendOrder(new DropItemOrder(m_inventory_sel), m_actor_ref);
-			else if(isKeyDown('E') && m_inventory_sel >= 0)
-				m_world->sendOrder(new EquipItemOrder(m_inventory_sel), m_actor_ref);
-			else if(isKeyDown('E') && m_inventory_sel < 0) {
-				ItemType::Type type = ItemType::Type(m_inventory_sel + 3);
-				m_world->sendOrder(new UnequipItemOrder(type), m_actor_ref);
-			}
-
-			if(container) {
-				if(isKeyDown(Key_right) && m_inventory_sel >= 0)
-					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_to, m_inventory_sel, 1), m_actor_ref);
-				if(isKeyDown(Key_left))
-					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_from, m_container_sel, 1), m_actor_ref);
-			}
-		}
-
 		if(m_last_time - m_stats_update_time > 0.25) {
 			m_profiler_stats = profiler::getStats();
 			m_stats_update_time = m_last_time;
@@ -281,22 +232,6 @@ namespace io {
 		font->drawShadowed(pos + int2(2, 2), Color::white, Color::black,fmt.text());
 
 		lookAt({0, 0});
-		if(actor && 0) {
-			Container *container = m_world->refEntity<Container>(m_container_ref);
-			string inv_info = actor? actor->inventory().printMenu(m_inventory_sel) : string();
-			string cont_info = container? container->inventory().printMenu(m_container_sel) : string();
-			if(container)
-				cont_info = string("Container: ") + container->proto().id + "\n" + cont_info;
-				
-			IRect extents = font->evalExtents(inv_info.c_str());
-			font->drawShadowed(int2(0, m_resolution.y - extents.height()),
-							Color::white, Color::black, "%s", inv_info.c_str());
-
-			extents = font->evalExtents(cont_info.c_str());
-			font->drawShadowed(int2(m_resolution.x - extents.width(), m_resolution.y - extents.height()),
-							Color::white, Color::black, "%s", cont_info.c_str());
-		}
-
 		m_console.draw();
 		m_hud->draw();
 	}

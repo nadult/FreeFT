@@ -27,12 +27,17 @@ namespace hud
 	class HudInventoryItem: public HudWidget {
 	public:
 		HudInventoryItem(const FRect &rect);
-		void setEntry(const Inventory::Entry &entry) { m_entry = entry; }
-		const Inventory::Entry &entry() const { return m_entry; }
+		void setItem(const Item &item) { m_item = item; }
+		void setCount(int count) { m_count = count; }
+
+		const Item &item() const { return m_item; }
+		int count() const { return m_count; }
+
 		void draw() const override;
 
 	protected:
-		Inventory::Entry m_entry;
+		Item m_item;
+		int m_count;
 	};
 
 	class HudInventory: public HudLayer {

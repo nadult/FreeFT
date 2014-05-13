@@ -40,12 +40,6 @@ namespace game {
 			return (ProtoId::Type)(id + ProtoId::item_first);
 		}
 	}
-
-	
-	AmmoProto::AmmoProto(const TupleParser &parser) :ProtoImpl(parser) {
-		damage_mod = toFloat(parser("damage_mod"));
-		class_id = parser("class_id");
-	}
 	
 	ItemProto::ItemProto(const TupleParser &parser) :ProtoImpl(parser) {
 		name = parser("name");

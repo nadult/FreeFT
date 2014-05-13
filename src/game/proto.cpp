@@ -11,6 +11,7 @@
 #include "game/item.h"
 #include "game/weapon.h"
 #include "game/armour.h"
+#include "game/ammo.h"
 #include "game/projectile.h"
 #include "game/door.h"
 #include "game/container.h"

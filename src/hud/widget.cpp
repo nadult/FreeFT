@@ -69,6 +69,10 @@ namespace hud {
 		}
 	}
 		
+	void HudWidget::drawText(const float2 &pos, const TextFormatter &fmt) const {
+		m_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, u8(this->alpha() * 255)), "%s", fmt.text());
+	}
+		
 	void HudWidget::setVisible(bool is_visible, bool animate) {
 		m_is_visible = is_visible;
 		if(!animate)

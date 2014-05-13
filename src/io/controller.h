@@ -36,8 +36,6 @@ namespace io {
 		game::EntityRef m_container_ref;
 		int2 m_resolution, m_view_pos;
 
-		int m_inventory_sel, m_container_sel;
-
 		string m_profiler_stats;
 		double m_last_time, m_stats_update_time;
 		bool m_show_stats;

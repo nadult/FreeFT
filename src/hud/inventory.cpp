@@ -10,6 +10,7 @@
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "audio/device.h"
+#include <algorithm>
 
 using namespace gfx;
 
@@ -53,14 +54,21 @@ namespace hud {
 		HudWidget::draw();
 		FRect rect = this->rect();
 
-		if(!m_entry.item.isDummy()) {
+		if(!m_item.isDummy()) {
 			FRect uv_rect;
-			gfx::PTexture texture = m_entry.item.guiImage(true, uv_rect);
+			gfx::PTexture texture = m_item.guiImage(true, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(rect.center() - size / 2);
 			texture->bind();
 			drawQuad(FRect(pos, pos + size), uv_rect);
+
+			if(m_count > 1) {
+				TextFormatter fmt(256);
+				fmt("%d", m_count);
+				IRect extents = m_font->evalExtents(fmt.text());
+				drawText(float2(rect.max.x - extents.width(), rect.min.y), fmt);
+			}
 		}
 	}
 
@@ -85,19 +93,52 @@ namespace hud {
 		
 	HudInventory::~HudInventory() { }
 
+	namespace {
+
+		struct Entry {
+			Item item;
+			int count;
+			bool is_equipped;
+
+			bool operator<(const Entry &rhs) const {
+				return item.type() == rhs.item.type()? item.name() < rhs.item.name() : item.type() < rhs.item.type();
+			}
+		};
+
+		void extractEntries(vector<Entry> &out, const ActorInventory &inventory) {
+			ActorInventory temp = inventory;
+			temp.unequip(ItemType::armour);
+			temp.unequip(ItemType::ammo);
+			temp.unequip(ItemType::weapon);
+			
+			out.reserve(temp.size());
+			for(int n = 0; n < temp.size(); n++) {
+				bool is_equipped = inventory.armour() == temp[n].item || inventory.weapon() == temp[n].item ||
+								  (inventory.ammo().item == temp[n].item && inventory.ammo().count);
+				out.emplace_back(Entry{temp[n].item, temp[n].count, is_equipped});
+			}
+
+			std::sort(out.begin(), out.end());
+		}
+
+	}
+
 	void HudInventory::update(bool is_active, double time_diff) {
 		HudLayer::update(is_active, time_diff);
 		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
 
 		if(actor) {
-			const ActorInventory &orig = actor->inventory();
-			ActorInventory temp = orig;
-			temp.unequip(ItemType::armour);
+			vector<Entry> entries;
+			extractEntries(entries, actor->inventory());
 
-			int max_count = min(temp.size(), (int)m_buttons.size());
-			for(int n = 0; n < max_count; n++)
-				m_buttons[n]->setEntry(temp[n]);
+			int max_count = min((int)entries.size(), (int)m_buttons.size());
+			for(int n = 0; n < max_count; n++) {
+				m_buttons[n]->setItem(entries[n].item);
+				m_buttons[n]->setCount(entries[n].count);
+				m_buttons[n]->setFocus(entries[n].is_equipped);
+			}
+
 			for(int n = 0; n < (int)m_buttons.size(); n++)
 				m_buttons[n]->setVisible(n < max_count, false);
 		}
@@ -121,11 +162,57 @@ namespace hud {
 			rect += float2(0.0f, best_pos - rect.min.y);
 
 			m_item_desc->setTargetRect(rect);
-			m_item_desc->setItem(m_buttons[over_item]->entry().item);
+			m_item_desc->setItem(m_buttons[over_item]->item());
 		}
-			
-	//	m_item_desc->setVisible(over_item != -1);
-	//	m_item_desc->setFocus(true);
+	
+		//	m_item_desc->setVisible(over_item != -1);
+		//	m_item_desc->setFocus(true);
+
+		if(is_active && over_item != -1) {
+			if(m_buttons[over_item]->isPressed(mouse_pos)) {
+				Item item = m_buttons[over_item]->item();
+				const ActorInventory &inventory = actor->inventory();
+
+				bool is_equipped = inventory.weapon() == item || inventory.armour() == item ||
+									(inventory.ammo().item == item && inventory.ammo().count);
+
+
+				if(is_equipped) {
+					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
+					audio::playSound("butn_pulldown", 1.0f);
+				}
+				else {
+					int item_id = -1;
+					for(int n = 0; n < inventory.size(); n++)
+						if(inventory[n].item == item) { 
+							item_id = n;
+							break;
+						}
+
+					//TODO: play sounds only for items which doesn't generate any 
+					if(item_id != -1 && actor->canEquipItem(item_id)) {
+						m_world->sendOrder(new EquipItemOrder(item_id), m_actor_ref);
+
+						if(item.type() != ItemType::ammo)
+							audio::playSound("butn_pulldown", 1.0f);
+					}
+					else {
+						audio::playSound("butn_optionknob", 1.0f);
+					}
+				}
+
+				//TODO: drop item
+		//		if(isKeyDown('D') && m_inventory_sel >= 0)
+		//			m_world->sendOrder(new DropItemOrder(m_inventory_sel), m_actor_ref);
+
+				//TODO: using containers
+//				if(isKeyDown(Key_right) && m_inventory_sel >= 0)
+//					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_to, m_inventory_sel, 1), m_actor_ref);
+//				if(isKeyDown(Key_left))
+//					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_from, m_container_sel, 1), m_actor_ref);
+			}
+		}
+		
 	}
 
 	float HudInventory::preferredHeight() const {

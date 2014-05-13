@@ -21,6 +21,8 @@ namespace hud
 		virtual void update(const float2 &mouse_pos, double time_diff);
 		virtual void draw() const;
 		virtual void setStyle(HudStyle style);
+		
+		void drawText(const float2 &pos, const TextFormatter&) const;
 
 		Color focusColor() const;
 		float alpha() const { return m_visible_time; }

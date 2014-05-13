@@ -66,7 +66,8 @@ namespace game {
 	bool Actor::handleOrder(EquipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(!m_inventory.isValidId(order.m_inventory_id) || !canEquipItem(order.m_inventory_id))
 			return false;
-		ItemType::Type item_type = m_inventory[order.m_inventory_id].item.type(); //TODO: type->typeId
+		const Item &item = m_inventory[order.m_inventory_id].item;
+		ItemType::Type item_type = item.type(); //TODO: type->typeId
 
 		//TODO: magic_hi animation when object to be picked up is high enough
 		
@@ -76,10 +77,16 @@ namespace game {
 				return false;
 			}
 
+			if(item_type == ItemType::ammo)
+				world()->playSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
+
 			animate(item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}
 		if(event == ActorEvent::anim_finished) {
-			m_inventory.equip(order.m_inventory_id);
+			int count = 1;
+			if(item_type == ItemType::ammo)
+				count = min(m_inventory.weapon().proto().max_ammo, m_inventory[order.m_inventory_id].count);
+			m_inventory.equip(order.m_inventory_id, count);
 			if(item_type == ItemType::armour)
 				updateArmour();
 			return false;
@@ -109,6 +116,9 @@ namespace game {
 				m_inventory.unequip(order.m_item_type);
 				return false;
 			}
+		// TODO: play only half of the sound and then blend out?
+		//	if(order.m_item_type == ItemType::ammo)
+		//		world()->playSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
 
 			animate(order.m_item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}

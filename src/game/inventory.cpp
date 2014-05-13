@@ -81,21 +81,6 @@ namespace game {
 		return float(sum);
 	}
 
-	const string Inventory::printMenu(int select) const {
-		char buf[1024], *ptr = buf, *end = buf + sizeof(buf);
-		const char *sel = "(*) ", *desel = "( ) ";
-		buf[0] = 0;
-
-		for(int n = 0; n < size(); n++) {
-			const Entry &entry = (*this)[n];
-			ptr += snprintf(ptr, end - ptr, "%sitem: %s (type: %s)", select == n? sel : desel,
-					entry.item.name().c_str(), ItemType::toString(entry.item.type()));
-			ptr += snprintf(ptr, end - ptr, entry.count > 1? " [%d]\n" : "\n", entry.count);
-		}
-
-		return string(buf);
-	}
-		
 	void Inventory::save(Stream &sr) const {
 		sr.encodeInt(size());
 		for(int n = 0; n < size(); n++) {
@@ -174,6 +159,8 @@ namespace game {
 				ret = add(m_weapon, 1);
 				m_weapon = m_dummy_weapon;
 			}
+
+			unequip(ItemType::ammo);
 		}
 		else if(item_type == ItemType::armour) {
 			if(!m_armour.isDummy()) {
@@ -192,9 +179,12 @@ namespace game {
 		return ret;
 	}
 		
-	void ActorInventory::useAmmo(int count) {
+	bool ActorInventory::useAmmo(int count) {
 		DASSERT(count >= 0);
-		m_ammo.count = max(0, m_ammo.count - count);
+		if(m_ammo.count < count)
+			return false;
+		m_ammo.count -= count;
+		return true;
 	}
 
 	float ActorInventory::weight() const {
@@ -211,20 +201,6 @@ namespace game {
 		return Inventory::isEmpty() && m_weapon.isDummy() && m_armour.isDummy() && (m_ammo.item.isDummy() || m_ammo.count == 0);
 	}
 
-	const string ActorInventory::printMenu(int select) const {
-		char buf[1024], *ptr = buf, *end = buf + sizeof(buf);
-		const char *sel = "(*) ", *desel = "( ) ";
-
-		ptr += snprintf(ptr, end - ptr, "%sweapon: %s\n", select == -3? sel : desel,
-				m_weapon.isDummy()? "none" : m_weapon.name().c_str());
-		ptr += snprintf(ptr, end - ptr, "%sarmour: %s\n", select == -2? sel : desel,
-				m_armour.isDummy()? "none" : m_armour.name().c_str());
-		ptr += snprintf(ptr, end - ptr, "%sammo: %s [%d]\n", select == -1? sel : desel,
-				m_ammo.item.isDummy()? "none" : m_ammo.item.name().c_str(), m_ammo.count);
-
-		return string(buf) + Inventory::printMenu(select);
-	}
-	
 	void ActorInventory::save(Stream &sr) const {
 		Inventory::save(sr);
 		sr << u8(	(!m_weapon.isDummy()? 1 : 0) |

@@ -80,6 +80,8 @@ namespace io {
 			inventory.add(findProto("9mm_ap", ProtoId::item_ammo), 100);
 			inventory.add(findProto("9mm_ball", ProtoId::item_ammo), 100);
 			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
+			inventory.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
+			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 100);
 		}
 		
 		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, actor_ref, config.profiler_enabled));

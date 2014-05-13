@@ -55,6 +55,10 @@ namespace game {
 			AttackMode::Type mode = validateAttackMode(order.m_mode);
 			if(mode == AttackMode::undefined)
 				return failOrder();
+			if(weapon.needAmmo() && !m_inventory.ammo().count) {
+				world()->playSound(weapon.soundId(WeaponSoundType::out_of_ammo), pos());
+				return failOrder();
+			}
 			
 			order.m_is_kick_weapon = mode == AttackMode::kick;
 			order.m_mode = mode;
@@ -103,6 +107,8 @@ namespace game {
 			m_action = Action::attack;
 		}
 
+
+
 		if(AttackMode::isRanged(order.m_mode)) {
 			float inaccuracy = this->inaccuracy(weapon);
 
@@ -116,10 +122,14 @@ namespace game {
 					order.m_burst_mode = 1;
 				}
 				else {
+					if(weapon.needAmmo() && !m_inventory.useAmmo(1))
+						return false;
 					fireProjectile(target_box, weapon, inaccuracy);
 				}
 			}
 			if(event == ActorEvent::next_frame && order.m_burst_mode) {
+				if(weapon.needAmmo() && !m_inventory.useAmmo(1))
+					return false;
 				order.m_burst_mode++;
 				fireProjectile(target_box, weapon, inaccuracy * (1.0f + 0.1f * order.m_burst_mode));
 				if(order.m_burst_mode > weapon.proto().burst_ammo)
@@ -129,6 +139,8 @@ namespace game {
 		}
 		else {
 			if(event == ActorEvent::hit) {
+				if(weapon.needAmmo() && !m_inventory.useAmmo(1))
+					return false;
 				makeImpact(order.m_target, weapon);
 			}
 		}

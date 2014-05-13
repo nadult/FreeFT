@@ -64,6 +64,8 @@ namespace game {
 		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }
 		uint attackModes() const								{ return proto().attack_modes; }
 
+		bool needAmmo() const { return !proto().ammo_class_id.empty(); }
+
 		const WeaponProto &proto() const { return static_cast<const WeaponProto&>(*m_proto); }
 	};
 

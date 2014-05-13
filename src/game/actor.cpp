@@ -280,16 +280,18 @@ namespace game {
 		return world()->isVisible(eye_pos, target_ref, ref(), target->typeId() == EntityId::actor? 4 : 3);
 	}
 
+	//TODO: move to actorinventory (part at least)
 	bool Actor::canEquipItem(int item_id) const {
 		DASSERT(item_id >= 0 && item_id < m_inventory.size());
 		const Item &item = m_inventory[item_id].item;
 		if(item.type() == ItemType::weapon)
 			return m_proto.canEquipWeapon(Weapon(item).classId());
-		else if(item.type() == ItemType::armour) {
+		else if(item.type() == ItemType::armour)
 			return (bool)findActorArmour(m_actor, m_inventory.armour());
-		}
+		else if(item.type() == ItemType::ammo)
+			return m_inventory.weapon().proto().ammo_class_id == Ammo(item).classId();
 
-		return true;
+		return false;
 	}
 
 	bool Actor::canChangeStance() const {

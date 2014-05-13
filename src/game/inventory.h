@@ -10,6 +10,7 @@
 #include "game/item.h"
 #include "game/weapon.h"
 #include "game/armour.h"
+#include "game/ammo.h"
 
 namespace game {
 
@@ -34,7 +35,6 @@ namespace game {
 		int find(const Item &item) const;
 		void remove(int entry_id, int count);
 		float weight() const;
-		const string printMenu(int select) const;
 
 		bool isValidId(int id) const { return id >= 0 && id < size(); }
 		bool isEmpty() const { return m_entries.empty(); }
@@ -60,15 +60,13 @@ namespace game {
 		bool isEquipped(ItemType::Type);
 		int unequip(ItemType::Type);
 		bool isEmpty() const;
-
-		const string printMenu(int select) const;
 		float weight() const;
 
 		const Weapon &dummyWeapon() const { return m_dummy_weapon; }
 		const Weapon &weapon() const { return m_weapon; }
 		const Armour &armour() const { return m_armour; }
 		const Entry  &ammo  () const { return m_ammo; }
-		void useAmmo(int count);
+		bool useAmmo(int count);
 
 		void save(Stream&) const;
 		void load(Stream&);
