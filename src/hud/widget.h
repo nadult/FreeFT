@@ -24,7 +24,9 @@ namespace hud
 		
 		void drawText(const float2 &pos, const TextFormatter&) const;
 
-		Color focusColor() const;
+		virtual Color focusColor() const;
+		virtual Color backgroundColor() const;
+
 		float alpha() const { return m_visible_time; }
 
 		void setTargetRect(const FRect &rect) { m_target_rect = rect; }
@@ -38,7 +40,9 @@ namespace hud
 		bool isVisible() const;
 
 		bool isMouseOver(const float2 &mouse_pos) const;
-		bool isPressed(const float2 &mouse_pos) const;
+
+		// is_accelerator will be set only if that is the case (otherwise the value won't change)
+		bool isPressed(const float2 &mouse_pos, int mouse_key = 0, bool *is_accelerator = nullptr) const;
 
 		void setText(const string &text);
 

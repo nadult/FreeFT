@@ -59,7 +59,7 @@ namespace hud {
 			gfx::PTexture texture = m_item.guiImage(true, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-			float2 pos = (int2)(rect.center() - size / 2);
+			float2 pos = (rect.center() - size / 2);
 			texture->bind();
 			drawQuad(FRect(pos, pos + size), uv_rect);
 
@@ -70,6 +70,10 @@ namespace hud {
 				drawText(float2(rect.max.x - extents.width(), rect.min.y), fmt);
 			}
 		}
+	}
+		
+	Color HudInventoryItem::backgroundColor() const {
+		return lerp(HudWidget::backgroundColor(), Color::white, m_focus_time * 0.5f);
 	}
 
 	HudInventory::HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect)
@@ -174,7 +178,7 @@ namespace hud {
 				const ActorInventory &inventory = actor->inventory();
 
 				bool is_equipped = inventory.weapon() == item || inventory.armour() == item ||
-									(inventory.ammo().item == item && inventory.ammo().count);
+									(inventory.ammo().item == item && inventory.ammo().count == inventory.weapon().proto().max_ammo);
 
 
 				if(is_equipped) {

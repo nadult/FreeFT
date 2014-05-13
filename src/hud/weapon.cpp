@@ -37,8 +37,6 @@ namespace hud {
 				IRect extents = m_font->evalExtents(fmt.text());
 				m_font->drawShadowed(int2(rect.max.x - extents.width(), rect.min.y), m_style.focus_color, Color::black, "%s", fmt.text());
 			}
-
-			//TODO: reload when clicked + 'R' shortcut
 		}
 	}
 

@@ -69,6 +69,7 @@ namespace hud {
 
 		m_hud_char_icon = new HudCharIcon(char_rect);
 		m_hud_weapon = new HudWeapon(weapon_rect);
+		m_hud_weapon->setAccelerator('R');
 
 		m_icons = new DTexture; {
 			Loader ldr("data/icons.png");
@@ -131,16 +132,18 @@ namespace hud {
 			m_hud_weapon->setAmmoCount(actor->inventory().ammo().count);
 
 			int stance_id = -1, sel_id = -1;
+			bool is_accel = false;
 
 			if(is_active) for(int n = 0; n < (int)m_hud_stances.size(); n++) {
-				if(m_hud_stances[n]->isPressed(mouse_pos))
+				if(m_hud_stances[n]->isPressed(mouse_pos, 0, &is_accel))
 					stance_id = n;
 				if(m_hud_stances[n]->isFocused())
 					sel_id = n;
 			}
 
 			if(stance_id != -1 && stance_id != sel_id) {
-				audio::playSound("butn_pulldown", 1.0f);
+				if(!is_accel)
+					audio::playSound("butn_pulldown", 1.0f);
 				sendOrder(new ChangeStanceOrder(m_hud_stances[stance_id]->stance()));
 				for(int n = 0; n < (int)m_hud_stances.size(); n++)
 					m_hud_stances[n]->setFocus(stance_id == n);
@@ -149,6 +152,27 @@ namespace hud {
 			if(stance_id == -1 && sel_id == -1)
 				for(int n = 0; n < (int)m_hud_stances.size(); n++)
 					m_hud_stances[n]->setFocus(m_hud_stances[n]->stance() == actor->stance());
+
+			// Reloading:	
+			if(is_active && m_hud_weapon->isPressed(mouse_pos)) {
+				const ActorInventory &inventory = actor->inventory();
+				const Weapon &weapon = inventory.weapon();
+				if(weapon.needAmmo() && inventory.ammo().count < weapon.maxAmmo()) {
+					Item ammo = inventory.ammo().item;
+
+					int item_id = -1;
+
+					for(int n = 0; n < inventory.size(); n++)
+						if(inventory[n].item == ammo ||
+							(ammo.isDummy() && inventory[n].item.type() == ItemType::ammo && Ammo(inventory[n].item).classId() == weapon.ammoClassId())) {
+							item_id = n;
+							break;
+						}
+
+					if(item_id != -1)
+						m_world->sendOrder(new EquipItemOrder(item_id), m_actor_ref);
+				}
+			}
 		}
 
 		{

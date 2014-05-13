@@ -46,6 +46,10 @@ namespace hud {
 		return Color(out, u8(float(out.a) * alpha()));
 	}
 
+	Color HudWidget::backgroundColor() const {
+		return Color(m_style.back_color, (int)(alpha() * 127));
+	}
+
 	void HudWidget::draw() const {
 		if(!isVisible())
 			return;
@@ -54,7 +58,7 @@ namespace hud {
 		FRect rect = this->rect();
 
 		u8 alpha(this->alpha() * 255);
-		drawQuad(rect, Color(m_style.back_color, alpha / 2));
+		drawQuad(rect, backgroundColor());
 
 		Color border_color = lerp(Color(m_style.border_color, alpha / 2), Color(m_style.border_color, alpha), m_focus_time);
 		float offset = lerp(m_style.border_offset, 0.0f, m_over_time);
@@ -70,7 +74,7 @@ namespace hud {
 	}
 		
 	void HudWidget::drawText(const float2 &pos, const TextFormatter &fmt) const {
-		m_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, u8(this->alpha() * 255)), "%s", fmt.text());
+		m_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, int(this->alpha() * 255)), "%s", fmt.text());
 	}
 		
 	void HudWidget::setVisible(bool is_visible, bool animate) {
@@ -87,12 +91,17 @@ namespace hud {
 		return m_is_visible && rect().isInside(mouse_pos);
 	}
 		
-	bool HudWidget::isPressed(const float2 &mouse_pos) const {
+	bool HudWidget::isPressed(const float2 &mouse_pos, int mouse_key, bool *is_accelerator) const {
 		if(!m_is_visible)
 			return false;
-		return (isMouseOver(mouse_pos) && isMouseKeyDown(0)) || (m_accelerator && isKeyDown(m_accelerator));
+		if(m_accelerator && isKeyDown(m_accelerator)) {
+			if(is_accelerator)
+				*is_accelerator = true;
+			return true;
+		}
+		return isMouseOver(mouse_pos) && isMouseKeyDown(mouse_key);
 	}
-		
+	
 	const FRect HudWidget::rect() const {
 		return m_target_rect;
 	}

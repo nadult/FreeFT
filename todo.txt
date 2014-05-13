@@ -54,3 +54,4 @@ REFACTORING:
 - bind0 -> unbind
 - use rects in drawQuads
 - ?? Make rects and boxes store position and size, not min and max
+- In Equip/unequip orders ise items as attributes, not indices into inventories

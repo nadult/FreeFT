@@ -34,6 +34,8 @@ namespace hud
 		int count() const { return m_count; }
 
 		void draw() const override;
+		
+		Color backgroundColor() const override;
 
 	protected:
 		Item m_item;
