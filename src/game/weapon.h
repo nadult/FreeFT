@@ -50,6 +50,8 @@ namespace game {
 		Weapon(const Item &item) :Item((DASSERT(item.type() == ItemType::weapon), item)) { }
 		Weapon() { *this = dummyWeapon(); }
 		
+		const string paramDesc() const;
+		
 		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
 
 		float range(AttackMode::Type mode) const;
@@ -57,7 +59,7 @@ namespace game {
 
 		bool hasMeleeAttack() const;
 		bool hasRangedAttack() const;
-		float estimateDamage() const;
+		float estimateDamage(bool include_burst = true) const;
 		float estimateProjectileTime(float distance) const;
 
 		WeaponClass::Type classId() const						{ return proto().class_id; }

@@ -15,6 +15,8 @@ namespace hud
 
 	class HudWidget: public RefCounter {
 	public:
+		enum { spacing = 15 };
+
 		HudWidget(const FRect &target_rect);
 		virtual ~HudWidget();
 
@@ -23,6 +25,7 @@ namespace hud
 		virtual void setStyle(HudStyle style);
 		
 		void drawText(const float2 &pos, const TextFormatter&) const;
+		void drawTitleText(const float2 &pos, const TextFormatter &fmt) const;
 
 		virtual Color focusColor() const;
 		virtual Color backgroundColor() const;
@@ -52,6 +55,7 @@ namespace hud
 	protected:
 		HudStyle m_style;
 		gfx::PFont m_font;
+		gfx::PFont m_big_font;
 
 		string m_text;
 		FRect m_target_rect;

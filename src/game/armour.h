@@ -27,6 +27,8 @@ namespace game {
 		Armour(const Item &item) :Item((DASSERT(item.type() == ItemType::armour), item)) { }
 		Armour(const ArmourProto &proto) :Item(proto) { }
 		Armour() { *this = dummy(); }
+		
+		const string paramDesc() const;
 
 		ArmourClass::Type classId() const		{ return proto().class_id; }
 

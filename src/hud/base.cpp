@@ -92,18 +92,22 @@ namespace hud
 	}
 
 	DEFINE_ENUM(HudStyleId,
-		"Blueish Green",
+		"Whiteish Green",
 		"Greenish Red"
 	);
+		
+	const float HudStyle::s_spacing = 15.0f;
+	const float HudStyle::s_layer_spacing = 5.0f;
 
 	static HudStyle s_styles[HudStyleId::count] = {
 		HudStyle{
-			Color::blue,
+			Color::white,
 			Color(30, 255, 60),
 			Color(30, 255, 60),
 			Color::white,
 			5.0f,
-			"transformers_20"
+			"transformers_20",
+			"transformers_30"
 		},
 		HudStyle{
 			Color::green,
@@ -111,7 +115,8 @@ namespace hud
 			Color(255, 60, 30),
 			Color::white,
 			5.0f,
-			"transformers_20"
+			"transformers_20",
+			"transformers_30"
 		}
 	};
 	

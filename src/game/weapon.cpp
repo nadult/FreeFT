@@ -81,12 +81,12 @@ namespace game {
 		return false;
 	}
 		
-	float Weapon::estimateDamage() const {
+	float Weapon::estimateDamage(bool include_burst) const {
 		//TODO: this function should take some parameters to be mor accurate?
 
 		if(proto().projectile) {
 			const ProjectileProto &projectile = *proto().projectile;
-			return projectile.impact->damage * proto().damage_mod * max(1, proto().burst_ammo);
+			return projectile.impact->damage * proto().damage_mod * max(1, include_burst? proto().burst_ammo : 1);
 		}
 		if(proto().impact) {
 			return proto().impact->damage * proto().damage_mod;
@@ -104,6 +104,19 @@ namespace game {
 		}
 
 		return time;
+	}
+	
+	const string Weapon::paramDesc() const {
+		TextFormatter out;
+		out("Damage: %.0f", estimateDamage(false));
+		if(proto().burst_ammo > 1)
+			out(" (x%d)", proto().burst_ammo);
+		out("\n");
+		if(needAmmo())
+			out("Max ammo: %d\n", maxAmmo());
+		if(hasRangedAttack())
+			out("Accuracy: %.0f", proto().accuracy);
+		return string(out.text());
 	}
 		
 

@@ -44,6 +44,8 @@ namespace hud
 
 	class HudInventory: public HudLayer {
 	public:
+		enum { spacing = 17 };
+
 		HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect);
 		~HudInventory();
 
@@ -56,6 +58,7 @@ namespace hud
 
 		vector<PHudInventoryItem> m_buttons;
 		PHudItemDesc m_item_desc;
+		float m_out_of_item_time;
 	};
 
 }

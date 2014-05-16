@@ -33,21 +33,25 @@ namespace hud {
 		{ return align(align(rect, rel1, mode1, spacing), rel2, mode2, spacing); }
 
 	struct HudStyle {
+		static const float s_spacing;
+		static const float s_layer_spacing;
+
 		Color layer_color;
 		Color back_color;
 		Color border_color;
 		Color focus_color;
 		float border_offset;
 		const char *font_name;
+		const char *big_font_name;
 	};
 
 	DECLARE_ENUM(HudStyleId,
-		green_blue,
+		green_white,
 		red_green
 	);
 
 	HudStyle getStyle(HudStyleId::Type);
-	inline HudStyle defaultStyle() { return getStyle(HudStyleId::green_blue); }
+	inline HudStyle defaultStyle() { return getStyle(HudStyleId::green_white); }
 
 	class Hud;
 	class HudLayer;

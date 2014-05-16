@@ -69,9 +69,9 @@ namespace io {
 			inventory.add(findProto("heavy_laser_rifle", ProtoId::item_weapon), 1);
 			inventory.add(findProto("uzi", ProtoId::item_weapon), 1);
 			inventory.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
-			inventory.add(findProto("flamer", ProtoId::item_weapon), 1);
 			inventory.add(findProto("ak47", ProtoId::item_weapon), 1);
 			inventory.add(findProto("beretta", ProtoId::item_weapon), 1);
+			inventory.add(findProto("gatling_laser", ProtoId::item_weapon), 1);
 
 			inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
 			inventory.add(findProto("metal_armour", ProtoId::item_armour), 1);
@@ -81,7 +81,7 @@ namespace io {
 			inventory.add(findProto("9mm_ball", ProtoId::item_ammo), 100);
 			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
 			inventory.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
-			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 100);
+			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 300);
 		}
 		
 		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, actor_ref, config.profiler_enabled));

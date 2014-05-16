@@ -25,6 +25,8 @@ namespace game {
 		Ammo(const Item &item) :Item((DASSERT(item.type() == ItemType::ammo), item)) { }
 		Ammo(const AmmoProto &proto) :Item(proto) { }
 		Ammo() { *this = dummyAmmo(); }
+		
+		const string paramDesc() const;
 
 		const string classId() const		{ return proto().class_id; }
 		float damageMod() const				{ return proto().damage_mod; }

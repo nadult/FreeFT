@@ -48,11 +48,10 @@ TODO: prioritize bugs
 - Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
 
 - Bullets shouldnt create sparks when actors are hit
+- Fix flamer
 - Problem with direction of flamer's projectile
 
 - Attacking on stairs may caus player to get stuck
-
-- Fix flamer
 
 - In multiplayer mode, player can get kicked into doors and get stuck
 

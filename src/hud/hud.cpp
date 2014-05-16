@@ -25,14 +25,11 @@ namespace hud {
 
 		const float2 s_hud_char_icon_size(75, 100);
 		const float2 s_hud_weapon_size(210, 100);
-		const float2 s_hud_button_size(60, 15);
+		const float2 s_hud_button_size(60, 17);
 		const float2 s_hud_stance_size(23, 23);
 		const float2 s_hud_main_size(365, 155);
 		const float2 s_hud_inventory_size(365, 300);
 		const float2 s_hud_options_size(365, 200);
-
-		const float s_spacing = 15.0f;
-		const float s_layer_spacing = 5.0f;
 
 		enum ButtonId {
 			button_inventory,
@@ -55,17 +52,17 @@ namespace hud {
 	}
 
 	static FRect initRect() {
-		return FRect(s_hud_main_size) + float2(s_layer_spacing, gfx::getWindowSize().y - s_hud_main_size.y - s_layer_spacing);
+		return FRect(s_hud_main_size) + float2(HudLayer::spacing, gfx::getWindowSize().y - s_hud_main_size.y - HudLayer::spacing);
 	}
 
 	Hud::Hud(PWorld world, EntityRef actor_ref) :HudLayer(initRect()), m_world(world), m_actor_ref(actor_ref), m_selected_layer(layer_none) {
-		float2 bottom_left(s_spacing - s_layer_spacing, rect().height() - s_spacing + s_layer_spacing);
+		float2 bottom_left(HudWidget::spacing - spacing, rect().height() - HudWidget::spacing + HudLayer::spacing);
 
 		FRect char_rect(s_hud_char_icon_size);
 		char_rect += bottom_left - float2(0, char_rect.height());
 
 		FRect weapon_rect(s_hud_weapon_size);
-		weapon_rect += float2(char_rect.max.x + s_spacing, bottom_left.y - weapon_rect.height());
+		weapon_rect += float2(char_rect.max.x + HudWidget::spacing, bottom_left.y - weapon_rect.height());
 
 		m_hud_char_icon = new HudCharIcon(char_rect);
 		m_hud_weapon = new HudWeapon(weapon_rect);
@@ -78,7 +75,7 @@ namespace hud {
 
 		{
 			FRect stance_rect(s_hud_stance_size);
-			stance_rect += float2(weapon_rect.max.x + s_spacing, bottom_left.y - s_hud_stance_size.y);
+			stance_rect += float2(weapon_rect.max.x + HudWidget::spacing, bottom_left.y - s_hud_stance_size.y);
 
 			FRect uv_rect(0, 0, 0.25f, 0.25f);
 
@@ -87,19 +84,19 @@ namespace hud {
 				m_hud_stances.push_back(std::move(stance));
 
 				uv_rect += float2(0.25f, 0.0f);
-				stance_rect += float2(0.0f, -s_hud_stance_size.y - s_spacing);
+				stance_rect += float2(0.0f, -s_hud_stance_size.y - HudWidget::spacing);
 			}
 		}
 
 		{
-			FRect button_rect = align(FRect(s_hud_button_size), weapon_rect, align_top, char_rect, align_right, s_spacing);
+			FRect button_rect = align(FRect(s_hud_button_size), weapon_rect, align_top, char_rect, align_right, HudWidget::spacing);
 
 			for(int n = 0; n < COUNTOF(s_buttons); n++) {
 				PHudWidget button(new HudWidget(button_rect));
 				button->setText(s_buttons[n].name);
 				button->setAccelerator(s_buttons[n].accelerator);
 				m_hud_buttons.emplace_back(std::move(button));
-				button_rect += float2(button_rect.width() + s_spacing, 0.0f);
+				button_rect += float2(button_rect.width() + HudWidget::spacing, 0.0f);
 			}
 		}
 
@@ -110,11 +107,11 @@ namespace hud {
 		for(int n = 0; n < (int)m_hud_stances.size(); n++)
 			attach(m_hud_stances[n].get());
 
-		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(s_layer_spacing, 0.0f), rect(), align_top, s_layer_spacing);
+		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
 		m_hud_inventory = new HudInventory(m_world, m_actor_ref, inv_rect);
 		m_hud_inventory->setVisible(false, false);
 		
-		FRect opt_rect = align(FRect(s_hud_options_size) + float2(s_layer_spacing, 0.0f), rect(), align_top, s_layer_spacing);
+		FRect opt_rect = align(FRect(s_hud_options_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
 		m_hud_options = new HudOptions(opt_rect);
 		m_hud_options->setVisible(false, false);
 	}
@@ -158,17 +155,12 @@ namespace hud {
 				const ActorInventory &inventory = actor->inventory();
 				const Weapon &weapon = inventory.weapon();
 				if(weapon.needAmmo() && inventory.ammo().count < weapon.maxAmmo()) {
-					Item ammo = inventory.ammo().item;
-
-					int item_id = -1;
-
-					for(int n = 0; n < inventory.size(); n++)
-						if(inventory[n].item == ammo ||
-							(ammo.isDummy() && inventory[n].item.type() == ItemType::ammo && Ammo(inventory[n].item).classId() == weapon.ammoClassId())) {
+					int item_id = inventory.find(inventory.ammo().item);
+					if(item_id == -1) for(int n = 0; n < inventory.size(); n++)
+						if(inventory[n].item.type() == ItemType::ammo && Ammo(inventory[n].item).classId() == weapon.ammoClassId()) {
 							item_id = n;
 							break;
 						}
-
 					if(item_id != -1)
 						m_world->sendOrder(new EquipItemOrder(item_id), m_actor_ref);
 				}

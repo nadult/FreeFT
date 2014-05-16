@@ -25,6 +25,7 @@ namespace hud {
 	void HudWidget::setStyle(HudStyle style) {
 		m_style = style;
 		m_font = Font::mgr[style.font_name];
+		m_big_font = Font::mgr[style.big_font_name];
 	}
 		
 	void HudWidget::update(const float2 &mouse_pos, double time_diff) {
@@ -75,6 +76,10 @@ namespace hud {
 		
 	void HudWidget::drawText(const float2 &pos, const TextFormatter &fmt) const {
 		m_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, int(this->alpha() * 255)), "%s", fmt.text());
+	}
+
+	void HudWidget::drawTitleText(const float2 &pos, const TextFormatter &fmt) const {
+		m_big_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, int(this->alpha() * 255)), "%s", fmt.text());
 	}
 		
 	void HudWidget::setVisible(bool is_visible, bool animate) {

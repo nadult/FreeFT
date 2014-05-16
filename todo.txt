@@ -1,5 +1,3 @@
-- ADD SPAWN POINTS
-
 - Network security (at least against hostile packets)
 
 - think about handling orders on client / server and replication
@@ -55,3 +53,4 @@ REFACTORING:
 - use rects in drawQuads
 - ?? Make rects and boxes store position and size, not min and max
 - In Equip/unequip orders ise items as attributes, not indices into inventories
+- Normal Inheritence for items

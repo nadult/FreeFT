@@ -400,7 +400,7 @@ protected:
 
 class TextFormatter {
 public:
-	TextFormatter(int size);
+	TextFormatter(int size = 1024);
 
 	void operator()(const char *format, ...);
 	const char *text() const { return m_data.data(); }

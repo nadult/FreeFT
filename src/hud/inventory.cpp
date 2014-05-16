@@ -18,29 +18,60 @@ namespace hud {
 	
 	namespace {
 		const float2 s_item_size(70, 65);
-		const float2 s_item_desc_size(340, 100);
-		const float s_spacing = 17.0f;
+		const float2 s_item_desc_size(250, 300);
 
 		const int2 s_grid_size(4, 10);
 	}	
 		
 	HudItemDesc::HudItemDesc(const FRect &rect) :HudWidget(rect) { }
-
+	
 	void HudItemDesc::draw() const {
 		if(!isVisible())
 			return;
+
+		FRect layer_rect = rect();
+		layer_rect.min -= float2(HudLayer::spacing, HudLayer::spacing);
+		layer_rect.max += float2(HudLayer::spacing, HudLayer::spacing);
+		HudLayer layer(layer_rect);
+		HudStyle temp_style = m_style;
+		temp_style.layer_color = Color(temp_style.layer_color, (int)(alpha() * 255));
+		layer.setStyle(temp_style);
+		layer.draw();
 
 		HudWidget::draw();
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
+			TextFormatter title;
+			title("%s", m_item.proto().name.c_str());
+
+			IRect extents = m_big_font->evalExtents(title.text());
+			drawTitleText(float2(rect.center().x - extents.width() / 2, 5.0f), title);
+
+			float ypos = 15.0f + extents.height();
+
 			FRect uv_rect;
-			gfx::PTexture texture = m_item.guiImage(true, uv_rect);
+			gfx::PTexture texture = m_item.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-			float2 pos = (int2)(rect.center() - size / 2);
+			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
 			texture->bind();
 			drawQuad(FRect(pos, pos + size), uv_rect, focusColor());
+
+			ypos += size.y + 10.0f;
+			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
+		
+			string params_desc;
+			if(m_item.type() == ItemType::weapon)
+				params_desc = Weapon(m_item).paramDesc();
+			else if(m_item.type() == ItemType::ammo)
+				params_desc = Ammo(m_item).paramDesc();
+			else if(m_item.type() == ItemType::armour)
+				params_desc = Armour(m_item).paramDesc();
+
+			TextFormatter fmt;
+			fmt("%s", params_desc.c_str());
+			drawText(float2(rect.min.x + 5.0f, ypos), fmt);
 		}
 
 	}
@@ -77,19 +108,19 @@ namespace hud {
 	}
 
 	HudInventory::HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect)
-		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref) {
+		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref), m_out_of_item_time(1.0f) {
 		DASSERT(m_world);
 
 		for(int y = 0; y < s_grid_size.y; y++)
 			for(int x = 0; x < s_grid_size.x; x++) {
-				float2 pos(s_item_size.x * x + s_spacing * (x + 1), s_item_size.y * y + s_spacing * (y + 1));
+				float2 pos(s_item_size.x * x + spacing * (x + 1), s_item_size.y * y + spacing * (y + 1));
 				PHudInventoryItem item(new HudInventoryItem(FRect(pos, pos + s_item_size)));
 
 				attach(item.get());
 				m_buttons.emplace_back(std::move(item));
 			}
 
-		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(s_spacing, s_spacing));
+		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(rect().width() + HudLayer::spacing * 2.0f, HudLayer::spacing));
 		m_item_desc->setVisible(false);
 
 		attach(m_item_desc.get());
@@ -154,23 +185,20 @@ namespace hud {
 				break;
 			}
 
-		if(over_item != -1) {
-			FRect button_rect = m_buttons[over_item]->rect();
-			float offset = rect().min.y;
+		{	// Update item desc
+			m_out_of_item_time = over_item == -1? min(m_out_of_item_time + (float)time_diff, 1.0f) : 0.0f;
+			if(!rect().isInside(mouse_pos + rect().min))
+				m_out_of_item_time = 1.0f;
 
-			float best_pos = button_rect.min.y - m_item_desc->rect().height() - s_spacing;
-			if(best_pos + offset < 0.0f)
-				best_pos = button_rect.max.y + s_spacing;
+			if(over_item != -1)
+				m_item_desc->setItem(m_buttons[over_item]->item());
 
 			FRect rect = m_item_desc->targetRect();
-			rect += float2(0.0f, best_pos - rect.min.y);
-
+			rect.max.y = rect.min.y + this->rect().height() - HudLayer::spacing * 2.0f;
 			m_item_desc->setTargetRect(rect);
-			m_item_desc->setItem(m_buttons[over_item]->item());
+			m_item_desc->setVisible(m_is_visible && (over_item != -1 || m_out_of_item_time < 1.0f));
+			m_item_desc->setFocus(true);
 		}
-	
-		//	m_item_desc->setVisible(over_item != -1);
-		//	m_item_desc->setFocus(true);
 
 		if(is_active && over_item != -1) {
 			if(m_buttons[over_item]->isPressed(mouse_pos)) {
@@ -226,7 +254,7 @@ namespace hud {
 			if(m_buttons[n]->isVisible())
 				rect = sum(rect, m_buttons[n]->rect());
 
-		return rect.height() + s_spacing * 2.0f;
+		return max(rect.height() + spacing * 2.0f, s_item_desc_size.y);
 	}
 		
 }
