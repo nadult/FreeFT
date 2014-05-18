@@ -109,6 +109,12 @@ namespace game {
 		"death_match"
 	)
 
+	DEFINE_ENUM(SoundType,
+		"normal",
+		"explosion",
+		"shooting"
+	)
+
 	namespace AttackModeFlags {
 		uint fromString(const char *string) {
 			return ::toFlags(string, AttackMode::s_strings, AttackMode::count, 1);

@@ -105,8 +105,7 @@ namespace game {
 		void replicate(int entity_id);
 		void replicate(const Entity*);
 
-		void playSound(SoundId, const float3 &pos);
-		void playSound(const char*, const float3 &pos);
+		void playSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
 
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
 		

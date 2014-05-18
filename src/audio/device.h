@@ -7,6 +7,7 @@
 #define AUDIO_DEVICE_H
 
 #include "base.h"
+#include "game/base.h"
 
 namespace audio {
 
@@ -34,13 +35,7 @@ namespace audio {
 
 	void printInfo();
 
-	void setListenerPos(const float3&);
-	void setListenerVelocity(const float3&);
-	void setListenerOrientation(const float3&);
-
-	const float3 listenerPos();
-	const float3 listenerVelocity();
-	const float3 listenerOrientation();
+	void setListener(const float3 &pos, const float3 &vel, const float3 &dir);
 
 	void setUnits(float unitsPerMeter);
 
@@ -64,11 +59,9 @@ namespace audio {
 	const SoundIndex findSound(const char *locase_name);
 
 	void loadSound(int id);
-	void playSound(int id, const float3 &pos);
-	void playSound(int id, float volume);
-	
-	void playSound(const char *locase_name, const float3 &pos);
-	void playSound(const char *locase_name, float volume);
+	void playSound(int id, game::SoundType::Type sound_type, const float3 &pos, const float3 &vel = float3(0.0f, 0.0f, 0.0f));
+	void playSound(int id, float volume = 1.0f);
+	void playSound(const char *locase_name, float volume = 1.0f);
 
 	class MP3Decoder;
 

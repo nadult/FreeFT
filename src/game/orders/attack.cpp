@@ -150,7 +150,7 @@ namespace game {
 		if(event == ActorEvent::sound) {
 			//TODO: select firing mode in attack order
 			SoundId sound_id = weapon.soundId(order.m_mode == AttackMode::burst? WeaponSoundType::fire_burst : WeaponSoundType::normal);
-			world()->playSound(sound_id, pos());
+			world()->playSound(sound_id, pos(), AttackMode::isRanged(order.m_mode)? SoundType::shooting : SoundType::normal);
 		}
 
 		return true;

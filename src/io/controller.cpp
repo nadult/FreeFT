@@ -35,12 +35,6 @@ namespace io {
 		m_last_time = m_stats_update_time = getTime();
 		m_last_look_at = float3(0, 0, 0);
 	
-		if(audio::isInitialized()) {
-			audio::setListenerPos(float3(0, 0, 0));
-			audio::setListenerVelocity(float3(0, 0, 0));
-			audio::setUnits(16.66666666);
-		}
-				
 		m_hud = new hud::Hud(world, actor_ref);
 	}
 
@@ -55,7 +49,7 @@ namespace io {
 		if(actor && actor->isDead())
 			actor = nullptr;
 		if(actor)
-			audio::setListenerPos(actor->pos());
+			audio::setListener(actor->pos(), actor->estimateMove(1.0f), normalized(float3(-1, 0, -1)));
 
 		int2 mouse_pos = getMousePos();
 		bool console_mode = m_console.isOpened();

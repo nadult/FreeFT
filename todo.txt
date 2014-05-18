@@ -26,8 +26,6 @@
 - Add limit on number of attacks per second for given weapon?
 
 - Sounds should be played in the middle of entity
-- Add sound attenuation
-
 - Add looped walk / run sounds
 
 - when projectiles are being shot vertically, their angle could be altered a bit

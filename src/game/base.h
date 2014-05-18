@@ -118,7 +118,13 @@ namespace game {
 	DECLARE_ENUM(GameMode,
 		death_match
 	);
-	
+
+	DECLARE_ENUM(SoundType,
+		normal,
+		explosion,
+		shooting
+	);
+
 	namespace AttackMode {
 		inline constexpr bool isRanged(Type t) { return t == single || t == burst || t == throwing; }
 		inline constexpr bool isMelee(Type t) { return !isRanged(t); }

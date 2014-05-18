@@ -119,8 +119,6 @@ namespace audio
 		int s_num_free_sources = 0;
 		double s_last_time = 0.0;
 
-		float3 s_listener_pos;
-
 		bool s_is_initialized = false;
 	}
 	
@@ -204,6 +202,9 @@ namespace audio
 			alGetError();
 			alGenSources(max_sources, (ALuint*)s_sources);
 			testError("Error while creating audio source.");
+			
+			alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+			alSpeedOfSound(16.666666f * 343.3);
 	
 			initSoundMap();
 			initMusicDevice();
@@ -281,40 +282,14 @@ namespace audio
 		printf("\n");
 	}
 
-	void setListenerPos(const float3 &v) {
-		s_listener_pos = v;
-		alListener3f(AL_POSITION,v.x, v.y, v.z);
-	}
-
-	void setListenerVelocity(const float3 &v) {
-		alListener3f(AL_VELOCITY,v.x, v.y, v.z);
-	}
-
-	void setListenerOrientation(const float3 &vec) {
-		float v[6] = {vec.x, vec.y, vec.z, 0.0f, 1.0f, 0.0f};
+	void setListener(const float3 &pos, const float3 &vel, const float3 &dir) {
+		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
+		alListener3f(AL_VELOCITY, vel.x, vel.y, vel.z);
+		float v[6] = {dir.x, dir.y, dir.z, 0.0f, 1.0f, 0.0f};
 		alListenerfv(AL_ORIENTATION, v);
 	}
 
-	const float3 listenerPos() {
-		float x,y,z;
-		alGetListener3f(AL_POSITION, &x, &y, &z);
-		return float3(x, y, z);
-	}
-
-	const float3 listenerVelocity() {
-		float x,y,z;
-		alGetListener3f(AL_VELOCITY, &x, &y, &z);
-		return float3(x, y, z);
-	}
-
-	const float3 listenerOrientation() {
-		float v[6];
-		alGetListenerfv(AL_ORIENTATION, v);
-		return float3(v[0], v[1], v[2]);
-	}
-
 	void setUnits(float meter) {
-		alSpeedOfSound(meter * 343.3);
 	}
 
 	static DSound *accessSound(int sound_id) {
@@ -359,21 +334,29 @@ namespace audio
 
 		uint source_id = s_sources[s_free_sources[--s_num_free_sources]];
 		alSourcei(source_id, AL_BUFFER, sound->m_id);
-		alSourcef(source_id, AL_ROLLOFF_FACTOR, 0.02f);
-		alSourcef(source_id, AL_MIN_GAIN, 10.0f);
-		alSourcef(source_id, AL_MAX_GAIN, 20.0f);
+		alSourcef(source_id, AL_ROLLOFF_FACTOR, 1.0f);
+		alSourcef(source_id, AL_MAX_DISTANCE, 500.0f);
+		alSourcef(source_id, AL_REFERENCE_DISTANCE, 10.0f);
+		alSource3f(source_id, AL_DIRECTION, 0.0f, 0.0f, 0.0f);
+		alSourcef (source_id, AL_GAIN, 1.0f);
 		return (int)source_id;
 	}
 
-	void playSound(int sound_id, const float3 &pos) {
+	static float s_sound_rolloffs[game::SoundType::count] = {
+		5.0f,
+		1.0f,
+		1.5f
+	};
+
+	void playSound(int sound_id, game::SoundType::Type sound_type, const float3 &pos, const float3 &vel) {
 		uint source_id = prepSource(sound_id);
 		if(!source_id)
 			return;
 		
-		alSourcef(source_id, AL_GAIN, 1.0f);
-		
 		alSource3f(source_id, AL_POSITION, pos.x, pos.y, pos.z);
-		alSource3f(source_id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+		alSource3f(source_id, AL_VELOCITY, vel.x, vel.y, vel.z);
+		alSourcei (source_id, AL_SOURCE_RELATIVE, AL_FALSE);	
+		alSourcef(source_id, AL_ROLLOFF_FACTOR, s_sound_rolloffs[sound_type]);
 
 		alSourcePlay(source_id);
 	}
@@ -385,8 +368,6 @@ namespace audio
 	
 		alSource3f(source_id, AL_POSITION,			0.0f, 0.0f, 0.0f);
 		alSource3f(source_id, AL_VELOCITY,			0.0f, 0.0f, 0.0f);
-		alSource3f(source_id, AL_DIRECTION,			0.0f, 0.0f, 0.0f);
-		alSourcef (source_id, AL_ROLLOFF_FACTOR,	0.0f);
 		alSourcei (source_id, AL_SOURCE_RELATIVE, AL_TRUE);	
 		alSourcePlay(source_id);
 	}
@@ -398,10 +379,6 @@ namespace audio
 		auto it = s_sound_map.find(locase_name);
 		SoundIndex out = it == s_sound_map.end()? SoundIndex() : it->second;
 		return out;
-	}
-
-	void playSound(const char *locase_name, const float3 &pos) {
-		playSound(findSound(locase_name), pos);
 	}
 
 	void playSound(const char *locase_name, float volume) {

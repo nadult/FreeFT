@@ -99,7 +99,7 @@ namespace game {
 		}
 
 		if(!m_played_sound) {
-			world()->playSound(m_proto.sound_idx, pos());
+			world()->playSound(m_proto.sound_idx, pos(), m_proto.type == ImpactType::area? SoundType::explosion : SoundType::normal);
 			m_played_sound = true;
 		}
 		

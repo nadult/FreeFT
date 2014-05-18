@@ -417,16 +417,10 @@ namespace game {
 			m_replicator->replicateEntity(index);
 	}
 
-	void World::playSound(const char *name, const float3 &pos) {
+	void World::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
 		if(isServer())
 			return;
-		audio::playSound(name, pos);
-	}
-
-	void World::playSound(SoundId sound_id, const float3 &pos) {
-		if(isServer())
-			return;
-		audio::playSound(sound_id, pos);
+		audio::playSound(sound_id, sound_type, pos);
 	}
 
 	bool World::sendOrder(POrder &&order_ptr, EntityRef actor_ref) {
