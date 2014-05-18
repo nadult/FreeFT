@@ -12,38 +12,31 @@ namespace game {
 
 	//TODO: split to separate files
 
-	DropItemOrder::DropItemOrder(int inventory_id, int count)
-		:m_inventory_id(inventory_id), m_count(count) {
+	DropItemOrder::DropItemOrder(Item item, int count)
+		:m_item(item), m_count(count) {
 	}
 
-	DropItemOrder::DropItemOrder(Stream &sr) :OrderImpl(sr) {
-		sr >> m_inventory_id >> m_count;
+	DropItemOrder::DropItemOrder(Stream &sr) :OrderImpl(sr), m_item(sr) {
+		sr >> m_count;
 	}
 
 	void DropItemOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_inventory_id << m_count;
+		sr << m_item << m_count;
 	}
 
 	bool Actor::handleOrder(DropItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(!m_inventory.isValidId(order.m_inventory_id) || order.m_count <= 0)
+		int item_id = m_inventory.find(order.m_item);
+		if(item_id == -1 || order.m_count <= 0)
 			return false;
 
-		int item_id = order.m_inventory_id;
-
 		if(event == ActorEvent::init_order) {
-			if(m_inventory.isValidId(item_id))
-				animate(Action::pickup);
-			else
-				order.finish();
+			animate(Action::pickup);
 		}
 		if(event == ActorEvent::pickup) {
-			if(m_inventory.isValidId(item_id)) {
-				Item item = m_inventory[item_id].item;
-				int count = min(order.m_count, m_inventory[item_id].count);
-				m_inventory.remove(item_id, count);
-				addNewEntity<ItemEntity>(pos(), item, count);
-			}
+			int count = min(order.m_count, m_inventory[item_id].count);
+			m_inventory.remove(item_id, count);
+			addNewEntity<ItemEntity>(pos(), order.m_item, count);
 		}
 		if(event == ActorEvent::anim_finished)
 			order.finish();
@@ -53,45 +46,47 @@ namespace game {
 
 
 
-	EquipItemOrder::EquipItemOrder(int inventory_id) :m_inventory_id(inventory_id) {
+	EquipItemOrder::EquipItemOrder(Item item) :m_item(item) {
 	}
 
-	EquipItemOrder::EquipItemOrder(Stream &sr) :OrderImpl(sr) {
-		sr >> m_inventory_id;
+	EquipItemOrder::EquipItemOrder(Stream &sr) :OrderImpl(sr), m_item(sr) {
 	}
 
 	void EquipItemOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_inventory_id;
+		sr << m_item;
 	}
 
 	bool Actor::handleOrder(EquipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(!m_inventory.isValidId(order.m_inventory_id) || !canEquipItem(order.m_inventory_id))
+		int item_id = m_inventory.find(order.m_item);
+		if(item_id == -1)
 			return false;
-		//TODO: don't do anything if weapon is already full?
+		ItemType::Type item_type = order.m_item.type();
 
-		const Item &item = m_inventory[order.m_inventory_id].item;
-		ItemType::Type item_type = item.type(); //TODO: type->typeId
+		if(item_type == ItemType::ammo   && m_inventory.ammo().item == order.m_item && m_inventory.ammo().count == m_inventory.weapon().maxAmmo())
+			return false;
+		if(item_type == ItemType::armour && m_inventory.armour() == order.m_item)
+			return false;
+		if(item_type == ItemType::weapon && m_inventory.weapon() == order.m_item)
+			return false;
 
-		//TODO: magic_hi animation when object to be picked up is high enough
-		
 		if(event == ActorEvent::init_order) {
 			if(item_type == ItemType::weapon) {
-				m_inventory.equip(order.m_inventory_id);
+				m_inventory.equip(item_id);
 				return false;
 			}
-
 			if(item_type == ItemType::ammo)
 				world()->playSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
 
+			//TODO: magic_hi animation when object to be picked up is high enough
 			animate(item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}
 		if(event == ActorEvent::anim_finished) {
 			int count = 1;
 			if(item_type == ItemType::ammo)
-				count = min(m_inventory.weapon().maxAmmo(), m_inventory[order.m_inventory_id].count);
+				count = min(m_inventory.weapon().maxAmmo(), m_inventory[item_id].count);
 			if(count)
-				m_inventory.equip(order.m_inventory_id, count);
+				m_inventory.equip(item_id, count);
 			if(item_type == ItemType::armour)
 				updateArmour();
 			return false;
@@ -138,20 +133,23 @@ namespace game {
 	}
 
 
-	TransferItemOrder::TransferItemOrder(EntityRef target, TransferMode mode, int src_inventory_id, int count)
-		:m_target(target), m_mode(mode), m_src_inventory_id(src_inventory_id), m_count(count) {
+	TransferItemOrder::TransferItemOrder(EntityRef target, TransferMode mode, Item item, int count)
+		:m_target(target), m_mode(mode), m_item(item), m_count(count) {
 	}
 
-	TransferItemOrder::TransferItemOrder(Stream &sr) :OrderImpl(sr) {
-		sr >> m_target >> m_mode >> m_src_inventory_id >> m_count;
+	TransferItemOrder::TransferItemOrder(Stream &sr) :OrderImpl(sr), m_item(sr) {
+		sr >> m_target >> m_mode >> m_count;
 	}
 
 	void TransferItemOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_target << m_mode << m_src_inventory_id << m_count;
+		sr << m_item << m_target << m_mode << m_count;
 	}
 	
 	bool Actor::handleOrder(TransferItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		if(order.m_count <= 0)
+			return false;
+
 		if(event == ActorEvent::init_order) {
 			Container *container = refEntity<Container>(order.m_target);
 
@@ -159,10 +157,13 @@ namespace game {
 				Inventory *src = &m_inventory, *dst = &container->inventory();
 				if(order.m_mode == transfer_from)
 					swap(src, dst);
-				if(src->isValidId(order.m_src_inventory_id) && (*src)[order.m_src_inventory_id].count >= order.m_count) {
-					Item item = (*src)[order.m_src_inventory_id].item;
-					src->remove(order.m_src_inventory_id, order.m_count);
-					dst->add(item, order.m_count);
+
+				int src_id = src->find(order.m_item);
+
+				if(src_id != -1) {
+					int count = min((*src)[src_id].count, order.m_count);
+					src->remove(src_id, count);
+					dst->add(order.m_item, count);
 				}
 				container->replicate();
 			}

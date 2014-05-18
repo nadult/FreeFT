@@ -281,9 +281,7 @@ namespace game {
 	}
 
 	//TODO: move to actorinventory (part at least)
-	bool Actor::canEquipItem(int item_id) const {
-		DASSERT(item_id >= 0 && item_id < m_inventory.size());
-		const Item &item = m_inventory[item_id].item;
+	bool Actor::canEquipItem(const Item &item) const {
 		if(item.type() == ItemType::weapon)
 			return m_proto.canEquipWeapon(Weapon(item).classId());
 		else if(item.type() == ItemType::armour)

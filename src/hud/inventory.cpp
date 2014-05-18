@@ -215,17 +215,9 @@ namespace hud {
 					audio::playSound("butn_pulldown", 1.0f);
 				}
 				else {
-					int item_id = -1;
-					for(int n = 0; n < inventory.size(); n++)
-						if(inventory[n].item == item) { 
-							item_id = n;
-							break;
-						}
-
 					//TODO: play sounds only for items which doesn't generate any 
-					if(item_id != -1 && actor->canEquipItem(item_id)) {
-						m_world->sendOrder(new EquipItemOrder(item_id), m_actor_ref);
-
+					if(actor->canEquipItem(item)) {
+						m_world->sendOrder(new EquipItemOrder(item), m_actor_ref);
 						if(item.type() != ItemType::ammo)
 							audio::playSound("butn_pulldown", 1.0f);
 					}
@@ -233,10 +225,6 @@ namespace hud {
 						audio::playSound("butn_optionknob", 1.0f);
 					}
 				}
-
-				//TODO: drop item
-		//		if(isKeyDown('D') && m_inventory_sel >= 0)
-		//			m_world->sendOrder(new DropItemOrder(m_inventory_sel), m_actor_ref);
 
 				//TODO: using containers
 //				if(isKeyDown(Key_right) && m_inventory_sel >= 0)
@@ -260,16 +248,15 @@ namespace hud {
 
 		if(is_active && !m_drop_item.isDummy()) {
 			int inv_id = actor->inventory().find(m_drop_item);
-			
 			if(inv_id != -1 && isMouseKeyPressed(1)) {
 				float diff = (mouse_pos.y - m_drop_start_pos.y) / 20.0f;
 				m_drop_count += (diff < 0.0f? -1.0f : 1.0f) * (diff * diff) * time_diff;
 				m_drop_count = clamp(m_drop_count, 0.0, (double)actor->inventory()[inv_id].count);
 			}
 
-			if(inv_id != -1 && !isMouseKeyPressed(1)) {
+			if(!isMouseKeyPressed(1)) {
 				if((int)m_drop_count > 0)
-					m_world->sendOrder(new DropItemOrder(inv_id, (int)m_drop_count), m_actor_ref);
+					m_world->sendOrder(new DropItemOrder(m_drop_item, (int)m_drop_count), m_actor_ref);
 				m_drop_item = Item::dummy();
 			}
 		}

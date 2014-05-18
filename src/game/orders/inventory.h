@@ -13,22 +13,23 @@ namespace game {
 
 	class DropItemOrder: public OrderImpl<DropItemOrder, OrderTypeId::drop_item> {
 	public:
-		DropItemOrder(int inventory_id, int count);
+		DropItemOrder(Item item, int count);
 		DropItemOrder(Stream&);
 
 		void save(Stream&) const;
 
-		int m_inventory_id, m_count;
+		Item m_item;
+		int m_count;
 	};
 
 	class EquipItemOrder: public OrderImpl<EquipItemOrder, OrderTypeId::equip_item> {
 	public:
-		EquipItemOrder(int inventory_id);
+		EquipItemOrder(Item item);
 		EquipItemOrder(Stream&);
 
 		void save(Stream&) const;
 
-		int m_inventory_id;
+		Item m_item;
 	};
 
 	class UnequipItemOrder: public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item> {
@@ -48,14 +49,14 @@ namespace game {
 
 	class TransferItemOrder: public OrderImpl<TransferItemOrder, OrderTypeId::transfer_item> {
 	public:
-		TransferItemOrder(EntityRef target, TransferMode mode, int src_inventory_id, int count);
+		TransferItemOrder(EntityRef target, TransferMode mode, Item item, int count);
 		TransferItemOrder(Stream&);
 
 		void save(Stream&) const;
 		
 		EntityRef m_target;
 		TransferMode m_mode;
-		int m_src_inventory_id; //TODO: use Items instead of indexes
+		Item m_item;
 		int m_count;
 	};
 

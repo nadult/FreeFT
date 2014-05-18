@@ -160,7 +160,7 @@ namespace game {
 		ActorInventory &inventory() { return m_inventory; }
 		
 		bool canSee(EntityRef ref, bool simple_test = false);
-		bool canEquipItem(int item_id) const;
+		bool canEquipItem(const Item &item) const;
 		bool canChangeStance() const;
 		bool isDying() const;
 		bool isDead() const;

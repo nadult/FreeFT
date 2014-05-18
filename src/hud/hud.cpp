@@ -162,7 +162,7 @@ namespace hud {
 							break;
 						}
 					if(item_id != -1)
-						m_world->sendOrder(new EquipItemOrder(item_id), m_actor_ref);
+						m_world->sendOrder(new EquipItemOrder(inventory[item_id].item), m_actor_ref);
 				}
 			}
 		}

@@ -45,7 +45,7 @@ namespace game {
 			if(target_dist < 8.0f && !weapon.hasMeleeAttack())
 				continue;
 
-			if(actor->canEquipItem(n) && damage > best_damage) {
+			if(actor->canEquipItem(inventory[n].item) && damage > best_damage) {
 				best_weapon = weapon;
 				best_damage = damage;
 				best_id = n;

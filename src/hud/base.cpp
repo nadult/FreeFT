@@ -99,30 +99,28 @@ namespace hud
 	const float HudStyle::s_spacing = 15.0f;
 	const float HudStyle::s_layer_spacing = 5.0f;
 
-	static HudStyle s_styles[HudStyleId::count] = {
-		HudStyle{
-			Color::white,
-			Color(30, 255, 60),
-			Color(30, 255, 60),
-			Color::white,
-			5.0f,
-			"transformers_20",
-			"transformers_30"
-		},
-		HudStyle{
-			Color::green,
-			Color(255, 60, 30),
-			Color(255, 60, 30),
-			Color::white,
-			5.0f,
-			"transformers_20",
-			"transformers_30"
-		}
-	};
-	
 	HudStyle getStyle(HudStyleId::Type style_id) {
 		DASSERT(HudStyleId::isValid(style_id));
-		return s_styles[style_id];
+		if(style_id == HudStyleId::green_white)
+			return HudStyle{
+				Color::white,
+				Color(30, 255, 60),
+				Color(30, 255, 60),
+				Color::white,
+				5.0f,
+				"transformers_20",
+				"transformers_30"
+			};
+		else //style_id == HudStyleId::red_green)
+			return HudStyle{
+				Color::green,
+				Color(255, 60, 30),
+				Color(255, 60, 30),
+				Color::white,
+				5.0f,
+				"transformers_20",
+				"transformers_30"
+			};
 	}
 }
 
