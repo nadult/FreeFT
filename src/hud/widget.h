@@ -13,6 +13,15 @@
 namespace hud
 {
 
+	DECLARE_ENUM(HudIcon,
+		undefined = -1,
+		stance_stand,
+		stance_crouch,
+		stance_prone,
+		down_arrow,
+		up_arrow
+	);
+
 	class HudWidget: public RefCounter {
 	public:
 		enum { spacing = 15 };
@@ -33,6 +42,7 @@ namespace hud
 		float alpha() const { return m_visible_time; }
 
 		void setTargetRect(const FRect &rect) { m_target_rect = rect; }
+		void setPos(const float2 &pos) { m_target_rect += pos - m_target_rect.min; }
 		const FRect &targetRect() const { return m_target_rect; }
 		const FRect rect() const;
 
@@ -48,6 +58,7 @@ namespace hud
 		bool isPressed(const float2 &mouse_pos, int mouse_key = 0, bool *is_accelerator = nullptr) const;
 
 		void setText(const string &text);
+		void setIcon(HudIcon::Type icon) { m_icon_id = icon; }
 
 		void setAccelerator(int key) { m_accelerator = key; }
 		int accelerator() const { return m_accelerator; }
@@ -56,6 +67,8 @@ namespace hud
 		HudStyle m_style;
 		gfx::PFont m_font;
 		gfx::PFont m_big_font;
+		gfx::PTexture m_icons_tex;
+		HudIcon::Type m_icon_id;
 
 		string m_text;
 		FRect m_target_rect;

@@ -46,6 +46,7 @@ namespace gfx
 		bool isValid() const { return m_id > 0; }
 
 		static ResourceMgr<DTexture> gui_mgr;
+		static ResourceMgr<DTexture> mgr;
 
 	private:
 		int m_id;
@@ -175,6 +176,7 @@ namespace gfx
 
 	void setBlendingMode(BlendingMode mode);
 	void setScissorRect(const IRect &rect);
+	const IRect getScissorRect();
 	void setScissorTest(bool is_enabled);
 
 }

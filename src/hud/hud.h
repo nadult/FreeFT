@@ -38,11 +38,10 @@ namespace hud
 
 		game::PWorld m_world;
 		game::EntityRef m_actor_ref;
-		gfx::PTexture m_icons;
 
 		PHudWeapon m_hud_weapon;
 		PHudCharIcon m_hud_char_icon;
-		vector<PHudStance> m_hud_stances;
+		vector<PHudWidget> m_hud_stances;
 		vector<PHudWidget> m_hud_buttons;
 
 		LayerId m_selected_layer;

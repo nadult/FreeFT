@@ -121,5 +121,6 @@ namespace gfx
 	}
 
 	ResourceMgr<DTexture> DTexture::gui_mgr("data/gui/", ".zar");
+	ResourceMgr<DTexture> DTexture::mgr("data/", "");
 
 }

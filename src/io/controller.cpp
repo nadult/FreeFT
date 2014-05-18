@@ -83,15 +83,6 @@ namespace io {
 				m_full_isect = m_viewer.trace(ray, m_actor_ref);
 
 			if(!m_full_isect.isEmpty() && actor) {
-				float3 target = ray.at(m_full_isect.distance());
-				float3 origin = actor->boundingBox().center();
-				float3 dir = target - origin;
-
-				Ray shoot_ray(origin, dir / length(dir));
-				m_shoot_isect = m_world->trace(Segment(shoot_ray, 0.0f), {Flags::all | Flags::colliding, m_actor_ref});
-			}
-
-			if(!m_full_isect.isEmpty() && actor) {
 				//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
 				if(m_full_isect.distance() < constant::inf && m_full_isect.distance() > -constant::inf) {
 					float3 look_at = ray.at(m_full_isect.distance());
@@ -175,11 +166,6 @@ namespace io {
 
 		if(!m_isect.isEmpty())
 			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
-
-		if(!m_shoot_isect.isEmpty()) {
-			FBox box = m_world->refBBox(m_shoot_isect);
-			renderer.addBox(box, Color(255, 0, 0, 100));
-		}
 
 		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 

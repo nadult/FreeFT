@@ -56,8 +56,11 @@ namespace hud
 	private:
 		game::PWorld m_world;
 		game::EntityRef m_actor_ref;
+		int m_row_offset;
+		int m_min_items;
 
 		vector<PHudInventoryItem> m_buttons;
+		PHudWidget m_button_up, m_button_down;
 		PHudItemDesc m_item_desc;
 		float m_out_of_item_time;
 

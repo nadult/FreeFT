@@ -14,10 +14,27 @@ using namespace gfx;
 
 namespace hud {
 
+	namespace {
+
+		struct IconInfo {
+			FRect uv_rect;
+		};
+
+		IconInfo s_icons[HudIcon::count] = {
+			{ FRect(0.00f, 0.00f, 0.25f, 0.25f) },
+			{ FRect(0.25f, 0.00f, 0.50f, 0.25f) },
+			{ FRect(0.50f, 0.00f, 0.75f, 0.25f) },
+			{ FRect(0.00f, 0.25f, 0.25f, 0.50f) },
+			{ FRect(0.25f, 0.25f, 0.50f, 0.50f) }
+		};
+
+	}
+
 	HudWidget::HudWidget(const FRect &rect)
 		:m_target_rect(rect), m_style(defaultStyle()), m_over_time(0.0f), m_focus_time(0.0f), m_visible_time(1.0f),
-		 m_is_focused(false), m_is_visible(true), m_accelerator(0) {
+		 m_is_focused(false), m_is_visible(true), m_accelerator(0), m_icon_id(HudIcon::undefined) {
 		setStyle(defaultStyle());
+		m_icons_tex = gfx::DTexture::mgr["icons.png"];
 	}
 
 	HudWidget::~HudWidget() { }
@@ -71,6 +88,11 @@ namespace hud {
 			IRect extents = m_font->evalExtents(m_text.c_str());
 			float2 pos = rect.center() - float2(extents.size()) * 0.5f - float2(0, 3);
 			m_font->drawShadowed((int2)pos, focusColor(), Color::black, "%s", m_text.c_str());
+		}
+
+		if(HudIcon::isValid(m_icon_id)) {
+			m_icons_tex->bind();
+			drawQuad(rect, s_icons[m_icon_id].uv_rect, focusColor());
 		}
 	}
 		

@@ -196,9 +196,16 @@ namespace gfx
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
+	static IRect s_scissor_rect = IRect::empty();
+
 	void setScissorRect(const IRect &rect) {
+		s_scissor_rect = rect;
 		glScissor(rect.min.x, s_viewport_size.y - rect.max.y, rect.width(), rect.height());
 		testGlError("glScissor");
+	}
+
+	const IRect getScissorRect() {
+		return s_scissor_rect;
 	}
 
 	void setScissorTest(bool is_enabled) {

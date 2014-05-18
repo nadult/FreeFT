@@ -6,7 +6,6 @@
 #include "hud/hud.h"
 #include "hud/char_icon.h"
 #include "hud/weapon.h"
-#include "hud/stance.h"
 #include "hud/inventory.h"
 #include "hud/options.h"
 
@@ -49,6 +48,18 @@ namespace hud {
 			{ Hud::layer_options,	'O',	"OPT" }
 		};
 
+		struct StanceButton {
+			Stance::Type stance_id;
+			HudIcon::Type icon_id;
+			int accelerator;
+		};
+
+		static StanceButton s_stance_buttons[] = {
+			{ Stance::prone,  HudIcon::stance_prone,  'Z' },
+			{ Stance::crouch, HudIcon::stance_crouch, 'A' },
+			{ Stance::stand,  HudIcon::stance_stand,  'Q' },
+		};
+
 	}
 
 	static FRect initRect() {
@@ -68,22 +79,16 @@ namespace hud {
 		m_hud_weapon = new HudWeapon(weapon_rect);
 		m_hud_weapon->setAccelerator('R');
 
-		m_icons = new DTexture; {
-			Loader ldr("data/icons.png");
-			m_icons->load(ldr);
-		}
-
 		{
 			FRect stance_rect(s_hud_stance_size);
 			stance_rect += float2(weapon_rect.max.x + HudWidget::spacing, bottom_left.y - s_hud_stance_size.y);
 
-			FRect uv_rect(0, 0, 0.25f, 0.25f);
-
-			for(int n = 0; n < Stance::count; n++) {
-				PHudStance stance(new HudStance(stance_rect, (Stance::Type)n, m_icons));
+			for(int n = 0; n < COUNTOF(s_stance_buttons); n++) {
+				PHudWidget stance(new HudWidget(stance_rect));
+				stance->setIcon(s_stance_buttons[n].icon_id);
+				stance->setAccelerator(s_stance_buttons[n].accelerator);
 				m_hud_stances.push_back(std::move(stance));
 
-				uv_rect += float2(0.25f, 0.0f);
 				stance_rect += float2(0.0f, -s_hud_stance_size.y - HudWidget::spacing);
 			}
 		}
@@ -141,14 +146,15 @@ namespace hud {
 			if(stance_id != -1 && stance_id != sel_id) {
 				if(!is_accel)
 					audio::playSound("butn_pulldown", 1.0f);
-				sendOrder(new ChangeStanceOrder(m_hud_stances[stance_id]->stance()));
+
+				sendOrder(new ChangeStanceOrder(s_stance_buttons[stance_id].stance_id));
 				for(int n = 0; n < (int)m_hud_stances.size(); n++)
 					m_hud_stances[n]->setFocus(stance_id == n);
 			}
 
 			if(stance_id == -1 && sel_id == -1)
 				for(int n = 0; n < (int)m_hud_stances.size(); n++)
-					m_hud_stances[n]->setFocus(m_hud_stances[n]->stance() == actor->stance());
+					m_hud_stances[n]->setFocus(s_stance_buttons[n].stance_id == actor->stance());
 
 			// Reloading:	
 			if(is_active && m_hud_weapon->isPressed(mouse_pos)) {
@@ -200,7 +206,7 @@ namespace hud {
 		{
 			float inv_height = m_hud_inventory->preferredHeight();
 			FRect inv_rect = m_hud_inventory->targetRect();
-			inv_rect.min.y = inv_rect.max.y - inv_height;
+			inv_rect.min.y = max(5.0f, inv_rect.max.y - inv_height);
 			m_hud_inventory->setTargetRect(inv_rect);
 		}
 	}

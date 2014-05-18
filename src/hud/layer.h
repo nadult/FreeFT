@@ -29,10 +29,9 @@ namespace hud
 		virtual void setVisible(bool is_visible, bool animate = true);
 		
 		void setStyle(HudStyle);
-
-	protected:
 		void attach(PHudWidget);
 
+	protected:
 		FRect m_target_rect;
 		HudStyle m_style;
 		vector<PHudWidget> m_widgets;

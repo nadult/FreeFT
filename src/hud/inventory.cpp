@@ -19,24 +19,17 @@ namespace hud {
 	namespace {
 		const float2 s_item_size(70, 65);
 		const float2 s_item_desc_size(250, 300);
+		const float2 s_button_size(15, 15);
+		const float s_bottom_size = 30.0f;
 
 		const int2 s_grid_size(4, 10);
-	}	
+	}
 		
 	HudItemDesc::HudItemDesc(const FRect &rect) :HudWidget(rect) { }
 	
 	void HudItemDesc::draw() const {
 		if(!isVisible())
 			return;
-
-		FRect layer_rect = rect();
-		layer_rect.min -= float2(HudLayer::spacing, HudLayer::spacing);
-		layer_rect.max += float2(HudLayer::spacing, HudLayer::spacing);
-		HudLayer layer(layer_rect);
-		HudStyle temp_style = m_style;
-		temp_style.layer_color = Color(temp_style.layer_color, (int)(alpha() * 255));
-		layer.setStyle(temp_style);
-		layer.draw();
 
 		HudWidget::draw();
 		FRect rect = this->rect();
@@ -60,6 +53,7 @@ namespace hud {
 
 			ypos += size.y + 10.0f;
 			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
+			// TODO: fix drawing of text that does not fit
 		
 			string params_desc;
 			if(m_item.type() == ItemType::weapon)
@@ -73,7 +67,6 @@ namespace hud {
 			fmt("%s", params_desc.c_str());
 			drawText(float2(rect.min.x + 5.0f, ypos), fmt);
 		}
-
 	}
 
 	HudInventoryItem::HudInventoryItem(const FRect &rect) :HudWidget(rect) { }
@@ -108,7 +101,7 @@ namespace hud {
 	}
 
 	HudInventory::HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect)
-		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref), m_out_of_item_time(1.0f), m_drop_count(0) {
+		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
 		DASSERT(m_world);
 
 		for(int y = 0; y < s_grid_size.y; y++)
@@ -120,10 +113,19 @@ namespace hud {
 				m_buttons.emplace_back(std::move(item));
 			}
 
-		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(rect().width() + HudLayer::spacing * 2.0f, HudLayer::spacing));
-		m_item_desc->setVisible(false);
+		m_button_up = new HudWidget(FRect(s_button_size));
+		m_button_up->setIcon(HudIcon::up_arrow);
+		m_button_up->setAccelerator(Key_pageup);
 
-		attach(m_item_desc.get());
+		m_button_down = new HudWidget(FRect(s_button_size));
+		m_button_down->setIcon(HudIcon::down_arrow);
+		m_button_down->setAccelerator(Key_pagedown);
+
+		attach(m_button_up.get());
+		attach(m_button_down.get());
+
+		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(HudLayer::spacing, HudLayer::spacing));
+		m_item_desc->setVisible(false);
 	}
 		
 	HudInventory::~HudInventory() { }
@@ -162,21 +164,64 @@ namespace hud {
 		HudLayer::update(is_active, time_diff);
 		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
+			
+		float bottom_line = rect().height() - s_bottom_size;
 
-		if(actor) {
+		int max_row_offset = 0;
+		{
 			vector<Entry> entries;
-			extractEntries(entries, actor->inventory());
+			if(actor)
+				extractEntries(entries, actor->inventory());
+			m_min_items = (int)entries.size();
 
-			int max_count = min((int)entries.size(), (int)m_buttons.size());
+			int max_count = (int)m_buttons.size();
+			for(int n = 0; n < (int)m_buttons.size(); n++)
+				if(m_buttons[n]->rect().max.y > bottom_line) {
+					max_count = n;
+					break;
+				}
+
+			max_count = min(max_count, (int)entries.size());
+			max_row_offset = ((int)entries.size() - max_count + s_grid_size.x - 1) / s_grid_size.x;
+			
+			if(m_row_offset > max_row_offset)
+				m_row_offset = max_row_offset;
+			int item_offset = m_row_offset * s_grid_size.x;
+
+			max_count = min(max_count, (int)entries.size() - item_offset);
 			for(int n = 0; n < max_count; n++) {
-				m_buttons[n]->setItem(entries[n].item);
-				m_buttons[n]->setCount(entries[n].count);
-				m_buttons[n]->setFocus(entries[n].is_equipped);
+				m_buttons[n]->setItem(entries[n + item_offset].item);
+				m_buttons[n]->setCount(entries[n + item_offset].count);
+				m_buttons[n]->setFocus(entries[n + item_offset].is_equipped);
 			}
 
 			for(int n = 0; n < (int)m_buttons.size(); n++)
 				m_buttons[n]->setVisible(n < max_count, false);
 		}
+
+		{
+			HudStyle button_style = m_style;
+			button_style.border_offset *= 0.5f;
+			m_button_up->setStyle(button_style);
+			m_button_down->setStyle(button_style);
+			m_button_up  ->setPos(float2(rect().width() - HudWidget::spacing * 2 - s_button_size.x * 2, bottom_line + 5.0f));
+			m_button_down->setPos(float2(rect().width() - HudWidget::spacing * 1 - s_button_size.x * 1, bottom_line + 5.0f));
+			m_button_up->setVisible(m_row_offset > 0);
+			m_button_down->setVisible(m_row_offset < max_row_offset);
+
+			m_button_up->setFocus(m_button_up->rect().isInside(mouse_pos) && isMouseKeyPressed(0));
+			m_button_down->setFocus(m_button_down->rect().isInside(mouse_pos) && isMouseKeyPressed(0));
+
+			if(m_button_up->isPressed(mouse_pos) && m_row_offset > 0) {
+				audio::playSound("butn_slider", 1.0f);
+				m_row_offset--;
+			}
+			if(m_button_down->isPressed(mouse_pos) && m_row_offset < max_row_offset) {
+				audio::playSound("butn_slider", 1.0f);
+				m_row_offset++;
+			}
+		}
+
 		
 		int over_item = -1;
 		for(int n = 0; n < (int)m_buttons.size(); n++)
@@ -212,14 +257,14 @@ namespace hud {
 			if(m_buttons[over_item]->isPressed(mouse_pos, 0)) {
 				if(is_equipped) {
 					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
-					audio::playSound("butn_pulldown", 1.0f);
+					audio::playSound("butn_itemswitch", 1.0f);
 				}
 				else {
 					//TODO: play sounds only for items which doesn't generate any 
 					if(actor->canEquipItem(item)) {
 						m_world->sendOrder(new EquipItemOrder(item), m_actor_ref);
 						if(item.type() != ItemType::ammo)
-							audio::playSound("butn_pulldown", 1.0f);
+							audio::playSound("butn_itemswitch", 1.0f);
 					}
 					else {
 						audio::playSound("butn_optionknob", 1.0f);
@@ -235,7 +280,7 @@ namespace hud {
 			if(m_buttons[over_item]->isPressed(mouse_pos, 1)) {
 				if(is_equipped) {
 					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
-					audio::playSound("butn_pulldown", 1.0f);
+					audio::playSound("butn_itemswitch", 1.0f);
 				}
 				else {
 					m_drop_start_pos = mouse_pos;
@@ -260,6 +305,8 @@ namespace hud {
 				m_drop_item = Item::dummy();
 			}
 		}
+
+		m_item_desc->update(mouse_pos, time_diff);
 	}
 		
 	void HudInventory::draw() const {
@@ -275,16 +322,29 @@ namespace hud {
 					break;
 				}
 		}
+		
+		if(isVisible()) {
+			FRect layer_rect = m_item_desc->rect();
+			layer_rect += float2(rect().max.x + HudLayer::spacing, rect().min.y);
+			layer_rect.min -= float2(HudLayer::spacing, HudLayer::spacing);
+			layer_rect.max += float2(HudLayer::spacing, HudLayer::spacing);
+		
+			HudLayer layer(layer_rect);
+			HudStyle temp_style = m_style;
+			temp_style.layer_color = Color(temp_style.layer_color, (int)(m_item_desc->alpha() * 255));
+			layer.setStyle(temp_style);
+			layer.attach(m_item_desc.get());
+			layer.draw();
+		}
 	}
 
 	float HudInventory::preferredHeight() const {
 		FRect rect;
 
-		for(int n = 0; n < (int)m_buttons.size(); n++)
-			if(m_buttons[n]->isVisible())
-				rect = sum(rect, m_buttons[n]->rect());
+		for(int n = 0; n < min(m_min_items, (int)m_buttons.size()); n++)
+			rect = sum(rect, m_buttons[n]->rect());
 
-		return max(rect.height() + spacing * 2.0f, s_item_desc_size.y);
+		return max(rect.height() + spacing * 2.0f, s_item_desc_size.y + s_bottom_size);
 	}
 
 }
