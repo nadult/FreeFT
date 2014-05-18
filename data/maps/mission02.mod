@@ -35,8 +35,9 @@ CRC32 4560f4e8
 	<actor pos="138 9 155" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="148 9 109" angle="0.785398" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="151 8 470" angle="1.570796" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="ak47" count="1"/>
+			<item proto_type="ammo" proto_id="762mm" count="150"/>
 		</inventory>
 	</actor>
 	<actor pos="156 9 78" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
@@ -46,14 +47,16 @@ CRC32 4560f4e8
 	<actor pos="167 9 258" angle="0.785398" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="179 9 59" angle="0.785398" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="185 8 460" angle="1.570796" proto_type="actor" proto_id="raider_huge" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="ak47" count="1"/>
+			<item proto_type="ammo" proto_id="762mm" count="150"/>
 		</inventory>
 	</actor>
 	<actor pos="192 9 266" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="212 9 297" proto_type="actor" proto_id="raider_huge" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="ak47" count="1"/>
+			<item proto_type="ammo" proto_id="762mm" count="150"/>
 		</inventory>
 	</actor>
 	<actor pos="217 9 291" angle="0.785398" proto_type="actor" proto_id="raider_huge" faction_id="2" sound_variation="0"/>
@@ -64,13 +67,15 @@ CRC32 4560f4e8
 	</actor>
 	<actor pos="226 9 58" angle="2.356194" proto_type="actor" proto_id="rad_scorpion" faction_id="3" sound_variation="0"/>
 	<actor pos="230 9 370" angle="5.497787" proto_type="actor" proto_id="mutant" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="m60" count="1"/>
+			<item proto_type="ammo" proto_id="762mm" count="150"/>
 		</inventory>
 	</actor>
 	<actor pos="236 8 472" angle="1.570796" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="uzi" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="251 9 431" angle="0.785398" proto_type="actor" proto_id="raider_female" faction_id="2" sound_variation="0">
@@ -84,8 +89,9 @@ CRC32 4560f4e8
 		</inventory>
 	</actor>
 	<actor pos="260 9 279" angle="5.497787" proto_type="actor" proto_id="raider_female" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="263 9 233" angle="1.570796" proto_type="actor" proto_id="mutant" faction_id="2" sound_variation="0">
@@ -99,8 +105,9 @@ CRC32 4560f4e8
 		</inventory>
 	</actor>
 	<actor pos="311 8 319" angle="4.712389" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="uzi" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="319 8 319" angle="5.497787" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
@@ -109,13 +116,15 @@ CRC32 4560f4e8
 		</inventory>
 	</actor>
 	<actor pos="324 8 326" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="uzi" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="330 12 339" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="uzi" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<trigger pos="340 2 691" class="spawn_zone" box_size="34 7 31"/>
@@ -125,38 +134,45 @@ CRC32 4560f4e8
 		</inventory>
 	</actor>
 	<actor pos="440 8 481" angle="1.570796" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="521 9 348" angle="1.570796" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="550 2 536" angle="0.785398" proto_type="actor" proto_id="raider_huge" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="554 9 345" angle="1.570796" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="ak47" count="1"/>
+			<item proto_type="ammo" proto_id="762mm" count="150"/>
 		</inventory>
 	</actor>
 	<actor pos="555 9 405" angle="1.570796" proto_type="actor" proto_id="raider_huge" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="559 8 456" angle="0.785398" proto_type="actor" proto_id="raider_female" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 	<actor pos="623 9 417" angle="1.570796" proto_type="actor" proto_id="raider_male" faction_id="2" sound_variation="0">
-		<inventory count="1">
+		<inventory count="2">
 			<item proto_type="weapon" proto_id="beretta" count="1"/>
+			<item proto_type="ammo" proto_id="9mm_ap" count="250"/>
 		</inventory>
 	</actor>
 </entity_map>

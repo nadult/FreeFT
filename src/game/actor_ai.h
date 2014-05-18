@@ -39,7 +39,7 @@ namespace game {
 
 	public:
 		void think() override;
-		void tryEquipItems();
+		const Weapon findBestWeapon() const;
 
 		ActorAI *clone() { return new SimpleAI(*this); }
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;

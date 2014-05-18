@@ -85,8 +85,9 @@ namespace game {
 			int count = 1;
 			if(item_type == ItemType::ammo)
 				count = min(m_inventory.weapon().maxAmmo(), m_inventory[item_id].count);
-			if(count)
+			if(count) {
 				m_inventory.equip(item_id, count);
+			}
 			if(item_type == ItemType::armour)
 				updateArmour();
 			return false;

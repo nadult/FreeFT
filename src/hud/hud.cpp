@@ -163,7 +163,7 @@ namespace hud {
 				if(weapon.needAmmo() && inventory.ammo().count < weapon.maxAmmo()) {
 					int item_id = inventory.find(inventory.ammo().item);
 					if(item_id == -1) for(int n = 0; n < inventory.size(); n++)
-						if(inventory[n].item.type() == ItemType::ammo && Ammo(inventory[n].item).classId() == weapon.ammoClassId()) {
+						if(weapon.canUseAmmo(inventory[n].item)) {
 							item_id = n;
 							break;
 						}

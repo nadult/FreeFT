@@ -4,6 +4,7 @@
  */
 
 #include "game/weapon.h"
+#include "game/ammo.h"
 
 namespace game {
 
@@ -79,6 +80,10 @@ namespace game {
 				return true;
 		}
 		return false;
+	}
+		
+	bool Weapon::canUseAmmo(const Item &item) const {
+		return needAmmo() && item.type() == ItemType::ammo && Ammo(item).classId() == proto().ammo_class_id;
 	}
 		
 	float Weapon::estimateDamage(bool include_burst) const {

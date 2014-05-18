@@ -19,27 +19,29 @@ namespace game {
 	SimpleAI::SimpleAI(PWorld world, EntityRef ref) :ActorAI(world, ref), m_delay(0.0f), m_failed_orders(0) {
 	}
 		
-	void SimpleAI::tryEquipItems() {
+	const Weapon SimpleAI::findBestWeapon() const {
 		Actor *actor = this->actor();
 		if(!actor)
-			return;
+			return Item::dummyWeapon();;
 
-		ActorInventory &inventory = actor->inventory();
+		ActorInventory inventory = actor->inventory();
 
 		float target_dist = distance(actor->boundingBox(), m_world->refBBox(m_target));
 
 		inventory.unequip(ItemType::weapon);
-		//TODO: use orders for equipping / unequipping
+		inventory.unequip(ItemType::ammo);
 
 		Weapon best_weapon = inventory.dummyWeapon();
 		float best_damage = best_weapon.estimateDamage();
-		int best_id = -1;
 
 		for(int n = 0; n < inventory.size(); n++) {
 			if(inventory[n].item.type() != ItemType::weapon)
 				continue;
 
 			Weapon weapon = inventory[n].item;
+			if(weapon.needAmmo() && inventory.findAmmo(weapon) == -1)
+				continue;
+
 			float damage = weapon.estimateDamage();
 			
 			if(target_dist < 8.0f && !weapon.hasMeleeAttack())
@@ -48,12 +50,10 @@ namespace game {
 			if(actor->canEquipItem(inventory[n].item) && damage > best_damage) {
 				best_weapon = weapon;
 				best_damage = damage;
-				best_id = n;
 			}
 		}
 
-		if(best_id != -1)
-			inventory.equip(best_id);
+		return best_weapon;
 	}
 		
 	void SimpleAI::onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) {
@@ -123,8 +123,6 @@ namespace game {
 			m_target = EntityRef();
 
 		if(actor->currentOrder() == OrderTypeId::idle || actor->currentOrder() == OrderTypeId::track) {
-			tryEquipItems();
-
 			if(!m_target) {
 				vector<EntityRef> enemies;
 				findActors(-1, float3(100, 30, 100), enemies);
@@ -149,11 +147,29 @@ namespace game {
 				m_last_time_visible = m_world->currentTime();
 			else if(m_world->currentTime() - m_last_time_visible > 5.0f)
 				m_target = EntityRef();
+				
+			const ActorInventory &inventory = actor->inventory();
+			const Weapon &weapon = inventory.weapon();
+			const Weapon &best_weapon = findBestWeapon();
+
+			if(weapon != best_weapon) {
+				if(best_weapon.isDummy())
+					m_world->sendOrder(new UnequipItemOrder(ItemType::weapon), m_actor_ref);
+				else
+					m_world->sendOrder(new EquipItemOrder(best_weapon), m_actor_ref);
+				return;
+			}
+
+			if(weapon.needAmmo() && inventory.ammo().count == 0) {
+				for(int n = 0; n < inventory.size(); n++)
+					if(inventory[n].item.type() == ItemType::ammo && weapon.canUseAmmo(inventory[n].item)) {
+						m_world->sendOrder(new EquipItemOrder(inventory[n].item), m_actor_ref);
+						return;
+					}
+			}
 
 			Actor *target = m_world->refEntity<Actor>(m_target);
 			if(target && !target->isDying()) {
-				const Weapon &weapon = actor->inventory().weapon();
-
 				if(weapon.hasRangedAttack() && can_see) {
 					AttackMode::Type mode = weapon.attackModes() & AttackMode::toFlags(AttackMode::burst)?
 						AttackMode::burst : AttackMode::undefined;

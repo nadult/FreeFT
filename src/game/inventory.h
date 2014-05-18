@@ -62,6 +62,8 @@ namespace game {
 		bool isEmpty() const;
 		float weight() const;
 
+		int findAmmo(const Weapon &weapon) const;
+
 		const Weapon &dummyWeapon() const { return m_dummy_weapon; }
 		const Weapon &weapon() const { return m_weapon; }
 		const Armour &armour() const { return m_armour; }

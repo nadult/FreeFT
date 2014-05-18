@@ -180,6 +180,13 @@ namespace game {
 		return ret;
 	}
 		
+	int ActorInventory::findAmmo(const Weapon &weapon) const {
+		for(int n = 0; n < size(); n++)
+			if(weapon.canUseAmmo((*this)[n].item))
+				return n;
+		return -1;
+	}
+		
 	bool ActorInventory::useAmmo(int count) {
 		DASSERT(count >= 0);
 		if(m_ammo.count < count)

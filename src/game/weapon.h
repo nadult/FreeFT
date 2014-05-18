@@ -68,7 +68,7 @@ namespace game {
 
 		int maxAmmo() const { return proto().max_ammo; }
 		bool needAmmo() const { return !proto().ammo_class_id.empty(); }
-		const string &ammoClassId() const { return proto().ammo_class_id; }
+		bool canUseAmmo(const Item &item) const;
 
 		const WeaponProto &proto() const { return static_cast<const WeaponProto&>(*m_proto); }
 	};

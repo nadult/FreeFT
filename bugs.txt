@@ -1,8 +1,5 @@
 TODO: prioritize bugs
 
-- Problem with item icons in HudInventory (one line too many) 
-- AI's cannot reload :D
-
 - Wrong mouse position before moving it for the first time
 
 - In res_viewer when popup is visible, you can still select objects behind it by
@@ -51,7 +48,6 @@ TODO: prioritize bugs
 - Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
 
 - Bullets shouldnt create sparks when actors are hit
-- Fix flamer
 - Problem with direction of flamer's projectile
 
 - Attacking on stairs may caus player to get stuck
@@ -59,3 +55,7 @@ TODO: prioritize bugs
 - In multiplayer mode, player can get kicked into doors and get stuck
 
 - When trying to teleport in client, AIs react (for a single frame)
+
+
+SECONDARY:
+- Fix flamer
