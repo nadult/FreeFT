@@ -1,3 +1,5 @@
+- DOWNSCALE, remove unnecessary features, prioritize TODO
+
 - Network security (at least against hostile packets)
 
 - think about handling orders on client / server and replication
@@ -17,6 +19,11 @@
 - Blending in/out entities when getting out of/into invisible occluder
 
 - Remove actor event flags from orders
+
+- Scrolling inventory up/down?
+
+- Out of ammo sound can be played as often as the user can press right click
+- Add limit on number of attacks per second for given weapon?
 
 - Sounds should be played in the middle of entity
 - Add sound attenuation

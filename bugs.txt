@@ -1,5 +1,8 @@
 TODO: prioritize bugs
 
+- Problem with item icons in HudInventory (one line too many) 
+- AI's cannot reload :D
+
 - Wrong mouse position before moving it for the first time
 
 - In res_viewer when popup is visible, you can still select objects behind it by

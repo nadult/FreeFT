@@ -51,6 +51,7 @@ namespace hud
 
 		float preferredHeight() const;
 		void update(bool is_active, double time_diff) override;
+		void draw() const override;
 
 	private:
 		game::PWorld m_world;
@@ -59,6 +60,10 @@ namespace hud
 		vector<PHudInventoryItem> m_buttons;
 		PHudItemDesc m_item_desc;
 		float m_out_of_item_time;
+
+		float2 m_drop_start_pos;
+		game::Item m_drop_item;
+		double m_drop_count;
 	};
 
 }

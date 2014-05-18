@@ -13,12 +13,12 @@ namespace game {
 
 	class DropItemOrder: public OrderImpl<DropItemOrder, OrderTypeId::drop_item> {
 	public:
-		DropItemOrder(int inventory_id);
+		DropItemOrder(int inventory_id, int count);
 		DropItemOrder(Stream&);
 
 		void save(Stream&) const;
 
-		int m_inventory_id;
+		int m_inventory_id, m_count;
 	};
 
 	class EquipItemOrder: public OrderImpl<EquipItemOrder, OrderTypeId::equip_item> {

@@ -128,10 +128,9 @@ namespace game {
 				}
 			}
 			if(event == ActorEvent::next_frame && order.m_burst_mode) {
-				if(weapon.needAmmo() && !m_inventory.useAmmo(1))
-					return false;
 				order.m_burst_mode++;
-				fireProjectile(target_box, weapon, inaccuracy * (1.0f + 0.1f * order.m_burst_mode));
+				if(weapon.needAmmo() && m_inventory.useAmmo(1))
+					fireProjectile(target_box, weapon, inaccuracy * (1.0f + 0.1f * order.m_burst_mode));
 				if(order.m_burst_mode > weapon.proto().burst_ammo)
 					order.m_burst_mode = 0;
 			}

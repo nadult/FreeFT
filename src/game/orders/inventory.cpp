@@ -12,19 +12,23 @@ namespace game {
 
 	//TODO: split to separate files
 
-	DropItemOrder::DropItemOrder(int inventory_id) :m_inventory_id(inventory_id) {
+	DropItemOrder::DropItemOrder(int inventory_id, int count)
+		:m_inventory_id(inventory_id), m_count(count) {
 	}
 
 	DropItemOrder::DropItemOrder(Stream &sr) :OrderImpl(sr) {
-		sr >> m_inventory_id;
+		sr >> m_inventory_id >> m_count;
 	}
 
 	void DropItemOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_inventory_id;
+		sr << m_inventory_id << m_count;
 	}
 
 	bool Actor::handleOrder(DropItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+		if(!m_inventory.isValidId(order.m_inventory_id) || order.m_count <= 0)
+			return false;
+
 		int item_id = order.m_inventory_id;
 
 		if(event == ActorEvent::init_order) {
@@ -36,9 +40,7 @@ namespace game {
 		if(event == ActorEvent::pickup) {
 			if(m_inventory.isValidId(item_id)) {
 				Item item = m_inventory[item_id].item;
-				int count = m_inventory[item_id].count;
-				if(item.type() != ItemType::ammo)
-					count = 1;
+				int count = min(order.m_count, m_inventory[item_id].count);
 				m_inventory.remove(item_id, count);
 				addNewEntity<ItemEntity>(pos(), item, count);
 			}
@@ -66,6 +68,8 @@ namespace game {
 	bool Actor::handleOrder(EquipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(!m_inventory.isValidId(order.m_inventory_id) || !canEquipItem(order.m_inventory_id))
 			return false;
+		//TODO: don't do anything if weapon is already full?
+
 		const Item &item = m_inventory[order.m_inventory_id].item;
 		ItemType::Type item_type = item.type(); //TODO: type->typeId
 
@@ -85,7 +89,7 @@ namespace game {
 		if(event == ActorEvent::anim_finished) {
 			int count = 1;
 			if(item_type == ItemType::ammo)
-				count = min(m_inventory.weapon().proto().max_ammo, m_inventory[order.m_inventory_id].count);
+				count = min(m_inventory.weapon().maxAmmo(), m_inventory[order.m_inventory_id].count);
 			if(count)
 				m_inventory.equip(order.m_inventory_id, count);
 			if(item_type == ItemType::armour)

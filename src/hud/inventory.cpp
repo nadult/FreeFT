@@ -90,7 +90,7 @@ namespace hud {
 			gfx::PTexture texture = m_item.guiImage(true, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-			float2 pos = (rect.center() - size / 2);
+			float2 pos = (int2)(rect.center() - size / 2);
 			texture->bind();
 			drawQuad(FRect(pos, pos + size), uv_rect);
 
@@ -108,7 +108,7 @@ namespace hud {
 	}
 
 	HudInventory::HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect)
-		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref), m_out_of_item_time(1.0f) {
+		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref), m_out_of_item_time(1.0f), m_drop_count(0) {
 		DASSERT(m_world);
 
 		for(int y = 0; y < s_grid_size.y; y++)
@@ -199,16 +199,17 @@ namespace hud {
 			m_item_desc->setVisible(m_is_visible && (over_item != -1 || m_out_of_item_time < 1.0f));
 			m_item_desc->setFocus(true);
 		}
+		
+		if(!is_active || !m_is_visible)
+			m_drop_item = Item::dummy();
 
 		if(is_active && over_item != -1) {
-			if(m_buttons[over_item]->isPressed(mouse_pos)) {
-				Item item = m_buttons[over_item]->item();
-				const ActorInventory &inventory = actor->inventory();
+			Item item = m_buttons[over_item]->item();
+			const ActorInventory &inventory = actor->inventory();
+			bool is_equipped = inventory.weapon() == item || inventory.armour() == item ||
+								(inventory.ammo().item == item && inventory.ammo().count == inventory.weapon().proto().max_ammo);
 
-				bool is_equipped = inventory.weapon() == item || inventory.armour() == item ||
-									(inventory.ammo().item == item && inventory.ammo().count == inventory.weapon().proto().max_ammo);
-
-
+			if(m_buttons[over_item]->isPressed(mouse_pos, 0)) {
 				if(is_equipped) {
 					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
 					audio::playSound("butn_pulldown", 1.0f);
@@ -243,8 +244,50 @@ namespace hud {
 //				if(isKeyDown(Key_left))
 //					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_from, m_container_sel, 1), m_actor_ref);
 			}
+			if(m_buttons[over_item]->isPressed(mouse_pos, 1)) {
+				if(is_equipped) {
+					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
+					audio::playSound("butn_pulldown", 1.0f);
+				}
+				else {
+					m_drop_start_pos = mouse_pos;
+					m_drop_item = item;
+					m_drop_count = 1;
+				}
+			}
+
 		}
+
+		if(is_active && !m_drop_item.isDummy()) {
+			int inv_id = actor->inventory().find(m_drop_item);
+			
+			if(inv_id != -1 && isMouseKeyPressed(1)) {
+				float diff = (mouse_pos.y - m_drop_start_pos.y) / 20.0f;
+				m_drop_count += (diff < 0.0f? -1.0f : 1.0f) * (diff * diff) * time_diff;
+				m_drop_count = clamp(m_drop_count, 0.0, (double)actor->inventory()[inv_id].count);
+			}
+
+			if(inv_id != -1 && !isMouseKeyPressed(1)) {
+				if((int)m_drop_count > 0)
+					m_world->sendOrder(new DropItemOrder(inv_id, (int)m_drop_count), m_actor_ref);
+				m_drop_item = Item::dummy();
+			}
+		}
+	}
 		
+	void HudInventory::draw() const {
+		HudLayer::draw();
+
+		if(!m_drop_item.isDummy()) {
+			for(int n = 0; n < (int)m_buttons.size(); n++)
+				if(m_buttons[n]->item() == m_drop_item) {
+					TextFormatter fmt;
+					fmt("-%d", (int)m_drop_count);
+					FRect rect = m_buttons[n]->rect() + this->rect().min;
+					m_buttons[n]->drawText(float2(rect.min.x, rect.max.y - 20.0f), fmt);
+					break;
+				}
+		}
 	}
 
 	float HudInventory::preferredHeight() const {
@@ -256,5 +299,5 @@ namespace hud {
 
 		return max(rect.height() + spacing * 2.0f, s_item_desc_size.y);
 	}
-		
+
 }

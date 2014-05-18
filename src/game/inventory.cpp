@@ -64,9 +64,10 @@ namespace game {
 
 	void Inventory::remove(int entry_id, int count) {
 		DASSERT(entry_id >= 0 && entry_id < size());
-		DASSERT(count >= 0);
 
 		Entry &entry = m_entries[entry_id];
+		DASSERT(count >= 0 && count <= entry.count);
+
 		entry.count -= count;
 		if(entry.count <= 0) {
 			std::swap(m_entries[entry_id], m_entries.back());
