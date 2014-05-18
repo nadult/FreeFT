@@ -56,7 +56,6 @@ REFACTORING:
 - make EntityWorldProxy::ref() const
 - make Entity access functions both const and non-const (it's ok to do them with const-casts)
 - If sprites are kept in a big pool, then PSprite is no longer required and sprite doesn't have to inherit from RefCounter?
-- bind0 -> unbind
 - use rects in drawQuads
 - ?? Make rects and boxes store position and size, not min and max
 - Normal Inheritence for items

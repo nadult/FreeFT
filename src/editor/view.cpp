@@ -38,7 +38,7 @@ namespace ui {
 		int2 tmax = max(max(p[0], p[1]), max(p[2], p[3]));
 		IRect box(max(tmin, int2(0, 0)), min(tmax, tile_map_size));
 
-		DTexture::bind0();
+		DTexture::unbind();
 		Color color(255, 255, 255, 64);
 
 		for(int x = box.min.x - box.min.x % m_cell_size; x <= box.max.x; x += m_cell_size)

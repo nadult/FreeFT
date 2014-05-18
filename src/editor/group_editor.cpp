@@ -194,7 +194,7 @@ namespace {
 				entry.tile->draw(pos);
 		}
 		
-		DTexture::bind0();
+		DTexture::unbind();
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const ui::TileList::Entry &entry = m_tile_list[n];
 			if(!entry.is_selected)

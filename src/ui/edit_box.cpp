@@ -27,7 +27,7 @@ namespace ui {
 		int2 pos(5, height() / 2 - line_height / 2);
 		m_font->drawShadowed(pos, Color::white, Color::black, "%s%s", m_label.c_str(), m_text.c_str());
 
-		DTexture::bind0();
+		DTexture::unbind();
 		if(m_is_editing) {
 			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
 			drawLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), Color(255, 255, 255, 180));

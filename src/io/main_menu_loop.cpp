@@ -224,7 +224,7 @@ namespace io {
 
 		lookAt({0, 0});
 		if(m_mode == mode_quitting) {
-			DTexture::bind0();
+			DTexture::unbind();
 			m_timer -= time_diff / m_blend_time;
 			if(m_timer < 0.0) {
 				m_timer = 0.0;

@@ -50,7 +50,7 @@ namespace ui {
 				tile->draw(pos);
 		}
 		
-		DTexture::bind0();
+		DTexture::unbind();
 
 		if(m_selection) {
 			int2 pos = m_selection->pos - offset;

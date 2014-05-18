@@ -40,7 +40,7 @@ namespace hud {
 		glTranslatef(rect.min.x, rect.min.y, 0.0f);
 		rect -= rect.min;
 
-		DTexture::bind0();
+		DTexture::unbind();
 		Color color = m_style.layer_color;
 		drawQuad(rect, mulAlpha(color, 0.15));
 		drawBorder(rect, mulAlpha(color, 0.4), float2(0, 0), 100.0f, false);

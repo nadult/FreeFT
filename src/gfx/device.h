@@ -26,7 +26,7 @@ namespace gfx
 		void load(Stream&);
 
 		void bind() const;
-		static void bind0();
+		static void unbind();
 
 		void resize(TextureFormat format, int width, int height);
 		void clear();

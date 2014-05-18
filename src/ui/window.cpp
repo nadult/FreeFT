@@ -30,7 +30,7 @@ namespace ui
 	};
 
 	void Window::drawWindow(IRect rect, Color color, int outline) {
-		DTexture::bind0();
+		DTexture::unbind();
 		float3 fcolor = (float3)color;
 		float falpha = float(color.a) * (1.0f / 255.0f);
 
@@ -199,7 +199,7 @@ namespace ui
 			if(m_background_color.a == 255)
 				clear(m_background_color);
 			else {
-				DTexture::bind0();
+				DTexture::unbind();
 				drawQuad(m_clipped_rect.min, m_clipped_rect.max, m_background_color);
 			}
 		}
@@ -222,7 +222,7 @@ namespace ui
 			col2 = Color(int(col2.r) * 4 / 3, int(col2.g) * 4 / 3, int(col2.b) * 4 / 3, 128);
 
 			// TODO: minimum size of progress bar, coz sometimes its almost invisible
-			DTexture::bind0();
+			DTexture::unbind();
 			if(isize.x > rsize.x) {
 				float divisor = 1.0f / float(isize.x);
 				float spos = float(0       - m_inner_rect.min.x) * divisor;

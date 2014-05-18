@@ -20,7 +20,7 @@ namespace ui {
 		int2 vis_entries = visibleEntriesIds();
 		
 
-		DTexture::bind0();
+		DTexture::unbind();
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
 			const Entry &entry = m_entries[n];
 			IRect rect = entryRect(n) - offset;

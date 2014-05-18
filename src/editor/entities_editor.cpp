@@ -228,7 +228,7 @@ namespace ui {
 	}
 
 	void EntitiesEditor::drawBoxHelpers(const IBox &box) const {
-		DTexture::bind0();
+		DTexture::unbind();
 
 		int3 pos = box.min, bbox = box.max - box.min;
 		int3 tsize = asXZY(m_tile_map.dimensions(), 32);
@@ -357,7 +357,7 @@ namespace ui {
 		lookAt(-clippedRect().min + m_view.pos());
 		m_view.drawGrid();
 
-		DTexture::bind0();
+		DTexture::unbind();
 		
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[WindowStyle::fonts[1]];

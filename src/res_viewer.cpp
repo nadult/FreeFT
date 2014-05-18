@@ -115,7 +115,7 @@ public:
 			// problems if texture cache is full
 			tile->draw(int2(0, 0));
 
-			DTexture::bind0();
+			DTexture::unbind();
 			drawBBox(box, outline_col);
 		}
 		else if(m_type == ResType::texture) {
@@ -124,7 +124,7 @@ public:
 			lookAt(-pos);
 			texture->bind();
 			drawQuad({0, 0}, m_rect_size);
-			DTexture::bind0();
+			DTexture::unbind();
 			drawRect(IRect({0, 0}, m_rect_size), outline_col);
 
 			if(isKeyDown('E')) {
@@ -170,7 +170,7 @@ public:
 			lookAt(brect.min - pos);
 			drawQuad(rect.min, rect.size(), tex_rect.min, tex_rect.max);
 	
-			DTexture::bind0();
+			DTexture::unbind();
 			if(is_gui_image)
 				drawRect(rect, outline_col);
 			else

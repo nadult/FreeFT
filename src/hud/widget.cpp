@@ -72,7 +72,7 @@ namespace hud {
 		if(!isVisible())
 			return;
 
-		DTexture::bind0();
+		DTexture::unbind();
 		FRect rect = this->rect();
 
 		u8 alpha(this->alpha() * 255);

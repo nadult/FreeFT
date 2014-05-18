@@ -310,7 +310,7 @@ int safe_main(int argc, char **argv)
 		lookAt({0, 0});
 
 		if(config.profiler_enabled) {
-			DTexture::bind0();
+			DTexture::unbind();
 			drawQuad(config.resolution - int2(280, 200), config.resolution, Color(0, 0, 0, 80));
 
 			gfx::PFont font = gfx::Font::mgr["liberation_16"];

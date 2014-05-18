@@ -251,7 +251,7 @@ REPEAT:
 					drawQuad(elem.rect.min, elem.rect.size(), elem.tex_rect.min, elem.tex_rect.max, elem.color);
 				}
 				else {
-					DTexture::bind0();
+					DTexture::unbind();
 					drawBBox(elem.bbox, elem.color, true);
 				}
 			}
@@ -262,7 +262,7 @@ REPEAT:
 //		printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
 		setScissorRect(m_viewport);
-		DTexture::bind0();
+		DTexture::unbind();
 		for(int n = 0; n < (int)m_lines.size(); n++) {
 			const LineElement &line = m_lines[n];
 			drawLine(line.begin, line.end, line.color);

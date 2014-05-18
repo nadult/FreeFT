@@ -178,7 +178,7 @@ namespace io {
 		lookAt(m_view_pos);
 
 		lookAt({0, 0});
-		DTexture::bind0();
+		DTexture::unbind();
 		drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
 		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 

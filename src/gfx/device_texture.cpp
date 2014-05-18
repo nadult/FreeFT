@@ -113,7 +113,7 @@ namespace gfx
 		}
 	}
 
-	void DTexture::bind0() {
+	void DTexture::unbind() {
 		if(s_current_tex) {
 			::glBindTexture(GL_TEXTURE_2D, 0);
 			s_current_tex = 0;

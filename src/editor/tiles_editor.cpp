@@ -328,7 +328,7 @@ namespace ui {
 	}
 
 	void TilesEditor::drawBoxHelpers(const IBox &box) const {
-		DTexture::bind0();
+		DTexture::unbind();
 
 		int3 pos = box.min, bbox = box.max - box.min;
 		int3 tsize = asXZY(m_tile_map.dimensions(), 32);
@@ -445,14 +445,14 @@ namespace ui {
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
 					m_new_tile->draw(int2(worldToScreen(pos)), color);
-					DTexture::bind0();
+					DTexture::unbind();
 					drawBBox(IBox(pos, pos + bbox));
 				}
 	//		m_tile_map.drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
 		}
 
 	//	m_tile_map.drawBoxHelpers(m_selection);
-		DTexture::bind0();
+		DTexture::unbind();
 
 		if(!isChangingOccluders()) {
 			IBox under = m_selection;

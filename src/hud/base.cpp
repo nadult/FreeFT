@@ -46,7 +46,7 @@ namespace hud
 		float2 min = rect.min - offset, max = rect.max + offset;
 		width = ::min(width, (max.x - min.x) * 0.5f - 2.0f);
 
-		DTexture::bind0();
+		DTexture::unbind();
 		if(is_left) {
 			drawLine(float2(min.x, min.y), float2(min.x, max.y), color, color);
 			drawLine(float2(min.x + width, min.y), float2(min.x, min.y), Color::transparent, color);
