@@ -8,6 +8,25 @@
 
 #include "io/loop.h"
 #include "io/controller.h"
+#include "hud/layer.h"
+#include "hud/widget.h"
+#include "net/lobby.h"
+
+namespace hud {
+
+	class MultiPlayerMenu: public HudLayer {
+	public:
+		MultiPlayerMenu(const FRect &rect, HudStyle style);
+
+		void update(bool is_active, double time_diff) override;
+		void draw() const override;
+
+	protected:
+		vector<PHudWidget> m_buttons;
+		vector<net::ServerStatusChunk> m_servers;
+	};
+
+}
 
 namespace io {
 

@@ -66,6 +66,7 @@ namespace hud {
 	class HudOptions;
 
 	typedef Ptr<HudWidget> PHudWidget;
+	typedef Ptr<HudLayer> PHudLayer;
 	typedef Ptr<HudWeapon> PHudWeapon;
 	typedef Ptr<HudStance> PHudStance;
 	typedef Ptr<HudCharIcon> PHudCharIcon;

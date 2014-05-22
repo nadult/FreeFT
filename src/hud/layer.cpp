@@ -12,14 +12,16 @@ using namespace gfx;
 
 namespace hud {
 
-	HudLayer::HudLayer(const FRect &target_rect) :m_target_rect(target_rect), m_is_visible(true), m_visible_time(1.0) {
+	HudLayer::HudLayer(const FRect &target_rect) :m_target_rect(target_rect), m_is_visible(true), m_visible_time(1.0), m_slide_left(true) {
 		m_style = defaultStyle();
 	}
 
 	HudLayer::~HudLayer() { }
 		
 	const FRect HudLayer::rect() const {
-		return m_target_rect - float2((1.0f - m_visible_time) * (m_target_rect.max.x + 5.0f), 0.0f);
+		return m_slide_left? 
+			m_target_rect - float2((1.0f - m_visible_time) * (m_target_rect.max.x + 5.0f), 0.0f) :
+			m_target_rect - float2(0.0f, (1.0f - m_visible_time) * (m_target_rect.max.y + 5.0f));
 	}
 		
 	void HudLayer::setTargetRect(const FRect &rect) {
@@ -42,9 +44,9 @@ namespace hud {
 
 		DTexture::unbind();
 		Color color = m_style.layer_color;
-		drawQuad(rect, mulAlpha(color, 0.15));
-		drawBorder(rect, mulAlpha(color, 0.4), float2(0, 0), 100.0f, false);
-		drawBorder(rect, mulAlpha(color, 0.4), float2(0, 0), 100.0f, true);
+		drawQuad(rect, mulAlpha(color, 0.5));
+		drawBorder(rect, mulAlpha(color, 0.7), float2(0, 0), 100.0f, false);
+		drawBorder(rect, mulAlpha(color, 0.7), float2(0, 0), 100.0f, true);
 
 		for(int n = 0; n < (int)m_widgets.size(); n++)
 			m_widgets[n]->draw();
@@ -58,10 +60,6 @@ namespace hud {
 			m_visible_time = m_is_visible? 1.0f : 0.0f;
 	}
 
-	bool HudLayer::isVisible() const {
-		return m_is_visible || m_visible_time > 0.01f;
-	}
-	
 	void HudLayer::setStyle(HudStyle style) {
 		m_style = style;
 		for(int n = 0; n < (int)m_widgets.size(); n++)

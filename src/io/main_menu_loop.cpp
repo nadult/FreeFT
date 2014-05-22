@@ -17,6 +17,8 @@
 #include "net/client.h"
 #include "net/server.h"
 
+#include "hud/hud.h"
+
 #ifdef MessageBox // Yea.. TODO: remove windows.h from includes
 #undef MessageBox
 #endif
@@ -107,8 +109,11 @@ namespace io {
 				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_multi_player.get()) {
-				m_future_client = std::async(std::launch::async, []() { return createClient("", 20001); } );
-				m_mode = mode_loading;
+				FRect rect = FRect(float2(700, 500));
+				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
+				m_sub_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
+			//	m_future_client = std::async(std::launch::async, []() { return createClient("", 20001); } );
+			//	m_mode = mode_loading;
 			}
 			else if(ev.source == m_exit.get()) {
 				stopMusic();
@@ -207,8 +212,13 @@ namespace io {
 				startMusic();
 		}
 
-		if(m_mode != mode_quitting)
+		if(m_mode != mode_quitting && !m_sub_menu)
 			process();
+		if(m_sub_menu) {
+			m_sub_menu->update(true, time_diff);
+			if(!m_sub_menu->isVisible() && !m_sub_menu->isShowing())
+				m_sub_menu.reset();
+		}
 
 		clear(Color(0, 0, 0));
 		m_back->bind();
@@ -217,12 +227,15 @@ namespace io {
 		lookAt({0, 0});
 		draw();
 
-		std::thread thr;
+		lookAt({0, 0});
+		if(m_sub_menu)
+			m_sub_menu->draw();
 
 		if(m_mode == mode_loading)
 			drawLoading(gfx::getWindowSize() - int2(180, 50), 1.0);
 
 		lookAt({0, 0});
+
 		if(m_mode == mode_quitting) {
 			DTexture::unbind();
 			m_timer -= time_diff / m_blend_time;

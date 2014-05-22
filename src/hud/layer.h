@@ -25,9 +25,11 @@ namespace hud
 		virtual void update(bool is_active, double time_diff);
 		virtual bool isMouseOver() const;
 
-		bool isVisible() const;
+		bool isVisible() const { return m_is_visible || m_visible_time > 0.01f; }
+		bool isShowing() const { return m_is_visible && m_visible_time < 1.0f; }
+
 		virtual void setVisible(bool is_visible, bool animate = true);
-		
+
 		void setStyle(HudStyle);
 		void attach(PHudWidget);
 
@@ -38,6 +40,7 @@ namespace hud
 
 		float m_visible_time;
 		bool m_is_visible;
+		bool m_slide_left;
 	};
 
 }

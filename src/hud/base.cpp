@@ -103,7 +103,7 @@ namespace hud
 		DASSERT(HudStyleId::isValid(style_id));
 		if(style_id == HudStyleId::green_white)
 			return HudStyle{
-				Color::white,
+				Color(150, 200, 150),
 				Color(30, 255, 60),
 				Color(30, 255, 60),
 				Color::white,

@@ -18,10 +18,6 @@
 
 - Blending in/out entities when getting out of/into invisible occluder
 
-- Remove actor event flags from orders
-
-- Scrolling inventory up/down?
-
 - Out of ammo sound can be played as often as the user can press right click
 - Add limit on number of attacks per second for given weapon?
 
@@ -40,8 +36,6 @@
 - verification of resources on client side, because they might be different than on server side
 
 - better camera work
-
-- 9Patch images for GUI
 
 - If the last interactor with a door was a player, then he should see when the door closes
 

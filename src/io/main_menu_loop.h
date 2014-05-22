@@ -10,6 +10,7 @@
 #include "ui/window.h"
 #include <future>
 #include <thread>
+#include "hud/layer.h"
 
 namespace io {
 
@@ -34,6 +35,8 @@ namespace io {
 		ui::PImageButton m_exit;
 		
 		ui::PFileDialog m_file_dialog;
+
+		hud::PHudLayer m_sub_menu;
 
 		enum Mode {
 			mode_normal,

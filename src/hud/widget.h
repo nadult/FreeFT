@@ -19,7 +19,8 @@ namespace hud
 		stance_crouch,
 		stance_prone,
 		down_arrow,
-		up_arrow
+		up_arrow,
+		close
 	);
 
 	class HudWidget: public RefCounter {

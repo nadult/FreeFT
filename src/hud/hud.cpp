@@ -125,6 +125,7 @@ namespace hud {
 
 	void Hud::update(bool is_active, double time_diff) {
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
+		is_active &= isVisible() && m_visible_time == 1.0f;
 
 		if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
 			m_hud_char_icon->setCharacter(actor->character());
@@ -144,8 +145,7 @@ namespace hud {
 			}
 
 			if(stance_id != -1 && stance_id != sel_id) {
-				if(!is_accel)
-					audio::playSound("butn_pulldown", 1.0f);
+				audio::playSound("butn_text", 1.0f);
 
 				sendOrder(new ChangeStanceOrder(s_stance_buttons[stance_id].stance_id));
 				for(int n = 0; n < (int)m_hud_stances.size(); n++)
@@ -182,7 +182,7 @@ namespace hud {
 
 			if(pressed_id != -1) {
 				bool is_disabling = pressed_id != -1 && m_selected_layer == s_buttons[pressed_id].id;
-				audio::playSound("butn_pulldown", 1.0f);
+				audio::playSound("butn_text", 1.0f);
 				for(int n = 0; n < (int)m_hud_buttons.size(); n++)
 					m_hud_buttons[n]->setFocus(pressed_id == n && !is_disabling);
 			
@@ -195,8 +195,8 @@ namespace hud {
 			any_other_visible |= m_selected_layer != layer_options   && m_hud_options->isVisible();
 
 			//TODO: add sliding sounds?
-			m_hud_inventory->setVisible(m_selected_layer == layer_inventory && !any_other_visible);
-			m_hud_options->setVisible(m_selected_layer == layer_options && !any_other_visible);
+			m_hud_inventory->setVisible(isVisible() && m_selected_layer == layer_inventory && !any_other_visible);
+			m_hud_options->setVisible(isVisible() && m_selected_layer == layer_options && !any_other_visible);
 		}
 
 		HudLayer::update(is_active, time_diff);

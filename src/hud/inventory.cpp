@@ -213,11 +213,11 @@ namespace hud {
 			m_button_down->setFocus(m_button_down->rect().isInside(mouse_pos) && isMouseKeyPressed(0));
 
 			if(m_button_up->isPressed(mouse_pos) && m_row_offset > 0) {
-				audio::playSound("butn_slider", 1.0f);
+				audio::playSound("butn_text", 1.0f);
 				m_row_offset--;
 			}
 			if(m_button_down->isPressed(mouse_pos) && m_row_offset < max_row_offset) {
-				audio::playSound("butn_slider", 1.0f);
+				audio::playSound("butn_text", 1.0f);
 				m_row_offset++;
 			}
 		}
