@@ -225,6 +225,8 @@ namespace audio
 
 		s_last_time = getTime() - 1.0 /  60.0;		
 		tick();
+
+		atexit(freeDevice);
 	}
 
 	void freeDevice() {

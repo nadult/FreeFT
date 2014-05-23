@@ -20,8 +20,42 @@ using namespace net;
 namespace net {
 
 	Client::Client(int port)
-	  :LocalHost(Address(port)), m_mode(Mode::disconnected) {
+	  :LocalHost(Address(port? port : net::randomPort())), m_mode(Mode::disconnected), m_server_id(-1) {
 		m_order_type = OrderTypeId::invalid;
+	}
+		
+	bool Client::getLobbyData(vector<ServerStatusChunk> &out) {
+		InPacket packet;
+		bool any_packets = false;
+
+		while(getLobbyPacket(packet)) {
+			try {
+				LobbyChunkId::Type chunk_id;
+				packet >> chunk_id;
+
+				if(chunk_id == LobbyChunkId::server_list) {
+					while(packet.pos() < packet.size()) {
+						ServerStatusChunk chunk;
+						packet >> chunk;
+
+						if(chunk.address.isValid())
+							out.push_back(chunk);
+					}
+				}
+				any_packets = true;
+			}
+			catch(...) {
+				continue;
+			}
+		}
+
+		return any_packets;
+	}
+
+	void Client::requestLobbyData() {
+		OutPacket request(0, -1, -1, PacketInfo::flag_lobby);
+		request << LobbyChunkId::server_list_request;
+		sendLobbyPacket(request);
 	}
 		
 	void Client::connect(Address address) {
@@ -56,13 +90,11 @@ namespace net {
 	}
 	
 	void Client::beginFrame() {
-		if(m_server_id == -1)
-			return;
-		RemoteHost *host = getRemoteHost(m_server_id);
+		RemoteHost *host = m_server_id == -1? nullptr : getRemoteHost(m_server_id);
 
 		LocalHost::receive();
 
-		if(m_mode == Mode::connecting) {
+		if(m_mode == Mode::connecting && host) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
@@ -87,7 +119,7 @@ namespace net {
 				}
 			}
 		}
-		else if(m_mode == Mode::connected) {
+		else if(m_mode == Mode::connected && host) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
@@ -98,12 +130,11 @@ namespace net {
 	}
 
 	void Client::finishFrame() {
-		if(m_server_id == -1)
-			return;
-		RemoteHost *host = getRemoteHost(m_server_id);
-		beginSending(m_server_id);
+		RemoteHost *host = m_server_id == -1? nullptr : getRemoteHost(m_server_id);
+		if(host)
+			beginSending(m_server_id);
 
-		if(m_mode == Mode::connected) {
+		if(m_mode == Mode::connected && host) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
@@ -119,10 +150,11 @@ namespace net {
 			m_orders.clear();
 		}
 
-		finishSending();
+		if(host)
+			finishSending();
 		m_timestamp++;
 
-		if(host->timeout() > 10.0) {
+		if(host && host->timeout() > 10.0) {
 			printf("Timeout\n");
 			disconnect();
 		}

@@ -1,5 +1,9 @@
 - DOWNSCALE, remove unnecessary features, prioritize TODO
 
+- Better camera work
+
+- add baselib as submodule
+
 - Add shotguns
 
 - Network security (at least against hostile packets)
@@ -36,8 +40,6 @@
  damage_res="all(0.1) fire(0.2)"
 
 - verification of resources on client side, because they might be different than on server side
-
-- better camera work
 
 - If the last interactor with a door was a player, then he should see when the door closes
 

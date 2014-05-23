@@ -95,6 +95,8 @@ namespace sys {
 	void mkdirRecursive(const Path &path);
 	bool access(const Path &path);
 
+	void handleCtrlC(void (*handler)());
+
 }
 
 #endif

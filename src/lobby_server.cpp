@@ -28,7 +28,7 @@ using namespace net;
 class LobbyServer {
 public:
 	// TODO: socket only on specific interface?
-	LobbyServer(int port) :m_socket(lobbyServerAddress().port) { }
+	LobbyServer() :m_socket(lobbyServerAddress().port) { }
 
 	struct ServerInfo: public ServerStatusChunk {
 		ServerInfo(ServerStatusChunk chunk) :ServerStatusChunk(chunk), last_update_time(getTime()) { }
@@ -124,16 +124,25 @@ private:
 	std::map<Address, ServerInfo> m_servers;
 };
 
+static bool s_is_closing = false;
+
+void onCtrlC() {
+	s_is_closing = true;
+}
+
 int safe_main(int argc, char **argv)
 {
 	printf("FreeFT::lobby_server; built " __DATE__ " " __TIME__ "\nPress Ctrl+C to quit\n");
-	LobbyServer server(12345);
+	sys::handleCtrlC(onCtrlC);
+	LobbyServer server;
+	printf("Server address: %s\n", lobbyServerAddress().toString().c_str());
 
-	while(true) {
+	while(!s_is_closing) {
 		server.tick();
 		sleep(0.01);
 	}
 
+	printf("Closing...\n");
 	return 0;
 }
 

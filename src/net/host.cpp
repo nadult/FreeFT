@@ -506,9 +506,22 @@ ERROR:;
 		return data_size + 8;
 	}
 	
-	LocalHost::LocalHost(const net::Address &address)
-		:m_socket(address), m_current_id(-1), m_unverified_count(0), m_timestamp(0) {
+	LocalHost::LocalHost(const net::Address &in_address)
+	  :m_current_id(-1), m_unverified_count(0), m_timestamp(0) {
+		net::Address address = in_address;
+
+		int retries = 0;
+		while(!m_socket.isValid()) {
+			try {
+				m_socket = std::move(Socket(address));
+			}
+			catch(...) {
+				address = Address(address.ip, randomPort());
+				if(++retries == 100)
+					throw;
+			}
 		}
+	}
 
 	bool LocalHost::getLobbyPacket(InPacket &out) {
 		if(m_lobby_packets.empty())
@@ -545,7 +558,7 @@ ERROR:;
 				break;
 			if(ret < 0)
 				continue;
-
+			
 			if(packet.flags() & PacketInfo::flag_lobby) {
 				m_lobby_packets.emplace_back(packet);
 				continue;

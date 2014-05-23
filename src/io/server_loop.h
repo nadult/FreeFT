@@ -11,11 +11,9 @@
 
 namespace io {
 
-	net::PServer createServer(const string &map_name, int port = 20000);
-
 	class ServerLoop: public Loop {
 	public:
-		ServerLoop(net::PServer server);
+		ServerLoop(net::PServer &&server);
 		bool tick(double time_diff) override;
 
 	private:

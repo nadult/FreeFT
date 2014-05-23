@@ -22,9 +22,12 @@ namespace net {
 			connected,
 		};
 
-		Client(int port);
+		Client(int port = 0);
 		~Client();
-		
+	
+		bool getLobbyData(vector<ServerStatusChunk> &out);
+		void requestLobbyData();
+
 		void connect(Address address);
 		void disconnect();
 		

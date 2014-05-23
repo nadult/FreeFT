@@ -68,15 +68,18 @@ public:
 			auto &seq = (*sprite)[m_seq_id];
 
 			int2 max_frame_size(0, 0);
-			for(int n = 0; n < seq.frame_count; n++)
+			for(int n = 0; n < seq.frame_count; n++) {
+				if(sprite->frame(m_seq_id, n).id < 0)
+					continue;
 				max_frame_size = max(max_frame_size, sprite->getRect(m_seq_id, n, m_dir_id).size());
+			}
 
 			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: (%d, %d, %d)\nMax frame size: (%d, %d)",
 					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count,
 					sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z,
 					max_frame_size.x, max_frame_size.y);
 
-			m_font->drawShadowed(pos, Color::white, Color::black, buffer);
+			m_font->draw(pos, {Color::white, Color::black}, buffer);
 			pos.y += m_font->evalExtents(buffer).height();
 
 			double time = getTime();
@@ -88,7 +91,7 @@ public:
 
 			for(int n = 0; n < (int)m_events.size(); n++) {
 				Color col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
-				m_font->drawShadowed(pos, col, Color::black, m_events[n].first);
+				m_font->draw(pos, {col, Color::black}, m_events[n].first);
 				pos.y += m_font->textBase();
 			}
 
@@ -98,7 +101,7 @@ public:
 			const DTexture *texture = static_cast<const DTexture*>(m_resource.get());
 			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)",
 					texture->width(), texture->height());
-			m_font->drawShadowed(pos, Color::white, Color::black, buffer);
+			m_font->draw(pos, {Color::white, Color::black}, buffer);
 		}
 	}
 
@@ -419,6 +422,7 @@ int safe_main(int argc, char **argv)
 {
 	Config config = loadConfig("res_viewer");
 
+	gfx::initDevice();
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::res_viewer; built " __DATE__ " " __TIME__);
 	grabMouse(false);
@@ -435,11 +439,8 @@ int safe_main(int argc, char **argv)
 		main_window.process();
 		main_window.draw();
 
-		swapBuffers();
-		TextureCache::main_cache.nextFrame();
+		gfx::tick();
 	}
-
-	destroyWindow();
 
 	return 0;
 }
@@ -449,7 +450,6 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		destroyWindow();
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}

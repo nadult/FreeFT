@@ -115,6 +115,14 @@ namespace gfx
 		Key_count,
 	};
 
+	void initDevice();
+	void freeDevice();
+
+	double targetFrameTime();
+
+	// Swaps frames and synchronizes frame rate
+	void tick();
+
 	void createWindow(int2 size, bool fullscreen);
 	void destroyWindow();
 	void printDeviceInfo();

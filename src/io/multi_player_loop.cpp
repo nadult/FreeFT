@@ -28,8 +28,8 @@ namespace hud {
 		button_connect,
 	};
 		
-	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style)
-		  :HudLayer(rect), m_max_visible_rows(0), m_row_offset(0), m_selection(-1) {
+	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style) :HudLayer(rect),
+	  m_max_visible_rows(0), m_row_offset(0), m_selection(-1), m_last_refresh_time(-1.0), m_please_refresh(true), m_waiting_for_refresh(false) {
 		m_slide_left = false;
 		m_visible_time = 0.0f;
 
@@ -81,14 +81,14 @@ namespace hud {
 		m_columns.emplace_back(Column{ ColumnType::game_mode,	"Game mode",	80.0f });
 		m_columns.emplace_back(Column{ ColumnType::ping,		"Ping",			50.0f });
 
-		updateData();
+		m_client.reset(new net::Client());
 	}
 	
 	float MultiPlayerMenu::backAlpha() const {
 		return 0.6f;
 	}
 		
-	void MultiPlayerMenu::updateColumnRects() {
+	void MultiPlayerMenu::updateRects() {
 		FRect sub_rect = rect();
 		sub_rect.min += float2(spacing, spacing);
 		sub_rect.max -= float2(spacing, spacing * 2 + s_button_size.y);
@@ -105,6 +105,8 @@ namespace hud {
 			int isize = (int)col_size;
 			frac = col_size - isize;
 			m_columns[n].rect = FRect(sub_rect.min.x + pos, sub_rect.min.y, sub_rect.min.x + pos + isize, sub_rect.max.y);
+			if(n == (int)m_columns.size() - 1)
+				m_columns[n].rect.max.x = sub_rect.max.x;
 			pos += isize + spacing;
 		}
 
@@ -127,6 +129,8 @@ namespace hud {
 		is_active &= m_is_visible;
 		HudLayer::update(is_active, time_diff);
 		float2 mouse_pos((float2)gfx::getMousePos() - rect().min);
+
+		updateLobbyData();
 
 		if(isKeyDown(Key_esc))
 			setVisible(false);
@@ -155,6 +159,7 @@ namespace hud {
 			}
 			if(m_buttons[button_refresh]->isPressed(mouse_pos)) {
 				playSound(HudSound::button);
+				m_please_refresh = true;
 			}
 			if(m_buttons[button_connect]->isPressed(mouse_pos)) {
 				playSound(HudSound::button);
@@ -164,7 +169,7 @@ namespace hud {
 		if(m_selection < m_row_offset || m_selection >= m_row_offset + m_max_visible_rows)
 			m_selection = -1;
 
-		updateColumnRects();
+		updateRects();
 
 		mouse_pos += rect().min;
 		for(int n = 0; n < (int)m_servers.size(); n++) {
@@ -182,9 +187,49 @@ namespace hud {
 		}
 	}
 
-#define GEN_RANDOM
+	void MultiPlayerMenu::updateLobbyData() {
+		if(!m_client)
+			return;
 
-	void MultiPlayerMenu::updateData() {
+		if(m_please_refresh && getTime() - m_last_refresh_time > 1.0) {
+			m_client->requestLobbyData();
+			m_last_refresh_time = getTime();
+			m_please_refresh = false;
+			m_waiting_for_refresh = true;
+		}
+		
+		m_client->beginFrame();
+		m_client->finishFrame();
+
+		vector<ServerStatusChunk> new_data;
+		if(m_client->getLobbyData(new_data)) {
+			m_waiting_for_refresh = false;
+
+			//TODO: support for data send in multiple packets
+			if(new_data.empty()) {
+				setMessage("No servers active", Color::white);
+				m_servers.clear();
+			}
+
+			auto old_servers = m_servers;
+			m_servers.clear();
+			for(int n = 0; n < (int)new_data.size(); n++) {
+				ServerInfo new_info;
+				((net::ServerStatusChunk&)new_info) = new_data[n];
+				new_info.ping = 0;
+				new_info.is_mouse_over = false;
+				new_info.over_time = 0.0f;
+				new_info.selection_time = 0.0f;
+				m_servers.push_back(new_info);
+			}
+			m_row_offset = 0;
+		}
+
+		if(m_waiting_for_refresh && getTime() - m_last_refresh_time > 5.0) {
+			setMessage("No data received from lobby server...", lerp(Color::white, Color::red, 0.5f));
+			m_waiting_for_refresh = false;
+		}
+
 #ifdef GEN_RANDOM
 		m_servers.clear();
 
@@ -203,9 +248,8 @@ namespace hud {
 			info.selection_time = 0.0f;
 			m_servers.push_back(info);
 		}
-#endif
-
 		m_row_offset = 0;
+#endif
 	}
 
 	void MultiPlayerMenu::draw() const {
@@ -236,6 +280,15 @@ namespace hud {
 							float2(50.0f, 50.0f) * (1.0f - info.selection_time), 500.0f);
 			}
 		}
+
+		if(!m_message.empty()) {
+			double msg_time = getTime() - m_message_time;
+			double alpha = min(1.0, 5.0 - msg_time);
+
+			if(msg_time < 5.0)
+				m_font->draw(rect() + float2(spacing, 0.0f),
+						     {mulAlpha(m_message_color, alpha), mulAlpha(Color::black, alpha), HAlign::left, VAlign::bottom}, m_message);
+		}
 	}
 		
 	const string MultiPlayerMenu::cellText(int server_id, ColumnType col_type) const {
@@ -255,91 +308,20 @@ namespace hud {
 
 		return string();
 	}
+		
+	void MultiPlayerMenu::setMessage(const string &message, Color color) {
+		m_message = message;
+		m_message_time = getTime();
+		m_message_color = color;
+	}
+		
+	net::PClient &&MultiPlayerMenu::getClient() {
+		return std::move(m_client);
+	}
 
 }
 
 namespace io {
-
-	static void parseServerList(std::map<Address, net::ServerStatusChunk> &servers, InPacket &packet) {
-		while(packet.pos() < packet.size()) {
-			ServerStatusChunk chunk;
-			packet >> chunk;
-
-			if(chunk.address.isValid())
-				servers[chunk.address] = chunk;
-		}
-	}
-
-	static Address findServer(int local_port) {
-		using namespace net;
-
-		Address local_addr((u16)local_port);
-		Socket socket(local_addr); //TODO: use socket from Client class
-		Address lobby_address = lobbyServerAddress();
-
-		OutPacket request(0, -1, -1, PacketInfo::flag_lobby);
-		request << LobbyChunkId::server_list_request;
-		socket.send(request, lobby_address);
-
-		double start_time = getTime();
-
-		while(getTime() - start_time < 5.0) {
-			InPacket packet;
-			Address source;
-			int ret = socket.receive(packet, source);
-			if(ret <= 0) {
-				sleep(0.01);
-				continue;
-			}
-
-			try {
-				LobbyChunkId::Type chunk_id;
-				packet >> chunk_id;
-
-				if(chunk_id == LobbyChunkId::server_list) {
-					std::map<Address, ServerStatusChunk> servers;
-					parseServerList(servers, packet);
-
-					if(servers.empty()) {
-						printf("No servers currently active\n");
-						return Address();
-					}
-					else {
-						auto it = servers.begin();
-						//TODO: punch through
-						return it->second.address;
-					}
-				}
-			}
-			catch(...) {
-				continue;
-			}
-
-
-		}
-				
-		printf("Timeout when connecting to lobby server\n");
-		return Address();
-	}
-
-	net::PClient createClient(const string &server_name, int port) {
-		Address server_address = findServer(port);
-		//Address server_address = server_name.empty()? findServer(port) : Address(resolveName(server_name.c_str()), server_port);
-
-		if(!server_address.isValid())
-			THROW("Invalid server address\n");
-
-		net::PClient client(new net::Client(port));
-		client->connect(server_address);
-		
-		while(client->mode() != Client::Mode::connected) {
-			client->beginFrame();
-			client->finishFrame();
-			sleep(0.05);
-		}
-
-		return client;
-	}
 
 	MultiPlayerLoop::MultiPlayerLoop(net::PClient client) {
 		DASSERT(client && client->mode() == Client::Mode::connected);

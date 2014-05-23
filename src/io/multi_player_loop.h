@@ -45,19 +45,30 @@ namespace hud {
 			float over_time, selection_time;
 		};
 
-	protected:
-		void updateColumnRects();
-		const string cellText(int server_id, ColumnType) const;
+		net::PClient &&getClient();
 
-		void updateData();
+	protected:
+		void updateRects();
+		const string cellText(int server_id, ColumnType) const;
+		void setMessage(const string&, Color color);
+
+		void updateLobbyData();
 
 		vector<Column> m_columns;
 		vector<PHudWidget> m_buttons;
 		vector<ServerInfo> m_servers;
+		net::PClient m_client;
+
+		string m_message;
+		Color m_message_color;
+		double m_message_time;
 
 		int m_selection;
 		int m_row_offset;
 		int m_max_visible_rows;
+		bool m_please_refresh;
+		bool m_waiting_for_refresh;
+		double m_last_refresh_time;
 	};
 
 }

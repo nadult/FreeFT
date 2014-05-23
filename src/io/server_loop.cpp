@@ -14,16 +14,10 @@ using namespace game;
 
 namespace io {
 
-	net::PServer createServer(const string &map_name, int port) {
-		net::PServer server(new net::Server(port));
-		server->createWorld(map_name);
-		return server;
-	}
-
-	ServerLoop::ServerLoop(net::PServer server) {
+	ServerLoop::ServerLoop(net::PServer &&server) {
 		DASSERT(server && server->world());
 		m_server = std::move(server);
-		m_world = server->world();
+		m_world = m_server->world();
 		Config config = loadConfig("server");
 		
 		for(int n = 0; n < m_world->entityCount(); n++) {
@@ -32,19 +26,24 @@ namespace io {
 				actor->attachAI<SimpleAI>();
 		}
 
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, EntityRef(), config.profiler_enabled));
+		if(!m_server->config().m_console_mode)
+			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, EntityRef(), config.profiler_enabled));
 	}
 
 	bool ServerLoop::tick(double time_diff) {
-		m_controller->update(time_diff);
+		if(m_controller)
+			m_controller->update(time_diff);
 		m_server->beginFrame();
 
 		m_world->simulate(time_diff);
 		m_server->finishFrame();
-		m_controller->updateView(time_diff);
-		m_controller->draw();
 
-		return !isKeyDown(gfx::Key_esc);
+		if(m_controller) {
+			m_controller->updateView(time_diff);
+			m_controller->draw();
+		}
+
+		return !isKeyDown(gfx::Key_esc) && !m_is_closing;
 	}
 
 }

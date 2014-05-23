@@ -22,7 +22,7 @@ namespace net {
 	);
 
 	struct ServerStatusChunk {
-		ServerStatusChunk() :num_players(0), max_players(0) { }
+		ServerStatusChunk() :num_players(0), max_players(0), is_passworded(false) { }
 
 		void save(Stream &sr) const;
 		void load(Stream &sr);
@@ -32,6 +32,7 @@ namespace net {
 		string map_name;
 		game::GameMode::Type game_mode;
 		int num_players, max_players;
+		bool is_passworded;
 	};
 
 }

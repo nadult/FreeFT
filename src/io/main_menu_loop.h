@@ -36,6 +36,9 @@ namespace io {
 		
 		ui::PFileDialog m_file_dialog;
 
+		hud::PMultiPlayerMenu m_multi_player_menu;
+	//	hud::PSinglePlayerMenu m_single_player_menu;
+	//	hud::PServerMenu m_server_menu;
 		hud::PHudLayer m_sub_menu;
 
 		enum Mode {

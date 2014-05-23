@@ -82,6 +82,10 @@ namespace net {
 			elems[3 - n] = (ip >> (n * 8)) & 0xff;
 	}
 
+	int randomPort() {
+		return 50000 + rand() % 16530;
+	}
+
 	Address::Address(u16 port) :port(port), ip(htonl(INADDR_ANY)) { }
 
 	const string Address::toString() const {
@@ -144,6 +148,8 @@ namespace net {
 	}
 	
 	int Socket::receive(char *buffer, int buffer_size, Address &source) {
+		DASSERT(m_fd);
+
 		sockaddr_in addr;
 		socklen_t addr_len = sizeof(addr);
 		int len = recvfrom(m_fd, buffer, buffer_size, 0, (struct sockaddr*)&addr, &addr_len);
@@ -174,6 +180,8 @@ namespace net {
 	}
 
 	void Socket::send(const char *data, int size, const Address &target) {
+		DASSERT(m_fd);
+
 		sockaddr_in addr;
 		toSockAddr(target, &addr);
 		int ret = sendto(m_fd, data, size, 0, (struct sockaddr*)&addr, sizeof(addr));

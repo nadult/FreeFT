@@ -16,6 +16,8 @@ namespace net {
 	void encodeInt3(Stream&, const int3 &value);
 	const int3 decodeInt3(Stream&);
 
+	int randomPort();
+
 	struct SeqNumber {
 	public:
 		SeqNumber() { }
@@ -61,6 +63,7 @@ namespace net {
 	class Socket {
 	public:
 		Socket(const Address &address);
+		Socket() :m_fd(0) { }
 		~Socket();
 		
 		void operator=(const Socket&) = delete;
@@ -78,6 +81,7 @@ namespace net {
 		void send(const OutPacket &packet, const Address &target);
 
 		void close();
+		bool isValid() const { return m_fd != 0; }
 
 	protected:
 		int m_fd;

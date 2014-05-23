@@ -4,6 +4,7 @@
  */
 
 #include "gfx/device.h"
+#include "gfx/texture_cache.h"
 #include <memory.h>
 #include <GL/glfw.h>
 
@@ -48,7 +49,9 @@ namespace
 	int  mouseDX, mouseDY;
 	u32  s_key_map[gfx::Key_count];
 
-	bool s_want_close = 0, s_is_created = 0;
+	bool s_want_close = 0;
+	bool s_is_initialized = 0;
+	bool s_has_window = 0;
 
 	int GLFWCALL CloseWindowHandle() {
 		s_want_close = 1;
@@ -63,31 +66,34 @@ namespace gfx
 	void loadExtensions();
 	void initViewport(int2 size);
 
-	static void initDevice() {
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-		glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
-
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDepthMask(0);
-	}
-
-
-	void createWindow(int2 size, bool full) {
-		if(s_is_created)
-			THROW("Trying to create more than one glfw window");
+	void initDevice() {
+		ASSERT(!s_is_initialized);
 		if(!glfwInit())
 			THROW("Error while initializing GLFW");
+		glfwDisable(GLFW_AUTO_POLL_EVENTS);
+		s_is_initialized = true;
+		s_last_time = -1.0;
+
+		atexit(freeDevice);
+	}
+
+	void freeDevice() {
+		if(s_has_window)
+			destroyWindow();
+		if(s_is_initialized) {
+			glfwTerminate();
+			s_is_initialized = 0;
+		}
+	}
+
+	void createWindow(int2 size, bool full) {
+		ASSERT(s_is_initialized);
+		ASSERT(!s_has_window);
 
 		glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-
 		if(!glfwOpenWindow(size.x, size.y, 8, 8, 8, 8, 24, 8, full ? GLFW_FULLSCREEN : GLFW_WINDOW))
 			THROW("Error while initializing window with glfwOpenGLWindow");
 
-		glfwDisable(GLFW_AUTO_POLL_EVENTS);
 		glfwSwapInterval(1);
 		glfwSetWindowPos(0, 24);
 
@@ -159,20 +165,30 @@ namespace gfx
 
 		loadExtensions();
 
-		initDevice();
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+		glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDepthMask(0);
+
 		initViewport(size);
 		//TODO: initial mouse pos (until user moves it) is always 0,0
 			
 		glfwPollEvents();
+		setBlendingMode(bmNormal);
 
-		s_is_created = 1;
+		s_has_window = true;
+		atexit(destroyWindow);
 	}
 
 	void destroyWindow() {
-		if(s_is_created) {
+		if(s_has_window) {
 			glfwCloseWindow();
-			glfwTerminate();
-			s_is_created = 0;
+			s_has_window = false;
 		}
 	}
 
@@ -188,23 +204,42 @@ namespace gfx
 				"Maximum texture size: %d\n",
 				vendor, renderer, max_tex_size);
 	}
+	
+	double targetFrameTime() {
+		return 1.0 / 60.0;
+	}
 
-	void swapBuffers() {
-		glfwSwapBuffers();
+	void tick() {
+		double time_diff = getTime() - s_last_time;
+
+		if(s_has_window) {
+			TextureCache::main_cache.nextFrame();
+			glfwSwapBuffers();
+		}
+		else {
+			double target_diff = targetFrameTime();
+			double target_time = s_last_time + target_diff;
+
+#ifdef _WIN32
+			//TODO: check if this is enough
+			double busy_sleep = 0.001;
+#else
+			double busy_sleep = 0.0002;
+#endif
+
+			if(time_diff < target_diff) {
+				sleep(target_diff - time_diff - busy_sleep);
+				while(getTime() < target_time)
+					;
+			}
+		}
+		
+		s_last_time = getTime();
 	}
 
 	bool pollEvents() {
-		for(;;) {
+		if(s_has_window)
 			glfwPollEvents();
-
-			if(glfwGetWindowParam(GLFW_ICONIFIED)) {
-				sleep(0.05);
-				continue;
-			}
-			break;
-		}
-		int width, height;
-		glfwGetWindowSize(&width, &height);
 
 		lastInput = activeInput;
 		memcpy(&activeInput, &_glfwInput, sizeof(_glfwInput));
@@ -224,23 +259,28 @@ namespace gfx
 			else if(!current)
 				s_time_pressed[n] = -1.0;
 		}
-		s_last_time = time;
 		s_clock++;
 
 		return !s_want_close;
 	}
 
 	const int2 getWindowSize() {
+		DASSERT(s_has_window);
+
 		int2 out;
 		glfwGetWindowSize(&out.x, &out.y);
 		return out;
 	}
 
 	void setWindowPos(const int2 &pos) {
+		DASSERT(s_has_window);
+
 		glfwSetWindowPos(pos.x, pos.y);
 	}
 
 	void setWindowTitle(const char *title) {
+		DASSERT(s_has_window);
+
 		glfwSetWindowTitle(title);
 		glfwPollEvents(); //TODO: remove, set window on creation
 	}

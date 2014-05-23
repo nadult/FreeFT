@@ -76,6 +76,10 @@ namespace hud {
 	class HudCharacter;
 	class HudOptions;
 
+	class SinglePlayerMenu;
+	class MultiPlayerMenu;
+	class ServerMenu;
+
 	typedef Ptr<HudWidget> PHudWidget;
 	typedef Ptr<HudLayer> PHudLayer;
 	typedef Ptr<HudWeapon> PHudWeapon;
@@ -87,6 +91,10 @@ namespace hud {
 	typedef Ptr<HudCharacter> PHudCharacter;
 	typedef Ptr<HudOptions> PHudOptions;
 	typedef Ptr<Hud> PHud;
+	
+	typedef Ptr<MultiPlayerMenu> PMultiPlayerMenu;
+	typedef Ptr<SinglePlayerMenu> PSinglePlayerMenu;
+	typedef Ptr<ServerMenu> PServerMenu;
 
 }
 

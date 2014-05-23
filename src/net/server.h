@@ -13,13 +13,27 @@
 
 namespace net {
 
+	class ServerConfig {
+	public:
+		ServerConfig();
+		ServerConfig(const XMLNode&);
+		void save(XMLNode&);
+
+		bool isValid() const;
+
+		bool m_console_mode;
+		string m_map_name;
+		string m_server_name;
+		string m_password;
+		int m_port, m_max_players;
+	};
+
 	class Server: public net::LocalHost, game::Replicator {
 	public:
-		Server(int port);
+		Server(const ServerConfig &config);
 		~Server();
 
 		enum {
-			max_clients = 32,
 			client_timeout = 10,
 		};
 
@@ -48,15 +62,17 @@ namespace net {
 		void beginFrame();
 		void finishFrame();
 
-		void createWorld(const string &file_name);
 		game::PWorld world() { return m_world; }
 
 		void replicateEntity(int entity_id) override;
+
+		const ServerConfig &config() const { return m_config; }
 
 	private:
 		void handleHostReceiving(RemoteHost &host, Client &client);
 		void handleHostSending(RemoteHost &host, Client &client);
 
+		ServerConfig m_config;
 		vector<int> m_replication_list;
 		vector<Client> m_clients;
 

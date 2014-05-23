@@ -263,6 +263,7 @@ int safe_main(int argc, char **argv)
 	Config config = loadConfig("editor");
 	game::loadData();
 
+	gfx::initDevice();
 	createWindow(config.resolution, config.fullscreen);
 	setWindowTitle("FreeFT::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
@@ -317,8 +318,7 @@ int safe_main(int argc, char **argv)
 			font->draw(config.resolution - int2(280, 180), {Color::white, Color::black},prof_stats);
 		}
 
-		swapBuffers();
-		TextureCache::main_cache.nextFrame();
+		gfx::tick();
 
 		profiler::updateTimer("main_loop", profiler::getTime() - loop_start);
 		if(getTime() - stat_update_time > 0.25) {
@@ -328,8 +328,6 @@ int safe_main(int argc, char **argv)
 		profiler::nextFrame();
 	}
 
-	destroyWindow();
-
 	return 0;
 }
 
@@ -338,7 +336,6 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		destroyWindow();
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}

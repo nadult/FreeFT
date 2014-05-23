@@ -171,10 +171,12 @@ namespace io {
 
 		lookAt(m_view_pos);
 
-		lookAt({0, 0});
-		DTexture::unbind();
-		drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
-		drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
+		/*{ // Drawing cursor
+			lookAt({0, 0});
+			DTexture::unbind();
+			drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
+			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
+		}*/
 
 		lookAt({0, -m_console.size().y});
 		
@@ -197,8 +199,7 @@ namespace io {
 				float hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
 				fmt("\nHit chance: %.0f%%", hit_chance * 100.0f);
 			}
-			fmt("\n");
-			fmt("\n");
+			fmt("\n\n");
 		}
 
 		if(m_show_stats)

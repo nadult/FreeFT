@@ -14,6 +14,7 @@
 #include "game/trigger.h"
 #include "net/lobby.h"
 #include "net/server.h"
+#include "sys/xml.h"
 #include <list>
 #include <algorithm>
 
@@ -22,9 +23,47 @@ using namespace game;
 using namespace net;
 
 namespace net {
+		
+	ServerConfig::ServerConfig()
+		:m_console_mode(false), m_port(20000), m_max_players(16) {
+	}
 
-	Server::Server(int port) :LocalHost(Address(port)), m_client_count(0) {
+	ServerConfig::ServerConfig(const XMLNode &node) :ServerConfig() {
+		if(const char *attrib = node.hasAttrib("max_players")) {
+			m_max_players = toInt(attrib);
+			ASSERT(m_max_players >= 1 && m_max_players <= Server::max_remote_hosts);
+		}
+		if(const char *attrib = node.hasAttrib("console_mode"))
+			m_console_mode = toBool(attrib);
+		if(const char *attrib = node.hasAttrib("port")) {
+			m_port = toInt(attrib);
+			ASSERT(m_port > 0 && m_port < 65536);
+		}
+		if(const char *attrib = node.hasAttrib("password"))
+			m_password = attrib;
+		m_map_name = node.attrib("map_name");
+		m_server_name = node.attrib("name");
+
+		ASSERT(m_server_name.size() >= 4 && m_server_name.size() <= 20);
+		ASSERT(isValid());
+	}
+		
+	bool ServerConfig::isValid() const {
+		return !m_server_name.empty() && !m_map_name.empty();
+	}
+
+	void ServerConfig::save(XMLNode &node) {
+		node.addAttrib("name", node.own(m_server_name));
+		node.addAttrib("map_name", node.own(m_map_name));
+		node.addAttrib("port", m_port);
+		node.addAttrib("max_players", m_max_players);
+		node.addAttrib("console_mode", m_console_mode);
+		node.addAttrib("password", node.own(m_password));
+	}
+
+	Server::Server(const ServerConfig &config) :LocalHost(Address(m_config.m_port)), m_config(config), m_client_count(0) {
 		m_lobby_timeout = m_current_time = getTime();
+		m_world = new World(m_config.m_map_name, World::Mode::server, this);
 	}
 
 	Server::~Server() {
@@ -237,20 +276,17 @@ namespace net {
 			OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
 			ServerStatusChunk chunk;
 			chunk.address = Address();
-			chunk.map_name = "map_name";
-			chunk.server_name = "test_serv";
+			//TODO: send map title, which should be shorter
+			chunk.map_name = m_config.m_map_name;
+			chunk.server_name = m_config.m_server_name;
 			chunk.num_players = m_client_count;
 			chunk.max_players = max_remote_hosts;
+			chunk.is_passworded = !m_config.m_password.empty();
 			chunk.game_mode = GameMode::death_match;
 			out << LobbyChunkId::server_status << chunk;
 			sendLobbyPacket(out);
 			m_lobby_timeout = m_current_time + 10.0;
 		}
-	}
-
-	void Server::createWorld(const string &file_name) {
-		//TODO: update clients
-		m_world = new World(file_name, World::Mode::server, this);
 	}
 
 	void Server::replicateEntity(int entity_id) {

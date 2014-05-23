@@ -102,18 +102,18 @@ namespace io {
 				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_create_server.get()) {
-				m_mode = mode_starting_server;
-				IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-				m_file_dialog = new FileDialog(dialog_rect, "Select map", FileDialogMode::opening_file);
-				m_file_dialog->setPath("data/maps/");
-				attach(m_file_dialog.get(), true);
+			//	m_mode = mode_starting_server;
+			//	IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
+			//	m_file_dialog = new FileDialog(dialog_rect, "Select map", FileDialogMode::opening_file);
+			//	m_file_dialog->setPath("data/maps/");
+			//	attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(750, 550));
 				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
-				m_sub_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
-			//	m_future_client = std::async(std::launch::async, []() { return createClient("", 20001); } );
-			//	m_mode = mode_loading;
+				m_multi_player_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
+				m_sub_menu = m_multi_player_menu.get();
+			//	m_mode = mode_starting_multi;
 			}
 			else if(ev.source == m_exit.get()) {
 				stopMusic();
@@ -128,9 +128,6 @@ namespace io {
 
 			if(m_mode == mode_starting_single && ev.value) {
 				m_future_world = std::async(std::launch::async, [path]() { return createWorld(path); } );
-			}
-			else if(m_mode == mode_starting_server && ev.value) {
-				m_future_server = std::async(std::launch::async, [path]() { return createServer(path); } );
 			}
 			
 			m_mode = ev.value? mode_loading : mode_normal;
