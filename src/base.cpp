@@ -39,6 +39,9 @@ const Color Color::blue			(0, 0, 255);
 const Color Color::black		(0, 0, 0);
 const Color Color::transparent	(0, 0, 0, 0);
 
+Color mulAlpha(Color color, float alpha_mul) {
+	return Color(float4(color) * float4(1.0f, 1.0f, 1.0f, alpha_mul));
+}
 
 Color lerp(Color a, Color b, float value) {
 	return Color(lerp((float4)a, (float4)b, value));
@@ -175,6 +178,15 @@ void TextFormatter::operator()(const char *format, ...) {
 	va_start(ap, format);
 	m_offset += vsnprintf(&m_data[m_offset], m_data.size() - m_offset, format, ap);
 	va_end(ap);
+}
+
+const string format(const char *format, ...) {
+	char buffer[4096];
+	va_list ap;
+	va_start(ap, format);
+	vsnprintf(buffer, sizeof(buffer), format, ap);
+	va_end(ap);
+	return std::move(string(buffer));
 }
 
 MoveVector::MoveVector(const int2 &start, const int2 &end) {

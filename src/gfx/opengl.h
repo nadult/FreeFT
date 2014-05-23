@@ -117,6 +117,9 @@ namespace gfx {
 	);
 
 	bool isExtensionSupported(OpenglExtension::Type);
+	void glColor(Color);
+	void glVertex(const float2&);
+	void glTexCoord(const float2&);
 
 }
 

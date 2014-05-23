@@ -27,7 +27,7 @@ namespace ui {
 		int2 pos = (size() - m_text_extents.size()) / 2 - m_text_extents.min;
 		if(!m_is_centered)
 			pos.x = 5;
-		m_font->drawShadowed(pos, Color::white, Color::black, m_text.c_str());
+		m_font->draw(pos, {Color::white, Color::black}, m_text);
 	}
 
 }

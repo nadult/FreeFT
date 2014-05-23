@@ -109,7 +109,7 @@ namespace io {
 				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_multi_player.get()) {
-				FRect rect = FRect(float2(700, 500));
+				FRect rect = FRect(float2(750, 550));
 				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
 				m_sub_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
 			//	m_future_client = std::async(std::launch::async, []() { return createClient("", 20001); } );
@@ -151,11 +151,10 @@ namespace io {
 
 		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * constant::pi * 2.0), 8.0) * 0.1;
 
-		IRect extents = font->evalExtents(text);
-		font->drawShadowed(int2(0, -extents.height()), color, Color::black, text);
+		FRect extents = font->draw(float2(0.0f, 0.0f), {color, Color::black, HAlign::right, VAlign::center}, text);
 
 		glPushMatrix();
-		glTranslatef(extents.width() + 8.0f + center.x, 0.0f, 0.0f);
+		glTranslatef(extents.max.x + 8.0f + center.x, 0.0f, 0.0f);
 
 		glScalef(scale, scale, scale);
 		glRotated(m_anim_pos * 360.0, 0, 0, 1);

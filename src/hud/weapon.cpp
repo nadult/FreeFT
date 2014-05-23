@@ -32,10 +32,9 @@ namespace hud {
 
 			//TODO: print current attack mode
 			if(m_weapon.proto().max_ammo) {
-				TextFormatter fmt(256);
+				TextFormatter fmt;
 				fmt("%d/%d", m_ammo_count, m_weapon.proto().max_ammo);
-				IRect extents = m_font->evalExtents(fmt.text());
-				m_font->drawShadowed(int2(rect.max.x - extents.width(), rect.min.y), m_style.focus_color, Color::black, "%s", fmt.text());
+				m_font->draw(rect, {m_style.focus_color, Color::black, HAlign::right, VAlign::top}, fmt);
 			}
 		}
 	}

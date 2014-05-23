@@ -20,8 +20,27 @@ namespace hud {
 
 		void update(bool is_active, double time_diff) override;
 		void draw() const override;
+		float backAlpha() const override;
+
+		enum class ColumnType {
+			server_name,
+			map_name,
+			num_players,
+			game_mode,
+			ping
+		};
+
+		struct Column {
+			ColumnType type;
+			const char *title;
+			float min_size;
+			FRect rect;
+		};
 
 	protected:
+		void updateColumnRects();
+
+		vector<Column> m_columns;
 		vector<PHudWidget> m_buttons;
 		vector<net::ServerStatusChunk> m_servers;
 	};

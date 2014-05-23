@@ -64,6 +64,10 @@ namespace hud {
 		Color out = lerp(Color(m_style.focus_color, 160), m_style.focus_color, m_focus_time);
 		return Color(out, u8(float(out.a) * alpha()));
 	}
+		
+	Color HudWidget::focusShadowColor() const {
+		return mulAlpha(Color::black, alpha());
+	}
 
 	Color HudWidget::backgroundColor() const {
 		return Color(m_style.back_color, (int)(alpha() * 127));
@@ -81,28 +85,15 @@ namespace hud {
 
 		Color border_color = lerp(Color(m_style.border_color, alpha / 2), Color(m_style.border_color, alpha), m_focus_time);
 		float offset = lerp(m_style.border_offset, 0.0f, m_over_time);
+		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
 
-		drawBorder(rect, border_color, float2(offset, offset), 20.0f, true);
-		drawBorder(rect, border_color, float2(offset, offset), 20.0f, false);
-
-		if(!m_text.empty()) {
-			IRect extents = m_font->evalExtents(m_text.c_str());
-			float2 pos = rect.center() - float2(extents.size()) * 0.5f - float2(0, 3);
-			m_font->drawShadowed((int2)pos, focusColor(), Color::black, "%s", m_text.c_str());
-		}
+		if(!m_text.empty())
+			m_font->draw(rect, {focusColor(), Color::black, HAlign::center, VAlign::center}, m_text);
 
 		if(HudIcon::isValid(m_icon_id)) {
 			m_icons_tex->bind();
 			drawQuad(rect, s_icons[m_icon_id].uv_rect, focusColor());
 		}
-	}
-		
-	void HudWidget::drawText(const float2 &pos, const TextFormatter &fmt) const {
-		m_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, int(this->alpha() * 255)), "%s", fmt.text());
-	}
-
-	void HudWidget::drawTitleText(const float2 &pos, const TextFormatter &fmt) const {
-		m_big_font->drawShadowed((int2)pos, focusColor(), Color(0, 0, 0, int(this->alpha() * 255)), "%s", fmt.text());
 	}
 		
 	void HudWidget::setVisible(bool is_visible, bool animate) {

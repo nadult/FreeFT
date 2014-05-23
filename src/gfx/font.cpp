@@ -5,15 +5,20 @@
 
 #include "gfx/font.h"
 #include "gfx/device.h"
-#include <GL/gl.h>
+#include "gfx/opengl.h"
 #include <cstring>
 #include <cwchar>
 #include <cstdarg>
-#include <ext/vstring.h>
 #include "sys/xml.h"
 
 namespace gfx
 {
+	FontStyle::FontStyle(Color color, Color shadow_color, HAlign halign, VAlign valign)
+		:text_color(color), shadow_color(shadow_color), halign(halign), valign(valign) { }
+
+	FontStyle::FontStyle(Color color, HAlign halign, VAlign valign)
+		:text_color(color), shadow_color(Color::transparent), halign(halign), valign(valign) { }
+
 	void Font::load(Stream &sr) {
 		ASSERT(sr.isLoading());
 
@@ -96,9 +101,10 @@ namespace gfx
 		return (int)(len == (size_t)-1? 0 : len);
 	}
 
-	IRect Font::evalExtents(const char *str) const {
-		wchar_t wstr[1024];
-		int len = convertToWChar(str, wstr, sizeof(wstr) / sizeof(wchar_t));
+	const IRect Font::evalExtents(const char *str) const {
+		int len = strlen(str);
+		PodArray<wchar_t> wstr(len);
+		len = convertToWChar(str, wstr.data(), len);
 
 		IRect rect(0, 0, 0, 0);
 		int2 pos(0, 0);
@@ -188,62 +194,56 @@ namespace gfx
 		return gen_count;
 	}
 
-	void Font::draw(int2 pos, Color color, const char *format, ...) const {
-		char text[1024];
-		va_list ap;
-		va_start(ap, format);
-		vsnprintf(text, sizeof(text), format, ap);
-		va_end(ap);
+	const FRect Font::draw(const FRect &rect, const FontStyle &style, const char *text) const {
+		float2 pos = rect.min;
+		if(style.halign != HAlign::left || style.valign != VAlign::top) {
+			FRect extents = (FRect)evalExtents(text);
+			float2 center = rect.center() - extents.center();
 
-		ASSERT(m_texture);
+			pos.x = style.halign == HAlign::left?	rect.min.x :
+					style.halign == HAlign::center? center.x :
+													rect.max.x - extents.width();
+			pos.y = style.valign == VAlign::top?	rect.min.y :
+					style.valign == VAlign::center? center.y :
+													rect.max.y - extents.height();
+		}
+
+		pos = float2((int)(pos.x + 0.5f), (int)(pos.y + 0.5f));
+		
+		int len = strlen(text);
+		PodArray<float2> pos_buf(len * 4), uv_buf(len * 4);
+		int quad_count = genQuads(text, pos_buf.data(), uv_buf.data(), len * 4);
+
+		FRect out_rect;
+		for(int n = 0; n < quad_count * 4; n++) {
+			out_rect.min = min(out_rect.min, pos_buf[n]);
+			out_rect.max = max(out_rect.max, pos_buf[n]);
+		}
+		out_rect += pos;
+
 		m_texture->bind();
+		if(style.shadow_color.a) {
+			float2 offset(1.0f, 1.0f);
+			out_rect.max += offset;
 
-		enum { buf_size = 1024 * 4 };
-		float2 pos_buf[buf_size], uv_buf[buf_size];
-		int quad_count = genQuads(text, pos_buf, uv_buf, buf_size);
-
-		glBegin(GL_QUADS);
-		glColor4ub(color.r, color.g, color.b, color.a);
-		for(int n = 0, count = quad_count * 4; n < count; n++) {
-			glTexCoord2f( uv_buf[n].x,  uv_buf[n].y);
-			glVertex2f  (pos_buf[n].x + pos.x, pos_buf[n].y + pos.y);
+			glBegin(GL_QUADS);
+			glColor(style.shadow_color);
+			for(int n = 0; n < quad_count * 4; n++) {
+				glTexCoord(uv_buf[n]);
+				glVertex  (pos_buf[n] + pos + offset);
+			}
+			glEnd();
 		}
-		glEnd();
-	}
-
-	void Font::drawShadowed(int2 pos, Color color, Color shadow, const char *format, ...) const {
-		char text[1024];
-		va_list ap;
-		va_start(ap, format);
-		vsnprintf(text, sizeof(text), format, ap);
-		va_end(ap);
-
-		ASSERT(m_texture);
-		m_texture->bind();
-
-		enum { buf_size = 1024 * 4 };
-		float2 pos_buf[buf_size], uv_buf[buf_size];
-		int quad_count = genQuads(text, pos_buf, uv_buf, buf_size);
 
 		glBegin(GL_QUADS);
-		glColor4ub(shadow.r, shadow.g, shadow.b, shadow.a);
-		pos += int2(1, 1);
-		for(int n = 0, count = quad_count * 4; n < count; n++) {
-			glTexCoord2f( uv_buf[n].x,  uv_buf[n].y);
-			glVertex2f  (pos_buf[n].x + pos.x, pos_buf[n].y + pos.y);
+		glColor(style.text_color);
+		for(int n = 0; n < quad_count * 4; n++) {
+			glTexCoord(uv_buf[n]);
+			glVertex  (pos_buf[n] + pos);
 		}
 		glEnd();
 
-		//TODO: problems with too much text on windows, that's why we have two
-		// glBegins instead of just one; investigate!
-		glBegin(GL_QUADS);
-		pos -= int2(1, 1);
-		glColor4ub(color.r, color.g, color.b, color.a);
-		for(int n = 0, count = quad_count * 4; n < count; n++) {
-			glTexCoord2f( uv_buf[n].x,  uv_buf[n].y);
-			glVertex2f  (pos_buf[n].x + pos.x, pos_buf[n].y + pos.y);
-		}
-		glEnd();
+		return out_rect;
 	}
 
 	ResourceMgr<Font> Font::mgr("data/fonts/", ".fnt"); 

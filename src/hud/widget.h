@@ -34,10 +34,8 @@ namespace hud
 		virtual void draw() const;
 		virtual void setStyle(HudStyle style);
 		
-		void drawText(const float2 &pos, const TextFormatter&) const;
-		void drawTitleText(const float2 &pos, const TextFormatter &fmt) const;
-
 		virtual Color focusColor() const;
+		virtual Color focusShadowColor() const;
 		virtual Color backgroundColor() const;
 
 		float alpha() const { return m_visible_time; }

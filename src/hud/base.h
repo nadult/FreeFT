@@ -14,7 +14,7 @@ namespace hud {
 	
 	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical);
 	void drawLine(float2 p1, float2 p2, Color a, Color b);
-	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width, bool is_left);
+	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width);
 
 	enum Alignment {
 		align_top,

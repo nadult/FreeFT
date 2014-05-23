@@ -314,7 +314,7 @@ int safe_main(int argc, char **argv)
 			drawQuad(config.resolution - int2(280, 200), config.resolution, Color(0, 0, 0, 80));
 
 			gfx::PFont font = gfx::Font::mgr["liberation_16"];
-			font->drawShadowed(config.resolution - int2(280, 180), Color::white, Color::black, "%s", prof_stats.c_str());
+			font->draw(config.resolution - int2(280, 180), {Color::white, Color::black},prof_stats);
 		}
 
 		swapBuffers();

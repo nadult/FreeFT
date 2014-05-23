@@ -33,7 +33,7 @@ namespace ui
 		int2 pos = rect_center - m_text_extents.size() / 2 - m_text_extents.min - int2(1, 1);
 		if(m_mouse_press)
 			pos += int2(2, 2);
-		m_font->drawShadowed(pos, m_is_enabled? Color::white : Color::gray, Color::black, m_text.c_str());
+		m_font->draw((float2)pos, {m_is_enabled? Color::white : Color::gray, Color::black}, m_text);
 	}
 
 	bool Button::onMouseDrag(int2 start, int2 current, int key, int is_final) {

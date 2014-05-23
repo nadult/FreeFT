@@ -209,7 +209,7 @@ namespace io {
 		int2 res = getWindowSize();
 		int2 pos(res.x - extents.x - 4, res.y - extents.y - 4);
 		drawQuad(pos.x, pos.y, res.x, res.y, Color(0, 0, 0, 80));
-		font->drawShadowed(pos + int2(2, 2), Color::white, Color::black,fmt.text());
+		font->draw(pos + int2(2, 2), {Color::white, Color::black}, fmt);
 
 		lookAt({0, 0});
 		m_console.draw();

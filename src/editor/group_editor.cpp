@@ -217,11 +217,11 @@ namespace {
 
 			for(int n = 0; n < TileGroup::Group::side_count; n++) {
 				lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
-				font->draw(int2(0, 0), Color::white, "%d", m_tile_group->groupSurface(m_selected_group_id, n));
+				font->draw(int2(0, 0), Color::white, format("%d", m_tile_group->groupSurface(m_selected_group_id, n)));
 			}
 				
 			lookAt(-center +edit_rect.size() / 2);
-			font->draw(int2(0, 0), Color::white, "setting surface: %d", m_selected_surface_id);
+			font->draw(int2(0, 0), {Color::white}, format("setting surface: %d", m_selected_surface_id));
 
 			/*
 			const char *names[] = {
@@ -244,8 +244,7 @@ namespace {
 		}
 
 		if(m_current_entry)
-			m_font->drawShadowed(int2(5, height() - 20), Color::white, Color::black, "%s",
-					m_current_entry->tile->resourceName());
+			m_font->draw(int2(5, height() - 20), {Color::white, Color::black}, format("%s", m_current_entry->tile->resourceName()));
 	}
 
 	void GroupEditor::setTarget(TileGroup* tile_group) {

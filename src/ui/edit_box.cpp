@@ -25,7 +25,7 @@ namespace ui {
 		int line_height = m_font->lineHeight();
 
 		int2 pos(5, height() / 2 - line_height / 2);
-		m_font->drawShadowed(pos, Color::white, Color::black, "%s%s", m_label.c_str(), m_text.c_str());
+		m_font->draw(pos, {Color::white, Color::black}, format("%s%s", m_label.c_str(), m_text.c_str()));
 
 		DTexture::unbind();
 		if(m_is_editing) {

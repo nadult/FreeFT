@@ -1,5 +1,7 @@
 - DOWNSCALE, remove unnecessary features, prioritize TODO
 
+- Add shotguns
+
 - Network security (at least against hostile packets)
 
 - think about handling orders on client / server and replication
@@ -44,6 +46,7 @@
 - Use shared_ptr<> instead of Ptr<> ? (safety issues in multithreaded environment)
 
 REFACTORING:
+- perform color operations on float4, use Color only for storage
 - move EntityWorldProxy, EntityRef to separate files?
 - make EntityWorldProxy::ref() const
 - make Entity access functions both const and non-const (it's ok to do them with const-casts)

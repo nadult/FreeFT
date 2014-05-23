@@ -35,13 +35,9 @@ namespace hud {
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
-			TextFormatter title;
-			title("%s", m_item.proto().name.c_str());
-
-			IRect extents = m_big_font->evalExtents(title.text());
-			drawTitleText(float2(rect.center().x - extents.width() / 2, 5.0f), title);
-
-			float ypos = 15.0f + extents.height();
+			FRect extents = m_big_font->draw(FRect(rect.min.x, 5.0f, rect.max.x, 5.0f), {focusColor(), focusShadowColor(), HAlign::center},
+											 m_item.proto().name);
+			float ypos = extents.max.y + spacing;
 
 			FRect uv_rect;
 			gfx::PTexture texture = m_item.guiImage(false, uv_rect);
@@ -63,9 +59,7 @@ namespace hud {
 			else if(m_item.type() == ItemType::armour)
 				params_desc = Armour(m_item).paramDesc();
 
-			TextFormatter fmt;
-			fmt("%s", params_desc.c_str());
-			drawText(float2(rect.min.x + 5.0f, ypos), fmt);
+			m_font->draw(float2(rect.min.x + 5.0f, ypos), {focusColor(), focusShadowColor()}, params_desc);
 		}
 	}
 
@@ -87,12 +81,8 @@ namespace hud {
 			texture->bind();
 			drawQuad(FRect(pos, pos + size), uv_rect);
 
-			if(m_count > 1) {
-				TextFormatter fmt(256);
-				fmt("%d", m_count);
-				IRect extents = m_font->evalExtents(fmt.text());
-				drawText(float2(rect.max.x - extents.width(), rect.min.y), fmt);
-			}
+			if(m_count > 1)
+				m_font->draw(rect, {focusColor(), focusShadowColor(), HAlign::right}, format("%d", m_count));
 		}
 	}
 		
@@ -315,10 +305,11 @@ namespace hud {
 		if(!m_drop_item.isDummy()) {
 			for(int n = 0; n < (int)m_buttons.size(); n++)
 				if(m_buttons[n]->item() == m_drop_item) {
-					TextFormatter fmt;
-					fmt("-%d", (int)m_drop_count);
-					FRect rect = m_buttons[n]->rect() + this->rect().min;
-					m_buttons[n]->drawText(float2(rect.min.x, rect.max.y - 20.0f), fmt);
+					//TODO: move to button
+					PFont font = Font::mgr[m_style.font_name];
+					font->draw(m_buttons[n]->rect() + rect().min,
+							   {m_buttons[n]->focusColor(), m_buttons[n]->focusShadowColor(), HAlign::left, VAlign::bottom},
+							   format("-%d", (int)m_drop_count));
 					break;
 				}
 		}

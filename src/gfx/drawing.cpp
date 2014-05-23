@@ -4,7 +4,7 @@
  */
 
 #include "gfx/device.h"
-#include <GL/gl.h>
+#include "gfx/opengl.h"
 
 namespace gfx
 {
@@ -36,10 +36,6 @@ namespace gfx
 	void lookAt(int2 pos) {
 		glLoadMatrixf(s_default_matrix);
 		glTranslatef(-pos.x, -pos.y, 0.0f);
-	}
-
-	static void glColor(const Color &color) {
-		glColor4ub(color.r, color.g, color.b, color.a);
 	}
 
 	void drawQuad(int2 pos, int2 size, Color color) {
@@ -92,7 +88,7 @@ namespace gfx
 	void drawLine(int2 p1, int2 p2, Color color) {
 		glBegin(GL_LINES);
 
-		glColor4ub(color.r, color.g, color.b, color.a);
+		glColor(color);
 		glVertex2i(p1.x, p1.y);
 		glVertex2i(p2.x, p2.y);
 
@@ -105,7 +101,7 @@ namespace gfx
 		float2 p1 = worldToScreen(wp1);
 		float2 p2 = worldToScreen(wp2);
 
-		glColor4ub(color.r, color.g, color.b, color.a);
+		glColor(color);
 		glVertex2f(p1.x, p1.y);
 		glVertex2f(p2.x, p2.y);
 
@@ -114,7 +110,7 @@ namespace gfx
 
 	void drawRect(const IRect &rect, Color col) {
 		glBegin(GL_LINE_STRIP);
-		glColor4ub(col.r, col.g, col.b, col.a);
+		glColor(col);
 
 		glVertex2i(rect.min.x, rect.min.y);
 		glVertex2i(rect.max.x, rect.min.y);
@@ -150,7 +146,7 @@ namespace gfx
 			int count = is_flat? 6 : COUNTOF(front);
 
 			glBegin(GL_TRIANGLES);
-			glColor4ub(col.r, col.g, col.b, col.a);
+			glColor(col);
 			for(int n = 0; n < count; n++)
 				glVertex2f(pt[front[n]].x, pt[front[n]].y);
 			glEnd();
@@ -167,7 +163,7 @@ namespace gfx
 					glVertex2f(pt[back[n]].x, pt[back[n]].y);
 			}
 
-			glColor4ub(col.r, col.g, col.b, col.a);
+			glColor(col);
 			if(is_flat) for(size_t n = 0; n < COUNTOF(front_flat); n++)
 				glVertex2f(pt[front_flat[n]].x, pt[front_flat[n]].y);
 			else for(size_t n = 0; n < COUNTOF(front); n++)

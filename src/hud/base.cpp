@@ -42,21 +42,21 @@ namespace hud
 		drawGradQuad(FRect(p1, p2), a, b, is_vertical);
 	}
 
-	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width, bool is_left) {
+	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width) {
 		float2 min = rect.min - offset, max = rect.max + offset;
 		width = ::min(width, (max.x - min.x) * 0.5f - 2.0f);
 
 		DTexture::unbind();
-		if(is_left) {
-			drawLine(float2(min.x, min.y), float2(min.x, max.y), color, color);
-			drawLine(float2(min.x + width, min.y), float2(min.x, min.y), Color::transparent, color);
-			drawLine(float2(min.x + width, max.y), float2(min.x, max.y), Color::transparent, color);
-		}
-		else {
-			drawLine(float2(max.x, min.y), float2(max.x, max.y), color, color);
-			drawLine(float2(max.x - width, min.y), float2(max.x, min.y), Color::transparent, color);
-			drawLine(float2(max.x - width, max.y), float2(max.x, max.y), Color::transparent, color);
-		}
+	
+		// left
+		drawLine(float2(min.x, min.y), float2(min.x, max.y), color, color);
+		drawLine(float2(min.x + width, min.y), float2(min.x, min.y), Color::transparent, color);
+		drawLine(float2(min.x + width, max.y), float2(min.x, max.y), Color::transparent, color);
+			
+		// right
+		drawLine(float2(max.x, min.y), float2(max.x, max.y), color, color);
+		drawLine(float2(max.x - width, min.y), float2(max.x, min.y), Color::transparent, color);
+		drawLine(float2(max.x - width, max.y), float2(max.x, max.y), Color::transparent, color);
 	}
 	
 	const FRect align(const FRect &rect, const FRect &relative_to, Alignment mode, float spacing) {

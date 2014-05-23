@@ -51,7 +51,7 @@ namespace ui {
 		if(!m_text.empty()) {
 			IRect extents = m_font->evalExtents(m_text.c_str());
 			int2 pos = (size() - extents.size()) / 2 - extents.min;
-			m_font->drawShadowed(pos, Color::white, Color::black, "%s", m_text.c_str());
+			m_font->draw((float2)pos, {Color::white, Color::black}, m_text);
 		}
 	}
 

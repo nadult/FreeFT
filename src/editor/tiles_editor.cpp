@@ -466,19 +466,19 @@ namespace ui {
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[WindowStyle::fonts[1]];
 
-		font->drawShadowed(int2(0, 0), Color::white, Color::black, "Tile count: %d\n", m_tile_map.size());
+		font->draw(int2(0, 0), {Color::white, Color::black}, format("Tile count: %d\n", m_tile_map.size()));
 		if(isChangingOccluders() && m_current_occluder != -1) {
 			auto &occluder = m_tile_map.occluderMap()[m_current_occluder];
-			font->drawShadowed(int2(0, 25), Color::white, Color::black, "Occluder: %d (%d objects)\n",
-				   	m_current_occluder, (int)occluder.objects.size());
+			font->draw(int2(0, 25), {Color::white, Color::black},
+						format("Occluder: %d (%d objects)\n", m_current_occluder, (int)occluder.objects.size()));
 		}
 
 		if(m_new_tile)
-			font->drawShadowed(int2(0, clippedRect().height() - 50), Color::white, Color::black,
-					"Tile: %s\n", m_new_tile->resourceName());
-		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
-				"Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]);
+			font->draw(int2(0, clippedRect().height() - 50), {Color::white, Color::black},
+					format("Tile: %s\n", m_new_tile->resourceName()));
+		font->draw(int2(0, clippedRect().height() - 25), {Color::white, Color::black},
+				format("Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
+				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]));
 	}
 		
 	const IBox TilesEditor::computeCursor(const int2 &start, const int2 &end) const {

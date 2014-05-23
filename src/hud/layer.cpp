@@ -27,9 +27,9 @@ namespace hud {
 	void HudLayer::setTargetRect(const FRect &rect) {
 		m_target_rect = rect;
 	}
-
-	Color mulAlpha(Color color, float alpha_mul) {
-		return Color(float4(color) * float4(1.0f, 1.0f, 1.0f, alpha_mul));
+		
+	float HudLayer::backAlpha() const {
+		return 0.3f;
 	}
 
 	void HudLayer::draw() const {
@@ -44,9 +44,8 @@ namespace hud {
 
 		DTexture::unbind();
 		Color color = m_style.layer_color;
-		drawQuad(rect, mulAlpha(color, 0.5));
-		drawBorder(rect, mulAlpha(color, 0.7), float2(0, 0), 100.0f, false);
-		drawBorder(rect, mulAlpha(color, 0.7), float2(0, 0), 100.0f, true);
+		drawQuad(rect, mulAlpha(color, backAlpha()));
+		drawBorder(rect, mulAlpha(color, min(backAlpha() * 1.5f, 1.0f)), float2(0, 0), 100.0f);
 
 		for(int n = 0; n < (int)m_widgets.size(); n++)
 			m_widgets[n]->draw();

@@ -33,14 +33,9 @@ namespace hud {
 
 		drawQuad(FRect(pos, pos + icon_size), color);
 
-		if(m_max_hp) {
-			TextFormatter fmt(256);
-			fmt(hp_value <= 0.0f? "DEAD" : "%d/%d", m_current_hp, m_max_hp);
-			IRect extents = m_font->evalExtents(fmt.text());
-
-			float2 pos(rect.max.x - extents.width(), rect.min.y);
-			m_font->drawShadowed((int2)pos, m_style.focus_color, Color::black, "%s", fmt.text());
-		}
+		if(m_max_hp)
+			m_font->draw(rect, {m_style.focus_color, Color::black, HAlign::right, VAlign::top},
+						 format(hp_value <= 0.0f? "DEAD" : "%d/%d", m_current_hp, m_max_hp));
 	}
 
 }

@@ -29,6 +29,7 @@ namespace hud
 		bool isShowing() const { return m_is_visible && m_visible_time < 1.0f; }
 
 		virtual void setVisible(bool is_visible, bool animate = true);
+		virtual float backAlpha() const;
 
 		void setStyle(HudStyle);
 		void attach(PHudWidget);

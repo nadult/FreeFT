@@ -411,6 +411,8 @@ private:
 	uint m_offset;
 };
 
+const string format(const char *format, ...);
+
 template <class T>
 class ClonablePtr: public unique_ptr<T> {
 public:
@@ -481,6 +483,7 @@ struct Color
 	};
 };
 
+Color mulAlpha(Color color, float alpha);
 Color lerp(Color a, Color b, float value);
 
 inline bool operator==(const Color &lhs, const Color &rhs) { return lhs.rgba == rhs.rgba; }

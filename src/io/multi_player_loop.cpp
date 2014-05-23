@@ -10,6 +10,7 @@
 #include "audio/device.h"
 
 using namespace net;
+using namespace gfx;
 
 namespace hud {
 
@@ -25,7 +26,7 @@ namespace hud {
 		button_down,
 		button_refresh,
 	};
-
+		
 	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style) :HudLayer(rect) {
 		m_slide_left = false;
 		m_visible_time = 0.0f;
@@ -61,11 +62,44 @@ namespace hud {
 		attach(button_up.get());
 		attach(button_down.get());
 		attach(button_refresh.get());
+
+		m_columns.emplace_back(Column{ ColumnType::server_name,	"Server name",	150.0f });
+		m_columns.emplace_back(Column{ ColumnType::map_name,	"Map name",		150.0f });
+		m_columns.emplace_back(Column{ ColumnType::num_players,	"Num players",	80.0f });
+		m_columns.emplace_back(Column{ ColumnType::game_mode,	"Game mode",	80.0f });
+		m_columns.emplace_back(Column{ ColumnType::ping,		"Ping",			50.0f });
+	}
+	
+	float MultiPlayerMenu::backAlpha() const {
+		return 0.6f;
+	}
+		
+	void MultiPlayerMenu::updateColumnRects() {
+		FRect sub_rect = rect();
+		sub_rect.min += float2(spacing, spacing);
+		sub_rect.max -= float2(spacing, spacing * 2 + s_button_size.y);
+		
+		float size_left = sub_rect.width(), min_sum = 0.0f;
+		for(int n = 0; n < (int)m_columns.size(); n++) {
+			size_left -= m_columns[n].min_size + spacing;
+			min_sum += m_columns[n].min_size;
+		}
+
+		float frac = 0.0f, pos = 0.0f;
+		for(int n = 0; n < (int)m_columns.size(); n++) {
+			float col_size = m_columns[n].min_size + size_left * (m_columns[n].min_size / min_sum) + frac;
+			int isize = (int)col_size;
+			frac = col_size - isize;
+			m_columns[n].rect = FRect(sub_rect.min.x + pos, sub_rect.min.y, sub_rect.min.x + pos + isize, sub_rect.max.y);
+			pos += isize + spacing;
+		}
 	}
 		
 	void MultiPlayerMenu::update(bool is_active, double time_diff) {
 		HudLayer::update(is_active, time_diff);
 		float2 mouse_pos = float2(gfx::getMousePos()) - rect().min;
+
+		updateColumnRects();
 
 		if(is_active && m_is_visible) {
 			for(int n = 0; n < (int)m_buttons.size(); n++)
@@ -84,12 +118,22 @@ namespace hud {
 			if(m_buttons[button_refresh]->isPressed(mouse_pos)) {
 				audio::playSound("butn_text", 1.0f);
 			}
-
 		}
 	}
 
 	void MultiPlayerMenu::draw() const {
+		FRect back_quad(gfx::getWindowSize());
+
+		DTexture::unbind();
+		drawQuad(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
+
 		HudLayer::draw();
+
+		DTexture::unbind();
+		for(int n = 0; n < (int)m_columns.size(); n++) {
+			const Column &column = m_columns[n];
+			drawQuad(column.rect, mulAlpha(lerp(Color::white, Color::green, n & 1? 0.3f : 0.6f), 0.5f));
+		}
 	}
 
 }

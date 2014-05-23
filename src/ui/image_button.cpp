@@ -71,7 +71,7 @@ namespace ui
 
 			if(m_mouse_press)
 				pos += int2(2, 2);
-			m_proto.font->drawShadowed(pos, m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black, m_text.c_str());
+			m_proto.font->draw(pos, {m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black}, m_text);
 		}
 	}
 

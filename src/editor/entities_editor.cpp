@@ -362,9 +362,9 @@ namespace ui {
 		lookAt(-clippedRect().min);
 		PFont font = Font::mgr[WindowStyle::fonts[1]];
 
-		font->drawShadowed(int2(0, clippedRect().height() - 25), Color::white, Color::black,
-				"Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
-				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), EntitiesEditorMode::toString(m_mode));
+		font->draw(int2(0, clippedRect().height() - 25), {Color::white, Color::black},
+				format("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
+				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), EntitiesEditorMode::toString(m_mode)));
 	}
 
 }
