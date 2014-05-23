@@ -38,6 +38,7 @@ namespace hud
 		FRect m_target_rect;
 		HudStyle m_style;
 		vector<PHudWidget> m_widgets;
+		gfx::PFont m_font, m_big_font;
 
 		float m_visible_time;
 		bool m_is_visible;

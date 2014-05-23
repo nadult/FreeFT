@@ -37,12 +37,27 @@ namespace hud {
 			FRect rect;
 		};
 
+		struct ServerInfo: public net::ServerStatusChunk {
+			int ping;
+
+			FRect rect;
+			bool is_mouse_over;
+			float over_time, selection_time;
+		};
+
 	protected:
 		void updateColumnRects();
+		const string cellText(int server_id, ColumnType) const;
+
+		void updateData();
 
 		vector<Column> m_columns;
 		vector<PHudWidget> m_buttons;
-		vector<net::ServerStatusChunk> m_servers;
+		vector<ServerInfo> m_servers;
+
+		int m_selection;
+		int m_row_offset;
+		int m_max_visible_rows;
 	};
 
 }

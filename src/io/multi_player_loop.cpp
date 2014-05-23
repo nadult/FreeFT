@@ -5,9 +5,9 @@
 
 #include "io/multi_player_loop.h"
 #include "gfx/device.h"
+#include "gfx/font.h"
 #include "net/client.h"
 #include "sys/config.h"
-#include "audio/device.h"
 
 using namespace net;
 using namespace gfx;
@@ -25,9 +25,11 @@ namespace hud {
 		button_up,
 		button_down,
 		button_refresh,
+		button_connect,
 	};
 		
-	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style) :HudLayer(rect) {
+	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style)
+		  :HudLayer(rect), m_max_visible_rows(0), m_row_offset(0), m_selection(-1) {
 		m_slide_left = false;
 		m_visible_time = 0.0f;
 
@@ -41,33 +43,45 @@ namespace hud {
 		button_close->setIcon(HudIcon::close);
 
 		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
-		PHudWidget button_up = new HudWidget(button_rect);
-		button_up->setIcon(HudIcon::up_arrow);
-
-		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
 		PHudWidget button_down = new HudWidget(button_rect);
 		button_down->setIcon(HudIcon::down_arrow);
+		button_down->setAccelerator(Key_pagedown);
+
+		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
+		PHudWidget button_up = new HudWidget(button_rect);
+		button_up->setIcon(HudIcon::up_arrow);
+		button_up->setAccelerator(Key_pageup);
 
 		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
 		button_rect.min.x -= 50.0f;
 		PHudWidget button_refresh = new HudWidget(button_rect);
 		button_refresh->setText("refresh");
+		
+		button_rect -= float2(button_rect.width() + HudWidget::spacing, 0.0f);
+		button_rect.min.x -= 20.0f;
+		PHudWidget button_connect = new HudWidget(button_rect);
+		button_connect->setText("connect");
+		button_connect->setAccelerator(Key_enter);
 
 		m_buttons.push_back(button_close);
 		m_buttons.push_back(button_up);
 		m_buttons.push_back(button_down);
 		m_buttons.push_back(button_refresh);
+		m_buttons.push_back(button_connect);
 
 		attach(button_close.get());
 		attach(button_up.get());
 		attach(button_down.get());
 		attach(button_refresh.get());
+		attach(button_connect.get());
 
 		m_columns.emplace_back(Column{ ColumnType::server_name,	"Server name",	150.0f });
 		m_columns.emplace_back(Column{ ColumnType::map_name,	"Map name",		150.0f });
 		m_columns.emplace_back(Column{ ColumnType::num_players,	"Num players",	80.0f });
 		m_columns.emplace_back(Column{ ColumnType::game_mode,	"Game mode",	80.0f });
 		m_columns.emplace_back(Column{ ColumnType::ping,		"Ping",			50.0f });
+
+		updateData();
 	}
 	
 	float MultiPlayerMenu::backAlpha() const {
@@ -93,32 +107,105 @@ namespace hud {
 			m_columns[n].rect = FRect(sub_rect.min.x + pos, sub_rect.min.y, sub_rect.min.x + pos + isize, sub_rect.max.y);
 			pos += isize + spacing;
 		}
+
+		float row_size = m_font->lineHeight();
+		m_max_visible_rows = (int)((sub_rect.height() + spacing) / (row_size + spacing)) - 1;
+
+		pos = sub_rect.min.y + row_size + spacing;
+		for(int r = 0; r < (int)m_servers.size(); r++) {
+			if(r < m_row_offset || r >= m_row_offset + m_max_visible_rows) {
+				m_servers[r].rect = FRect();
+				continue;
+			}
+
+			m_servers[r].rect = FRect(sub_rect.min.x, pos, sub_rect.max.x, pos + row_size);
+			pos += row_size + spacing;
+		}
 	}
 		
 	void MultiPlayerMenu::update(bool is_active, double time_diff) {
+		is_active &= m_is_visible;
 		HudLayer::update(is_active, time_diff);
-		float2 mouse_pos = float2(gfx::getMousePos()) - rect().min;
+		float2 mouse_pos((float2)gfx::getMousePos() - rect().min);
 
-		updateColumnRects();
+		if(isKeyDown(Key_esc))
+			setVisible(false);
 
-		if(is_active && m_is_visible) {
-			for(int n = 0; n < (int)m_buttons.size(); n++)
-				m_buttons[n]->setFocus(gfx::isMouseKeyPressed(0) && m_buttons[n]->rect().isInside(mouse_pos));
+		for(int n = 0; n < (int)m_buttons.size(); n++)
+			m_buttons[n]->setFocus(gfx::isMouseKeyPressed(0) && m_buttons[n]->rect().isInside(mouse_pos) && is_active);
 
+		m_buttons[button_connect]->setVisible(m_selection != -1);
+		m_buttons[button_up]->setVisible(m_row_offset > 0);
+		m_buttons[button_down]->setVisible(m_row_offset + m_max_visible_rows < (int)m_servers.size());
+
+		if(is_active) {
 			if(m_buttons[button_close]->isPressed(mouse_pos)) {
-				audio::playSound("butn_text", 1.0f);
+				playSound(HudSound::button);
 				setVisible(false);
 			}
 			if(m_buttons[button_up]->isPressed(mouse_pos)) {
-				audio::playSound("butn_text", 1.0f);
+				m_row_offset -= m_max_visible_rows;
+				m_row_offset = max(m_row_offset, 0);
+				playSound(HudSound::button);
 			}
 			if(m_buttons[button_down]->isPressed(mouse_pos)) {
-				audio::playSound("butn_text", 1.0f);
+				if(m_row_offset + m_max_visible_rows < (int)m_servers.size())
+					m_row_offset += m_max_visible_rows;
+				playSound(HudSound::button);
 			}
 			if(m_buttons[button_refresh]->isPressed(mouse_pos)) {
-				audio::playSound("butn_text", 1.0f);
+				playSound(HudSound::button);
+			}
+			if(m_buttons[button_connect]->isPressed(mouse_pos)) {
+				playSound(HudSound::button);
 			}
 		}
+
+		if(m_selection < m_row_offset || m_selection >= m_row_offset + m_max_visible_rows)
+			m_selection = -1;
+
+		updateColumnRects();
+
+		mouse_pos += rect().min;
+		for(int n = 0; n < (int)m_servers.size(); n++) {
+			ServerInfo &info = m_servers[n];
+			FRect rect = info.rect;
+			rect.min.y -= spacing * 0.5f;
+			rect.max.y += spacing * 0.5f;
+
+			info.is_mouse_over = rect.isInside(mouse_pos);
+			if(info.is_mouse_over && isMouseKeyDown(0))
+				m_selection = n;
+			animateValue(info.over_time, time_diff * 5.0f, info.is_mouse_over);
+			animateValue(info.selection_time, time_diff * 5.0f, n == m_selection);
+			info.over_time = max(info.over_time, info.selection_time);
+		}
+	}
+
+#define GEN_RANDOM
+
+	void MultiPlayerMenu::updateData() {
+#ifdef GEN_RANDOM
+		m_servers.clear();
+
+		vector<const char*> snames = { "Maxx server", "Maxx server", "Poly killers", "Hello kitty fans", "Duck hunters" };
+		vector<const char*> mnames = { "City carnage", "Bunker assault", "Motor sports", "Crypt #13", "Desert" };
+
+		for(int n = 0; n < 30; n++) {
+			ServerInfo info;
+			info.game_mode = (game::GameMode::Type)(rand() % game::GameMode::count);
+			info.max_players = rand() % 2? rand() % 2? 4 : 8 : 16;
+			info.num_players = rand() % info.max_players + 1;
+			info.ping = rand() % 2? rand() % 200 : rand() % 500;
+			info.map_name = mnames[rand() % mnames.size()];
+			info.server_name = format("%s #%d", snames[rand() % snames.size()], rand() % 4 + 1);
+			info.over_time = 0.0f;
+			info.selection_time = 0.0f;
+			m_servers.push_back(info);
+		}
+#endif
+
+		m_row_offset = 0;
 	}
 
 	void MultiPlayerMenu::draw() const {
@@ -129,11 +216,44 @@ namespace hud {
 
 		HudLayer::draw();
 
-		DTexture::unbind();
 		for(int n = 0; n < (int)m_columns.size(); n++) {
 			const Column &column = m_columns[n];
-			drawQuad(column.rect, mulAlpha(lerp(Color::white, Color::green, n & 1? 0.3f : 0.6f), 0.5f));
+			FRect rect = column.rect;
+
+			DTexture::unbind();
+			drawQuad(rect, mulAlpha(lerp(Color::white, Color::green, n & 1? 0.3f : 0.6f), 0.5f));
+			m_font->draw(rect, {Color::white, Color::black, HAlign::center, VAlign::top}, column.title);
+			
+			for(int r = m_row_offset, rend = min((int)m_servers.size(), m_row_offset + m_max_visible_rows); r < rend; r++) {
+				const ServerInfo &info = m_servers[r];
+				FRect row_rect = info.rect;
+				m_font->draw(FRect(rect.min.x, row_rect.min.y, rect.max.x, row_rect.max.y),
+							 {lerp(Color(200, 200, 200), Color::white, info.over_time), Color::black, HAlign::center},
+							 cellText(r, column.type));
+
+				if(m_selection == r && info.selection_time > 0.0f)
+					drawBorder(info.rect, mulAlpha(Color(200, 255, 200, 80), info.selection_time * info.selection_time),
+							float2(50.0f, 50.0f) * (1.0f - info.selection_time), 500.0f);
+			}
 		}
+	}
+		
+	const string MultiPlayerMenu::cellText(int server_id, ColumnType col_type) const {
+		DASSERT(server_id >= 0 && server_id < (int)m_servers.size());
+		const auto &row = m_servers[server_id];
+
+		if(col_type == ColumnType::server_name)
+			return row.server_name;
+		else if(col_type == ColumnType::map_name)
+			return row.map_name;
+		else if(col_type == ColumnType::num_players)
+			return format("%d / %d", row.num_players, row.max_players);
+		else if(col_type == ColumnType::game_mode)
+			return game::GameMode::toString(row.game_mode);
+		else if(col_type == ColumnType::ping)
+			return format("%d", row.ping);
+
+		return string();
 	}
 
 }

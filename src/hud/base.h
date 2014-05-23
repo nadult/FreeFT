@@ -15,6 +15,17 @@ namespace hud {
 	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical);
 	void drawLine(float2 p1, float2 p2, Color a, Color b);
 	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width);
+	void animateValue(float &value, float speed, bool maximize);
+
+	enum class HudSound {
+		button,
+		item_equip,
+		error,
+
+		count
+	};
+
+	void playSound(HudSound);
 
 	enum Alignment {
 		align_top,

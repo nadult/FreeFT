@@ -7,13 +7,14 @@
 #include "hud/widget.h"
 #include "gfx/device.h"
 #include "gfx/opengl.h"
+#include "gfx/font.h"
 
 using namespace gfx;
 
 namespace hud {
 
 	HudLayer::HudLayer(const FRect &target_rect) :m_target_rect(target_rect), m_is_visible(true), m_visible_time(1.0), m_slide_left(true) {
-		m_style = defaultStyle();
+		HudLayer::setStyle(defaultStyle());
 	}
 
 	HudLayer::~HudLayer() { }
@@ -63,15 +64,15 @@ namespace hud {
 		m_style = style;
 		for(int n = 0; n < (int)m_widgets.size(); n++)
 			m_widgets[n]->setStyle(style);
+
+		m_font = Font::mgr[style.font_name];
+		m_big_font = Font::mgr[style.big_font_name];
 	}
 		
 	void HudLayer::update(bool is_active, double time_diff) {
 		const float2 mouse_pos = float2(getMousePos()) - rect().min;
 
-		float anim_speed = 5.0f;
-
-		m_visible_time += (m_is_visible? 1.0f : -1.0f) * pow(1.0f - m_visible_time + 0.2f, 1.5f) * time_diff * anim_speed;
-		m_visible_time = clamp(m_visible_time, 0.0f, 1.0f);
+		animateValue(m_visible_time, time_diff * 5.0f, m_is_visible);
 
 		for(int n = 0; n < (int)m_widgets.size(); n++)
 			m_widgets[n]->update(mouse_pos, time_diff);

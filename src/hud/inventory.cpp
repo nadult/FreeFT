@@ -9,7 +9,6 @@
 #include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "audio/device.h"
 #include <algorithm>
 
 using namespace gfx;
@@ -203,11 +202,11 @@ namespace hud {
 			m_button_down->setFocus(m_button_down->rect().isInside(mouse_pos) && isMouseKeyPressed(0));
 
 			if(m_button_up->isPressed(mouse_pos) && m_row_offset > 0) {
-				audio::playSound("butn_text", 1.0f);
+				playSound(HudSound::button);
 				m_row_offset--;
 			}
 			if(m_button_down->isPressed(mouse_pos) && m_row_offset < max_row_offset) {
-				audio::playSound("butn_text", 1.0f);
+				playSound(HudSound::button);
 				m_row_offset++;
 			}
 		}
@@ -247,17 +246,17 @@ namespace hud {
 			if(m_buttons[over_item]->isPressed(mouse_pos, 0)) {
 				if(is_equipped) {
 					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
-					audio::playSound("butn_itemswitch", 1.0f);
+					playSound(HudSound::item_equip);
 				}
 				else {
 					//TODO: play sounds only for items which doesn't generate any 
 					if(actor->canEquipItem(item)) {
 						m_world->sendOrder(new EquipItemOrder(item), m_actor_ref);
 						if(item.type() != ItemType::ammo)
-							audio::playSound("butn_itemswitch", 1.0f);
+							playSound(HudSound::item_equip);
 					}
 					else {
-						audio::playSound("butn_optionknob", 1.0f);
+						playSound(HudSound::error);
 					}
 				}
 
@@ -270,7 +269,7 @@ namespace hud {
 			if(m_buttons[over_item]->isPressed(mouse_pos, 1)) {
 				if(is_equipped) {
 					m_world->sendOrder(new UnequipItemOrder(item.type()), m_actor_ref);
-					audio::playSound("butn_itemswitch", 1.0f);
+					playSound(HudSound::item_equip);
 				}
 				else {
 					m_drop_start_pos = mouse_pos;
@@ -303,15 +302,15 @@ namespace hud {
 		HudLayer::draw();
 
 		if(!m_drop_item.isDummy()) {
-			for(int n = 0; n < (int)m_buttons.size(); n++)
-				if(m_buttons[n]->item() == m_drop_item) {
-					//TODO: move to button
-					PFont font = Font::mgr[m_style.font_name];
-					font->draw(m_buttons[n]->rect() + rect().min,
-							   {m_buttons[n]->focusColor(), m_buttons[n]->focusShadowColor(), HAlign::left, VAlign::bottom},
+			for(int n = 0; n < (int)m_buttons.size(); n++) {
+				const HudInventoryItem *item = m_buttons[n].get();
+				if(item->item() == m_drop_item) {
+					//TODO: move to HudInventoryItem impl
+					m_font->draw(item->rect() + rect().min, {item->focusColor(), item->focusShadowColor(), HAlign::left, VAlign::bottom},
 							   format("-%d", (int)m_drop_count));
 					break;
 				}
+			}
 		}
 		
 		if(isVisible()) {

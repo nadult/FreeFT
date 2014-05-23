@@ -13,7 +13,6 @@
 #include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "audio/device.h"
 
 using namespace gfx;
 
@@ -145,7 +144,7 @@ namespace hud {
 			}
 
 			if(stance_id != -1 && stance_id != sel_id) {
-				audio::playSound("butn_text", 1.0f);
+				playSound(HudSound::button);
 
 				sendOrder(new ChangeStanceOrder(s_stance_buttons[stance_id].stance_id));
 				for(int n = 0; n < (int)m_hud_stances.size(); n++)
@@ -182,7 +181,7 @@ namespace hud {
 
 			if(pressed_id != -1) {
 				bool is_disabling = pressed_id != -1 && m_selected_layer == s_buttons[pressed_id].id;
-				audio::playSound("butn_text", 1.0f);
+				playSound(HudSound::button);
 				for(int n = 0; n < (int)m_hud_buttons.size(); n++)
 					m_hud_buttons[n]->setFocus(pressed_id == n && !is_disabling);
 			

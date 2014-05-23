@@ -8,7 +8,6 @@
 #include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "audio/device.h"
 
 using namespace gfx;
 
@@ -47,16 +46,10 @@ namespace hud {
 	}
 		
 	void HudWidget::update(const float2 &mouse_pos, double time_diff) {
-		float anim_speed = 20.0f;
-
-		m_focus_time += (m_is_focused? 1.0f - m_focus_time : -m_focus_time) * time_diff * anim_speed;
-		m_focus_time = clamp(m_focus_time, 0.0f, 1.0f);
-
-		m_visible_time += (m_is_visible? 1.0f - m_visible_time : -m_visible_time) * time_diff * anim_speed;
-		m_visible_time = clamp(m_visible_time, 0.0f, 1.0f);
-		
-		m_over_time += (isMouseOver(mouse_pos)? 1.0f - m_over_time : -m_over_time) * time_diff * anim_speed;
-		m_over_time = clamp(m_over_time, 0.0f, 1.0f);
+		float anim_speed = 10.0f;
+		animateValue(m_focus_time, time_diff * anim_speed, m_is_focused);
+		animateValue(m_visible_time, time_diff * anim_speed, m_is_visible);
+		animateValue(m_over_time, time_diff * anim_speed, isMouseOver(mouse_pos));
 		m_over_time = max(m_over_time, m_focus_time);
 	}
 
@@ -88,7 +81,7 @@ namespace hud {
 		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
 
 		if(!m_text.empty())
-			m_font->draw(rect, {focusColor(), Color::black, HAlign::center, VAlign::center}, m_text);
+			m_font->draw(rect, {focusColor(), focusShadowColor(), HAlign::center, VAlign::center}, m_text);
 
 		if(HudIcon::isValid(m_icon_id)) {
 			m_icons_tex->bind();

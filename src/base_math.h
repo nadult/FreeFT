@@ -286,6 +286,13 @@ struct Rect
 	Rect() { }
 	static const Rect empty() { return Rect(0, 0, 0, 0); }
 
+	const Rect subRect(const Rect &part) const {
+		return Rect(lerp(min.x, max.x, part.min.x),
+					lerp(min.y, max.y, part.min.y),
+					lerp(min.x, max.x, part.max.x),
+					lerp(min.x, max.x, part.max.y));
+	}
+
 	Type width() const { return max.x - min.x; }
 	Type height() const { return max.y - min.y; }
 	Type2 size() const { return max - min; }

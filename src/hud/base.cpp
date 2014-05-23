@@ -5,12 +5,13 @@
 
 #include "hud/base.h"
 #include "gfx/device.h"
+#include "audio/device.h"
 
 using namespace gfx;
 
 namespace hud
 {
-
+	
 	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical) {
 		Color colors[4] = { a, b, b, a };
 		if(is_vertical)
@@ -45,18 +46,19 @@ namespace hud
 	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width) {
 		float2 min = rect.min - offset, max = rect.max + offset;
 		width = ::min(width, (max.x - min.x) * 0.5f - 2.0f);
+		Color transparent = Color(color, 0);
 
 		DTexture::unbind();
 	
 		// left
 		drawLine(float2(min.x, min.y), float2(min.x, max.y), color, color);
-		drawLine(float2(min.x + width, min.y), float2(min.x, min.y), Color::transparent, color);
-		drawLine(float2(min.x + width, max.y), float2(min.x, max.y), Color::transparent, color);
+		drawLine(float2(min.x + width, min.y), float2(min.x, min.y), transparent, color);
+		drawLine(float2(min.x + width, max.y), float2(min.x, max.y), transparent, color);
 			
 		// right
 		drawLine(float2(max.x, min.y), float2(max.x, max.y), color, color);
-		drawLine(float2(max.x - width, min.y), float2(max.x, min.y), Color::transparent, color);
-		drawLine(float2(max.x - width, max.y), float2(max.x, max.y), Color::transparent, color);
+		drawLine(float2(max.x - width, min.y), float2(max.x, min.y), transparent, color);
+		drawLine(float2(max.x - width, max.y), float2(max.x, max.y), transparent, color);
 	}
 	
 	const FRect align(const FRect &rect, const FRect &relative_to, Alignment mode, float spacing) {
@@ -90,6 +92,24 @@ namespace hud
 			return FRect(right, rect.min.y, right + rect.width(), rect.max.y);
 		}
 	}
+	
+	void animateValue(float &value, float speed, bool maximize) {
+		value = clamp(value, 0.0f, 1.0f);
+		value += (maximize? 1.0f : -1.0f) * (1.0f - (value * value) * 0.9) * speed;
+		value = clamp(value, 0.0f, 1.0f);
+	}
+	
+	static const char *s_sound_names[(int)HudSound::count] = {
+		"butn_text",
+		"butn_itemswitch",
+		"butn_optionknob"
+	};
+
+	void playSound(HudSound id) {
+		DASSERT(id >= (HudSound)0 && id < HudSound::count);
+		audio::playSound(s_sound_names[(int)id], 1.0f);
+	}
+
 
 	DEFINE_ENUM(HudStyleId,
 		"Whiteish Green",

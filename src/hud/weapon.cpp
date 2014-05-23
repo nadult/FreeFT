@@ -8,7 +8,6 @@
 #include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
-#include "audio/device.h"
 
 using namespace gfx;
 
