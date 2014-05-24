@@ -36,8 +36,8 @@ namespace io {
 		
 		ui::PFileDialog m_file_dialog;
 
-		hud::PMultiPlayerMenu m_multi_player_menu;
-	//	hud::PSinglePlayerMenu m_single_player_menu;
+		hud::PMultiPlayerMenu m_multi_menu;
+	//	hud::PSinglePlayerMenu m_single_menu;
 	//	hud::PServerMenu m_server_menu;
 		hud::PHudLayer m_sub_menu;
 
@@ -57,8 +57,8 @@ namespace io {
 		IRect m_back_rect;
 	
 		std::future<game::PWorld> m_future_world;
-		std::future<net::PClient> m_future_client;
-		std::future<net::PServer> m_future_server;	
+		net::PClient m_client;
+		net::PServer m_server;	
 		PLoop m_sub_loop;
 
 		double m_anim_pos;

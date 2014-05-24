@@ -7,7 +7,7 @@
 #define NET_SERVER_H
 
 #include "net/host.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 #include "game/entity.h"
 #include "game/world.h"
 
@@ -55,7 +55,7 @@ namespace net {
 			int host_id;
 		};
 
-
+		int maxPlayers() const { return min(m_config.m_max_players, (int)max_remote_hosts); }
 		game::EntityRef spawnActor(game::EntityRef spawn_zone);
 		void disconnectClient(int client_id);
 

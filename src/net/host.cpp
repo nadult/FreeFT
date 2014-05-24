@@ -4,7 +4,7 @@
  */
 
 #include "net/host.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 #include <algorithm>
 
 //#define LOGGING

@@ -12,7 +12,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/trigger.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 #include "net/server.h"
 #include "sys/xml.h"
 #include <list>
@@ -121,8 +121,10 @@ namespace net {
 						spawn_zones.push_back(trigger);
 				}
 
+				// TODO: startup verification and sending refuse if needed
+				m_client_count++;
 				client.actor_ref = spawnActor(spawn_zones[rand() % spawn_zones.size()]->ref());
-//				printf("Client connected (cid:%d): %s\n", (int)r, host.address().toString().c_str());
+				printf("Client connected (%d / %d): %s\n", m_client_count, maxPlayers(), host.address().toString().c_str());
 
 				client.update_map.resize(m_world->entityCount() * 2);
 				for(int n = 0; n < m_world->entityCount(); n++)
@@ -130,12 +132,11 @@ namespace net {
 						client.update_map[n] = true;
 
 				TempPacket temp;
-				temp << string(m_world->mapName()) << client.actor_ref;
+				temp << LevelInfoChunk{ m_world->mapName(), client.actor_ref };
 				host.enqueChunk(temp, ChunkType::join_accept, 0);
 			}
-			if(chunk.type() == ChunkType::join_complete) {
+			if(chunk.type() == ChunkType::level_loaded) {
 				client.mode = ClientMode::connected;
-				m_client_count++;
 				host.verify(true);
 				break;
 			}
@@ -208,7 +209,17 @@ namespace net {
 
 		LocalHost::receive();
 
-		//TODO: handle lobby packets
+		while(getLobbyPacket(packet)) {
+			LobbyChunkId::Type id;
+			packet >> id;
+			Address target;
+			packet >> target.ip >> target.port;
+
+			if(id == LobbyChunkId::join_request && target.isValid()) {
+				OutPacket punch(0, -1, -1, PacketInfo::flag_lobby);
+				m_socket.send(punch, target);
+			}
+		}
 
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
@@ -231,6 +242,8 @@ namespace net {
 	}
 
 	void Server::finishFrame() {
+		m_timestamp++;
+
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
@@ -280,7 +293,7 @@ namespace net {
 			chunk.map_name = m_config.m_map_name;
 			chunk.server_name = m_config.m_server_name;
 			chunk.num_players = m_client_count;
-			chunk.max_players = max_remote_hosts;
+			chunk.max_players = maxPlayers();
 			chunk.is_passworded = !m_config.m_password.empty();
 			chunk.game_mode = GameMode::death_match;
 			out << LobbyChunkId::server_status << chunk;

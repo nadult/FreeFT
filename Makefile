@@ -20,7 +20,7 @@ SHARED_SRC=\
 	gfx/texture_format gfx/texture gfx/texture_bmp gfx/texture_tga gfx/texture_png gfx/font gfx/opengl \
 	gfx/texture_cache gfx/device gfx/device_texture gfx/drawing gfx/scene_renderer gfx/packed_texture \
 	sys/frame_allocator sys/memory sys/profiler sys/platform sys/xml sys/config sys/data_sheet \
-	net/socket net/lobby net/chunk net/host net/server net/client \
+	net/socket net/chunks net/chunk net/host net/server net/client \
 	occluder_map base base_math navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/entity game/entity_world_proxy game/container game/level game/visibility game/path \
@@ -78,6 +78,7 @@ CC =gcc
 
 MGW_CXX=i686-w64-mingw32-g++
 MGW_CC =i686-w64-mingw32-gcc 
+MGW_STRIP=i686-w64-mingw32-strip
 
 
 -include Makefile.local
@@ -106,6 +107,7 @@ $(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD)/%.o  $(BUILD)/sys/pla
 
 $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD)/%_.o $(BUILD)/sys/platform_windows_.o
 	$(MGW_CXX) -o $@ $^  $(LIBS_$*) $(MINGW_LIBS)
+	$(MGW_STRIP) $@
 
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \

@@ -22,11 +22,12 @@
 #ifdef MessageBox // Yea.. TODO: remove windows.h from includes
 #undef MessageBox
 #endif
+	
+using namespace gfx;
+using namespace ui;
+using namespace game;
 
 namespace io {
-
-	using namespace gfx;
-	using namespace ui;
 
 	static PImageButton makeButton(const int2 &pos, const char *title) {
 		char back_name[256];
@@ -111,8 +112,8 @@ namespace io {
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(750, 550));
 				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
-				m_multi_player_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
-				m_sub_menu = m_multi_player_menu.get();
+				m_multi_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
+				m_sub_menu = m_multi_menu.get();
 			//	m_mode = mode_starting_multi;
 			}
 			else if(ev.source == m_exit.get()) {
@@ -177,15 +178,24 @@ namespace io {
 			PLoop new_loop;
 
 			try {
-				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-					new_loop.reset( new SinglePlayerLoop(m_future_world.get()) );
-				if(m_future_server.valid() && m_future_server.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-					new_loop.reset( new ServerLoop(std::move(m_future_server.get())) );
-				if(m_future_client.valid() && m_future_client.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-					new_loop.reset( new MultiPlayerLoop(std::move(m_future_client.get())) );
+				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+					if(m_client) {
+						PWorld world = m_future_world.get();
+						m_client->updateWorld(world);
+						new_loop.reset(new MultiPlayerLoop(std::move(m_client)));
+					}
+					else if(m_server) {
+					}
+					else {
+						new_loop.reset( new SinglePlayerLoop(m_future_world.get()) );
+					}
+				}
 			}
 			catch(const Exception &ex) {
-				int2 pos = rect().center(), size(600, 150);
+				PFont font = gfx::Font::mgr[WindowStyle::fonts[1]];
+				IRect extents = font->evalExtents(ex.what());
+				int2 pos = rect().center(), size(min(rect().width(), extents.width() + 50), 100);
+
 				PMessageBox message_box(new ui::MessageBox(IRect(pos - size / 2, pos + size / 2), ex.what(), MessageBoxMode::ok));
 				attach(message_box.get());
 				new_loop.reset(nullptr);
@@ -214,6 +224,22 @@ namespace io {
 			m_sub_menu->update(true, time_diff);
 			if(!m_sub_menu->isVisible() && !m_sub_menu->isShowing())
 				m_sub_menu.reset();
+
+			if(m_multi_menu->isClientReady()) {
+				m_multi_menu->setVisible(false);
+				m_client = std::move(m_multi_menu->getClient());
+				Replicator *replicator = dynamic_cast<Replicator*>(m_client.get());
+				const string map_name = m_client->levelInfo().map_name;
+
+				m_future_world = std::async(std::launch::async,
+						[map_name, replicator]() { return PWorld(new World(map_name, World::Mode::client, replicator)); } );
+				m_mode = mode_loading;
+			}
+		}
+
+		if(m_client) {
+			m_client->beginFrame();
+			m_client->finishFrame();
 		}
 
 		clear(Color(0, 0, 0));

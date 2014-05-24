@@ -7,20 +7,27 @@
 #define NET_CLIENT_H
 
 #include "net/host.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 #include "game/entity.h"
 #include "game/world.h"
 #include "game/orders.h"
 
 namespace net {
 
-	class Client: public net::LocalHost, game::Replicator {
+	class Client: public net::LocalHost, public game::Replicator {
 	public:
 		enum class Mode {
 			disconnected,
 			connecting,
-			connected,
+			refused,
+			timeout,
+
+			waiting_for_world_update,
+			world_updated,
+			playing,
 		};
+
+		enum { timeout = 5 };
 
 		Client(int port = 0);
 		~Client();
@@ -36,7 +43,11 @@ namespace net {
 		void beginFrame();
 		void finishFrame();
 
-		game::EntityRef actorRef() const { return m_actor_ref; }
+		const LevelInfoChunk &levelInfo() const { return m_level_info; }
+		void updateWorld(game::PWorld);
+		bool needWorldUpdate() const { return m_mode == Mode::waiting_for_world_update; }
+
+		game::EntityRef actorRef() const { return m_level_info.actor_ref; }
 		game::PWorld world() { return m_world; }
 
 	protected:
@@ -44,17 +55,14 @@ namespace net {
 		void replicateOrder(game::POrder &&order, game::EntityRef entity_ref) override;
 
 	private:
-		game::EntityRef m_actor_ref;
-		int m_server_id;
-		Mode m_mode;
+		LevelInfoChunk m_level_info;
 		game::PWorld m_world;
 
 		Address m_server_address;
+		int m_server_id;
+		Mode m_mode;
 
 		vector<game::POrder> m_orders;
-		bool m_order_cancels_prev;
-		game::OrderTypeId::Type m_order_type;
-		double m_order_send_time;
 	};
 
 }

@@ -19,8 +19,11 @@ namespace net {
 		join,
 		join_accept,
 		join_refuse,
-		join_complete,
 		leave,
+		ping,
+		
+		level_info,
+		level_loaded,
 
 		timestamp,
 		entity_full,

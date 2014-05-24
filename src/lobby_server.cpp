@@ -9,7 +9,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/socket.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 #include <list>
 #include <algorithm>
 #include <map>
@@ -82,6 +82,7 @@ public:
 					auto it = m_servers.find(server_address);
 
 					if(it != m_servers.end()) {
+						LOG("Punching through for: %s to: %s\n", source.toString().c_str(), server_address.toString().c_str());
 						OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
 						out << LobbyChunkId::join_request;
 						out.pack(source.ip, source.port);
@@ -135,7 +136,7 @@ int safe_main(int argc, char **argv)
 	printf("FreeFT::lobby_server; built " __DATE__ " " __TIME__ "\nPress Ctrl+C to quit\n");
 	sys::handleCtrlC(onCtrlC);
 	LobbyServer server;
-	printf("Server address: %s\n", lobbyServerAddress().toString().c_str());
+	printf("Lobby server address: %s\n", lobbyServerAddress().toString().c_str());
 
 	while(!s_is_closing) {
 		server.tick();

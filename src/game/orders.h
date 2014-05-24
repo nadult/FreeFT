@@ -12,6 +12,7 @@ namespace game {
 
 	// Only actors can receive orders
 
+	//TODO: add cancel order
 	DECLARE_ENUM(OrderTypeId,
 		invalid = -1,
 	

@@ -11,7 +11,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "net/host.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 #include "net/socket.h"
 
 using namespace game;
@@ -21,7 +21,6 @@ namespace net {
 
 	Client::Client(int port)
 	  :LocalHost(Address(port? port : net::randomPort())), m_mode(Mode::disconnected), m_server_id(-1) {
-		m_order_type = OrderTypeId::invalid;
 	}
 		
 	bool Client::getLobbyData(vector<ServerStatusChunk> &out) {
@@ -62,6 +61,12 @@ namespace net {
 		if(m_mode != Mode::disconnected)
 			disconnect();
 
+		{
+			OutPacket punch_through(0, -1, -1, PacketInfo::flag_lobby);
+			punch_through << LobbyChunkId::join_request << address.ip << address.port;
+			sendLobbyPacket(punch_through);
+		}
+
 		m_server_address = address;
 		m_server_id = addRemoteHost(m_server_address, -1);
 		if(m_server_id != -1) {
@@ -72,7 +77,7 @@ namespace net {
 	}
 
 	void Client::disconnect() {
-		if(m_mode == Mode::connected || m_mode == Mode::connecting) {
+		if(m_server_id != -1) {
 			RemoteHost *host = getRemoteHost(m_server_id);
 			if(host) {
 				beginSending(m_server_id);
@@ -82,59 +87,85 @@ namespace net {
 				m_server_id = -1;
 			}
 
+			m_server_id = -1;
 			m_mode = Mode::disconnected;
 		}
 	}
 
 	Client::~Client() {
+		disconnect();
 	}
-	
+		
+	void Client::updateWorld(game::PWorld world) {
+		DASSERT(m_mode == Mode::waiting_for_world_update);
+		DASSERT(world->replicator() == this && world->mode() == World::Mode::client);
+
+		if(world->mapName() == m_level_info.map_name) {
+			m_world = world;
+			m_mode = Mode::world_updated;
+		}
+	}
+
 	void Client::beginFrame() {
-		RemoteHost *host = m_server_id == -1? nullptr : getRemoteHost(m_server_id);
-
 		LocalHost::receive();
+		
+		if(m_server_id == -1)
+			return;
+		RemoteHost *host = getRemoteHost(m_server_id);
 
-		if(m_mode == Mode::connecting && host) {
+		if(m_mode == Mode::connecting) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
 				if(chunk.type() == ChunkType::join_accept) {
 					host->verify(true);
-					string map_name;
-					chunk >> map_name;
-					chunk >> m_actor_ref;
-
-					m_world = new World(map_name.c_str(), World::Mode::client, this);
-					for(int n = 0; n < m_world->entityCount(); n++)
-						m_world->removeEntity(m_world->toEntityRef(n));
-					m_mode = Mode::connected;
-
-					host->enqueChunk("", 0, ChunkType::join_complete, 0);
-					printf("Joined to: %s (map: %s)\n", m_server_address.toString().c_str(), map_name.c_str());
-
+					chunk >> m_level_info;
+					m_mode = Mode::waiting_for_world_update;
 				}
 				else if(chunk.type() == ChunkType::join_refuse) {
-					printf("Connection refused\n");
-					exit(0);
+					removeRemoteHost(m_server_id);
+					m_server_id = -1;
+					m_mode = Mode::refused;
 				}
 			}
 		}
-		else if(m_mode == Mode::connected && host) {
+
+		if(m_mode == Mode::world_updated) {
+			host->enqueChunk("", 0, ChunkType::level_loaded, 0);
+			m_mode = Mode::playing;
+		}
+
+		if(m_mode == Mode::playing) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
 				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
 					entityUpdate(chunk);
+
+				if(chunk.type() == ChunkType::level_info) {
+					LevelInfoChunk new_info;
+					chunk >> new_info;
+					if(new_info.map_name != m_level_info.map_name)
+						m_mode = Mode::waiting_for_world_update;
+					m_level_info = new_info;
+
+					//TODO: message about changed map first?
+					m_world.reset();
+				}
 			}
 		}
 	}
 
 	void Client::finishFrame() {
-		RemoteHost *host = m_server_id == -1? nullptr : getRemoteHost(m_server_id);
-		if(host)
-			beginSending(m_server_id);
+		m_timestamp++;
 
-		if(m_mode == Mode::connected && host) {
+		if(m_server_id == -1)
+			return;
+
+		RemoteHost *host = getRemoteHost(m_server_id);
+		beginSending(m_server_id);
+
+		if(m_mode == Mode::playing) {
 			while( const Chunk *chunk_ptr  = host->getIChunk() ) {
 				InChunk chunk(*chunk_ptr);
 
@@ -150,42 +181,30 @@ namespace net {
 			m_orders.clear();
 		}
 
-		if(host)
-			finishSending();
-		m_timestamp++;
+		finishSending();
 
-		if(host && host->timeout() > 10.0) {
-			printf("Timeout\n");
+		if(host->timeout() > double(timeout)) {
 			disconnect();
+			m_mode = Mode::timeout;
 		}
 	}
 	
 	void Client::entityUpdate(InChunk &chunk) {
 		DASSERT(chunk.type() == ChunkType::entity_full || chunk.type() == ChunkType::entity_delete);
+		if(!m_world || m_mode != Mode::playing)
+			return;
 
 		m_world->removeEntity(m_world->toEntityRef(chunk.chunkId()));
 
 		if(chunk.type() == ChunkType::entity_full) {
 			Entity *new_entity = Entity::construct(chunk);
 			m_world->addEntity(PEntity(new_entity), chunk.chunkId());
-
-			if(new_entity->ref() == m_actor_ref) {
-				Actor *actor = static_cast<Actor*>(new_entity);
-				if(actor->currentOrder() == m_order_type && m_order_type != OrderTypeId::invalid) {
-					printf("Order lag: %f\n", getTime() - m_order_send_time);
-					m_order_type = OrderTypeId::invalid;
-				}
-			}
 		}
 	}
 
 	void Client::replicateOrder(POrder &&order, EntityRef entity_ref) {
-		//TODO: handle cancel_prev
-		if(entity_ref == m_actor_ref) {
-			m_order_type = order->typeId();
+		if(entity_ref == m_level_info.actor_ref)
 			m_orders.emplace_back(std::move(order));
-			m_order_send_time = getTime();
-		}
 	}
 
 }

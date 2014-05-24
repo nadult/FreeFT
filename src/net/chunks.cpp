@@ -3,12 +3,12 @@
    This file is part of FreeFT.
  */
 
-#include "net/lobby.h"
+#include "net/chunks.h"
 
 namespace net {
 
 	Address lobbyServerAddress() {
-		return Address(resolveName("localhost"), 50000);
+		return Address(resolveName("89.74.58.32"), 50000);
 	}
 
 	void ServerStatusChunk::save(Stream &sr) const {
@@ -23,6 +23,15 @@ namespace net {
 		sr >> server_name >> map_name;
 		num_players = sr.decodeInt();
 		max_players = sr.decodeInt();
+	}
+
+
+	void LevelInfoChunk::save(Stream &sr) const {
+		sr << map_name << actor_ref;
+	}
+
+	void LevelInfoChunk::load(Stream &sr) {
+		sr >> map_name >> actor_ref;
 	}
 
 }

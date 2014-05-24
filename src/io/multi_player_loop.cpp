@@ -29,9 +29,15 @@ namespace hud {
 	};
 		
 	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style) :HudLayer(rect),
-	  m_max_visible_rows(0), m_row_offset(0), m_selection(-1), m_last_refresh_time(-1.0), m_please_refresh(true), m_waiting_for_refresh(false) {
+	  m_max_visible_rows(0), m_row_offset(0), m_selection(-1), m_please_refresh(true) {
 		m_slide_left = false;
 		m_visible_time = 0.0f;
+
+		m_waiting_for_refresh = false;
+		m_waiting_to_connect = false;
+
+		m_last_refresh_time = -1.0;
+		m_last_connect_time = -1.0;
 
 		style.border_offset *= 0.5f;
 		setStyle(style);
@@ -126,7 +132,7 @@ namespace hud {
 	}
 		
 	void MultiPlayerMenu::update(bool is_active, double time_diff) {
-		is_active &= m_is_visible;
+		is_active &= m_is_visible && m_client;
 		HudLayer::update(is_active, time_diff);
 		float2 mouse_pos((float2)gfx::getMousePos() - rect().min);
 
@@ -162,8 +168,21 @@ namespace hud {
 				m_please_refresh = true;
 			}
 			if(m_buttons[button_connect]->isPressed(mouse_pos)) {
-				playSound(HudSound::button);
+				if(m_selection != -1 && getTime() - m_last_connect_time > 1.0) {
+					Address address = m_servers[m_selection].address;
+					if(address.isValid()) {
+						m_last_connect_time = getTime();
+						m_client->connect(address);
+						playSound(HudSound::button);
+						m_waiting_to_connect = true;
+					}
+				}
 			}
+		}
+
+		if(m_waiting_to_connect && getTime() - m_last_connect_time > 5.0) {
+			setMessage("Error while connecting to server...", lerp(Color::white, Color::red, 0.5f));
+			m_waiting_to_connect = false;
 		}
 
 		if(m_selection < m_row_offset || m_selection >= m_row_offset + m_max_visible_rows)
@@ -315,6 +334,10 @@ namespace hud {
 		m_message_color = color;
 	}
 		
+	bool MultiPlayerMenu::isClientReady() const {
+		return m_client && m_client->mode() == Client::Mode::waiting_for_world_update;
+	}
+		
 	net::PClient &&MultiPlayerMenu::getClient() {
 		return std::move(m_client);
 	}
@@ -324,18 +347,20 @@ namespace hud {
 namespace io {
 
 	MultiPlayerLoop::MultiPlayerLoop(net::PClient client) {
-		DASSERT(client && client->mode() == Client::Mode::connected);
+		DASSERT(client && client->world());
 		m_client = std::move(client);
 		m_world = m_client->world();
 
 		Config config = loadConfig("client");
 
+		//TODO: wait until initial entity information is loaded?
 		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_client->actorRef(), config.profiler_enabled));
 	}
 
 	bool MultiPlayerLoop::tick(double time_diff) {
 		using namespace gfx;
 
+		//TODO: handle change of map
 		m_controller->update(time_diff);
 		m_client->beginFrame();
 

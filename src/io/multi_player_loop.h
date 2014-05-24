@@ -10,7 +10,7 @@
 #include "io/controller.h"
 #include "hud/layer.h"
 #include "hud/widget.h"
-#include "net/lobby.h"
+#include "net/chunks.h"
 
 namespace hud {
 
@@ -45,6 +45,7 @@ namespace hud {
 			float over_time, selection_time;
 		};
 
+		bool isClientReady() const;
 		net::PClient &&getClient();
 
 	protected:
@@ -68,7 +69,9 @@ namespace hud {
 		int m_max_visible_rows;
 		bool m_please_refresh;
 		bool m_waiting_for_refresh;
+		bool m_waiting_to_connect;
 		double m_last_refresh_time;
+		double m_last_connect_time;
 	};
 
 }

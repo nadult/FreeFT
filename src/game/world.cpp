@@ -15,12 +15,13 @@
 
 namespace game {
 
-	World::World(const string &file_name, Mode mode, Replicator *replicator)
+	World::World(string map_name, Mode mode, Replicator *replicator)
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
 		m_anim_frame(0), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map),
 	   	m_replicator(replicator) {
 		DASSERT(m_mode == Mode::single_player || m_replicator != nullptr);
 
+		string file_name = format("data/maps/%s", map_name.c_str());
 		m_level.load(file_name.c_str());
 		for(int n = 0; n < m_tile_map.size(); n++) {
 			//TODO: leave them and use them
@@ -39,7 +40,7 @@ namespace game {
 			m_navi_maps.emplace_back(agent_sizes[n]);
 
 //		m_tile_map.printInfo();
-		m_map_name = file_name;
+		m_map_name = map_name;
 		updateNaviMap(true);
 	}
 

@@ -3,11 +3,12 @@
    This file is part of FreeFT.
  */
 
-#ifndef NET_LOBBY_H
-#define NET_LOBBY_H
+#ifndef NET_CHUNKS_H
+#define NET_CHUNKS_H
 
 #include "net/socket.h"
 #include "game/base.h"
+#include "game/entity.h"
 
 namespace net {
 
@@ -33,6 +34,16 @@ namespace net {
 		game::GameMode::Type game_mode;
 		int num_players, max_players;
 		bool is_passworded;
+	};
+
+	struct LevelInfoChunk {
+		void save(Stream &sr) const;
+		void load(Stream &sr);
+
+		bool isValid() const { return !map_name.empty(); }
+
+		string map_name;
+		game::EntityRef actor_ref;
 	};
 
 }
