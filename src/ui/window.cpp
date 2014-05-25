@@ -18,10 +18,10 @@ namespace ui
 	Color WindowStyle::gui_light (0x4c, 0x86, 0xfe);
 	Color WindowStyle::gui_popup (0x60, 0xa0, 0xff); */
 	
-	Color WindowStyle::gui_dark  (0.60f, 0.40f, 0.10f);
-	Color WindowStyle::gui_medium(0.65f, 0.45f, 0.15f);
-	Color WindowStyle::gui_light (0.70f, 0.50f, 0.20f);
-	Color WindowStyle::gui_popup (0.70f, 0.55f, 0.30f);
+	Color WindowStyle::gui_dark  (0.10f, 0.50f, 0.10f);
+	Color WindowStyle::gui_medium(0.15f, 0.60f, 0.15f);
+	Color WindowStyle::gui_light (0.20f, 0.70f, 0.20f);
+	Color WindowStyle::gui_popup (0.30f, 0.80f, 0.30f);
 
 	const char *WindowStyle::fonts[3] = {
 		"liberation_16",

@@ -15,11 +15,9 @@
 
 namespace game {
 
-	World::World(string map_name, Mode mode, Replicator *replicator)
+	World::World(string map_name, Mode mode)
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
-		m_anim_frame(0), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map),
-	   	m_replicator(replicator) {
-		DASSERT(m_mode == Mode::single_player || m_replicator != nullptr);
+		m_anim_frame(0), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map), m_replicator(nullptr) {
 
 		string file_name = format("data/maps/%s", map_name.c_str());
 		m_level.load(file_name.c_str());
@@ -407,6 +405,10 @@ namespace game {
 		return false;
 	}
 	
+	void World::setReplicator(Replicator *replicator) {
+		m_replicator = replicator;
+	}
+
 	void World::replicate(const Entity *entity) {
 		DASSERT(entity && entity->isHooked());
 		DASSERT(entity->m_world == this);
@@ -414,7 +416,7 @@ namespace game {
 	}
 
 	void World::replicate(int index) {
-		if(isServer())
+		if(isServer() && m_replicator)
 			m_replicator->replicateEntity(index);
 	}
 
@@ -428,7 +430,8 @@ namespace game {
 		DASSERT(order_ptr);
 
 		if(isClient()) {
-			m_replicator->replicateOrder(std::move(order_ptr), actor_ref);
+			if(m_replicator)
+				m_replicator->replicateOrder(std::move(order_ptr), actor_ref);
 			return true;
 		}
 

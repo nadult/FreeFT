@@ -96,11 +96,11 @@ namespace net {
 		disconnect();
 	}
 		
-	void Client::updateWorld(game::PWorld world) {
+	void Client::setWorld(game::PWorld world) {
 		DASSERT(m_mode == Mode::waiting_for_world_update);
-		DASSERT(world->replicator() == this && world->mode() == World::Mode::client);
 
 		if(world->mapName() == m_level_info.map_name) {
+			world->setReplicator(this);
 			m_world = world;
 			m_mode = Mode::world_updated;
 		}

@@ -25,7 +25,7 @@ using namespace net;
 namespace net {
 		
 	ServerConfig::ServerConfig()
-		:m_console_mode(false), m_port(20000), m_max_players(16) {
+		:m_console_mode(false), m_port(0), m_max_players(16) {
 	}
 
 	ServerConfig::ServerConfig(const XMLNode &node) :ServerConfig() {
@@ -63,7 +63,6 @@ namespace net {
 
 	Server::Server(const ServerConfig &config) :LocalHost(Address(m_config.m_port)), m_config(config), m_client_count(0) {
 		m_lobby_timeout = m_current_time = getTime();
-		m_world = new World(m_config.m_map_name, World::Mode::server, this);
 	}
 
 	Server::~Server() {
@@ -78,8 +77,6 @@ namespace net {
 	}
 
 	EntityRef Server::spawnActor(EntityRef spawn_zone_ref) {
-		DASSERT(m_world);
-
 		const Trigger *spawn_zone = m_world->refEntity<Trigger>(spawn_zone_ref);
 		DASSERT(spawn_zone);
 
@@ -221,7 +218,7 @@ namespace net {
 			}
 		}
 
-		for(int h = 0; h < numRemoteHosts(); h++) {
+		if(m_world) for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
 			if(!host)
@@ -244,7 +241,7 @@ namespace net {
 	void Server::finishFrame() {
 		m_timestamp++;
 
-		for(int h = 0; h < numRemoteHosts(); h++) {
+		if(m_world) for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
 			if(!host)
@@ -268,7 +265,7 @@ namespace net {
 			}
 		}
 
-		for(int h = 0; h < (int)m_clients.size(); h++) {
+		if(m_world) for(int h = 0; h < (int)m_clients.size(); h++) {
 			Client &client = m_clients[h];
 			if(client.mode == ClientMode::to_be_removed) {
 				if(client.actor_ref) {
@@ -300,6 +297,14 @@ namespace net {
 			sendLobbyPacket(out);
 			m_lobby_timeout = m_current_time + 10.0;
 		}
+	}
+
+	void Server::setWorld(PWorld world) {
+		//TODO send level_info to clients
+		m_world = world;
+		if(m_world)
+			m_world->setReplicator(this);
+		m_config.m_map_name = m_world? m_world->mapName() : "";
 	}
 
 	void Server::replicateEntity(int entity_id) {

@@ -150,7 +150,7 @@ namespace io {
 	}
 
 	void Controller::draw() {
-		clear(Color(128, 64, 0));
+		clear(Color(0, 0, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), m_resolution), m_view_pos);
 
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);

@@ -44,7 +44,7 @@ namespace net {
 		void finishFrame();
 
 		const LevelInfoChunk &levelInfo() const { return m_level_info; }
-		void updateWorld(game::PWorld);
+		void setWorld(game::PWorld);
 		bool needWorldUpdate() const { return m_mode == Mode::waiting_for_world_update; }
 
 		game::EntityRef actorRef() const { return m_level_info.actor_ref; }

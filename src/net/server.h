@@ -62,6 +62,7 @@ namespace net {
 		void beginFrame();
 		void finishFrame();
 
+		void setWorld(game::PWorld);
 		game::PWorld world() { return m_world; }
 
 		void replicateEntity(int entity_id) override;

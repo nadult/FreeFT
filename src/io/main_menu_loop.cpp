@@ -103,11 +103,11 @@ namespace io {
 				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_create_server.get()) {
-			//	m_mode = mode_starting_server;
-			//	IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			//	m_file_dialog = new FileDialog(dialog_rect, "Select map", FileDialogMode::opening_file);
-			//	m_file_dialog->setPath("data/maps/");
-			//	attach(m_file_dialog.get(), true);
+				m_mode = mode_starting_server;
+				IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
+				m_file_dialog = new FileDialog(dialog_rect, "Select map", FileDialogMode::opening_file);
+				m_file_dialog->setPath("data/maps/");
+				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(750, 550));
@@ -126,9 +126,20 @@ namespace io {
 		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			string path = m_file_dialog->path();
+			string map_name = sys::Path(path).absolute().relative(sys::Path("data/maps/").absolute());
 
 			if(m_mode == mode_starting_single && ev.value) {
-				m_future_world = std::async(std::launch::async, [path]() { return createWorld(path); } );
+				m_future_world = std::async(std::launch::async,
+					[map_name]() { return PWorld(new World(map_name, World::Mode::single_player)); } );
+			}
+			else if(m_mode == mode_starting_server && ev.value) {
+				net::ServerConfig config;
+				config.m_map_name = map_name;
+				config.m_server_name = format("Test server #%d", rand() % 256);
+				m_server.reset(new net::Server(config));
+
+				m_future_world = std::async(std::launch::async,
+					[map_name]() { return PWorld(new World(map_name, World::Mode::server)); } );
 			}
 			
 			m_mode = ev.value? mode_loading : mode_normal;
@@ -181,13 +192,16 @@ namespace io {
 				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
 					if(m_client) {
 						PWorld world = m_future_world.get();
-						m_client->updateWorld(world);
+						m_client->setWorld(world);
 						new_loop.reset(new MultiPlayerLoop(std::move(m_client)));
 					}
 					else if(m_server) {
+						PWorld world = m_future_world.get();
+						m_server->setWorld(world);
+						new_loop.reset(new ServerLoop(std::move(m_server)));
 					}
 					else {
-						new_loop.reset( new SinglePlayerLoop(m_future_world.get()) );
+						new_loop.reset(new SinglePlayerLoop(m_future_world.get()));
 					}
 				}
 			}
@@ -228,11 +242,10 @@ namespace io {
 			if(m_multi_menu->isClientReady()) {
 				m_multi_menu->setVisible(false);
 				m_client = std::move(m_multi_menu->getClient());
-				Replicator *replicator = dynamic_cast<Replicator*>(m_client.get());
 				const string map_name = m_client->levelInfo().map_name;
 
 				m_future_world = std::async(std::launch::async,
-						[map_name, replicator]() { return PWorld(new World(map_name, World::Mode::client, replicator)); } );
+						[map_name]() { return PWorld(new World(map_name, World::Mode::client)); } );
 				m_mode = mode_loading;
 			}
 		}
@@ -240,6 +253,11 @@ namespace io {
 		if(m_client) {
 			m_client->beginFrame();
 			m_client->finishFrame();
+		}
+
+		if(m_server) {
+			m_server->beginFrame();
+			m_server->finishFrame();
 		}
 
 		clear(Color(0, 0, 0));

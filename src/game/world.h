@@ -31,7 +31,7 @@ namespace game {
 			single_player,
 		};
 
-		World(string map_name, Mode mode = Mode::single_player, Replicator* = nullptr);
+		World(string map_name, Mode mode = Mode::single_player);
 		~World();
 
 		const char *mapName() const { return m_map_name.c_str(); }
@@ -102,7 +102,7 @@ namespace game {
 		bool isClient() const { return m_mode == Mode::client; }
 		bool isServer() const { return m_mode == Mode::server; }
 
-		Replicator *replicator() { return m_replicator; }
+		void setReplicator(Replicator*);
 		void replicate(int entity_id);
 		void replicate(const Entity*);
 
