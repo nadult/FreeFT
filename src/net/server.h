@@ -10,6 +10,7 @@
 #include "net/chunks.h"
 #include "game/entity.h"
 #include "game/world.h"
+#include "game/character.h"
 
 namespace net {
 
@@ -50,12 +51,17 @@ namespace net {
 			bool isValid() const { return host_id != -1 && mode != ClientMode::invalid; }
 
 			ClientMode mode;
+			game::PCharacter character;
 			BitVector update_map;
 			game::EntityRef actor_ref;
 			int host_id;
 		};
 
+		const Client &client(int n) const { return m_clients[n]; }
+		int numClients() const { return (int)m_clients.size(); }
+
 		int maxPlayers() const { return min(m_config.m_max_players, (int)max_remote_hosts); }
+
 		game::EntityRef spawnActor(game::EntityRef spawn_zone);
 		void disconnectClient(int client_id);
 
@@ -65,13 +71,14 @@ namespace net {
 		void setWorld(game::PWorld);
 		game::PWorld world() { return m_world; }
 
-		void replicateEntity(int entity_id) override;
-
 		const ServerConfig &config() const { return m_config; }
 
 	private:
 		void handleHostReceiving(RemoteHost &host, Client &client);
 		void handleHostSending(RemoteHost &host, Client &client);
+		
+		void replicateEntity(int entity_id) override;
+		void sendMessage(net::TempPacket&, int target_id) override;
 
 		ServerConfig m_config;
 		vector<int> m_replication_list;

@@ -29,6 +29,7 @@ namespace net {
 		entity_full,
 		entity_delete,
 		entity_update,
+		message,
 
 		actor_order,
 	};

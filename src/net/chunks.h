@@ -31,7 +31,7 @@ namespace net {
 		Address address;
 		string server_name;
 		string map_name;
-		game::GameMode::Type game_mode;
+		game::GameModeId::Type game_mode;
 		int num_players, max_players;
 		bool is_passworded;
 	};
@@ -43,6 +43,7 @@ namespace net {
 		bool isValid() const { return !map_name.empty(); }
 
 		string map_name;
+		game::GameModeId::Type game_mode;
 		game::EntityRef actor_ref;
 	};
 

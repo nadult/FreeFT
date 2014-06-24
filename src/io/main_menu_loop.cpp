@@ -4,6 +4,7 @@
  */
 
 #include "game/world.h"
+#include "game/death_match.h"
 #include "ui/file_dialog.h"
 #include "ui/message_box.h"
 #include "ui/image_button.h"
@@ -192,11 +193,14 @@ namespace io {
 				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
 					if(m_client) {
 						PWorld world = m_future_world.get();
+						if(m_client->levelInfo().game_mode == GameModeId::death_match)
+							world->setGameMode<DeathMatch>();
 						m_client->setWorld(world);
 						new_loop.reset(new MultiPlayerLoop(std::move(m_client)));
 					}
 					else if(m_server) {
 						PWorld world = m_future_world.get();
+						world->setGameMode<DeathMatch>();
 						m_server->setWorld(world);
 						new_loop.reset(new ServerLoop(std::move(m_server)));
 					}

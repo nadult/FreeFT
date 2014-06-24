@@ -21,7 +21,9 @@
 namespace game {
 
 	Actor::Actor(Stream &sr)
-	  :EntityImpl(sr), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)) {
+	  :EntityImpl(sr), m_actor(*m_proto.actor) {
+		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
+
 		u8 flags;
 		sr.unpack(flags, m_stance, m_action);
 		m_hit_points = sr.decodeInt();
@@ -46,8 +48,9 @@ namespace game {
 	}
 
 	Actor::Actor(const XMLNode &node)
-	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon), node.child("inventory")),
+	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(node.child("inventory")),
 		  m_stance(Stance::stand), m_target_angle(dirAngle()) {
+		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 		m_sound_variation = node.intAttrib("sound_variation") % m_actor.sounds.size();
 		m_faction_id = node.intAttrib("faction_id");
 		m_hit_points = m_actor.hit_points;
@@ -56,7 +59,8 @@ namespace game {
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
-		:EntityImpl(proto), m_actor(*m_proto.actor), m_inventory(Weapon(*m_actor.punch_weapon)), m_stance(stance), m_target_angle(dirAngle()) {
+		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()) {
+		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 		m_sound_variation = rand() % m_actor.sounds.size();
 		m_faction_id = 0;
 		m_hit_points = m_actor.hit_points;

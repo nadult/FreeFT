@@ -9,6 +9,7 @@
 #include "audio/device.h"
 #include "gfx/device.h"
 #include "game/base.h"
+#include "game/death_match.h"
 
 #include "io/main_menu_loop.h"
 #include "io/single_player_loop.h"
@@ -81,7 +82,7 @@ int safe_main(int argc, char **argv)
 			a++;
 		}
 		else {
-			map_name = string("data/maps/") + argv[a];
+			map_name = argv[a];
 		}
 
 	}
@@ -95,8 +96,12 @@ int safe_main(int argc, char **argv)
 
 	try {
 		if(server_config.isValid()) {
-			printf("Creating server: %s (map: %s)\n", server_config.m_server_name.c_str(), server_config.m_map_name.c_str());
+			map_name = server_config.m_map_name;
+			printf("Creating server: %s (map: %s)\n", server_config.m_server_name.c_str(), map_name.c_str());
 			net::PServer server(new net::Server(server_config));
+			PWorld world(new World(map_name, World::Mode::server));
+			world->setGameMode<DeathMatch>();
+			server->setWorld(world);
 			main_loop.reset(new io::ServerLoop(std::move(server)));
 			if(server_config.m_console_mode)
 				sys::handleCtrlC(ctrlCHandler);

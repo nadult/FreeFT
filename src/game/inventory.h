@@ -51,8 +51,8 @@ namespace game {
 
 	class ActorInventory: public Inventory {
 	public:
-		ActorInventory(Weapon dummy_weapon);
-		ActorInventory(Weapon dummy_weapon, const XMLNode&);
+		ActorInventory();
+		ActorInventory(const XMLNode&);
 
 		void save(XMLNode) const;
 
@@ -65,6 +65,8 @@ namespace game {
 		int findAmmo(const Weapon &weapon) const;
 
 		const Weapon &dummyWeapon() const { return m_dummy_weapon; }
+		void setDummyWeapon(Weapon);
+
 		const Weapon &weapon() const { return m_weapon; }
 		const Armour &armour() const { return m_armour; }
 		const Entry  &ammo  () const { return m_ammo; }
@@ -72,6 +74,10 @@ namespace game {
 
 		void save(Stream&) const;
 		void load(Stream&);
+		
+		static int predefinedCount();
+		// Returns a pair: inventory and tier id
+		static pair<ActorInventory, int> getPredefined(int id, bool equip_items);
 
 	protected:
 		Weapon m_weapon, m_dummy_weapon;
@@ -79,10 +85,6 @@ namespace game {
 		Entry  m_ammo;
 	};
 
-
-
-
 }
-
 
 #endif

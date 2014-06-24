@@ -10,6 +10,21 @@ namespace game {
 
 	Character::Character(const string &name, const string &icon_name)
    		:m_name(name), m_icon_name(icon_name) {
+		ASSERT(isValid());
+	}
+
+	bool Character::isValid() const {
+		return	m_name.size() <= max_name_size &&
+				m_icon_name.size() < max_icon_name_size;
+	}
+		
+	void Character::save(Stream &sr) const {
+		sr << m_name << m_icon_name;
+	}
+
+	void Character::load(Stream &sr) {
+		sr >> m_name >> m_icon_name;
+		ASSERT(isValid());
 	}
 
 	gfx::PTexture Character::icon() const {

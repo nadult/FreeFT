@@ -28,7 +28,8 @@ SHARED_SRC=\
 	game/entities game/actor game/actor_ai game/actor_proto game/orders game/proto game/trigger game/character \
 	game/orders/attack game/orders/change_stance game/orders/die game/orders/idle game/orders/interact \
 	game/orders/inventory game/orders/move game/orders/look_at game/orders/track game/orders/get_hit \
-	hud/base hud/layer hud/widget hud/char_icon hud/weapon hud/inventory hud/hud hud/options \
+	game/game_mode game/death_match \
+	hud/base hud/layer hud/widget hud/char_icon hud/weapon hud/inventory hud/hud hud/options hud/class \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box ui/image_button \
 	io/controller io/console io/main_menu_loop io/single_player_loop io/multi_player_loop io/server_loop \

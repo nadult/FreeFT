@@ -31,6 +31,7 @@ namespace hud
 			layer_inventory,
 			layer_character,
 			layer_options,
+			layer_class,
 		};
 
 	private:
@@ -45,8 +46,9 @@ namespace hud
 		vector<PHudWidget> m_hud_buttons;
 
 		LayerId m_selected_layer;
-		PHudInventory m_hud_inventory;
-		PHudOptions m_hud_options;
+		Ptr<HudInventory> m_hud_inventory;
+		Ptr<HudOptions> m_hud_options;
+		Ptr<HudClass> m_hud_class;
 	};
 
 }

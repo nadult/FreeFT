@@ -8,6 +8,7 @@
 #include "hud/weapon.h"
 #include "hud/inventory.h"
 #include "hud/options.h"
+#include "hud/class.h"
 
 #include "game/actor.h"
 #include "game/world.h"
@@ -27,12 +28,14 @@ namespace hud {
 		const float2 s_hud_stance_size(23, 23);
 		const float2 s_hud_main_size(365, 155);
 		const float2 s_hud_inventory_size(365, 300);
+		const float2 s_hud_class_size(365, 300);
 		const float2 s_hud_options_size(365, 200);
 
 		enum ButtonId {
 			button_inventory,
 			button_character,
 			button_options,
+			button_class,
 		};
 
 		struct Button {
@@ -42,9 +45,10 @@ namespace hud {
 		};
 
 		static Button s_buttons[] = {
-			{ Hud::layer_inventory,	'I',	"INV" },
-			{ Hud::layer_character,	'C',	"CHA" },
-			{ Hud::layer_options,	'O',	"OPT" }
+			{ Hud::layer_inventory,		'I',	"INV" },
+			{ Hud::layer_character,		'C',	"CHA" },
+			{ Hud::layer_options,		'O',	"OPT" },
+			{ Hud::layer_class,			'R',	"CLS" }
 		};
 
 		struct StanceButton {
@@ -93,7 +97,8 @@ namespace hud {
 		}
 
 		{
-			FRect button_rect = align(FRect(s_hud_button_size), weapon_rect, align_top, char_rect, align_right, HudWidget::spacing);
+			FRect button_rect = align(FRect(s_hud_button_size), char_rect, align_top, HudWidget::spacing);
+			button_rect += float2(char_rect.min.x - button_rect.min.x, 0.0f);
 
 			for(int n = 0; n < COUNTOF(s_buttons); n++) {
 				PHudWidget button(new HudWidget(button_rect));
@@ -114,6 +119,10 @@ namespace hud {
 		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
 		m_hud_inventory = new HudInventory(m_world, m_actor_ref, inv_rect);
 		m_hud_inventory->setVisible(false, false);
+		
+		FRect cls_rect = align(FRect(s_hud_class_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
+		m_hud_class = new HudClass(m_world, m_actor_ref, cls_rect);
+		m_hud_class->setVisible(false, false);
 		
 		FRect opt_rect = align(FRect(s_hud_options_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
 		m_hud_options = new HudOptions(opt_rect);
@@ -136,7 +145,7 @@ namespace hud {
 			int stance_id = -1, sel_id = -1;
 			bool is_accel = false;
 
-			if(is_active) for(int n = 0; n < (int)m_hud_stances.size(); n++) {
+			for(int n = 0; n < (int)m_hud_stances.size(); n++) {
 				if(m_hud_stances[n]->isPressed(mouse_pos, 0, &is_accel))
 					stance_id = n;
 				if(m_hud_stances[n]->isFocused())
@@ -156,7 +165,7 @@ namespace hud {
 					m_hud_stances[n]->setFocus(s_stance_buttons[n].stance_id == actor->stance());
 
 			// Reloading:	
-			if(is_active && m_hud_weapon->isPressed(mouse_pos)) {
+			if(m_hud_weapon->isPressed(mouse_pos)) {
 				const ActorInventory &inventory = actor->inventory();
 				const Weapon &weapon = inventory.weapon();
 				if(weapon.needAmmo() && inventory.ammo().count < weapon.maxAmmo()) {
@@ -192,21 +201,30 @@ namespace hud {
 
 			any_other_visible |= m_selected_layer != layer_inventory && m_hud_inventory->isVisible();
 			any_other_visible |= m_selected_layer != layer_options   && m_hud_options->isVisible();
+			any_other_visible |= m_selected_layer != layer_class     && m_hud_class->isVisible();
 
 			//TODO: add sliding sounds?
 			m_hud_inventory->setVisible(isVisible() && m_selected_layer == layer_inventory && !any_other_visible);
 			m_hud_options->setVisible(isVisible() && m_selected_layer == layer_options && !any_other_visible);
+			m_hud_class->setVisible(isVisible() && m_selected_layer == layer_class && !any_other_visible);
 		}
 
 		HudLayer::update(is_active, time_diff);
 		m_hud_inventory->update(is_active, time_diff);
 		m_hud_options->update(is_active, time_diff);
+		m_hud_class->update(is_active, time_diff);
 
 		{
 			float inv_height = m_hud_inventory->preferredHeight();
 			FRect inv_rect = m_hud_inventory->targetRect();
 			inv_rect.min.y = max(5.0f, inv_rect.max.y - inv_height);
 			m_hud_inventory->setTargetRect(inv_rect);
+		}
+		{
+			float cls_height = m_hud_class->preferredHeight();
+			FRect cls_rect = m_hud_class->targetRect();
+			cls_rect.min.y = max(5.0f, cls_rect.max.y - cls_height);
+			m_hud_class->setTargetRect(cls_rect);
 		}
 	}
 		
@@ -229,10 +247,11 @@ namespace hud {
 		HudLayer::draw();
 		m_hud_inventory->draw();
 		m_hud_options->draw();
+		m_hud_class->draw();
 	}
 
 	bool Hud::isMouseOver() const {
-		return HudLayer::isMouseOver() || m_hud_inventory->isMouseOver() || m_hud_options->isMouseOver();
+		return HudLayer::isMouseOver() || m_hud_inventory->isMouseOver() || m_hud_options->isMouseOver() || m_hud_class->isMouseOver();
 	}
 
 }

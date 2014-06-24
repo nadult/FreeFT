@@ -8,6 +8,7 @@
 namespace net {
 
 	Address lobbyServerAddress() {
+		return Address(resolveName("localhost"), 50000);
 		return Address(resolveName("89.74.58.32"), 50000);
 	}
 
@@ -27,11 +28,11 @@ namespace net {
 
 
 	void LevelInfoChunk::save(Stream &sr) const {
-		sr << map_name << actor_ref;
+		sr << game_mode << map_name << actor_ref;
 	}
 
 	void LevelInfoChunk::load(Stream &sr) {
-		sr >> map_name >> actor_ref;
+		sr >> game_mode >> map_name >> actor_ref;
 	}
 
 }

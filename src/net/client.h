@@ -37,6 +37,8 @@ namespace net {
 
 		void connect(Address address);
 		void disconnect();
+
+		int clientId() const { return m_client_id; }
 		
 		Mode mode() const { return m_mode; }
 
@@ -53,6 +55,7 @@ namespace net {
 	protected:
 		void entityUpdate(InChunk &chunk);
 		void replicateOrder(game::POrder &&order, game::EntityRef entity_ref) override;
+		void sendMessage(net::TempPacket&, int target_id) override;
 
 	private:
 		LevelInfoChunk m_level_info;
@@ -60,6 +63,7 @@ namespace net {
 
 		Address m_server_address;
 		int m_server_id;
+		int m_client_id;
 		Mode m_mode;
 
 		vector<game::POrder> m_orders;

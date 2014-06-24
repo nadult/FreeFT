@@ -13,7 +13,6 @@ namespace game {
 		if(!node)
 			return;
 
-		m_entries.reserve(node.intAttrib("count"));
 		XMLNode child = node.child("item");
 
 		while(child) {
@@ -26,8 +25,6 @@ namespace game {
 	}
 
 	void Inventory::save(XMLNode node) const {
-		node.addAttrib("count", (int)m_entries.size());
-
 		for(int n = 0; n < (int)m_entries.size(); n++) {
 			XMLNode item_node = node.addChild("item");
 			m_entries[n].item.index().save(item_node);
@@ -103,12 +100,13 @@ namespace game {
 			m_entries.emplace_back(Entry{item, icount});
 		}
 	}
+
 		
-	ActorInventory::ActorInventory(Weapon dummy_weapon)
-		:m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} { }
+	ActorInventory::ActorInventory()
+		:m_weapon(Item::dummyWeapon()), m_dummy_weapon(Item::dummyWeapon()), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} { }
 	
-	ActorInventory::ActorInventory(Weapon dummy_weapon, const XMLNode &node)
-		:Inventory(node), m_weapon(dummy_weapon), m_dummy_weapon(dummy_weapon), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} {
+	ActorInventory::ActorInventory(const XMLNode &node)
+		:Inventory(node), m_weapon(Item::dummyWeapon()), m_dummy_weapon(Item::dummyWeapon()), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} {
 		//TODO: load equipped items
 	}
 		
@@ -235,4 +233,56 @@ namespace game {
 		m_ammo.item = flags & 4? Item(sr) : Item::dummyAmmo();
 		m_ammo.count = flags & 4? sr.decodeInt() : 0;
 	}
+		
+	void ActorInventory::setDummyWeapon(Weapon dummy) {
+		if(m_weapon.isDummy())
+			m_weapon = dummy;
+		m_dummy_weapon = dummy;
+	}
+
+	//TODO: move those to game/class.cpp
+	//
+	struct StartingEquipment {
+		int tier_id;
+		const char *armour;
+		const char *weapon;
+		const char *ammo;
+		int ammo_count;
+	};
+
+	static StartingEquipment s_equipments[] = {
+		{ 0, "leather_armour",		"uzi",				"9mm_ball",		200 },
+		{ 0, nullptr,				"ak47",				"762mm",		150 },
+		{ 0, nullptr,				"plasma_rifle",		"fusion_cell",	100 }
+	};
+
+	int ActorInventory::predefinedCount() {
+		return COUNTOF(s_equipments);
+	}
+
+	pair<ActorInventory, int> ActorInventory::getPredefined(int inv_id, bool equip_items) {
+		DASSERT(inv_id >= 0 && inv_id < COUNTOF(s_equipments));
+		const StartingEquipment &def = s_equipments[inv_id];
+
+		ActorInventory out;
+		if(def.armour) {
+			int id = out.add(findProto(def.armour, ProtoId::item_armour), 1);
+			if(equip_items)
+				out.equip(id);
+		}
+		if(def.weapon) {
+			int id = out.add(findProto(def.weapon, ProtoId::item_weapon), 1);
+			if(equip_items)
+				out.equip(id);
+			
+			if(def.ammo && def.ammo_count > 0) {
+				int ammo_id = out.add(findProto(def.ammo, ProtoId::item_ammo), def.ammo_count);
+				if(equip_items)
+					out.equip(ammo_id, min(def.ammo_count, out.weapon().maxAmmo()));
+			}
+		}
+
+		return make_pair(out, def.tier_id);
+	}
+
 }

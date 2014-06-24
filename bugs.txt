@@ -1,5 +1,7 @@
 TODO: prioritize bugs
 
+- Hud shortcuts doesn't work when it's hidden
+
 - Wrong mouse position before moving it for the first time
 
 - In res_viewer when popup is visible, you can still select objects behind it by

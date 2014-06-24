@@ -1,3 +1,6 @@
+MAIN GOAL:
+- Soldat style multiplayer with simple logic
+
 - prepare few maps (add entities to maps already created for tactics)   8h
 - testing & bug fixing  20h
 

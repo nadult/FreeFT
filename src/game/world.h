@@ -21,11 +21,14 @@ namespace game {
 		virtual ~Replicator() = default;
 		virtual void replicateEntity(int entity_id) { }
 		virtual void replicateOrder(POrder&&, EntityRef) { }
+		virtual void sendMessage(net::TempPacket&, int target_id) = 0;
 	};
+
+	class GameMode;
 
 	class World: public RefCounter {
 	public:
-		enum class Mode {
+		enum class Mode { //TODO: better name
 			client,
 			server,
 			single_player,
@@ -102,9 +105,19 @@ namespace game {
 		bool isClient() const { return m_mode == Mode::client; }
 		bool isServer() const { return m_mode == Mode::server; }
 
+		template <class TGameMode, class ...Args>
+		void setGameMode(const Args&... args) {
+			ASSERT(!m_game_mode);
+			m_game_mode.reset(new TGameMode(*this, args...));
+		}
+		const GameMode *gameMode() const { return m_game_mode.get(); }
+		GameModeId::Type gameModeId() const;
+
 		void setReplicator(Replicator*);
 		void replicate(int entity_id);
 		void replicate(const Entity*);
+		void sendMessage(net::TempPacket&, int target_id = -1);
+		void onMessage(Stream&, int source_id);
 
 		void playSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
 
@@ -134,6 +147,8 @@ namespace game {
 		vector<NaviMap> m_navi_maps;
 		
 		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
+
+		PGameMode m_game_mode;
 
 		Replicator *m_replicator;
 		friend class EntityWorldProxy;

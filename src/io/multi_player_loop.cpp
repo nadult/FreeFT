@@ -321,7 +321,7 @@ namespace hud {
 		else if(col_type == ColumnType::num_players)
 			return format("%d / %d", row.num_players, row.max_players);
 		else if(col_type == ColumnType::game_mode)
-			return game::GameMode::toString(row.game_mode);
+			return game::GameModeId::toString(row.game_mode);
 		else if(col_type == ColumnType::ping)
 			return format("%d", row.ping);
 

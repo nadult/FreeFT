@@ -542,15 +542,21 @@ namespace game {
 	class World;
 	class Actor;
 	class Character;
+	class Inventory;
+	class ActorInventory;
+	class GameMode;
+
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;
 	typedef Ptr<Character> PCharacter;
+	typedef unique_ptr<GameMode> PGameMode;
 	typedef unique_ptr<Entity> PEntity;
 }
 
 namespace net {
 	class Client;
 	class Server;
+	class TempPacket;
 	typedef unique_ptr<Client> PClient;
 	typedef unique_ptr<Server> PServer;
 }

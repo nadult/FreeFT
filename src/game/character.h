@@ -13,7 +13,16 @@ namespace game
 
 	class Character: public RefCounter {
 	public:
+		enum {
+			max_name_size = 20,
+			max_icon_name_size = 32,
+		};
+
 		Character(const string &name, const string &icon_name);
+		bool isValid() const;
+
+		void save(Stream&) const;
+		void load(Stream&);
 
 		const string &name() const { return m_name; }
 		gfx::PTexture icon() const;

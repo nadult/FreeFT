@@ -73,6 +73,7 @@ namespace game {
 		if(event == ActorEvent::init_order) {
 			if(item_type == ItemType::weapon) {
 				m_inventory.equip(item_id);
+				//TODO: maybe we should make sure that animation will be properly updated for a new weapon
 				return false;
 			}
 			if(item_type == ItemType::ammo)

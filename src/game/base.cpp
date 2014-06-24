@@ -105,8 +105,9 @@ namespace game {
 		"kick"
 	)
 
-	DEFINE_ENUM(GameMode,
-		"death_match"
+	DEFINE_ENUM(GameModeId,
+		"death_match",
+		"trench_war"
 	)
 
 	DEFINE_ENUM(SoundType,

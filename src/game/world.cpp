@@ -4,6 +4,7 @@
  */
 
 #include "game/world.h"
+#include "game/game_mode.h"
 #include "tile_map.h"
 #include "sys/xml.h"
 #include "sys/profiler.h"
@@ -19,6 +20,7 @@ namespace game {
 		:m_mode(mode), m_last_anim_frame_time(0.0), m_last_time(0.0), m_time_delta(0.0), m_current_time(0.0),
 		m_anim_frame(0), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map), m_replicator(nullptr) {
 
+		ASSERT(!map_name.empty());
 		string file_name = format("data/maps/%s", map_name.c_str());
 		m_level.load(file_name.c_str());
 		for(int n = 0; n < m_tile_map.size(); n++) {
@@ -178,6 +180,9 @@ namespace game {
 
 		m_last_time = current_time;
 		updateNaviMap(false);
+
+		if(m_game_mode)
+			m_game_mode->tick(time_diff);
 	}
 		
 	const EntityMap::ObjectDef *World::refEntityDesc(int index) const {
@@ -404,7 +409,11 @@ namespace game {
 
 		return false;
 	}
-	
+		
+	GameModeId::Type World::gameModeId() const {
+		return m_game_mode? m_game_mode->modeId() : GameModeId::undefined;
+	}
+		
 	void World::setReplicator(Replicator *replicator) {
 		m_replicator = replicator;
 	}
@@ -418,6 +427,16 @@ namespace game {
 	void World::replicate(int index) {
 		if(isServer() && m_replicator)
 			m_replicator->replicateEntity(index);
+	}
+		
+	void World::sendMessage(net::TempPacket &packet, int target_id) {
+		if(m_replicator)
+			m_replicator->sendMessage(packet, target_id);
+	}
+
+	void World::onMessage(Stream &sr, int source_id) {
+		if(m_game_mode)
+			m_game_mode->onMessage(sr, source_id);
 	}
 
 	void World::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {

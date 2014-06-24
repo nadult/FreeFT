@@ -1,5 +1,7 @@
 - DOWNSCALE, remove unnecessary features, prioritize TODO
 
+- Player cannot run with a minigun?
+
 - Better camera work
 
 - add baselib as submodule

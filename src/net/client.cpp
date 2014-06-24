@@ -20,7 +20,7 @@ using namespace net;
 namespace net {
 
 	Client::Client(int port)
-	  :LocalHost(Address(port? port : net::randomPort())), m_mode(Mode::disconnected), m_server_id(-1) {
+	  :LocalHost(Address(port? port : net::randomPort())), m_mode(Mode::disconnected), m_server_id(-1), m_client_id(-1) {
 	}
 		
 	bool Client::getLobbyData(vector<ServerStatusChunk> &out) {
@@ -88,6 +88,7 @@ namespace net {
 			}
 
 			m_server_id = -1;
+			m_client_id = -1;
 			m_mode = Mode::disconnected;
 		}
 	}
@@ -119,6 +120,7 @@ namespace net {
 
 				if(chunk.type() == ChunkType::join_accept) {
 					host->verify(true);
+					m_client_id = chunk.decodeInt();
 					chunk >> m_level_info;
 					m_mode = Mode::waiting_for_world_update;
 				}
@@ -141,8 +143,7 @@ namespace net {
 
 				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
 					entityUpdate(chunk);
-
-				if(chunk.type() == ChunkType::level_info) {
+				else if(chunk.type() == ChunkType::level_info) {
 					LevelInfoChunk new_info;
 					chunk >> new_info;
 					if(new_info.map_name != m_level_info.map_name)
@@ -151,7 +152,10 @@ namespace net {
 
 					//TODO: message about changed map first?
 					m_world.reset();
+					break;
 				}
+				else if(chunk.type() == ChunkType::message)
+					m_world->onMessage(chunk, -1);
 			}
 		}
 	}
@@ -205,6 +209,15 @@ namespace net {
 	void Client::replicateOrder(POrder &&order, EntityRef entity_ref) {
 		if(entity_ref == m_level_info.actor_ref)
 			m_orders.emplace_back(std::move(order));
+	}
+	
+	void Client::sendMessage(net::TempPacket &packet, int target_id) {
+		if(target_id != -1)
+			return;
+
+		RemoteHost *server = getRemoteHost(m_server_id);
+		if(server)
+			server->enqueChunk(packet.data(), packet.pos(), ChunkType::message, 1);
 	}
 
 }

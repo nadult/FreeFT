@@ -75,6 +75,7 @@ namespace hud {
 	class HudInventory;
 	class HudCharacter;
 	class HudOptions;
+	class HudClass;
 
 	class SinglePlayerMenu;
 	class MultiPlayerMenu;
@@ -87,9 +88,6 @@ namespace hud {
 	typedef Ptr<HudCharIcon> PHudCharIcon;
 	typedef Ptr<HudInventoryItem> PHudInventoryItem;
 	typedef Ptr<HudItemDesc> PHudItemDesc;
-	typedef Ptr<HudInventory> PHudInventory;
-	typedef Ptr<HudCharacter> PHudCharacter;
-	typedef Ptr<HudOptions> PHudOptions;
 	typedef Ptr<Hud> PHud;
 	
 	typedef Ptr<MultiPlayerMenu> PMultiPlayerMenu;

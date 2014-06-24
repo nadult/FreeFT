@@ -5,18 +5,18 @@
 
 #include <memory.h>
 #include <cstdio>
+#include <list>
+#include <algorithm>
 
+#include "game/world.h"
 #include "navi_map.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
 #include "game/actor.h"
-#include "game/world.h"
 #include "game/trigger.h"
 #include "net/chunks.h"
 #include "net/server.h"
 #include "sys/xml.h"
-#include <list>
-#include <algorithm>
 
 using namespace gfx;
 using namespace game;
@@ -106,6 +106,7 @@ namespace net {
 		DASSERT(client.isValid());
 
 		const Chunk *chunk = nullptr;
+		int client_id = &client - m_clients.data();
 
 		while( const Chunk *chunk_ptr = host.getIChunk() ) {
 			InChunk chunk(*chunk_ptr);
@@ -129,10 +130,13 @@ namespace net {
 						client.update_map[n] = true;
 
 				TempPacket temp;
-				temp << LevelInfoChunk{ m_world->mapName(), client.actor_ref };
+				temp.encodeInt(client_id);
+				temp << LevelInfoChunk{ m_world->mapName(), m_world->gameModeId(), client.actor_ref };
 				host.enqueChunk(temp, ChunkType::join_accept, 0);
+
+				//TODO: send information about new clients to other clients?
 			}
-			if(chunk.type() == ChunkType::level_loaded) {
+			else if(chunk.type() == ChunkType::level_loaded) {
 				client.mode = ClientMode::connected;
 				host.verify(true);
 				break;
@@ -141,13 +145,16 @@ namespace net {
 				disconnectClient(host.currentId());
 				break;
 			}
-			else if(client.mode == ClientMode::connected && chunk.type() == ChunkType::actor_order) {
+			else if(chunk.type() == ChunkType::actor_order && client.mode == ClientMode::connected) {
 				POrder order;
 				chunk >> order;
 				if(order)
 					m_world->sendOrder(std::move(order), client.actor_ref);
 				else
 					printf("Invalid order!\n");
+			}
+			else if(chunk.type() == ChunkType::message && client.mode == ClientMode::connected) {
+				m_world->onMessage(chunk, client_id);
 			}
 		}
 	}
@@ -198,6 +205,9 @@ namespace net {
 	}
 
 	void Server::beginFrame() {
+		if(!m_world)
+			return;
+
 		InPacket packet;
 		Address source;
 
@@ -218,7 +228,7 @@ namespace net {
 			}
 		}
 
-		if(m_world) for(int h = 0; h < numRemoteHosts(); h++) {
+		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
 			if(!host)
@@ -239,9 +249,11 @@ namespace net {
 	}
 
 	void Server::finishFrame() {
+		if(!m_world)
+			return;
 		m_timestamp++;
 
-		if(m_world) for(int h = 0; h < numRemoteHosts(); h++) {
+		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
 			if(!host)
@@ -265,7 +277,7 @@ namespace net {
 			}
 		}
 
-		if(m_world) for(int h = 0; h < (int)m_clients.size(); h++) {
+		for(int h = 0; h < (int)m_clients.size(); h++) {
 			Client &client = m_clients[h];
 			if(client.mode == ClientMode::to_be_removed) {
 				if(client.actor_ref) {
@@ -292,7 +304,7 @@ namespace net {
 			chunk.num_players = m_client_count;
 			chunk.max_players = maxPlayers();
 			chunk.is_passworded = !m_config.m_password.empty();
-			chunk.game_mode = GameMode::death_match;
+			chunk.game_mode = GameModeId::death_match;
 			out << LobbyChunkId::server_status << chunk;
 			sendLobbyPacket(out);
 			m_lobby_timeout = m_current_time + 10.0;
@@ -300,15 +312,27 @@ namespace net {
 	}
 
 	void Server::setWorld(PWorld world) {
+		DASSERT(world);
+		
 		//TODO send level_info to clients
 		m_world = world;
-		if(m_world)
-			m_world->setReplicator(this);
+		m_world->setReplicator(this);
 		m_config.m_map_name = m_world? m_world->mapName() : "";
 	}
 
 	void Server::replicateEntity(int entity_id) {
 		m_replication_list.emplace_back(entity_id);
+	}
+		
+	void Server::sendMessage(net::TempPacket &packet, int target_id) {
+		for(int c = 0; c < (int)m_clients.size(); c++) {
+			const Client &client = m_clients[c];
+			if(client.isValid() && target_id == -1 || c == target_id) {
+				RemoteHost *host = getRemoteHost(client.host_id);
+				if(host)
+					host->enqueChunk(packet.data(), packet.pos(), ChunkType::message, 1);
+			}
+		}
 	}
 
 }
