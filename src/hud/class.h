@@ -18,18 +18,18 @@ namespace hud
 
 		HudClassButton(const FRect &rect);
 
-		void setId(int predefined_id);
+		void setId(int class_id);
 
 		void draw() const override;
 		Color backgroundColor() const override;
 
 	protected:
-		int m_predefined_id;
+		int m_class_id;
 	};
 
 	class HudClass: public HudLayer {
 	public:
-		HudClass(PWorld world, EntityRef actor_ref, const FRect &target_rect);
+		HudClass(PWorld world, const FRect &target_rect);
 		~HudClass();
 
 		float preferredHeight() const;
@@ -41,7 +41,6 @@ namespace hud
 
 	private:
 		game::PWorld m_world;
-		game::EntityRef m_actor_ref;
 		int m_offset, m_class_count;
 		int m_selected_id;
 

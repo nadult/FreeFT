@@ -89,8 +89,8 @@ namespace hud {
 		return lerp(HudWidget::backgroundColor(), Color::white, m_focus_time * 0.5f);
 	}
 
-	HudInventory::HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect)
-		:HudLayer(target_rect), m_world(world), m_actor_ref(actor_ref), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
+	HudInventory::HudInventory(PWorld world, const FRect &target_rect)
+		:HudLayer(target_rect), m_world(world), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
 		DASSERT(m_world);
 
 		for(int y = 0; y < s_grid_size.y; y++)
@@ -118,6 +118,13 @@ namespace hud {
 	}
 		
 	HudInventory::~HudInventory() { }
+		
+	void HudInventory::setActor(game::EntityRef actor_ref) {
+		if(actor_ref == m_actor_ref)
+			return;
+		m_actor_ref = actor_ref;
+		m_drop_item = Item::dummy();
+	}
 
 	namespace {
 
@@ -150,11 +157,16 @@ namespace hud {
 	}
 
 	void HudInventory::update(bool is_active, double time_diff) {
-		HudLayer::update(is_active, time_diff);
 		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
+		is_active &= actor != nullptr;
+
+		HudLayer::update(is_active, time_diff);
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
 			
 		float bottom_line = rect().height() - s_bottom_size;
+
+		if(!is_active)
+			m_drop_item = Item::dummy();
 
 		int max_row_offset = 0;
 		{

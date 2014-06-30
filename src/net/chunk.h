@@ -30,8 +30,6 @@ namespace net {
 		entity_delete,
 		entity_update,
 		message,
-
-		actor_order,
 	};
 
 	struct Chunk {

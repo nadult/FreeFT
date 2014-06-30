@@ -411,7 +411,7 @@ namespace game {
 	}
 		
 	GameModeId::Type World::gameModeId() const {
-		return m_game_mode? m_game_mode->modeId() : GameModeId::undefined;
+		return m_game_mode? m_game_mode->typeId() : GameModeId::undefined;
 	}
 		
 	void World::setReplicator(Replicator *replicator) {
@@ -435,10 +435,13 @@ namespace game {
 	}
 
 	void World::onMessage(Stream &sr, int source_id) {
-		if(m_game_mode)
-			m_game_mode->onMessage(sr, source_id);
+		if(m_game_mode) {
+			MessageId::Type message_id;
+			sr >> message_id;
+			m_game_mode->onMessage(sr, message_id, source_id);
+		}
 	}
-
+		
 	void World::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
 		if(isServer())
 			return;
@@ -448,11 +451,8 @@ namespace game {
 	bool World::sendOrder(POrder &&order_ptr, EntityRef actor_ref) {
 		DASSERT(order_ptr);
 
-		if(isClient()) {
-			if(m_replicator)
-				m_replicator->replicateOrder(std::move(order_ptr), actor_ref);
-			return true;
-		}
+		if(m_game_mode)
+			return m_game_mode->sendOrder(std::move(order_ptr), actor_ref);
 
 		if( Actor *entity = refEntity<Actor>(actor_ref) )
 			return entity->setOrder(std::move(order_ptr));

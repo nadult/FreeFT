@@ -74,10 +74,6 @@ namespace game {
 
 		void save(Stream&) const;
 		void load(Stream&);
-		
-		static int predefinedCount();
-		// Returns a pair: inventory and tier id
-		static pair<ActorInventory, int> getPredefined(int id, bool equip_items);
 
 	protected:
 		Weapon m_weapon, m_dummy_weapon;

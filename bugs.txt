@@ -1,6 +1,7 @@
 TODO: prioritize bugs
 
 - Hud shortcuts doesn't work when it's hidden
+- Hud shortcuts work when writing to console
 
 - Wrong mouse position before moving it for the first time
 

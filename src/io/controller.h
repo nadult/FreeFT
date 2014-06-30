@@ -16,9 +16,10 @@ namespace io {
 
 	class Controller {
 	public:
-		Controller(const int2 &resolution, game::PWorld world, game::EntityRef actor_ref, bool show_stats);
+		Controller(const int2 &resolution, game::PWorld world, bool show_stats);
 		~Controller();
 
+		void updateActor();
 		void update(double time_diff);
 		void updateView(double time_diff);
 		void draw();
@@ -29,6 +30,7 @@ namespace io {
 		Console m_console;
 		game::PWorld m_world;
 		game::WorldViewer m_viewer;
+		game::GameMode *m_game_mode;
 
 		Ptr<hud::Hud> m_hud;
 

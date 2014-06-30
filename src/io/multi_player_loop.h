@@ -10,7 +10,7 @@
 #include "io/controller.h"
 #include "hud/layer.h"
 #include "hud/widget.h"
-#include "net/chunks.h"
+#include "net/base.h"
 
 namespace hud {
 

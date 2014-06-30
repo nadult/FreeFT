@@ -202,10 +202,10 @@ namespace gfx
 
 			pos.x = style.halign == HAlign::left?	rect.min.x :
 					style.halign == HAlign::center? center.x :
-													rect.max.x - extents.width();
+													rect.max.x - extents.max.x;
 			pos.y = style.valign == VAlign::top?	rect.min.y :
 					style.valign == VAlign::center? center.y :
-													rect.max.y - extents.height();
+													rect.max.y - extents.max.y;
 		}
 
 		pos = float2((int)(pos.x + 0.5f), (int)(pos.y + 0.5f));

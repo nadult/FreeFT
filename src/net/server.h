@@ -7,10 +7,9 @@
 #define NET_SERVER_H
 
 #include "net/host.h"
-#include "net/chunks.h"
+#include "net/base.h"
 #include "game/entity.h"
 #include "game/world.h"
-#include "game/character.h"
 
 namespace net {
 
@@ -45,24 +44,22 @@ namespace net {
 			to_be_removed,
 		};
 
-		struct Client {
-			Client() :mode(ClientMode::invalid), host_id(-1) { }
-
+		struct ClientInfo {
+			ClientInfo() :mode(ClientMode::invalid), host_id(-1), notify_others(false), is_loading_level(false) { }
 			bool isValid() const { return host_id != -1 && mode != ClientMode::invalid; }
 
+			string nick_name;
 			ClientMode mode;
-			game::PCharacter character;
 			BitVector update_map;
-			game::EntityRef actor_ref;
 			int host_id;
+
+			bool notify_others;
+			bool is_loading_level;
 		};
 
-		const Client &client(int n) const { return m_clients[n]; }
-		int numClients() const { return (int)m_clients.size(); }
-
+		int numActiveClients() const;
 		int maxPlayers() const { return min(m_config.m_max_players, (int)max_remote_hosts); }
 
-		game::EntityRef spawnActor(game::EntityRef spawn_zone);
 		void disconnectClient(int client_id);
 
 		void beginFrame();
@@ -74,18 +71,18 @@ namespace net {
 		const ServerConfig &config() const { return m_config; }
 
 	private:
-		void handleHostReceiving(RemoteHost &host, Client &client);
-		void handleHostSending(RemoteHost &host, Client &client);
+		void handleHostReceiving(RemoteHost &host, int client_id);
+		void handleHostSending(RemoteHost &host, int client_id);
 		
 		void replicateEntity(int entity_id) override;
 		void sendMessage(net::TempPacket&, int target_id) override;
 
 		ServerConfig m_config;
 		vector<int> m_replication_list;
-		vector<Client> m_clients;
+		vector<ClientInfo> m_clients;
 
 		game::PWorld m_world;
-		int m_client_count;
+		game::GameModeServer *m_game_mode;
 		double m_current_time;
 		double m_lobby_timeout;
 	};

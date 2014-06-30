@@ -18,19 +18,41 @@ namespace game
 			max_icon_name_size = 32,
 		};
 
-		Character(const string &name, const string &icon_name);
-		bool isValid() const;
+		// TODO: different icons match different protos
+		Character(const string &name, const string &icon_name, const string &proto_name);
+		Character(Stream&);
 
 		void save(Stream&) const;
 		void load(Stream&);
 
 		const string &name() const { return m_name; }
+		const Proto &proto() const { return getProto(m_proto_idx); }
+
 		gfx::PTexture icon() const;
 		static gfx::PTexture defaultIcon();
 
 	private:
+		void validate();
+
 		string m_name;
 		string m_icon_name;
+		ProtoIndex m_proto_idx;
+	};
+
+	class CharacterClass {
+	public:
+		CharacterClass(int class_id);
+
+		static bool isValidId(int);
+		static int count();
+
+		int id() const { return m_id; }
+		int tier() const { return m_tier; }
+		const ActorInventory inventory(bool equip) const;
+
+	private:
+		int m_tier;
+		int m_id;
 	};
 
 }

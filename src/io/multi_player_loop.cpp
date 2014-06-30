@@ -172,7 +172,7 @@ namespace hud {
 					Address address = m_servers[m_selection].address;
 					if(address.isValid()) {
 						m_last_connect_time = getTime();
-						m_client->connect(address);
+						m_client->connect(address, "bubba", "");
 						playSound(HudSound::button);
 						m_waiting_to_connect = true;
 					}
@@ -354,7 +354,7 @@ namespace io {
 		Config config = loadConfig("client");
 
 		//TODO: wait until initial entity information is loaded?
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_client->actorRef(), config.profiler_enabled));
+		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, config.profiler_enabled));
 	}
 
 	bool MultiPlayerLoop::tick(double time_diff) {

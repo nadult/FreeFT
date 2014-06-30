@@ -11,8 +11,9 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "net/host.h"
-#include "net/chunks.h"
 #include "net/socket.h"
+
+#include "game/death_match.h"
 
 using namespace game;
 using namespace net;
@@ -57,7 +58,7 @@ namespace net {
 		sendLobbyPacket(request);
 	}
 		
-	void Client::connect(Address address) {
+	void Client::connect(Address address, const string &nick_name, const string &password) {
 		if(m_mode != Mode::disconnected)
 			disconnect();
 
@@ -67,11 +68,14 @@ namespace net {
 			sendLobbyPacket(punch_through);
 		}
 
+		m_nick_name = nick_name;
 		m_server_address = address;
 		m_server_id = addRemoteHost(m_server_address, -1);
 		if(m_server_id != -1) {
 			RemoteHost *host = getRemoteHost(m_server_id);
-			host->enqueChunk("", 0, ChunkType::join, 0);
+			TempPacket chunk;
+			chunk << m_nick_name << password;
+			host->enqueChunk(chunk, ChunkType::join, 0);
 			m_mode = Mode::connecting;
 		}
 	}
@@ -101,6 +105,8 @@ namespace net {
 		DASSERT(m_mode == Mode::waiting_for_world_update);
 
 		if(world->mapName() == m_level_info.map_name) {
+			if(m_level_info.game_mode == GameModeId::death_match)
+				world->assignGameMode<DeathMatchClient>(m_client_id);
 			world->setReplicator(this);
 			m_world = world;
 			m_mode = Mode::world_updated;
@@ -125,6 +131,9 @@ namespace net {
 					m_mode = Mode::waiting_for_world_update;
 				}
 				else if(chunk.type() == ChunkType::join_refuse) {
+					RefuseReason::Type reason;
+					chunk >> reason;
+
 					removeRemoteHost(m_server_id);
 					m_server_id = -1;
 					m_mode = Mode::refused;
@@ -156,6 +165,7 @@ namespace net {
 				}
 				else if(chunk.type() == ChunkType::message)
 					m_world->onMessage(chunk, -1);
+
 			}
 		}
 	}
@@ -176,13 +186,6 @@ namespace net {
 				if(chunk.type() == ChunkType::entity_delete || chunk.type() == ChunkType::entity_full)
 					entityUpdate(chunk);
 			}
-
-			for(int n = 0; n < (int)m_orders.size(); n++) {
-				TempPacket temp;
-				temp << m_orders[n];
-				host->enqueChunk(temp, ChunkType::actor_order, 0);
-			}
-			m_orders.clear();
 		}
 
 		finishSending();
@@ -205,16 +208,9 @@ namespace net {
 			m_world->addEntity(PEntity(new_entity), chunk.chunkId());
 		}
 	}
-
-	void Client::replicateOrder(POrder &&order, EntityRef entity_ref) {
-		if(entity_ref == m_level_info.actor_ref)
-			m_orders.emplace_back(std::move(order));
-	}
-	
+		
 	void Client::sendMessage(net::TempPacket &packet, int target_id) {
-		if(target_id != -1)
-			return;
-
+		DASSERT(target_id == -1);
 		RemoteHost *server = getRemoteHost(m_server_id);
 		if(server)
 			server->enqueChunk(packet.data(), packet.pos(), ChunkType::message, 1);

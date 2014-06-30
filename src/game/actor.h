@@ -137,9 +137,8 @@ namespace game {
 		Flags::Type flags() const;
 		const FBox boundingBox() const override;
 
-		//TODO: multiplayer support
-		void setCharacter(PCharacter character) { m_character = character; }
-		PCharacter character() const { return m_character; }
+		void setClientId(int client_id) { m_client_id = client_id; }
+		int clientId() const { return m_client_id; }
 
 		bool setOrder(POrder&&, bool force = false);
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
@@ -156,7 +155,7 @@ namespace game {
 		Action::Type action() const { return m_action; }
 
 		// TODO: only const access to inventory,
-		// use orders for equipping / unequipping
+		// use orders for adding / removing items
 		const ActorInventory &inventory() const { return m_inventory; }
 		ActorInventory &inventory() { return m_inventory; }
 		
@@ -264,7 +263,6 @@ namespace game {
 		const ActorProto &m_actor;
 
 		PActorAI m_ai;
-		PCharacter m_character;
 
 		POrder m_order;
 		vector<POrder> m_following_orders;
@@ -273,7 +271,7 @@ namespace game {
 		float m_target_angle;
 		Stance::Type m_stance;
 		Action::Type m_action;
-		int m_faction_id;
+		int m_faction_id, m_client_id;
 		int m_sound_variation;
 
 		ActorInventory m_inventory;

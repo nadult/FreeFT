@@ -5,15 +5,216 @@
 
 #include "game/game_mode.h"
 #include "game/world.h"
+#include "game/actor.h"
+#include "game/inventory.h"
+#include "game/trigger.h"
+#include "net/socket.h"
 
 namespace game {
+		
+	PlayableCharacter::PlayableCharacter(const Character &character) :m_character(character), m_class(0) { }
 
-	bool GameMode::isClient() const {
-		return m_world.isClient();
+	void PlayableCharacter::save(Stream &sr) const {
+		sr << m_character << m_entity_ref;
+		sr.encodeInt(m_class.id());
 	}
 
-	bool GameMode::isServer() const {
-		return m_world.isServer();
+	void PlayableCharacter::load(Stream &sr) {
+		sr >> m_character >> m_entity_ref;
+		int class_id = sr.decodeInt();
+		ASSERT(CharacterClass::isValidId(class_id));
+		m_class = CharacterClass(class_id);
+	}
+
+		
+	bool GameMode::sendOrder(POrder &&order, EntityRef entity_ref) {
+		if( Actor *entity = m_world.refEntity<Actor>(entity_ref) )
+			return entity->setOrder(std::move(order));
+		return false;
+	}
+		
+	void GameMode::attachAIs() {
+		for(int n = 0; n < m_world.entityCount(); n++) {
+			Actor *actor = m_world.refEntity<Actor>(n);
+			if(actor && actor->factionId() != 0)
+				actor->attachAI<SimpleAI>();
+		}
+	}
+	
+	game::EntityRef GameMode::findSpawnZone(int faction_id) const {
+		Trigger *spawn_zone = nullptr;
+
+		vector<Trigger*> spawn_zones;
+		for(int n = 0; n < m_world.entityCount(); n++) {
+			Trigger *trigger = m_world.refEntity<Trigger>(n);
+			if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
+				spawn_zones.push_back(trigger);
+		}
+
+		return spawn_zones.empty()? EntityRef() : spawn_zones[rand() % spawn_zones.size()]->ref();
+	}
+
+	EntityRef GameMode::spawnActor(EntityRef spawn_zone_ref, const char *proto_name) {
+		const Trigger *spawn_zone = m_world.refEntity<Trigger>(spawn_zone_ref);
+		DASSERT(spawn_zone);
+
+		PEntity actor = (PEntity)new Actor(getProto(proto_name, ProtoId::actor));
+
+		FBox spawn_box = spawn_zone->boundingBox();
+		float3 spawn_pos = spawn_box.center();
+
+		actor->setPos(spawn_pos);
+		while(!m_world.findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
+			spawn_pos.y -= 1.0f;
+			actor->setPos(spawn_pos);
+		}
+
+		spawn_pos.y += 1.0f;
+		actor->setPos(spawn_pos);
+
+		return m_world.addEntity(std::move(actor));
+	}
+		
+	
+	void GameClient::save(Stream &sr) const {
+		sr << nick_name;
+		sr.encodeInt((int)pcs.size());
+		for(int n = 0; n < (int)pcs.size(); n++)
+			sr << pcs[n];
+	}
+
+	void GameClient::load(Stream &sr) {
+		sr >> nick_name;
+		int count = sr.decodeInt();
+		pcs.clear();
+		pcs.reserve(count);
+		for(int n = 0; n < count; n++)
+			pcs.emplace_back(PlayableCharacter(sr));
+	}
+		
+	GameModeServer::GameModeServer(World &world) :GameMode(world) {
+		ASSERT(world.isServer());
+	}
+
+	void GameModeServer::tick(double time_diff) {
+
+	}
+
+	void GameModeServer::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
+		if(msg_type == MessageId::actor_order) {
+			EntityRef actor_ref;
+			POrder order;
+			sr >> actor_ref >> order;
+
+			auto it = m_clients.find(source_id);
+			if(it != m_clients.end() && order) {
+				for(int n = 0; n < (int)it->second.pcs.size(); n++)
+					if(it->second.pcs[n].entityRef() == actor_ref) {
+						sendOrder(std::move(order), actor_ref);
+						break;
+					}
+			}
+		}
+		else if(msg_type == MessageId::update_client) {
+			GameClient new_client;
+			sr >> new_client;
+			//TODO: verification?
+			updateClient(source_id, new_client);
+		}
+	}
+
+	void GameModeServer::sendClientInfo(int client_id, int target_id) {
+		net::TempPacket chunk;
+		chunk << MessageId::update_client;
+		chunk.encodeInt(client_id);
+		chunk << m_clients[client_id];
+		m_world.sendMessage(chunk, target_id);
+	}
+		
+	void GameModeServer::updateClient(int client_id, const GameClient &new_client) {
+		bool is_new = m_clients.find(client_id) == m_clients.end();
+
+		m_clients[client_id] = new_client;
+		for(auto it = m_clients.begin(); it != m_clients.end(); ++it) {
+			sendClientInfo(client_id, it->first);
+			if(!is_new)
+				sendClientInfo(it->first, client_id);
+		}
+	}
+	
+	void GameModeServer::onClientConnected(int client_id, const string &nick_name) {
+		GameClient new_client;
+		new_client.nick_name = nick_name;
+		updateClient(client_id, new_client);
+	}
+		
+	void GameModeServer::onClientDisconnected(int client_id) {
+		auto del_it = m_clients.find(client_id);
+		if(del_it != m_clients.end()) {
+			m_clients.erase(del_it);
+			for(auto it = m_clients.begin(); it != m_clients.end(); ++it) {
+				net::TempPacket chunk;
+				chunk << MessageId::remove_client;
+				chunk.encodeInt(client_id);
+				m_world.sendMessage(chunk, it->first);
+			}
+		}
+	}
+
+	/*
+			else if(chunk.type() == ChunkType::actor_order && client.mode == ClientMode::connected) {
+				POrder order;
+				chunk >> order;
+				if(order)
+					m_world->sendOrder(std::move(order), client.actor_ref);
+				else
+					printf("Invalid order!\n");
+			}
+
+			for(int n = 0; n < (int)m_orders.size(); n++) {
+				TempPacket temp;
+				temp << m_orders[n];
+				host->enqueChunk(temp, ChunkType::actor_order, 0);
+			}
+			m_orders.clear();
+
+
+	*/
+
+
+	GameModeClient::GameModeClient(World &world, int client_id) :GameMode(world), m_current_id(client_id) {
+		ASSERT(world.isClient());
+	}
+	
+	void GameModeClient::tick(double time_diff) {
+
+	}
+
+	void GameModeClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
+		if(msg_type == MessageId::update_client) {
+			GameClient new_client;
+			int new_id = sr.decodeInt();
+			sr >> new_client;
+			m_others[new_id] = new_client;
+		}
+		else if(msg_type == MessageId::remove_client) {
+			int remove_id = sr.decodeInt();
+			auto it = m_others.find(remove_id);
+			if(it != m_others.end())
+				m_others.erase(it);
+		}
+	}
+	
+	void GameModeClient::setPlayerClassId(int id) {
+		//m_player_class_id = id;
+	}
+
+	bool GameModeClient::sendOrder(POrder &&order, EntityRef entity_ref) {
+		net::TempPacket chunk;
+		chunk << MessageId::actor_order;
+		chunk << entity_ref << order;
+		m_world.sendMessage(chunk);
+		return true;
 	}
 
 }

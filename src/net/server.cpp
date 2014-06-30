@@ -9,12 +9,11 @@
 #include <algorithm>
 
 #include "game/world.h"
+#include "game/game_mode.h"
+#include "game/death_match.h"
 #include "navi_map.h"
 #include "sys/profiler.h"
 #include "sys/platform.h"
-#include "game/actor.h"
-#include "game/trigger.h"
-#include "net/chunks.h"
 #include "net/server.h"
 #include "sys/xml.h"
 
@@ -61,7 +60,7 @@ namespace net {
 		node.addAttrib("password", node.own(m_password));
 	}
 
-	Server::Server(const ServerConfig &config) :LocalHost(Address(m_config.m_port)), m_config(config), m_client_count(0) {
+	Server::Server(const ServerConfig &config) :LocalHost(Address(m_config.m_port)), m_config(config), m_game_mode(nullptr) {
 		m_lobby_timeout = m_current_time = getTime();
 	}
 
@@ -75,55 +74,51 @@ namespace net {
 		}
 		catch(...) { }
 	}
-
-	EntityRef Server::spawnActor(EntityRef spawn_zone_ref) {
-		const Trigger *spawn_zone = m_world->refEntity<Trigger>(spawn_zone_ref);
-		DASSERT(spawn_zone);
-
-		PEntity actor = (PEntity)new Actor(getProto("male", ProtoId::actor));
-
-		FBox spawn_box = spawn_zone->boundingBox();
-		float3 spawn_pos = spawn_box.center();
-
-		actor->setPos(spawn_pos);
-		while(!m_world->findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
-			spawn_pos.y -= 1.0f;
-			actor->setPos(spawn_pos);
-		}
-
-		spawn_pos.y += 1.0f;
-		actor->setPos(spawn_pos);
-
-		return m_world->addEntity(std::move(actor));
+		
+	int Server::numActiveClients() const {
+		int out = 0;
+		for(int n = 0; n < (int)m_clients.size(); n++)
+			if(m_clients[n].isValid())
+				out++;
+		return out;
 	}
 
 	void Server::disconnectClient(int client_id) {
 		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
 		m_clients[client_id].mode = ClientMode::to_be_removed;
+		m_clients[client_id].notify_others = true;
+		m_clients[client_id].nick_name = string();
 	}
-
-	void Server::handleHostReceiving(RemoteHost &host, Client &client) {
-		DASSERT(client.isValid());
-
-		const Chunk *chunk = nullptr;
-		int client_id = &client - m_clients.data();
+		
+	void Server::handleHostReceiving(RemoteHost &host, int client_id) {
+		ClientInfo &client = m_clients[client_id];
 
 		while( const Chunk *chunk_ptr = host.getIChunk() ) {
 			InChunk chunk(*chunk_ptr);
 
-			if(chunk.type() == ChunkType::join) {
-				vector<Trigger*> spawn_zones;
-				for(int n = 0; n < m_world->entityCount(); n++) {
-					Trigger *trigger = m_world->refEntity<Trigger>(n);
-					if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
-						spawn_zones.push_back(trigger);
+			if(chunk.type() == ChunkType::join && client.mode == ClientMode::connecting) {
+				chunk >> client.nick_name;
+				string password;
+				chunk >> password;
+
+				if(!m_config.m_password.empty() && password != m_config.m_password) {
+					TempPacket temp;
+					temp << RefuseReason::wrong_password;
+					host.enqueChunk(temp, ChunkType::join_refuse, 0);
+					disconnectClient(client_id);
+					break;
 				}
+				if(numActiveClients() > maxPlayers()) {
+					TempPacket temp;
+					temp << RefuseReason::server_full;
+					host.enqueChunk(temp, ChunkType::join_refuse, 0);
+					disconnectClient(client_id);
+					break;
+				}
+				
+				m_game_mode->onClientConnected(client_id, client.nick_name);
 
-				// TODO: startup verification and sending refuse if needed
-				m_client_count++;
-				client.actor_ref = spawnActor(spawn_zones[rand() % spawn_zones.size()]->ref());
-				printf("Client connected (%d / %d): %s\n", m_client_count, maxPlayers(), host.address().toString().c_str());
-
+				client.is_loading_level = true;
 				client.update_map.resize(m_world->entityCount() * 2);
 				for(int n = 0; n < m_world->entityCount(); n++)
 					if(m_world->refEntity(n))
@@ -131,27 +126,23 @@ namespace net {
 
 				TempPacket temp;
 				temp.encodeInt(client_id);
-				temp << LevelInfoChunk{ m_world->mapName(), m_world->gameModeId(), client.actor_ref };
+				temp << LevelInfoChunk{ m_world->mapName(), m_world->gameModeId() };
 				host.enqueChunk(temp, ChunkType::join_accept, 0);
 
-				//TODO: send information about new clients to other clients?
+				printf("Client connected (%d / %d): %s (%s)\n", numActiveClients(), maxPlayers(),
+						client.nick_name.c_str(), host.address().toString().c_str());
 			}
-			else if(chunk.type() == ChunkType::level_loaded) {
+			else if(chunk.type() == ChunkType::level_loaded && client.mode == ClientMode::connecting) {
+				//TODO: timeout for level_loaded?
 				client.mode = ClientMode::connected;
+				client.is_loading_level = false;
+				client.notify_others = true;
 				host.verify(true);
 				break;
 			}
 			else if(chunk.type() == ChunkType::leave) {	
-				disconnectClient(host.currentId());
+				disconnectClient(client_id);
 				break;
-			}
-			else if(chunk.type() == ChunkType::actor_order && client.mode == ClientMode::connected) {
-				POrder order;
-				chunk >> order;
-				if(order)
-					m_world->sendOrder(std::move(order), client.actor_ref);
-				else
-					printf("Invalid order!\n");
 			}
 			else if(chunk.type() == ChunkType::message && client.mode == ClientMode::connected) {
 				m_world->onMessage(chunk, client_id);
@@ -159,8 +150,8 @@ namespace net {
 		}
 	}
 
-	void Server::handleHostSending(RemoteHost &host, Client &client) {
-		DASSERT(client.isValid());
+	void Server::handleHostSending(RemoteHost &host, int client_id) {
+		ClientInfo &client = m_clients[client_id];
 		beginSending(client.host_id);
 
 		if(client.mode == ClientMode::connected) {
@@ -236,15 +227,16 @@ namespace net {
 				
 			if((int)m_clients.size() <= h)
 				m_clients.resize(h + 1);
-			Client &client = m_clients[h];
+			ClientInfo &client = m_clients[h];
 			if(!client.isValid()) {
+				client = ClientInfo();
 				client.mode = ClientMode::connecting;
 				client.host_id = h;
 			}
 			if(m_world->entityCount() > client.update_map.size())
 				client.update_map.resize(m_world->entityCount() * 2);
 
-			handleHostReceiving(*host, client);
+			handleHostReceiving(*host, h);
 		}
 	}
 
@@ -253,23 +245,18 @@ namespace net {
 			return;
 		m_timestamp++;
 
+		
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
 
-			if(!host)
+			if(!host || h >= (int)m_clients.size())
 				continue;
 				
-			if((int)m_clients.size() <= h)
-				m_clients.resize(h + 1);
-			Client &client = m_clients[h];
-			if(!client.isValid()) {
-				client.mode = ClientMode::connecting;
-				client.host_id = h;
-			}
+			ClientInfo &client = m_clients[h];
 			if(m_world->entityCount() > client.update_map.size())
 				client.update_map.resize(m_world->entityCount() * 2);
 
-			handleHostSending(*host, client);
+			handleHostSending(*host, h);
 
 			if(host->timeout() > 10.0) {
 				printf("Disconnecting host (timeout)\n");
@@ -278,16 +265,11 @@ namespace net {
 		}
 
 		for(int h = 0; h < (int)m_clients.size(); h++) {
-			Client &client = m_clients[h];
+			ClientInfo &client = m_clients[h];
 			if(client.mode == ClientMode::to_be_removed) {
-				if(client.actor_ref) {
-					m_world->removeEntity(client.actor_ref);
-					client.actor_ref = EntityRef();
-				}
-				
+				m_game_mode->onClientDisconnected(h);
 				printf("Client disconnected: %s\n", getRemoteHost(h)->address().toString().c_str());
 				removeRemoteHost(h);
-				m_client_count--;
 				client.mode = ClientMode::invalid;
 			}
 		}
@@ -301,10 +283,10 @@ namespace net {
 			//TODO: send map title, which should be shorter
 			chunk.map_name = m_config.m_map_name;
 			chunk.server_name = m_config.m_server_name;
-			chunk.num_players = m_client_count;
+			chunk.num_players = numActiveClients();
 			chunk.max_players = maxPlayers();
 			chunk.is_passworded = !m_config.m_password.empty();
-			chunk.game_mode = GameModeId::death_match;
+			chunk.game_mode = m_game_mode->typeId();
 			out << LobbyChunkId::server_status << chunk;
 			sendLobbyPacket(out);
 			m_lobby_timeout = m_current_time + 10.0;
@@ -313,10 +295,15 @@ namespace net {
 
 	void Server::setWorld(PWorld world) {
 		DASSERT(world);
+
+		//TODO: different modes
+		world->assignGameMode<DeathMatchServer>();
 		
 		//TODO send level_info to clients
 		m_world = world;
 		m_world->setReplicator(this);
+		m_game_mode = dynamic_cast<GameModeServer*>(m_world->gameMode());
+
 		m_config.m_map_name = m_world? m_world->mapName() : "";
 	}
 
@@ -326,8 +313,8 @@ namespace net {
 		
 	void Server::sendMessage(net::TempPacket &packet, int target_id) {
 		for(int c = 0; c < (int)m_clients.size(); c++) {
-			const Client &client = m_clients[c];
-			if(client.isValid() && target_id == -1 || c == target_id) {
+			const ClientInfo &client = m_clients[c];
+			if(client.isValid() && (target_id == -1 || c == target_id)) {
 				RemoteHost *host = getRemoteHost(client.host_id);
 				if(host)
 					host->enqueChunk(packet.data(), packet.pos(), ChunkType::message, 1);

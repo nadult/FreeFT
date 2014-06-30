@@ -7,10 +7,9 @@
 #define NET_CLIENT_H
 
 #include "net/host.h"
-#include "net/chunks.h"
+#include "net/base.h"
 #include "game/entity.h"
 #include "game/world.h"
-#include "game/orders.h"
 
 namespace net {
 
@@ -31,14 +30,12 @@ namespace net {
 
 		Client(int port = 0);
 		~Client();
-	
+		
 		bool getLobbyData(vector<ServerStatusChunk> &out);
 		void requestLobbyData();
 
-		void connect(Address address);
+		void connect(Address address, const string &nick_name, const string &password);
 		void disconnect();
-
-		int clientId() const { return m_client_id; }
 		
 		Mode mode() const { return m_mode; }
 
@@ -49,24 +46,20 @@ namespace net {
 		void setWorld(game::PWorld);
 		bool needWorldUpdate() const { return m_mode == Mode::waiting_for_world_update; }
 
-		game::EntityRef actorRef() const { return m_level_info.actor_ref; }
 		game::PWorld world() { return m_world; }
 
 	protected:
 		void entityUpdate(InChunk &chunk);
-		void replicateOrder(game::POrder &&order, game::EntityRef entity_ref) override;
 		void sendMessage(net::TempPacket&, int target_id) override;
 
 	private:
 		LevelInfoChunk m_level_info;
 		game::PWorld m_world;
 
+		string m_nick_name;
 		Address m_server_address;
-		int m_server_id;
-		int m_client_id;
+		int m_server_id, m_client_id;
 		Mode m_mode;
-
-		vector<game::POrder> m_orders;
 	};
 
 }

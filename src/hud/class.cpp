@@ -4,6 +4,7 @@
  */
 
 #include "hud/class.h"
+#include "game/character.h"
 #include "game/inventory.h"
 
 #include "hud/widget.h"
@@ -24,11 +25,11 @@ namespace hud {
 		int m_max_buttons = 4;
 	}
 		
-	HudClassButton::HudClassButton(const FRect &rect) :HudWidget(rect), m_predefined_id(-1) { }
+	HudClassButton::HudClassButton(const FRect &rect) :HudWidget(rect), m_class_id(-1) { }
 		
-	void HudClassButton::setId(int predefined_id) {
-		DASSERT(predefined_id == -1 || (predefined_id >= 0 && predefined_id < ActorInventory::predefinedCount()));
-		m_predefined_id = predefined_id;
+	void HudClassButton::setId(int class_id) {
+		DASSERT(class_id == -1 || CharacterClass::isValidId(class_id));
+		m_class_id = class_id;
 	}
 
 	void HudClassButton::draw() const {
@@ -38,9 +39,8 @@ namespace hud {
 		HudWidget::draw();
 		FRect rect = this->rect();
 
-		if(m_predefined_id != -1) {
-			ActorInventory inv = ActorInventory::getPredefined(m_predefined_id, false).first;
-
+		if(m_class_id != -1) {
+			ActorInventory inv = CharacterClass(m_class_id).inventory(false);
 			float2 pos(spacing, rect.center().y);
 
 			for(int n = 0; n < inv.size(); n++) {
@@ -55,8 +55,11 @@ namespace hud {
 				texture->bind();
 				drawQuad(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f), uv_rect);
 
-				if(inv[n].count > 1)
-					m_font->draw(irect, {focusColor(), focusShadowColor(), HAlign::right}, format("%d", inv[n].count));
+				if(inv[n].count > 1) {
+					FRect trect = irect;
+					trect.max.y -= 5.0;
+					m_font->draw(trect, {focusColor(), focusShadowColor(), HAlign::right, VAlign::bottom}, format("%d", inv[n].count));
+				}
 				
 				pos.x += irect.width() + spacing;
 			}
@@ -67,10 +70,10 @@ namespace hud {
 		return lerp(HudWidget::backgroundColor(), Color::white, m_focus_time * 0.5f);
 	}
 
-	HudClass::HudClass(PWorld world, EntityRef actor_ref, const FRect &target_rect)
+	HudClass::HudClass(PWorld world, const FRect &target_rect)
 		:HudLayer(target_rect), m_offset(0), m_selected_id(-1) {
 
-		m_class_count = ActorInventory::predefinedCount();
+		m_class_count = CharacterClass::count();
 		for(int n = 0; n < m_max_buttons; n++) {
 			float diff = s_item_height + spacing * 2;
 			float2 pos(HudWidget::spacing, HudWidget::spacing + (s_item_height + HudWidget::spacing) * n);

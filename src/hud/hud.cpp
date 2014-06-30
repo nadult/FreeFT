@@ -69,7 +69,7 @@ namespace hud {
 		return FRect(s_hud_main_size) + float2(HudLayer::spacing, gfx::getWindowSize().y - s_hud_main_size.y - HudLayer::spacing);
 	}
 
-	Hud::Hud(PWorld world, EntityRef actor_ref) :HudLayer(initRect()), m_world(world), m_actor_ref(actor_ref), m_selected_layer(layer_none) {
+	Hud::Hud(PWorld world) :HudLayer(initRect()), m_world(world), m_selected_layer(layer_none) {
 		float2 bottom_left(HudWidget::spacing - spacing, rect().height() - HudWidget::spacing + HudLayer::spacing);
 
 		FRect char_rect(s_hud_char_icon_size);
@@ -117,11 +117,11 @@ namespace hud {
 			attach(m_hud_stances[n].get());
 
 		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
-		m_hud_inventory = new HudInventory(m_world, m_actor_ref, inv_rect);
+		m_hud_inventory = new HudInventory(m_world, inv_rect);
 		m_hud_inventory->setVisible(false, false);
 		
 		FRect cls_rect = align(FRect(s_hud_class_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
-		m_hud_class = new HudClass(m_world, m_actor_ref, cls_rect);
+		m_hud_class = new HudClass(m_world, cls_rect);
 		m_hud_class->setVisible(false, false);
 		
 		FRect opt_rect = align(FRect(s_hud_options_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
@@ -130,13 +130,27 @@ namespace hud {
 	}
 
 	Hud::~Hud() { }
+		
+	void Hud::setActor(game::EntityRef actor_ref) {
+		if(actor_ref == m_actor_ref)
+			return;
+		m_actor_ref = actor_ref;
+
+		m_hud_inventory->setActor(m_actor_ref);
+		if(!m_actor_ref)
+			m_hud_inventory->setVisible(false);
+	}
+		
+	void Hud::setCharacter(game::PCharacter character) {
+		m_character = character;
+		m_hud_char_icon->setCharacter(m_character);
+	}
 
 	void Hud::update(bool is_active, double time_diff) {
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
 		is_active &= isVisible() && m_visible_time == 1.0f;
 
 		if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
-			m_hud_char_icon->setCharacter(actor->character());
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
 
 			m_hud_weapon->setWeapon(actor->inventory().weapon());
@@ -195,6 +209,8 @@ namespace hud {
 					m_hud_buttons[n]->setFocus(pressed_id == n && !is_disabling);
 			
 				m_selected_layer = is_disabling? layer_none : s_buttons[pressed_id].id;
+				if(m_selected_layer == layer_inventory && !m_actor_ref)
+					m_selected_layer = layer_none;
 			}
 
 			bool any_other_visible = false;

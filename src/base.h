@@ -545,6 +545,8 @@ namespace game {
 	class Inventory;
 	class ActorInventory;
 	class GameMode;
+	class GameModeServer;
+	class GameModeClient;
 
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;

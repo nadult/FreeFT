@@ -8,11 +8,18 @@
 
 namespace game {
 
-	DeathMatch::DeathMatch(World &world) :GameMode(world) {
-		DASSERT(isClient() || isServer());
+	DeathMatchServer::DeathMatchServer(World &world) :GameModeServer(world) {
 	}
 
-	void DeathMatch::tick(double time_diff) {
+	void DeathMatchServer::tick(double time_diff) {
 	}
+
+
+	DeathMatchClient::DeathMatchClient(World &world, int client_id) :GameModeClient(world, client_id) {
+	}
+
+	void DeathMatchClient::tick(double time_diff) {
+	}
+
 
 }

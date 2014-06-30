@@ -118,8 +118,10 @@ namespace game {
 	// TODO: better name
 	DECLARE_ENUM(GameModeId,
 		undefined = -1,
+		single_player,
 		death_match,
-		trench_war
+		trench_war,
+		hunter
 	);
 
 	DECLARE_ENUM(SoundType,

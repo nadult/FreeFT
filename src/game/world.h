@@ -22,6 +22,8 @@ namespace game {
 		virtual void replicateEntity(int entity_id) { }
 		virtual void replicateOrder(POrder&&, EntityRef) { }
 		virtual void sendMessage(net::TempPacket&, int target_id) = 0;
+		//TODO: inform replicator about entity priorities
+		// most basic: which entity belongs to which client
 	};
 
 	class GameMode;
@@ -106,11 +108,11 @@ namespace game {
 		bool isServer() const { return m_mode == Mode::server; }
 
 		template <class TGameMode, class ...Args>
-		void setGameMode(const Args&... args) {
+		void assignGameMode(const Args&... args) {
 			ASSERT(!m_game_mode);
 			m_game_mode.reset(new TGameMode(*this, args...));
 		}
-		const GameMode *gameMode() const { return m_game_mode.get(); }
+		GameMode *gameMode() const { return m_game_mode.get(); }
 		GameModeId::Type gameModeId() const;
 
 		void setReplicator(Replicator*);

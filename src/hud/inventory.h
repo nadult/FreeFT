@@ -46,12 +46,13 @@ namespace hud
 	public:
 		enum { spacing = 17 };
 
-		HudInventory(PWorld world, EntityRef actor_ref, const FRect &target_rect);
+		HudInventory(PWorld world, const FRect &target_rect);
 		~HudInventory();
 
 		float preferredHeight() const;
 		void update(bool is_active, double time_diff) override;
 		void draw() const override;
+		void setActor(game::EntityRef);
 
 	private:
 		game::PWorld m_world;

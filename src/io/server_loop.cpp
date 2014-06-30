@@ -27,7 +27,7 @@ namespace io {
 		}
 
 		if(!m_server->config().m_console_mode)
-			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, EntityRef(), config.profiler_enabled));
+			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, config.profiler_enabled));
 	}
 
 	bool ServerLoop::tick(double time_diff) {

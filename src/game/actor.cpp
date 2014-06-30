@@ -28,6 +28,8 @@ namespace game {
 		sr.unpack(flags, m_stance, m_action);
 		m_hit_points = sr.decodeInt();
 		m_sound_variation = sr.decodeInt();
+		m_client_id = sr.decodeInt();
+		m_faction_id = sr.decodeInt();
 
 		if(flags & 1) {
 			sr >> m_order;
@@ -48,8 +50,8 @@ namespace game {
 	}
 
 	Actor::Actor(const XMLNode &node)
-	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(node.child("inventory")),
-		  m_stance(Stance::stand), m_target_angle(dirAngle()) {
+	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(node.child("inventory")), m_stance(Stance::stand),
+	      m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 		m_sound_variation = node.intAttrib("sound_variation") % m_actor.sounds.size();
 		m_faction_id = node.intAttrib("faction_id");
@@ -59,7 +61,7 @@ namespace game {
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
-		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()) {
+		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 		m_sound_variation = rand() % m_actor.sounds.size();
 		m_faction_id = 0;
@@ -76,7 +78,6 @@ namespace game {
 		m_sound_variation = rhs.m_sound_variation;
 		m_hit_points = rhs.m_hit_points;
 		m_ai = rhs.m_ai;
-		m_character = rhs.m_character;
 	}
 	
 	XMLNode Actor::save(XMLNode &parent) const {
@@ -97,6 +98,8 @@ namespace game {
 		sr.pack(flags, m_stance, m_action);
 		sr.encodeInt(m_hit_points);
 		sr.encodeInt(m_sound_variation);
+		sr.encodeInt(m_client_id);
+		sr.encodeInt(m_faction_id);
 
 		if(flags & 1)
 			sr << m_order;

@@ -106,8 +106,10 @@ namespace game {
 	)
 
 	DEFINE_ENUM(GameModeId,
+		"single_player",
 		"death_match",
-		"trench_war"
+		"trench_war",
+		"hunter"
 	)
 
 	DEFINE_ENUM(SoundType,

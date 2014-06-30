@@ -10,6 +10,7 @@
 #include "game/item.h"
 #include "game/container.h"
 #include "game/visibility.h"
+#include "game/game_mode.h"
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -24,27 +25,44 @@ using namespace game;
 
 namespace io {
 
-	Controller::Controller(const int2 &resolution, PWorld world, EntityRef actor_ref, bool show_stats)
-	  :m_console(resolution), m_world(world), m_viewer(world, actor_ref), m_actor_ref(actor_ref), m_resolution(resolution),
-	   m_view_pos(0, 0), m_show_stats(show_stats)  {
+	Controller::Controller(const int2 &resolution, PWorld world, bool show_stats)
+	  :m_console(resolution), m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_stats(show_stats) {
 		DASSERT(world);
-		const Actor *actor = m_world->refEntity<Actor>(actor_ref);
+		m_hud = new hud::Hud(world);
+
+		m_game_mode = m_world->gameMode();
+		ASSERT(m_game_mode);
+		updateActor();
+
+		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor)
 			m_view_pos = int2(worldToScreen(actor->pos())) - resolution / 2;
 		
 		m_last_time = m_stats_update_time = getTime();
 		m_last_look_at = float3(0, 0, 0);
 	
-		m_hud = new hud::Hud(world, actor_ref);
 	}
 
 	Controller::~Controller() {
+	}
+		
+	//TODO: better name
+	void Controller::updateActor() {
+		const auto &pcs = m_game_mode->playableCharacters();
+		const PlayableCharacter *pc = pcs.empty()? nullptr : &pcs[0];
+
+		m_actor_ref = pc? pc->entityRef() : EntityRef();
+		m_hud->setActor(m_actor_ref);
+		m_viewer.setSpectator(m_actor_ref);
+		m_hud->setCharacter(pc? new Character(pc->character()) : PCharacter());
 	}
 
 	void Controller::update(double time_diff) {
 		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 		
+		updateActor();
+
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor && actor->isDead())
 			actor = nullptr;

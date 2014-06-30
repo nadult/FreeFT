@@ -10,13 +10,22 @@
 
 namespace game {
 
-	class DeathMatch: public GameMode {
+	class DeathMatchServer: public GameModeServer {
 	public:
-		DeathMatch(World &world);
+		DeathMatchServer(World &world);
 
-		GameModeId::Type modeId() const override { return GameModeId::death_match; }
+		GameModeId::Type typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
 	};
+
+	class DeathMatchClient: public GameModeClient {
+	public:
+		DeathMatchClient(World &world, int client_id);
+
+		GameModeId::Type typeId() const override { return GameModeId::death_match; }
+		void tick(double time_diff) override;
+	};
+
 
 }
 

@@ -20,6 +20,13 @@ namespace game {
 	}
 
 	static const double blend_time = 0.5;
+
+	void WorldViewer::setSpectator(EntityRef spectator) {
+		if(spectator == m_spectator)
+			return;
+		m_spectator = spectator;
+		m_entities.clear();
+	}
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {
 		EntityId::Type type_id = entity.typeId();

@@ -22,6 +22,8 @@ namespace game {
 		WorldViewer(const WorldViewer&) = delete;
 		void operator=(const WorldViewer&) = delete;
 
+		void setSpectator(EntityRef);
+
 		struct VisEntity {
 			VisEntity() :mode(invisible), occluder_id(-1) { }
 
@@ -63,7 +65,7 @@ namespace game {
 
 		PWorld m_world;
 
-		const EntityRef m_spectator;
+		EntityRef m_spectator;
 		float3 m_cur_pos, m_eye_pos;
 	};
 

@@ -3,14 +3,24 @@
    This file is part of FreeFT.
  */
 
-#ifndef NET_CHUNKS_H
-#define NET_CHUNKS_H
+#ifndef NET_BASE_H
+#define NET_BASE_H
 
 #include "net/socket.h"
 #include "game/base.h"
 #include "game/entity.h"
 
 namespace net {
+
+	namespace limits {
+
+		enum {
+			max_clients = 64,
+			min_nick_name_size = 4,
+			max_nick_name_size = 20,
+		};
+
+	}
 
 	Address lobbyServerAddress();
 
@@ -20,6 +30,11 @@ namespace net {
 		server_list,
 		server_list_request, // TODO: filters
 		join_request
+	);
+
+	DECLARE_ENUM(RefuseReason,
+		wrong_password,
+		server_full
 	);
 
 	struct ServerStatusChunk {
@@ -44,7 +59,6 @@ namespace net {
 
 		string map_name;
 		game::GameModeId::Type game_mode;
-		game::EntityRef actor_ref;
 	};
 
 }

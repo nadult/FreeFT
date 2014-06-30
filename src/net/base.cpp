@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "net/chunks.h"
+#include "net/base.h"
 
 namespace net {
 
@@ -28,11 +28,11 @@ namespace net {
 
 
 	void LevelInfoChunk::save(Stream &sr) const {
-		sr << game_mode << map_name << actor_ref;
+		sr << game_mode << map_name;
 	}
 
 	void LevelInfoChunk::load(Stream &sr) {
-		sr >> game_mode >> map_name >> actor_ref;
+		sr >> game_mode >> map_name;
 	}
 
 }

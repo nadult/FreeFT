@@ -9,7 +9,7 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 #include "net/socket.h"
-#include "net/chunks.h"
+#include "net/base.h"
 #include <list>
 #include <algorithm>
 #include <map>
