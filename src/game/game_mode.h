@@ -19,7 +19,9 @@ namespace game {
 		class_changed,
 		update_client,
 		remove_client,
-		respawn
+		respawn,
+
+		update_client_info
 	);
 
 	class PlayableCharacter {
@@ -59,8 +61,8 @@ namespace game {
 		virtual bool sendOrder(POrder &&order, EntityRef entity_ref);
 
 	protected:
-		game::EntityRef findSpawnZone(int faction_id) const;
-		game::EntityRef spawnActor(game::EntityRef spawn_zone, const char *proto_name);
+		EntityRef findSpawnZone(int faction_id) const;
+		EntityRef spawnActor(EntityRef spawn_zone, const Proto &proto);
 		void attachAIs();
 
 		World &m_world;
@@ -91,6 +93,7 @@ namespace game {
 	protected:
 		void sendClientInfo(int client_id, int target_id);
 		void updateClient(int client_id, const GameClient&);
+		void respawn(int client_id, int pc_id, EntityRef spawn_zone);
 
 		std::map<int, GameClient> m_clients;
 	};
@@ -111,7 +114,6 @@ namespace game {
 
 		GameClient m_current;
 		std::map<int, GameClient> m_others;
-		vector<game::POrder> m_orders;
 		const int m_current_id;
 	};
 

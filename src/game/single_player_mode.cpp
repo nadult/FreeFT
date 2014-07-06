@@ -17,7 +17,7 @@ namespace game {
 		EntityRef spawn_zone = findSpawnZone(0);
 		if(!spawn_zone)
 			THROW("Spawn zone not found!\n");
-		m_pc.setEntityRef(spawnActor(spawn_zone, "male"));
+		m_pc.setEntityRef(spawnActor(spawn_zone, getProto("male", ProtoId::actor)));
 
 		if( Actor *actor = m_world.refEntity<Actor>(m_pc.entityRef()) ) {
 			auto &inventory = actor->inventory();

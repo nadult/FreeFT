@@ -54,11 +54,11 @@ namespace game {
 		return spawn_zones.empty()? EntityRef() : spawn_zones[rand() % spawn_zones.size()]->ref();
 	}
 
-	EntityRef GameMode::spawnActor(EntityRef spawn_zone_ref, const char *proto_name) {
+	EntityRef GameMode::spawnActor(EntityRef spawn_zone_ref, const Proto &proto) {
 		const Trigger *spawn_zone = m_world.refEntity<Trigger>(spawn_zone_ref);
 		DASSERT(spawn_zone);
 
-		PEntity actor = (PEntity)new Actor(getProto(proto_name, ProtoId::actor));
+		PEntity actor = (PEntity)new Actor(proto);
 
 		FBox spawn_box = spawn_zone->boundingBox();
 		float3 spawn_pos = spawn_box.center();
@@ -160,27 +160,22 @@ namespace game {
 			}
 		}
 	}
+		
+	void GameModeServer::respawn(int client_id, int pc_id, EntityRef spawn_zone) {
+		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
+		DASSERT(pc_id >= 0 && pc_id < (int)m_clients[client_id].pcs.size());
 
-	/*
-			else if(chunk.type() == ChunkType::actor_order && client.mode == ClientMode::connected) {
-				POrder order;
-				chunk >> order;
-				if(order)
-					m_world->sendOrder(std::move(order), client.actor_ref);
-				else
-					printf("Invalid order!\n");
-			}
-
-			for(int n = 0; n < (int)m_orders.size(); n++) {
-				TempPacket temp;
-				temp << m_orders[n];
-				host->enqueChunk(temp, ChunkType::actor_order, 0);
-			}
-			m_orders.clear();
-
-
-	*/
-
+		GameClient &client = m_clients[client_id];
+		PlayableCharacter &pc = client.pcs[pc_id];
+		if(pc.entityRef())
+			m_world.removeEntity(pc.entityRef());
+		EntityRef actor_ref = spawnActor(spawn_zone, pc.character().proto());
+		Actor *actor = m_world.refEntity<Actor>(actor_ref);
+		DASSERT(actor);
+		actor->setClientId(client_id);
+		pc.setEntityRef(actor_ref);
+		updateClient(client_id, client);
+	}
 
 	GameModeClient::GameModeClient(World &world, int client_id) :GameMode(world), m_current_id(client_id) {
 		ASSERT(world.isClient());
