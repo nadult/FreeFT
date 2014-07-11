@@ -12,6 +12,9 @@ namespace gfx { class Font; }
 
 namespace io {
 
+	//TODO: move Console to hud, use HudEditBox
+	
+
 	class ConsoleEditBox;
 
 	class Console {

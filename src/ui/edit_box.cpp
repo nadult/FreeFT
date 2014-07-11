@@ -33,7 +33,6 @@ namespace ui {
 			drawLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), Color(255, 255, 255, 180));
 			drawRect(IRect(2, 1, width() - 1, height() - 2), Color(255, 255, 255, 80));	
 		}
-
 	}
 	
 	void EditBox::setCursorPos(int2 rect_pos) {

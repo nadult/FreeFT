@@ -29,7 +29,9 @@ namespace game
 		const Proto &proto() const { return getProto(m_proto_idx); }
 
 		gfx::PTexture icon() const;
-		static gfx::PTexture defaultIcon();
+		static gfx::PTexture emptyIcon();
+
+		static const vector<pair<ProtoIndex, string>> findIcons();
 
 	private:
 		void validate();

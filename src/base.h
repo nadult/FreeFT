@@ -516,6 +516,7 @@ namespace ui {
 	class ImageButton;
 	class FileDialog;
 	class MessageBox;
+	class EditBox;
 	typedef Ptr<Window> PWindow;
 	typedef Ptr<Button> PButton;
 	typedef Ptr<ImageButton> PImageButton;

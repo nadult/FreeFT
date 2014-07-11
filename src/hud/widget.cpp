@@ -23,9 +23,13 @@ namespace hud {
 			{ FRect(0.00f, 0.00f, 0.25f, 0.25f) },
 			{ FRect(0.25f, 0.00f, 0.50f, 0.25f) },
 			{ FRect(0.50f, 0.00f, 0.75f, 0.25f) },
+
 			{ FRect(0.00f, 0.25f, 0.25f, 0.50f) },
 			{ FRect(0.25f, 0.25f, 0.50f, 0.50f) },
-			{ FRect(0.50f, 0.25f, 0.75f, 0.50f) }
+			{ FRect(0.50f, 0.25f, 0.75f, 0.50f) },
+			{ FRect(0.75f, 0.25f, 1.00f, 0.50f) },
+
+			{ FRect(0.00f, 0.50f, 0.25f, 0.75f) }
 		};
 
 	}
@@ -72,11 +76,10 @@ namespace hud {
 
 		DTexture::unbind();
 		FRect rect = this->rect();
-
-		u8 alpha(this->alpha() * 255);
 		drawQuad(rect, backgroundColor());
 
-		Color border_color = lerp(Color(m_style.border_color, alpha / 2), Color(m_style.border_color, alpha), m_focus_time);
+		u8 border_alpha = clamp((int)(255 * this->alpha() * (0.3f + 0.7f * m_focus_time * m_over_time)), 0, 255);
+		Color border_color(m_style.border_color, border_alpha);
 		float offset = lerp(m_style.border_offset, 0.0f, m_over_time);
 		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
 

@@ -154,13 +154,4 @@ namespace hud {
 		HudLayer::draw();
 	}
 
-	float HudClass::preferredHeight() const {
-		FRect rect;
-
-		for(int n = 0; n < min(m_class_count, (int)m_buttons.size()); n++)
-			rect = sum(rect, m_buttons[n]->rect());
-
-		return max(rect.height() + spacing * 2.0f, s_item_height) + s_bottom_size;
-	}
-
 }

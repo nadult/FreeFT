@@ -22,7 +22,7 @@ namespace hud {
 		HudWidget::draw();
 		FRect rect = this->rect();
 	
-		PTexture icon = m_character? m_character->icon() : Character::defaultIcon();
+		PTexture icon = m_character? m_character->icon() : Character::emptyIcon();
 		icon->bind();
 		float2 pos = rect.center(), icon_size(icon->dimensions());
 		pos -= icon_size * 0.5f;

@@ -22,7 +22,7 @@ namespace hud
 		void draw() const override;
 
 		// Update should always be called before draw in current frame
-		void update(bool is_active, double time_diff) override;
+		void update(bool handle_input, double time_diff) override;
 		
 		void setVisible(bool is_visible, bool animate = true) override;
 
@@ -54,6 +54,7 @@ namespace hud
 		Ptr<HudInventory> m_hud_inventory;
 		Ptr<HudOptions> m_hud_options;
 		Ptr<HudClass> m_hud_class;
+		Ptr<HudCharacter> m_hud_character;
 	};
 
 }

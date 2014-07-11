@@ -34,7 +34,7 @@ namespace game {
 
 			EntityRef actor_ref = pcs.empty()? EntityRef() : pcs.front().entityRef();
 			const Actor *actor = m_world.refEntity<Actor>(actor_ref);
-			bool needs_respawn = !actor || actor->isDead() && !pcs.empty();
+			bool needs_respawn = (!actor || actor->isDead()) && !pcs.empty();
 			bool notify_client = false;
 
 			if(actor && actor->isDead() && !info.is_dead) {

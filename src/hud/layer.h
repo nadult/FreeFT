@@ -22,7 +22,7 @@ namespace hud
 
 		const FRect rect() const;
 		virtual void draw() const;
-		virtual void update(bool is_active, double time_diff);
+		virtual void update(bool handle_input, double time_diff);
 		virtual bool isMouseOver() const;
 
 		bool isVisible() const { return m_is_visible || m_visible_time > 0.01f; }

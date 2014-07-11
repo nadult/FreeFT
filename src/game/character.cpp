@@ -6,8 +6,13 @@
 #include "game/character.h"
 #include "game/inventory.h"
 #include "gfx/device.h"
+#include "sys/platform.h"
+#include "sys/xml.h"
 
 namespace game {
+
+	static const char *s_icon_folder = "char/";
+	static const char *s_empty_name = "no_char";
 
 	Character::Character(const string &name, const string &icon_name, const string &proto_name)
    		:m_name(name), m_icon_name(icon_name), m_proto_idx(findProto(proto_name, ProtoId::actor)) {
@@ -35,16 +40,33 @@ namespace game {
 	gfx::PTexture Character::icon() const {
 		if(!m_icon_name.empty()) {
 			try {
-				return gfx::DTexture::gui_mgr[string("char/") + m_icon_name];
+				return gfx::DTexture::gui_mgr[string(s_icon_folder) + m_icon_name];
 			}
 			catch(...) { } //TODO: log error
 		}
 
-		return defaultIcon();
+		return emptyIcon();
 	}
 		
-	gfx::PTexture Character::defaultIcon() {
-		return gfx::DTexture::gui_mgr["char/no_char"];
+	gfx::PTexture Character::emptyIcon() {
+		return gfx::DTexture::gui_mgr[string(s_icon_folder) + s_empty_name];
+	}
+		
+	const vector<pair<ProtoIndex, string>> Character::findIcons() {
+		XMLDocument doc;
+		Loader("data/char_icons.xml") >> doc;
+
+		vector<pair<ProtoIndex, string>> out;
+
+		XMLNode node = doc.child("char");
+		while(node) {
+			const char *proto_name = node.attrib("proto");
+			const char *icon_name = node.attrib("icon");
+			out.push_back(make_pair(findProto(proto_name, ProtoId::actor), string(icon_name)));
+			node = node.sibling("char");
+		}
+
+		return out;
 	}
 		
 	struct StartingEquipment {

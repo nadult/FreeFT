@@ -11,7 +11,7 @@ using namespace gfx;
 
 namespace hud
 {
-	
+
 	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical) {
 		Color colors[4] = { a, b, b, a };
 		if(is_vertical)

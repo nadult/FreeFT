@@ -18,8 +18,12 @@ namespace hud
 		stance_stand,
 		stance_crouch,
 		stance_prone,
+
 		down_arrow,
 		up_arrow,
+		left_arrow,
+		right_arrow,
+
 		close
 	);
 

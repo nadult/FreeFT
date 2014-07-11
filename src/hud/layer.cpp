@@ -69,7 +69,7 @@ namespace hud {
 		m_big_font = Font::mgr[style.big_font_name];
 	}
 		
-	void HudLayer::update(bool is_active, double time_diff) {
+	void HudLayer::update(bool handle_input, double time_diff) {
 		const float2 mouse_pos = float2(getMousePos()) - rect().min;
 
 		animateValue(m_visible_time, time_diff * 5.0f, m_is_visible);

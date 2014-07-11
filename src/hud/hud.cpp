@@ -9,6 +9,7 @@
 #include "hud/inventory.h"
 #include "hud/options.h"
 #include "hud/class.h"
+#include "hud/character.h"
 
 #include "game/actor.h"
 #include "game/world.h"
@@ -27,8 +28,10 @@ namespace hud {
 		const float2 s_hud_button_size(60, 17);
 		const float2 s_hud_stance_size(23, 23);
 		const float2 s_hud_main_size(365, 155);
+
 		const float2 s_hud_inventory_size(365, 300);
 		const float2 s_hud_class_size(365, 300);
+		const float2 s_hud_character_size(365, 300);
 		const float2 s_hud_options_size(365, 200);
 
 		enum ButtonId {
@@ -127,6 +130,10 @@ namespace hud {
 		FRect opt_rect = align(FRect(s_hud_options_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
 		m_hud_options = new HudOptions(opt_rect);
 		m_hud_options->setVisible(false, false);
+		
+		FRect cha_rect = align(FRect(s_hud_character_size) + float2(spacing, 0.0f), rect(), align_top, spacing);
+		m_hud_character = new HudCharacter(cha_rect);
+		m_hud_character->setVisible(false, false);
 	}
 
 	Hud::~Hud() { }
@@ -146,9 +153,10 @@ namespace hud {
 		m_hud_char_icon->setCharacter(m_character);
 	}
 
-	void Hud::update(bool is_active, double time_diff) {
+	void Hud::update(bool handle_input, double time_diff) {
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
-		is_active &= isVisible() && m_visible_time == 1.0f;
+		bool handle_accelerators = handle_input;
+		handle_input &= isVisible() && m_visible_time == 1.0f;
 
 		if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
@@ -166,20 +174,22 @@ namespace hud {
 					sel_id = n;
 			}
 
-			if(stance_id != -1 && stance_id != sel_id) {
-				playSound(HudSound::button);
+			if(handle_input || (is_accel && handle_accelerators)) {
+				if(stance_id != -1 && stance_id != sel_id) {
+					playSound(HudSound::button);
 
-				sendOrder(new ChangeStanceOrder(s_stance_buttons[stance_id].stance_id));
-				for(int n = 0; n < (int)m_hud_stances.size(); n++)
-					m_hud_stances[n]->setFocus(stance_id == n);
+					sendOrder(new ChangeStanceOrder(s_stance_buttons[stance_id].stance_id));
+					for(int n = 0; n < (int)m_hud_stances.size(); n++)
+						m_hud_stances[n]->setFocus(stance_id == n);
+				}
+
+				if(stance_id == -1 && sel_id == -1)
+					for(int n = 0; n < (int)m_hud_stances.size(); n++)
+						m_hud_stances[n]->setFocus(s_stance_buttons[n].stance_id == actor->stance());
 			}
 
-			if(stance_id == -1 && sel_id == -1)
-				for(int n = 0; n < (int)m_hud_stances.size(); n++)
-					m_hud_stances[n]->setFocus(s_stance_buttons[n].stance_id == actor->stance());
-
-			// Reloading:	
-			if(m_hud_weapon->isPressed(mouse_pos)) {
+			bool is_pressed = m_hud_weapon->isPressed(mouse_pos, 0, &is_accel);
+			if(is_pressed && (handle_input || (is_accel && handle_accelerators))) {
 				const ActorInventory &inventory = actor->inventory();
 				const Weapon &weapon = inventory.weapon();
 				if(weapon.needAmmo() && inventory.ammo().count < weapon.maxAmmo()) {
@@ -198,7 +208,7 @@ namespace hud {
 		{
 			int pressed_id = -1;
 
-			if(is_active) for(int n = 0; n < (int)m_hud_buttons.size(); n++)
+			if(handle_input) for(int n = 0; n < (int)m_hud_buttons.size(); n++)
 				if(m_hud_buttons[n]->isPressed(mouse_pos))
 					pressed_id = n;
 
@@ -218,29 +228,26 @@ namespace hud {
 			any_other_visible |= m_selected_layer != layer_inventory && m_hud_inventory->isVisible();
 			any_other_visible |= m_selected_layer != layer_options   && m_hud_options->isVisible();
 			any_other_visible |= m_selected_layer != layer_class     && m_hud_class->isVisible();
+			any_other_visible |= m_selected_layer != layer_character && m_hud_character->isVisible();
 
 			//TODO: add sliding sounds?
-			m_hud_inventory->setVisible(isVisible() && m_selected_layer == layer_inventory && !any_other_visible);
-			m_hud_options->setVisible(isVisible() && m_selected_layer == layer_options && !any_other_visible);
-			m_hud_class->setVisible(isVisible() && m_selected_layer == layer_class && !any_other_visible);
+			m_hud_inventory	->setVisible(isVisible() && m_selected_layer == layer_inventory		&& !any_other_visible);
+			m_hud_options	->setVisible(isVisible() && m_selected_layer == layer_options		&& !any_other_visible);
+			m_hud_class		->setVisible(isVisible() && m_selected_layer == layer_class			&& !any_other_visible);
+			m_hud_character	->setVisible(isVisible() && m_selected_layer == layer_character		&& !any_other_visible);
 		}
 
-		HudLayer::update(is_active, time_diff);
-		m_hud_inventory->update(is_active, time_diff);
-		m_hud_options->update(is_active, time_diff);
-		m_hud_class->update(is_active, time_diff);
+		HudLayer::update(handle_input, time_diff);
+		m_hud_inventory->update(handle_input, time_diff);
+		m_hud_options->update(handle_input, time_diff);
+		m_hud_class->update(handle_input, time_diff);
+		m_hud_character->update(handle_input, time_diff);
 
 		{
 			float inv_height = m_hud_inventory->preferredHeight();
 			FRect inv_rect = m_hud_inventory->targetRect();
 			inv_rect.min.y = max(5.0f, inv_rect.max.y - inv_height);
 			m_hud_inventory->setTargetRect(inv_rect);
-		}
-		{
-			float cls_height = m_hud_class->preferredHeight();
-			FRect cls_rect = m_hud_class->targetRect();
-			cls_rect.min.y = max(5.0f, cls_rect.max.y - cls_height);
-			m_hud_class->setTargetRect(cls_rect);
 		}
 	}
 		
@@ -264,10 +271,15 @@ namespace hud {
 		m_hud_inventory->draw();
 		m_hud_options->draw();
 		m_hud_class->draw();
+		m_hud_character->draw();
 	}
 
 	bool Hud::isMouseOver() const {
-		return HudLayer::isMouseOver() || m_hud_inventory->isMouseOver() || m_hud_options->isMouseOver() || m_hud_class->isMouseOver();
+		return HudLayer::isMouseOver() ||
+			m_hud_inventory->isMouseOver() ||
+			m_hud_options->isMouseOver() ||
+			m_hud_class->isMouseOver() ||
+			m_hud_character->isMouseOver();
 	}
 
 }

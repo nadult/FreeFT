@@ -32,8 +32,7 @@ namespace hud
 		HudClass(PWorld world, const FRect &target_rect);
 		~HudClass();
 
-		float preferredHeight() const;
-		void update(bool is_active, double time_diff) override;
+		void update(bool handle_input, double time_diff) override;
 		void draw() const override;
 
 		int selectedId() const { return m_selected_id; }

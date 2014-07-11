@@ -58,8 +58,8 @@ namespace gfx
 
 	enum KeyId
 	{
-		Key_unknown		=-1,
-		Key_space		=' ',
+		Key_unknown		= -1,
+		Key_space		= ' ',
 		Key_special		= 256,
 
 		Key_esc,
