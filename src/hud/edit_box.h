@@ -6,16 +6,16 @@
 #ifndef HUD_EDIT_BOX_H
 #define HUD_EDIT_BOX_H
 
-#include "hud/widget.h"
+#include "hud/button.h"
 
 namespace hud {
 
-	class HudEditBox: public HudWidget {
+	class HudEditBox: public HudButton {
 	public:
 		HudEditBox(const FRect &rect, int max_size);
 
-		void update(const float2 &mouse_pos, double time_diff) override;
-		void draw() const override;
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
 
 	protected:
 	};

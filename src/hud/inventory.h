@@ -7,24 +7,24 @@
 #define HUD_INVENTORY_H
 
 #include "hud/layer.h"
-#include "hud/widget.h"
+#include "hud/button.h"
 #include "game/item.h"
 #include "game/inventory.h"
 
 namespace hud
 {
 
-	class HudItemDesc: public HudWidget {
+	class HudItemDesc: public HudButton {
 	public:
 		HudItemDesc(const FRect &rect);
 		void setItem(const Item &item) { m_item = item; }
-		void draw() const override;
+		void onDraw() const override;
 
 	protected:
 		Item m_item;
 	};
 
-	class HudInventoryItem: public HudWidget {
+	class HudInventoryItem: public HudButton {
 	public:
 		HudInventoryItem(const FRect &rect);
 		void setItem(const Item &item) { m_item = item; }
@@ -33,7 +33,7 @@ namespace hud
 		const Item &item() const { return m_item; }
 		int count() const { return m_count; }
 
-		void draw() const override;
+		void onDraw() const override;
 		
 		Color backgroundColor() const override;
 
@@ -50,8 +50,10 @@ namespace hud
 		~HudInventory();
 
 		float preferredHeight() const;
-		void update(bool is_active, double time_diff) override;
-		void draw() const override;
+		bool onInput(const io::InputEvent&) override;
+		bool onEvent(const HudEvent&) override;
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
 		void setActor(game::EntityRef);
 
 	private:
@@ -61,7 +63,7 @@ namespace hud
 		int m_min_items;
 
 		vector<PHudInventoryItem> m_buttons;
-		PHudWidget m_button_up, m_button_down;
+		PHudButton m_button_up, m_button_down;
 		PHudItemDesc m_item_desc;
 		float m_out_of_item_time;
 

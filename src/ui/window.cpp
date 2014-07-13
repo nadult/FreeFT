@@ -119,7 +119,7 @@ namespace ui
 		int2 mouse_pos = getMousePos();
 		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min;
 		int finished_dragging = 0;
-		bool escape = isKeyDown(Key_esc);
+		bool escape = isKeyDown(Key::esc);
 
 		if(m_dragging_mode) {
 			if(!isMouseKeyPressed(m_dragging_mode - 1) || escape)
@@ -169,9 +169,9 @@ namespace ui
 
 					if(wheel)
 						vector.y += wheel * rect().height() / 8;
-					if(isKeyDownAuto(Key_pageup, 2))
+					if(isKeyDownAuto(Key::pageup, 2))
 						vector.y += rect().height();
-					if(isKeyDownAuto(Key_pagedown, 2))
+					if(isKeyDownAuto(Key::pagedown, 2))
 						vector.y -= rect().height();
 
 					setInnerRect(m_inner_rect + vector);

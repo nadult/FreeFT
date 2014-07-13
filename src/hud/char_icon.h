@@ -6,12 +6,12 @@
 #ifndef HUD_CHAR_ICON_H
 #define HUD_CHAR_ICON_H
 
-#include "hud/widget.h"
+#include "hud/button.h"
 
 namespace hud
 {
 
-	class HudCharIcon: public HudWidget {
+	class HudCharIcon: public HudButton {
 	public:
 		HudCharIcon(const FRect &target_rect);
 		~HudCharIcon();
@@ -19,7 +19,7 @@ namespace hud
 		void setHP(int current, int max) { m_current_hp = current; m_max_hp = max; }
 		void setCharacter(PCharacter character) {  m_character = character; }
 		
-		void draw() const override;
+		void onDraw() const override;
 
 	private:
 		PCharacter m_character;

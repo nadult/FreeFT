@@ -40,7 +40,7 @@ namespace io {
 		m_controller->updateView(time_diff);
 
 		m_controller->draw();
-		return !gfx::isKeyPressed(gfx::Key_esc);
+		return !gfx::isKeyPressed(gfx::Key::esc);
 	}
 
 }

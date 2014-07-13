@@ -569,6 +569,10 @@ namespace audio {
 	typedef Ptr<Playback> PPlayback;
 }
 
+namespace io {
+	class InputEvent;
+}
+
 class TupleParser;
 
 // These functions expect valid strings and throw on error

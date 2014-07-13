@@ -58,6 +58,10 @@ namespace io {
 	const int2 Console::size() const {
 		return m_is_opened? m_edit_box->rect().size() : int2(0, 0);
 	}
+		
+	bool Console::onInput(const InputEvent &event) {
+		return false;
+	}
 
 	void Console::update(double time_diff) {
 		if(isKeyDown('`')) {
@@ -96,6 +100,10 @@ namespace io {
 			m_commands.erase(m_commands.begin());
 		}
 		return out;
+	}
+		
+	bool Console::isMouseOver(const InputEvent &event) const {
+		return isOpened() && FRect(m_edit_box->rect()).isInside(event.mousePos());	
 	}
 
 }

@@ -7,12 +7,12 @@
 #define HUD_CLASS_H
 
 #include "hud/layer.h"
-#include "hud/widget.h"
+#include "hud/button.h"
 
 namespace hud
 {
 
-	class HudClassButton: public HudWidget {
+	class HudClassButton: public HudButton {
 	public:
 		enum { spacing = 17 };
 
@@ -20,7 +20,7 @@ namespace hud
 
 		void setId(int class_id);
 
-		void draw() const override;
+		void onDraw() const override;
 		Color backgroundColor() const override;
 
 	protected:
@@ -32,9 +32,7 @@ namespace hud
 		HudClass(PWorld world, const FRect &target_rect);
 		~HudClass();
 
-		void update(bool handle_input, double time_diff) override;
-		void draw() const override;
-
+		void onUpdate(double time_diff) override;
 		int selectedId() const { return m_selected_id; }
 		void select(int id) { m_selected_id = id; }
 
@@ -44,7 +42,7 @@ namespace hud
 		int m_selected_id;
 
 		vector<Ptr<HudClassButton>> m_buttons;
-		PHudWidget m_button_up, m_button_down;
+		PHudButton m_button_up, m_button_down;
 	};
 
 }

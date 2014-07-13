@@ -8,9 +8,12 @@
 
 #include "base.h"
 #include "gfx/texture.h"
+#include "io/input.h"
 
 namespace gfx
 {
+
+	namespace Key { using namespace io::Key; };
 
 	// Device texture, no support for mipmaps,
 	class DTexture: public Resource
@@ -56,65 +59,6 @@ namespace gfx
 
 	typedef Ptr<DTexture> PTexture;
 
-	enum KeyId
-	{
-		Key_unknown		= -1,
-		Key_space		= ' ',
-		Key_special		= 256,
-
-		Key_esc,
-		Key_f1,
-		Key_f2,
-		Key_f3,
-		Key_f4,
-		Key_f5,
-		Key_f6,
-		Key_f7,
-		Key_f8,
-		Key_f9,
-		Key_f10,
-		Key_f11,
-		Key_f12,
-		Key_up,
-		Key_down,
-		Key_left,
-		Key_right,
-		Key_lshift,
-		Key_rshift,
-		Key_lctrl,
-		Key_rctrl,
-		Key_lalt,
-		Key_ralt,
-		Key_tab,
-		Key_enter,
-		Key_backspace,
-		Key_insert,
-		Key_del,
-		Key_pageup,
-		Key_pagedown,
-		Key_home,
-		Key_end,
-		Key_kp_0,
-		Key_kp_1,
-		Key_kp_2,
-		Key_kp_3,
-		Key_kp_4,
-		Key_kp_5,
-		Key_kp_6,
-		Key_kp_7,
-		Key_kp_8,
-		Key_kp_9,
-		Key_kp_divide,
-		Key_kp_multiply,
-		Key_kp_subtract,
-		Key_kp_add,
-		Key_kp_decimal,
-		Key_kp_equal,
-		Key_kp_enter,
-
-		Key_count,
-	};
-
 	void initDevice();
 	void freeDevice();
 
@@ -155,6 +99,10 @@ namespace gfx
 
 	int getMouseWheelPos();
 	int getMouseWheelMove();
+	
+	// Generates events from keyboard & mouse input
+	// Mouse move events are always first
+	const vector<io::InputEvent> generateInputEvents();
 
 	void lookAt(int2 pos);
 
@@ -185,6 +133,7 @@ namespace gfx
 	void setBlendingMode(BlendingMode mode);
 	void setScissorRect(const IRect &rect);
 	const IRect getScissorRect();
+
 	void setScissorTest(bool is_enabled);
 
 }

@@ -7,7 +7,6 @@
 #include "game/character.h"
 #include "game/inventory.h"
 
-#include "hud/widget.h"
 #include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -25,18 +24,15 @@ namespace hud {
 		int m_max_buttons = 4;
 	}
 		
-	HudClassButton::HudClassButton(const FRect &rect) :HudWidget(rect), m_class_id(-1) { }
+	HudClassButton::HudClassButton(const FRect &rect) :HudButton(rect), m_class_id(-1) { }
 		
 	void HudClassButton::setId(int class_id) {
 		DASSERT(class_id == -1 || CharacterClass::isValidId(class_id));
 		m_class_id = class_id;
 	}
 
-	void HudClassButton::draw() const {
-		if(!isVisible())
-			return;
-
-		HudWidget::draw();
+	void HudClassButton::onDraw() const {
+		HudButton::onDraw();
 		FRect rect = this->rect();
 
 		if(m_class_id != -1) {
@@ -58,7 +54,7 @@ namespace hud {
 				if(inv[n].count > 1) {
 					FRect trect = irect;
 					trect.max.y -= 5.0;
-					m_font->draw(trect, {focusColor(), focusShadowColor(), HAlign::right, VAlign::bottom}, format("%d", inv[n].count));
+					m_font->draw(trect, {enabledColor(), enabledShadowColor(), HAlign::right, VAlign::bottom}, format("%d", inv[n].count));
 				}
 				
 				pos.x += irect.width() + spacing;
@@ -67,7 +63,7 @@ namespace hud {
 	}
 		
 	Color HudClassButton::backgroundColor() const {
-		return lerp(HudWidget::backgroundColor(), Color::white, m_focus_time * 0.5f);
+		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
 	}
 
 	HudClass::HudClass(PWorld world, const FRect &target_rect)
@@ -76,20 +72,20 @@ namespace hud {
 		m_class_count = CharacterClass::count();
 		for(int n = 0; n < m_max_buttons; n++) {
 			float diff = s_item_height + spacing * 2;
-			float2 pos(HudWidget::spacing, HudWidget::spacing + (s_item_height + HudWidget::spacing) * n);
-			FRect rect(pos, pos + float2(target_rect.width() - HudWidget::spacing * 2, s_item_height));
+			float2 pos(HudButton::spacing, HudButton::spacing + (s_item_height + HudButton::spacing) * n);
+			FRect rect(pos, pos + float2(target_rect.width() - HudButton::spacing * 2, s_item_height));
 			Ptr<HudClassButton> button(new HudClassButton(rect));
 			attach(button.get());
 			m_buttons.push_back(std::move(button));
 		}
 
-		m_button_up = new HudWidget(FRect(s_button_size));
+		m_button_up = new HudButton(FRect(s_button_size));
 		m_button_up->setIcon(HudIcon::up_arrow);
-		m_button_up->setAccelerator(Key_pageup);
+		m_button_up->setAccelerator(Key::pageup);
 
-		m_button_down = new HudWidget(FRect(s_button_size));
+		m_button_down = new HudButton(FRect(s_button_size));
 		m_button_down->setIcon(HudIcon::down_arrow);
-		m_button_down->setAccelerator(Key_pagedown);
+		m_button_down->setAccelerator(Key::pagedown);
 
 		attach(m_button_up.get());
 		attach(m_button_down.get());
@@ -97,11 +93,8 @@ namespace hud {
 		
 	HudClass::~HudClass() { }
 
-	void HudClass::update(bool is_active, double time_diff) {
-		HudLayer::update(is_active, time_diff);
-		float2 mouse_pos = float2(getMousePos()) - rect().min;
-			
-		float bottom_line = rect().height() - s_bottom_size;
+	void HudClass::onUpdate(double time_diff) {
+/*		float bottom_line = rect().height() - s_bottom_size;
 
 		int max_offset = (m_class_count + m_max_buttons - 1) / m_max_buttons - 1;
 		int over_item = -1;
@@ -147,11 +140,7 @@ namespace hud {
 				m_selected_id = over_item;
 				playSound(HudSound::button);
 			}
-		}
-	}
-		
-	void HudClass::draw() const {
-		HudLayer::draw();
+		}*/
 	}
 
 }

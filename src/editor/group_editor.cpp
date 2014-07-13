@@ -72,7 +72,7 @@ namespace {
 	void GroupEditor::onInput(int2 mouse_pos) {
 		ASSERT(m_tile_group);
 
-		if(isKeyDown(Key_space)) {
+		if(isKeyDown(Key::space)) {
 			m_offset[m_mode] = innerOffset();
 			m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);
 			updateSelector();
@@ -118,19 +118,19 @@ namespace {
 				m_tile_list.update();
 			}
 
-			struct { KeyId key; int side; } actions[] = {
-				{ Key_kp_1, 0 },
-				{ Key_kp_2, 1 },
-				{ Key_kp_3, 2 },
-				{ Key_kp_6, 3 },
-				{ Key_kp_9, 4 },
-				{ Key_kp_8, 5 },
-				{ Key_kp_7, 6 },
-				{ Key_kp_4, 7 } };
+			struct { int key; int side; } actions[] = {
+				{ Key::kp_1, 0 },
+				{ Key::kp_2, 1 },
+				{ Key::kp_3, 2 },
+				{ Key::kp_6, 3 },
+				{ Key::kp_9, 4 },
+				{ Key::kp_8, 5 },
+				{ Key::kp_7, 6 },
+				{ Key::kp_4, 7 } };
 
 			if(m_selected_group_id != -1) {
 				for(int a = 0; a < COUNTOF(actions); a++)
-					if(isKeyDown(actions[a].key) || isKeyDown(Key_kp_5))
+					if(isKeyDown(actions[a].key) || isKeyDown(Key::kp_5))
 						m_tile_group->setGroupSurface(m_selected_group_id, actions[a].side, m_selected_surface_id);
 			}
 

@@ -25,6 +25,40 @@ namespace hud {
 		count
 	};
 
+	enum HudLayerId {
+		layer_none = -1,
+
+		layer_inventory,
+		layer_character,
+		layer_options,
+		layer_class,
+
+		layer_count
+	};
+
+	class HudWidget;
+
+	struct HudEvent {
+		enum Type {
+			button_clicked,
+			text_modified,
+
+			layer_selected,
+			stance_changed,
+
+			item_equipped,
+			item_unequipped,
+			item_dropped,
+		};
+
+		HudEvent(HudWidget *source, Type type, int value = 0) :source(source), type(type), value(value) { }
+
+		HudWidget *source;
+		Type type;
+		int value;
+	};
+
+
 	void playSound(HudSound);
 
 	enum Alignment {
@@ -50,7 +84,7 @@ namespace hud {
 		Color layer_color;
 		Color back_color;
 		Color border_color;
-		Color focus_color;
+		Color enabled_color;
 		float border_offset;
 		const char *font_name;
 		const char *big_font_name;
@@ -67,11 +101,14 @@ namespace hud {
 	class Hud;
 	class HudLayer;
 	class HudWidget;
+	class HudButton;
 	class HudWeapon;
 	class HudStance;
 	class HudCharIcon;
 	class HudInventoryItem;
 	class HudItemDesc;
+
+	class HudMainPanel;
 	class HudInventory;
 	class HudCharacter;
 	class HudOptions;
@@ -82,6 +119,7 @@ namespace hud {
 	class ServerMenu;
 
 	typedef Ptr<HudWidget> PHudWidget;
+	typedef Ptr<HudButton> PHudButton;
 	typedef Ptr<HudLayer> PHudLayer;
 	typedef Ptr<HudWeapon> PHudWeapon;
 	typedef Ptr<HudStance> PHudStance;

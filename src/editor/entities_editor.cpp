@@ -56,8 +56,8 @@ namespace ui {
 
 		if(m_proto) {
 			int inc = 0;
-			if(isKeyDown(Key_left)) inc = -1;
-			if(isKeyDown(Key_right)) inc = 1;
+			if(isKeyDown(Key::left)) inc = -1;
+			if(isKeyDown(Key::right)) inc = 1;
 			int dir_count = m_proto->sprite().dirCount(0);
 
 			if(inc && dir_count)
@@ -65,7 +65,7 @@ namespace ui {
 			m_proto->setDirAngle(constant::pi * 2.0f * (float)m_proto_angle / float(dir_count));
 		}
 
-		if(isKeyPressed(Key_del)) {
+		if(isKeyPressed(Key::del)) {
 			for(int i = 0; i < (int)m_selected_ids.size(); i++)
 				m_entity_map.remove(m_selected_ids[i]);
 			m_selected_ids.clear();
@@ -83,7 +83,7 @@ namespace ui {
 		Ray ray = screenRay(start);
 
 		Flags::Type flags = Flags::all;
-		if(isKeyPressed(Key_lshift))
+		if(isKeyPressed(Key::lshift))
 			flags = flags & ~(Flags::wall_tile | Flags::object_tile);
 
 		auto isect = m_tile_map.trace(ray, -1, flags | Flags::visible);
@@ -152,7 +152,7 @@ namespace ui {
 	}
 
 	bool EntitiesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
-		if(key == 0 && !isKeyPressed(Key_lctrl)) {
+		if(key == 0 && !isKeyPressed(Key::lctrl)) {
 			computeCursor(start, current);
 			m_is_selecting = !is_final;
 
@@ -201,7 +201,7 @@ namespace ui {
 		}
 		else if(key == 1 && m_mode == Mode::selecting) {
 			if(!m_is_moving) {
-				m_is_moving_vertically = isKeyPressed(Key_lshift);
+				m_is_moving_vertically = isKeyPressed(Key::lshift);
 				m_is_moving = true;
 			}
 

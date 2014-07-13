@@ -45,29 +45,29 @@ namespace hud {
 		FRect button_rect(s_button_size);
 		button_rect += float2(rect.width() - spacing, rect.height() - spacing) - button_rect.size();
 
-		PHudWidget button_close = new HudWidget(button_rect);
+		PHudButton button_close = new HudButton(button_rect);
 		button_close->setIcon(HudIcon::close);
 
-		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
-		PHudWidget button_down = new HudWidget(button_rect);
+		button_rect -= float2(s_button_size.x + HudButton::spacing, 0.0f);
+		PHudButton button_down = new HudButton(button_rect);
 		button_down->setIcon(HudIcon::down_arrow);
-		button_down->setAccelerator(Key_pagedown);
+		button_down->setAccelerator(Key::pagedown);
 
-		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
-		PHudWidget button_up = new HudWidget(button_rect);
+		button_rect -= float2(s_button_size.x + HudButton::spacing, 0.0f);
+		PHudButton button_up = new HudButton(button_rect);
 		button_up->setIcon(HudIcon::up_arrow);
-		button_up->setAccelerator(Key_pageup);
+		button_up->setAccelerator(Key::pageup);
 
-		button_rect -= float2(s_button_size.x + HudWidget::spacing, 0.0f);
+		button_rect -= float2(s_button_size.x + HudButton::spacing, 0.0f);
 		button_rect.min.x -= 50.0f;
-		PHudWidget button_refresh = new HudWidget(button_rect);
+		PHudButton button_refresh = new HudButton(button_rect);
 		button_refresh->setText("refresh");
 		
-		button_rect -= float2(button_rect.width() + HudWidget::spacing, 0.0f);
+		button_rect -= float2(button_rect.width() + HudButton::spacing, 0.0f);
 		button_rect.min.x -= 20.0f;
-		PHudWidget button_connect = new HudWidget(button_rect);
+		PHudButton button_connect = new HudButton(button_rect);
 		button_connect->setText("connect");
-		button_connect->setAccelerator(Key_enter);
+		button_connect->setAccelerator(Key::enter);
 
 		m_buttons.push_back(button_close);
 		m_buttons.push_back(button_up);
@@ -131,14 +131,14 @@ namespace hud {
 		}
 	}
 		
-	void MultiPlayerMenu::update(bool is_active, double time_diff) {
-		is_active &= m_is_visible && m_client;
+	void MultiPlayerMenu::onUpdate(double time_diff) {
+/*		is_active &= m_is_visible && m_client;
 		HudLayer::update(is_active, time_diff);
 		float2 mouse_pos((float2)gfx::getMousePos() - rect().min);
 
 		updateLobbyData();
 
-		if(isKeyDown(Key_esc))
+		if(isKeyDown(Key::esc))
 			setVisible(false);
 
 		for(int n = 0; n < (int)m_buttons.size(); n++)
@@ -203,7 +203,7 @@ namespace hud {
 			animateValue(info.over_time, time_diff * 5.0f, info.is_mouse_over);
 			animateValue(info.selection_time, time_diff * 5.0f, n == m_selection);
 			info.over_time = max(info.over_time, info.selection_time);
-		}
+		}*/
 	}
 
 	void MultiPlayerMenu::updateLobbyData() {
@@ -271,13 +271,13 @@ namespace hud {
 #endif
 	}
 
-	void MultiPlayerMenu::draw() const {
+	void MultiPlayerMenu::onDraw() const {
 		FRect back_quad(gfx::getWindowSize());
 
 		DTexture::unbind();
 		drawQuad(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
 
-		HudLayer::draw();
+		HudLayer::onDraw();
 
 		for(int n = 0; n < (int)m_columns.size(); n++) {
 			const Column &column = m_columns[n];
@@ -369,7 +369,7 @@ namespace io {
 		m_controller->updateView(time_diff);
 
 		m_controller->draw();
-		return !isKeyPressed(Key_esc);
+		return !isKeyPressed(Key::esc);
 	}
 
 }

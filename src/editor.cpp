@@ -301,7 +301,7 @@ int safe_main(int argc, char **argv)
 
 	while(pollEvents()) {
 		double loop_start = profiler::getTime();
-		if(isKeyPressed(Key_lalt) && isKeyDown(Key_f4))
+		if(isKeyPressed(Key::lalt) && isKeyDown(Key::f4))
 			break;
 		
 		Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));

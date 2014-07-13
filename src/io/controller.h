@@ -7,12 +7,13 @@
 #define IO_CONTROLLER_H
 
 #include "game/world.h"
-#include "io/console.h"
 #include "game/visibility.h"
 
 namespace hud { class Hud; }
 
 namespace io {
+
+	class Console;
 
 	class Controller {
 	public:
@@ -22,16 +23,17 @@ namespace io {
 		void updateActor();
 		void update(double time_diff);
 		void updateView(double time_diff);
+		void onInput(const InputEvent&);
 		void draw();
 
 		void drawVisibility(game::EntityRef);
 
 	protected:
-		Console m_console;
 		game::PWorld m_world;
 		game::WorldViewer m_viewer;
 		game::GameMode *m_game_mode;
 
+		Ptr<Console> m_console;
 		Ptr<hud::Hud> m_hud;
 
 		game::EntityRef m_actor_ref;
@@ -42,6 +44,7 @@ namespace io {
 		double m_last_time, m_stats_update_time;
 		bool m_show_stats;
 
+		Ray m_screen_ray;
 		game::Intersection m_isect, m_full_isect;
 		float3 m_target_pos;
 		float3 m_last_look_at;

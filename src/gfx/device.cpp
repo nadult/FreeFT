@@ -47,7 +47,7 @@ namespace
 	const double s_press_delay = 0.4;
 
 	int  mouseDX, mouseDY;
-	u32  s_key_map[gfx::Key_count];
+	u32  s_key_map[gfx::Key::count];
 
 	bool s_want_close = 0;
 	bool s_is_initialized = 0;
@@ -104,64 +104,64 @@ namespace gfx
 		memset(&activeInput, 0, sizeof(activeInput));
 		glfwGetMousePos(&activeInput.MousePosX, &activeInput.MousePosY);
 
-		for(int n = 0; n < Key_special; n++)
+		for(int n = 0; n < Key::special; n++)
 			s_key_map[n] = n;
-		memset(s_key_map + Key_special, 0, (Key_count - Key_special) * sizeof(s_key_map[0]));
+		memset(s_key_map + Key::special, 0, (Key::count - Key::special) * sizeof(s_key_map[0]));
 
-		for(int n = 0; n < Key_count; n++)
+		for(int n = 0; n < Key::count; n++)
 			s_time_pressed[n] = -1.0;
 
-		s_key_map[Key_space]       = GLFW_KEY_SPACE;
-		s_key_map[Key_special]     = GLFW_KEY_SPECIAL;
-		s_key_map[Key_esc]         = GLFW_KEY_ESC;
-		s_key_map[Key_f1]          = GLFW_KEY_F1;
-		s_key_map[Key_f2]          = GLFW_KEY_F2;
-		s_key_map[Key_f3]          = GLFW_KEY_F3;
-		s_key_map[Key_f4]          = GLFW_KEY_F4;
-		s_key_map[Key_f5]          = GLFW_KEY_F5;
-		s_key_map[Key_f6]          = GLFW_KEY_F6;
-		s_key_map[Key_f7]          = GLFW_KEY_F7;
-		s_key_map[Key_f8]          = GLFW_KEY_F8;
-		s_key_map[Key_f9]          = GLFW_KEY_F9;
-		s_key_map[Key_f10]         = GLFW_KEY_F10;
-		s_key_map[Key_f11]         = GLFW_KEY_F11;
-		s_key_map[Key_f12]         = GLFW_KEY_F12;
-		s_key_map[Key_up]          = GLFW_KEY_UP;
-		s_key_map[Key_down]        = GLFW_KEY_DOWN;
-		s_key_map[Key_left]        = GLFW_KEY_LEFT;
-		s_key_map[Key_right]       = GLFW_KEY_RIGHT;
-		s_key_map[Key_lshift]      = GLFW_KEY_LSHIFT;
-		s_key_map[Key_rshift]      = GLFW_KEY_RSHIFT;
-		s_key_map[Key_lctrl]       = GLFW_KEY_LCTRL;
-		s_key_map[Key_rctrl]       = GLFW_KEY_RCTRL;
-		s_key_map[Key_lalt]        = GLFW_KEY_LALT;
-		s_key_map[Key_ralt]        = GLFW_KEY_RALT;
-		s_key_map[Key_tab]         = GLFW_KEY_TAB;
-		s_key_map[Key_enter]       = GLFW_KEY_ENTER;
-		s_key_map[Key_backspace]   = GLFW_KEY_BACKSPACE;
-		s_key_map[Key_insert]      = GLFW_KEY_INSERT;
-		s_key_map[Key_del]         = GLFW_KEY_DEL;
-		s_key_map[Key_pageup]      = GLFW_KEY_PAGEUP;
-		s_key_map[Key_pagedown]    = GLFW_KEY_PAGEDOWN;
-		s_key_map[Key_home]        = GLFW_KEY_HOME;
-		s_key_map[Key_end]         = GLFW_KEY_END;
-		s_key_map[Key_kp_0]        = GLFW_KEY_KP_0;
-		s_key_map[Key_kp_1]        = GLFW_KEY_KP_1;
-		s_key_map[Key_kp_2]        = GLFW_KEY_KP_2;
-		s_key_map[Key_kp_3]        = GLFW_KEY_KP_3;
-		s_key_map[Key_kp_4]        = GLFW_KEY_KP_4;
-		s_key_map[Key_kp_5]        = GLFW_KEY_KP_5;
-		s_key_map[Key_kp_6]        = GLFW_KEY_KP_6;
-		s_key_map[Key_kp_7]        = GLFW_KEY_KP_7;
-		s_key_map[Key_kp_8]        = GLFW_KEY_KP_8;
-		s_key_map[Key_kp_9]        = GLFW_KEY_KP_9;
-		s_key_map[Key_kp_divide]   = GLFW_KEY_KP_DIVIDE;
-		s_key_map[Key_kp_multiply] = GLFW_KEY_KP_MULTIPLY;
-		s_key_map[Key_kp_subtract] = GLFW_KEY_KP_SUBTRACT;
-		s_key_map[Key_kp_add]      = GLFW_KEY_KP_ADD;
-		s_key_map[Key_kp_decimal]  = GLFW_KEY_KP_DECIMAL;
-		s_key_map[Key_kp_equal]    = GLFW_KEY_KP_EQUAL;
-		s_key_map[Key_kp_enter]    = GLFW_KEY_KP_ENTER;
+		s_key_map[Key::space]       = GLFW_KEY_SPACE;
+		s_key_map[Key::special]     = GLFW_KEY_SPECIAL;
+		s_key_map[Key::esc]         = GLFW_KEY_ESC;
+		s_key_map[Key::f1]          = GLFW_KEY_F1;
+		s_key_map[Key::f2]          = GLFW_KEY_F2;
+		s_key_map[Key::f3]          = GLFW_KEY_F3;
+		s_key_map[Key::f4]          = GLFW_KEY_F4;
+		s_key_map[Key::f5]          = GLFW_KEY_F5;
+		s_key_map[Key::f6]          = GLFW_KEY_F6;
+		s_key_map[Key::f7]          = GLFW_KEY_F7;
+		s_key_map[Key::f8]          = GLFW_KEY_F8;
+		s_key_map[Key::f9]          = GLFW_KEY_F9;
+		s_key_map[Key::f10]         = GLFW_KEY_F10;
+		s_key_map[Key::f11]         = GLFW_KEY_F11;
+		s_key_map[Key::f12]         = GLFW_KEY_F12;
+		s_key_map[Key::up]          = GLFW_KEY_UP;
+		s_key_map[Key::down]        = GLFW_KEY_DOWN;
+		s_key_map[Key::left]        = GLFW_KEY_LEFT;
+		s_key_map[Key::right]       = GLFW_KEY_RIGHT;
+		s_key_map[Key::lshift]      = GLFW_KEY_LSHIFT;
+		s_key_map[Key::rshift]      = GLFW_KEY_RSHIFT;
+		s_key_map[Key::lctrl]       = GLFW_KEY_LCTRL;
+		s_key_map[Key::rctrl]       = GLFW_KEY_RCTRL;
+		s_key_map[Key::lalt]        = GLFW_KEY_LALT;
+		s_key_map[Key::ralt]        = GLFW_KEY_RALT;
+		s_key_map[Key::tab]         = GLFW_KEY_TAB;
+		s_key_map[Key::enter]       = GLFW_KEY_ENTER;
+		s_key_map[Key::backspace]   = GLFW_KEY_BACKSPACE;
+		s_key_map[Key::insert]      = GLFW_KEY_INSERT;
+		s_key_map[Key::del]         = GLFW_KEY_DEL;
+		s_key_map[Key::pageup]      = GLFW_KEY_PAGEUP;
+		s_key_map[Key::pagedown]    = GLFW_KEY_PAGEDOWN;
+		s_key_map[Key::home]        = GLFW_KEY_HOME;
+		s_key_map[Key::end]         = GLFW_KEY_END;
+		s_key_map[Key::kp_0]        = GLFW_KEY_KP_0;
+		s_key_map[Key::kp_1]        = GLFW_KEY_KP_1;
+		s_key_map[Key::kp_2]        = GLFW_KEY_KP_2;
+		s_key_map[Key::kp_3]        = GLFW_KEY_KP_3;
+		s_key_map[Key::kp_4]        = GLFW_KEY_KP_4;
+		s_key_map[Key::kp_5]        = GLFW_KEY_KP_5;
+		s_key_map[Key::kp_6]        = GLFW_KEY_KP_6;
+		s_key_map[Key::kp_7]        = GLFW_KEY_KP_7;
+		s_key_map[Key::kp_8]        = GLFW_KEY_KP_8;
+		s_key_map[Key::kp_9]        = GLFW_KEY_KP_9;
+		s_key_map[Key::kp_divide]   = GLFW_KEY_KP_DIVIDE;
+		s_key_map[Key::kp_multiply] = GLFW_KEY_KP_MULTIPLY;
+		s_key_map[Key::kp_subtract] = GLFW_KEY_KP_SUBTRACT;
+		s_key_map[Key::kp_add]      = GLFW_KEY_KP_ADD;
+		s_key_map[Key::kp_decimal]  = GLFW_KEY_KP_DECIMAL;
+		s_key_map[Key::kp_equal]    = GLFW_KEY_KP_EQUAL;
+		s_key_map[Key::kp_enter]    = GLFW_KEY_KP_ENTER;
 
 		loadExtensions();
 
@@ -247,7 +247,6 @@ namespace gfx
 
 		mouseDX = activeInput.MousePosX - lastInput.MousePosX;
 		mouseDY = activeInput.MousePosY - lastInput.MousePosY;
-		//glfwSetMousePos(activeInput.MousePosX, activeInput.MousePosY);
 
 		double time = getTime();
 		for(int n = 0; n < GLFW_KEY_LAST + 1; n++) {
@@ -300,7 +299,7 @@ namespace gfx
 	}
 
 	char getCharPressed() {
-		if(isKeyPressed(Key_space))
+		if(isKeyPressed(Key::space))
 			return ' ';
 
 		char numerics_s[11] = ")!@#$%^&*(";
@@ -318,7 +317,7 @@ namespace gfx
 			{ '\\', '|' },
 		};
 
-		bool shift = isKeyPressed(Key_lshift) || isKeyPressed(Key_rshift); //TODO: capslock
+		bool shift = isKeyPressed(Key::lshift) || isKeyPressed(Key::rshift); //TODO: capslock
 
 		for(int i = 0; i < (int)sizeof(map) / 2; i++)
 			if(isKeyPressed(map[i][0]))
@@ -373,6 +372,51 @@ namespace gfx
 
 	int getMouseWheelMove() {
 		return activeInput.WheelPos - lastInput.WheelPos;
+	}
+
+	using io::InputEvent;
+
+	const vector<InputEvent> generateInputEvents() {
+		vector<InputEvent> out;
+		
+		const int2 mouse_pos = getMousePos(), mouse_move = getMouseMove();
+
+		if(mouse_move != int2(0, 0))
+			out.push_back({InputEvent::mouse_moved, 0, mouse_move});
+		if(getMouseWheelMove())
+			out.push_back({InputEvent::mouse_wheel, 0, int2(getMouseWheelMove(), 0)});
+
+		for(int n = 0; n < Key::count; n++) {
+			if(isKeyDown(n))
+				out.push_back({InputEvent::key_down, n, 0});
+			if(isKeyUp(n))
+				out.push_back({InputEvent::key_up, n, 0});
+			if(isKeyPressed(n))
+				out.push_back({InputEvent::key_pressed, n, 0});
+			if(isKeyDownAuto(n, 1))
+				out.push_back({InputEvent::key_down_auto, n, s_clock});
+		}
+
+		for(int mk = 0; mk < 3; mk++) {
+			if(isMouseKeyDown(mk))
+				out.push_back({InputEvent::mouse_key_down, mk, mouse_move});
+			if(isMouseKeyUp(mk))
+				out.push_back({InputEvent::mouse_key_up, mk, mouse_move});
+			if(isMouseKeyPressed(mk))
+				out.push_back({InputEvent::mouse_key_pressed, mk, mouse_move});
+		}
+		
+		int modifiers =
+			(isKeyDown(Key::lshift)? InputEvent::mod_lshift : 0) |
+			(isKeyDown(Key::rshift)? InputEvent::mod_rshift : 0) |
+			(isKeyDown(Key::lctrl)? InputEvent::mod_lctrl  : 0) |
+			(isKeyDown(Key::lalt)? InputEvent::mod_lalt   : 0);
+		for(int n = 0; n < (int)out.size(); n++) {
+			out[n].setModifiers(modifiers);
+			out[n].setMousePos(mouse_pos);
+		}
+		
+		return out;
 	}
 
 }

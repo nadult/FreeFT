@@ -184,13 +184,13 @@ public:
 				m_frame_id = m_frame_id + 1;
 				m_last_time = time;
 			}
-			if(isKeyDown(Key_up))
+			if(isKeyDown(Key::up))
 				m_seq_id++;
-			if(isKeyDown(Key_down))
+			if(isKeyDown(Key::down))
 				m_seq_id--;
-			if(isKeyDown(Key_left))
+			if(isKeyDown(Key::left))
 				m_dir_id--;
-			if(isKeyDown(Key_right))
+			if(isKeyDown(Key::right))
 				m_dir_id++;
 			if(isKeyDown('P')) {
 				Path path(sprite->resourceName());

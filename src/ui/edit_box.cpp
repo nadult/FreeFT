@@ -66,10 +66,10 @@ namespace ui {
 		else {
 			double time = getTime();
 
-			int key =	isKeyPressed(Key_right)? Key_right :
-						isKeyPressed(Key_left)? Key_left :
-						isKeyPressed(Key_del)? Key_del :
-						isKeyPressed(Key_backspace)? Key_backspace : getCharPressed();
+			int key =	isKeyPressed(Key::right)? Key::right :
+						isKeyPressed(Key::left)? Key::left :
+						isKeyPressed(Key::del)? Key::del :
+						isKeyPressed(Key::backspace)? Key::backspace : getCharPressed();
 
 			if(key != m_last_key) {
 				m_key_down_time = time;
@@ -81,7 +81,7 @@ namespace ui {
 			if(key == m_last_key && time > m_key_down_time + 0.4f && time > m_on_key_time + 0.025f)
 				onKey(key);
 		
-			bool end = isKeyDown(Key_enter);	
+			bool end = isKeyDown(Key::enter);	
 			if(isMouseKeyDown(0) || end) {
 				if(!end && rect().isInside(mouse_pos)) {
 					setCursorPos(mouse_pos);
@@ -107,13 +107,13 @@ namespace ui {
 	}
 
 	void EditBox::onKey(int key) {
-		if(key == Key_right && m_cursor_pos < (int)m_text.size())
+		if(key == Key::right && m_cursor_pos < (int)m_text.size())
 			m_cursor_pos++;
-		else if(key == Key_left && m_cursor_pos > 0)
+		else if(key == Key::left && m_cursor_pos > 0)
 			m_cursor_pos--;
-		else if(key == Key_del && (int)m_text.size() > m_cursor_pos)
+		else if(key == Key::del && (int)m_text.size() > m_cursor_pos)
 			m_text.erase(m_cursor_pos, 1);
-		else if(key == Key_backspace && m_cursor_pos > 0 && !m_text.empty())
+		else if(key == Key::backspace && m_cursor_pos > 0 && !m_text.empty())
 			m_text.erase(--m_cursor_pos, 1);
 		else if(key >= 32 && key < 128 && (int)m_text.size() < m_max_size)
 			m_text.insert(m_cursor_pos++, 1, key);

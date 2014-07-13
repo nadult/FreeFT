@@ -235,7 +235,11 @@ namespace io {
 		if(m_mode != mode_quitting && !m_sub_menu)
 			process();
 		if(m_sub_menu) {
-			m_sub_menu->update(true, time_diff);
+			vector<InputEvent> events = generateInputEvents();
+			for(auto event: events)
+				m_sub_menu->onInput(event);
+
+			m_sub_menu->update(time_diff);
 			if(!m_sub_menu->isVisible() && !m_sub_menu->isShowing())
 				m_sub_menu.reset();
 

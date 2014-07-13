@@ -17,20 +17,25 @@ namespace io {
 
 	class ConsoleEditBox;
 
-	class Console {
+	class Console: public RefCounter {
 	public:
 		Console(const int2 &resolution);
+		Console(const Console&) = delete;
+		void operator=(const Console&) = delete;
 		~Console();
 
 		void open();
 		void close();
 		bool isOpened() const { return m_is_opened; }
 
+		bool onInput(const InputEvent&);
 		void update(double time_diff);
 		void draw() const;
 
 		const string getCommand();
 		const int2 size() const;
+
+		bool isMouseOver(const InputEvent&) const;
 
 	protected:
 		Ptr<gfx::Font> m_font;

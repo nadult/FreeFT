@@ -14,16 +14,14 @@ using namespace gfx;
 namespace hud {
 
 	HudEditBox::HudEditBox(const FRect &rect, int max_size)
-		:HudWidget(rect) {
+		:HudButton(rect) {
 
 	}
 
-	void HudEditBox::update(const float2 &mouse_pos, double time_diff) {
-		HudWidget::update(mouse_pos, time_diff);
+	void HudEditBox::onUpdate(double time_diff) {
 	}
 
-	void HudEditBox::draw() const {
-		HudWidget::draw();
+	void HudEditBox::onDraw() const {
 	}
 
 }

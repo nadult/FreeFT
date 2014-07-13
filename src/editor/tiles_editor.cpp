@@ -62,9 +62,9 @@ namespace ui {
 	void TilesEditor::onInput(int2 mouse_pos) {
 		m_selection = computeCursor(mouse_pos, mouse_pos);
 
-		if(isKeyDown(Key_kp_add))
+		if(isKeyDown(Key::kp_add))
 			m_cursor_offset++;
-		if(isKeyDown(Key_kp_subtract))
+		if(isKeyDown(Key::kp_subtract))
 			m_cursor_offset--;
 
 		m_view.update();
@@ -102,7 +102,7 @@ namespace ui {
 			}
 		}
 		else {
-			if(isKeyPressed(Key_del)) {
+			if(isKeyPressed(Key::del)) {
 				for(int i = 0; i < (int)m_selected_ids.size(); i++)
 					m_tile_map.remove(m_selected_ids[i]);
 				m_selected_ids.clear();
@@ -273,7 +273,7 @@ namespace ui {
 	}
 
 	bool TilesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
-		if(key == 0 && !isKeyPressed(Key_lctrl) && !isChangingOccluders()) {
+		if(key == 0 && !isKeyPressed(Key::lctrl) && !isChangingOccluders()) {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(is_final && is_final != -1) {

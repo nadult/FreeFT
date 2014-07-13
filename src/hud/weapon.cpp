@@ -14,10 +14,10 @@ using namespace gfx;
 namespace hud {
 
 	HudWeapon::HudWeapon(const FRect &target_rect)
-		:HudWidget(target_rect), m_attack_mode(AttackMode::undefined), m_ammo_count(0) { }
+		:HudButton(target_rect), m_attack_mode(AttackMode::undefined), m_ammo_count(0) { }
 		
-	void HudWeapon::draw() const {
-		HudWidget::draw();
+	void HudWeapon::onDraw() const {
+		HudButton::onDraw();
 		FRect rect = this->rect();
 
 		if(!m_weapon.isDummy()) {
@@ -33,7 +33,8 @@ namespace hud {
 			if(m_weapon.proto().max_ammo) {
 				TextFormatter fmt;
 				fmt("%d/%d", m_ammo_count, m_weapon.proto().max_ammo);
-				m_font->draw(rect, {m_style.focus_color, Color::black, HAlign::right, VAlign::top}, fmt);
+				//TODO: alpha for shadow color
+				m_font->draw(rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top}, fmt);
 			}
 		}
 	}

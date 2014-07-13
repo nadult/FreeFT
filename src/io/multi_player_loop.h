@@ -9,7 +9,7 @@
 #include "io/loop.h"
 #include "io/controller.h"
 #include "hud/layer.h"
-#include "hud/widget.h"
+#include "hud/button.h"
 #include "net/base.h"
 
 namespace hud {
@@ -18,8 +18,8 @@ namespace hud {
 	public:
 		MultiPlayerMenu(const FRect &rect, HudStyle style);
 
-		void update(bool is_active, double time_diff) override;
-		void draw() const override;
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
 		float backAlpha() const override;
 
 		enum class ColumnType {
@@ -56,7 +56,7 @@ namespace hud {
 		void updateLobbyData();
 
 		vector<Column> m_columns;
-		vector<PHudWidget> m_buttons;
+		vector<PHudButton> m_buttons;
 		vector<ServerInfo> m_servers;
 		net::PClient m_client;
 

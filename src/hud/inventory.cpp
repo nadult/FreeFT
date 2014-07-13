@@ -4,7 +4,6 @@
  */
 
 #include "hud/inventory.h"
-#include "hud/widget.h"
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/device.h"
@@ -24,17 +23,14 @@ namespace hud {
 		const int2 s_grid_size(4, 10);
 	}
 		
-	HudItemDesc::HudItemDesc(const FRect &rect) :HudWidget(rect) { }
+	HudItemDesc::HudItemDesc(const FRect &rect) :HudButton(rect) { }
 	
-	void HudItemDesc::draw() const {
-		if(!isVisible())
-			return;
-
-		HudWidget::draw();
+	void HudItemDesc::onDraw() const {
+		HudButton::onDraw();
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
-			FRect extents = m_big_font->draw(FRect(rect.min.x, 5.0f, rect.max.x, 5.0f), {focusColor(), focusShadowColor(), HAlign::center},
+			FRect extents = m_big_font->draw(FRect(rect.min.x, 5.0f, rect.max.x, 5.0f), {enabledColor(), enabledShadowColor(), HAlign::center},
 											 m_item.proto().name);
 			float ypos = extents.max.y + spacing;
 
@@ -44,7 +40,7 @@ namespace hud {
 
 			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
 			texture->bind();
-			drawQuad(FRect(pos, pos + size), uv_rect, focusColor());
+			drawQuad(FRect(pos, pos + size), uv_rect, enabledColor());
 
 			ypos += size.y + 10.0f;
 			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
@@ -58,17 +54,14 @@ namespace hud {
 			else if(m_item.type() == ItemType::armour)
 				params_desc = Armour(m_item).paramDesc();
 
-			m_font->draw(float2(rect.min.x + 5.0f, ypos), {focusColor(), focusShadowColor()}, params_desc);
+			m_font->draw(float2(rect.min.x + 5.0f, ypos), {enabledColor(), enabledShadowColor()}, params_desc);
 		}
 	}
 
-	HudInventoryItem::HudInventoryItem(const FRect &rect) :HudWidget(rect) { }
+	HudInventoryItem::HudInventoryItem(const FRect &rect) :HudButton(rect) { }
 
-	void HudInventoryItem::draw() const {
-		if(!isVisible())
-			return;
-
-		HudWidget::draw();
+	void HudInventoryItem::onDraw() const {
+		HudButton::onDraw();
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
@@ -81,12 +74,12 @@ namespace hud {
 			drawQuad(FRect(pos, pos + size), uv_rect);
 
 			if(m_count > 1)
-				m_font->draw(rect, {focusColor(), focusShadowColor(), HAlign::right}, format("%d", m_count));
+				m_font->draw(rect, {enabledColor(), enabledShadowColor(), HAlign::right}, format("%d", m_count));
 		}
 	}
 		
 	Color HudInventoryItem::backgroundColor() const {
-		return lerp(HudWidget::backgroundColor(), Color::white, m_focus_time * 0.5f);
+		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
 	}
 
 	HudInventory::HudInventory(PWorld world, const FRect &target_rect)
@@ -102,13 +95,13 @@ namespace hud {
 				m_buttons.emplace_back(std::move(item));
 			}
 
-		m_button_up = new HudWidget(FRect(s_button_size));
+		m_button_up = new HudButton(FRect(s_button_size));
 		m_button_up->setIcon(HudIcon::up_arrow);
-		m_button_up->setAccelerator(Key_pageup);
+		m_button_up->setAccelerator(Key::pageup);
 
-		m_button_down = new HudWidget(FRect(s_button_size));
+		m_button_down = new HudButton(FRect(s_button_size));
 		m_button_down->setIcon(HudIcon::down_arrow);
-		m_button_down->setAccelerator(Key_pagedown);
+		m_button_down->setAccelerator(Key::pagedown);
 
 		attach(m_button_up.get());
 		attach(m_button_down.get());
@@ -155,10 +148,17 @@ namespace hud {
 		}
 
 	}
+		
+	bool HudInventory::onInput(const io::InputEvent &event) {
+		return false;
+	}
 
-	void HudInventory::update(bool is_active, double time_diff) {
-		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
-		is_active &= actor != nullptr;
+	bool HudInventory::onEvent(const HudEvent &event) {
+		return false;
+	}
+
+	void HudInventory::onUpdate(double time_diff) {
+/*		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 
 		HudLayer::update(is_active, time_diff);
 		float2 mouse_pos = float2(getMousePos()) - rect().min;
@@ -273,9 +273,9 @@ namespace hud {
 				}
 
 				//TODO: using containers
-//				if(isKeyDown(Key_right) && m_inventory_sel >= 0)
+//				if(isKeyDown(Key::right) && m_inventory_sel >= 0)
 //					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_to, m_inventory_sel, 1), m_actor_ref);
-//				if(isKeyDown(Key_left))
+//				if(isKeyDown(Key::left))
 //					m_world->sendOrder(new TransferItemOrder(container->ref(), transfer_from, m_container_sel, 1), m_actor_ref);
 			}
 			if(m_buttons[over_item]->isPressed(mouse_pos, 1)) {
@@ -307,37 +307,36 @@ namespace hud {
 			}
 		}
 
-		m_item_desc->update(mouse_pos, time_diff);
+		m_item_desc->update(mouse_pos, time_diff);*/
 	}
 		
-	void HudInventory::draw() const {
-		HudLayer::draw();
+	void HudInventory::onDraw() const {
+		HudLayer::onDraw();
 
 		if(!m_drop_item.isDummy()) {
 			for(int n = 0; n < (int)m_buttons.size(); n++) {
 				const HudInventoryItem *item = m_buttons[n].get();
 				if(item->item() == m_drop_item) {
 					//TODO: move to HudInventoryItem impl
-					m_font->draw(item->rect() + rect().min, {item->focusColor(), item->focusShadowColor(), HAlign::left, VAlign::bottom},
+					m_font->draw(item->rect() + rect().min, {item->enabledColor(), item->enabledShadowColor(), HAlign::left, VAlign::bottom},
 							   format("-%d", (int)m_drop_count));
 					break;
 				}
 			}
 		}
+
+/*		
+		FRect layer_rect = m_item_desc->rect();
+		layer_rect += float2(rect().max.x + HudLayer::spacing, rect().min.y);
+		layer_rect.min -= float2(HudLayer::spacing, HudLayer::spacing);
+		layer_rect.max += float2(HudLayer::spacing, HudLayer::spacing);
 		
-		if(isVisible()) {
-			FRect layer_rect = m_item_desc->rect();
-			layer_rect += float2(rect().max.x + HudLayer::spacing, rect().min.y);
-			layer_rect.min -= float2(HudLayer::spacing, HudLayer::spacing);
-			layer_rect.max += float2(HudLayer::spacing, HudLayer::spacing);
-		
-			HudLayer layer(layer_rect);
-			HudStyle temp_style = m_style;
-			temp_style.layer_color = Color(temp_style.layer_color, (int)(m_item_desc->alpha() * 255));
-			layer.setStyle(temp_style);
-			layer.attach(m_item_desc.get());
-			layer.draw();
-		}
+		HudLayer layer(layer_rect);
+		HudStyle temp_style = m_style;
+		temp_style.layer_color = Color(temp_style.layer_color, (int)(m_item_desc->alpha() * 255));
+		layer.setStyle(temp_style);
+		layer.attach(m_item_desc.get());
+		layer.draw();*/
 	}
 
 	float HudInventory::preferredHeight() const {

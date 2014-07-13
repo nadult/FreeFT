@@ -43,7 +43,7 @@ namespace io {
 			m_controller->draw();
 		}
 
-		return !isKeyDown(gfx::Key_esc) && !m_is_closing;
+		return !gfx::isKeyDown(Key::esc) && !m_is_closing;
 	}
 
 }

@@ -66,21 +66,21 @@ namespace ui {
 		}
 			
 		int height_change = getMouseWheelMove() +
-							(isKeyDownAuto(Key_pagedown)? -1 : 0) +
-							(isKeyDownAuto(Key_pageup)? 1 : 0);
+							(isKeyDownAuto(Key::pagedown)? -1 : 0) +
+							(isKeyDownAuto(Key::pageup)? 1 : 0);
 		if(height_change)
 			m_height = clamp(m_height + height_change, 0, (int)Grid::max_height);
 		
 		{
-			KeyId actions[TileGroup::Group::side_count] = {
-				Key_kp_1, 
-				Key_kp_2,
-				Key_kp_3,
-				Key_kp_6,
-				Key_kp_9,
-				Key_kp_8,
-				Key_kp_7,
-				Key_kp_4
+			int actions[TileGroup::Group::side_count] = {
+				Key::kp_1, 
+				Key::kp_2,
+				Key::kp_3,
+				Key::kp_6,
+				Key::kp_9,
+				Key::kp_8,
+				Key::kp_7,
+				Key::kp_4
 			};
 			
 			for(int n = 0; n < COUNTOF(actions); n++)
@@ -88,7 +88,7 @@ namespace ui {
 					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_cell_size);
 		}
 
-		if((isKeyPressed(Key_lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
+		if((isKeyPressed(Key::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));

@@ -9,12 +9,12 @@
 #include "game/base.h"
 #include "game/entity.h"
 #include "game/weapon.h"
-#include "hud/widget.h"
+#include "hud/button.h"
 
 namespace hud
 {
 
-	class HudWeapon: public HudWidget {
+	class HudWeapon: public HudButton {
 	public:
 		HudWeapon(const FRect &target_rect);
 
@@ -22,7 +22,7 @@ namespace hud
 		void setAmmoCount(int count) { m_ammo_count = count; }
 		void setAttackMode(AttackMode::Type mode) { m_attack_mode = mode; }
 
-		void draw() const override;
+		void onDraw() const override;
 
 	private:
 		Weapon m_weapon;

@@ -4,92 +4,130 @@
  */
 
 #include "hud/widget.h"
-#include "game/actor.h"
-#include "game/world.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
+#include "gfx/opengl.h"
 
 using namespace gfx;
 
 namespace hud {
 
-	namespace {
-
-		struct IconInfo {
-			FRect uv_rect;
-		};
-
-		IconInfo s_icons[HudIcon::count] = {
-			{ FRect(0.00f, 0.00f, 0.25f, 0.25f) },
-			{ FRect(0.25f, 0.00f, 0.50f, 0.25f) },
-			{ FRect(0.50f, 0.00f, 0.75f, 0.25f) },
-
-			{ FRect(0.00f, 0.25f, 0.25f, 0.50f) },
-			{ FRect(0.25f, 0.25f, 0.50f, 0.50f) },
-			{ FRect(0.50f, 0.25f, 0.75f, 0.50f) },
-			{ FRect(0.75f, 0.25f, 1.00f, 0.50f) },
-
-			{ FRect(0.00f, 0.50f, 0.25f, 0.75f) }
-		};
-
-	}
 
 	HudWidget::HudWidget(const FRect &rect)
-		:m_target_rect(rect), m_style(defaultStyle()), m_over_time(0.0f), m_focus_time(0.0f), m_visible_time(1.0f),
-		 m_is_focused(false), m_is_visible(true), m_accelerator(0), m_icon_id(HudIcon::undefined) {
+		:m_parent(nullptr), m_input_focus(nullptr), m_rect(rect), m_visible_time(1.0), m_is_visible(true), m_anim_speed(10.0f) {
 		setStyle(defaultStyle());
-		m_icons_tex = gfx::DTexture::mgr["icons.png"];
 	}
 
 	HudWidget::~HudWidget() { }
 		
-	void HudWidget::setStyle(HudStyle style) {
+	void HudWidget::setInputFocus(bool is_focused) {
+		if(!m_parent)
+			return;
+		if((m_parent->m_input_focus == this) == is_focused)
+			return;
+
+		HudWidget *top = m_parent;
+		while(top->m_parent)
+			top = top->m_parent;
+
+		HudWidget *old_focus = top->m_input_focus;
+		while(old_focus) {
+			old_focus->m_parent->m_input_focus = nullptr;
+			old_focus = old_focus->m_input_focus;
+		}
+
+		HudWidget *current = m_parent;
+		while(current->m_parent) {
+			current->m_parent->m_input_focus = current;
+			current = current->m_parent;
+		}
+	}
+	
+	bool HudWidget::handleInput(const io::InputEvent &event) {
+		io::InputEvent cevent = event;
+		cevent.translate(-rect().min);
+		bool focus_handled = false;
+
+		HudWidget *handled = nullptr;
+		if(m_input_focus && !cevent.mouseMoved()) {
+			handled = m_input_focus;
+			if(m_input_focus->handleInput(cevent))
+				return true;
+		}
+		
+		if(onInput(event))
+			return true;
+
+		for(auto child: m_children)
+			if(child.get() != handled)
+				if(child->handleInput(cevent))
+					return true;
+		return false;
+	}
+		
+	bool HudWidget::handleEvent(const HudEvent &event) {
+		if(onEvent(event))
+			return true;
+		return m_parent? m_parent->handleEvent(event) : false;
+	}
+	
+	void HudWidget::setStyle(const HudStyle &style) {
 		m_style = style;
 		m_font = Font::mgr[style.font_name];
 		m_big_font = Font::mgr[style.big_font_name];
+
+		for(auto child: m_children)
+			child->setStyle(style);
 	}
 		
-	void HudWidget::update(const float2 &mouse_pos, double time_diff) {
-		float anim_speed = 10.0f;
-		animateValue(m_focus_time, time_diff * anim_speed, m_is_focused);
-		animateValue(m_visible_time, time_diff * anim_speed, m_is_visible);
-		animateValue(m_over_time, time_diff * anim_speed, isMouseOver(mouse_pos));
-		m_over_time = max(m_over_time, m_focus_time);
-	}
+	Ptr<HudWidget> HudWidget::detach(HudWidget *widget) {
+		DASSERT(widget->m_parent == this);
+		Ptr<HudWidget> out;
 
-	Color HudWidget::focusColor() const {
-		Color out = lerp(Color(m_style.focus_color, 160), m_style.focus_color, m_focus_time);
-		return Color(out, u8(float(out.a) * alpha()));
+		setInputFocus(false);
+		widget->m_parent = nullptr;
+
+		for(auto child = m_children.begin(); child != m_children.end(); ++child) {
+			if(child->get() == widget) {
+				out = std::move(*child);
+				m_children.erase(child);
+				break;
+			}
+		}
+
+		return std::move(out);
 	}
 		
-	Color HudWidget::focusShadowColor() const {
-		return mulAlpha(Color::black, alpha());
+	void HudWidget::attach(Ptr<HudWidget> child) {
+		DASSERT(child);
+		child->setStyle(m_style);
+		child->m_parent = this;
+		m_children.push_back(std::move(child));
 	}
+		
+	void HudWidget::update(double time_diff) {
+		animateValue(m_visible_time, time_diff * m_anim_speed, m_is_visible);
+		onUpdate(time_diff);
 
-	Color HudWidget::backgroundColor() const {
-		return Color(m_style.back_color, (int)(alpha() * 127));
+		for(auto child: m_children)
+			child->update(time_diff);
 	}
-
+	
 	void HudWidget::draw() const {
 		if(!isVisible())
 			return;
 
 		DTexture::unbind();
-		FRect rect = this->rect();
-		drawQuad(rect, backgroundColor());
+		onDraw();
 
-		u8 border_alpha = clamp((int)(255 * this->alpha() * (0.3f + 0.7f * m_focus_time * m_over_time)), 0, 255);
-		Color border_color(m_style.border_color, border_alpha);
-		float offset = lerp(m_style.border_offset, 0.0f, m_over_time);
-		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
+		float2 offset = rect().min;
 
-		if(!m_text.empty())
-			m_font->draw(rect, {focusColor(), focusShadowColor(), HAlign::center, VAlign::center}, m_text);
+		glPushMatrix();
+		glTranslatef(offset.x, offset.y, 0.0f);
+		for(auto child: m_children)
+			child->draw();
+		glPopMatrix();
 
-		if(HudIcon::isValid(m_icon_id)) {
-			m_icons_tex->bind();
-			drawQuad(rect, s_icons[m_icon_id].uv_rect, focusColor());
-		}
 	}
 		
 	void HudWidget::setVisible(bool is_visible, bool animate) {
@@ -97,32 +135,33 @@ namespace hud {
 		if(!animate)
 			m_visible_time = m_is_visible? 1.0f : 0.0f;
 	}
-	
-	bool HudWidget::isVisible() const {	
+		
+	bool HudWidget::isVisible() const {
 		return m_is_visible || m_visible_time > 0.01f;
 	}
-		
-	bool HudWidget::isMouseOver(const float2 &mouse_pos) const {
-		return m_is_visible && rect().isInside(mouse_pos);
+
+	bool HudWidget::isShowing() const {
+		return m_is_visible && m_visible_time < 1.0f;
+	}
+
+	bool HudWidget::isHiding() const {
+		return !m_is_visible && m_visible_time > 0.01f;
 	}
 		
-	bool HudWidget::isPressed(const float2 &mouse_pos, int mouse_key, bool *is_accelerator) const {
-		if(!m_is_visible)
-			return false;
-		if(m_accelerator && isKeyDown(m_accelerator)) {
-			if(is_accelerator)
-				*is_accelerator = true;
-			return true;
-		}
-		return isMouseOver(mouse_pos) && isMouseKeyDown(mouse_key);
+	bool HudWidget::isMouseOver(const io::InputEvent &event) const {
+		return isMouseOver(event.mousePos());
 	}
 	
-	const FRect HudWidget::rect() const {
-		return m_target_rect;
-	}
-		
-	void HudWidget::setText(const string &text) {
-		m_text = text;
+	bool HudWidget::isMouseOver(const float2 &mouse_pos) const {
+		FRect rect = this->rect();
+
+		if(rect.isInside(mouse_pos))
+			return true;
+		float2 cmouse_pos = mouse_pos - rect.min;
+		for(auto child: m_children)
+			if(child->isMouseOver(cmouse_pos))
+				return true;
+		return false;
 	}
 
 }

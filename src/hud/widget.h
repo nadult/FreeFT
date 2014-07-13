@@ -7,80 +7,61 @@
 #define HUD_WIDGET_H
 
 #include "hud/base.h"
-#include "game/entity.h"
-#include "game/weapon.h"
 
 namespace hud
 {
 
-	DECLARE_ENUM(HudIcon,
-		undefined = -1,
-		stance_stand,
-		stance_crouch,
-		stance_prone,
-
-		down_arrow,
-		up_arrow,
-		left_arrow,
-		right_arrow,
-
-		close
-	);
-
 	class HudWidget: public RefCounter {
 	public:
-		enum { spacing = 15 };
-
-		HudWidget(const FRect &target_rect);
+		HudWidget(const FRect &rect);
+		HudWidget(const HudWidget&) = delete;
+		void operator=(const HudWidget&) = delete;
 		virtual ~HudWidget();
-
-		virtual void update(const float2 &mouse_pos, double time_diff);
-		virtual void draw() const;
-		virtual void setStyle(HudStyle style);
 		
-		virtual Color focusColor() const;
-		virtual Color focusShadowColor() const;
-		virtual Color backgroundColor() const;
+		virtual void setStyle(const HudStyle &style);
 
-		float alpha() const { return m_visible_time; }
+		void update(double time_diff);
+		virtual void onUpdate(double time_diff) { }
+		
+		bool handleInput(const io::InputEvent&);
+		virtual bool onInput(const io::InputEvent&) { return false; }
+		
+		void draw() const;
+		virtual void onDraw() const { }
+		
+		virtual bool onEvent(const HudEvent&) { return false; }
+		bool handleEvent(const HudEvent&);
 
-		void setTargetRect(const FRect &rect) { m_target_rect = rect; }
-		void setPos(const float2 &pos) { m_target_rect += pos - m_target_rect.min; }
-		const FRect &targetRect() const { return m_target_rect; }
-		const FRect rect() const;
-
-		void setFocus(bool focus) { m_is_focused = focus; }
-		bool isFocused() const { return m_is_focused; }
+		void setRect(const FRect &rect) { m_rect = rect; }
+		void setPos(const float2 &pos) { m_rect += pos - m_rect.min; }
+		const FRect &targetRect() const { return m_rect; }
+		virtual const FRect rect() const { return m_rect; }
 
 		void setVisible(bool is_visible, bool animate = true);
 		bool isVisible() const;
+		bool isShowing() const;
+		bool isHiding() const;
 
+		void setInputFocus(bool is_focused);
+
+		bool isMouseOver(const io::InputEvent&) const;
 		bool isMouseOver(const float2 &mouse_pos) const;
 
-		// is_accelerator will be set only if that is the case (otherwise the value won't change)
-		bool isPressed(const float2 &mouse_pos, int mouse_key = 0, bool *is_accelerator = nullptr) const;
-
-		void setText(const string &text);
-		void setIcon(HudIcon::Type icon) { m_icon_id = icon; }
-
-		void setAccelerator(int key) { m_accelerator = key; }
-		int accelerator() const { return m_accelerator; }
+		void attach(Ptr<HudWidget>);
+		Ptr<HudWidget> detach(HudWidget*);
+		
+	private:
+		HudWidget *m_parent, *m_input_focus;
 
 	protected:
+		FRect m_rect;
 		HudStyle m_style;
-		gfx::PFont m_font;
-		gfx::PFont m_big_font;
-		gfx::PTexture m_icons_tex;
-		HudIcon::Type m_icon_id;
+		gfx::PFont m_font, m_big_font;
+		vector<Ptr<HudWidget>> m_children;
 
-		string m_text;
-		FRect m_target_rect;
-		float m_over_time;
-		float m_focus_time;
+		float m_anim_speed;
 		float m_visible_time;
-
-		int m_accelerator;
-		bool m_is_focused;
+		float m_mouse_over_time;
 		bool m_is_visible;
 	};
 
