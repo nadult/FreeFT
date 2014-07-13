@@ -13,6 +13,11 @@ namespace hud
 
 	class HudWidget: public RefCounter {
 	public:
+		enum {
+			spacing = 15,
+			layer_spacing = 5
+		};
+
 		HudWidget(const FRect &rect);
 		HudWidget(const HudWidget&) = delete;
 		void operator=(const HudWidget&) = delete;
@@ -21,23 +26,19 @@ namespace hud
 		virtual void setStyle(const HudStyle &style);
 
 		void update(double time_diff);
-		virtual void onUpdate(double time_diff) { }
+		void draw() const;
 		
 		bool handleInput(const io::InputEvent&);
-		virtual bool onInput(const io::InputEvent&) { return false; }
-		
-		void draw() const;
-		virtual void onDraw() const { }
-		
-		virtual bool onEvent(const HudEvent&) { return false; }
 		bool handleEvent(const HudEvent&);
 
 		void setRect(const FRect &rect) { m_rect = rect; }
 		void setPos(const float2 &pos) { m_rect += pos - m_rect.min; }
 		const FRect &targetRect() const { return m_rect; }
 		virtual const FRect rect() const { return m_rect; }
+		void fitRectToChildren(const float2 &min_size, bool only_visible);
 
-		void setVisible(bool is_visible, bool animate = true);
+		virtual void setVisible(bool is_visible, bool animate = true);
+
 		bool isVisible() const;
 		bool isShowing() const;
 		bool isHiding() const;
@@ -49,6 +50,12 @@ namespace hud
 
 		void attach(Ptr<HudWidget>);
 		Ptr<HudWidget> detach(HudWidget*);
+
+	protected:
+		virtual void onUpdate(double time_diff) { }
+		virtual bool onInput(const io::InputEvent&) { return false; }
+		virtual bool onEvent(const HudEvent&) { return false; }
+		virtual void onDraw() const { }
 		
 	private:
 		HudWidget *m_parent, *m_input_focus;

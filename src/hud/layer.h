@@ -12,8 +12,6 @@ namespace hud
 {
 	class HudLayer: public HudWidget {
 	public:
-		enum { spacing = 5 };
-
 		HudLayer(const FRect &target_rect);
 		virtual ~HudLayer();
 

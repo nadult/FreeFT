@@ -18,16 +18,16 @@ namespace hud
 		Hud(game::PWorld world);
 		~Hud();
 
-		bool onInput(const io::InputEvent&) override;
-		bool onEvent(const HudEvent&) override;
-		void onUpdate(double time_diff) override;
-		
-		void setVisible(bool is_visible, bool animate = true);
+		void setVisible(bool is_visible, bool animate = true) override;
 
 		//TODO: remove these?
 		void setActor(game::EntityRef);
 		void setCharacter(game::PCharacter); //TODO: 
 
+	protected:
+		bool onInput(const io::InputEvent&) override;
+		bool onEvent(const HudEvent&) override;
+		void onUpdate(double time_diff) override;
 
 	private:
 		void sendOrder(game::POrder&&);

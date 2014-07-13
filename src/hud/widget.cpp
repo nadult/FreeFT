@@ -58,7 +58,7 @@ namespace hud {
 		if(onInput(event))
 			return true;
 
-		for(auto child: m_children)
+		for(auto &child: m_children)
 			if(child.get() != handled)
 				if(child->handleInput(cevent))
 					return true;
@@ -70,13 +70,27 @@ namespace hud {
 			return true;
 		return m_parent? m_parent->handleEvent(event) : false;
 	}
+		
+	void HudWidget::fitRectToChildren(const float2 &min_size, bool only_visible) {
+		float2 max_pos = min_size;
+		for(auto &child : m_children) {
+			if(only_visible && !child->isVisible())
+				continue;
+
+			float2 child_max = child->rect().max;
+			max_pos.x = max(max_pos.x, child_max.x + spacing);
+			max_pos.y = max(max_pos.y, child_max.y + spacing);
+		}
+
+		m_rect.max = m_rect.min + max_pos;
+	}
 	
 	void HudWidget::setStyle(const HudStyle &style) {
 		m_style = style;
 		m_font = Font::mgr[style.font_name];
 		m_big_font = Font::mgr[style.big_font_name];
 
-		for(auto child: m_children)
+		for(auto &child: m_children)
 			child->setStyle(style);
 	}
 		
@@ -109,7 +123,7 @@ namespace hud {
 		animateValue(m_visible_time, time_diff * m_anim_speed, m_is_visible);
 		onUpdate(time_diff);
 
-		for(auto child: m_children)
+		for(auto &child: m_children)
 			child->update(time_diff);
 	}
 	
@@ -124,7 +138,7 @@ namespace hud {
 
 		glPushMatrix();
 		glTranslatef(offset.x, offset.y, 0.0f);
-		for(auto child: m_children)
+		for(const auto &child: m_children)
 			child->draw();
 		glPopMatrix();
 
@@ -158,7 +172,7 @@ namespace hud {
 		if(rect.isInside(mouse_pos))
 			return true;
 		float2 cmouse_pos = mouse_pos - rect.min;
-		for(auto child: m_children)
+		for(auto &child: m_children)
 			if(child->isMouseOver(cmouse_pos))
 				return true;
 		return false;

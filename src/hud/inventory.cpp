@@ -20,7 +20,7 @@ namespace hud {
 		const float2 s_button_size(15, 15);
 		const float s_bottom_size = 30.0f;
 
-		const int2 s_grid_size(4, 10);
+		const int2 s_grid_size(4, 6);
 	}
 		
 	HudItemDesc::HudItemDesc(const FRect &rect) :HudButton(rect) { }

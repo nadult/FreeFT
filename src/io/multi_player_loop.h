@@ -16,7 +16,7 @@ namespace hud {
 
 	class MultiPlayerMenu: public HudLayer {
 	public:
-		MultiPlayerMenu(const FRect &rect, HudStyle style);
+		MultiPlayerMenu(const FRect &rect);
 
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;

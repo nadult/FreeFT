@@ -34,7 +34,7 @@ namespace hud {
 
 	HudButton::HudButton(const FRect &rect, HudEvent::Type event_type, int event_value)
 		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_is_enabled(false), m_is_highlighted(false),
-		 m_accelerator(0), m_icon_id(HudIcon::undefined), m_event_type(event_type), m_event_value(event_value) {
+		 m_accelerator(0), m_icon_id(HudIcon::undefined), m_event_type(event_type), m_event_value(event_value), m_button_style(style_normal) {
 		m_icons_tex = gfx::DTexture::mgr["icons.png"];
 	}
 
@@ -52,7 +52,8 @@ namespace hud {
 
 		u8 border_alpha = clamp((int)(255 * this->alpha() * (0.3f + 0.7f * m_enabled_time * m_highlighted_time)), 0, 255);
 		Color border_color(m_style.border_color, border_alpha);
-		float offset = lerp(m_style.border_offset, 0.0f, m_highlighted_time);
+		float border_offset = m_button_style == style_small? 2.5f : 5.0f;
+		float offset = lerp(border_offset, 0.0f, m_highlighted_time);
 		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
 
 		if(!m_text.empty())

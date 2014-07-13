@@ -53,13 +53,13 @@ namespace hud {
 	}
 
 	HudMainPanel::HudMainPanel(const FRect &rect) :HudLayer(rect) {
-		float2 bottom_left(HudButton::spacing - spacing, rect.height() - HudButton::spacing + HudLayer::spacing);
+		float2 bottom_left(spacing, rect.height() - spacing);
 
 		FRect char_rect(s_hud_char_icon_size);
 		char_rect += bottom_left - float2(0, char_rect.height());
 
 		FRect weapon_rect(s_hud_weapon_size);
-		weapon_rect += float2(char_rect.max.x + HudButton::spacing, bottom_left.y - weapon_rect.height());
+		weapon_rect += float2(char_rect.max.x + spacing, bottom_left.y - weapon_rect.height());
 
 		m_hud_char_icon = new HudCharIcon(char_rect);
 		m_hud_weapon = new HudWeapon(weapon_rect);
@@ -67,7 +67,7 @@ namespace hud {
 
 		{
 			FRect stance_rect(s_hud_stance_size);
-			stance_rect += float2(weapon_rect.max.x + HudButton::spacing, bottom_left.y - s_hud_stance_size.y);
+			stance_rect += float2(weapon_rect.max.x + spacing, bottom_left.y - s_hud_stance_size.y);
 
 			for(int n = 0; n < COUNTOF(s_stance_buttons); n++) {
 				PHudButton stance(new HudButton(stance_rect, HudEvent::stance_changed, s_stance_buttons[n].stance_id));
@@ -75,12 +75,12 @@ namespace hud {
 				stance->setAccelerator(s_stance_buttons[n].accelerator);
 				m_hud_stances.push_back(std::move(stance));
 
-				stance_rect += float2(0.0f, -s_hud_stance_size.y - HudButton::spacing);
+				stance_rect += float2(0.0f, -s_hud_stance_size.y - spacing);
 			}
 		}
 
 		{
-			FRect button_rect = align(FRect(s_hud_button_size), char_rect, align_top, HudButton::spacing);
+			FRect button_rect = align(FRect(s_hud_button_size), char_rect, align_top, spacing);
 			button_rect += float2(char_rect.min.x - button_rect.min.x, 0.0f);
 
 			for(int n = 0; n < COUNTOF(s_buttons); n++) {
@@ -88,7 +88,7 @@ namespace hud {
 				button->setText(s_buttons[n].name);
 				button->setAccelerator(s_buttons[n].accelerator);
 				m_hud_buttons.emplace_back(std::move(button));
-				button_rect += float2(button_rect.width() + HudButton::spacing, 0.0f);
+				button_rect += float2(button_rect.width() + spacing, 0.0f);
 			}
 		}
 
@@ -160,7 +160,6 @@ namespace hud {
 				if(stance_id != -1 && stance_id != sel_id) {
 					playSound(HudSound::button);
 
-					sendOrder(new ChangeStanceOrder(s_stance_buttons[stance_id].stance_id));
 					for(int n = 0; n < (int)m_hud_stances.size(); n++)
 						m_hud_stances[n]->setFocus(stance_id == n);
 				}

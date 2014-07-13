@@ -28,7 +28,7 @@ namespace hud {
 		button_connect,
 	};
 		
-	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, HudStyle style) :HudLayer(rect),
+	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect) :HudLayer(rect),
 	  m_max_visible_rows(0), m_row_offset(0), m_selection(-1), m_please_refresh(true) {
 		m_slide_left = false;
 		m_visible_time = 0.0f;
@@ -38,9 +38,6 @@ namespace hud {
 
 		m_last_refresh_time = -1.0;
 		m_last_connect_time = -1.0;
-
-		style.border_offset *= 0.5f;
-		setStyle(style);
 
 		FRect button_rect(s_button_size);
 		button_rect += float2(rect.width() - spacing, rect.height() - spacing) - button_rect.size();
@@ -74,6 +71,9 @@ namespace hud {
 		m_buttons.push_back(button_down);
 		m_buttons.push_back(button_refresh);
 		m_buttons.push_back(button_connect);
+
+		for(auto &button : m_buttons)
+			button->setButtonStyle(HudButton::style_small);
 
 		attach(button_close.get());
 		attach(button_up.get());

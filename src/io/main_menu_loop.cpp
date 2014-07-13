@@ -112,7 +112,7 @@ namespace io {
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(750, 550));
 				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
-				m_multi_menu = new hud::MultiPlayerMenu(rect, hud::defaultStyle());
+				m_multi_menu = new hud::MultiPlayerMenu(rect);
 				m_sub_menu = m_multi_menu.get();
 			//	m_mode = mode_starting_multi;
 			}
@@ -236,8 +236,8 @@ namespace io {
 			process();
 		if(m_sub_menu) {
 			vector<InputEvent> events = generateInputEvents();
-			for(auto event: events)
-				m_sub_menu->onInput(event);
+			for(auto &event: events)
+				m_sub_menu->handleInput(event);
 
 			m_sub_menu->update(time_diff);
 			if(!m_sub_menu->isVisible() && !m_sub_menu->isShowing())

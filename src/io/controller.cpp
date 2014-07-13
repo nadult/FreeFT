@@ -74,7 +74,6 @@ namespace io {
 		if(event.keyDown('H'))
 			m_hud->setVisible(m_hud->isVisible() ^ 1);
 
-
 		if(event.mouseMoved() && mouse_over_hud) {
 			m_isect = m_full_isect = Intersection();
 		}

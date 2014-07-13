@@ -27,10 +27,15 @@ namespace hud
 
 	class HudButton: public HudWidget {
 	public:
-		enum { spacing = 15 };
+		enum Style {
+			style_normal,
+			style_small
+		};
 
 		HudButton(const FRect &target_rect, HudEvent::Type type = HudEvent::button_clicked, int event_value = 0);
 		virtual ~HudButton();
+
+		void setButtonStyle(Style style) { m_button_style = style; }
 
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;
@@ -63,6 +68,7 @@ namespace hud
 		
 		const HudEvent::Type m_event_type;
 		const int m_event_value;
+		Style m_button_style;
 
 		int m_accelerator;
 		bool m_is_enabled;
