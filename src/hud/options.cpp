@@ -14,7 +14,7 @@ using namespace gfx;
 namespace hud {
 
 	HudOptions::HudOptions(const FRect &target_rect)
-		:HudLayer(target_rect) {
+		:HudLayer(nullptr, target_rect) {
 	}
 		
 }

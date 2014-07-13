@@ -24,7 +24,7 @@ namespace game {
 		update_client_info
 	);
 
-	class PlayableCharacter {
+	class PlayableCharacter: public RefCounter {
 	public:
 		PlayableCharacter(const Character &character);
 		
@@ -38,6 +38,7 @@ namespace game {
 		EntityRef entityRef() const { return m_entity_ref; }
 
 		const Character &character() const { return m_character; }
+		bool operator==(const PlayableCharacter&) const;
 
 	private:
 		Character m_character;

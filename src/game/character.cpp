@@ -69,6 +69,10 @@ namespace game {
 		return out;
 	}
 		
+	bool Character::operator==(const Character &rhs) const {
+		return m_name == rhs.m_name && m_icon_name == rhs.m_icon_name && m_proto_idx == rhs.m_proto_idx;
+	}
+		
 	struct StartingEquipment {
 		int tier;
 		const char *armour;
@@ -118,6 +122,10 @@ namespace game {
 		}
 
 		return out;
+	}
+		
+	bool CharacterClass::operator==(const CharacterClass &rhs) const {
+		return m_tier == rhs.m_tier && m_id == rhs.m_id;
 	}
 
 }

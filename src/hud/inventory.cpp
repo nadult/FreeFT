@@ -6,6 +6,7 @@
 #include "hud/inventory.h"
 #include "game/actor.h"
 #include "game/world.h"
+#include "game/game_mode.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include <algorithm>
@@ -20,7 +21,7 @@ namespace hud {
 		const float2 s_button_size(15, 15);
 		const float s_bottom_size = 30.0f;
 
-		const int2 s_grid_size(4, 6);
+		const int2 s_grid_size(4, 4);
 	}
 		
 	HudItemDesc::HudItemDesc(const FRect &rect) :HudButton(rect) { }
@@ -83,8 +84,7 @@ namespace hud {
 	}
 
 	HudInventory::HudInventory(PWorld world, const FRect &target_rect)
-		:HudLayer(target_rect), m_world(world), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
-		DASSERT(m_world);
+		:HudLayer(world, target_rect), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
 
 		for(int y = 0; y < s_grid_size.y; y++)
 			for(int x = 0; x < s_grid_size.x; x++) {
@@ -112,10 +112,11 @@ namespace hud {
 		
 	HudInventory::~HudInventory() { }
 		
-	void HudInventory::setActor(game::EntityRef actor_ref) {
-		if(actor_ref == m_actor_ref)
-			return;
-		m_actor_ref = actor_ref;
+	bool HudInventory::canShow() const {
+		return m_pc && m_world->refEntity<Actor>(m_pc->entityRef());
+	}
+		
+	void HudInventory::onPCSet() {
 		m_drop_item = Item::dummy();
 	}
 

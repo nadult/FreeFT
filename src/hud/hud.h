@@ -18,11 +18,10 @@ namespace hud
 		Hud(game::PWorld world);
 		~Hud();
 
-		void setVisible(bool is_visible, bool animate = true) override;
+		void setVisible(bool is_visible, bool animate = true);
+		bool isVisible() const;
 
-		//TODO: remove these?
-		void setActor(game::EntityRef);
-		void setCharacter(game::PCharacter); //TODO: 
+		void setPC(game::PPlayableCharacter);
 
 	protected:
 		bool onInput(const io::InputEvent&) override;
@@ -30,12 +29,6 @@ namespace hud
 		void onUpdate(double time_diff) override;
 
 	private:
-		void sendOrder(game::POrder&&);
-
-		game::PWorld m_world;
-		game::EntityRef m_actor_ref;
-		game::PCharacter m_character;
-
 		int m_selected_layer;
 		Ptr<HudMainPanel> m_main_panel;
 		PHudLayer m_layers[layer_count];

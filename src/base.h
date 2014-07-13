@@ -545,6 +545,7 @@ namespace game {
 	class Character;
 	class Inventory;
 	class ActorInventory;
+	class PlayableCharacter;
 	class GameMode;
 	class GameModeServer;
 	class GameModeClient;
@@ -552,6 +553,7 @@ namespace game {
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;
 	typedef Ptr<Character> PCharacter;
+	typedef Ptr<PlayableCharacter> PPlayableCharacter;
 	typedef unique_ptr<GameMode> PGameMode;
 	typedef unique_ptr<Entity> PEntity;
 }

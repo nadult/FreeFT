@@ -67,7 +67,7 @@ namespace hud {
 	}
 
 	HudClass::HudClass(PWorld world, const FRect &target_rect)
-		:HudLayer(target_rect), m_offset(0), m_selected_id(-1) {
+		:HudLayer(world, target_rect), m_offset(0), m_selected_id(-1) {
 
 		m_class_count = CharacterClass::count();
 		for(int n = 0; n < m_max_buttons; n++) {

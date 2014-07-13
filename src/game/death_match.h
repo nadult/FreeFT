@@ -40,6 +40,9 @@ namespace game {
 	public:
 		DeathMatchClient(World &world, int client_id);
 
+		void addPlayableCharacter(const Character&);
+		void setCharacterClass(const CharacterClass&);
+
 		GameModeId::Type typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
 		void onMessage(Stream&, MessageId::Type, int source_id) override;

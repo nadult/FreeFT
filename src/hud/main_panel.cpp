@@ -10,6 +10,7 @@
 
 #include "game/actor.h"
 #include "game/world.h"
+#include "game/game_mode.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 
@@ -52,7 +53,7 @@ namespace hud {
 
 	}
 
-	HudMainPanel::HudMainPanel(const FRect &rect) :HudLayer(rect) {
+	HudMainPanel::HudMainPanel(game::PWorld world, const FRect &rect) :HudLayer(world, rect) {
 		float2 bottom_left(spacing, rect.height() - spacing);
 
 		FRect char_rect(s_hud_char_icon_size);
@@ -131,15 +132,26 @@ namespace hud {
 			HudButton *source = dynamic_cast<HudButton*>(event.source);
 			if(source && !source->isEnabled()) {
 				playSound(HudSound::button);
+				sendOrder(new ChangeStanceOrder((Stance::Type)event.value));
 				for(auto button: m_hud_stances)
 					button->setEnabled(button.get() == event.source);
 			}
+			return true;
 		}
 		return false;
 	}
 
 	void HudMainPanel::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
+
+		int stance_id = -1;
+		const Actor *actor = m_pc? m_world->refEntity<Actor>(m_pc->entityRef()) : nullptr;
+
+		if(actor)
+			stance_id = actor->stance();
+
+		for(auto &button: m_hud_stances)
+			button->setEnabled(button->eventValue() == stance_id);
 	/*	if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
 

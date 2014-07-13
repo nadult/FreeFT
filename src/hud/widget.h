@@ -37,7 +37,7 @@ namespace hud
 		virtual const FRect rect() const { return m_rect; }
 		void fitRectToChildren(const float2 &min_size, bool only_visible);
 
-		virtual void setVisible(bool is_visible, bool animate = true);
+		void setVisible(bool is_visible, bool animate = true);
 
 		bool isVisible() const;
 		bool isShowing() const;

@@ -4,16 +4,16 @@
  */
 
 #include "hud/layer.h"
-#include "hud/widget.h"
 #include "gfx/device.h"
-#include "gfx/opengl.h"
-#include "gfx/font.h"
+#include "game/world.h"
+#include "game/game_mode.h"
 
 using namespace gfx;
 
 namespace hud {
 
-	HudLayer::HudLayer(const FRect &rect) :HudWidget(rect), m_slide_left(true) {
+	HudLayer::HudLayer(game::PWorld world, const FRect &rect)
+		:HudWidget(rect), m_world(world), m_slide_left(true) {
 		m_anim_speed = 5.0f;
 	}
 
@@ -33,6 +33,16 @@ namespace hud {
 		Color color = m_style.layer_color;
 		drawQuad(rect(), mulAlpha(color, backAlpha()));
 		drawBorder(rect(), mulAlpha(color, min(backAlpha() * 1.5f, 1.0f)), float2(0, 0), 100.0f);
+	}
+		
+	void HudLayer::setPC(game::PPlayableCharacter pc) {
+		m_pc = std::move(pc);
+		onPCSet();
+	}
+	
+	void HudLayer::sendOrder(game::POrder &&order) {
+		if(m_pc && m_world)
+			m_world->sendOrder(std::move(order), m_pc->entityRef());
 	}
 
 }

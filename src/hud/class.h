@@ -37,7 +37,6 @@ namespace hud
 		void select(int id) { m_selected_id = id; }
 
 	private:
-		game::PWorld m_world;
 		int m_offset, m_class_count;
 		int m_selected_id;
 

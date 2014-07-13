@@ -33,6 +33,8 @@ namespace game
 
 		static const vector<pair<ProtoIndex, string>> findIcons();
 
+		bool operator==(const Character &rhs) const;
+
 	private:
 		void validate();
 
@@ -51,6 +53,8 @@ namespace game
 		int id() const { return m_id; }
 		int tier() const { return m_tier; }
 		const ActorInventory inventory(bool equip) const;
+
+		bool operator==(const CharacterClass &rhs) const;
 
 	private:
 		int m_tier;

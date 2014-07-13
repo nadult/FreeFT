@@ -25,7 +25,10 @@ namespace game {
 		ASSERT(CharacterClass::isValidId(class_id));
 		m_class = CharacterClass(class_id);
 	}
-
+		
+	bool PlayableCharacter::operator==(const PlayableCharacter &rhs) const {
+		return m_character == rhs.m_character && m_class == rhs.m_class && m_entity_ref == rhs.m_entity_ref;
+	}
 		
 	bool GameMode::sendOrder(POrder &&order, EntityRef entity_ref) {
 		if( Actor *entity = m_world.refEntity<Actor>(entity_ref) )

@@ -35,6 +35,8 @@ namespace hud
 		HudButton(const FRect &target_rect, HudEvent::Type type = HudEvent::button_clicked, int event_value = 0);
 		virtual ~HudButton();
 
+		int eventValue() const { return m_event_value; }
+
 		void setButtonStyle(Style style) { m_button_style = style; }
 
 		void onUpdate(double time_diff) override;

@@ -76,13 +76,28 @@ namespace game {
 
 	DeathMatchClient::DeathMatchClient(World &world, int client_id) :GameModeClient(world, client_id) {
 	}
+		
+	void DeathMatchClient::addPlayableCharacter(const Character &character) {
+		if(m_current.pcs.empty()) {
+			PlayableCharacter new_char(character);
+			m_current.pcs.push_back(new_char);	
+			net::TempPacket chunk;
+			chunk << MessageId::update_client;
+			chunk << m_current;
+			m_world.sendMessage(chunk);
+		}
+	}
+
+	void DeathMatchClient::setCharacterClass(const CharacterClass &character_class) {
+
+	}
 
 	void DeathMatchClient::tick(double time_diff) {
 		GameModeClient::tick(time_diff);
 	}
 	
 	void DeathMatchClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
-
+		GameModeClient::onMessage(sr, msg_type, source_id);
 	}
 
 

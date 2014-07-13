@@ -13,7 +13,7 @@ namespace hud
 
 	class HudMainPanel: public HudLayer {
 	public:
-		HudMainPanel(const FRect &rect);
+		HudMainPanel(game::PWorld, const FRect &rect);
 		~HudMainPanel();
 
 		bool onInput(const io::InputEvent&) override;

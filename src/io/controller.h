@@ -20,7 +20,7 @@ namespace io {
 		Controller(const int2 &resolution, game::PWorld world, bool show_stats);
 		~Controller();
 
-		void updateActor();
+		void updatePC();
 		void update(double time_diff);
 		void updateView(double time_diff);
 		void onInput(const InputEvent&);
@@ -29,15 +29,17 @@ namespace io {
 		void drawVisibility(game::EntityRef);
 
 	protected:
+		game::Actor *getActor();
+
 		game::PWorld m_world;
 		game::WorldViewer m_viewer;
 		game::GameMode *m_game_mode;
+		game::PPlayableCharacter m_pc;
+		game::EntityRef m_actor_ref;
 
 		Ptr<Console> m_console;
 		Ptr<hud::Hud> m_hud;
 
-		game::EntityRef m_actor_ref;
-		game::EntityRef m_container_ref;
 		int2 m_resolution, m_view_pos;
 
 		string m_profiler_stats;

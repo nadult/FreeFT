@@ -10,7 +10,6 @@
 
 #include "game/actor.h"
 #include "game/item.h"
-#include "game/container.h"
 #include "game/visibility.h"
 #include "game/game_mode.h"
 
@@ -35,29 +34,37 @@ namespace io {
 
 		m_game_mode = m_world->gameMode();
 		ASSERT(m_game_mode);
-		updateActor();
+		updatePC();
 
-		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
-		if(actor)
+		if( const Actor *actor = getActor() )
 			m_view_pos = int2(worldToScreen(actor->pos())) - resolution / 2;
 		
 		m_last_time = m_stats_update_time = getTime();
 		m_last_look_at = float3(0, 0, 0);
-	
 	}
 
 	Controller::~Controller() {
 	}
 		
 	//TODO: better name
-	void Controller::updateActor() {
+	void Controller::updatePC() {
 		const auto &pcs = m_game_mode->playableCharacters();
-		const PlayableCharacter *pc = pcs.empty()? nullptr : &pcs[0];
+		PPlayableCharacter pc;
 
-		m_actor_ref = pc? pc->entityRef() : EntityRef();
-		m_hud->setActor(m_actor_ref);
+		if( (pcs.empty() && !m_pc) || (m_pc && pcs[0] == *m_pc) )
+			return;
+
+		m_pc = new PlayableCharacter(pcs[0]);
+		m_actor_ref = m_pc? m_pc->entityRef() : EntityRef();
 		m_viewer.setSpectator(m_actor_ref);
-		m_hud->setCharacter(pc? new Character(pc->character()) : PCharacter());
+		m_hud->setPC(m_pc);
+	}
+		
+	Actor *Controller::getActor() {
+		Actor *actor = nullptr;
+		if(m_pc)
+			actor = m_world->refEntity<Actor>(m_pc->entityRef());
+		return actor;
 	}
 		
 	void Controller::onInput(const InputEvent &event) {
@@ -67,7 +74,7 @@ namespace io {
 			return;
 		bool mouse_over_hud = m_console->isMouseOver(event) || m_hud->isMouseOver(event);
 		
-		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
+		Actor *actor = getActor();
 		if(actor && actor->isDead())
 			actor = nullptr;
 
@@ -146,7 +153,7 @@ namespace io {
 		if((isKeyPressed(Key::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 		
-		updateActor();
+		updatePC();
 
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor && actor->isDead())

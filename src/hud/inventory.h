@@ -50,15 +50,17 @@ namespace hud
 		~HudInventory();
 
 		float preferredHeight() const;
+		void setActor(game::EntityRef);
+		bool canShow() const override;
+
+	protected:
 		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;
-		void setActor(game::EntityRef);
+		void onPCSet() override;
 
 	private:
-		game::PWorld m_world;
-		game::EntityRef m_actor_ref;
 		int m_row_offset;
 		int m_min_items;
 

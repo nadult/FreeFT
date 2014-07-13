@@ -19,13 +19,10 @@ namespace hud
 	public:
 		enum { spacing = 17 };
 
-		HudCharacter(const FRect &target_rect);
+		HudCharacter(PWorld world, const FRect &target_rect);
 		~HudCharacter();
 
 		void onUpdate(double time_diff) override;
-
-		void setCharacter(const PCharacter&);
-		const PCharacter character() const { return m_character; }
 
 	private:
 		int m_icon_id;
@@ -34,8 +31,6 @@ namespace hud
 		Ptr<HudEditBox> m_name_edit_box;
 		PHudButton m_button_race;
 		PHudButton m_button_up, m_button_down;
-		
-		PCharacter m_character;
 	};
 
 }
