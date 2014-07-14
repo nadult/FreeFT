@@ -32,11 +32,10 @@ namespace hud
 			style_small
 		};
 
-		HudButton(const FRect &target_rect, HudEvent::Type type = HudEvent::button_clicked, int event_value = 0);
+		HudButton(const FRect &target_rect, int id = 0);
 		virtual ~HudButton();
 
-		int eventValue() const { return m_event_value; }
-
+		int id() const { return m_id; }
 		void setButtonStyle(Style style) { m_button_style = style; }
 
 		void onUpdate(double time_diff) override;
@@ -56,9 +55,7 @@ namespace hud
 
 		void setText(const string &text) { m_text = text; }
 		void setIcon(HudIcon::Type icon) { m_icon_id = icon; }
-
-		void setAccelerator(int key) { m_accelerator = key; }
-		int accelerator() const { return m_accelerator; }
+		void setAccelerator(int accel) { m_accelerator = accel; }
 
 	protected:
 		gfx::PTexture m_icons_tex;
@@ -67,15 +64,11 @@ namespace hud
 		string m_text;
 		float m_enabled_time;
 		float m_highlighted_time;
-		
-		const HudEvent::Type m_event_type;
-		const int m_event_value;
 		Style m_button_style;
+		int m_id, m_accelerator;
 
-		int m_accelerator;
 		bool m_is_enabled;
 		bool m_is_highlighted;
-
 	};
 
 }

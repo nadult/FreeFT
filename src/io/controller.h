@@ -29,13 +29,17 @@ namespace io {
 		void drawVisibility(game::EntityRef);
 
 	protected:
+		void sendOrder(game::POrder&&);
+
 		game::Actor *getActor();
 
+		//TODO: m_world can be a reference, not a pointer
 		game::PWorld m_world;
 		game::WorldViewer m_viewer;
 		game::GameMode *m_game_mode;
 		game::PPlayableCharacter m_pc;
 		game::EntityRef m_actor_ref;
+		Ptr<game::PCController> m_pc_controller;
 
 		Ptr<Console> m_console;
 		Ptr<hud::Hud> m_hud;

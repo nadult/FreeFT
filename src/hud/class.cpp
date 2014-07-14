@@ -66,8 +66,8 @@ namespace hud {
 		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
 	}
 
-	HudClass::HudClass(PWorld world, const FRect &target_rect)
-		:HudLayer(world, target_rect), m_offset(0), m_selected_id(-1) {
+	HudClass::HudClass(const FRect &target_rect)
+		:HudLayer(target_rect), m_offset(0), m_selected_id(-1) {
 
 		m_class_count = CharacterClass::count();
 		for(int n = 0; n < m_max_buttons; n++) {

@@ -18,6 +18,7 @@ namespace game {
 		void save(Stream&) const;
 
 		Stance::Type m_target_stance;
+		bool m_stance_up;
 	};
 
 }

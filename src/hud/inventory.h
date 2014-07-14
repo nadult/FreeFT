@@ -46,7 +46,7 @@ namespace hud
 	public:
 		enum { spacing = 17 };
 
-		HudInventory(PWorld world, const FRect &target_rect);
+		HudInventory(const FRect &target_rect);
 		~HudInventory();
 
 		float preferredHeight() const;
@@ -58,7 +58,6 @@ namespace hud
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;
-		void onPCSet() override;
 
 	private:
 		int m_row_offset;

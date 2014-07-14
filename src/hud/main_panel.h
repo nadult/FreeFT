@@ -13,14 +13,16 @@ namespace hud
 
 	class HudMainPanel: public HudLayer {
 	public:
-		HudMainPanel(game::PWorld, const FRect &rect);
+		HudMainPanel(const FRect &rect);
 		~HudMainPanel();
+	
+		void setLayerId(int layer_id);
 
+	private:
 		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 
-	private:
 		PHudWeapon m_hud_weapon;
 		PHudCharIcon m_hud_char_icon;
 		vector<PHudButton> m_hud_stances;

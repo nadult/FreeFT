@@ -43,9 +43,7 @@ namespace hud {
 			button_clicked,
 			text_modified,
 
-			layer_selected,
-			stance_changed,
-
+			layer_changed,
 			item_equipped,
 			item_unequipped,
 			item_dropped,

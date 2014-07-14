@@ -32,9 +32,9 @@ namespace hud {
 
 	}
 
-	HudButton::HudButton(const FRect &rect, HudEvent::Type event_type, int event_value)
+	HudButton::HudButton(const FRect &rect, int id)
 		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_is_enabled(false), m_is_highlighted(false),
-		 m_accelerator(0), m_icon_id(HudIcon::undefined), m_event_type(event_type), m_event_value(event_value), m_button_style(style_normal) {
+	     m_icon_id(HudIcon::undefined), m_button_style(style_normal), m_id(id), m_accelerator(0) {
 		m_icons_tex = gfx::DTexture::mgr["icons.png"];
 	}
 
@@ -69,8 +69,8 @@ namespace hud {
 		if(event.mouseMoved()) {
 			m_is_highlighted = isMouseOver(event);
 		}
-		if( (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator)) ) {
-			handleEvent(HudEvent(this, m_event_type, m_event_value));
+		if( (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && isKeyDown(m_accelerator)) ) {
+			handleEvent(HudEvent(this, HudEvent::button_clicked, 0));
 			return true;
 		}
 

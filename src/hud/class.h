@@ -29,7 +29,7 @@ namespace hud
 
 	class HudClass: public HudLayer {
 	public:
-		HudClass(PWorld world, const FRect &target_rect);
+		HudClass(const FRect &target_rect);
 		~HudClass();
 
 		void onUpdate(double time_diff) override;

@@ -10,6 +10,8 @@
 #include "game/entity.h"
 #include "hud/widget.h"
 
+//TODO: add help layer
+
 namespace hud
 {
 
@@ -21,7 +23,9 @@ namespace hud
 		void setVisible(bool is_visible, bool animate = true);
 		bool isVisible() const;
 
-		void setPC(game::PPlayableCharacter);
+		void showLayer(int layer_id);
+		void setPCController(game::PPCController);
+		HudMainPanel *mainPanel() { return m_main_panel.get(); }
 
 	protected:
 		bool onInput(const io::InputEvent&) override;

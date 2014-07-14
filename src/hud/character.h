@@ -19,7 +19,7 @@ namespace hud
 	public:
 		enum { spacing = 17 };
 
-		HudCharacter(PWorld world, const FRect &target_rect);
+		HudCharacter(const FRect &target_rect);
 		~HudCharacter();
 
 		void onUpdate(double time_diff) override;

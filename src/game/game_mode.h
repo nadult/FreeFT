@@ -24,28 +24,6 @@ namespace game {
 		update_client_info
 	);
 
-	class PlayableCharacter: public RefCounter {
-	public:
-		PlayableCharacter(const Character &character);
-		
-		void save(Stream&) const;
-		void load(Stream&);
-
-		void setCharacterClass(const CharacterClass &char_class) { m_class = char_class; }
-		const CharacterClass &characterClass() const { return m_class; }
-
-		void setEntityRef(EntityRef ref) { m_entity_ref = ref; }
-		EntityRef entityRef() const { return m_entity_ref; }
-
-		const Character &character() const { return m_character; }
-		bool operator==(const PlayableCharacter&) const;
-
-	private:
-		Character m_character;
-		CharacterClass m_class;
-		EntityRef m_entity_ref;
-	};
-
 	class GameMode {
 	public:
 		GameMode(World &world) :m_world(world) { }

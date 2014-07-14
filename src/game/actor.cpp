@@ -325,26 +325,38 @@ namespace game {
 				return false;
 		}
 
-		//TODO: instead add option to attack target which is closest to the cursor?
-		if(order->typeId() == OrderTypeId::attack) {
-			if(m_order && m_order->typeId() == OrderTypeId::attack) {
+		if(m_order && order->typeId() == m_order->typeId()) {
+			//TODO: instead add option to attack target which is closest to the cursor?
+			if(order->typeId() == OrderTypeId::attack) {
 				AttackOrder *attack = static_cast<AttackOrder*>(m_order.get());
 				AttackOrder *new_attack = static_cast<AttackOrder*>(order.get());
 				if(new_attack->m_target)
 					attack->m_target = new_attack->m_target;
+				order.reset();
+			}
+			else if(order->typeId() == OrderTypeId::change_stance) {
+				ChangeStanceOrder *current_order = static_cast<ChangeStanceOrder*>(m_order.get());
+				ChangeStanceOrder *new_order = static_cast<ChangeStanceOrder*>(order.get());
+
+				current_order->m_target_stance = new_order->m_target_stance;
+				order.reset();
 			}
 		}
 
-		if(m_order)
-			m_order->cancel();
+		if(order) {
+			if(m_order) {
+				if(m_order->typeId() != OrderTypeId::change_stance)
+					m_order->cancel();
+			}
 
-		if(force) {
-			m_order.reset(nullptr);
-			m_following_orders.insert(m_following_orders.begin(), std::move(order));
-		}
-		else {
-			m_following_orders.clear();
-			m_following_orders.emplace_back(std::move(order));
+			if(force) {
+				m_order.reset(nullptr);
+				m_following_orders.insert(m_following_orders.begin(), std::move(order));
+			}
+			else { //TODO: fix this! why are we clearing orders?
+				m_following_orders.clear();
+				m_following_orders.emplace_back(std::move(order));
+			}
 		}
 
 		replicate();

@@ -28,9 +28,8 @@ namespace hud {
 		button_connect,
 	};
 		
-	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect) :HudLayer(nullptr, rect),
+	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect) :HudLayer(rect, HudLayer::slide_top),
 	  m_max_visible_rows(0), m_row_offset(0), m_selection(-1), m_please_refresh(true) {
-		m_slide_left = false;
 		m_visible_time = 0.0f;
 
 		m_waiting_for_refresh = false;

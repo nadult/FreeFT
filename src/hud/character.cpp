@@ -25,8 +25,8 @@ namespace hud {
 		const int2 s_grid_size(4, 10);
 	}
 		
-	HudCharacter::HudCharacter(PWorld world, const FRect &target_rect)
-		:HudLayer(world, target_rect), m_icon_id(-1) {
+	HudCharacter::HudCharacter(const FRect &target_rect)
+		:HudLayer(target_rect), m_icon_id(-1) {
 
 		float2 pos(spacing, spacing);
 		m_icon_box = new HudCharIcon(FRect(s_hud_char_icon_size) + pos);

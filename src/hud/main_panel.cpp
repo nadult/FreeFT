@@ -11,6 +11,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/game_mode.h"
+#include "game/pc_controller.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 
@@ -42,18 +43,17 @@ namespace hud {
 		struct StanceButton {
 			Stance::Type stance_id;
 			HudIcon::Type icon_id;
-			int accelerator;
 		};
 
 		static StanceButton s_stance_buttons[] = {
-			{ Stance::prone,  HudIcon::stance_prone,  'Z' },
-			{ Stance::crouch, HudIcon::stance_crouch, 'A' },
-			{ Stance::stand,  HudIcon::stance_stand,  'Q' }
+			{ Stance::prone,  HudIcon::stance_prone },
+			{ Stance::crouch, HudIcon::stance_crouch },
+			{ Stance::stand,  HudIcon::stance_stand }
 		};
 
 	}
 
-	HudMainPanel::HudMainPanel(game::PWorld world, const FRect &rect) :HudLayer(world, rect) {
+	HudMainPanel::HudMainPanel(const FRect &rect) :HudLayer(rect) {
 		float2 bottom_left(spacing, rect.height() - spacing);
 
 		FRect char_rect(s_hud_char_icon_size);
@@ -64,16 +64,14 @@ namespace hud {
 
 		m_hud_char_icon = new HudCharIcon(char_rect);
 		m_hud_weapon = new HudWeapon(weapon_rect);
-		m_hud_weapon->setAccelerator('R');
 
 		{
 			FRect stance_rect(s_hud_stance_size);
 			stance_rect += float2(weapon_rect.max.x + spacing, bottom_left.y - s_hud_stance_size.y);
 
 			for(int n = 0; n < COUNTOF(s_stance_buttons); n++) {
-				PHudButton stance(new HudButton(stance_rect, HudEvent::stance_changed, s_stance_buttons[n].stance_id));
+				PHudButton stance(new HudButton(stance_rect, s_stance_buttons[n].stance_id));
 				stance->setIcon(s_stance_buttons[n].icon_id);
-				stance->setAccelerator(s_stance_buttons[n].accelerator);
 				m_hud_stances.push_back(std::move(stance));
 
 				stance_rect += float2(0.0f, -s_hud_stance_size.y - spacing);
@@ -85,9 +83,8 @@ namespace hud {
 			button_rect += float2(char_rect.min.x - button_rect.min.x, 0.0f);
 
 			for(int n = 0; n < COUNTOF(s_buttons); n++) {
-				PHudButton button(new HudButton(button_rect, HudEvent::layer_selected, s_buttons[n].layer_id));
+				PHudButton button(new HudButton(button_rect, s_buttons[n].layer_id));
 				button->setText(s_buttons[n].name);
-				button->setAccelerator(s_buttons[n].accelerator);
 				m_hud_buttons.emplace_back(std::move(button));
 				button_rect += float2(button_rect.width() + spacing, 0.0f);
 			}
@@ -121,37 +118,46 @@ namespace hud {
 	bool HudMainPanel::onInput(const io::InputEvent &event) {
 		return false;
 	}
-		
+	
+	template <class T>
+	static bool isOneOf(HudWidget *source, const vector<Ptr<T>> &widgets) {
+		for(auto &widget : widgets)
+			if(widget.get() == source)
+				return true;
+		return false;
+	}
+
 	bool HudMainPanel::onEvent(const HudEvent &event) {
-		if(event.type == HudEvent::layer_selected) {
-			playSound(HudSound::button);
-			for(auto button: m_hud_buttons)
-				button->setEnabled(button.get() == event.source && !button->isEnabled());
-		}
-		if(event.type == HudEvent::stance_changed) {
-			HudButton *source = dynamic_cast<HudButton*>(event.source);
-			if(source && !source->isEnabled()) {
+		if(event.type == HudEvent::button_clicked) {
+		   	HudButton *source = dynamic_cast<HudButton*>(event.source);
+			if(isOneOf(source, m_hud_buttons)) {
 				playSound(HudSound::button);
-				sendOrder(new ChangeStanceOrder((Stance::Type)event.value));
-				for(auto button: m_hud_stances)
-					button->setEnabled(button.get() == event.source);
+				bool disable_all = source->isEnabled();
+				handleEvent(HudEvent::layer_changed, disable_all? layer_none : source->id());
 			}
+			else if(isOneOf(source, m_hud_stances) && !source->isEnabled() && m_pc_controller->canChangeStance()) {
+				playSound(HudSound::button);
+				m_pc_controller->setStance((Stance::Type)source->id());
+			}
+				
 			return true;
 		}
+
 		return false;
+	}
+		
+	void HudMainPanel::setLayerId(int layer_id) {
+		for(auto &button: m_hud_buttons)
+			button->setEnabled(button->id() == layer_id);
 	}
 
 	void HudMainPanel::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
 
-		int stance_id = -1;
-		const Actor *actor = m_pc? m_world->refEntity<Actor>(m_pc->entityRef()) : nullptr;
-
-		if(actor)
-			stance_id = actor->stance();
-
+		int stance = m_pc_controller->targetStance();
 		for(auto &button: m_hud_stances)
-			button->setEnabled(button->eventValue() == stance_id);
+			button->setEnabled(button->id() == stance);
+
 	/*	if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
 

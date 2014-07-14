@@ -83,8 +83,8 @@ namespace hud {
 		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
 	}
 
-	HudInventory::HudInventory(PWorld world, const FRect &target_rect)
-		:HudLayer(world, target_rect), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
+	HudInventory::HudInventory(const FRect &target_rect)
+		:HudLayer(target_rect), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
 
 		for(int y = 0; y < s_grid_size.y; y++)
 			for(int x = 0; x < s_grid_size.x; x++) {
@@ -113,11 +113,7 @@ namespace hud {
 	HudInventory::~HudInventory() { }
 		
 	bool HudInventory::canShow() const {
-		return m_pc && m_world->refEntity<Actor>(m_pc->entityRef());
-	}
-		
-	void HudInventory::onPCSet() {
-		m_drop_item = Item::dummy();
+		return 1;//TODO m_pc && m_world->refEntity<Actor>(m_pc->entityRef());
 	}
 
 	namespace {
@@ -168,6 +164,8 @@ namespace hud {
 
 		if(!is_active)
 			m_drop_item = Item::dummy();
+
+			//TODO: if m_drop_item not found in inventory, then clear
 
 		int max_row_offset = 0;
 		{

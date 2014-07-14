@@ -13,6 +13,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/game_mode.h"
+#include "game/pc_controller.h"
 
 using namespace gfx;
 
@@ -33,16 +34,16 @@ namespace hud {
 		DASSERT(world);
 
 		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, gfx::getWindowSize().y - s_hud_main_panel_size.y - layer_spacing);
-		m_main_panel = new HudMainPanel(world, main_rect);
+		m_main_panel = new HudMainPanel(main_rect);
 
 		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect cls_rect = align(FRect(s_hud_class_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect opt_rect = align(FRect(s_hud_options_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect cha_rect = align(FRect(s_hud_character_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		
-		m_layers[layer_inventory]	= new HudInventory(world, inv_rect);
-		m_layers[layer_class]		= new HudClass(world, cls_rect);
-		m_layers[layer_character]	= new HudCharacter(world, cha_rect);
+		m_layers[layer_inventory]	= new HudInventory(inv_rect);
+		m_layers[layer_class]		= new HudClass(cls_rect);
+		m_layers[layer_character]	= new HudCharacter(cha_rect);
 		m_layers[layer_options]		= new HudOptions(opt_rect);
 
 		attach(m_main_panel.get());
@@ -59,15 +60,20 @@ namespace hud {
 	}
 
 	bool Hud::onEvent(const HudEvent &event) {
-		if(event.type == HudEvent::layer_selected) {
-			bool disable = event.value == m_selected_layer;
-			m_selected_layer = disable? layer_none : event.value;
+		if(event.type == HudEvent::layer_changed) {
+			DASSERT(event.value >= layer_none && event.value < layer_count);
+
+			m_selected_layer = event.value;
 			if(m_selected_layer != layer_none)
 				setVisible(true, true);
 			return true;
 		}
 
 		return false;
+	}
+
+	void Hud::showLayer(int layer_id) {
+		handleEvent(HudEvent::layer_changed, layer_id);
 	}
 
 	void Hud::onUpdate(double time_diff) {
@@ -87,8 +93,10 @@ namespace hud {
 			FRect layer_rect = layer->targetRect();
 			layer->setPos(float2(layer_rect.min.x, main_panel_pos.y - layer_rect.height() - layer_spacing));
 		}
+
+		m_main_panel->setLayerId(m_selected_layer);
 	}
-		
+
 	void Hud::setVisible(bool is_visible, bool animate) {
 		if(!is_visible) {
 			m_selected_layer = layer_none;
@@ -102,10 +110,10 @@ namespace hud {
 		return m_main_panel->isVisible();
 	}
 		
-	void Hud::setPC(game::PPlayableCharacter pc) {
-		m_main_panel->setPC(pc);
+	void Hud::setPCController(game::PPCController pc_controller) {
+		m_main_panel->setPCController(pc_controller);
 		for(auto &layer: m_layers)
-			layer->setPC(pc);
+			layer->setPCController(pc_controller);
 	}
 
 }

@@ -12,7 +12,12 @@ namespace hud
 {
 	class HudLayer: public HudWidget {
 	public:
-		HudLayer(PWorld world, const FRect &target_rect);
+		enum SlideMode {
+			slide_left,
+			slide_top,
+		};
+
+		HudLayer(const FRect &target_rect, SlideMode slide_mode = slide_left);
 		virtual ~HudLayer();
 
 		const FRect rect() const override;
@@ -20,17 +25,14 @@ namespace hud
 
 		virtual float backAlpha() const;
 
-		void setPC(game::PPlayableCharacter);
-		void sendOrder(game::POrder&&);
+		void setPCController(game::PPCController);
 		virtual bool canShow() const { return true; }
 
+	private:
+		SlideMode m_slide_mode;
+
 	protected:
-		virtual void onPCSet() { }
-
-		bool m_slide_left;
-
-		game::PWorld m_world;
-		game::PPlayableCharacter m_pc;
+		game::PPCController m_pc_controller;
 	};
 
 }

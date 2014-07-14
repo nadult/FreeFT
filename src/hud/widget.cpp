@@ -44,6 +44,9 @@ namespace hud {
 	}
 	
 	bool HudWidget::handleInput(const io::InputEvent &event) {
+		if(!isVisible())
+			return false;
+
 		io::InputEvent cevent = event;
 		cevent.translate(-rect().min);
 		bool focus_handled = false;

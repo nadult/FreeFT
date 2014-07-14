@@ -12,6 +12,7 @@
 #include "game/item.h"
 #include "game/visibility.h"
 #include "game/game_mode.h"
+#include "game/pc_controller.h"
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -55,9 +56,11 @@ namespace io {
 			return;
 
 		m_pc = new PlayableCharacter(pcs[0]);
+		m_pc_controller = new PCController(*m_world, m_pc);
+
 		m_actor_ref = m_pc? m_pc->entityRef() : EntityRef();
 		m_viewer.setSpectator(m_actor_ref);
-		m_hud->setPC(m_pc);
+		m_hud->setPCController(m_pc_controller);
 	}
 		
 	Actor *Controller::getActor() {
@@ -65,6 +68,11 @@ namespace io {
 		if(m_pc)
 			actor = m_world->refEntity<Actor>(m_pc->entityRef());
 		return actor;
+	}
+		
+	void Controller::sendOrder(game::POrder &&order) {
+		if(m_pc && m_world)
+			m_world->sendOrder(std::move(order), m_pc->entityRef());
 	}
 		
 	void Controller::onInput(const InputEvent &event) {
@@ -80,6 +88,20 @@ namespace io {
 
 		if(event.keyDown('H'))
 			m_hud->setVisible(m_hud->isVisible() ^ 1);
+		else if(event.keyDown('I'))
+			m_hud->showLayer(hud::layer_inventory);
+		else if(event.keyDown('C'))
+			m_hud->showLayer(hud::layer_character);
+		else if(event.keyDown('O'))
+			m_hud->showLayer(hud::layer_options);
+		else if(event.keyDown('V'))
+			m_hud->showLayer(hud::layer_class);
+		else if(event.keyDown('Q'))
+			m_pc_controller->setStance(Stance::stand);
+		else if(event.keyDown('A'))
+			m_pc_controller->setStance(Stance::crouch);
+		else if(event.keyDown('Z'))
+			m_pc_controller->setStance(Stance::prone);
 
 		if(event.mouseMoved() && mouse_over_hud) {
 			m_isect = m_full_isect = Intersection();

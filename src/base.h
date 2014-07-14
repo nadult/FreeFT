@@ -549,11 +549,15 @@ namespace game {
 	class GameMode;
 	class GameModeServer;
 	class GameModeClient;
+	class WorldViewer;
+	class EntityRef;
+	class PCController;
 
 	typedef Ptr<Sprite> PSprite;
 	typedef Ptr<World> PWorld;
 	typedef Ptr<Character> PCharacter;
 	typedef Ptr<PlayableCharacter> PPlayableCharacter;
+	typedef Ptr<PCController> PPCController;
 	typedef unique_ptr<GameMode> PGameMode;
 	typedef unique_ptr<Entity> PEntity;
 }

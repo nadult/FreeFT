@@ -31,6 +31,14 @@ namespace hud
 		bool handleInput(const io::InputEvent&);
 		bool handleEvent(const HudEvent&);
 
+		bool handleEvent(HudWidget *widget, HudEvent::Type event_type, int value = 0) {
+			return handleEvent(HudEvent(widget, event_type, value));
+		}
+
+		bool handleEvent(HudEvent::Type event_type, int value = 0) {
+			return handleEvent(nullptr, event_type, value);
+		}
+
 		void setRect(const FRect &rect) { m_rect = rect; }
 		void setPos(const float2 &pos) { m_rect += pos - m_rect.min; }
 		const FRect &targetRect() const { return m_rect; }
