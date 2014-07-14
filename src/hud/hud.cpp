@@ -62,8 +62,7 @@ namespace hud {
 	bool Hud::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::layer_changed) {
 			DASSERT(event.value >= layer_none && event.value < layer_count);
-
-			m_selected_layer = event.value;
+			m_selected_layer = event.value == m_selected_layer? layer_none : event.value;
 			if(m_selected_layer != layer_none)
 				setVisible(true, true);
 			return true;

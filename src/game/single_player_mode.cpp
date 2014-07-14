@@ -39,6 +39,8 @@ namespace game {
 			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
 			inventory.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
 			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 300);
+		
+			actor->setOrder(new EquipItemOrder(findProto("uzi", ProtoId::item_weapon)));
 		}
 	}
 		

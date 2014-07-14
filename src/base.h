@@ -40,6 +40,14 @@ inline constexpr bool isOneOf(const T &value, const Arg1 &arg1) { return value =
 template <class T, class Arg1, class ...Args>
 inline constexpr bool isOneOf(const T &value, const Arg1 &arg1, const Args&... args) { return value == arg1 || isOneOf(value, args...); }
 
+template <class T1, class T2>
+inline bool isOneOf(const T1 &value, const vector<T2> &vec) {
+	for(const auto &item : vec)
+		if(value == item)
+			return true;
+	return false;
+}
+
 // TODO: finish me
 class CString {
 public:

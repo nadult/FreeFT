@@ -7,7 +7,7 @@
 #define GAME_PC_CONTROLLER_H
 
 #include "game/base.h"
-#include "game/entity.h"
+#include "game/character.h"
 
 namespace game
 {
@@ -15,25 +15,26 @@ namespace game
 	// Playable character controller
 	class PCController: public RefCounter {
 	public:
-		PCController(World&, PPlayableCharacter);
+		PCController(World&, const PlayableCharacter&);
 		~PCController();
 
-		PPlayableCharacter pc() const { return m_pc; }
+		const PlayableCharacter &pc() const { return m_pc; }
+		const Actor *actor() const;
 		bool hasActor() const;
 
 		bool canChangeStance() const;
 		void setStance(Stance::Type);
 		int targetStance() const { return m_target_stance; }
+
+		void reload();
+
+		void sendOrder(game::POrder&&);
 	
 	private:
-		Actor *getActor() const;
-		void sendOrder(game::POrder&&);
-
 		int m_target_stance;
 
 		World &m_world;
-		PPlayableCharacter m_pc;
-		EntityRef m_actor_ref;
+		PlayableCharacter m_pc;
 	};
 
 }

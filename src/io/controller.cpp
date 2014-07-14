@@ -56,7 +56,7 @@ namespace io {
 			return;
 
 		m_pc = new PlayableCharacter(pcs[0]);
-		m_pc_controller = new PCController(*m_world, m_pc);
+		m_pc_controller = m_pc? new PCController(*m_world, *m_pc) : nullptr;
 
 		m_actor_ref = m_pc? m_pc->entityRef() : EntityRef();
 		m_viewer.setSpectator(m_actor_ref);
@@ -102,6 +102,8 @@ namespace io {
 			m_pc_controller->setStance(Stance::crouch);
 		else if(event.keyDown('Z'))
 			m_pc_controller->setStance(Stance::prone);
+		else if(event.keyDown('R'))
+			m_pc_controller->reload();
 
 		if(event.mouseMoved() && mouse_over_hud) {
 			m_isect = m_full_isect = Intersection();

@@ -100,45 +100,23 @@ namespace hud {
 
 	HudMainPanel::~HudMainPanel() { }
 		
-/*	void HudMainPanel::setActor(game::EntityRef actor_ref) {
-		if(actor_ref == m_actor_ref)
-			return;
-		m_actor_ref = actor_ref;
-
-		m_hud_inventory->setActor(m_actor_ref);
-		if(!m_actor_ref)
-			m_hud_inventory->setVisible(false);
-	}
-		
-	void HudMainPanel::setCharacter(game::PCharacter character) {
-		m_character = character;
-		m_hud_char_icon->setCharacter(m_character);
-	}*/
-		
 	bool HudMainPanel::onInput(const io::InputEvent &event) {
 		return false;
 	}
 	
-	template <class T>
-	static bool isOneOf(HudWidget *source, const vector<Ptr<T>> &widgets) {
-		for(auto &widget : widgets)
-			if(widget.get() == source)
-				return true;
-		return false;
-	}
-
 	bool HudMainPanel::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::button_clicked) {
 		   	HudButton *source = dynamic_cast<HudButton*>(event.source);
 			if(isOneOf(source, m_hud_buttons)) {
 				playSound(HudSound::button);
-				bool disable_all = source->isEnabled();
-				handleEvent(HudEvent::layer_changed, disable_all? layer_none : source->id());
+				handleEvent(HudEvent::layer_changed, source->id());
 			}
 			else if(isOneOf(source, m_hud_stances) && !source->isEnabled() && m_pc_controller->canChangeStance()) {
 				playSound(HudSound::button);
 				m_pc_controller->setStance((Stance::Type)source->id());
 			}
+			else if(m_hud_weapon == source)
+				m_pc_controller->reload();
 				
 			return true;
 		}
@@ -154,75 +132,21 @@ namespace hud {
 	void HudMainPanel::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
 
+		ASSERT(m_pc_controller); //TODO
+
 		int stance = m_pc_controller->targetStance();
 		for(auto &button: m_hud_stances)
 			button->setEnabled(button->id() == stance);
 
-	/*	if( const Actor *actor = m_world->refEntity<Actor>(m_actor_ref) ) {
+		const Actor *actor = m_pc_controller->actor();
+
+		if( actor)  {
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
+			m_hud_char_icon->setCharacter(new Character(m_pc_controller->pc().character()));
 
 			m_hud_weapon->setWeapon(actor->inventory().weapon());
 			m_hud_weapon->setAmmoCount(actor->inventory().ammo().count);
-
-			int stance_id = -1, sel_id = -1;
-			bool is_accel = false;
-
-			for(int n = 0; n < (int)m_hud_stances.size(); n++) {
-				if(m_hud_stances[n]->isPressed(mouse_pos, 0, &is_accel))
-					stance_id = n;
-				if(m_hud_stances[n]->isFocused())
-					sel_id = n;
-			}
-
-			if(handle_input || (is_accel && handle_accelerators)) {
-				if(stance_id != -1 && stance_id != sel_id) {
-					playSound(HudSound::button);
-
-					for(int n = 0; n < (int)m_hud_stances.size(); n++)
-						m_hud_stances[n]->setFocus(stance_id == n);
-				}
-
-				if(stance_id == -1 && sel_id == -1)
-					for(int n = 0; n < (int)m_hud_stances.size(); n++)
-						m_hud_stances[n]->setFocus(s_stance_buttons[n].stance_id == actor->stance());
-			}
-
-			bool is_pressed = m_hud_weapon->isPressed(mouse_pos, 0, &is_accel);
-			if(is_pressed && (handle_input || (is_accel && handle_accelerators))) {
-				const ActorInventory &inventory = actor->inventory();
-				const Weapon &weapon = inventory.weapon();
-				if(weapon.needAmmo() && inventory.ammo().count < weapon.maxAmmo()) {
-					int item_id = inventory.find(inventory.ammo().item);
-					if(item_id == -1) for(int n = 0; n < inventory.size(); n++)
-						if(weapon.canUseAmmo(inventory[n].item)) {
-							item_id = n;
-							break;
-						}
-					if(item_id != -1)
-						m_world->sendOrder(new EquipItemOrder(inventory[item_id].item), m_actor_ref);
-				}
-			}
 		}
-
-		{
-			int pressed_id = -1;
-
-			if(handle_input) for(int n = 0; n < (int)m_hud_buttons.size(); n++)
-				if(m_hud_buttons[n]->isPressed(mouse_pos))
-					pressed_id = n;
-
-			if(pressed_id != -1) {
-				bool is_disabling = pressed_id != -1 && m_selected_layer == s_buttons[pressed_id].id;
-				playSound(HudSound::button);
-				for(int n = 0; n < (int)m_hud_buttons.size(); n++)
-					m_hud_buttons[n]->setFocus(pressed_id == n && !is_disabling);
-			
-				m_selected_layer = is_disabling? layer_none : s_buttons[pressed_id].id;
-				if(m_selected_layer == layer_inventory && !m_actor_ref)
-					m_selected_layer = layer_none;
-			}
-
-		}*/
 	}
 
 }

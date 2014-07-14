@@ -23,6 +23,7 @@ namespace hud
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 
+		//TODO: change attack mode on right click
 		PHudWeapon m_hud_weapon;
 		PHudCharIcon m_hud_char_icon;
 		vector<PHudButton> m_hud_stances;
