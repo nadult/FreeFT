@@ -85,6 +85,7 @@ namespace game {
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 		const vector<PlayableCharacter> playableCharacters() const override { return m_current.pcs; }
 
+		//TODO: PC's identification
 		void setPlayerClassId(int id);
 		bool sendOrder(POrder &&order, EntityRef entity_ref) override;
 

@@ -31,9 +31,13 @@ namespace game
 		void unequipItem(const Item&);
 		void dropItem(const Item&, int count);
 
+		int classId() const;
+		void setClassId(int class_id);
+
 		void reload();
 
 		void sendOrder(game::POrder&&);
+		const World &world() const { return m_world; }
 	
 	private:
 		int m_target_stance;

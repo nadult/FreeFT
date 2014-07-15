@@ -75,6 +75,8 @@ namespace game {
 		
 	struct StartingEquipment {
 		int tier;
+		const char *class_name;
+
 		const char *armour;
 		const char *weapon;
 		const char *ammo;
@@ -82,13 +84,17 @@ namespace game {
 	};
 
 	static StartingEquipment s_equipments[] = {
-		{ 0, "leather_armour",		"uzi",				"9mm_ball",		200 },
-		{ 0, nullptr,				"ak47",				"762mm",		150 },
-		{ 0, nullptr,				"plasma_rifle",		"fusion_cell",	100 }
+		{ 0, "Scout",		"leather_armour",		"uzi",				"9mm_ball",		200 },
+		{ 0, "Infantry",	nullptr,				"ak47",				"762mm",		150 },
+		{ 0, "Sniper",		nullptr,				"laser_rifle",		"fusion_cell",	100 }
 	};
 
 	int CharacterClass::count() {
 		return COUNTOF(s_equipments);
+	}
+
+	const string CharacterClass::name() const {
+		return s_equipments[m_id].class_name;
 	}
 		
 	bool CharacterClass::isValidId(int id) {

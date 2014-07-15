@@ -87,8 +87,8 @@ namespace hud {
 		handleEvent(this, HudEvent::button_clicked, m_id);
 	}
 
-	Color HudButton::textColor() const {
-		Color out = lerp(Color(m_style.enabled_color, 160), m_style.enabled_color, m_enabled_time);
+	Color HudButton::textColor(bool force_enabled) const {
+		Color out = lerp(Color(m_style.enabled_color, 160), m_style.enabled_color, force_enabled? 1.0f : m_enabled_time);
 		return Color(out, u8(float(out.a) * alpha()));
 	}
 		

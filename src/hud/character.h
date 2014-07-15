@@ -22,9 +22,11 @@ namespace hud
 		HudCharacter(const FRect &target_rect);
 		~HudCharacter();
 
-		void onUpdate(double time_diff) override;
-
 	private:
+		void onUpdate(double time_diff) override;
+		bool onEvent(const HudEvent&) override;
+		void updateIcon(int offset);
+
 		int m_icon_id;
 		vector<pair<ProtoIndex, string>> m_icons;
 		Ptr<HudCharIcon> m_icon_box;

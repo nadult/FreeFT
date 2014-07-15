@@ -323,6 +323,12 @@ struct Rect
 };
 
 template <class Type2>
+inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &tl, const Type2 &br) {
+	rect.inset(tl, br);
+	return rect;
+}
+
+template <class Type2>
 bool operator==(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min == rhs.min && lhs.max == rhs.max; }
 template <class Type2>
 bool operator!=(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }

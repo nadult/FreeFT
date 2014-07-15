@@ -55,14 +55,26 @@ namespace hud {
 		attach(m_button_down.get());
 		attach(m_icon_box.get());
 		attach(m_name_edit_box.get());
+
+		updateIcon(0);
 	}
 		
 	HudCharacter::~HudCharacter() { }
 		
-	void HudCharacter::onUpdate(double time_diff) {
-		/*float bottom_line = rect().height() - s_bottom_size;
+	bool HudCharacter::onEvent(const HudEvent &event) {
+		if(event.type == HudEvent::button_clicked) {
+			if(m_button_up == event.source)
+				updateIcon(-1);
+			if(m_button_down == event.source)
+				updateIcon(1);
 
-		int num_icons = 0;
+			return true;
+		}
+
+		return false;
+	}
+		
+	void HudCharacter::updateIcon(int offset) {
 		ProtoIndex index = findProto("male", ProtoId::actor);
 
 		if(m_icon_id < 0 || m_icon_id >= (int)m_icons.size() || m_icons[m_icon_id].first != index)
@@ -73,38 +85,29 @@ namespace hud {
 					m_icon_id = n;
 		}
 
-		int max_row_offset = 0;
+		if(offset) {
+			int old_id = m_icon_id;
+			m_icon_id += offset;
 
-		if(m_button_up->isPressed(mouse_pos)) {
-			playSound(HudSound::button);
-			int old_id = m_icon_id++;
 			while(m_icon_id != old_id) {
-				if(m_icon_id >= (int)m_icons.size()) {
-					m_icon_id = 0;
-					continue;
-				}
-				if(m_icons[m_icon_id].first == index)
-					break;
-				m_icon_id++;
-			}
-		}
-		if(m_button_down->isPressed(mouse_pos)) {
-			playSound(HudSound::button);
-			int old_id = m_icon_id--;
-			while(m_icon_id != old_id) {
-				if(m_icon_id == -1) {
+				if(m_icon_id == -1)
 					m_icon_id = (int)m_icons.size() - 1;
-					continue;
+				else if(m_icon_id == (int)m_icons.size())
+					m_icon_id = 0;
+				else {
+					if(m_icons[m_icon_id].first == index)
+						break;
+					m_icon_id += offset;
 				}
-				if(m_icons[m_icon_id].first == index)
-					break;
-				m_icon_id--;
 			}
-		}
 
-		m_character = new Character("unnamed", m_icon_id == -1? "" : m_icons[m_icon_id].second, getProto(index).id);
-		m_icon_box->setCharacter(m_character);
-		//TODO: update icon_box afterwards?*/
+		}
+		
+		PCharacter character = new Character("unnamed", m_icon_id == -1? "" : m_icons[m_icon_id].second, getProto(index).id);
+		m_icon_box->setCharacter(character);
+	}
+
+	void HudCharacter::onUpdate(double time_diff) {
 	}
 
 }

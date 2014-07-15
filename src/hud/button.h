@@ -41,7 +41,7 @@ namespace hud
 		void setId(int id) { m_id = id; }
 		int id() const { return m_id; }
 		
-		virtual Color textColor() const;
+		virtual Color textColor(bool force_enabled = false) const;
 		virtual Color textShadowColor() const;
 		virtual Color backgroundColor() const;
 		virtual Color borderColor() const;

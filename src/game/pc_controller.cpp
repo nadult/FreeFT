@@ -7,6 +7,7 @@
 #include "game/character.h"
 #include "game/actor.h"
 #include "game/inventory.h"
+#include "game/game_mode.h"
 
 namespace game {
 
@@ -20,7 +21,7 @@ namespace game {
 		
 	const Actor *PCController::actor() const {
 		const Actor *out = m_world.refEntity<Actor>(m_pc.entityRef());
-		return out->isDead()? nullptr : out;
+		return out;
 	}
 	
 	void PCController::sendOrder(game::POrder &&order) {
@@ -76,6 +77,16 @@ namespace game {
 			if(item_id != -1)
 				sendOrder(new EquipItemOrder(inventory[item_id].item));
 		}
+	}
+		
+	int PCController::classId() const {
+		return m_pc.characterClass().id();
+	}
+
+	void PCController::setClassId(int class_id) {
+		GameModeClient *game_mode_client = dynamic_cast<GameModeClient*>(m_world.gameMode());
+		if(game_mode_client)
+			game_mode_client->setPlayerClassId(class_id);
 	}
 
 }

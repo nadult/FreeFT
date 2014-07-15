@@ -1,5 +1,7 @@
 TODO: prioritize bugs
 
+- Wrong number of players in lobby
+- Problems with item icon textures stored in cache
 - Problems with queuing orders
 - When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
 

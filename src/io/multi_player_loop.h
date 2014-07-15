@@ -16,12 +16,6 @@ namespace hud {
 
 	class MultiPlayerMenu: public HudLayer {
 	public:
-		MultiPlayerMenu(const FRect &rect);
-
-		void onUpdate(double time_diff) override;
-		void onDraw() const override;
-		float backAlpha() const override;
-
 		enum class ColumnType {
 			server_name,
 			map_name,
@@ -40,15 +34,23 @@ namespace hud {
 		struct ServerInfo: public net::ServerStatusChunk {
 			int ping;
 
-			FRect rect;
+			FRect rect, hit_rect;
 			bool is_mouse_over;
 			float over_time, selection_time;
 		};
+
+		MultiPlayerMenu(const FRect &rect);
+		float backAlpha() const override;
 
 		bool isClientReady() const;
 		net::PClient &&getClient();
 
 	protected:
+		void onUpdate(double time_diff) override;
+		bool onInput(const io::InputEvent&) override;
+		bool onEvent(const HudEvent&) override;
+		void onDraw() const override;
+
 		void updateRects();
 		const string cellText(int server_id, ColumnType) const;
 		void setMessage(const string&, Color color);

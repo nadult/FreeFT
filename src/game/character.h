@@ -54,6 +54,7 @@ namespace game
 		int id() const { return m_id; }
 		int tier() const { return m_tier; }
 		const ActorInventory inventory(bool equip) const;
+		const string name() const;
 
 		bool operator==(const CharacterClass &rhs) const;
 

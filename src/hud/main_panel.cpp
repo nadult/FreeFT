@@ -105,10 +105,14 @@ namespace hud {
 			if(isOneOf(source, m_hud_buttons)) {
 				handleEvent(HudEvent::layer_changed, source->id());
 			}
-			else if(isOneOf(source, m_hud_stances) && m_pc_controller->canChangeStance()) {
+
+			if(!m_pc_controller)
+				return false;
+
+			if(isOneOf(source, m_hud_stances) && m_pc_controller->canChangeStance()) {
 				m_pc_controller->setStance((Stance::Type)event.value);
 			}
-			else if(m_hud_weapon == source)
+			if(m_hud_weapon == source)
 				m_pc_controller->reload();
 				
 			return true;
@@ -132,20 +136,29 @@ namespace hud {
 	void HudMainPanel::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
 
-		ASSERT(m_pc_controller); //TODO
+		const Character *character = m_pc_controller? &m_pc_controller->pc().character() : nullptr;
+		const Actor *actor = m_pc_controller? m_pc_controller->actor() : nullptr;
 
-		int stance = m_pc_controller->targetStance();
-		for(auto &button: m_hud_stances)
+		int stance = m_pc_controller? m_pc_controller->targetStance() : -1;
+		if(actor && actor->isDead())
+			stance = Stance::prone;
+
+		for(auto &button: m_hud_stances) {
 			button->setEnabled(button->id() == stance);
+			button->setGreyed(stance == -1 || !actor || actor->isDead());
+		}
+			
+		m_hud_char_icon->setCharacter(character? new Character(*character) : nullptr);
 
-		const Actor *actor = m_pc_controller->actor();
-
-		if( actor)  {
+		if(actor) {
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);
-			m_hud_char_icon->setCharacter(new Character(m_pc_controller->pc().character()));
-
 			m_hud_weapon->setWeapon(actor->inventory().weapon());
 			m_hud_weapon->setAmmoCount(actor->inventory().ammo().count);
+		}
+		else {
+			m_hud_char_icon->setHP(0, 0);
+			m_hud_weapon->setWeapon(Item::dummyWeapon());
+			m_hud_weapon->setAmmoCount(0);
 		}
 	}
 

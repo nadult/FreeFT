@@ -98,7 +98,7 @@ namespace hud {
 			if(m_entry.count > 1)
 				m_font->draw(rect, {textColor(), textShadowColor(), HAlign::right}, format("%d", m_entry.count));
 			if(isDropping())
-				m_font->draw(rect, {textColor(), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
+				m_font->draw(rect, {textColor(true), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
 		}
 	}
 		
