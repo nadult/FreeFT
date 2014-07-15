@@ -34,7 +34,7 @@ namespace hud {
 
 	HudButton::HudButton(const FRect &rect, int id)
 		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_is_enabled(false), m_is_highlighted(false),
-	     m_icon_id(HudIcon::undefined), m_button_style(style_normal), m_id(id), m_accelerator(0) {
+	     m_icon_id(HudIcon::undefined), m_button_style(HudButtonStyle::normal), m_id(id), m_accelerator(0), m_click_sound(HudSound::button) {
 		m_icons_tex = gfx::DTexture::mgr["icons.png"];
 	}
 
@@ -52,7 +52,7 @@ namespace hud {
 
 		u8 border_alpha = clamp((int)(255 * this->alpha() * (0.3f + 0.7f * m_enabled_time * m_highlighted_time)), 0, 255);
 		Color border_color(m_style.border_color, border_alpha);
-		float border_offset = m_button_style == style_small? 2.5f : 5.0f;
+		float border_offset = m_button_style == HudButtonStyle::small? 2.5f : 5.0f;
 		float offset = lerp(border_offset, 0.0f, m_highlighted_time);
 		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
 
@@ -69,12 +69,17 @@ namespace hud {
 		if(event.mouseMoved()) {
 			m_is_highlighted = isMouseOver(event);
 		}
-		if( (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && isKeyDown(m_accelerator)) ) {
-			handleEvent(HudEvent(this, HudEvent::button_clicked, 0));
+		if( (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator)) ) {
+			onClick();
 			return true;
 		}
 
 		return false;
+	}
+		
+	void HudButton::onClick() {
+		playSound(m_click_sound);
+		handleEvent(this, HudEvent::button_clicked, m_id);
 	}
 
 	Color HudButton::enabledColor() const {
@@ -94,6 +99,79 @@ namespace hud {
 		m_is_enabled = is_enabled;
 		if(!animate)
 			m_enabled_time = m_is_enabled? 1.0f : 0.0f;
+	}
+		
+	HudClickButton::HudClickButton(const FRect &target_rect, int id)
+		:HudButton(target_rect, id), m_is_accelerator(false) { }
+
+	bool HudClickButton::onInput(const io::InputEvent &event) {
+		if(event.mouseMoved())
+			m_is_highlighted = isMouseOver(event);
+
+		if(isEnabled()) {
+			if(event.mouseKeyUp(0) && !m_is_accelerator) {
+				setEnabled(false);
+				return true;
+			}
+			if(m_accelerator && event.keyUp(m_accelerator) && m_is_accelerator) {
+				m_is_accelerator = false;
+				setEnabled(false);
+				return true;
+			}
+		}
+		else {
+			m_is_accelerator = m_accelerator && event.keyDown(m_accelerator);
+			if(m_is_accelerator || (event.mouseKeyDown(0) && isMouseOver(event))) {
+				setEnabled(true);
+				onClick();
+				return true;
+			}
+		}
+
+		return false;
+	}
+		
+	HudToggleButton::HudToggleButton(const FRect &target_rect, int id)
+		:HudButton(target_rect, id) { }
+		
+	bool HudToggleButton::onInput(const io::InputEvent &event) {
+		if(event.mouseMoved())
+			m_is_highlighted = isMouseOver(event);
+
+		if((event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator))) {
+			setEnabled(!isEnabled());
+			onClick();
+			return true;
+		}
+
+		return false;
+	}
+		
+	HudRadioButton::HudRadioButton(const FRect &target_rect, int id, int group_id)
+		:HudButton(target_rect, id), m_group_id(group_id) { }
+	
+	bool HudRadioButton::onInput(const io::InputEvent &event) {
+		if(event.mouseMoved())
+			m_is_highlighted = isMouseOver(event);
+		
+		bool clicked = (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator));
+		if(clicked && !isEnabled()) {
+			setEnabled(true);
+
+			if(parent()) {
+				const vector<PHudWidget> &children = parent()->children();
+				for(auto &child: children) {
+					HudRadioButton *radio = dynamic_cast<HudRadioButton*>(child.get());
+					if(radio && radio != this && radio->m_group_id == m_group_id)
+						radio->setEnabled(false);
+				}
+			}
+			
+			onClick();
+			return true;
+		}
+
+		return false;
 	}
 	
 }

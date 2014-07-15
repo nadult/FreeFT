@@ -51,6 +51,8 @@ namespace hud {
 			attach(layer.get());
 			layer->setVisible(false, false);
 		}
+
+		layout();
 	}
 
 	Hud::~Hud() { }
@@ -67,6 +69,8 @@ namespace hud {
 				setVisible(true, true);
 			return true;
 		}
+		else if(event.type == HudEvent::layout_needed)
+			layout();
 
 		return false;
 	}
@@ -75,23 +79,25 @@ namespace hud {
 		handleEvent(HudEvent::layer_changed, layer_id);
 	}
 
+	void Hud::layout() {
+		//TODO: canShow for layers
+		float2 main_panel_pos = m_main_panel->rect().min;
+
+		for(auto &layer: m_layers) {
+			layer->fitRectToChildren(float2(s_hud_main_panel_size), true);
+			FRect layer_rect = layer->targetRect();
+			layer->setPos(float2(layer_rect.min.x, main_panel_pos.y - layer_rect.height() - layer_spacing));
+		}
+	}
+
 	void Hud::onUpdate(double time_diff) {
 		bool any_other_visible = false;
 		for(int l = 0; l < layer_count; l++) {
 			if(m_layers[l]->isVisible() && m_selected_layer != l)
 				any_other_visible = true;
 		}
-
-		//TODO: canShow for layers
-		float2 main_panel_pos = m_main_panel->rect().min;
-
-		for(int l = 0; l < layer_count; l++) {
-			auto &layer = m_layers[l];
-			layer->setVisible(isVisible() && m_selected_layer == l && !any_other_visible);
-			layer->fitRectToChildren(float2(s_hud_main_panel_size), true);
-			FRect layer_rect = layer->targetRect();
-			layer->setPos(float2(layer_rect.min.x, main_panel_pos.y - layer_rect.height() - layer_spacing));
-		}
+		for(int l = 0; l < layer_count; l++)
+			m_layers[l]->setVisible(isVisible() && m_selected_layer == l && !any_other_visible);
 
 		m_main_panel->setLayerId(m_selected_layer);
 	}

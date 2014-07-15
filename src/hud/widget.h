@@ -58,12 +58,16 @@ namespace hud
 
 		void attach(Ptr<HudWidget>);
 		Ptr<HudWidget> detach(HudWidget*);
+		
+		const vector<PHudWidget> &children() const { return m_children; }
 
 	protected:
 		virtual void onUpdate(double time_diff) { }
 		virtual bool onInput(const io::InputEvent&) { return false; }
 		virtual bool onEvent(const HudEvent&) { return false; }
 		virtual void onDraw() const { }
+
+		HudWidget *parent() const { return m_parent; }
 		
 	private:
 		HudWidget *m_parent, *m_input_focus;

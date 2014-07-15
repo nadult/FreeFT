@@ -120,7 +120,7 @@ int fromString(const char *str, const char **strings, int count);
 		static const char *s_strings[] = { __VA_ARGS__ }; \
 		static_assert(COUNTOF(s_strings) == count, "String count does not match enum count"); \
 		const char *toString(int value) { \
-			DASSERT(value >= 0 && value < count); \
+			DASSERT(isValid(value)); \
 			return s_strings[value]; \
 		} \
 		Type fromString(const char *str) { \

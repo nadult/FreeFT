@@ -53,6 +53,18 @@ namespace hud
 		void setActor(game::EntityRef);
 		bool canShow() const override;
 
+		void updateData();
+		void layout();
+
+		struct Entry {
+			Item item;
+			int count;
+			bool is_equipped;
+
+			bool operator<(const Entry&) const;
+			bool operator==(const Entry&) const;
+		};
+
 	protected:
 		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
@@ -63,6 +75,7 @@ namespace hud
 		int m_row_offset;
 		int m_min_items;
 
+		vector<Entry> m_entries;
 		vector<PHudInventoryItem> m_buttons;
 		PHudButton m_button_up, m_button_down;
 		PHudItemDesc m_item_desc;

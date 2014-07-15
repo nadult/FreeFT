@@ -19,7 +19,6 @@ namespace hud
 		void setLayerId(int layer_id);
 
 	private:
-		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 

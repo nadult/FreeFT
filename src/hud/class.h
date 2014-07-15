@@ -12,19 +12,14 @@
 namespace hud
 {
 
-	class HudClassButton: public HudButton {
+	class HudClassButton: public HudRadioButton {
 	public:
 		enum { spacing = 17 };
 
 		HudClassButton(const FRect &rect);
 
-		void setId(int class_id);
-
 		void onDraw() const override;
 		Color backgroundColor() const override;
-
-	protected:
-		int m_class_id;
 	};
 
 	class HudClass: public HudLayer {

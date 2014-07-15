@@ -98,16 +98,17 @@ namespace hud
 		value += (maximize? 1.0f : -1.0f) * (1.0f - (value * value) * 0.9) * speed;
 		value = clamp(value, 0.0f, 1.0f);
 	}
-	
-	static const char *s_sound_names[(int)HudSound::count] = {
+
+	DEFINE_ENUM(HudSound,	
+		"",
 		"butn_text",
 		"butn_itemswitch",
 		"butn_optionknob"
-	};
+	);
 
-	void playSound(HudSound id) {
-		DASSERT(id >= (HudSound)0 && id < HudSound::count);
-		audio::playSound(s_sound_names[(int)id], 1.0f);
+	void playSound(HudSound::Type id) {
+		if(id != HudSound::none)
+			audio::playSound(HudSound::toString(id));
 	}
 
 

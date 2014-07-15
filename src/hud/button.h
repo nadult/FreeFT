@@ -25,22 +25,21 @@ namespace hud
 		close
 	);
 
+	DECLARE_ENUM(HudButtonStyle,
+		normal,
+		small
+	);
+
 	class HudButton: public HudWidget {
 	public:
-		enum Style {
-			style_normal,
-			style_small
-		};
-
 		HudButton(const FRect &target_rect, int id = 0);
-		virtual ~HudButton();
+		~HudButton();
 
+		void setButtonStyle(HudButtonStyle::Type style) { m_button_style = style; }
+
+		void setClickSound(HudSound::Type sound) { m_click_sound = sound; }
+		void setId(int id) { m_id = id; }
 		int id() const { return m_id; }
-		void setButtonStyle(Style style) { m_button_style = style; }
-
-		void onUpdate(double time_diff) override;
-		void onDraw() const override;
-		bool onInput(const io::InputEvent&) override;
 		
 		virtual Color enabledColor() const;
 		virtual Color enabledShadowColor() const;
@@ -58,18 +57,53 @@ namespace hud
 		void setAccelerator(int accel) { m_accelerator = accel; }
 
 	protected:
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
+		bool onInput(const io::InputEvent&) override;
+		void onClick();
+
 		gfx::PTexture m_icons_tex;
 		HudIcon::Type m_icon_id;
 
 		string m_text;
 		float m_enabled_time;
 		float m_highlighted_time;
-		Style m_button_style;
-		int m_id, m_accelerator;
+		HudButtonStyle::Type m_button_style;
+		HudSound::Type m_click_sound;
+		int m_id, m_group_id, m_accelerator;
 
 		bool m_is_enabled;
 		bool m_is_highlighted;
 	};
+
+	class HudClickButton: public HudButton {
+	public:
+		HudClickButton(const FRect &target_rect, int id = 0);
+	
+	protected:
+		bool onInput(const io::InputEvent&) override;
+
+		bool m_is_accelerator;
+	};
+
+	class HudToggleButton: public HudButton {
+	public:
+		HudToggleButton(const FRect &target_rect, int id = 0);
+	
+	protected:
+		bool onInput(const io::InputEvent&) override;
+	};
+
+	class HudRadioButton: public HudButton {
+	public:
+		HudRadioButton(const FRect &target_rect, int id = 0, int group_id = 0);
+
+	protected:
+		bool onInput(const io::InputEvent&) override;
+
+		int m_group_id;
+	};
+
 
 }
 

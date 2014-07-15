@@ -72,7 +72,7 @@ namespace hud {
 		m_buttons.push_back(button_connect);
 
 		for(auto &button : m_buttons)
-			button->setButtonStyle(HudButton::style_small);
+			button->setButtonStyle(HudButtonStyle::small);
 
 		attach(button_close.get());
 		attach(button_up.get());

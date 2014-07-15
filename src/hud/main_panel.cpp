@@ -29,15 +29,14 @@ namespace hud {
 
 		struct Button {
 			int layer_id;
-			int accelerator;
 			const char *name;
 		};
 
 		static Button s_buttons[] = {
-			{ layer_inventory,		'I',	"INV" },
-			{ layer_character,		'C',	"CHA" },
-			{ layer_options,		'O',	"OPT" },
-			{ layer_class,			'R',	"CLS" }
+			{ layer_inventory,		"INV" },
+			{ layer_character,		"CHAR" },
+			{ layer_options,		"OPT" },
+			{ layer_class,			"CLASS" }
 		};
 
 		struct StanceButton {
@@ -70,7 +69,7 @@ namespace hud {
 			stance_rect += float2(weapon_rect.max.x + spacing, bottom_left.y - s_hud_stance_size.y);
 
 			for(int n = 0; n < COUNTOF(s_stance_buttons); n++) {
-				PHudButton stance(new HudButton(stance_rect, s_stance_buttons[n].stance_id));
+				PHudButton stance(new HudRadioButton(stance_rect, s_stance_buttons[n].stance_id, 1));
 				stance->setIcon(s_stance_buttons[n].icon_id);
 				m_hud_stances.push_back(std::move(stance));
 
@@ -83,7 +82,7 @@ namespace hud {
 			button_rect += float2(char_rect.min.x - button_rect.min.x, 0.0f);
 
 			for(int n = 0; n < COUNTOF(s_buttons); n++) {
-				PHudButton button(new HudButton(button_rect, s_buttons[n].layer_id));
+				PHudButton button(new HudToggleButton(button_rect, s_buttons[n].layer_id));
 				button->setText(s_buttons[n].name);
 				m_hud_buttons.emplace_back(std::move(button));
 				button_rect += float2(button_rect.width() + spacing, 0.0f);
@@ -100,20 +99,14 @@ namespace hud {
 
 	HudMainPanel::~HudMainPanel() { }
 		
-	bool HudMainPanel::onInput(const io::InputEvent &event) {
-		return false;
-	}
-	
 	bool HudMainPanel::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::button_clicked) {
 		   	HudButton *source = dynamic_cast<HudButton*>(event.source);
 			if(isOneOf(source, m_hud_buttons)) {
-				playSound(HudSound::button);
 				handleEvent(HudEvent::layer_changed, source->id());
 			}
-			else if(isOneOf(source, m_hud_stances) && !source->isEnabled() && m_pc_controller->canChangeStance()) {
-				playSound(HudSound::button);
-				m_pc_controller->setStance((Stance::Type)source->id());
+			else if(isOneOf(source, m_hud_stances) && m_pc_controller->canChangeStance()) {
+				m_pc_controller->setStance((Stance::Type)event.value);
 			}
 			else if(m_hud_weapon == source)
 				m_pc_controller->reload();

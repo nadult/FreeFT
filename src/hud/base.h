@@ -17,13 +17,12 @@ namespace hud {
 	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width);
 	void animateValue(float &value, float speed, bool maximize);
 
-	enum class HudSound {
+	DECLARE_ENUM(HudSound,
+		none,
 		button,
 		item_equip,
-		error,
-
-		count
-	};
+		error
+	);
 
 	enum HudLayerId {
 		layer_none = -1,
@@ -47,6 +46,8 @@ namespace hud {
 			item_equipped,
 			item_unequipped,
 			item_dropped,
+
+			layout_needed
 		};
 
 		HudEvent(HudWidget *source, Type type, int value = 0) :source(source), type(type), value(value) { }
@@ -57,7 +58,7 @@ namespace hud {
 	};
 
 
-	void playSound(HudSound);
+	void playSound(HudSound::Type);
 
 	enum Alignment {
 		align_top,

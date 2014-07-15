@@ -24,19 +24,15 @@ namespace hud {
 		int m_max_buttons = 4;
 	}
 		
-	HudClassButton::HudClassButton(const FRect &rect) :HudButton(rect), m_class_id(-1) { }
+	HudClassButton::HudClassButton(const FRect &rect)
+		:HudRadioButton(rect, -1, 1) { }
 		
-	void HudClassButton::setId(int class_id) {
-		DASSERT(class_id == -1 || CharacterClass::isValidId(class_id));
-		m_class_id = class_id;
-	}
-
 	void HudClassButton::onDraw() const {
 		HudButton::onDraw();
 		FRect rect = this->rect();
 
-		if(m_class_id != -1) {
-			ActorInventory inv = CharacterClass(m_class_id).inventory(false);
+		if(m_id != -1) {
+			ActorInventory inv = CharacterClass(m_id).inventory(false);
 			float2 pos(spacing, rect.center().y);
 
 			for(int n = 0; n < inv.size(); n++) {

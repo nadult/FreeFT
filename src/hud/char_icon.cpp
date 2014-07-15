@@ -14,7 +14,9 @@ using namespace gfx;
 namespace hud {
 
 	HudCharIcon::HudCharIcon(const FRect &target_rect)
-		:HudButton(target_rect), m_current_hp(0), m_max_hp(0) { }
+		:HudButton(target_rect), m_current_hp(0), m_max_hp(0) {
+		setClickSound(HudSound::none);
+	}
 		
 	HudCharIcon::~HudCharIcon() { }
 

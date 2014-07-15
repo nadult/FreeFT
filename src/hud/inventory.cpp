@@ -7,6 +7,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/game_mode.h"
+#include "game/pc_controller.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include <algorithm>
@@ -59,7 +60,9 @@ namespace hud {
 		}
 	}
 
-	HudInventoryItem::HudInventoryItem(const FRect &rect) :HudButton(rect) { }
+	HudInventoryItem::HudInventoryItem(const FRect &rect) :HudButton(rect) {
+		setClickSound(HudSound::none);
+	}
 
 	void HudInventoryItem::onDraw() const {
 		HudButton::onDraw();
@@ -83,6 +86,14 @@ namespace hud {
 		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
 	}
 
+	bool HudInventory::Entry::operator<(const Entry &rhs) const {
+		return item.type() == rhs.item.type()? item.name() < rhs.item.name() : item.type() < rhs.item.type();
+	}
+	
+	bool HudInventory::Entry::operator==(const Entry &rhs) const {
+		return item == rhs.item && count == rhs.count && is_equipped == rhs.is_equipped;
+	}
+
 	HudInventory::HudInventory(const FRect &target_rect)
 		:HudLayer(target_rect), m_out_of_item_time(1.0f), m_drop_count(0), m_row_offset(0), m_min_items(0) {
 
@@ -95,19 +106,23 @@ namespace hud {
 				m_buttons.emplace_back(std::move(item));
 			}
 
-		m_button_up = new HudButton(FRect(s_button_size));
+		m_button_up = new HudClickButton(FRect(s_button_size), -1);
 		m_button_up->setIcon(HudIcon::up_arrow);
 		m_button_up->setAccelerator(Key::pageup);
+		m_button_up->setButtonStyle(HudButtonStyle::small);
 
-		m_button_down = new HudButton(FRect(s_button_size));
+		m_button_down = new HudClickButton(FRect(s_button_size), 1);
 		m_button_down->setIcon(HudIcon::down_arrow);
 		m_button_down->setAccelerator(Key::pagedown);
+		m_button_down->setButtonStyle(HudButtonStyle::small);
 
 		attach(m_button_up.get());
 		attach(m_button_down.get());
 
 		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(HudLayer::spacing, HudLayer::spacing));
 		m_item_desc->setVisible(false);
+
+		updateData();
 	}
 		
 	HudInventory::~HudInventory() { }
@@ -116,58 +131,46 @@ namespace hud {
 		return 1;//TODO m_pc && m_world->refEntity<Actor>(m_pc->entityRef());
 	}
 
-	namespace {
-
-		struct Entry {
-			Item item;
-			int count;
-			bool is_equipped;
-
-			bool operator<(const Entry &rhs) const {
-				return item.type() == rhs.item.type()? item.name() < rhs.item.name() : item.type() < rhs.item.type();
-			}
-		};
-
-		void extractEntries(vector<Entry> &out, const ActorInventory &inventory) {
-			ActorInventory temp = inventory;
-			temp.unequip(ItemType::armour);
-			temp.unequip(ItemType::ammo);
-			temp.unequip(ItemType::weapon);
-			
-			out.reserve(temp.size());
-			for(int n = 0; n < temp.size(); n++) {
-				bool is_equipped = inventory.armour() == temp[n].item || inventory.weapon() == temp[n].item ||
-								  (inventory.ammo().item == temp[n].item && inventory.ammo().count);
-				out.emplace_back(Entry{temp[n].item, temp[n].count, is_equipped});
-			}
-
-			std::sort(out.begin(), out.end());
-		}
-
-	}
-		
 	bool HudInventory::onInput(const io::InputEvent &event) {
 		return false;
 	}
 
 	bool HudInventory::onEvent(const HudEvent &event) {
+
 		return false;
 	}
+		
+	void HudInventory::updateData() {
+		vector<Entry> new_entries;
+	
+		if(!m_pc_controller)
+			return;	
+		const Actor *actor = m_pc_controller->actor();
+		const ActorInventory inventory = actor? actor->inventory() : ActorInventory();
 
-	void HudInventory::onUpdate(double time_diff) {
-/*		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
+		game::ActorInventory temp = inventory;
+		temp.unequip(ItemType::armour);
+		temp.unequip(ItemType::ammo);
+		temp.unequip(ItemType::weapon);
+		
+		new_entries.reserve(temp.size());
+		for(int n = 0; n < temp.size(); n++) {
+			bool is_equipped = inventory.armour() == temp[n].item || inventory.weapon() == temp[n].item ||
+							  (inventory.ammo().item == temp[n].item && inventory.ammo().count);
+	//		new_entries.emplace_back(Entry{temp[n].item, temp[n].count, is_equipped});
+		}
 
-		HudLayer::update(is_active, time_diff);
-		float2 mouse_pos = float2(getMousePos()) - rect().min;
-			
-		float bottom_line = rect().height() - s_bottom_size;
+//		std::sort(new_entries.begin(), new_entries.end());
 
-		if(!is_active)
+		if(new_entries != m_entries) {
+			m_entries = new_entries;
 			m_drop_item = Item::dummy();
+			layout();
+		}
+	}
 
-			//TODO: if m_drop_item not found in inventory, then clear
-
-		int max_row_offset = 0;
+	void HudInventory::layout() {
+	/*	int max_row_offset = 0;
 		{
 			vector<Entry> entries;
 			if(actor)
@@ -200,12 +203,8 @@ namespace hud {
 		}
 
 		{
-			HudStyle button_style = m_style;
-			button_style.border_offset *= 0.5f;
-			m_button_up->setStyle(button_style);
-			m_button_down->setStyle(button_style);
-			m_button_up  ->setPos(float2(rect().width() - HudWidget::spacing * 2 - s_button_size.x * 2, bottom_line + 5.0f));
-			m_button_down->setPos(float2(rect().width() - HudWidget::spacing * 1 - s_button_size.x * 1, bottom_line + 5.0f));
+			m_button_up  ->setPos(float2(rect().width() - spacing * 2 - s_button_size.x * 2, bottom_line + 5.0f));
+			m_button_down->setPos(float2(rect().width() - spacing * 1 - s_button_size.x * 1, bottom_line + 5.0f));
 			m_button_up->setVisible(m_row_offset > 0);
 			m_button_down->setVisible(m_row_offset < max_row_offset);
 
@@ -220,9 +219,24 @@ namespace hud {
 				playSound(HudSound::button);
 				m_row_offset++;
 			}
-		}
+		}*/
 
-		
+		handleEvent(HudEvent::layout_needed);
+	}
+
+	void HudInventory::onUpdate(double time_diff) {
+		HudLayer::onUpdate(time_diff);
+		float2 mouse_pos = float2(getMousePos()) - rect().min;
+			
+		float bottom_line = rect().height() - s_bottom_size;
+
+		updateData();
+//		if(!is_active)
+//			m_drop_item = Item::dummy();
+
+			//TODO: if m_drop_item not found in inventory, then clear
+
+	/*	
 		int over_item = -1;
 		for(int n = 0; n < (int)m_buttons.size(); n++)
 			if(m_buttons[n]->isMouseOver(mouse_pos)) {

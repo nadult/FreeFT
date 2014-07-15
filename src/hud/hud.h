@@ -22,6 +22,7 @@ namespace hud
 
 		void setVisible(bool is_visible, bool animate = true);
 		bool isVisible() const;
+		void layout();
 
 		void showLayer(int layer_id);
 		void setPCController(game::PPCController);

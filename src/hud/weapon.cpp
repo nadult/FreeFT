@@ -14,7 +14,9 @@ using namespace gfx;
 namespace hud {
 
 	HudWeapon::HudWeapon(const FRect &target_rect)
-		:HudButton(target_rect), m_attack_mode(AttackMode::undefined), m_ammo_count(0) { }
+		:HudButton(target_rect), m_attack_mode(AttackMode::undefined), m_ammo_count(0) {
+		setClickSound(HudSound::none);
+	}
 		
 	void HudWeapon::onDraw() const {
 		HudButton::onDraw();
