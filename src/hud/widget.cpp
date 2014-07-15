@@ -14,7 +14,8 @@ namespace hud {
 
 
 	HudWidget::HudWidget(const FRect &rect)
-		:m_parent(nullptr), m_input_focus(nullptr), m_rect(rect), m_visible_time(1.0), m_is_visible(true), m_anim_speed(10.0f) {
+		:m_parent(nullptr), m_input_focus(nullptr), m_rect(rect), m_visible_time(1.0), m_anim_speed(10.0f),
+		m_is_visible(true), m_needs_layout(true) {
 		setStyle(defaultStyle());
 	}
 
@@ -52,7 +53,7 @@ namespace hud {
 		bool focus_handled = false;
 
 		HudWidget *handled = nullptr;
-		if(m_input_focus && !cevent.mouseMoved()) {
+		if(m_input_focus && !cevent.mouseOver()) {
 			handled = m_input_focus;
 			if(m_input_focus->handleInput(cevent))
 				return true;
@@ -122,29 +123,45 @@ namespace hud {
 		m_children.push_back(std::move(child));
 	}
 		
+	void HudWidget::needsLayout() {
+		m_needs_layout = true;
+		if(m_parent)
+			m_parent->needsLayout();
+	}
+		
+	void HudWidget::layout() {
+		if(!m_needs_layout)
+			return;
+		for(auto &child: m_children)
+			child->layout();
+		onLayout();
+		m_needs_layout = false;
+	}
+		
 	void HudWidget::update(double time_diff) {
+		for(auto &child: m_children)
+			child->update(time_diff);
+		
 		animateValue(m_visible_time, time_diff * m_anim_speed, m_is_visible);
 		onUpdate(time_diff);
 
-		for(auto &child: m_children)
-			child->update(time_diff);
+		layout();
 	}
 	
 	void HudWidget::draw() const {
-		if(!isVisible())
-			return;
+		DASSERT(!m_needs_layout);
 
-		DTexture::unbind();
-		onDraw();
+		if(isVisible()) {
+			onDraw();
+	
+			float2 offset = rect().min;
 
-		float2 offset = rect().min;
-
-		glPushMatrix();
-		glTranslatef(offset.x, offset.y, 0.0f);
-		for(const auto &child: m_children)
-			child->draw();
-		glPopMatrix();
-
+			glPushMatrix();
+			glTranslatef(offset.x, offset.y, 0.0f);
+			for(const auto &child: m_children)
+				child->draw();
+			glPopMatrix();
+		}
 	}
 		
 	void HudWidget::setVisible(bool is_visible, bool animate) {

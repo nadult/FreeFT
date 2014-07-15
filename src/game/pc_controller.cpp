@@ -6,7 +6,7 @@
 #include "game/pc_controller.h"
 #include "game/character.h"
 #include "game/actor.h"
-
+#include "game/inventory.h"
 
 namespace game {
 
@@ -38,6 +38,24 @@ namespace game {
 		DASSERT(canChangeStance());
 		sendOrder(new ChangeStanceOrder(stance));
 		m_target_stance = stance;
+	}
+		
+	bool PCController::canEquipItem(const Item &item) const {
+		const Actor *actor = this->actor();
+		return actor && actor->canEquipItem(item);
+	}
+		
+	void PCController::equipItem(const Item &item) {
+		DASSERT(canEquipItem(item));
+		sendOrder(new EquipItemOrder(item));
+	}
+
+	void PCController::unequipItem(const Item &item) {
+		sendOrder(new UnequipItemOrder(item.type()));
+	}
+
+	void PCController::dropItem(const Item &item, int count) {
+		sendOrder(new DropItemOrder(item, count));
 	}
 		
 	void PCController::reload() {

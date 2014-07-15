@@ -35,8 +35,8 @@ namespace hud {
 		static Button s_buttons[] = {
 			{ layer_inventory,		"INV" },
 			{ layer_character,		"CHAR" },
-			{ layer_options,		"OPT" },
-			{ layer_class,			"CLASS" }
+			{ layer_class,			"CLASS" },
+			{ layer_options,		"OPT" }
 		};
 
 		struct StanceButton {

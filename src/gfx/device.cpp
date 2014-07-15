@@ -381,8 +381,7 @@ namespace gfx
 		
 		const int2 mouse_pos = getMousePos(), mouse_move = getMouseMove();
 
-		if(mouse_move != int2(0, 0))
-			out.push_back({InputEvent::mouse_moved, 0, mouse_move});
+		out.push_back({InputEvent::mouse_over, 0, mouse_move});
 		if(getMouseWheelMove())
 			out.push_back({InputEvent::mouse_wheel, 0, int2(getMouseWheelMove(), 0)});
 

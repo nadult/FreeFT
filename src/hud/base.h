@@ -43,11 +43,10 @@ namespace hud {
 			text_modified,
 
 			layer_changed,
-			item_equipped,
-			item_unequipped,
-			item_dropped,
-
-			layout_needed
+			item_equip,
+			item_unequip,
+			item_drop,
+			item_focused
 		};
 
 		HudEvent(HudWidget *source, Type type, int value = 0) :source(source), type(type), value(value) { }
@@ -100,7 +99,7 @@ namespace hud {
 	class HudWeapon;
 	class HudStance;
 	class HudCharIcon;
-	class HudInventoryItem;
+	class HudItemButton;
 	class HudItemDesc;
 
 	class HudMainPanel;
@@ -119,7 +118,7 @@ namespace hud {
 	typedef Ptr<HudWeapon> PHudWeapon;
 	typedef Ptr<HudStance> PHudStance;
 	typedef Ptr<HudCharIcon> PHudCharIcon;
-	typedef Ptr<HudInventoryItem> PHudInventoryItem;
+	typedef Ptr<HudItemButton> PHudItemButton;
 	typedef Ptr<HudItemDesc> PHudItemDesc;
 	typedef Ptr<Hud> PHud;
 	

@@ -54,7 +54,7 @@ namespace io {
 			mouse_key_down,
 			mouse_key_up,
 			mouse_key_pressed,
-			mouse_moved,
+			mouse_over,
 			mouse_wheel,
 		};
 
@@ -84,14 +84,14 @@ namespace io {
 		bool mouseKeyDown(int key) const;
 		bool mouseKeyUp(int key) const;
 		bool mouseKeyPressed(int key) const;
-		bool mouseMoved() const { return m_type == mouse_moved; }
+		bool mouseOver() const { return m_type == mouse_over; }
 
 		const float2 &mousePos() const {
 			DASSERT(m_type != invalid);
 			return m_mouse_pos;
 		}
 		const float2 &mouseMove() const {
-			DASSERT(m_type == mouse_moved);
+			DASSERT(m_type == mouse_over);
 			return m_mouse_move;
 		}
 		const int mouseWheel() const {

@@ -552,6 +552,7 @@ namespace game {
 	class Actor;
 	class Character;
 	class Inventory;
+	class Item;
 	class ActorInventory;
 	class PlayableCharacter;
 	class GameMode;

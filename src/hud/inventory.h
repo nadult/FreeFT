@@ -14,32 +14,51 @@
 namespace hud
 {
 
+	struct HudItemEntry {
+		HudItemEntry() :count(0), is_equipped(false) { }
+		HudItemEntry(Item item, int count, bool is_equipped)
+			:item(item), count(count), is_equipped(is_equipped) { }
+
+		Item item;
+		int count;
+		bool is_equipped;
+
+		bool operator<(const HudItemEntry&) const;
+		bool operator==(const HudItemEntry&) const;
+	};
+
 	class HudItemDesc: public HudButton {
 	public:
 		HudItemDesc(const FRect &rect);
 		void setItem(const Item &item) { m_item = item; }
-		void onDraw() const override;
 
 	protected:
+		void onDraw() const override;
+
 		Item m_item;
 	};
 
-	class HudInventoryItem: public HudButton {
+	class HudItemButton: public HudButton {
 	public:
-		HudInventoryItem(const FRect &rect);
-		void setItem(const Item &item) { m_item = item; }
-		void setCount(int count) { m_count = count; }
+		HudItemButton(const FRect &rect);
 
-		const Item &item() const { return m_item; }
-		int count() const { return m_count; }
+		void setEntry(const HudItemEntry&);
+		const HudItemEntry &entry() const { return m_entry; }
 
-		void onDraw() const override;
-		
 		Color backgroundColor() const override;
 
+		bool isDropping() const { return m_drop_count >= 0.0; }
+		int dropCount() const { return (int)m_drop_count; }
+
 	protected:
-		Item m_item;
-		int m_count;
+		bool onInput(const io::InputEvent&) override;
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
+
+		HudItemEntry m_entry;
+		double m_drop_count;
+		float  m_drop_diff;
+		float2 m_drop_start_pos;
 	};
 
 	class HudInventory: public HudLayer {
@@ -49,41 +68,25 @@ namespace hud
 		HudInventory(const FRect &target_rect);
 		~HudInventory();
 
-		float preferredHeight() const;
-		void setActor(game::EntityRef);
-		bool canShow() const override;
-
 		void updateData();
-		void layout();
 
-		struct Entry {
-			Item item;
-			int count;
-			bool is_equipped;
-
-			bool operator<(const Entry&) const;
-			bool operator==(const Entry&) const;
-		};
+		bool canShow() const override;
 
 	protected:
 		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
+		void onLayout() override;
 		void onDraw() const override;
 
 	private:
-		int m_row_offset;
-		int m_min_items;
+		int m_row_offset, m_max_row_offset;
 
-		vector<Entry> m_entries;
-		vector<PHudInventoryItem> m_buttons;
+		vector<HudItemEntry> m_entries;
+		vector<PHudItemButton> m_buttons;
 		PHudButton m_button_up, m_button_down;
 		PHudItemDesc m_item_desc;
 		float m_out_of_item_time;
-
-		float2 m_drop_start_pos;
-		game::Item m_drop_item;
-		double m_drop_count;
 	};
 
 }

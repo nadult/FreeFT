@@ -105,10 +105,10 @@ namespace io {
 		else if(event.keyDown('R'))
 			m_pc_controller->reload();
 
-		if(event.mouseMoved() && mouse_over_hud) {
+		if(event.mouseOver() && mouse_over_hud) {
 			m_isect = m_full_isect = Intersection();
 		}
-		else if(event.mouseMoved() && !mouse_over_hud) {
+		else if(event.mouseOver() && !mouse_over_hud) {
 			m_screen_ray = screenRay((int2)event.mousePos() + m_view_pos);
 
 			Flags::Type flags = Flags::walkable_tile | (Flags::entity & ~(Flags::projectile | Flags::impact | Flags::trigger));

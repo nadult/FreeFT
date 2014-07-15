@@ -1,5 +1,8 @@
 TODO: prioritize bugs
 
+- Problems with queuing orders
+- When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
+
 - Hud shortcuts doesn't work when it's hidden
 - Hud shortcuts work when writing to console
 

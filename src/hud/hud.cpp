@@ -51,8 +51,6 @@ namespace hud {
 			attach(layer.get());
 			layer->setVisible(false, false);
 		}
-
-		layout();
 	}
 
 	Hud::~Hud() { }
@@ -69,8 +67,6 @@ namespace hud {
 				setVisible(true, true);
 			return true;
 		}
-		else if(event.type == HudEvent::layout_needed)
-			layout();
 
 		return false;
 	}
@@ -79,7 +75,7 @@ namespace hud {
 		handleEvent(HudEvent::layer_changed, layer_id);
 	}
 
-	void Hud::layout() {
+	void Hud::onLayout() {
 		//TODO: canShow for layers
 		float2 main_panel_pos = m_main_panel->rect().min;
 

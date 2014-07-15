@@ -38,6 +38,7 @@ namespace hud {
 
 	void HudLayer::onDraw() const {
 		Color color = m_style.layer_color;
+		DTexture::unbind();
 		drawQuad(rect(), mulAlpha(color, backAlpha()));
 		drawBorder(rect(), mulAlpha(color, min(backAlpha() * 1.5f, 1.0f)), float2(0, 0), 100.0f);
 	}

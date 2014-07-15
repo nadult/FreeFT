@@ -49,7 +49,8 @@ namespace hud
 
 		void setEnabled(bool is_enabled, bool animate = true);
 		bool isEnabled() const { return m_is_enabled; }
-	
+
+		void setHighlighted(bool is_highlighted, bool animate = true);	
 		bool isHighlighted() const { return m_is_highlighted; }
 
 		void setText(const string &text) { m_text = text; }

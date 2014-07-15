@@ -48,6 +48,7 @@ namespace hud {
 
 	void HudButton::onDraw() const {
 		FRect rect = this->rect();
+		DTexture::unbind();
 		drawQuad(rect, backgroundColor());
 
 		u8 border_alpha = clamp((int)(255 * this->alpha() * (0.3f + 0.7f * m_enabled_time * m_highlighted_time)), 0, 255);
@@ -66,7 +67,7 @@ namespace hud {
 	}
 		
 	bool HudButton::onInput(const io::InputEvent &event) {
-		if(event.mouseMoved()) {
+		if(event.mouseOver()) {
 			m_is_highlighted = isMouseOver(event);
 		}
 		if( (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator)) ) {
@@ -94,6 +95,12 @@ namespace hud {
 	Color HudButton::backgroundColor() const {
 		return Color(m_style.back_color, (int)(alpha() * 127));
 	}
+		
+	void HudButton::setHighlighted(bool is_highlighted, bool animate) {
+		m_is_highlighted = is_highlighted;
+		if(!animate)
+			m_highlighted_time = m_is_highlighted? 1.0f : 0.0f;
+	}
 
 	void HudButton::setEnabled(bool is_enabled, bool animate) {
 		m_is_enabled = is_enabled;
@@ -105,7 +112,7 @@ namespace hud {
 		:HudButton(target_rect, id), m_is_accelerator(false) { }
 
 	bool HudClickButton::onInput(const io::InputEvent &event) {
-		if(event.mouseMoved())
+		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 
 		if(isEnabled()) {
@@ -135,7 +142,7 @@ namespace hud {
 		:HudButton(target_rect, id) { }
 		
 	bool HudToggleButton::onInput(const io::InputEvent &event) {
-		if(event.mouseMoved())
+		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 
 		if((event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator))) {
@@ -151,7 +158,7 @@ namespace hud {
 		:HudButton(target_rect, id), m_group_id(group_id) { }
 	
 	bool HudRadioButton::onInput(const io::InputEvent &event) {
-		if(event.mouseMoved())
+		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 		
 		bool clicked = (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator));

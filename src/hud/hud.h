@@ -22,7 +22,6 @@ namespace hud
 
 		void setVisible(bool is_visible, bool animate = true);
 		bool isVisible() const;
-		void layout();
 
 		void showLayer(int layer_id);
 		void setPCController(game::PPCController);
@@ -32,6 +31,7 @@ namespace hud
 		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
+		void onLayout() override;
 
 	private:
 		int m_selected_layer;

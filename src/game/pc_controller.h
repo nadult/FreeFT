@@ -26,6 +26,11 @@ namespace game
 		void setStance(Stance::Type);
 		int targetStance() const { return m_target_stance; }
 
+		bool canEquipItem(const Item&) const;
+		void equipItem(const Item&);
+		void unequipItem(const Item&);
+		void dropItem(const Item&, int count);
+
 		void reload();
 
 		void sendOrder(game::POrder&&);

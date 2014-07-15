@@ -299,6 +299,14 @@ struct Rect
 	Type2 center() const { return (max + min) / Type(2); }
 	Type surfaceArea() const { return (max.x - min.x) * (max.y - min.y); }
 
+	void setWidth(Type width) { max.x = min.x + width; }
+	void setHeight(Type height) { max.y = min.y + height; }
+	void setSize(const Type2 &size) { max = min + size; }
+	void inset(const Type2 &top_left, const Type2 &bottom_right) {
+		min -= top_left;
+		max += bottom_right;
+	}
+
 	Rect operator+(const Type2 &offset) const { return Rect(min + offset, max + offset); }
 	Rect operator-(const Type2 &offset) const { return Rect(min - offset, max - offset); }
 	Rect operator*(Type scale) const { return Rect(min * scale, max * scale); }

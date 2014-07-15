@@ -23,8 +23,10 @@ namespace hud
 		void operator=(const HudWidget&) = delete;
 		virtual ~HudWidget();
 		
-		virtual void setStyle(const HudStyle &style);
+		void setStyle(const HudStyle &style);
 
+		void needsLayout();
+		void layout();
 		void update(double time_diff);
 		void draw() const;
 		
@@ -63,6 +65,7 @@ namespace hud
 
 	protected:
 		virtual void onUpdate(double time_diff) { }
+		virtual void onLayout() { }
 		virtual bool onInput(const io::InputEvent&) { return false; }
 		virtual bool onEvent(const HudEvent&) { return false; }
 		virtual void onDraw() const { }
@@ -82,6 +85,7 @@ namespace hud
 		float m_visible_time;
 		float m_mouse_over_time;
 		bool m_is_visible;
+		bool m_needs_layout;
 	};
 
 }
