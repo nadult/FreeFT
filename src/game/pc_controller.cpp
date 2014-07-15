@@ -19,7 +19,8 @@ namespace game {
 	PCController::~PCController() { }
 		
 	const Actor *PCController::actor() const {
-		return m_world.refEntity<Actor>(m_pc.entityRef());
+		const Actor *out = m_world.refEntity<Actor>(m_pc.entityRef());
+		return out->isDead()? nullptr : out;
 	}
 	
 	void PCController::sendOrder(game::POrder &&order) {

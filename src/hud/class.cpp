@@ -50,7 +50,7 @@ namespace hud {
 				if(inv[n].count > 1) {
 					FRect trect = irect;
 					trect.max.y -= 5.0;
-					m_font->draw(trect, {enabledColor(), enabledShadowColor(), HAlign::right, VAlign::bottom}, format("%d", inv[n].count));
+					m_font->draw(trect, {textColor(), textShadowColor(), HAlign::right, VAlign::bottom}, format("%d", inv[n].count));
 				}
 				
 				pos.x += irect.width() + spacing;

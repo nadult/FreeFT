@@ -493,6 +493,7 @@ struct Color
 
 Color mulAlpha(Color color, float alpha);
 Color lerp(Color a, Color b, float value);
+Color desaturate(Color col, float value);
 
 inline bool operator==(const Color &lhs, const Color &rhs) { return lhs.rgba == rhs.rgba; }
 inline bool operator!=(const Color &lhs, const Color &rhs) { return lhs.rgba != rhs.rgba; }

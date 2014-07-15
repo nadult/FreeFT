@@ -29,6 +29,8 @@ namespace game {
 			inventory.add(findProto("ak47", ProtoId::item_weapon), 1);
 			inventory.add(findProto("beretta", ProtoId::item_weapon), 1);
 			inventory.add(findProto("gatling_laser", ProtoId::item_weapon), 1);
+			inventory.add(findProto("m60", ProtoId::item_weapon), 1);
+			inventory.add(findProto("pulse_rifle", ProtoId::item_weapon), 1);
 
 			inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
 			inventory.add(findProto("metal_armour", ProtoId::item_armour), 1);

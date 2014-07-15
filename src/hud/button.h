@@ -41,9 +41,10 @@ namespace hud
 		void setId(int id) { m_id = id; }
 		int id() const { return m_id; }
 		
-		virtual Color enabledColor() const;
-		virtual Color enabledShadowColor() const;
+		virtual Color textColor() const;
+		virtual Color textShadowColor() const;
 		virtual Color backgroundColor() const;
+		virtual Color borderColor() const;
 
 		float alpha() const { return m_visible_time; }
 
@@ -52,6 +53,9 @@ namespace hud
 
 		void setHighlighted(bool is_highlighted, bool animate = true);	
 		bool isHighlighted() const { return m_is_highlighted; }
+
+		void setGreyed(bool is_greyed, bool animate = true);
+		bool isGreyed() const { return m_is_greyed; }
 
 		void setText(const string &text) { m_text = text; }
 		void setIcon(HudIcon::Type icon) { m_icon_id = icon; }
@@ -69,10 +73,12 @@ namespace hud
 		string m_text;
 		float m_enabled_time;
 		float m_highlighted_time;
+		float m_greyed_time;
 		HudButtonStyle::Type m_button_style;
 		HudSound::Type m_click_sound;
 		int m_id, m_group_id, m_accelerator;
 
+		bool m_is_greyed;
 		bool m_is_enabled;
 		bool m_is_highlighted;
 	};

@@ -117,7 +117,14 @@ namespace hud {
 		return false;
 	}
 		
-	void HudMainPanel::setLayerId(int layer_id) {
+		
+	void HudMainPanel::setCanShowLayer(int layer_id, bool can_show) {
+		for(auto &button: m_hud_buttons)
+			if(button->id() == layer_id)
+				button->setGreyed(!can_show);
+	}
+
+	void HudMainPanel::setCurrentLayer(int layer_id) {
 		for(auto &button: m_hud_buttons)
 			button->setEnabled(button->id() == layer_id);
 	}

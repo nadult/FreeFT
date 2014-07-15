@@ -47,6 +47,12 @@ Color lerp(Color a, Color b, float value) {
 	return Color(lerp((float4)a, (float4)b, value));
 }
 
+Color desaturate(Color col, float value) {
+	float4 rgba(col);
+	float avg = sqrtf(rgba.x * rgba.x * 0.299f + rgba.y * rgba.y * 0.587f + rgba.z * rgba.z * 0.114f);
+	return lerp(col, Color(avg, avg, avg, rgba.w), value);
+}
+
 bool toBool(const char *input) {
 	CString str(input);
 	if(caseEqual(str, "true"))

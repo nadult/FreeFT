@@ -63,6 +63,9 @@ namespace hud {
 		if(event.type == HudEvent::layer_changed) {
 			DASSERT(event.value >= layer_none && event.value < layer_count);
 			m_selected_layer = event.value == m_selected_layer? layer_none : event.value;
+			if(m_selected_layer != layer_none && !m_layers[m_selected_layer]->canShow())
+				m_selected_layer = layer_none;
+
 			if(m_selected_layer != layer_none)
 				setVisible(true, true);
 			return true;
@@ -92,10 +95,15 @@ namespace hud {
 			if(m_layers[l]->isVisible() && m_selected_layer != l)
 				any_other_visible = true;
 		}
-		for(int l = 0; l < layer_count; l++)
-			m_layers[l]->setVisible(isVisible() && m_selected_layer == l && !any_other_visible);
+		if(m_selected_layer != layer_none && !m_layers[m_selected_layer]->canShow())
+			m_selected_layer = layer_none;
 
-		m_main_panel->setLayerId(m_selected_layer);
+		for(int l = 0; l < layer_count; l++) {
+			m_main_panel->setCanShowLayer(l, m_layers[l]->canShow());
+			m_layers[l]->setVisible(isVisible() && m_selected_layer == l && !any_other_visible);
+		}
+
+		m_main_panel->setCurrentLayer(m_selected_layer);
 	}
 
 	void Hud::setVisible(bool is_visible, bool animate) {

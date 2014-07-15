@@ -42,7 +42,7 @@ namespace hud {
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
-			FRect extents = m_big_font->draw(FRect(rect.min.x, 5.0f, rect.max.x, 5.0f), {enabledColor(), enabledShadowColor(), HAlign::center},
+			FRect extents = m_big_font->draw(FRect(rect.min.x, 5.0f, rect.max.x, 5.0f), {textColor(), textShadowColor(), HAlign::center},
 											 m_item.proto().name);
 			float ypos = extents.max.y + spacing;
 
@@ -52,7 +52,7 @@ namespace hud {
 
 			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
 			texture->bind();
-			drawQuad(FRect(pos, pos + size), uv_rect, enabledColor());
+			drawQuad(FRect(pos, pos + size), uv_rect, textColor());
 
 			ypos += size.y + 10.0f;
 			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
@@ -66,7 +66,7 @@ namespace hud {
 			else if(m_item.type() == ItemType::armour)
 				params_desc = Armour(m_item).paramDesc();
 
-			m_font->draw(float2(rect.min.x + 5.0f, ypos), {enabledColor(), enabledShadowColor()}, params_desc);
+			m_font->draw(float2(rect.min.x + 5.0f, ypos), {textColor(), textShadowColor()}, params_desc);
 		}
 	}
 
@@ -96,9 +96,9 @@ namespace hud {
 			drawQuad(FRect(pos, pos + size), uv_rect);
 
 			if(m_entry.count > 1)
-				m_font->draw(rect, {enabledColor(), enabledShadowColor(), HAlign::right}, format("%d", m_entry.count));
+				m_font->draw(rect, {textColor(), textShadowColor(), HAlign::right}, format("%d", m_entry.count));
 			if(isDropping())
-				m_font->draw(rect, {enabledColor(), enabledShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
+				m_font->draw(rect, {textColor(), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
 		}
 	}
 		
@@ -153,7 +153,7 @@ namespace hud {
 
 		for(int y = 0; y < s_grid_size.y; y++)
 			for(int x = 0; x < s_grid_size.x; x++) {
-				float2 pos(s_item_size.x * x + spacing * (x + 1), s_item_size.y * y + spacing * (y + 1));
+				float2 pos(s_item_size.x * x + item_spacing * (x + 1), s_item_size.y * y + item_spacing * (y + 1));
 				PHudItemButton item(new HudItemButton(FRect(pos, pos + s_item_size)));
 
 				attach(item.get());
@@ -174,13 +174,13 @@ namespace hud {
 		attach(m_button_down.get());
 
 		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(layer_spacing, layer_spacing));
-		m_item_desc->setVisible(false);
+		m_item_desc->setVisible(false, false);
 	}
 		
 	HudInventory::~HudInventory() { }
 		
 	bool HudInventory::canShow() const {
-		return 1;//TODO m_pc && m_world->refEntity<Actor>(m_pc->entityRef());
+		return m_pc_controller && m_pc_controller->actor();
 	}
 
 	bool HudInventory::onInput(const io::InputEvent &event) {
@@ -191,6 +191,9 @@ namespace hud {
 
 	bool HudInventory::onEvent(const HudEvent &event) {
 		ASSERT(m_pc_controller);
+
+		if(!canShow())
+			return false;
 
 		if(event.type == HudEvent::button_clicked) {
 			if(m_button_up == event.source && m_row_offset > 0)
@@ -238,8 +241,9 @@ namespace hud {
 	void HudInventory::updateData() {
 		vector<HudItemEntry> new_entries;
 	
-		if(!m_pc_controller)
-			return;	
+		if(!canShow())
+			return;
+
 		const Actor *actor = m_pc_controller->actor();
 		const ActorInventory inventory = actor? actor->inventory() : ActorInventory();
 
@@ -283,9 +287,9 @@ namespace hud {
 
 		m_button_up  ->setPos(float2(rect().width() - spacing * 2 - s_button_size.x * 2, bottom + 5.0f));
 		m_button_down->setPos(float2(rect().width() - spacing * 1 - s_button_size.x * 1, bottom + 5.0f));
-		m_button_up->setVisible(m_row_offset > 0, false);
-		m_button_down->setVisible(m_row_offset < m_max_row_offset, false);
 
+		m_button_up->setGreyed(m_row_offset == 0);
+		m_button_down->setGreyed(m_row_offset >= m_max_row_offset);
 	}
 
 	void HudInventory::onUpdate(double time_diff) {
@@ -299,7 +303,7 @@ namespace hud {
 		m_item_desc->setRect(desc_rect);
 
 		m_out_of_item_time += time_diff;
-		m_item_desc->setVisible(isVisible() && m_out_of_item_time < s_desc_visible_time);
+		m_item_desc->setVisible(isVisible() && !isHiding() && m_out_of_item_time < s_desc_visible_time);
 		m_item_desc->setEnabled(true, false);
 		m_item_desc->update(time_diff);
 		m_item_desc->layout();

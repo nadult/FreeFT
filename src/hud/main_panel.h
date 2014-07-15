@@ -16,7 +16,8 @@ namespace hud
 		HudMainPanel(const FRect &rect);
 		~HudMainPanel();
 	
-		void setLayerId(int layer_id);
+		void setCurrentLayer(int layer_id);
+		void setCanShowLayer(int layer_id, bool can_show);
 
 	private:
 		bool onEvent(const HudEvent&) override;
