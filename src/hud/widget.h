@@ -58,6 +58,8 @@ namespace hud
 
 		bool isMouseOver(const io::InputEvent&) const;
 		bool isMouseOver(const float2 &mouse_pos) const;
+		
+		virtual float alpha() const { return m_visible_time; }
 
 		void attach(Ptr<HudWidget>);
 		Ptr<HudWidget> detach(HudWidget*);

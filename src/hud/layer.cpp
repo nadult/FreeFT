@@ -9,6 +9,7 @@
 #include "game/game_mode.h"
 #include "game/actor.h"
 #include "game/pc_controller.h"
+#include "gfx/font.h"
 
 using namespace gfx;
 
@@ -18,8 +19,17 @@ namespace hud {
 		:HudWidget(rect), m_slide_mode(slide_mode) {
 		m_anim_speed = 5.0f;
 	}
+		
+	void HudLayer::setTitle(const string &title) {
+		m_title = title;
+		needsLayout();
+	}
 
 	HudLayer::~HudLayer() { }
+		
+	float HudLayer::topOffset() const {
+		return m_title.empty()? 0.0f : m_big_font->lineHeight() + layer_spacing;
+	}	
 		
 	const FRect HudLayer::rect() const {
 		FRect out = m_rect;
@@ -32,15 +42,41 @@ namespace hud {
 		return out;
 	}
 		
+	float HudLayer::alpha() const {
+		return 1.0f;
+	}
+		
 	float HudLayer::backAlpha() const {
-		return 0.3f;
+		return alpha() * 0.4f;
+	}
+		
+	Color HudLayer::backColor() const {
+		return mulAlpha(m_style.layer_color, backAlpha());
+	}
+
+	Color HudLayer::borderColor() const {
+		return mulAlpha(m_style.layer_color, min(backAlpha(), 1.0f));
+	}
+
+	Color HudLayer::titleColor() const {
+		return mulAlpha(m_style.enabled_color, (0.25f + 0.75f * pow(m_visible_time, 4.0f)) * alpha());
+	}
+		
+	Color HudLayer::titleShadowColor() const {
+		return Color(Color::black, titleColor().a);
 	}
 
 	void HudLayer::onDraw() const {
-		Color color = m_style.layer_color;
 		DTexture::unbind();
-		drawQuad(rect(), mulAlpha(color, backAlpha()));
-		drawBorder(rect(), mulAlpha(color, min(backAlpha() * 1.5f, 1.0f)), float2(0, 0), 100.0f);
+		FRect rect = this->rect();
+
+		drawQuad(rect, backColor());
+		drawBorder(rect, borderColor(), float2(0, 0), 100.0f);
+
+		if(!m_title.empty()) {
+			FRect font_rect = inset(rect, float2(spacing, layer_spacing));
+			m_big_font->draw(font_rect, {titleColor(), titleShadowColor()}, m_title);
+		}
 	}
 		
 	void HudLayer::setPCController(game::PPCController controller) {

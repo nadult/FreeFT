@@ -18,7 +18,7 @@ namespace hud {
 	
 	namespace {
 		const float2 s_item_size(70, 65);
-		const float2 s_item_desc_size(250, 300);
+		const float2 s_item_desc_size(280, 300);
 		const float2 s_button_size(15, 15);
 		const float s_bottom_size = 30.0f;
 		const float s_desc_visible_time = 1.0f;
@@ -35,16 +35,29 @@ namespace hud {
 	}
 
 	HudItemDesc::HudItemDesc(const FRect &rect)
-		:HudButton(rect) { }
+		:HudLayer(rect) {
+		m_anim_speed = 10.0f;
+	}
+		
+	const FRect HudItemDesc::rect() const {
+		return targetRect();
+	}
+		
+	float HudItemDesc::alpha() const {
+		return m_visible_time * HudLayer::alpha();
+	}
+		
+	void HudItemDesc::setItem(const Item &item) {
+		m_item = item;
+		setTitle(m_item.proto().name);
+	}
 	
 	void HudItemDesc::onDraw() const {
-		HudButton::onDraw();
+		HudLayer::onDraw();
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
-			FRect extents = m_big_font->draw(FRect(rect.min.x, 5.0f, rect.max.x, 5.0f), {textColor(), textShadowColor(), HAlign::center},
-											 m_item.proto().name);
-			float ypos = extents.max.y + spacing;
+			float ypos = topOffset() + rect.min.y;
 
 			FRect uv_rect;
 			gfx::PTexture texture = m_item.guiImage(false, uv_rect);
@@ -52,7 +65,7 @@ namespace hud {
 
 			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
 			texture->bind();
-			drawQuad(FRect(pos, pos + size), uv_rect, textColor());
+			drawQuad(FRect(pos, pos + size), uv_rect, mulAlpha(Color::white, alpha()));
 
 			ypos += size.y + 10.0f;
 			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
@@ -66,7 +79,7 @@ namespace hud {
 			else if(m_item.type() == ItemType::armour)
 				params_desc = Armour(m_item).paramDesc();
 
-			m_font->draw(float2(rect.min.x + 5.0f, ypos), {textColor(), textShadowColor()}, params_desc);
+			m_font->draw(float2(rect.min.x + 5.0f, ypos), {titleColor(), titleShadowColor()}, params_desc);
 		}
 	}
 
@@ -150,10 +163,11 @@ namespace hud {
 
 	HudInventory::HudInventory(const FRect &target_rect)
 		:HudLayer(target_rect), m_out_of_item_time(s_desc_visible_time), m_row_offset(0) {
+		setTitle("Inventory:");
 
 		for(int y = 0; y < s_grid_size.y; y++)
 			for(int x = 0; x < s_grid_size.x; x++) {
-				float2 pos(s_item_size.x * x + item_spacing * (x + 1), s_item_size.y * y + item_spacing * (y + 1));
+				float2 pos(s_item_size.x * x + item_spacing * (x + 1), s_item_size.y * y + item_spacing * (y + 1) + topOffset());
 				PHudItemButton item(new HudItemButton(FRect(pos, pos + s_item_size)));
 
 				attach(item.get());
@@ -298,13 +312,13 @@ namespace hud {
 			
 		updateData();
 
-		FRect desc_rect = m_item_desc->targetRect();
-		desc_rect.setHeight(rect().height() - layer_spacing * 2.0f);
+		FRect cur_rect = rect();
+		FRect desc_rect(float2(m_item_desc->targetRect().width(), cur_rect.height()));
+		desc_rect += float2(cur_rect.max.x + layer_spacing, cur_rect.min.y);
 		m_item_desc->setRect(desc_rect);
 
 		m_out_of_item_time += time_diff;
 		m_item_desc->setVisible(isVisible() && !isHiding() && m_out_of_item_time < s_desc_visible_time);
-		m_item_desc->setEnabled(true, false);
 		m_item_desc->update(time_diff);
 		m_item_desc->layout();
 	}
@@ -312,7 +326,8 @@ namespace hud {
 	void HudInventory::onDraw() const {
 		HudLayer::onDraw();
 
-		FRect layer_rect = m_item_desc->rect();
+		m_item_desc->draw();
+/*		FRect layer_rect = m_item_desc->rect();
 		layer_rect += float2(rect().max.x + layer_spacing, rect().min.y);
 		layer_rect = inset(layer_rect, -float2(layer_spacing, layer_spacing));
 		
@@ -322,7 +337,7 @@ namespace hud {
 		layer.setStyle(temp_style);
 		layer.attach(m_item_desc.get());
 		layer.layout();
-		layer.draw();
+		layer.draw();*/
 	}
 
 }

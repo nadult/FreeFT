@@ -54,8 +54,6 @@ namespace hud
 		virtual Color backgroundColor() const;
 		virtual Color borderColor() const;
 
-		float alpha() const { return m_visible_time; }
-
 		void setEnabled(bool is_enabled, bool animate = true);
 		bool isEnabled() const { return m_is_enabled; }
 

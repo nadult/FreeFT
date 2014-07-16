@@ -27,7 +27,9 @@ namespace hud {
 	HudCharacter::HudCharacter(const FRect &target_rect)
 		:HudLayer(target_rect) {
 
-		float2 pos(spacing, spacing);
+		setTitle("Character creation:");
+
+		float2 pos(spacing, spacing + topOffset());
 		m_icon_box = new HudCharIcon(FRect(s_hud_char_icon_size) + pos);
 		
 		pos.y += s_hud_char_icon_size.y + HudButton::spacing;
@@ -44,7 +46,7 @@ namespace hud {
 		m_icon_next->setAccelerator(Key::pagedown);
 		m_icon_next->setButtonStyle(HudButtonStyle::small);
 
-		pos = float2(s_hud_char_icon_size.x + spacing * 2, spacing);
+		pos = float2(s_hud_char_icon_size.x + spacing * 2, spacing + topOffset());
 		m_name_edit_box = new HudEditBox(FRect(s_name_size) + pos, Character::max_name_size, HudEditBox::mode_locase_nick);
 		m_name_edit_box->setLabel("Name: ");
 

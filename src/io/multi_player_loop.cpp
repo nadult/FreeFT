@@ -86,7 +86,7 @@ namespace hud {
 	}
 	
 	float MultiPlayerMenu::backAlpha() const {
-		return 0.6f;
+		return alpha() * 0.6f;
 	}
 		
 	void MultiPlayerMenu::updateRects() {

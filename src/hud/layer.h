@@ -20,9 +20,18 @@ namespace hud
 		HudLayer(const FRect &target_rect, SlideMode slide_mode = slide_left);
 		virtual ~HudLayer();
 
-		const FRect rect() const override;
+		void setTitle(const string &title);
 
+		const FRect rect() const override;
+		float topOffset() const;
+
+		float alpha() const override;
 		virtual float backAlpha() const;
+
+		virtual Color backColor() const;
+		virtual Color borderColor() const;
+		virtual Color titleColor() const;
+		virtual Color titleShadowColor() const;
 
 		void setPCController(game::PPCController);
 		virtual bool canShow() const { return true; }
@@ -34,6 +43,7 @@ namespace hud
 
 	private:
 		SlideMode m_slide_mode;
+		string m_title;
 	};
 
 }

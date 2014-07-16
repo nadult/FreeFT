@@ -27,10 +27,13 @@ namespace hud
 		bool operator==(const HudItemEntry&) const;
 	};
 
-	class HudItemDesc: public HudButton {
+	class HudItemDesc: public HudLayer {
 	public:
 		HudItemDesc(const FRect &rect);
-		void setItem(const Item &item) { m_item = item; }
+		void setItem(const Item &item);
+
+		const FRect rect() const override;
+		float alpha() const override;
 
 	protected:
 		void onDraw() const override;

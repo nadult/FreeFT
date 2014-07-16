@@ -68,10 +68,12 @@ namespace hud {
 	HudClass::HudClass(const FRect &target_rect)
 		:HudLayer(target_rect), m_offset(0), m_selected_id(-1) {
 
+		setTitle("Class selection:");
+
 		m_class_count = CharacterClass::count();
 		for(int n = 0; n < s_max_buttons; n++) {
 			float diff = s_item_height + spacing * 2;
-			float2 pos(HudButton::spacing, HudButton::spacing + (s_item_height + HudButton::spacing) * n);
+			float2 pos(HudButton::spacing, HudButton::spacing + (s_item_height + HudButton::spacing) * n + topOffset());
 			FRect rect(pos, pos + float2(target_rect.width() - HudButton::spacing * 2, s_item_height));
 			Ptr<HudClassButton> button(new HudClassButton(rect));
 			attach(button.get());

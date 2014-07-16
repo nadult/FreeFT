@@ -15,6 +15,7 @@ namespace hud {
 
 	HudOptions::HudOptions(const FRect &target_rect)
 		:HudLayer(target_rect) {
+		setTitle("Options:");
 	}
 		
 }

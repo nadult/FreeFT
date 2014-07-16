@@ -91,7 +91,7 @@ namespace hud {
 		playSound(m_click_sound);
 		handleEvent(this, HudEvent::button_clicked, m_id);
 	}
-
+		
 	Color HudButton::textColor(bool force_enabled) const {
 		Color out = lerp(Color(m_style.enabled_color, 160), m_style.enabled_color, force_enabled? 1.0f : m_enabled_time);
 		return Color(out, u8(float(out.a) * alpha()));
@@ -107,7 +107,7 @@ namespace hud {
 	}
 		
 	Color HudButton::borderColor() const {
-		u8 border_alpha = clamp((int)(255 * this->alpha() * (0.3f + 0.7f * m_enabled_time * m_highlighted_time)), 0, 255);
+		u8 border_alpha = clamp((int)(255 * alpha() * (0.3f + 0.7f * m_enabled_time * m_highlighted_time)), 0, 255);
 		Color color(m_style.border_color, border_alpha);
 		return desaturate(color, m_greyed_time);
 	}
