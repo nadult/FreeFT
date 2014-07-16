@@ -57,12 +57,12 @@ namespace hud {
 		button_rect -= float2(s_button_size.x + spacing, 0.0f);
 		button_rect.min.x -= 50.0f;
 		PHudButton button_refresh = new HudClickButton(button_rect);
-		button_refresh->setText("refresh");
+		button_refresh->setLabel("refresh");
 		
 		button_rect -= float2(button_rect.width() + spacing, 0.0f);
 		button_rect.min.x -= 20.0f;
 		PHudButton button_connect = new HudClickButton(button_rect);
-		button_connect->setText("connect");
+		button_connect->setLabel("connect");
 		button_connect->setAccelerator(Key::enter);
 
 		m_buttons.push_back(button_close);

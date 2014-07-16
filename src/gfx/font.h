@@ -46,8 +46,11 @@ namespace gfx
 		void load(Stream&);
 		void loadFromXML(const XMLDocument&);
 
-		const IRect evalExtents(const char *str) const;
-		const IRect evalExtents(const TextFormatter &fmt) const { return evalExtents(fmt.text()); }
+		const IRect evalExtents(const char *str, bool exact = false) const;
+		const IRect evalExtents(const TextFormatter &fmt, bool exact = false) const
+			{ return evalExtents(fmt.text(), exact); }
+		const IRect evalExtents(const string &str, bool exact = false) const
+			{ return evalExtents(str.c_str(), exact); }
 
 		const FRect draw(const FRect &rect, const FontStyle &style, const char *text) const;
 		const FRect draw(const FRect &rect, const FontStyle &style, const TextFormatter &fmt) const
@@ -90,6 +93,7 @@ namespace gfx
 		PTexture m_texture;
 
 		string m_face_name;
+		IRect m_max_rect;
 		int2 m_tex_size;
 		int m_line_height;
 		int m_text_base;

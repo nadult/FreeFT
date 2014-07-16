@@ -83,7 +83,7 @@ namespace hud {
 
 			for(int n = 0; n < COUNTOF(s_buttons); n++) {
 				PHudButton button(new HudToggleButton(button_rect, s_buttons[n].layer_id));
-				button->setText(s_buttons[n].name);
+				button->setLabel(s_buttons[n].name);
 				m_hud_buttons.emplace_back(std::move(button));
 				button_rect += float2(button_rect.width() + spacing, 0.0f);
 			}

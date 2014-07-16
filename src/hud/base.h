@@ -86,7 +86,8 @@ namespace hud {
 
 	DECLARE_ENUM(HudStyleId,
 		green_white,
-		red_green
+		red_green,
+		console
 	);
 
 	HudStyle getStyle(HudStyleId::Type);
@@ -101,6 +102,7 @@ namespace hud {
 	class HudCharIcon;
 	class HudItemButton;
 	class HudItemDesc;
+	class HudEditBox;
 
 	class HudMainPanel;
 	class HudInventory;
@@ -114,6 +116,7 @@ namespace hud {
 
 	typedef Ptr<HudWidget> PHudWidget;
 	typedef Ptr<HudButton> PHudButton;
+	typedef Ptr<HudButton> PHudEditBox;
 	typedef Ptr<HudLayer> PHudLayer;
 	typedef Ptr<HudWeapon> PHudWeapon;
 	typedef Ptr<HudStance> PHudStance;

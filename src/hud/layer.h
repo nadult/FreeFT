@@ -21,18 +21,19 @@ namespace hud
 		virtual ~HudLayer();
 
 		const FRect rect() const override;
-		void onDraw() const override;
 
 		virtual float backAlpha() const;
 
 		void setPCController(game::PPCController);
 		virtual bool canShow() const { return true; }
 
+	protected:
+		void onDraw() const override;
+		
+		game::PPCController m_pc_controller;
+
 	private:
 		SlideMode m_slide_mode;
-
-	protected:
-		game::PPCController m_pc_controller;
 	};
 
 }

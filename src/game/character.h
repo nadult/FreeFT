@@ -15,7 +15,7 @@ namespace game
 	class Character: public RefCounter {
 	public:
 		enum {
-			max_name_size = 20,
+			max_name_size = 14,
 			max_icon_name_size = 32,
 		};
 

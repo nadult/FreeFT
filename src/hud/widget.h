@@ -54,6 +54,7 @@ namespace hud
 		bool isHiding() const;
 
 		void setInputFocus(bool is_focused);
+		virtual void onInputFocus(bool is_focused) { }
 
 		bool isMouseOver(const io::InputEvent&) const;
 		bool isMouseOver(const float2 &mouse_pos) const;

@@ -34,7 +34,7 @@ namespace hud {
 
 	HudButton::HudButton(const FRect &rect, int id)
 		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_greyed_time(0.0f),
-		 m_is_enabled(false), m_is_highlighted(false), m_is_greyed(false),
+		 m_is_enabled(false), m_is_highlighted(false), m_is_greyed(false), m_draw_label(true),
 	     m_icon_id(HudIcon::undefined), m_button_style(HudButtonStyle::normal), m_id(id), m_accelerator(0), m_click_sound(HudSound::button) {
 		m_icons_tex = gfx::DTexture::mgr["icons.png"];
 	}
@@ -58,8 +58,8 @@ namespace hud {
 		float offset = lerp(border_offset, 0.0f, m_highlighted_time);
 		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
 
-		if(!m_text.empty())
-			m_font->draw(rect, {textColor(), textShadowColor(), HAlign::center, VAlign::center}, m_text);
+		if(!m_label.empty() && m_draw_label)
+			m_font->draw(rect, {textColor(), textShadowColor(), HAlign::center, VAlign::center}, m_label);
 
 		if(HudIcon::isValid(m_icon_id)) {
 			m_icons_tex->bind();

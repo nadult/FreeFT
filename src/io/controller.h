@@ -9,11 +9,12 @@
 #include "game/world.h"
 #include "game/visibility.h"
 
-namespace hud { class Hud; }
+namespace hud {
+	class Hud;
+	class HudConsole;
+}
 
 namespace io {
-
-	class Console;
 
 	class Controller {
 	public:
@@ -41,7 +42,7 @@ namespace io {
 		game::EntityRef m_actor_ref;
 		Ptr<game::PCController> m_pc_controller;
 
-		Ptr<Console> m_console;
+		Ptr<hud::HudConsole> m_console;
 		Ptr<hud::Hud> m_hud;
 
 		int2 m_resolution, m_view_pos;

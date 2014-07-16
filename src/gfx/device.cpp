@@ -392,7 +392,7 @@ namespace gfx
 				out.push_back({InputEvent::key_up, n, 0});
 			if(isKeyPressed(n))
 				out.push_back({InputEvent::key_pressed, n, 0});
-			if(isKeyDownAuto(n, 1))
+			if(isKeyDownAuto(n, 1) && !isKeyDown(n))
 				out.push_back({InputEvent::key_down_auto, n, s_clock});
 		}
 
@@ -406,14 +406,12 @@ namespace gfx
 		}
 		
 		int modifiers =
-			(isKeyDown(Key::lshift)? InputEvent::mod_lshift : 0) |
-			(isKeyDown(Key::rshift)? InputEvent::mod_rshift : 0) |
-			(isKeyDown(Key::lctrl)? InputEvent::mod_lctrl  : 0) |
-			(isKeyDown(Key::lalt)? InputEvent::mod_lalt   : 0);
-		for(int n = 0; n < (int)out.size(); n++) {
-			out[n].setModifiers(modifiers);
-			out[n].setMousePos(mouse_pos);
-		}
+			(isKeyPressed(Key::lshift)?	InputEvent::mod_lshift : 0) |
+			(isKeyPressed(Key::rshift)?	InputEvent::mod_rshift : 0) |
+			(isKeyPressed(Key::lctrl)?	InputEvent::mod_lctrl  : 0) |
+			(isKeyPressed(Key::lalt)?	InputEvent::mod_lalt   : 0);
+		for(int n = 0; n < (int)out.size(); n++)
+			out[n].init(modifiers, mouse_pos);
 		
 		return out;
 	}

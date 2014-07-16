@@ -57,7 +57,9 @@ namespace hud
 		void setGreyed(bool is_greyed, bool animate = true);
 		bool isGreyed() const { return m_is_greyed; }
 
-		void setText(const string &text) { m_text = text; }
+		void setLabel(const string &label) { m_label = label; }
+		const string &label() const { return m_label; }
+
 		void setIcon(HudIcon::Type icon) { m_icon_id = icon; }
 		void setAccelerator(int accel) { m_accelerator = accel; }
 
@@ -70,7 +72,7 @@ namespace hud
 		gfx::PTexture m_icons_tex;
 		HudIcon::Type m_icon_id;
 
-		string m_text;
+		string m_label;
 		float m_enabled_time;
 		float m_highlighted_time;
 		float m_greyed_time;
@@ -81,6 +83,7 @@ namespace hud
 		bool m_is_greyed;
 		bool m_is_enabled;
 		bool m_is_highlighted;
+		bool m_draw_label;
 	};
 
 	class HudClickButton: public HudButton {

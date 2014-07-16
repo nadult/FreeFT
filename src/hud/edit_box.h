@@ -12,12 +12,33 @@ namespace hud {
 
 	class HudEditBox: public HudButton {
 	public:
-		HudEditBox(const FRect &rect, int max_size);
+		enum EditMode {
+			mode_normal,
+			mode_nick,
+			mode_locase_nick,
+		};
 
-		void onUpdate(double time_diff) override;
-		void onDraw() const override;
+		HudEditBox(const FRect &rect, int max_size, EditMode mode = mode_normal, int id = 0);
+
+		void setText(const string&);
+		const string &text() const { return m_text; }
 
 	protected:
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
+		bool onInput(const io::InputEvent&) override;
+		void onInputFocus(bool is_focused) override;
+		void setCursorPos(const float2 &rect_pos);
+		const FRect evalExtents(const string &text) const;
+
+		bool onKey(int key);
+		bool isValidChar(int key);
+	
+		string m_text;
+		int m_max_size;
+		int m_cursor_pos;
+		EditMode m_mode;
+		double m_show_time;
 	};
 
 }

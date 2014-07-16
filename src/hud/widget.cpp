@@ -22,26 +22,27 @@ namespace hud {
 	HudWidget::~HudWidget() { }
 		
 	void HudWidget::setInputFocus(bool is_focused) {
-		if(!m_parent)
-			return;
-		if((m_parent->m_input_focus == this) == is_focused)
-			return;
+		if( m_parent && ((m_parent->m_input_focus == this) != is_focused) ) {
+			HudWidget *top = m_parent;
+			while(top->m_parent)
+				top = top->m_parent;
 
-		HudWidget *top = m_parent;
-		while(top->m_parent)
-			top = top->m_parent;
+			HudWidget *old_focus = top->m_input_focus;
+			while(old_focus) {
+				old_focus->m_parent->m_input_focus = nullptr;
+				old_focus = old_focus->m_input_focus;
+			}
 
-		HudWidget *old_focus = top->m_input_focus;
-		while(old_focus) {
-			old_focus->m_parent->m_input_focus = nullptr;
-			old_focus = old_focus->m_input_focus;
+			if(is_focused) {
+				HudWidget *current = m_parent;
+				while(current->m_parent) {
+					current->m_parent->m_input_focus = current;
+					current = current->m_parent;
+				}
+			}
 		}
 
-		HudWidget *current = m_parent;
-		while(current->m_parent) {
-			current->m_parent->m_input_focus = current;
-			current = current->m_parent;
-		}
+		onInputFocus(is_focused);
 	}
 	
 	bool HudWidget::handleInput(const io::InputEvent &event) {
@@ -169,6 +170,8 @@ namespace hud {
 		m_is_visible = is_visible;
 		if(!animate)
 			m_visible_time = m_is_visible? 1.0f : 0.0f;
+		if(!is_visible && m_parent && m_parent->m_input_focus == this)
+			setInputFocus(false);
 	}
 		
 	bool HudWidget::isVisible() const {

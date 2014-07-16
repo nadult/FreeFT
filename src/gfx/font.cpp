@@ -91,6 +91,12 @@ namespace gfx
 			}
 			ASSERT(kernings_count == 0);
 		}
+
+		m_max_rect = IRect(0, 0, 0, 0);
+		for(auto &character: m_chars) {
+			IRect rect = IRect(character.second.size) + character.second.offset;
+			m_max_rect = sum(m_max_rect, rect);
+		}
 	}
 
 	static int convertToWChar(const char *str, wchar_t *wstr, int buffer_size) {
@@ -101,13 +107,18 @@ namespace gfx
 		return (int)(len == (size_t)-1? 0 : len);
 	}
 
-	const IRect Font::evalExtents(const char *str) const {
+	const IRect Font::evalExtents(const char *str, bool exact) const {
 		int len = strlen(str);
 		PodArray<wchar_t> wstr(len);
 		len = convertToWChar(str, wstr.data(), len);
 
 		IRect rect(0, 0, 0, 0);
 		int2 pos(0, 0);
+
+		if(!len && !exact) {
+			rect = m_max_rect;
+			rect.setWidth(0);
+		}
 
 		for(int n = 0; n < len; n++) {
 			if(wstr[n] == '\n') {
@@ -124,7 +135,15 @@ namespace gfx
 
 			const Character &chr = char_it->second;
 		
-			IRect new_rect(pos + chr.offset, pos + chr.offset + chr.size);
+			IRect new_rect;
+			if(exact) {
+				new_rect = IRect(pos + chr.offset, pos + chr.offset + chr.size);
+			}
+			else {
+				new_rect = m_max_rect + pos;
+				new_rect.setWidth(wstr[n] == ' '? chr.x_advance : chr.offset.x + chr.size.x);
+			}
+
 			rect = n == 0? new_rect : rect + new_rect;
 			if(n + 1 < len) {
 				pos.x += chr.x_advance;
@@ -199,6 +218,7 @@ namespace gfx
 		if(style.halign != HAlign::left || style.valign != VAlign::top) {
 			FRect extents = (FRect)evalExtents(text);
 			float2 center = rect.center() - extents.center();
+			//TODO: Better veritcal alignment
 
 			pos.x = style.halign == HAlign::left?	rect.min.x :
 					style.halign == HAlign::center? center.x :

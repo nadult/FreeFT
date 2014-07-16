@@ -32,8 +32,8 @@ namespace hud {
 		m_icon_box = new HudCharIcon(FRect(s_hud_char_icon_size) + pos);
 		
 		pos.x += s_hud_char_icon_size.x + spacing;
-		m_name_edit_box = new HudEditBox(FRect(s_name_size) + pos, 20);
-		m_name_edit_box->setText("Name: ");
+		m_name_edit_box = new HudEditBox(FRect(s_name_size) + pos, Character::max_name_size, HudEditBox::mode_locase_nick);
+		m_name_edit_box->setLabel("Name: ");
 
 		pos.y += s_hud_char_icon_size.y + HudButton::spacing;
 		pos.x = m_icon_box->rect().center().x - s_button_size.x - spacing * 0.5f;

@@ -114,29 +114,21 @@ namespace hud
 
 	DEFINE_ENUM(HudStyleId,
 		"Whiteish Green",
-		"Greenish Red"
+		"Greenish Red",
+		"Console"
 	);
 		
 	HudStyle getStyle(HudStyleId::Type style_id) {
 		DASSERT(HudStyleId::isValid(style_id));
 		if(style_id == HudStyleId::green_white)
-			return HudStyle{
-				Color(150, 200, 150),
-				Color(30, 255, 60),
-				Color(30, 255, 60),
-				Color::white,
-				"transformers_20",
-				"transformers_30"
-			};
-		else //style_id == HudStyleId::red_green)
-			return HudStyle{
-				Color::green,
-				Color(255, 60, 30),
-				Color(255, 60, 30),
-				Color::white,
-				"transformers_20",
-				"transformers_30"
-			};
+			return HudStyle{	Color(150, 200, 150),	Color(30, 255, 60),		Color(30, 255, 60),		Color::white,
+								"transformers_20",		"transformers_30" };
+		else if(style_id == HudStyleId::red_green)
+			return HudStyle{	Color::green,			Color(255, 60, 30),		Color(255, 60, 30),		Color::white,
+								"transformers_20",		"transformers_30" };
+		else //if(style_id == HudStyleId::console)
+			return HudStyle{	Color::green,			Color(255, 60, 30),		Color(255, 60, 30),		Color::white,
+								"liberation_16",		"liberation_24"   };
 	}
 }
 

@@ -4,7 +4,6 @@
  */
 
 #include "io/controller.h"
-#include "io/console.h"
 #include "io/input.h"
 #include "sys/profiler.h"
 
@@ -20,6 +19,7 @@
 #include "audio/device.h"
 
 #include "gfx/texture.h"
+#include "hud/console.h"
 #include "hud/hud.h"
 
 using namespace gfx;
@@ -30,7 +30,7 @@ namespace io {
 	Controller::Controller(const int2 &resolution, PWorld world, bool show_stats)
 	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_stats(show_stats) {
 		DASSERT(world);
-		m_console = new Console(resolution);
+		m_console = new hud::HudConsole(resolution);
 		m_hud = new hud::Hud(world);
 
 		m_game_mode = m_world->gameMode();
@@ -76,17 +76,18 @@ namespace io {
 	}
 		
 	void Controller::onInput(const InputEvent &event) {
-		bool is_handled = m_console->isOpened()? m_console->onInput(event) : m_hud->handleInput(event);
-
-		if(is_handled)
+		if(m_console->handleInput(event) || m_hud->handleInput(event))
 			return;
+
 		bool mouse_over_hud = m_console->isMouseOver(event) || m_hud->isMouseOver(event);
 		
 		Actor *actor = getActor();
 		if(actor && actor->isDead())
 			actor = nullptr;
 
-		if(event.keyDown('H'))
+		if(event.keyDown('`'))
+			m_console->setVisible(m_console->isVisible() ^ 1);
+		else if(event.keyDown('H'))
 			m_hud->setVisible(m_hud->isVisible() ^ 1);
 		else if(event.keyDown('I'))
 			m_hud->showLayer(hud::layer_inventory);
@@ -232,8 +233,6 @@ namespace io {
 		m_last_path.visualize(3, renderer);*/
 		renderer.render();
 
-		lookAt(m_view_pos);
-
 		/*{ // Drawing cursor
 			lookAt({0, 0});
 			DTexture::unbind();
@@ -241,8 +240,7 @@ namespace io {
 			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 		}*/
 
-		lookAt({0, -m_console->size().y});
-		
+		lookAt({0, 0});
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
 		float3 isect_pos = ray.at(m_isect.distance());
 

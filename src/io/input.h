@@ -68,8 +68,7 @@ namespace io {
 		InputEvent() :m_type(invalid) { }
 		InputEvent(Type key_type, int key, int iter);
 		InputEvent(Type mouse_type, int key, const int2 &mouse_move);
-		void setMousePos(const int2 &pos);	
-		void setModifiers(int flags);
+		void init(int flags, const int2 &mouse_pos);	
 		void translate(const float2 &offset);
 
 		Type type() const { return m_type; }
@@ -80,6 +79,14 @@ namespace io {
 		bool keyUp(int key) const;
 		bool keyPressed(int key) const;
 		bool keyDownAuto(int key, int period = 1) const;
+		int key() const {
+			DASSERT(m_type >= key_down && m_type <= key_pressed);
+			return m_key;
+		}
+		int keyChar() const {
+			DASSERT(m_type >= key_down && m_type <= key_pressed);
+			return m_key_char;
+		}
 
 		bool mouseKeyDown(int key) const;
 		bool mouseKeyUp(int key) const;
@@ -105,7 +112,7 @@ namespace io {
 		
 	private:
 		float2 m_mouse_pos, m_mouse_move;
-		int m_key, m_iteration, m_modifiers;
+		int m_key, m_key_char, m_iteration, m_modifiers;
 		Type m_type;
 	};
 
