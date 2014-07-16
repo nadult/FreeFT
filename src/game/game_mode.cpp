@@ -39,11 +39,11 @@ namespace game {
 		return spawn_zones.empty()? EntityRef() : spawn_zones[rand() % spawn_zones.size()]->ref();
 	}
 
-	EntityRef GameMode::spawnActor(EntityRef spawn_zone_ref, const Proto &proto) {
+	EntityRef GameMode::spawnActor(EntityRef spawn_zone_ref, const Proto &proto, const ActorInventory &inv) {
 		const Trigger *spawn_zone = m_world.refEntity<Trigger>(spawn_zone_ref);
 		DASSERT(spawn_zone);
 
-		PEntity actor = (PEntity)new Actor(proto);
+		PEntity actor = (PEntity)new Actor(proto, inv);
 
 		FBox spawn_box = spawn_zone->boundingBox();
 		float3 spawn_pos = spawn_box.center();
@@ -73,7 +73,7 @@ namespace game {
 		int count = sr.decodeInt();
 		pcs.clear();
 		pcs.reserve(count);
-		for(int n = 0; n < count; n++)
+		for(int n = 0; n < count; n++) 
 			pcs.emplace_back(PlayableCharacter(sr));
 	}
 		
@@ -82,7 +82,6 @@ namespace game {
 	}
 
 	void GameModeServer::tick(double time_diff) {
-
 	}
 
 	void GameModeServer::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
@@ -136,7 +135,10 @@ namespace game {
 	void GameModeServer::onClientDisconnected(int client_id) {
 		auto del_it = m_clients.find(client_id);
 		if(del_it != m_clients.end()) {
+			for(auto &pc : del_it->second.pcs)
+				m_world.removeEntity(pc.entityRef());
 			m_clients.erase(del_it);
+
 			for(auto it = m_clients.begin(); it != m_clients.end(); ++it) {
 				net::TempPacket chunk;
 				chunk << MessageId::remove_client;
@@ -150,11 +152,11 @@ namespace game {
 		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
 		DASSERT(pc_id >= 0 && pc_id < (int)m_clients[client_id].pcs.size());
 
-		GameClient &client = m_clients[client_id];
+		GameClient client = m_clients[client_id];
 		PlayableCharacter &pc = client.pcs[pc_id];
 		if(pc.entityRef())
 			m_world.removeEntity(pc.entityRef());
-		EntityRef actor_ref = spawnActor(spawn_zone, pc.character().proto());
+		EntityRef actor_ref = spawnActor(spawn_zone, pc.character().proto(), pc.characterClass().inventory(false));
 		Actor *actor = m_world.refEntity<Actor>(actor_ref);
 		DASSERT(actor);
 		actor->setClientId(client_id);
@@ -162,8 +164,11 @@ namespace game {
 		updateClient(client_id, client);
 	}
 
-	GameModeClient::GameModeClient(World &world, int client_id) :GameMode(world), m_current_id(client_id) {
+	GameModeClient::GameModeClient(World &world, int client_id, const string &nick_name)
+		:GameMode(world), m_current_id(client_id) {
+		m_current.nick_name = nick_name;
 		ASSERT(world.isClient());
+		m_max_pcs = 1;
 	}
 	
 	void GameModeClient::tick(double time_diff) {
@@ -176,6 +181,9 @@ namespace game {
 			int new_id = sr.decodeInt();
 			sr >> new_client;
 			m_others[new_id] = new_client;
+
+			if(new_id == m_current_id)
+				m_current = new_client;
 		}
 		else if(msg_type == MessageId::remove_client) {
 			int remove_id = sr.decodeInt();
@@ -185,16 +193,43 @@ namespace game {
 		}
 	}
 	
-	void GameModeClient::setPlayerClassId(int id) {
-		//m_player_class_id = id;
-	}
-
 	bool GameModeClient::sendOrder(POrder &&order, EntityRef entity_ref) {
 		net::TempPacket chunk;
 		chunk << MessageId::actor_order;
 		chunk << entity_ref << order;
 		m_world.sendMessage(chunk);
 		return true;
+	}
+		
+	bool GameModeClient::addPC(const Character &character) {
+		if((int)m_current.pcs.size() >= m_max_pcs)
+			return false;
+
+		for(const auto &pc : m_current.pcs)
+			if(pc.character().name() == character.name())
+				return false;
+
+		PlayableCharacter new_char(character);
+		m_current.pcs.push_back(new_char);	
+		net::TempPacket chunk;
+		chunk << MessageId::update_client;
+		chunk << m_current;
+		m_world.sendMessage(chunk);
+		return true;
+	}
+		
+	bool GameModeClient::setPCClass(const Character &character, const CharacterClass &char_class) {
+		for(auto &pc : m_current.pcs)
+			if(pc.character() == character) {
+				pc.setCharacterClass(char_class);
+				net::TempPacket chunk;
+				chunk << MessageId::update_client;
+				chunk << m_current;
+				m_world.sendMessage(chunk);
+				return true;
+			}
+
+		return false;
 	}
 
 }

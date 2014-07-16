@@ -304,6 +304,8 @@ namespace hud {
 
 		m_button_up->setGreyed(m_row_offset == 0);
 		m_button_down->setGreyed(m_row_offset >= m_max_row_offset);
+		m_button_up->setVisible(!m_entries.empty());
+		m_button_down->setVisible(!m_entries.empty());
 	}
 
 	void HudInventory::onUpdate(double time_diff) {

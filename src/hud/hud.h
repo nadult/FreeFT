@@ -24,6 +24,7 @@ namespace hud
 		bool isVisible() const;
 
 		void showLayer(int layer_id);
+		void setWorld(game::PWorld);
 		void setPCController(game::PPCController);
 		HudMainPanel *mainPanel() { return m_main_panel.get(); }
 

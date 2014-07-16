@@ -21,7 +21,7 @@ namespace game
 
 		// TODO: different icons match different protos
 		Character(const string &name, const string &icon_name, const string &proto_name);
-		Character(Stream&);
+		explicit Character(Stream&);
 
 		void save(Stream&) const;
 		void load(Stream&);
@@ -66,6 +66,7 @@ namespace game
 	class PlayableCharacter: public RefCounter {
 	public:
 		PlayableCharacter(const Character &character);
+		explicit PlayableCharacter(Stream&);
 		~PlayableCharacter();
 		
 		void save(Stream&) const;

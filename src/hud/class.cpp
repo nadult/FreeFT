@@ -6,6 +6,7 @@
 #include "hud/class.h"
 #include "game/character.h"
 #include "game/inventory.h"
+#include "game/pc_controller.h"
 
 #include "game/world.h"
 #include "gfx/device.h"
@@ -107,6 +108,8 @@ namespace hud {
 			if(isOneOf(event.source, m_buttons)) {
 				HudButton *button = dynamic_cast<HudButton*>(event.source);
 				m_selected_id = button->id();
+				if(m_pc_controller)
+					m_pc_controller->setCharacterClass(CharacterClass(m_selected_id));
 			}
 
 			needsLayout();

@@ -54,6 +54,7 @@ namespace game {
 				if(info.next_respawn_time < 0.0f) {
 					respawn(id, 0, findSpawnZone(0));
 					notify_client = true;
+					info.is_respawning = false;
 				}
 			}
 
@@ -74,24 +75,10 @@ namespace game {
 	}
 
 
-	DeathMatchClient::DeathMatchClient(World &world, int client_id) :GameModeClient(world, client_id) {
+	DeathMatchClient::DeathMatchClient(World &world, int client_id, const string &nick_name)
+		:GameModeClient(world, client_id, nick_name) {
 	}
 		
-	void DeathMatchClient::addPlayableCharacter(const Character &character) {
-		if(m_current.pcs.empty()) {
-			PlayableCharacter new_char(character);
-			m_current.pcs.push_back(new_char);	
-			net::TempPacket chunk;
-			chunk << MessageId::update_client;
-			chunk << m_current;
-			m_world.sendMessage(chunk);
-		}
-	}
-
-	void DeathMatchClient::setCharacterClass(const CharacterClass &character_class) {
-
-	}
-
 	void DeathMatchClient::tick(double time_diff) {
 		GameModeClient::tick(time_diff);
 	}

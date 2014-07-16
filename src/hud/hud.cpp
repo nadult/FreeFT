@@ -51,6 +51,9 @@ namespace hud {
 			attach(layer.get());
 			layer->setVisible(false, false);
 		}
+		
+		setWorld(world);
+		setPCController(PPCController());
 	}
 
 	Hud::~Hud() { }
@@ -117,6 +120,12 @@ namespace hud {
 
 	bool Hud::isVisible() const {
 		return m_main_panel->isVisible();
+	}
+		
+	void Hud::setWorld(game::PWorld world) {
+		m_main_panel->setWorld(world);
+		for(auto &layer: m_layers)
+			layer->setWorld(world);
 	}
 		
 	void Hud::setPCController(game::PPCController pc_controller) {

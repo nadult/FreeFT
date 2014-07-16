@@ -154,10 +154,7 @@ namespace game {
 		Stance::Type stance() const { return m_stance; }
 		Action::Type action() const { return m_action; }
 
-		// TODO: only const access to inventory,
-		// use orders for adding / removing items
 		const ActorInventory &inventory() const { return m_inventory; }
-		ActorInventory &inventory() { return m_inventory; }
 		
 		bool canSee(EntityRef ref, bool simple_test = false);
 		bool canEquipItem(const Item &item) const;

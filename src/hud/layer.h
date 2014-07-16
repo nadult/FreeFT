@@ -33,6 +33,7 @@ namespace hud
 		virtual Color titleColor() const;
 		virtual Color titleShadowColor() const;
 
+		void setWorld(game::PWorld);
 		void setPCController(game::PPCController);
 		virtual void onPCControllerSet() { }
 
@@ -41,6 +42,7 @@ namespace hud
 	protected:
 		void onDraw() const override;
 		
+		game::PWorld m_world;
 		game::PPCController m_pc_controller;
 
 	private:

@@ -7,6 +7,7 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/pc_controller.h"
+#include "game/game_mode.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include <algorithm>
@@ -54,7 +55,7 @@ namespace hud {
 		pos.y += s_name_size.y + spacing;
 		m_race_button = new HudClickButton(FRect(s_name_size) + pos);
 		m_race_button->setLabelStyle(HudLabelStyle::left);
-
+		
 		pos.y += s_name_size.y * 3 + spacing;
 		pos.x = rect().width() - spacing - s_button_size.x;
 		m_cancel_button = new HudClickButton(FRect(s_button_size) + pos);
@@ -104,8 +105,10 @@ namespace hud {
 			if(event.source == m_name_edit_box) {
 				updateControls();
 			}
-			if(event.source == m_create_button) {
-
+			if(event.source == m_create_button && m_world) {
+				GameModeClient *game_mode = dynamic_cast<GameModeClient*>(m_world->gameMode());
+				if(game_mode)
+					game_mode->addPC(*makeCharacter());
 			}
 			if(event.source == m_cancel_button) {
 
@@ -121,11 +124,13 @@ namespace hud {
 	void HudCharacter::onPCControllerSet() {
 		m_icon_next->setGreyed((bool)m_pc_controller);
 		m_icon_prev->setGreyed((bool)m_pc_controller);
-		m_create_button->setGreyed((bool)m_pc_controller);
 		m_cancel_button->setGreyed((bool)m_pc_controller);
 
 		if(!m_pc_controller) {
-			//TODO: set name to client name
+			GameModeClient *game_mode = dynamic_cast<GameModeClient*>(m_world->gameMode());
+			if(game_mode)
+				m_name_edit_box->setText(game_mode->currentNickName());
+
 			m_race_id = 0;
 			m_icon_id = -1;
 			updateIcon(0);
@@ -146,10 +151,8 @@ namespace hud {
 		}
 		else {
 			ProtoIndex index = m_races[m_race_id];
-
 			const ActorProto &proto = dynamic_cast<const ActorProto&>(getProto(index));
-			PCharacter character = new Character(m_name_edit_box->text(), m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id);
-			m_icon_box->setCharacter(character);
+			m_icon_box->setCharacter(new Character("", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id));
 			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
 		}
 	}
@@ -194,6 +197,16 @@ namespace hud {
 			m_name_edit_box->setInputFocus(false);
 			m_race_button->setEnabled(false);
 		}
+
+		m_create_button->setGreyed((bool)m_pc_controller || m_name_edit_box->text().empty());
 	}
+
+	PCharacter HudCharacter::makeCharacter() {
+		if(m_pc_controller || m_icon_id == -1 || m_name_edit_box->text().empty())
+			return PCharacter();
+			
+		return new Character(m_name_edit_box->text(), m_icons[m_icon_id].second, getProto(m_races[m_race_id]).id);
+	}
+
 
 }

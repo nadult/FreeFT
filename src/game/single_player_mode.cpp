@@ -17,10 +17,8 @@ namespace game {
 		EntityRef spawn_zone = findSpawnZone(0);
 		if(!spawn_zone)
 			THROW("Spawn zone not found!\n");
-		m_pc.setEntityRef(spawnActor(spawn_zone, getProto("male", ProtoId::actor)));
 
-		if( Actor *actor = m_world.refEntity<Actor>(m_pc.entityRef()) ) {
-			auto &inventory = actor->inventory();
+		ActorInventory inventory; {
 			inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
 			inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
 			inventory.add(findProto("heavy_laser_rifle", ProtoId::item_weapon), 1);
@@ -41,7 +39,10 @@ namespace game {
 			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
 			inventory.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
 			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 300);
+
 		}
+
+		m_pc.setEntityRef(spawnActor(spawn_zone, getProto("male", ProtoId::actor), inventory));
 	}
 		
 	void SinglePlayerMode::tick(double time_diff) {

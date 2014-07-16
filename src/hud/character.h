@@ -29,11 +29,13 @@ namespace hud
 
 		void updateIcon(int offset);
 		void updateControls();
+		PCharacter makeCharacter();
 
 		int m_icon_id, m_race_id;
 		vector<pair<ProtoIndex, string>> m_icons;
 		vector<ProtoIndex> m_races;
 
+		//TODO: add character class button (yes, redundant)
 		Ptr<HudCharIcon> m_icon_box;
 		PHudEditBox m_name_edit_box;
 		PHudButton m_race_button;

@@ -70,6 +70,18 @@ namespace game {
 		updateOrderFunc();
 	}
 
+	//TODO: this doesn't work properly with equipped inventories
+	Actor::Actor(const Proto &proto, const ActorInventory &inv)
+		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(Stance::stand), m_inventory(inv), m_target_angle(dirAngle()), m_client_id(-1) {
+		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
+		m_sound_variation = rand() % m_actor.sounds.size();
+		m_faction_id = 0;
+		m_hit_points = m_actor.hit_points;
+		animate(Action::idle);
+		updateOrderFunc();
+	}
+
+
 	Actor::Actor(const Actor &rhs, const Proto &new_proto) :Actor(new_proto, rhs.m_stance) {
 		setPos(rhs.pos());
 		setDirAngle(m_target_angle = rhs.dirAngle());
@@ -354,7 +366,7 @@ namespace game {
 				m_following_orders.insert(m_following_orders.begin(), std::move(order));
 			}
 			else { //TODO: fix this! why are we clearing orders?
-				m_following_orders.clear();
+			//	m_following_orders.clear();
 				m_following_orders.emplace_back(std::move(order));
 			}
 		}

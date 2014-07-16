@@ -81,6 +81,7 @@ namespace hud {
 		button_rect.min.x = button_rect.max.x - 235;
 		m_nick_name = new HudEditBox(button_rect, net::limits::max_nick_name_size, HudEditBox::mode_nick);
 		m_nick_name->setLabel("Nick: ");
+		m_nick_name->setText("random_dude");
 
 		m_buttons.push_back(button_close);
 		m_buttons.push_back(button_up);

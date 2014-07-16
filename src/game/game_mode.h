@@ -41,7 +41,7 @@ namespace game {
 
 	protected:
 		EntityRef findSpawnZone(int faction_id) const;
-		EntityRef spawnActor(EntityRef spawn_zone, const Proto &proto);
+		EntityRef spawnActor(EntityRef spawn_zone, const Proto &proto, const ActorInventory&);
 		void attachAIs();
 
 		World &m_world;
@@ -79,22 +79,24 @@ namespace game {
 
 	class GameModeClient: public GameMode {
 	public:
-		GameModeClient(World &world, int client_id);
+		GameModeClient(World &world, int client_id, const string &nick_name);
 
 		void tick(double time_diff) override;
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 		const vector<PlayableCharacter> playableCharacters() const override { return m_current.pcs; }
 
-		//TODO: PC's identification
-		void setPlayerClassId(int id);
+		const string &currentNickName() const { return m_current.nick_name; }
+		bool addPC(const Character&);
+		bool setPCClass(const Character&, const CharacterClass&);
+
 		bool sendOrder(POrder &&order, EntityRef entity_ref) override;
 
 	protected:
-		void addPC(const PlayableCharacter&);
 
 		GameClient m_current;
 		std::map<int, GameClient> m_others;
 		const int m_current_id;
+		int m_max_pcs;
 	};
 
 }

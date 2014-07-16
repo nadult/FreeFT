@@ -78,6 +78,10 @@ namespace hud {
 			m_big_font->draw(font_rect, {titleColor(), titleShadowColor()}, m_title);
 		}
 	}
+
+	void HudLayer::setWorld(game::PWorld world) {
+		m_world = world;
+	}
 		
 	void HudLayer::setPCController(game::PPCController controller) {
 		m_pc_controller = std::move(controller);

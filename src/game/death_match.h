@@ -13,7 +13,7 @@ namespace game {
 	class DeathMatchServer: public GameModeServer {
 	public:
 		enum {
-			respawn_delay = 10
+			respawn_delay = 5
 		};
 
 		DeathMatchServer(World &world);
@@ -38,10 +38,7 @@ namespace game {
 
 	class DeathMatchClient: public GameModeClient {
 	public:
-		DeathMatchClient(World &world, int client_id);
-
-		void addPlayableCharacter(const Character&);
-		void setCharacterClass(const CharacterClass&);
+		DeathMatchClient(World &world, int client_id, const string &nick_name);
 
 		GameModeId::Type typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;

@@ -1,4 +1,5 @@
 - DOWNSCALE, remove unnecessary features, prioritize TODO
+- constructors with stream should be explicit
 
 - Player cannot run with a minigun?
 

@@ -106,7 +106,7 @@ namespace net {
 
 		if(world->mapName() == m_level_info.map_name) {
 			if(m_level_info.game_mode == GameModeId::death_match)
-				world->assignGameMode<DeathMatchClient>(m_client_id);
+				world->assignGameMode<DeathMatchClient>(m_client_id, m_nick_name);
 			world->setReplicator(this);
 			m_world = world;
 			m_mode = Mode::world_updated;
