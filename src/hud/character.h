@@ -27,12 +27,15 @@ namespace hud
 		bool onEvent(const HudEvent&) override;
 		void updateIcon(int offset);
 
-		int m_icon_id;
+		int m_icon_id, m_race_id;
 		vector<pair<ProtoIndex, string>> m_icons;
+		vector<ProtoIndex> m_races;
+
 		Ptr<HudCharIcon> m_icon_box;
-		Ptr<HudEditBox> m_name_edit_box;
-		PHudButton m_button_race;
-		PHudButton m_button_up, m_button_down;
+		PHudEditBox m_name_edit_box;
+		PHudButton m_race_button;
+		PHudButton m_icon_next, m_icon_prev;
+		PHudButton m_create_button, m_cancel_button;
 	};
 
 }

@@ -30,12 +30,20 @@ namespace hud
 		small
 	);
 
+	DECLARE_ENUM(HudLabelStyle,
+		left,
+		center,
+		right,
+		disabled
+	);
+
 	class HudButton: public HudWidget {
 	public:
 		HudButton(const FRect &target_rect, int id = 0);
 		~HudButton();
 
 		void setButtonStyle(HudButtonStyle::Type style) { m_button_style = style; }
+		void setLabelStyle(HudLabelStyle::Type style) { m_label_style = style; }
 
 		void setClickSound(HudSound::Type sound) { m_click_sound = sound; }
 		void setId(int id) { m_id = id; }
@@ -77,13 +85,13 @@ namespace hud
 		float m_highlighted_time;
 		float m_greyed_time;
 		HudButtonStyle::Type m_button_style;
+		HudLabelStyle::Type m_label_style;
 		HudSound::Type m_click_sound;
 		int m_id, m_group_id, m_accelerator;
 
 		bool m_is_greyed;
 		bool m_is_enabled;
 		bool m_is_highlighted;
-		bool m_draw_label;
 	};
 
 	class HudClickButton: public HudButton {

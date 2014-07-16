@@ -48,6 +48,9 @@ inline bool isOneOf(const T1 &value, const vector<T2> &vec) {
 	return false;
 }
 
+template <class T>
+bool operator!=(const T &a, const T &b) { return !(a == b); }
+
 // TODO: finish me
 class CString {
 public:
@@ -74,11 +77,6 @@ private:
 inline bool operator==(const CString a, const CString b) {
 	DASSERT(a.isValid() && b.isValid());
 	return a.size() == b.size() && strcmp(a.c_str(), b.c_str()) == 0;
-}
-
-inline bool operator!=(const CString a, const CString b) {
-	DASSERT(a.isValid() && b.isValid());
-	return strcmp(a.c_str(), b.c_str()) != 0;
 }
 
 inline bool operator<(const CString a, const CString b) {
@@ -496,7 +494,6 @@ Color lerp(Color a, Color b, float value);
 Color desaturate(Color col, float value);
 
 inline bool operator==(const Color &lhs, const Color &rhs) { return lhs.rgba == rhs.rgba; }
-inline bool operator!=(const Color &lhs, const Color &rhs) { return lhs.rgba != rhs.rgba; }
 
 inline Color swapBR(Color col) {
 	return ((col.rgba & 0xff) << 16) | ((col.rgba & 0xff0000) >> 16) | (col.rgba & 0xff00ff00);

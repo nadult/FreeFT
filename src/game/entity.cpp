@@ -23,6 +23,8 @@ namespace game {
 			sprite = &Sprite::getPartial(sprite_name);
 		else 
 			sprite = nullptr;
+		
+		description = parser("description");
 	}
 		
 	Entity::Entity(const Sprite &sprite)

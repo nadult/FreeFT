@@ -57,7 +57,6 @@ struct int2
 	int2 operator-() const { return int2(-x, -y); }
 
 	bool operator==(const int2 &rhs) const { return x == rhs.x && y == rhs.y; }
-	bool operator!=(const int2 &rhs) const { return x != rhs.x || y != rhs.y; }
 
 	int x, y;
 };
@@ -78,7 +77,6 @@ struct short2
 	short2 operator-() const { return short2(-x, -y); }
 
 	bool operator==(const short2 &rhs) const { return x == rhs.x && y == rhs.y; }
-	bool operator!=(const short2 &rhs) const { return x != rhs.x || y != rhs.y; }
 
 	short x, y;
 };
@@ -96,7 +94,6 @@ struct int3
 	int3 operator%(int s) const { return int3(x % s, y % s, z % s); }
 
 	bool operator==(const int3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
-	bool operator!=(const int3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
 
 	int2 xy() const { return int2(x, y); }
 	int2 xz() const { return int2(x, z); }
@@ -116,7 +113,6 @@ struct int4
 	int4 operator/(int s) const { return int4(x / s, y / s, z / s, w / s); }
 
 	bool operator==(const int4 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w; }
-	bool operator!=(const int4 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w; }
 
 	int x, y, z, w;
 };
@@ -137,7 +133,6 @@ struct float2
 	float2 operator-() const { return float2(-x, -y); }
 	
 	bool operator==(const float2 &rhs) const { return x == rhs.x && y == rhs.y; }
-	bool operator!=(const float2 &rhs) const { return x != rhs.x || y != rhs.y; }
 
 	float x, y;
 };
@@ -163,7 +158,6 @@ struct float3
 	void operator*=(float s) { x *= s; y *= s; z *= s; }
 	
 	bool operator==(const float3 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z; }
-	bool operator!=(const float3 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z; }
 
 	float2 xy() const { return float2(x, y); }
 	float2 xz() const { return float2(x, z); }
@@ -185,7 +179,6 @@ struct float4
 	float4 operator-() const { return float4(-x, -y, -z, -w); }
 	
 	bool operator==(const float4 &rhs) const { return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w; }
-	bool operator!=(const float4 &rhs) const { return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w; }
 
 	float x, y, z, w;
 };
@@ -302,10 +295,6 @@ struct Rect
 	void setWidth(Type width) { max.x = min.x + width; }
 	void setHeight(Type height) { max.y = min.y + height; }
 	void setSize(const Type2 &size) { max = min + size; }
-	void inset(const Type2 &top_left, const Type2 &bottom_right) {
-		min -= top_left;
-		max += bottom_right;
-	}
 
 	Rect operator+(const Type2 &offset) const { return Rect(min + offset, max + offset); }
 	Rect operator-(const Type2 &offset) const { return Rect(min - offset, max - offset); }
@@ -324,14 +313,16 @@ struct Rect
 
 template <class Type2>
 inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &tl, const Type2 &br) {
-	rect.inset(tl, br);
-	return rect;
+	return Rect<Type2>(rect.min + tl, rect.max - br);
+}
+
+template <class Type2>
+inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &inset) {
+	return Rect<Type2>(rect.min + inset, rect.max - inset);
 }
 
 template <class Type2>
 bool operator==(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min == rhs.min && lhs.max == rhs.max; }
-template <class Type2>
-bool operator!=(const Rect<Type2> &lhs, const Rect<Type2> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }
 
 template <class Type3>
 const Rect<Type3> sum(const Rect<Type3> &a, const Rect<Type3> &b) {
@@ -395,8 +386,6 @@ struct Box
 
 template <class Type3>
 bool operator==(const Box<Type3> &lhs, const Box<Type3> &rhs) { return lhs.min == rhs.min && lhs.max == rhs.max; }
-template <class Type3>
-bool operator!=(const Box<Type3> &lhs, const Box<Type3> &rhs) { return lhs.min != rhs.min || lhs.max != rhs.max; }
 
 
 template <class Type3>

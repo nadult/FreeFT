@@ -54,7 +54,6 @@ namespace game {
 		static const Item dummyWeapon();
 
 		bool operator==(const Item &rhs) const { return index() == rhs.index(); }
-		bool operator!=(const Item &rhs) const { return !operator==(rhs); }
 
 		ItemType::Type type() const			{ return m_proto->itemType(); }
 		bool isDummy() const				{ return m_proto->is_dummy; }

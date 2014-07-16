@@ -52,7 +52,7 @@ namespace game {
 		bool isValid() const { return m_type != ProtoId::invalid; }
 
 		bool operator==(const ProtoIndex &rhs) const { return m_idx == rhs.m_idx && m_type == rhs.m_type; }
-		bool operator!=(const ProtoIndex &rhs) const { return !operator==(rhs); }
+		bool operator<(const ProtoIndex &rhs) const { return m_type == rhs.m_type? m_idx < rhs.m_idx : m_type < rhs.m_type; }
 
 		ProtoId::Type type() const { return m_type; }
 		int index() const { return m_idx; }

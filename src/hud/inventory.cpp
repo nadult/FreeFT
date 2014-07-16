@@ -314,7 +314,7 @@ namespace hud {
 
 		FRect layer_rect = m_item_desc->rect();
 		layer_rect += float2(rect().max.x + layer_spacing, rect().min.y);
-		layer_rect.inset(float2(layer_spacing, layer_spacing), float2(layer_spacing, layer_spacing));
+		layer_rect = inset(layer_rect, -float2(layer_spacing, layer_spacing));
 		
 		HudLayer layer(layer_rect);
 		HudStyle temp_style = m_style;

@@ -23,6 +23,8 @@ namespace game {
 
 		string sprite_name;
 
+		string description;
+
 		// This sprite can be only partially loaded
 		// Use Sprite::get to make sure that its fully loaded
 		const Sprite *sprite;
@@ -49,7 +51,6 @@ namespace game {
 		bool operator==(const EntityRef &rhs) const {
 			return m_index == rhs.m_index && m_unique_id == rhs.m_unique_id;
 		}
-		bool operator!=(const EntityRef &rhs) const { return !operator==(rhs); }
 
 		void save(Stream&) const;
 		void load(Stream&);

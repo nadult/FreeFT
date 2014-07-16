@@ -15,7 +15,7 @@ namespace hud {
 
 	HudEditBox::HudEditBox(const FRect &rect, int max_size, EditMode mode, int id)
 		:HudButton(rect, id), m_cursor_pos(0), m_max_size(max_size), m_mode(mode) {
-		m_draw_label = false;
+		setLabelStyle(HudLabelStyle::disabled);
 	}
 
 	void HudEditBox::setText(const string &text) {
@@ -25,9 +25,7 @@ namespace hud {
 
 	void HudEditBox::onUpdate(double time_diff) {
 		HudButton::onUpdate(time_diff);
-
-		m_show_time += time_diff;
-
+		m_show_time = m_is_visible? m_show_time + time_diff : 0.0f;
 	}
 		
 	void HudEditBox::onInputFocus(bool is_focused) {

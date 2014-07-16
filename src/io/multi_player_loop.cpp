@@ -125,7 +125,7 @@ namespace hud {
 			}
 
 			m_servers[r].rect = FRect(sub_rect.min.x, pos, sub_rect.max.x, pos + row_size);
-			m_servers[r].hit_rect = inset(m_servers[r].rect, float2(0.0f, spacing * 0.5f), float2(0.0f, spacing * 0.5f));
+			m_servers[r].hit_rect = inset(m_servers[r].rect, float2(0.0f, spacing * 0.5f));
 			pos += row_size + spacing;
 		}
 	}

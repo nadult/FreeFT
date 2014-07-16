@@ -30,8 +30,7 @@ namespace net {
 				   (a > b && a - b > 32768);
 		}
 		bool operator>(const SeqNumber &rhs) const { return rhs < *this; }
-		bool operator==(const SeqNumber &rhs) { return value == rhs.value; }
-		bool operator!=(const SeqNumber &rhs) { return value != rhs.value; }
+		bool operator==(const SeqNumber &rhs) const { return value == rhs.value; }
 
 		const SeqNumber &operator++(int) {
 			value++;
