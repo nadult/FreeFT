@@ -6,6 +6,7 @@
 #include "hud/character.h"
 #include "game/actor.h"
 #include "game/world.h"
+#include "game/pc_controller.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include <algorithm>
@@ -27,7 +28,7 @@ namespace hud {
 	HudCharacter::HudCharacter(const FRect &target_rect)
 		:HudLayer(target_rect) {
 
-		setTitle("Character creation:");
+		setTitle(" ");
 
 		float2 pos(spacing, spacing + topOffset());
 		m_icon_box = new HudCharIcon(FRect(s_hud_char_icon_size) + pos);
@@ -90,7 +91,7 @@ namespace hud {
 	HudCharacter::~HudCharacter() { }
 		
 	bool HudCharacter::onEvent(const HudEvent &event) {
-		if(event.type == HudEvent::button_clicked) {
+		if(event.type == HudEvent::button_clicked && !m_pc_controller) {
 			if(event.source == m_icon_prev)
 				updateIcon(-1);
 			if(event.source == m_icon_next)
@@ -100,6 +101,16 @@ namespace hud {
 				m_icon_id = -1;
 				updateIcon(0);
 			}
+			if(event.source == m_name_edit_box) {
+				updateControls();
+			}
+			if(event.source == m_create_button) {
+
+			}
+			if(event.source == m_cancel_button) {
+
+			}
+
 
 			return true;
 		}
@@ -107,7 +118,46 @@ namespace hud {
 		return false;
 	}
 		
+	void HudCharacter::onPCControllerSet() {
+		m_icon_next->setGreyed((bool)m_pc_controller);
+		m_icon_prev->setGreyed((bool)m_pc_controller);
+		m_create_button->setGreyed((bool)m_pc_controller);
+		m_cancel_button->setGreyed((bool)m_pc_controller);
+
+		if(!m_pc_controller) {
+			//TODO: set name to client name
+			m_race_id = 0;
+			m_icon_id = -1;
+			updateIcon(0);
+		}
+		else
+			updateControls();
+	}
+
+	void HudCharacter::updateControls() {
+		setTitle(m_pc_controller? "Character: " : "Character creation: ");
+
+		if(m_pc_controller) {
+			const PlayableCharacter &pc = m_pc_controller->pc();
+			const ActorProto &proto = dynamic_cast<const ActorProto&>(pc.character().proto());
+			m_icon_box->setCharacter(new Character(pc.character()));
+			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
+			m_name_edit_box->setText(pc.character().name());
+		}
+		else {
+			ProtoIndex index = m_races[m_race_id];
+
+			const ActorProto &proto = dynamic_cast<const ActorProto&>(getProto(index));
+			PCharacter character = new Character(m_name_edit_box->text(), m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id);
+			m_icon_box->setCharacter(character);
+			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
+		}
+	}
+		
 	void HudCharacter::updateIcon(int offset) {
+		if(m_pc_controller)
+			return;
+
 		ProtoIndex index = m_races[m_race_id];
 
 		if(m_icon_id < 0 || m_icon_id >= (int)m_icons.size() || m_icons[m_icon_id].first != index)
@@ -134,15 +184,16 @@ namespace hud {
 				}
 			}
 		}
-		
-		const ActorProto &proto = dynamic_cast<const ActorProto&>(getProto(index));
-		PCharacter character = new Character("unnamed", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id);
-		m_icon_box->setCharacter(character);
-		m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
+
+		updateControls();		
 	}
 
 	void HudCharacter::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
+		if(m_pc_controller) {
+			m_name_edit_box->setInputFocus(false);
+			m_race_button->setEnabled(false);
+		}
 	}
 
 }

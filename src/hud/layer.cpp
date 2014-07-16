@@ -81,6 +81,7 @@ namespace hud {
 		
 	void HudLayer::setPCController(game::PPCController controller) {
 		m_pc_controller = std::move(controller);
+		onPCControllerSet();
 	}
 
 }

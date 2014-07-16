@@ -34,7 +34,7 @@ namespace hud {
 		bool onKey(int key);
 		bool isValidChar(int key);
 	
-		string m_text;
+		string m_text, m_old_text;
 		int m_max_size;
 		int m_cursor_pos;
 		EditMode m_mode;

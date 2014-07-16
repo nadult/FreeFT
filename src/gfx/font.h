@@ -6,12 +6,10 @@
 #ifndef GFX_FONT_H
 #define GFX_FONT_H
 
-#include <baselib.h>
 #include "gfx/device.h"
 
 namespace gfx
 {
-	using namespace baselib;
 
 	enum class HAlign {
 		left,

@@ -20,6 +20,7 @@ namespace hud {
 
 	void HudEditBox::setText(const string &text) {
 		m_text = text;
+		m_old_text = m_text;
 		m_cursor_pos = min(m_cursor_pos, (int)m_text.size());
 	}
 
@@ -36,14 +37,19 @@ namespace hud {
 		bool handled = false;
 
 		bool mouse_over = isMouseOver(event);
+		if(event.mouseOver())
+			m_is_highlighted = mouse_over;
 
-		if(!isEnabled() && event.mouseKeyDown(0) && mouse_over) {
+		if(!isEnabled() && event.mouseKeyDown(0) && !isGreyed() && mouse_over) {
 			setInputFocus(true);
 			handled = true;
+			m_old_text = m_text;
 		}
 
 		if(isEnabled()) {
-			if(event.keyDown(Key::enter) || (event.mouseKeyDown(0) && !mouse_over)) {
+			if(event.keyDown(Key::enter) || event.keyDown(Key::esc) || (event.mouseKeyDown(0) && !mouse_over)) {
+				if(event.keyDown(Key::esc))
+					m_text = m_old_text;
 				setInputFocus(false);
 				handleEvent(this, HudEvent::text_modified, m_id);
 				handled = true;

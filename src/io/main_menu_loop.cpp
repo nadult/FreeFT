@@ -110,7 +110,7 @@ namespace io {
 				attach(m_file_dialog.get(), true);
 			}
 			else if(ev.source == m_multi_player.get()) {
-				FRect rect = FRect(float2(750, 550));
+				FRect rect = FRect(float2(790, 550));
 				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
 				m_multi_menu = new hud::MultiPlayerMenu(rect);
 				m_sub_menu = m_multi_menu.get();
@@ -190,6 +190,9 @@ namespace io {
 
 			try {
 				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+					if(m_sub_menu)
+						m_sub_menu.reset();
+
 					if(m_client) {
 						PWorld world = m_future_world.get();
 						m_client->setWorld(world);

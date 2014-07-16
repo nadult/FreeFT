@@ -116,7 +116,7 @@ namespace hud {
 
 	typedef Ptr<HudWidget> PHudWidget;
 	typedef Ptr<HudButton> PHudButton;
-	typedef Ptr<HudButton> PHudEditBox;
+	typedef Ptr<HudEditBox> PHudEditBox;
 	typedef Ptr<HudLayer> PHudLayer;
 	typedef Ptr<HudWeapon> PHudWeapon;
 	typedef Ptr<HudStance> PHudStance;

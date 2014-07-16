@@ -25,7 +25,10 @@ namespace hud
 	private:
 		void onUpdate(double time_diff) override;
 		bool onEvent(const HudEvent&) override;
+		void onPCControllerSet() override;
+
 		void updateIcon(int offset);
+		void updateControls();
 
 		int m_icon_id, m_race_id;
 		vector<pair<ProtoIndex, string>> m_icons;

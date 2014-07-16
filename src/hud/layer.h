@@ -34,6 +34,8 @@ namespace hud
 		virtual Color titleShadowColor() const;
 
 		void setPCController(game::PPCController);
+		virtual void onPCControllerSet() { }
+
 		virtual bool canShow() const { return true; }
 
 	protected:

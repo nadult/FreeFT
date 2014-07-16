@@ -9,7 +9,6 @@
 #include "io/loop.h"
 #include "io/controller.h"
 #include "hud/layer.h"
-#include "hud/button.h"
 #include "net/base.h"
 
 namespace hud {
@@ -40,6 +39,8 @@ namespace hud {
 		};
 
 		MultiPlayerMenu(const FRect &rect);
+		~MultiPlayerMenu();
+
 		float backAlpha() const override;
 
 		bool isClientReady() const;
@@ -61,6 +62,9 @@ namespace hud {
 		vector<PHudButton> m_buttons;
 		vector<ServerInfo> m_servers;
 		net::PClient m_client;
+
+		PHudEditBox m_nick_name;
+		PHudEditBox m_password;
 
 		string m_message;
 		Color m_message_color;

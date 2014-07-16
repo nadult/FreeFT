@@ -7,6 +7,11 @@
 
 namespace net {
 
+	DEFINE_ENUM(RefuseReason,
+		"wrong password",
+		"server full"
+	);
+
 	Address lobbyServerAddress() {
 		return Address(resolveName("localhost"), 50000);
 		return Address(resolveName("89.74.58.32"), 50000);

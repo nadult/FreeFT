@@ -325,19 +325,7 @@ namespace hud {
 		
 	void HudInventory::onDraw() const {
 		HudLayer::onDraw();
-
 		m_item_desc->draw();
-/*		FRect layer_rect = m_item_desc->rect();
-		layer_rect += float2(rect().max.x + layer_spacing, rect().min.y);
-		layer_rect = inset(layer_rect, -float2(layer_spacing, layer_spacing));
-		
-		HudLayer layer(layer_rect);
-		HudStyle temp_style = m_style;
-		temp_style.layer_color = Color(temp_style.layer_color, (int)(m_item_desc->alpha() * 255));
-		layer.setStyle(temp_style);
-		layer.attach(m_item_desc.get());
-		layer.layout();
-		layer.draw();*/
 	}
 
 }

@@ -17,7 +17,8 @@ namespace net {
 		enum {
 			max_clients = 64,
 			min_nick_name_size = 4,
-			max_nick_name_size = 20,
+			max_nick_name_size = 14,
+			max_password_size = 10,
 		};
 
 	}

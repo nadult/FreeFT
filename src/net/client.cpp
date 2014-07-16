@@ -131,9 +131,7 @@ namespace net {
 					m_mode = Mode::waiting_for_world_update;
 				}
 				else if(chunk.type() == ChunkType::join_refuse) {
-					RefuseReason::Type reason;
-					chunk >> reason;
-
+					chunk >> m_refuse_reason;
 					removeRemoteHost(m_server_id);
 					m_server_id = -1;
 					m_mode = Mode::refused;

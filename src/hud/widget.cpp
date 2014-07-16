@@ -34,9 +34,10 @@ namespace hud {
 			}
 
 			if(is_focused) {
-				HudWidget *current = m_parent;
-				while(current->m_parent) {
-					current->m_parent->m_input_focus = current;
+				HudWidget *current = m_parent, *focus = this;
+				while(current) {
+					current->m_input_focus = focus;
+					focus = current;
 					current = current->m_parent;
 				}
 			}
