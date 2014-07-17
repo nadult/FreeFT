@@ -70,9 +70,32 @@ namespace game {
 		updateOrderFunc();
 	}
 
+	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
+		return armour.isDummy()? actor.index() :
+			findProto(actor.id + ":" + armour.id(), ProtoId::actor_armour);
+	}
+
+	static const Proto &getActorArmour(const Proto &actor, ActorInventory &inventory) {
+		ProtoIndex out = actor.index();
+
+		if(inventory.isEquipped(ItemType::armour)) {
+			ProtoIndex armour_proto = findActorArmour(actor, inventory.armour());
+			if(armour_proto)
+				out = armour_proto;
+			else
+				inventory.unequip(ItemType::armour);
+		}
+
+		const ActorArmourProto &proto = static_cast<const ActorArmourProto&>(getProto(out));
+		if(inventory.isEquipped(ItemType::weapon) && !proto.canEquipWeapon(inventory.weapon().classId()))
+			inventory.unequip(ItemType::weapon);
+
+		return proto;
+	}
+
 	//TODO: this doesn't work properly with equipped inventories
-	Actor::Actor(const Proto &proto, const ActorInventory &inv)
-		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(Stance::stand), m_inventory(inv), m_target_angle(dirAngle()), m_client_id(-1) {
+	Actor::Actor(const Proto &proto, ActorInventory &inv) :EntityImpl(getActorArmour(proto, inv)),
+		  m_actor(*m_proto.actor), m_stance(Stance::stand), m_inventory(inv), m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 		m_sound_variation = rand() % m_actor.sounds.size();
 		m_faction_id = 0;
@@ -251,11 +274,6 @@ namespace game {
 			m_ai->onImpact(damage_type, damage, force, source);
 	}
 		
-	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
-		return armour.isDummy()? actor.index() :
-			findProto(actor.id + ":" + armour.id(), ProtoId::actor_armour);
-	}
-
 	void Actor::updateArmour() {
 		ProtoIndex proto_idx = findActorArmour(m_actor, m_inventory.armour());
 

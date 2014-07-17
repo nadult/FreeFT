@@ -39,9 +39,7 @@ namespace game {
 			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
 			inventory.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
 			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 300);
-
 		}
-
 		m_pc.setEntityRef(spawnActor(spawn_zone, getProto("male", ProtoId::actor), inventory));
 	}
 		

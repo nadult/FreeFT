@@ -27,16 +27,12 @@ namespace hud
 		HudClass(const FRect &target_rect);
 		~HudClass();
 
-		int selectedId() const { return m_selected_id; }
-		void select(int id) { m_selected_id = id; }
-
 	private:
 		void onUpdate(double time_diff) override;
 		bool onEvent(const HudEvent&) override;
 		void onLayout() override;
 
 		int m_offset, m_class_count;
-		int m_selected_id;
 
 		vector<Ptr<HudClassButton>> m_buttons;
 		PHudButton m_button_up, m_button_down;

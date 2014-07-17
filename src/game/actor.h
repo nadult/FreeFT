@@ -132,7 +132,7 @@ namespace game {
 		Actor(const XMLNode&);
 		Actor(const Proto &proto, Stance::Type stance = Stance::stand);
 		Actor(const Actor &rhs, const Proto &new_proto);
-		Actor(const Proto &proto, const ActorInventory &inventory);
+		Actor(const Proto &proto, ActorInventory &inventory);
 
 		Flags::Type flags() const;
 		const FBox boundingBox() const override;

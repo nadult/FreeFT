@@ -67,7 +67,7 @@ namespace hud {
 	}
 
 	HudClass::HudClass(const FRect &target_rect)
-		:HudLayer(target_rect), m_offset(0), m_selected_id(-1) {
+		:HudLayer(target_rect), m_offset(0) {
 
 		setTitle("Class selection:");
 
@@ -107,9 +107,8 @@ namespace hud {
 				m_offset++;
 			if(isOneOf(event.source, m_buttons)) {
 				HudButton *button = dynamic_cast<HudButton*>(event.source);
-				m_selected_id = button->id();
 				if(m_pc_controller)
-					m_pc_controller->setCharacterClass(CharacterClass(m_selected_id));
+					m_pc_controller->setCharacterClass(CharacterClass(button->id()));
 			}
 
 			needsLayout();
@@ -130,7 +129,6 @@ namespace hud {
 				id = -1;
 
 			m_buttons[n]->setVisible(id != -1, false);
-			m_buttons[n]->setEnabled(m_selected_id == id && id != -1);
 			m_buttons[n]->setId(id);
 			
 			if(id != -1)
@@ -144,6 +142,11 @@ namespace hud {
 	}
 
 	void HudClass::onUpdate(double time_diff) {
+		int class_id = m_pc_controller? m_pc_controller->characterClass().id() : -1;
+		for(auto &button : m_buttons) {
+			button->setEnabled(button->id() == class_id);
+			button->setGreyed(!m_pc_controller);
+		}
 	}
 
 }

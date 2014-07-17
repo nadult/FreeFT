@@ -43,7 +43,8 @@ namespace game {
 		const Trigger *spawn_zone = m_world.refEntity<Trigger>(spawn_zone_ref);
 		DASSERT(spawn_zone);
 
-		PEntity actor = (PEntity)new Actor(proto, inv);
+		ActorInventory temp = inv;
+		PEntity actor = (PEntity)new Actor(proto, temp);
 
 		FBox spawn_box = spawn_zone->boundingBox();
 		float3 spawn_pos = spawn_box.center();
@@ -156,7 +157,7 @@ namespace game {
 		PlayableCharacter &pc = client.pcs[pc_id];
 		if(pc.entityRef())
 			m_world.removeEntity(pc.entityRef());
-		EntityRef actor_ref = spawnActor(spawn_zone, pc.character().proto(), pc.characterClass().inventory(false));
+		EntityRef actor_ref = spawnActor(spawn_zone, pc.character().proto(), pc.characterClass().inventory(true));
 		Actor *actor = m_world.refEntity<Actor>(actor_ref);
 		DASSERT(actor);
 		actor->setClientId(client_id);

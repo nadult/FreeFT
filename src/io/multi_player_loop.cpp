@@ -205,7 +205,6 @@ namespace hud {
 						if(address.isValid()) {
 							m_last_connect_time = getTime();
 							m_client->connect(address, m_nick_name->text(), m_password->text());
-							playSound(HudSound::button);
 							m_waiting_to_connect = true;
 						}
 					}

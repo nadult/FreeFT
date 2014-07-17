@@ -121,6 +121,8 @@ namespace game {
 		ItemType::Type type = item.type();
 		if((type != ItemType::weapon && type != ItemType::armour && type != ItemType::ammo) || !count)
 			return false;
+		if(type == ItemType::ammo && m_weapon.proto().ammo_class_id != Ammo(item).classId())
+			return false;
 
 		unequip(type);
 

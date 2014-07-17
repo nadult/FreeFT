@@ -181,10 +181,19 @@ namespace io {
 		updatePC();
 
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
-		if(actor && actor->isDead())
-			actor = nullptr;
 		if(actor)
 			audio::setListener(actor->pos(), actor->estimateMove(1.0f), normalized(float3(-1, 0, -1)));
+		else {
+			Ray mid_ray = screenRay(m_view_pos + m_resolution / 2);
+			auto isect = m_world->trace(mid_ray);
+			if(isect) {
+				float3 listener_pos = mid_ray.at(isect.distance());
+				audio::setListener(listener_pos, float3(0, 0, 0), normalized(float3(-1, 0, -1)));
+			}
+		}
+
+		if(actor && actor->isDead())
+			actor = nullptr;
 
 		vector<InputEvent> events = generateInputEvents();
 		for(int n = 0; n < (int)events.size(); n++)
