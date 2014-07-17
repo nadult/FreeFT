@@ -3,7 +3,7 @@
    This file is part of FreeFT.
  */
 
-#include "io/multi_player_loop.h"
+#include "hud/multi_player_menu.h"
 #include "hud/edit_box.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -397,32 +397,3 @@ namespace hud {
 
 }
 
-namespace io {
-
-	MultiPlayerLoop::MultiPlayerLoop(net::PClient client) {
-		DASSERT(client && client->world());
-		m_client = std::move(client);
-		m_world = m_client->world();
-
-		Config config = loadConfig("client");
-
-		//TODO: wait until initial entity information is loaded?
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, config.profiler_enabled));
-	}
-
-	bool MultiPlayerLoop::tick(double time_diff) {
-		using namespace gfx;
-
-		//TODO: handle change of map
-		m_controller->update(time_diff);
-		m_client->beginFrame();
-
-		m_world->simulate(time_diff);
-		m_client->finishFrame();
-		m_controller->updateView(time_diff);
-
-		m_controller->draw();
-		return !isKeyPressed(Key::esc);
-	}
-
-}

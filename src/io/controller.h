@@ -18,18 +18,20 @@ namespace io {
 
 	class Controller {
 	public:
+
 		Controller(const int2 &resolution, game::PWorld world, bool show_stats);
 		~Controller();
 
-		void updatePC();
-		void update(double time_diff);
 		void updateView(double time_diff);
-		void onInput(const InputEvent&);
+		void update(double time_diff);
 		void draw();
 
-		void drawVisibility(game::EntityRef);
+		int exitRequested() const { return m_is_exiting; }
 
 	protected:
+		void updatePC();
+		void onInput(const InputEvent&);
+
 		void sendOrder(game::POrder&&);
 
 		game::Actor *getActor();
@@ -57,9 +59,9 @@ namespace io {
 		float3 m_last_look_at;
 
 		game::Path m_last_path;
-	};
 
-	typedef unique_ptr<Controller> PController;
+		int m_is_exiting;
+	};
 
 }
 

@@ -19,14 +19,16 @@ namespace io {
 		MainMenuLoop();
 		~MainMenuLoop();
 
-		bool tick(double time_diff) override;
-		bool onEvent(const ui::Event &ev) override;
-
 		void stopMusic();
 		void startMusic();
 		void drawLoading(const int2 &pos, float alpha = 1.0f) const;
 
 	private:
+		bool onTick(double) override;
+		bool onEvent(const ui::Event &ev) override;
+		void onDraw() override;
+		void onTransitionFinished() override;
+
 		ui::PImageButton m_single_player;
 		ui::PImageButton m_multi_player;
 		ui::PImageButton m_create_server;
@@ -43,13 +45,14 @@ namespace io {
 
 		enum Mode {
 			mode_normal,
+			mode_transitioning,
 			mode_starting_single,
 			mode_starting_multi,
 			mode_starting_server,
 			mode_loading,
 			mode_quitting,
-			mode_quit,
-		} m_mode;
+		} m_mode, m_next_mode;
+
 
 		audio::PPlayback m_music;
 
@@ -62,7 +65,7 @@ namespace io {
 		PLoop m_sub_loop;
 
 		double m_anim_pos;
-		double m_timer, m_blend_time;
+		double m_blend_time;
 		double m_start_music_time;
 	};
 

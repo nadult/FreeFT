@@ -27,6 +27,8 @@ namespace hud
 		HudClass(const FRect &target_rect);
 		~HudClass();
 
+		bool canShow() const override;
+
 	private:
 		void onUpdate(double time_diff) override;
 		bool onEvent(const HudEvent&) override;

@@ -12,13 +12,39 @@ namespace io {
 
 	class Loop {
 	public:
-		Loop() :m_is_closing(false) { }
-		virtual ~Loop() = default;
-		virtual bool tick(double time_diff) = 0;
-		virtual void close() { m_is_closing = true; }
+		enum TransitionMode {
+			trans_normal,
+			trans_left,
+			trans_right
+		};
+
+		Loop();
+		virtual ~Loop();
+
+		bool tick(double time_diff);
+		void draw();
+		void exit();
+
+		void startTransition(Color from, Color to, TransitionMode mode, float length);
+		bool isTransitioning() const;
 
 	protected:
-		bool m_is_closing;
+		virtual bool onTick(double) = 0;
+		virtual void onDraw() = 0;
+		virtual void onTransitionFinished() { }
+
+	private:
+		struct Transition {
+			void draw(const FRect &rect);
+
+			Color from, to;
+			TransitionMode mode;
+			float pos, length;
+		};
+
+		Transition m_transition;
+		bool m_is_transitioning;
+		bool m_is_exiting;
 	};
 
 	typedef unique_ptr<Loop> PLoop;

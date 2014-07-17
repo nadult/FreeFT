@@ -31,6 +31,7 @@ namespace hud {
 		layer_character,
 		layer_options,
 		layer_class,
+		layer_stats,
 
 		layer_count
 	};
@@ -46,7 +47,8 @@ namespace hud {
 			item_equip,
 			item_unequip,
 			item_drop,
-			item_focused
+			item_focused,
+			exit
 		};
 
 		HudEvent(HudWidget *source, Type type, int value = 0) :source(source), type(type), value(value) { }
@@ -107,8 +109,9 @@ namespace hud {
 	class HudMainPanel;
 	class HudInventory;
 	class HudCharacter;
-	class HudOptions;
 	class HudClass;
+	class HudStats;
+	class HudOptions;
 
 	class SinglePlayerMenu;
 	class MultiPlayerMenu;

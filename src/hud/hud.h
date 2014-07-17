@@ -28,6 +28,8 @@ namespace hud
 		void setPCController(game::PPCController);
 		HudMainPanel *mainPanel() { return m_main_panel.get(); }
 
+		int exitRequested() const { return m_exit_value; }
+
 	protected:
 		bool onInput(const io::InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
@@ -36,6 +38,7 @@ namespace hud
 
 	private:
 		int m_selected_layer;
+		int m_exit_value;
 		Ptr<HudMainPanel> m_main_panel;
 		PHudLayer m_layers[layer_count];
 	};

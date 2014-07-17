@@ -11,9 +11,7 @@
 #include "game/base.h"
 
 #include "io/main_menu_loop.h"
-#include "io/single_player_loop.h"
-#include "io/multi_player_loop.h"
-#include "io/server_loop.h"
+#include "io/game_loop.h"
 #include "net/server.h"
 
 using namespace gfx;
@@ -107,7 +105,7 @@ int safe_main(int argc, char **argv)
 			net::PServer server(new net::Server(server_config));
 			PWorld world(new World(map_name, World::Mode::server));
 			server->setWorld(world);
-			main_loop.reset(new io::ServerLoop(std::move(server)));
+			main_loop.reset(new io::GameLoop(std::move(server), false));
 			if(server_config.m_console_mode)
 				sys::handleCtrlC(ctrlCHandler);
 			if(console_mode)
@@ -115,8 +113,8 @@ int safe_main(int argc, char **argv)
 		}
 		else if(!map_name.empty()) {
 			printf("Loading: %s\n", map_name.c_str());
-			PWorld world = createWorld(map_name);
-			main_loop.reset(new io::SinglePlayerLoop(world));
+			game::PWorld world(new World(map_name, World::Mode::single_player));
+			main_loop.reset(new io::GameLoop(world, false));
 		}
 	}
 	catch(const Exception &ex) {
@@ -137,10 +135,12 @@ int safe_main(int argc, char **argv)
 		last_time = time;
 
 		if(s_is_closing)
-			main_loop->close();
+			main_loop->exit();
 
 		if(!main_loop->tick(time_diff))
 			break;
+
+		main_loop->draw();
 
 		gfx::tick();
 		audio::tick();

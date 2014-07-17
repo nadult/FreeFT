@@ -27,8 +27,10 @@ using namespace game;
 
 namespace io {
 
+	static const float s_exit_anim_length = 0.7f;
+
 	Controller::Controller(const int2 &resolution, PWorld world, bool show_stats)
-	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_stats(show_stats) {
+	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_stats(show_stats), m_is_exiting(0) {
 		DASSERT(world);
 		m_console = new hud::HudConsole(resolution);
 		m_hud = new hud::Hud(world);
@@ -195,9 +197,12 @@ namespace io {
 		if(actor && actor->isDead())
 			actor = nullptr;
 
-		vector<InputEvent> events = generateInputEvents();
-		for(int n = 0; n < (int)events.size(); n++)
-			onInput(events[n]);
+		if(!m_is_exiting) {
+			vector<InputEvent> events = generateInputEvents();
+			for(int n = 0; n < (int)events.size(); n++)
+				onInput(events[n]);
+			m_is_exiting = m_hud->exitRequested();
+		}
 
 		m_console->update(time_diff);
 		m_hud->update(time_diff);
@@ -285,9 +290,6 @@ namespace io {
 		lookAt({0, 0});
 		m_console->draw();
 		m_hud->draw();
-	}
-
-	void Controller::drawVisibility(game::EntityRef ref) {
 	}
 
 }

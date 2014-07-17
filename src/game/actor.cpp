@@ -240,6 +240,7 @@ namespace game {
 		bool is_fallen = current && (current->mode == GetHitOrder::Mode::fall || current->mode == GetHitOrder::Mode::fallen);
 
 		//TODO: randomization provided by world class
+		//TODO: synchronization problems in multiplayer, seed should be passed with damage
 		bool will_dodge = !is_fallen && random() <= dodgeChance(damage_type, damage);
 		bool will_fall = !will_dodge && random() <= fallChance(damage_type, damage, force);
 		bool will_interrupt = random() <= interruptChance(damage_type, damage, force);

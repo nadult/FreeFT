@@ -9,6 +9,7 @@
 #include "hud/options.h"
 #include "hud/class.h"
 #include "hud/character.h"
+#include "hud/stats.h"
 
 #include "game/actor.h"
 #include "game/world.h"
@@ -27,10 +28,11 @@ namespace hud {
 		const float2 s_hud_class_size(365, 300);
 		const float2 s_hud_character_size(365, 300);
 		const float2 s_hud_options_size(365, 200);
+		const float2 s_hud_stats_size(365, 200);
 
 	}
 
-	Hud::Hud(PWorld world) :HudWidget(FRect::empty()), m_selected_layer(layer_none) {
+	Hud::Hud(PWorld world) :HudWidget(FRect::empty()), m_selected_layer(layer_none), m_exit_value(0) {
 		DASSERT(world);
 
 		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, gfx::getWindowSize().y - s_hud_main_panel_size.y - layer_spacing);
@@ -40,10 +42,12 @@ namespace hud {
 		FRect cls_rect = align(FRect(s_hud_class_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect opt_rect = align(FRect(s_hud_options_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect cha_rect = align(FRect(s_hud_character_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
+		FRect sta_rect = align(FRect(s_hud_stats_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		
 		m_layers[layer_inventory]	= new HudInventory(inv_rect);
 		m_layers[layer_class]		= new HudClass(cls_rect);
 		m_layers[layer_character]	= new HudCharacter(cha_rect);
+		m_layers[layer_stats]		= new HudStats(sta_rect);
 		m_layers[layer_options]		= new HudOptions(opt_rect);
 
 		attach(m_main_panel.get());
@@ -72,6 +76,9 @@ namespace hud {
 			if(m_selected_layer != layer_none)
 				setVisible(true, true);
 			return true;
+		}
+		else if(event.type == HudEvent::exit) {
+			m_exit_value = 1 + event.value;
 		}
 
 		return false;

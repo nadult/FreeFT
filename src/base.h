@@ -584,6 +584,8 @@ namespace audio {
 
 namespace io {
 	class InputEvent;
+	class Controller;
+	typedef unique_ptr<Controller> PController;
 }
 
 class TupleParser;

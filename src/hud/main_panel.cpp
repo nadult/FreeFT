@@ -24,7 +24,7 @@ namespace hud {
 
 		const float2 s_hud_char_icon_size(75, 100);
 		const float2 s_hud_weapon_size(210, 100);
-		const float2 s_hud_button_size(60, 17);
+		const float2 s_hud_button_size(56, 17);
 		const float2 s_hud_stance_size(23, 23);
 
 		struct Button {
@@ -36,6 +36,7 @@ namespace hud {
 			{ layer_inventory,		"INV" },
 			{ layer_character,		"CHAR" },
 			{ layer_class,			"CLASS" },
+			{ layer_stats,			"STATS" },
 			{ layer_options,		"OPT" }
 		};
 

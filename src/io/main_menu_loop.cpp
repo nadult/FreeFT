@@ -7,17 +7,18 @@
 #include "ui/file_dialog.h"
 #include "ui/message_box.h"
 #include "ui/image_button.h"
+
 #include "io/main_menu_loop.h"
-#include "io/single_player_loop.h"
-#include "io/multi_player_loop.h"
-#include "io/server_loop.h"
+#include "io/game_loop.h"
+
+#include "hud/multi_player_menu.h"
+
 #include "gfx/device.h"
 #include "gfx/opengl.h"
-#include "audio/device.h"
+
 #include "net/client.h"
 #include "net/server.h"
-
-#include "hud/hud.h"
+#include "audio/device.h"
 
 #ifdef MessageBox // Yea.. TODO: remove windows.h from includes
 #undef MessageBox
@@ -28,6 +29,8 @@ using namespace ui;
 using namespace game;
 
 namespace io {
+	
+	static const float s_transition_length = 0.7f;
 
 	static PImageButton makeButton(const int2 &pos, const char *title) {
 		char back_name[256];
@@ -38,13 +41,12 @@ namespace io {
 		return new ImageButton(pos, proto, title, ImageButton::mode_normal);
 	}
 
-	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal) {
+	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
 		m_back = gfx::DTexture::gui_mgr["back/flaminghelmet"];
 		m_loading = gfx::DTexture::gui_mgr["misc/worldm/OLD_moving"];
 
 		m_anim_pos = 0.0;
 		m_blend_time = 1.0;
-		m_timer = 0.0;
 
 		IRect rect = localRect();
 		m_back_rect = (IRect)FRect(
@@ -118,8 +120,9 @@ namespace io {
 			}
 			else if(ev.source == m_exit.get()) {
 				stopMusic();
-				m_mode = mode_quitting;
-				m_timer = 1.0;
+				m_mode = mode_transitioning;
+				m_next_mode = mode_quitting;
+				startTransition(Color(255, 255, 255, 0), Color(255, 255, 255, 255), trans_normal, 1.0f);
 			}
 
 			return true;
@@ -176,12 +179,22 @@ namespace io {
 		glPopMatrix();
 	}
 
-	bool MainMenuLoop::tick(double time_diff) {
-		using namespace gfx;
+	void MainMenuLoop::onTransitionFinished() {
+		DASSERT(m_mode == mode_transitioning);
+		m_mode = m_next_mode;
+	}
 
-		if(m_sub_loop) {
-			if(!m_sub_loop->tick(time_diff))
+	bool MainMenuLoop::onTick(double time_diff) {
+		if(m_mode == mode_transitioning && !isTransitioning())
+			m_mode = mode_normal;
+
+		if(m_sub_loop && m_mode == mode_normal) {
+			if(!m_sub_loop->tick(time_diff)) {
 				m_sub_loop.reset(nullptr);
+				m_mode = mode_transitioning;
+				m_next_mode = mode_normal;
+				startTransition(Color(0, 0, 0, 255), Color(0, 0, 0, 0), trans_left, s_transition_length);
+			}
 			return true;
 		}
 
@@ -190,21 +203,18 @@ namespace io {
 
 			try {
 				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-					if(m_sub_menu)
-						m_sub_menu.reset();
-
 					if(m_client) {
 						PWorld world = m_future_world.get();
 						m_client->setWorld(world);
-						new_loop.reset(new MultiPlayerLoop(std::move(m_client)));
+						new_loop.reset(new GameLoop(std::move(m_client), true));
 					}
 					else if(m_server) {
 						PWorld world = m_future_world.get();
 						m_server->setWorld(world);
-						new_loop.reset(new ServerLoop(std::move(m_server)));
+						new_loop.reset(new GameLoop(std::move(m_server), true));
 					}
 					else {
-						new_loop.reset(new SinglePlayerLoop(m_future_world.get()));
+						new_loop.reset(new GameLoop(m_future_world.get(), true));
 					}
 				}
 			}
@@ -220,8 +230,12 @@ namespace io {
 			}
 			
 			if(new_loop) {
-				m_sub_loop = std::move(new_loop);	
-				m_mode = mode_normal;
+				m_sub_loop = std::move(new_loop);
+				m_sub_loop->tick(time_diff);
+
+				startTransition(Color(0, 0, 0, 0), Color(0, 0, 0, 255), trans_right, s_transition_length);
+				m_mode = mode_transitioning;
+				m_next_mode = mode_normal;
 				stopMusic();
 			}
 		}
@@ -235,12 +249,14 @@ namespace io {
 				startMusic();
 		}
 
-		if(m_mode != mode_quitting && !m_sub_menu)
+		if(m_mode != mode_quitting && m_mode != mode_transitioning && !m_sub_menu)
 			process();
 		if(m_sub_menu) {
-			vector<InputEvent> events = generateInputEvents();
-			for(auto &event: events)
-				m_sub_menu->handleInput(event);
+			if(m_mode != mode_transitioning) {
+				vector<InputEvent> events = generateInputEvents();
+				for(auto &event: events)
+					m_sub_menu->handleInput(event);
+			}
 
 			m_sub_menu->update(time_diff);
 			if(!m_sub_menu->isVisible() && !m_sub_menu->isShowing())
@@ -267,12 +283,28 @@ namespace io {
 			m_server->finishFrame();
 		}
 
+		m_anim_pos += time_diff;
+		if(m_anim_pos > 1.0)
+			m_anim_pos -= 1.0;
+
+		return m_mode != mode_quitting;
+	}
+
+	void MainMenuLoop::onDraw() {
+		using namespace gfx;
+
+		if(m_sub_loop && m_mode != mode_transitioning) {
+			m_sub_loop->draw();
+			return;
+		}
+
+		lookAt({0, 0});
 		clear(Color(0, 0, 0));
 		m_back->bind();
 		drawQuad(m_back_rect.min, m_back_rect.size());
 	
 		lookAt({0, 0});
-		draw();
+		Window::draw();
 
 		lookAt({0, 0});
 		if(m_sub_menu)
@@ -280,24 +312,6 @@ namespace io {
 
 		if(m_mode == mode_loading)
 			drawLoading(gfx::getWindowSize() - int2(180, 50), 1.0);
-
-		lookAt({0, 0});
-
-		if(m_mode == mode_quitting) {
-			DTexture::unbind();
-			m_timer -= time_diff / m_blend_time;
-			if(m_timer < 0.0) {
-				m_timer = 0.0;
-				m_mode = mode_quit;
-			}
-			drawQuad({0, 0}, gfx::getWindowSize(), Color(1.0f, 1.0f, 1.0f, 1.0f - m_timer));
-		}
-
-		m_anim_pos += time_diff;
-		if(m_anim_pos > 1.0)
-			m_anim_pos -= 1.0;
-
-		return m_mode != mode_quit;
 	}
 
 }

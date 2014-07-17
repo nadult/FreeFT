@@ -97,6 +97,11 @@ namespace hud {
 		
 	HudClass::~HudClass() { }
 		
+	bool HudClass::canShow() const {
+		// TODO: This should be visible even when pc_controller is inactive
+		return m_pc_controller && m_pc_controller->world().isClient();
+	}
+		
 	bool HudClass::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::button_clicked) {
 			int max_offset = (m_class_count + s_max_buttons - 1) / s_max_buttons - 1;
