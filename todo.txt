@@ -1,57 +1,47 @@
 - DOWNSCALE, remove unnecessary features, prioritize TODO
-- constructors with stream should be explicit
 
-- Player cannot run with a minigun?
+Must-have: ----------------------------------------------------------------------------------------
 
-- Better camera work
-
-- add baselib as submodule
-
-- Add shotguns
-
-- Network security (at least against hostile packets)
-
+- Mutants cannot use rifles, add classes specific to mutants with heavy weapons
+- findClosestPos could return multiple points, if for some reason on of them is unreachable
+  (think this through). Problems arise when were trying to get to some door when lot's of AI's are running around
+- Constructors with Stream should be explicit
 - think about handling orders on client / server and replication
+
+
+
+
+Nice to have: -------------------------------------------------------------------------------------
+
+- In release build some bugs (no sound file, etc.) should be handled silently or, logged to a text file
+- Player cannot run with a minigun?
+- Better camera work
+- Add baselib as submodule ?
+- Add shotguns
+- Network security (at least against hostile packets)
 
 - convert should be run automaticly by game or editor. Some text file should also be created
   with information about file format versions, so that when .sprite format changes, the game
   won't crash, but will re-create all sprites automaticly.
-
-- use librocket instead of my own UI?
-  Answer: NO: for the editor current UI is good enough, in-game should'nt be based
-  on standard controls like buttons. Use your imagination!
-
-- Remove event filters from orders (unnecessary)
-
-- Looking through some of the entities (look-through flag?)
-
 - Blending in/out entities when getting out of/into invisible occluder
-
-- Out of ammo sound can be played as often as the user can press right click
-- Add limit on number of attacks per second for given weapon?
-
-- Sounds should be played in the middle of entity
-- Add looped walk / run sounds
-
-- when projectiles are being shot vertically, their angle could be altered a bit
-
 - Possibility to explode dead bodies if they are not yet exploded :D
-
 - Add damage_def class which is defined in xml:
  damage="bullet(10) fire(100)"
  damage_mod="all(1.5)"
  damage_res="all(0.1) fire(0.2)"
-
-- verification of resources on client side, because they might be different than on server side
-
+- Verification of resources on client side, because they might be different than on server side
+- Sounds should be played in the middle of entity
+- Add looped walk / run sounds
+- Add limit on number of attacks per second for given weapon?
+- When projectiles are being shot vertically, their angle could be altered a bit
 - If the last interactor with a door was a player, then he should see when the door closes
-
 - When player is moving in one direction for a very short distance, he shouldn't rotate
 
-- Use shared_ptr<> instead of Ptr<> ? (safety issues in multithreaded environment)
 
-REFACTORING:
-- perform color operations on float4, use Color only for storage
+
+Refactoring: --------------------------------------------------------------------------------------
+
+- Perform color operations on float4, use Color only for storage
 - move EntityWorldProxy, EntityRef to separate files?
 - make EntityWorldProxy::ref() const
 - make Entity access functions both const and non-const (it's ok to do them with const-casts)
@@ -59,3 +49,14 @@ REFACTORING:
 - use rects in drawQuads
 - ?? Make rects and boxes store position and size, not min and max
 - Normal Inheritence for items
+- Use shared_ptr<> instead of Ptr<> ? (safety issues in multithreaded environment)
+
+
+
+Finished: -----------------------------------------------------------------------------------------
+- Use librocket instead of my own UI?
+  Answer: NO: for the editor current UI is good enough, in-game should'nt be based
+  on standard controls like buttons. Use your imagination!
+- Remove event filters from orders (unnecessary)
+- Looking through some of the entities (look-through flag?)
+

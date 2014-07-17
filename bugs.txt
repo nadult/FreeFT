@@ -1,72 +1,56 @@
-TODO: prioritize bugs
-
-- In multiplayer sometimes players are stuck
-- ANimation glitches in multiplayer
+Mustfix: ------------------------------------------------------------------------------------------
+- Animation glitches in multiplayer  
 - Mutants can equip leather armor in multiplayer
-- Wrong number of players in lobby
 - Problems with item icon textures stored in cache
 - Problems with queuing orders
 - When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
-
-- Hud shortcuts doesn't work when it's hidden
-- Hud shortcuts work when writing to console
-
-- Wrong mouse position before moving it for the first time
-
-- In res_viewer when popup is visible, you can still select objects behind it by
-  clicking on screen (outside of popup area)
-
-- In release build some bugs (no sound file, etc.) should be handled silently or, logged to a text file
-
 - When standing near a wall, you can fire through it (projectiles spawn too far away)
-
-- Duplicated sprites: Robot turrets
-
-- Fix problem with mixed upper/lower case of paths to resources
-
+- Make sure that it's impossible to impact an object behind a wall
 - Crash when shooting at the automatic doors in the long corridor with M60 (game:237 (conversion to container))
-
 - Client cannot connect to server when started much earlier
-
 - Handle situation when client connection was broken, but server still expects
   normal communication on some specific port, and client tries to reconnect
-
-- Still some problems with drawing order when lots of entities & explosions
-- Entities shouldn't break order of tiles when rendering
-
 - Often death sounds are not played (in multiplayer mode)
 - Door sounds don't work in multiplayer
-- Robots have no hit sounds
-
 - Visible tearing when vsync (glfwSwapInterval(1)) is on
-
-- Mutants cannot use rifles
-
-- When changing armour, it should happen on event pickup, not when animation has finished
-
 - Projectiles that are out of range do not blend out
+- Bullets shouldnt create sparks when actors are hit
+
+- In multiplayer sometimes players are stuck
+- In multiplayer mode, player can get kicked into doors and get stuck
+- Attacking on stairs may caus player to get stuck
+- When trying to teleport in client, AIs react (for a single frame)
 
 - Some problems with tracking, when player wants to attack a scorpion moving towards him
   (sometimes tracking ends too early)
-
-- Make sure that it's impossible to impact an object behind a wall
-
 - Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)
-
-- findClosestPos could return multiple points, if for some reason on of them is unreachable
-  (think this through). Problems arise when were trying to get to some door when lot's of AI's are running around
-
 - Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
 
-- Bullets shouldnt create sparks when actors are hit
+
+
+
+Nice to fix: --------------------------------------------------------------------------------------
+
+- Wrong mouse position before moving it for the first time
+- Duplicated sprites: Robot turrets
+- Fix problem with mixed upper/lower case of paths to resources
+- In res_viewer when popup is visible, you can still select objects behind it by
+  clicking on screen (outside of popup area)
+- Still some problems with drawing order when lots of entities & explosions
+- Entities shouldn't break order of tiles when rendering
+- Robots have no hit sounds
+- When changing armour, it should happen on event pickup, not when animation has finished
+
+
+
+Secondary: ----------------------------------------------------------------------------------------
+- Fix flamer
 - Problem with direction of flamer's projectile
 
-- Attacking on stairs may caus player to get stuck
-
-- In multiplayer mode, player can get kicked into doors and get stuck
-
-- When trying to teleport in client, AIs react (for a single frame)
 
 
-SECONDARY:
-- Fix flamer
+Fixed: --------------------------------------------------------------------------------------------
+- Hud shortcuts doesn't work when it's hidden
+- Hud shortcuts work when writing to console
+- Out of ammo sound can be played as often as the user can press right click
+- Item desc is shown when mouse overed invisible items in HudInventory

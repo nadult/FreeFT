@@ -124,7 +124,7 @@ namespace hud {
 
 		if(event.mouseOver()) {
 			setHighlighted(mouse_over);
-			if(mouse_over)
+			if(mouse_over && isVisible())
 				handleEvent(this, HudEvent::item_focused);
 
 
@@ -296,8 +296,12 @@ namespace hud {
 			bottom = max(bottom, m_buttons[n]->rect().max.y + spacing);
 		}
 
-		for(int n = 0; n < (int)m_buttons.size(); n++)
-			m_buttons[n]->setVisible(n < max_count, false);
+		for(int n = 0; n < (int)m_buttons.size(); n++) {
+			auto &button = m_buttons[n];
+			button->setVisible(n < max_count, false);
+			if(!button->isHighlighted() && !button->isEnabled())
+				button->setHighlighted(false, false);
+		}
 
 		m_button_up  ->setPos(float2(rect().width() - spacing * 2 - s_button_size.x * 2, bottom + 5.0f));
 		m_button_down->setPos(float2(rect().width() - spacing * 1 - s_button_size.x * 1, bottom + 5.0f));

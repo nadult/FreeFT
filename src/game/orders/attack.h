@@ -13,6 +13,7 @@ namespace game {
 
 	class AttackOrder: public OrderImpl<AttackOrder, OrderTypeId::attack> {
 	public:
+		//TODO: better attack targets (more user friendly, it's hard to click on moving characters)
 		AttackOrder(AttackMode::Type mode, EntityRef target);
 		AttackOrder(AttackMode::Type mode, const float3 &target_pos);
 		AttackOrder(Stream&);
