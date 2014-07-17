@@ -44,15 +44,14 @@ int safe_main(int argc, char **argv)
 	srand((int)getTime());
 	audio::initSoundMap();
 	game::loadData(true);
-
 	gfx::initDevice();
-	audio::initDevice();
 
 	int2 res = config.resolution;
 
 	int2 window_pos(-1, -1);
 	net::ServerConfig server_config;
 	string map_name;
+	bool init_audio = true;
 
 	for(int a = 1; a < argc; a++) {
 		if(strcmp(argv[a], "-res") == 0) {
@@ -69,6 +68,9 @@ int safe_main(int argc, char **argv)
 			ASSERT(window_pos.x >= 0 && window_pos.y >= 0);
 			a += 2;
 		}
+		else if(strcmp(argv[a], "-nosound") == 0) {
+			init_audio = false;
+		}
 		else if(strcmp(argv[a], "-server") == 0) {
 			ASSERT(a + 1 < argc);
 			XMLDocument xml_config;
@@ -78,6 +80,8 @@ int safe_main(int argc, char **argv)
 
 			server_config = net::ServerConfig(server_node);
 			ASSERT(server_config.isValid());
+
+			init_audio = false;
 			a++;
 		}
 		else {
@@ -86,6 +90,9 @@ int safe_main(int argc, char **argv)
 
 	}
 	res = max(res, int2(640, 480));
+
+	if(init_audio)
+		audio::initDevice();
 
 	bool console_mode = server_config.isValid() && server_config.m_console_mode;
 	if(!console_mode)

@@ -10,8 +10,6 @@ Mustfix: -----------------------------------------------------------------------
 - Client cannot connect to server when started much earlier
 - Handle situation when client connection was broken, but server still expects
   normal communication on some specific port, and client tries to reconnect
-- Often death sounds are not played (in multiplayer mode)
-- Door sounds don't work in multiplayer
 - Visible tearing when vsync (glfwSwapInterval(1)) is on
 - Projectiles that are out of range do not blend out
 - Bullets shouldnt create sparks when actors are hit
@@ -25,7 +23,6 @@ Mustfix: -----------------------------------------------------------------------
   (sometimes tracking ends too early)
 - Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)
 - Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
-
 
 
 
@@ -54,3 +51,5 @@ Fixed: -------------------------------------------------------------------------
 - Hud shortcuts work when writing to console
 - Out of ammo sound can be played as often as the user can press right click
 - Item desc is shown when mouse overed invisible items in HudInventory
+- Often death sounds are not played (in multiplayer mode)
+- Door sounds don't work in multiplayer

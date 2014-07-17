@@ -6,7 +6,6 @@
 #include "game/orders/inventory.h"
 #include "game/actor.h"
 #include "game/container.h"
-#include "game/world.h"
 
 namespace game {
 
@@ -77,7 +76,7 @@ namespace game {
 				return false;
 			}
 			if(item_type == ItemType::ammo)
-				world()->playSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
+				replicateSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
 
 			//TODO: magic_hi animation when object to be picked up is high enough
 			animate(item_type == ItemType::armour? Action::magic_low : Action::magic);
@@ -120,7 +119,7 @@ namespace game {
 			}
 		// TODO: play only half of the sound and then blend out?
 		//	if(order.m_item_type == ItemType::ammo)
-		//		world()->playSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
+		//		replicateSound(m_inventory.weapon().soundId(WeaponSoundType::reload), pos());
 
 			animate(order.m_item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}
@@ -155,7 +154,7 @@ namespace game {
 		if(event == ActorEvent::init_order) {
 			Container *container = refEntity<Container>(order.m_target);
 
-			if(container && areAdjacent(*this, *container) && !isClient()) {
+			if(container && areAdjacent(*this, *container)) {
 				Inventory *src = &m_inventory, *dst = &container->inventory();
 				if(order.m_mode == transfer_from)
 					swap(src, dst);

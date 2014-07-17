@@ -107,7 +107,6 @@ namespace game {
 
 		template <class TEntity, class ...Args>
 		void addNewEntity(const float3 &pos, const Args&... args);
-
 		void addEntity(PEntity &&new_entity);
 
 		double timeDelta() const;
@@ -117,6 +116,9 @@ namespace game {
 		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
 		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;
 		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
+
+		void playSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
+		void replicateSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
 	
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;
@@ -127,8 +129,8 @@ namespace game {
 
 		bool isClient() const;
 		bool isServer() const;
+
 		const World *world() const { return m_world; }
-		World *world() { return m_world; }
 
 	private:
 		void hook(World *world, int index);
@@ -306,9 +308,11 @@ namespace game {
 
 	template <class TEntity, class ...Args>
 	void EntityWorldProxy::addNewEntity(const float3 &pos, const Args&... args) {
-		PEntity entity(new TEntity(args...));
-		entity->setPos(pos);
-		addEntity(std::move(entity));
+		if(!isClient()) {
+			PEntity entity(new TEntity(args...));
+			entity->setPos(pos);
+			addEntity(std::move(entity));
+		}
 	}
 }
 

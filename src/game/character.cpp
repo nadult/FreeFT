@@ -127,6 +127,9 @@ namespace game {
 			}
 		}
 
+		out.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
+		out.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
+
 		return out;
 	}
 		

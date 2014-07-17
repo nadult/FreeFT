@@ -71,7 +71,7 @@ namespace game {
 			}
 			if(event == ActorEvent::step) {
 				SurfaceId::Type standing_surface = surfaceUnder();
-				world()->playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
+				playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 			}
 		}
 

@@ -44,9 +44,6 @@ namespace game {
 
 		EntityRef m_target, m_source;
 		float m_damage_mod;
-
-		//TODO: Ugly hack; Add possibility to create entity with world as a parameter,
-		//this way we will be able to play sounds that should be played on the first frame
 		bool m_played_sound;
 		bool m_applied_damage;
 	};

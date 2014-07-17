@@ -45,6 +45,9 @@ namespace audio {
 		SoundIndex() :first_idx(-1), variation_count(0) { }
 		SoundIndex(int first_idx, int var_count) :first_idx(first_idx), variation_count(var_count) { }
 
+		void save(Stream&) const;
+		void load(Stream&);
+
 		operator int() const { return first_idx; }
 
 		int specificId(int index) const {

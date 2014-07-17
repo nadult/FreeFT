@@ -34,13 +34,13 @@ namespace game {
 	}
 
 	Projectile::Projectile(Stream &sr) :EntityImpl(sr) {
-		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_impact_created);
+		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_distance, m_impact_created);
 		sr >> m_spawner;
 	}
 
 	void Projectile::save(Stream &sr) const {
 		EntityImpl::save(sr);
-		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_impact_created);
+		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_distance, m_impact_created);
 		sr << m_spawner;
 	}
 		
@@ -93,7 +93,7 @@ namespace game {
 	}
 
 	void Projectile::makeImpact(float3 new_pos, ObjectRef hit) {
-		if(!m_impact_created && m_proto.impact.isValid() && !isClient()) {
+		if(!m_impact_created && m_proto.impact.isValid()) {
 			EntityRef ref = world()->toEntityRef(hit);
 			addNewEntity<Impact>(new_pos, *m_proto.impact, m_spawner, ref, m_damage_mod);
 			m_impact_created = true;

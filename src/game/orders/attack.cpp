@@ -5,7 +5,6 @@
 
 #include "game/orders/attack.h"
 #include "game/actor.h"
-#include "game/world.h"
 
 namespace game {
 
@@ -56,7 +55,7 @@ namespace game {
 			if(mode == AttackMode::undefined)
 				return failOrder();
 			if(weapon.needAmmo() && !m_inventory.ammo().count) {
-				world()->playSound(weapon.soundId(WeaponSoundType::out_of_ammo), pos());
+				replicateSound(weapon.soundId(WeaponSoundType::out_of_ammo), pos());
 				return failOrder();
 			}
 			
@@ -150,7 +149,7 @@ namespace game {
 		if(event == ActorEvent::sound) {
 			//TODO: select firing mode in attack order
 			SoundId sound_id = weapon.soundId(order.m_mode == AttackMode::burst? WeaponSoundType::fire_burst : WeaponSoundType::normal);
-			world()->playSound(sound_id, pos(), AttackMode::isRanged(order.m_mode)? SoundType::shooting : SoundType::normal);
+			playSound(sound_id, pos(), AttackMode::isRanged(order.m_mode)? SoundType::shooting : SoundType::normal);
 		}
 
 		return true;

@@ -6,7 +6,6 @@
 #include "game/container.h"
 #include "game/actor.h"
 #include "game/sprite.h"
-#include "game/world.h"
 #include "sys/xml.h"
 #include <cstdio>
 
@@ -102,7 +101,7 @@ namespace game {
 	void Container::onSoundEvent() {
 		bool is_opening = m_state == ContainerState::opening;
 		ContainerSoundType::Type sound_type = is_opening? ContainerSoundType::opening : ContainerSoundType::closing;
-		world()->playSound(m_proto.sound_ids[sound_type], pos());
+		replicateSound(m_proto.sound_ids[sound_type], pos());
 	}
 	
 	void Container::open() {
@@ -128,8 +127,7 @@ namespace game {
 			}
 		}
 		if(m_update_anim) {
-			world()->replicate(this);
-
+			replicate();
 			playSequence(m_proto.seq_ids[m_state]);
 			m_update_anim = false;
 		}

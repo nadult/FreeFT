@@ -5,7 +5,6 @@
 
 #include "game/impact.h"
 #include "sys/xml.h"
-#include "game/world.h"
 
 namespace game {
 
@@ -99,7 +98,7 @@ namespace game {
 		}
 
 		if(!m_played_sound) {
-			world()->playSound(m_proto.sound_idx, pos(), m_proto.type == ImpactType::area? SoundType::explosion : SoundType::normal);
+			playSound(m_proto.sound_idx, pos(), m_proto.type == ImpactType::area? SoundType::explosion : SoundType::normal);
 			m_played_sound = true;
 		}
 		

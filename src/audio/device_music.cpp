@@ -153,6 +153,9 @@ namespace audio
 	}
 
 	const PPlayback playMusic(const string &file_name, float volume) {
+		if(!isInitialized())
+			return PPlayback();
+
 		PPlayback out(new Playback(file_name, volume));
 		s_playbacks.emplace_back(out);
 		return out;

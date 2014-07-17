@@ -243,7 +243,7 @@ namespace game {
 				if(current_type_id != OrderTypeId::change_stance && (current_type_id == OrderTypeId::idle || random() > 0.5f))
 					setOrder(new GetHitOrder(will_dodge), true);
 				else if(!will_dodge)
-					world()->playSound(m_actor.sounds[m_sound_variation].hit, pos());
+					playSound(m_actor.sounds[m_sound_variation].hit, pos());
 			}
 		}
 		
@@ -328,8 +328,7 @@ namespace game {
 
 	bool Actor::setOrder(POrder &&order, bool force) {
 		DASSERT(order);
-
-		if(!world() || isClient() || !order)
+		if(!world() || !order)
 			return false;
 
 		if(order->typeId() == OrderTypeId::look_at) {
@@ -395,7 +394,7 @@ namespace game {
 			need_replicate = true;
 		}
 		
-		if(need_replicate)	
+		if(need_replicate)
 			replicate();
 
 		m_move_vec = float3(0, 0, 0);
@@ -431,8 +430,6 @@ namespace game {
 	}
 
 	void Actor::onPickupEvent() {
-		if(isClient())
-			return;
 		handleOrder(ActorEvent::pickup);
 	}
 		
@@ -445,15 +442,10 @@ namespace game {
 	}
 		
 	void Actor::onStepEvent(bool left_foot) {
-		if(isServer())
-			return;
 		handleOrder(ActorEvent::step, ActorEventParams{ int3(), left_foot });
 	}
 
 	void Actor::onSoundEvent() {
-		if(isServer())
-			return;
-
 		handleOrder(ActorEvent::sound);
 	}
 		

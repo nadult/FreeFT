@@ -15,6 +15,8 @@
 namespace game {
 
 	DECLARE_ENUM(MessageId,
+		sound,
+
 		actor_order,
 		class_changed,
 		update_client,

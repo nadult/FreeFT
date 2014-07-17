@@ -22,7 +22,7 @@ namespace game {
 		for(int n = 0; n < m_world.entityCount(); n++) {
 			Actor *actor = m_world.refEntity<Actor>(n);
 			if(actor && actor->factionId() != 0)
-				actor->attachAI<SimpleAI>();
+				actor->attachAI<SimpleAI>(PWorld(&m_world));
 		}
 	}
 	

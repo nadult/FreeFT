@@ -4,7 +4,6 @@
  */
 
 #include "game/door.h"
-#include "game/world.h"
 #include "game/actor.h"
 #include "game/sprite.h"
 #include "sys/xml.h"
@@ -180,13 +179,13 @@ namespace game {
 		bbox.min += float3(1.1f, 0.1f, 1.1f);
 		bbox.max -= float3(1.1f, 0.1f, 1.1f);
 
-		bool is_colliding = (bool)world()->findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
+		bool is_colliding = (bool)findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
 
 		if(is_colliding && classId() == DoorClassId::rotating && m_state == DoorState::closed && target == DoorState::opened_in) {
 			target = DoorState::opened_out;
 			result = DoorState::opening_out;
 			bbox = computeBBox(result);
-			is_colliding = (bool)world()->findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
+			is_colliding = (bool)findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
 		}
 		if(!is_colliding) {
 			m_bbox = bbox;
@@ -197,7 +196,7 @@ namespace game {
 		
 	void Door::onSoundEvent() {
 		bool is_opening = m_state == DoorState::opening_in || m_state == DoorState::opening_out;
-		world()->playSound(m_proto.sound_ids[is_opening? DoorSoundType::opening : DoorSoundType::closing], pos());
+		replicateSound(m_proto.sound_ids[is_opening? DoorSoundType::opening : DoorSoundType::closing], pos());
 	}
 	
 	FBox Door::computeBBox(DoorState::Type state) const {	
@@ -228,17 +227,16 @@ namespace game {
 
 	void Door::think() {
 		const float2 dir = actualDir();
-		World *world = this->world();
 		
 		if(m_update_anim) {
-			world->replicate(this);
+			replicate();
 			playSequence(m_proto.seq_ids[m_state]);
 			m_update_anim = false;
 		}
-		if(classId() == DoorClassId::sliding && m_state == DoorState::opened_in && world->currentTime() > m_close_time) {
+		if(classId() == DoorClassId::sliding && m_state == DoorState::opened_in && currentTime() > m_close_time) {
 			FBox bbox = computeBBox(DoorState::closed);
-			if((bool)world->findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()})) {
-				m_close_time = world->currentTime() + 1.5;
+			if((bool)findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()})) {
+				m_close_time = currentTime() + 1.5;
 			}
 			else {
 				m_bbox = bbox;
@@ -255,7 +253,7 @@ namespace game {
 				m_bbox = computeBBox(m_state);
 				m_update_anim = true;
 				if(m_state == DoorState::opened_in && classId() == DoorClassId::sliding)
-					m_close_time = world()->currentTime() + 3.0;
+					m_close_time = currentTime() + 3.0;
 				break;
 			}
 	}

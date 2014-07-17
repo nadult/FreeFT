@@ -1,11 +1,11 @@
-- DOWNSCALE, remove unnecessary features, prioritize TODO
+- DOWNSCALE, remove unnecessary features
 
 Must-have: ----------------------------------------------------------------------------------------
 
 - Mutants cannot use rifles, add classes specific to mutants with heavy weapons
 - findClosestPos could return multiple points, if for some reason on of them is unreachable
   (think this through). Problems arise when were trying to get to some door when lot's of AI's are running around
-- Constructors with Stream should be explicit
+- Constructors with Stream (or XMLNode, or other stuff) should be explicit
 - think about handling orders on client / server and replication
 
 
@@ -36,7 +36,7 @@ Nice to have: ------------------------------------------------------------------
 - When projectiles are being shot vertically, their angle could be altered a bit
 - If the last interactor with a door was a player, then he should see when the door closes
 - When player is moving in one direction for a very short distance, he shouldn't rotate
-
+- Sound blockers (floors, walls)
 
 
 Refactoring: --------------------------------------------------------------------------------------

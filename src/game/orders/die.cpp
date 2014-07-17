@@ -5,7 +5,6 @@
 
 #include "game/orders/die.h"
 #include "game/actor.h"
-#include "game/world.h"
 
 namespace game {
 
@@ -44,10 +43,10 @@ namespace game {
 			SoundId sound_id = m_actor.sounds[m_sound_variation].death[order.m_death_id];
 			if(sound_id == -1)
 				sound_id = m_actor.sounds[m_sound_variation].death[DeathId::normal];
-			world()->playSound(sound_id, pos());
+			playSound(sound_id, pos());
 
 			if(m_actor.is_alive)
-				world()->playSound(m_actor.human_death_sounds[order.m_death_id], pos());
+				playSound(m_actor.human_death_sounds[order.m_death_id], pos());
 		}
 		if(event == ActorEvent::anim_finished)
 			order.m_is_dead = true;

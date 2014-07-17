@@ -147,6 +147,7 @@ namespace hud {
 			button->setEnabled(button->id() == stance);
 			button->setGreyed(stance == -1 || !actor || actor->isDead());
 		}
+		m_hud_weapon->setGreyed(!actor || actor->isDead());
 			
 		m_hud_char_icon->setCharacter(character? new Character(*character) : nullptr);
 

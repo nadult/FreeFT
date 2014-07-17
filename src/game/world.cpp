@@ -12,6 +12,7 @@
 #include "navi_heightmap.h"
 #include "audio/device.h"
 #include "game/actor.h"
+#include "net/socket.h"
 #include <algorithm>
 
 namespace game {
@@ -435,16 +436,41 @@ namespace game {
 	}
 
 	void World::onMessage(Stream &sr, int source_id) {
+		MessageId::Type message_id;
+		sr >> message_id;
+
+		if(message_id == MessageId::sound) {
+			if(isClient()) {
+				audio::SoundIndex sound_id;
+				SoundType::Type sound_type;
+				sr >> sound_type >> sound_id;
+				float3 pos = (float3)net::decodeInt3(sr);
+				audio::playSound(sound_id, sound_type, pos);
+			}
+		}
+
 		if(m_game_mode) {
-			MessageId::Type message_id;
-			sr >> message_id;
 			m_game_mode->onMessage(sr, message_id, source_id);
 		}
 	}
 		
-	void World::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
-		if(isServer())
+	void World::replicateSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+		if(m_mode == Mode::single_player) {
+			playSound(sound_id, pos, sound_type);
 			return;
+		}
+
+		if(m_mode == Mode::server) {
+			net::TempPacket chunk;
+			chunk << MessageId::sound << sound_type << audio::SoundIndex((int)sound_id, 1);
+			net::encodeInt3(chunk, int3(pos));
+			sendMessage(chunk);
+			// TODO: send unreliable packet with short life span
+			//       (if RemoteHost couldn't send it in 50ms, then drop it)
+		}
+	}
+		
+	void World::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
 		audio::playSound(sound_id, sound_type, pos);
 	}
 

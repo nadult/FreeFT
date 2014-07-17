@@ -5,7 +5,6 @@
 
 #include "game/orders/get_hit.h"
 #include "game/actor.h"
-#include "game/world.h"
 
 namespace game {
 
@@ -94,11 +93,11 @@ namespace game {
 		}
 		else if(event == ActorEvent::sound) {
 			if(order.mode == Mode::recoil)
-				world()->playSound(m_actor.sounds[m_sound_variation].hit, pos());
+				playSound(m_actor.sounds[m_sound_variation].hit, pos());
 			else if(order.mode == Mode::fall)
-				world()->playSound(m_proto.fall_sound, pos());
+				playSound(m_proto.fall_sound, pos());
 			else if(order.mode == Mode::getup)
-				world()->playSound(m_actor.sounds[m_sound_variation].get_up, pos());
+				playSound(m_actor.sounds[m_sound_variation].get_up, pos());
 		}
 
 		return true;

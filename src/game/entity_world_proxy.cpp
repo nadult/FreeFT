@@ -79,7 +79,18 @@ namespace game {
 
 	void EntityWorldProxy::addEntity(unique_ptr<Entity> &&new_entity) {
 		DASSERT(isHooked());
-		m_world->m_replace_list.emplace_back(std::move(new_entity), -1);
+		if(!m_world->isClient())
+			m_world->m_replace_list.emplace_back(std::move(new_entity), -1);
+	}
+		
+	void EntityWorldProxy::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+		DASSERT(isHooked());
+		m_world->playSound(sound_id, pos, sound_type);
+	}
+	
+	void EntityWorldProxy::replicateSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+		DASSERT(isHooked());
+		m_world->replicateSound(sound_id, pos, sound_type);
 	}
 		
 	ObjectRef EntityWorldProxy::findAny(const FBox &box, const FindFilter &filter) const {

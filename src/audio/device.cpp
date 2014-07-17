@@ -106,6 +106,7 @@ namespace audio
 			int m_variation_count;
 			ALuint m_id;
 			string m_name;
+			string m_map_name;
 		};
 
 		std::map<string, SoundIndex> s_sound_map;
@@ -115,7 +116,7 @@ namespace audio
 		ALCcontext *s_context = nullptr;
 
 		uint s_sources[max_sources] = { 0, };
-		int s_free_sources[max_sources] = {0, };
+		int s_free_sources[max_sources] = { 0, };
 		int s_num_free_sources = 0;
 		double s_last_time = 0.0;
 
@@ -178,6 +179,7 @@ namespace audio
 			if(it == s_sound_map.end())
 				continue;
 			SoundIndex &idx = it->second;
+			s_sounds[idx.first_idx].m_map_name = it->first;
 			s_sounds[idx.first_idx + ++idx.variation_count].m_name = file_entries[n].path;
 		}
 
@@ -385,6 +387,19 @@ namespace audio
 
 	void playSound(const char *locase_name, float volume) {
 		playSound(findSound(locase_name), volume);
+	}
+		
+	void SoundIndex::save(Stream &sr) const {
+		const DSound *sound = first_idx >= 0 && first_idx < (int)s_sounds.size()? &s_sounds[first_idx] : nullptr;
+		const string &name = sound? sound->m_map_name : string();
+		sr << name;
+	}
+
+	void SoundIndex::load(Stream &sr) {
+		string name;
+		sr >> name;
+		auto it = s_sound_map.find(name);
+		*this = it == s_sound_map.end()? SoundIndex() : it->second;
 	}
 
 }

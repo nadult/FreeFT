@@ -167,8 +167,8 @@ namespace game {
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
 
 		template <class TAI, class ...Args>
-		void attachAI(const Args&... args) {
-			m_ai = new TAI(PWorld(world()), ref(), args...);
+		void attachAI(PWorld world, const Args&... args) {
+			m_ai = new TAI(world, ref(), args...);
 		}
 		void detachAI() {
 			m_ai.reset();

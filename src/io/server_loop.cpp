@@ -23,7 +23,7 @@ namespace io {
 		for(int n = 0; n < m_world->entityCount(); n++) {
 			Actor *actor = m_world->refEntity<Actor>(n);
 			if(actor && actor->factionId() != 0)
-				actor->attachAI<SimpleAI>();
+				actor->attachAI<SimpleAI>(m_world);
 		}
 
 		if(!m_server->config().m_console_mode)

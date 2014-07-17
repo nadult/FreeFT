@@ -121,7 +121,10 @@ namespace game {
 		void sendMessage(net::TempPacket&, int target_id = -1);
 		void onMessage(Stream&, int source_id);
 
+		//TODO: single function with replication as a parameter
+		// in some objects we can check if sound is played in the first frame or not
 		void playSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
+		void replicateSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
 
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
 		
