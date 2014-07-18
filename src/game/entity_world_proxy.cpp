@@ -42,8 +42,7 @@ namespace game {
 			m_world->replicate(m_index);
 	}
 		
-	EntityRef EntityWorldProxy::ref() {
-		DASSERT(isHooked());
+	EntityRef EntityWorldProxy::ref() const {
 		return EntityRef(m_index, m_unique_id);
 	}
 		

@@ -364,7 +364,7 @@ void NaviMap::removeColliders() {
 	
 void NaviMap::updateReachability() {
 	//TODO: this is probably too slow
-	PROFILE("NaviMap::updateReachability");
+	//PROFILE("NaviMap::updateReachability");
 
 	m_groups.clear();
 	m_groups.resize((int)m_quads.size(), -1);

@@ -33,6 +33,7 @@ namespace game
 		static gfx::PTexture emptyIcon();
 
 		static const vector<pair<ProtoIndex, string>> findIcons();
+		static const vector<string> findIcons(const string &proto_name);
 
 		bool operator==(const Character &rhs) const;
 

@@ -2,12 +2,14 @@
 
 Must-have: ----------------------------------------------------------------------------------------
 
+- Notify Client that Server has disconnected
 - Mutants cannot use rifles, add classes specific to mutants with heavy weapons
 - findClosestPos could return multiple points, if for some reason on of them is unreachable
   (think this through). Problems arise when were trying to get to some door when lot's of AI's are running around
 - Constructors with Stream (or XMLNode, or other stuff) should be explicit
 - think about handling orders on client / server and replication
-
+- Think about visibility system; What player should see when he's dead, etc.
+  Is this systeam really such a good idea?
 
 
 

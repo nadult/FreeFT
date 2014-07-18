@@ -88,7 +88,7 @@ namespace game {
 	class EntityWorldProxy {
 	public:
 		int index() const { return m_index; }
-		EntityRef ref();
+		EntityRef ref() const;
 		
 		void remove();
 		void replicate();

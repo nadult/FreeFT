@@ -69,6 +69,17 @@ namespace game {
 		return out;
 	}
 		
+	const vector<string> Character::findIcons(const string &proto_name) {
+		const auto &pairs = findIcons();
+		ProtoIndex index = findProto(proto_name, ProtoId::actor);
+
+		vector<string> out;
+		for(const auto &pair : pairs)
+			if(pair.first == index)
+				out.emplace_back(pair.second);
+		return out;
+	}
+		
 	bool Character::operator==(const Character &rhs) const {
 		return m_name == rhs.m_name && m_icon_name == rhs.m_icon_name && m_proto_idx == rhs.m_proto_idx;
 	}

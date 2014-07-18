@@ -1,6 +1,5 @@
 Mustfix: ------------------------------------------------------------------------------------------
 - Animation glitches in multiplayer  
-- Mutants can equip leather armor in multiplayer
 - Problems with item icon textures stored in cache
 - Problems with queuing orders
 - When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
@@ -14,7 +13,6 @@ Mustfix: -----------------------------------------------------------------------
 - Projectiles that are out of range do not blend out
 - Bullets shouldnt create sparks when actors are hit
 
-- In multiplayer sometimes players are stuck
 - In multiplayer mode, player can get kicked into doors and get stuck
 - Attacking on stairs may caus player to get stuck
 - When trying to teleport in client, AIs react (for a single frame)
@@ -53,3 +51,5 @@ Fixed: -------------------------------------------------------------------------
 - Item desc is shown when mouse overed invisible items in HudInventory
 - Often death sounds are not played (in multiplayer mode)
 - Door sounds don't work in multiplayer
+- Mutants can equip leather armor in multiplayer
+- In multiplayer sometimes players are stuck

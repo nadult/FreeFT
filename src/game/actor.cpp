@@ -323,7 +323,7 @@ namespace game {
 		if(item.type() == ItemType::weapon)
 			return m_proto.canEquipWeapon(Weapon(item).classId());
 		else if(item.type() == ItemType::armour)
-			return (bool)findActorArmour(m_actor, m_inventory.armour());
+			return (bool)findActorArmour(m_actor, Armour(item));
 		else if(item.type() == ItemType::ammo)
 			return m_inventory.weapon().proto().ammo_class_id == Ammo(item).classId();
 
