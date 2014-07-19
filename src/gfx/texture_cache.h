@@ -20,7 +20,7 @@ namespace gfx {
 		void operator=(const CachedTexture&);
 		virtual ~CachedTexture();
 
-		PTexture accessTexture(FRect&) const;
+		PTexture accessTexture(FRect&, bool put_in_atlas = true) const;
 		TextureCache *getCache() const { return m_cache; }
 		int cacheId() const { return m_id; }
 		void bindToCache(TextureCache&) const;
@@ -55,7 +55,7 @@ namespace gfx {
 		int size() const { return (int)m_resources.size(); }
 
 		void unload(int res_id);
-		PTexture access(int res_id, FRect&);
+		PTexture access(int res_id, bool put_in_atlas, FRect&);
 		PTexture atlas() { return PTexture(&m_atlas); }
 
 		void setMemoryLimit(int bytes) { m_memory_limit = bytes; }

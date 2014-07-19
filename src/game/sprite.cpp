@@ -116,13 +116,13 @@ namespace game
 		}
 	}
 
-	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect) const {
+	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect, bool put_in_atlas) const {
 		if(cacheId() == -1) {
 			bindToCache(TextureCache::main_cache);
 			prev_palette = &palette;
 		}
 
-		return accessTexture(tex_rect);
+		return accessTexture(tex_rect, put_in_atlas);
 	}
 
 	bool Sprite::MultiImage::testPixel(const int2 &screen_pos) const {
@@ -190,11 +190,11 @@ namespace game
 		return out;
 	}
 
-	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const {
+	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas) const {
 		DASSERT(!isPartial());
 
 		const MultiPalette &palette = m_palettes[m_sequences[seq_id].palette_id];
-		return m_images[imageIndex(seq_id, frame_id, dir_id)].toTexture(palette, tex_rect);
+		return m_images[imageIndex(seq_id, frame_id, dir_id)].toTexture(palette, tex_rect, put_in_atlas);
 	}
 
 	IRect Sprite::getRect(int seq_id, int frame_id, int dir_id) const {

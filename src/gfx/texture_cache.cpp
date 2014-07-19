@@ -20,9 +20,9 @@ namespace gfx {
 		unbindFromCache();
 	}
 
-	PTexture CachedTexture::accessTexture(FRect &tex_rect) const {
+	PTexture CachedTexture::accessTexture(FRect &tex_rect, bool put_in_atlas) const {
 		DASSERT(m_cache && m_id != -1);
-		return m_cache->access(m_id, tex_rect);
+		return m_cache->access(m_id, put_in_atlas, tex_rect);
 	}
 
 	void CachedTexture::unbindFromCache() const {
@@ -226,7 +226,7 @@ namespace gfx {
 		m_resources[res_id].res_ptr = nullptr;
 	}
 
-	PTexture TextureCache::access(int res_id, FRect &tex_rect) {
+	PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 		DASSERT(isValidId(res_id));
 
 		Resource &res = m_resources[res_id];
@@ -239,7 +239,7 @@ namespace gfx {
 			tex_rect = FRect(float2(res.atlas_pos) * mul, float2(res.atlas_pos + res.size) * mul);
 			return PTexture(&m_atlas);
 		}
-		else if(res.atlas_node.prev == -1 && res.atlas_node.next == -1 && m_atlas_queue.head != res_id) {
+		else if(put_in_atlas && res.atlas_node.prev == -1 && res.atlas_node.next == -1 && m_atlas_queue.head != res_id) {
 			DASSERT(res.atlas_node_id == -1);
 			if(res.size.x <= node_size / 2 && res.size.y <= node_size / 2)
 				INSERT(m_atlas_queue, atlas, res_id);
@@ -277,6 +277,7 @@ namespace gfx {
 			INSERT(m_main_list, main, res_id);
 		}
 		else {
+			// Moving to front
 			REMOVE(m_main_list, main, res_id);
 			INSERT(m_main_list, main, res_id);
 		}

@@ -111,6 +111,9 @@ namespace game {
 	
 	ActorInventory::ActorInventory(const XMLNode &node)
 		:Inventory(node), m_weapon(Item::dummyWeapon()), m_dummy_weapon(Item::dummyWeapon()), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} {
+		if(!node)
+			return;
+
 		XMLNode weapon_node = node.child("weapon");
 		XMLNode armour_node = node.child("armour");
 		XMLNode ammo_node = node.child("ammo");

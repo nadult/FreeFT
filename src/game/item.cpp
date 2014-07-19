@@ -77,8 +77,7 @@ namespace game {
 		
 	gfx::PTexture Item::guiImage(bool small, FRect &tex_rect) const {
 		const Sprite &sprite = Sprite::get(m_proto->sprite->index());
-		gfx::PTexture tex = sprite.getFrame(m_proto->seq_ids[small?2 : 1], 0, 0, tex_rect);
-		return tex;
+		return sprite.getFrame(m_proto->seq_ids[small?2 : 1], 0, 0, tex_rect, false);
 	}
 
 	void Item::save(Stream &sr) const {

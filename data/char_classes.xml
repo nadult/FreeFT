@@ -50,9 +50,9 @@
 
 <char_class tier="0" name="Scout" actors="male female">
 	<inventory>
-		<weapon proto_id="laser_rifle" />
+		<weapon proto_id="uzi" />
 		<armour proto_id="leather_armour" />
-		<ammo proto_id="fusion_cell" count="100" />
+		<ammo proto_id="9mm_jhp" count="300" />
 
 		<item proto_type="weapon" proto_id="rocket_launcher" />
 		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
@@ -61,9 +61,9 @@
 
 <char_class tier="0" name="Scout" actors="ghoul">
 	<inventory>
-		<weapon proto_id="laser_rifle" />
+		<weapon proto_id="uzi" />
 		<armour proto_id="ghoul_armour" />
-		<ammo proto_id="fusion_cell" count="100" />
+		<ammo proto_id="9mm_jhp" count="300" />
 
 		<item proto_type="weapon" proto_id="rocket_launcher" />
 		<item proto_type="ammo" proto_id="rocket_ap" count="10" />

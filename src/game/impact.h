@@ -35,6 +35,7 @@ namespace game {
 
 		void save(Stream&) const;
 		XMLNode save(XMLNode& parent) const;
+		void addToRender(gfx::SceneRenderer &out, Color color) const override;
 
 		Flags::Type flags() const { return Flags::impact | Flags::dynamic_entity; }
 	

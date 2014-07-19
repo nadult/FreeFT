@@ -2,6 +2,9 @@
 
 Must-have: ----------------------------------------------------------------------------------------
 
+- Better targeting, which should work in 3D (if user wants to aim at a wall)
+- Displaying hit percentage close to cursor
+- Action cursors
 - When user clicks on PC icon, camera should center on the PC
 - Notify Client that Server has disconnected
 - Mutants cannot use rifles, add classes specific to mutants with heavy weapons

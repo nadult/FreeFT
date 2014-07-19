@@ -86,7 +86,7 @@ namespace game {
 			void load(Stream&);
 			void save(Stream&) const;
 
-			gfx::PTexture toTexture(const MultiPalette&, FRect&) const;
+			gfx::PTexture toTexture(const MultiPalette&, FRect&, bool put_in_atlas = true) const;
 			bool testPixel(const int2&) const;
 			int memorySize() const;
 
@@ -107,7 +107,7 @@ namespace game {
 		void updateMaxRect();
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
-		gfx::PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect) const;
+		gfx::PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas = true) const;
 		
 		// Search is case-insensitive
 		int findSequence(const char *name) const;

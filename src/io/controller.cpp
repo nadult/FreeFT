@@ -148,7 +148,7 @@ namespace io {
 				//TODO: pixel intersect always returns distance == 0
 				int3 wpos = int3(m_screen_ray.at(m_isect.distance()) + float3(0, 0.5f, 0));
 				
-				bool run = actor && !isKeyPressed(Key::lshift) && distance(float3(wpos), actor->pos()) > 10.0f;
+				bool run = actor && !isKeyPressed(Key::lshift);// && distance(float3(wpos), actor->pos()) > 10.0f;
 				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
 		}

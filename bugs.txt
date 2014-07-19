@@ -1,6 +1,6 @@
 Mustfix: ------------------------------------------------------------------------------------------
+- AI's get stuck all the time
 - Animation glitches in multiplayer  
-- Problems with item icon textures stored in cache
 - Problems with queuing orders
 - When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
 - When standing near a wall, you can fire through it (projectiles spawn too far away)
@@ -11,7 +11,7 @@ Mustfix: -----------------------------------------------------------------------
   normal communication on some specific port, and client tries to reconnect
 - Visible tearing when vsync (glfwSwapInterval(1)) is on
 - Projectiles that are out of range do not blend out
-- Bullets shouldnt create sparks when actors are hit
+- m60 single shot sound cannot be hear in multiplayer
 
 - In multiplayer mode, player can get kicked into doors and get stuck
 - Attacking on stairs may caus player to get stuck
@@ -35,7 +35,7 @@ Nice to fix: -------------------------------------------------------------------
 - Entities shouldn't break order of tiles when rendering
 - Robots have no hit sounds
 - When changing armour, it should happen on event pickup, not when animation has finished
-
+- Sometimes main menu music is still being played in the game
 
 
 Secondary: ----------------------------------------------------------------------------------------
@@ -53,3 +53,5 @@ Fixed: -------------------------------------------------------------------------
 - Door sounds don't work in multiplayer
 - Mutants can equip leather armor in multiplayer
 - In multiplayer sometimes players are stuck
+- Problems with item icon textures stored in cache
+- Bullets shouldnt create sparks when actors are hit
