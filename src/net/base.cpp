@@ -7,14 +7,33 @@
 
 namespace net {
 
+	void TempPacket::v_save(const void *ptr, int count) {
+		if(m_pos + count > (int)sizeof(m_data))
+			THROW("not enough space in buffer (%d space left, %d needed)", spaceLeft(), (int)count);
+
+		memcpy(m_data + m_pos, ptr, count);
+		m_pos += count;
+		if(m_pos > m_size)
+			m_size = m_pos;
+	}
+
 	DEFINE_ENUM(RefuseReason,
 		"wrong password",
 		"server full"
 	);
 
-	Address lobbyServerAddress() {
-		return Address(resolveName("localhost"), 50000);
-		return Address(resolveName("89.74.58.32"), 50000);
+	void encodeInt3(Stream &sr, const int3 &value) {
+		sr.encodeInt(value.x);
+		sr.encodeInt(value.y);
+		sr.encodeInt(value.z);
+	}
+
+	const int3 decodeInt3(Stream &sr) {
+		int3 out;
+		out.x = sr.decodeInt();
+		out.y = sr.decodeInt();
+		out.z = sr.decodeInt();
+		return out;
 	}
 
 	void ServerStatusChunk::save(Stream &sr) const {

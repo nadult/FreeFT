@@ -16,6 +16,7 @@ namespace game {
 			respawn_delay = 5
 		};
 
+		//TODO: decrease data sent over the net
 		DeathMatchServer(World &world);
 
 		GameModeId::Type typeId() const override { return GameModeId::death_match; }
@@ -23,31 +24,39 @@ namespace game {
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 
 		struct ClientInfo {
-			ClientInfo() :next_respawn_time(respawn_delay), kills(0), deaths(0), is_respawning(false), is_dead(false) { }
+			ClientInfo();
 			void save(Stream&) const;
 			void load(Stream&);
 
 			double next_respawn_time;
 			int kills, deaths;
-			bool is_dead, is_respawning;
+			bool is_respawning;
 		};
 		
 	private:
-		vector<ClientInfo> m_client_infos;
+		void onClientConnected(int client_id, const string &nick_name) override;
+		void onClientDisconnected(int client_id) override;
+		void onKill(EntityRef target, EntityRef killer) override;
+		void replicateClientInfo(int client_id, int target_id);
+
+		std::map<int, ClientInfo> m_client_infos;
 	};
 
 	class DeathMatchClient: public GameModeClient {
 	public:
+		typedef DeathMatchServer::ClientInfo ClientInfo;
+
 		DeathMatchClient(World &world, int client_id, const string &nick_name);
 
 		GameModeId::Type typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
-
-		typedef DeathMatchServer::ClientInfo ClientInfo;
+		
+		const vector<GameClientStats> stats() const override;
 
 	private:
 		ClientInfo m_current_info;
+		std::map<int, ClientInfo> m_client_infos;
 	};
 
 }

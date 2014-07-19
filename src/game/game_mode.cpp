@@ -104,33 +104,39 @@ namespace game {
 			GameClient new_client;
 			sr >> new_client;
 			//TODO: verification?
-			updateClient(source_id, new_client);
+			m_clients[source_id] = new_client;
+			replicateClient(source_id);
 		}
 	}
+		
+	pair<int, PlayableCharacter*> GameModeServer::findPC(EntityRef ref) {
+		const Actor *actor = m_world.refEntity<Actor>(ref);
+		if(actor) {
+			auto it = m_clients.find(actor->clientId());
+			if(it != m_clients.end())
+				for(auto &pc : it->second.pcs)
+					if(pc.entityRef() == ref)
+						return make_pair(actor->clientId(), &pc);
+		}
 
-	void GameModeServer::sendClientInfo(int client_id, int target_id) {
+		return make_pair(-1, nullptr);
+	}
+
+	void GameModeServer::replicateClient(int client_id, int target_id) {
 		net::TempPacket chunk;
 		chunk << MessageId::update_client;
 		chunk.encodeInt(client_id);
 		chunk << m_clients[client_id];
 		m_world.sendMessage(chunk, target_id);
 	}
-		
-	void GameModeServer::updateClient(int client_id, const GameClient &new_client) {
-		bool is_new = m_clients.find(client_id) == m_clients.end();
-
-		m_clients[client_id] = new_client;
-		for(auto it = m_clients.begin(); it != m_clients.end(); ++it) {
-			sendClientInfo(client_id, it->first);
-			if(!is_new)
-				sendClientInfo(it->first, client_id);
-		}
-	}
 	
 	void GameModeServer::onClientConnected(int client_id, const string &nick_name) {
 		GameClient new_client;
 		new_client.nick_name = nick_name;
-		updateClient(client_id, new_client);
+		m_clients[client_id] = new_client;
+		replicateClient(client_id, -1);
+		for(auto &it : m_clients)
+			replicateClient(it.first, client_id);
 	}
 		
 	void GameModeServer::onClientDisconnected(int client_id) {
@@ -153,7 +159,7 @@ namespace game {
 		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
 		DASSERT(pc_id >= 0 && pc_id < (int)m_clients[client_id].pcs.size());
 
-		GameClient client = m_clients[client_id];
+		GameClient &client = m_clients[client_id];
 		PlayableCharacter &pc = client.pcs[pc_id];
 		if(pc.entityRef())
 			m_world.removeEntity(pc.entityRef());
@@ -162,7 +168,7 @@ namespace game {
 		DASSERT(actor);
 		actor->setClientId(client_id);
 		pc.setEntityRef(actor_ref);
-		updateClient(client_id, client);
+		replicateClient(client_id, -1);
 	}
 
 	GameModeClient::GameModeClient(World &world, int client_id, const string &nick_name)

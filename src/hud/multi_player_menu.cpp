@@ -5,6 +5,7 @@
 
 #include "hud/multi_player_menu.h"
 #include "hud/edit_box.h"
+#include "hud/grid.h"
 #include "gfx/device.h"
 #include "gfx/font.h"
 #include "net/client.h"
@@ -12,6 +13,8 @@
 
 using namespace net;
 using namespace gfx;
+
+//#define GEN_RANDOM
 
 namespace hud {
 
@@ -32,8 +35,7 @@ namespace hud {
 		button_nickname,
 	};
 		
-	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect) :HudLayer(rect, HudLayer::slide_top),
-	  m_max_visible_rows(0), m_row_offset(0), m_selection(-1), m_please_refresh(true) {
+	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect) :HudLayer(rect, HudLayer::slide_top), m_please_refresh(true) {
 		enum { spacing = layer_spacing };
 
 		setTitle("Connecting to server:");
@@ -51,22 +53,22 @@ namespace hud {
 		PHudButton button_close = new HudClickButton(button_rect);
 		button_close->setIcon(HudIcon::close);
 
-		button_rect -= float2(s_button_size.x + spacing, 0.0f);
+		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		PHudButton button_down = new HudClickButton(button_rect);
 		button_down->setIcon(HudIcon::down_arrow);
 		button_down->setAccelerator(Key::pagedown);
 
-		button_rect -= float2(s_button_size.x + spacing, 0.0f);
+		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		PHudButton button_up = new HudClickButton(button_rect);
 		button_up->setIcon(HudIcon::up_arrow);
 		button_up->setAccelerator(Key::pageup);
 
-		button_rect -= float2(s_button_size.x + spacing, 0.0f);
+		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		button_rect.min.x -= 50.0f;
 		PHudButton button_refresh = new HudClickButton(button_rect);
 		button_refresh->setLabel("refresh");
 		
-		button_rect -= float2(button_rect.width() + spacing, 0.0f);
+		button_rect -= float2(button_rect.width() + spacing * 2, 0.0f);
 		button_rect.min.x -= 20.0f;
 		PHudButton button_connect = new HudClickButton(button_rect);
 		button_connect->setLabel("connect");
@@ -83,6 +85,18 @@ namespace hud {
 		m_nick_name->setLabel("Nick: ");
 		m_nick_name->setText("random_dude");
 
+		FRect sub_rect(rect.size());
+		sub_rect.min += float2(spacing, spacing * 2 + topOffset() + s_button_size.y);
+		sub_rect.max -= float2(spacing, spacing * 2 + s_button_size.y);
+		m_grid = new HudGrid(sub_rect);
+		
+		m_grid->addColumn("Server name",	150.0f);
+		m_grid->addColumn("Map name",	150.0f);
+		m_grid->addColumn("Num players",	80.0f);
+		m_grid->addColumn("Game mode",	80.0f);
+		m_grid->addColumn("Ping",		50.0f);
+		attach(m_grid.get());
+
 		m_buttons.push_back(button_close);
 		m_buttons.push_back(button_up);
 		m_buttons.push_back(button_down);
@@ -96,12 +110,6 @@ namespace hud {
 			attach(button.get());
 		}
 
-		m_columns.emplace_back(Column{ ColumnType::server_name,	"Server name",	150.0f });
-		m_columns.emplace_back(Column{ ColumnType::map_name,	"Map name",		150.0f });
-		m_columns.emplace_back(Column{ ColumnType::num_players,	"Num players",	80.0f });
-		m_columns.emplace_back(Column{ ColumnType::game_mode,	"Game mode",	80.0f });
-		m_columns.emplace_back(Column{ ColumnType::ping,		"Ping",			50.0f });
-
 		m_client.reset(new net::Client());
 	}
 		
@@ -111,66 +119,9 @@ namespace hud {
 		return alpha() * 0.6f;
 	}
 		
-	void MultiPlayerMenu::updateRects() {
-		FRect sub_rect = rect();
-
-		enum { spacing = layer_spacing };
-
-		sub_rect.min += float2(spacing, spacing * 2 + topOffset() + s_button_size.y);
-		sub_rect.max -= float2(spacing, spacing * 2 + s_button_size.y);
-		
-		float size_left = sub_rect.width(), min_sum = 0.0f;
-		for(int n = 0; n < (int)m_columns.size(); n++) {
-			size_left -= m_columns[n].min_size + spacing;
-			min_sum += m_columns[n].min_size;
-		}
-
-		float frac = 0.0f, pos = 0.0f;
-		for(int n = 0; n < (int)m_columns.size(); n++) {
-			float col_size = m_columns[n].min_size + size_left * (m_columns[n].min_size / min_sum) + frac;
-			int isize = (int)col_size;
-			frac = col_size - isize;
-			m_columns[n].rect = FRect(sub_rect.min.x + pos, sub_rect.min.y, sub_rect.min.x + pos + isize, sub_rect.max.y);
-			if(n == (int)m_columns.size() - 1)
-				m_columns[n].rect.max.x = sub_rect.max.x;
-			pos += isize + spacing;
-		}
-
-		float row_size = m_font->lineHeight();
-		m_max_visible_rows = (int)((sub_rect.height() + spacing) / (row_size + spacing)) - 1;
-
-		pos = sub_rect.min.y + row_size + spacing;
-		for(int r = 0; r < (int)m_servers.size(); r++) {
-			if(r < m_row_offset || r >= m_row_offset + m_max_visible_rows) {
-				m_servers[r].rect = m_servers[r].hit_rect = FRect::empty();
-				continue;
-			}
-
-			m_servers[r].rect = FRect(sub_rect.min.x, pos, sub_rect.max.x, pos + row_size);
-			m_servers[r].hit_rect = m_servers[r].rect;//inset(m_servers[r].rect, float2(0.0f, 1.0f));
-			pos += row_size + spacing;
-		}
-	}
-		
 	bool MultiPlayerMenu::onInput(const io::InputEvent &event) {
 		if(event.keyDown(Key::esc)) {
 			setVisible(false);
-			return true;
-		}
-
-		if(event.mouseOver()) {
-			for(auto &server: m_servers)
-				server.is_mouse_over = server.hit_rect.isInside(event.mousePos());
-		}
-
-		FRect main_rect = sum(m_columns.front().rect, m_columns.back().rect);
-		if(event.mouseKeyDown(0) && main_rect.isInside(event.mousePos())) {
-			m_selection = -1;
-			for(int n = 0; n < (int)m_servers.size(); n++)
-				if(m_servers[n].hit_rect.isInside(event.mousePos())) {
-					m_selection = n;
-				}
-					
 			return true;
 		}
 
@@ -182,26 +133,20 @@ namespace hud {
 			if(event.source == m_buttons[button_close]) {
 				setVisible(false);
 			}
-			if(event.source == m_buttons[button_up]) {
-				m_row_offset -= m_max_visible_rows;
-				m_row_offset = max(m_row_offset, 0);
-				updateRects();
-			}
-			if(event.source == m_buttons[button_down]) {
-				if(m_row_offset + m_max_visible_rows < (int)m_servers.size())
-					m_row_offset += m_max_visible_rows;
-				updateRects();
-			}
+			if(event.source == m_buttons[button_up])
+				m_grid->scroll(-m_grid->numVisibleRows());
+			if(event.source == m_buttons[button_down])
+				m_grid->scroll(+m_grid->numVisibleRows());
 			if(event.source == m_buttons[button_refresh]) {
 				m_please_refresh = true;
 			}
 			if(event.source == m_buttons[button_connect] && m_client) {
-				if(m_selection != -1 && getTime() - m_last_connect_time > 1.0) {
+				if(m_grid->selectedRow() != -1 && getTime() - m_last_connect_time > 1.0) {
 					if(m_nick_name->text().size() < net::limits::min_nick_name_size) {
 						setMessage(format("Nick name should have at least %d characters", (int)net::limits::min_nick_name_size), s_error_color);
 					}
 					else {
-						Address address = m_servers[m_selection].address;
+						Address address = m_servers[m_grid->selectedRow()].address;
 						if(address.isValid()) {
 							m_last_connect_time = getTime();
 							m_client->connect(address, m_nick_name->text(), m_password->text());
@@ -221,12 +166,9 @@ namespace hud {
 		HudLayer::onUpdate(time_diff);
 		updateLobbyData();
 
-		if(m_selection < m_row_offset || m_selection >= m_row_offset + m_max_visible_rows)
-			m_selection = -1;
-
-		m_buttons[button_connect]->setGreyed(!m_client || m_selection == -1);
-		m_buttons[button_up]->setGreyed(m_row_offset <= 0);
-		m_buttons[button_down]->setGreyed(m_row_offset + m_max_visible_rows >= (int)m_servers.size());
+		m_buttons[button_connect]->setGreyed(!m_client || m_grid->selectedRow() == -1);
+		m_buttons[button_up]->setGreyed(m_grid->scrollPos() == 0);
+		m_buttons[button_down]->setGreyed(m_grid->scrollPos() + m_grid->numVisibleRows() >= m_grid->numRows());
 
 		if(m_waiting_to_connect && m_client) {
 			if(m_client->mode() == Client::Mode::waiting_for_world_update) {
@@ -240,14 +182,6 @@ namespace hud {
 				setMessage("Error while connecting to server...", s_error_color);
 				m_waiting_to_connect = false;
 			}
-		}
-
-		updateRects();
-		for(int n = 0; n < (int)m_servers.size(); n++) {
-			ServerInfo &info = m_servers[n];
-			animateValue(info.over_time, time_diff * 5.0f, info.is_mouse_over);
-			animateValue(info.selection_time, time_diff * 5.0f, n == m_selection);
-			info.over_time = max(info.over_time, info.selection_time);
 		}
 	}
 
@@ -272,14 +206,10 @@ namespace hud {
 			info.ping = rand() % 2? rand() % 200 : rand() % 500;
 			info.map_name = mnames[rand() % mnames.size()];
 			info.server_name = format("%s #%d", snames[rand() % snames.size()], rand() % 4 + 1);
-			info.over_time = 0.0f;
-			info.selection_time = 0.0f;
 			m_servers.push_back(info);
 		}
 
-		m_selection = -1;
-		m_row_offset = 0;
-		updateRects();
+		updateGrid();
 		return;
 #endif
 
@@ -303,25 +233,39 @@ namespace hud {
 				m_servers.clear();
 			}
 
-			auto old_servers = m_servers;
+			Address sel_address = m_grid->selectedRow() != -1? m_servers[m_grid->selectedRow()].address : Address();
+
 			m_servers.clear();
 			for(int n = 0; n < (int)new_data.size(); n++) {
 				ServerInfo new_info;
 				((net::ServerStatusChunk&)new_info) = new_data[n];
 				new_info.ping = 0;
-				new_info.is_mouse_over = false;
-				new_info.over_time = 0.0f;
-				new_info.selection_time = 0.0f;
 				m_servers.push_back(new_info);
 			}
-			m_row_offset = 0;
+		
+			updateGrid();
+			if(sel_address.isValid()) {
+				for(int n = 0; n < (int)m_servers.size(); n++)
+					if(m_servers[n].address == sel_address)
+						m_grid->selectRow(n);
+			}
 		}
+
 
 		if(m_waiting_for_refresh && getTime() - m_last_refresh_time > 5.0) {
 			setMessage("No data received from lobby server...", s_error_color);
 			m_waiting_for_refresh = false;
 		}
 
+	}
+		
+	void MultiPlayerMenu::updateGrid() {
+		m_grid->clearRows();
+		for(int n = 0; n < (int)m_servers.size(); n++) {
+			m_grid->addRow(n);
+			for(int c = 0; c < m_grid->numColumns(); c++)
+				m_grid->setCell(n, c, cellText(n, c));
+		}
 	}
 
 	void MultiPlayerMenu::onDraw() const {
@@ -331,27 +275,6 @@ namespace hud {
 		drawQuad(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
 
 		HudLayer::onDraw();
-
-		for(int n = 0; n < (int)m_columns.size(); n++) {
-			const Column &column = m_columns[n];
-			FRect rect = column.rect;
-
-			DTexture::unbind();
-			drawQuad(rect, mulAlpha(lerp(Color::white, Color::green, n & 1? 0.3f : 0.6f), 0.5f));
-			m_font->draw(rect, {Color::white, Color::black, HAlign::center, VAlign::top}, column.title);
-			
-			for(int r = m_row_offset, rend = min((int)m_servers.size(), m_row_offset + m_max_visible_rows); r < rend; r++) {
-				const ServerInfo &info = m_servers[r];
-				FRect row_rect = info.rect;
-				m_font->draw(FRect(rect.min.x, row_rect.min.y, rect.max.x, row_rect.max.y),
-							 {lerp(Color(200, 200, 200), Color::white, info.over_time), Color::black, HAlign::center},
-							 cellText(r, column.type));
-
-				if(m_selection == r && info.selection_time > 0.0f)
-					drawBorder(info.rect, mulAlpha(Color(200, 255, 200, 80), info.selection_time * info.selection_time),
-							float2(50.0f, 50.0f) * (1.0f - info.selection_time), 500.0f);
-			}
-		}
 
 		if(!m_message.empty()) {
 			double msg_time = getTime() - m_message_time;
@@ -363,19 +286,19 @@ namespace hud {
 		}
 	}
 		
-	const string MultiPlayerMenu::cellText(int server_id, ColumnType col_type) const {
+	const string MultiPlayerMenu::cellText(int server_id, int col_id) const {
 		DASSERT(server_id >= 0 && server_id < (int)m_servers.size());
 		const auto &row = m_servers[server_id];
 
-		if(col_type == ColumnType::server_name)
+		if(col_id == 0)
 			return row.server_name;
-		else if(col_type == ColumnType::map_name)
+		else if(col_id == 1)
 			return row.map_name;
-		else if(col_type == ColumnType::num_players)
+		else if(col_id == 2)
 			return format("%d / %d", row.num_players, row.max_players);
-		else if(col_type == ColumnType::game_mode)
+		else if(col_id == 3)
 			return game::GameModeId::toString(row.game_mode);
-		else if(col_type == ColumnType::ping)
+		else if(col_id == 4)
 			return format("%d", row.ping);
 
 		return string();

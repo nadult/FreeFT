@@ -29,7 +29,7 @@ SHARED_SRC=\
 	game/orders/attack game/orders/change_stance game/orders/die game/orders/idle game/orders/interact \
 	game/orders/inventory game/orders/move game/orders/look_at game/orders/track game/orders/get_hit \
 	game/game_mode game/death_match game/single_player_mode game/pc_controller \
-	hud/base hud/widget hud/layer hud/button hud/edit_box hud/console \
+	hud/base hud/widget hud/layer hud/button hud/edit_box hud/console hud/grid \
 	hud/char_icon hud/weapon hud/inventory hud/hud hud/main_panel hud/options hud/class hud/character hud/stats \
 	hud/multi_player_menu \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \

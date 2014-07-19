@@ -50,20 +50,6 @@ namespace net {
 		out.ip = ntohl(in->sin_addr.s_addr);
 		out.port = ntohs(in->sin_port);
 	}
-	
-	void encodeInt3(Stream &sr, const int3 &value) {
-		sr.encodeInt(value.x);
-		sr.encodeInt(value.y);
-		sr.encodeInt(value.z);
-	}
-
-	const int3 decodeInt3(Stream &sr) {
-		int3 out;
-		out.x = sr.decodeInt();
-		out.y = sr.decodeInt();
-		out.z = sr.decodeInt();
-		return out;
-	}
 
 	u32 resolveName(const char *name) {
 		DASSERT(name);
@@ -84,6 +70,11 @@ namespace net {
 
 	int randomPort() {
 		return 50000 + rand() % 16530;
+	}
+
+	const Address lobbyServerAddress() {
+		return Address(resolveName("localhost"), 50000);
+		return Address(resolveName("89.74.58.32"), 50000);
 	}
 
 	Address::Address(u16 port) :port(port), ip(htonl(INADDR_ANY)) { }
@@ -191,7 +182,7 @@ namespace net {
 	}
 
 	void Socket::send(const OutPacket &packet, const Address &target) {
-		send(packet.m_data, packet.size(), target);
+		send(packet.data(), packet.size(), target);
 	}
 		
 	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, int flags_)
@@ -224,16 +215,6 @@ namespace net {
 		*this >> m_info;
 	}
 		
-	void TempPacket::v_save(const void *ptr, int count) {
-		if(m_pos + count > (int)sizeof(m_data))
-			THROW("not enough space in buffer (%d space left, %d needed)", spaceLeft(), (int)count);
-
-		memcpy(m_data + m_pos, ptr, count);
-		m_pos += count;
-		if(m_pos > m_size)
-			m_size = m_pos;
-	}
-
 	OutPacket::OutPacket(SeqNumber packet_id, int current_id, int remote_id, int flags) :OutPacket() {
 		*this << PacketInfo(packet_id, current_id, remote_id, flags);
 	}

@@ -35,11 +35,16 @@ namespace game {
 		void operator=(const GameMode&) = delete;
 
 		virtual GameModeId::Type typeId() const = 0;
-		virtual void tick(double time_diff) = 0;
 		virtual const vector<PlayableCharacter> playableCharacters() const = 0;
 
+		virtual void onKill(EntityRef target, EntityRef killer) { }
+
+	protected:
+		virtual void tick(double time_diff) = 0;
 		virtual void onMessage(Stream&, MessageId::Type, int source_id) { }
 		virtual bool sendOrder(POrder &&order, EntityRef entity_ref);
+
+		friend class World;
 
 	protected:
 		EntityRef findSpawnZone(int faction_id) const;
@@ -65,18 +70,23 @@ namespace game {
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 
 		const vector<PlayableCharacter> playableCharacters() const override { return {}; };
-
-	protected:
-		void onClientConnected(int client_id, const string &nick_name);
-		void onClientDisconnected(int client_id);
-		friend class net::Server;
-
-	protected:
-		void sendClientInfo(int client_id, int target_id);
-		void updateClient(int client_id, const GameClient&);
 		void respawn(int client_id, int pc_id, EntityRef spawn_zone);
+		pair<int, PlayableCharacter*> findPC(EntityRef);
+
+	protected:
+		virtual void onClientConnected(int client_id, const string &nick_name);
+		virtual void onClientDisconnected(int client_id);
+		friend class net::Server;
+		
+		void replicateClient(int client_id, int target_id = -1);
 
 		std::map<int, GameClient> m_clients;
+	};
+
+	struct GameClientStats {
+		string nick_name;
+		int client_id;
+		int kills, deaths;
 	};
 
 	class GameModeClient: public GameMode {
@@ -87,6 +97,8 @@ namespace game {
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 		const vector<PlayableCharacter> playableCharacters() const override { return m_current.pcs; }
 
+		virtual const vector<GameClientStats> stats() const { return {}; }
+
 		const string &currentNickName() const { return m_current.nick_name; }
 		bool addPC(const Character&);
 		bool setPCClass(const Character&, const CharacterClass&);
@@ -94,7 +106,6 @@ namespace game {
 		bool sendOrder(POrder &&order, EntityRef entity_ref) override;
 
 	protected:
-
 		GameClient m_current;
 		std::map<int, GameClient> m_others;
 		const int m_current_id;

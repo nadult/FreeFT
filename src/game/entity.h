@@ -84,6 +84,9 @@ namespace game {
 		friend class World;
 	};
 
+	class EntityGameModeProxy {
+	public:
+	};
 
 	class EntityWorldProxy {
 	public:
@@ -119,6 +122,8 @@ namespace game {
 
 		void playSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
 		void replicateSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
+		
+		void onKill(EntityRef target, EntityRef killer);
 	
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;

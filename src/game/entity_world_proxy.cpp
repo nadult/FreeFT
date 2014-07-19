@@ -5,6 +5,7 @@
 
 #include "game/base.h"
 #include "game/world.h"
+#include "game/game_mode.h"
 
 namespace game {
 
@@ -90,6 +91,12 @@ namespace game {
 	void EntityWorldProxy::replicateSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
 		DASSERT(isHooked());
 		m_world->replicateSound(sound_id, pos, sound_type);
+	}
+		
+	void EntityWorldProxy::onKill(EntityRef target, EntityRef killer) {
+		DASSERT(isHooked());
+		if(m_world->gameMode())
+			m_world->gameMode()->onKill(target, killer);
 	}
 		
 	ObjectRef EntityWorldProxy::findAny(const FBox &box, const FindFilter &filter) const {

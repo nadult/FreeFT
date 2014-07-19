@@ -163,7 +163,6 @@ namespace net {
 				}
 				else if(chunk.type() == ChunkType::message)
 					m_world->onMessage(chunk, -1);
-
 			}
 		}
 	}

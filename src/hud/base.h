@@ -42,6 +42,7 @@ namespace hud {
 		enum Type {
 			button_clicked,
 			text_modified,
+			row_clicked,
 
 			layer_changed,
 			item_equip,
@@ -51,7 +52,8 @@ namespace hud {
 			exit
 		};
 
-		HudEvent(HudWidget *source, Type type, int value = 0) :source(source), type(type), value(value) { }
+		HudEvent(HudWidget *source, Type type, int value = 0)
+			:source(source), type(type), value(value) { }
 
 		HudWidget *source;
 		Type type;
@@ -105,6 +107,7 @@ namespace hud {
 	class HudItemButton;
 	class HudItemDesc;
 	class HudEditBox;
+	class HudGrid;
 
 	class HudMainPanel;
 	class HudInventory;
@@ -126,6 +129,7 @@ namespace hud {
 	typedef Ptr<HudCharIcon> PHudCharIcon;
 	typedef Ptr<HudItemButton> PHudItemButton;
 	typedef Ptr<HudItemDesc> PHudItemDesc;
+	typedef Ptr<HudGrid> PHudGrid;
 	typedef Ptr<Hud> PHud;
 	
 	typedef Ptr<MultiPlayerMenu> PMultiPlayerMenu;

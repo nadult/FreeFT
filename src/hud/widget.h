@@ -41,6 +41,7 @@ namespace hud
 			return handleEvent(nullptr, event_type, value);
 		}
 
+		//TODO: needsLayout?
 		void setRect(const FRect &rect) { m_rect = rect; }
 		void setPos(const float2 &pos) { m_rect += pos - m_rect.min; }
 		const FRect &targetRect() const { return m_rect; }

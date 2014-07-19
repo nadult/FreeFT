@@ -6,58 +6,17 @@
 #ifndef NET_SOCKET_H
 #define NET_SOCKET_H
 
-#include "../base.h"
+#include "net/base.h"
 
 namespace net {
 
-	u32 resolveName(const char *name);
-	void decomposeIp(u32 ip, u8 elems[4]);
-
-	void encodeInt3(Stream&, const int3 &value);
-	const int3 decodeInt3(Stream&);
-
-	int randomPort();
-
-	struct SeqNumber {
-	public:
-		SeqNumber() { }
-		SeqNumber(int i) :value(i) { }
-		operator int() const { return (int)value; }
-		
-		bool operator<(const SeqNumber &rhs) const {
-			int a(value), b(rhs.value);
-			return (a < b && b - a < 32768 ) ||
-				   (a > b && a - b > 32768);
-		}
-		bool operator>(const SeqNumber &rhs) const { return rhs < *this; }
-		bool operator==(const SeqNumber &rhs) const { return value == rhs.value; }
-
-		const SeqNumber &operator++(int) {
-			value++;
-			return *this;
-		}
-
-		unsigned short value;
-	};
-
-	struct Address {
-	public:
-		Address() :ip(0), port(0) { }
-		Address(u32 ip, u16 port) :ip(ip), port(port) { }
-		Address(u16 port); // any interface
-
-		bool isValid() const { return ip != 0 || port != 0; }
-		bool operator==(const Address &rhs) const { return ip == rhs.ip && port == rhs.port; }
-		bool operator<(const Address &rhs) const { return ip == rhs.ip? port < rhs.port : ip < rhs.ip; }
-
-		const string toString() const;
-
-		u32 ip;
-		u16 port;
-	};
-
 	class InPacket;
 	class OutPacket;
+	
+	u32 resolveName(const char *name);
+	void decomposeIp(u32 ip, u8 elems[4]);
+	int randomPort();
+	const Address lobbyServerAddress();
 
 	class Socket {
 	public:
@@ -96,7 +55,7 @@ namespace net {
 		i8 flags;
 
 		enum {
-			max_size = 1400,
+			max_size = limits::packet_size,
 			max_host_id = 127,
 			header_size = sizeof(protocol_id) + sizeof(packet_id) + sizeof(current_id) + sizeof(remote_id) + sizeof(flags),
 			valid_protocol_id = 0x1234,
@@ -133,22 +92,8 @@ namespace net {
 		void ready(int new_size);
 		friend class Socket;
 		
-		char m_data[PacketInfo::max_size];
+		char m_data[limits::packet_size];
 		PacketInfo m_info;
-	};
-
-	class TempPacket: public Stream {
-	public:
-		TempPacket() :Stream(false) { m_size = 0; }
-
-		const char *data() const { return m_data; }
-		int spaceLeft() const { return sizeof(m_data) - m_pos; }
-
-	protected:
-		virtual void v_save(const void *ptr, int size) final;
-
-		friend class Socket;
-		char m_data[PacketInfo::max_size];
 	};
 
 	class OutPacket: public TempPacket {
@@ -159,6 +104,5 @@ namespace net {
 
 }
 
-SERIALIZE_AS_POD(net::SeqNumber)
 
 #endif

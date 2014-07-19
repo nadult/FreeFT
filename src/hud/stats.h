@@ -19,6 +19,12 @@ namespace hud
 		bool canShow() const override;
 
 	protected:
+		void onUpdate(double time_diff) override;
+		void onDraw() const override;
+		void updateData();
+
+		PHudGrid m_grid;
+		string m_stats;
 	};
 
 }

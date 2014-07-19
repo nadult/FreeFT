@@ -8,6 +8,7 @@
 #include "game/projectile.h"
 #include "game/tile.h"
 #include "game/world.h"
+#include "game/game_mode.h"
 #include "sys/xml.h"
 #include "sys/data_sheet.h"
 #include "net/socket.h"
@@ -221,6 +222,7 @@ namespace game {
 		if(damage_type == DamageType::bullet && damage_rate > 0.2f)
 			return DeathId::big_hole;
 
+		//TODO: record recent damage and include this damage in computation
 		//TODO: riddled & big_hole
 
 		return DeathId::normal;	
@@ -251,6 +253,7 @@ namespace game {
 		if(m_hit_points <= 0.0f) {
 			DeathId::Type death_id = deathType(damage_type, damage, force);
 			setOrder(new DieOrder(death_id), true);
+			onKill(ref(), source);
 		}
 		else {
 			if(will_fall) {
