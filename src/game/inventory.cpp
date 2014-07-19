@@ -18,7 +18,10 @@ namespace game {
 		while(child) {
 			Entry new_entry;
 			new_entry.item = Item(ProtoIndex(child));
-			new_entry.count = child.intAttrib("count");
+			if( const char *count_attrib = child.hasAttrib("count") )
+				new_entry.count = toInt(count_attrib);
+			else
+				new_entry.count = 1;
 			m_entries.push_back(new_entry);
 			child = child.sibling("item");
 		}
@@ -28,7 +31,8 @@ namespace game {
 		for(int n = 0; n < (int)m_entries.size(); n++) {
 			XMLNode item_node = node.addChild("item");
 			m_entries[n].item.index().save(item_node);
-			item_node.addAttrib("count", m_entries[n].count);
+			if(m_entries[n].count != 1)
+				item_node.addAttrib("count", m_entries[n].count);
 		}
 	}
 
@@ -107,11 +111,33 @@ namespace game {
 	
 	ActorInventory::ActorInventory(const XMLNode &node)
 		:Inventory(node), m_weapon(Item::dummyWeapon()), m_dummy_weapon(Item::dummyWeapon()), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} {
-		//TODO: load equipped items
+		XMLNode weapon_node = node.child("weapon");
+		XMLNode armour_node = node.child("armour");
+		XMLNode ammo_node = node.child("ammo");
+
+		if(weapon_node)
+			m_weapon = Item(findProto(weapon_node.attrib("proto_id"), ProtoId::item_weapon));
+		if(armour_node)
+			m_armour = Item(findProto(armour_node.attrib("proto_id"), ProtoId::item_armour));
+		if(ammo_node) {
+			Item ammo(findProto(ammo_node.attrib("proto_id"), ProtoId::item_ammo));
+			int count = ammo_node.intAttrib("count");
+			int id = add(ammo, count);
+			equip(id, count);
+		}
 	}
 		
 	void ActorInventory::save(XMLNode node) const {
 		Inventory::save(node);
+		if(!m_weapon.isDummy())
+			m_weapon.index().save(node.addChild("weapon"));
+		if(!m_armour.isDummy())
+			m_armour.index().save(node.addChild("armour"));
+		if(!m_ammo.item.isDummy()) {
+			XMLNode item_node = node.addChild("ammo");
+			m_ammo.item.index().save(item_node);
+			item_node.addAttrib("count", m_ammo.count);
+		}
 	}
 
 	bool ActorInventory::equip(int id, int count) {
@@ -127,6 +153,9 @@ namespace game {
 		unequip(type);
 
 		count = min(type == ItemType::ammo? count : 1, m_entries[id].count);
+		if(type == ItemType::ammo)
+			count = min(count, m_weapon.maxAmmo());
+
 		remove(id, count);
 
 		if(type == ItemType::weapon)
@@ -186,7 +215,7 @@ namespace game {
 				return n;
 		return -1;
 	}
-		
+
 	bool ActorInventory::useAmmo(int count) {
 		DASSERT(count >= 0);
 		if(m_ammo.count < count)

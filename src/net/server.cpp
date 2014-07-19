@@ -101,16 +101,27 @@ namespace net {
 				string password;
 				chunk >> password;
 
+				bool disconnect = false;
+				RefuseReason::Type refuse_reason;
+
 				if(!m_config.m_password.empty() && password != m_config.m_password) {
-					TempPacket temp;
-					temp << RefuseReason::wrong_password;
-					host.enqueChunk(temp, ChunkType::join_refuse, 0);
-					disconnectClient(client_id);
-					break;
+					refuse_reason = RefuseReason::wrong_password;
+					disconnect = true;
 				}
-				if(numActiveClients() > maxPlayers()) {
+				else if(numActiveClients() > maxPlayers()) {
+					refuse_reason = RefuseReason::server_full;
+					disconnect = true;
+				}
+				else for(int n = 0; n < (int)m_clients.size(); n++)
+					if(n != client_id && m_clients[n].isValid() && m_clients[n].nick_name == client.nick_name) {
+						refuse_reason = RefuseReason::nick_already_used;
+						disconnect = true;
+						break;
+					}
+				
+				if(disconnect) {	
 					TempPacket temp;
-					temp << RefuseReason::server_full;
+					temp << refuse_reason;
 					host.enqueChunk(temp, ChunkType::join_refuse, 0);
 					disconnectClient(client_id);
 					break;

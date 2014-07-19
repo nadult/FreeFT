@@ -33,13 +33,33 @@ namespace hud {
 		FRect rect = this->rect();
 
 		if(m_id != -1) {
-			CharacterClass char_class(m_id);
-			ActorInventory inv = char_class.inventory(false);
+			const CharacterClass &char_class = CharacterClass::get(m_id);
+			ActorInventory inv = char_class.inventory(true);
 			float2 pos(spacing + 30.0f, rect.center().y);
 
+			vector<pair<Item, int>> items;
+			if(inv.isEquipped(ItemType::weapon))
+				items.emplace_back(make_pair(inv.weapon(), 1));
+			if(inv.isEquipped(ItemType::ammo))
+				items.emplace_back(make_pair(inv.ammo().item, inv.ammo().count));
+			if(inv.isEquipped(ItemType::armour))
+				items.emplace_back(make_pair(inv.armour(), 1));
 			for(int n = 0; n < inv.size(); n++) {
+				const auto &entry = inv[n];
+				bool added = false;
+
+				for(int i = 0; i < (int)items.size(); i++)
+					if(items[i].first == entry.item) {
+						added = true;
+						items[i].second += entry.count;
+					}
+				if(!added)
+					items.emplace_back(make_pair(entry.item, entry.count));
+			}
+
+			for(auto &item : items) {
 				FRect uv_rect;
-				gfx::PTexture texture = inv[n].item.guiImage(true, uv_rect);
+				gfx::PTexture texture = item.first.guiImage(true, uv_rect);
 				float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 				FRect irect(pos.x, rect.min.y, pos.x + max(s_min_item_width, size.x), rect.max.y);
@@ -49,10 +69,10 @@ namespace hud {
 				texture->bind();
 				drawQuad(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f), uv_rect);
 
-				if(inv[n].count > 1) {
+				if(item.second > 1) {
 					FRect trect = irect;
 					trect.max.y -= 5.0;
-					m_font->draw(trect, {textColor(), textShadowColor(), HAlign::right, VAlign::bottom}, format("%d", inv[n].count));
+					m_font->draw(trect, {textColor(), textShadowColor(), HAlign::right, VAlign::bottom}, format("%d", item.second));
 				}
 				
 				pos.x += irect.width() + spacing;
@@ -71,7 +91,6 @@ namespace hud {
 
 		setTitle("Class selection:");
 
-		m_class_count = CharacterClass::count();
 		for(int n = 0; n < s_max_buttons; n++) {
 			float diff = s_item_height + spacing * 2;
 			float2 pos(HudButton::spacing, HudButton::spacing + (s_item_height + HudButton::spacing) * n + topOffset());
@@ -104,7 +123,7 @@ namespace hud {
 		
 	bool HudClass::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::button_clicked) {
-			int max_offset = (m_class_count + s_max_buttons - 1) / s_max_buttons - 1;
+			int max_offset = ((int)m_class_ids.size() + s_max_buttons - 1) / s_max_buttons - 1;
 
 			if(m_button_up == event.source && m_offset > 0)
 				m_offset--;
@@ -113,7 +132,7 @@ namespace hud {
 			if(isOneOf(event.source, m_buttons)) {
 				HudButton *button = dynamic_cast<HudButton*>(event.source);
 				if(m_pc_controller)
-					m_pc_controller->setCharacterClass(CharacterClass(button->id()));
+					m_pc_controller->setClassId(button->id());
 			}
 
 			needsLayout();
@@ -125,16 +144,27 @@ namespace hud {
 	}
 		
 	void HudClass::onLayout() {
-		int max_offset = (m_class_count + s_max_buttons - 1) / s_max_buttons - 1;
+		HudLayer::onLayout();
+
+		m_class_ids.clear();
+		if(m_pc_controller) {
+			const string &proto_id = m_pc_controller->pc().character().proto().id;
+
+			for(int n = 0; n < CharacterClass::count(); n++)
+				if(n != CharacterClass::defaultId() && CharacterClass::get(n).isValidForActor(proto_id))
+					m_class_ids.emplace_back(n);
+		}
+
+		int max_offset = ((int)m_class_ids.size() + s_max_buttons - 1) / s_max_buttons - 1;
 
 		float bottom = 0.0f;
 		for(int n = 0; n < (int)m_buttons.size(); n++) {
 			int id = n + m_offset;
-			if(id >= m_class_count)
+			if(id >= (int)m_class_ids.size())
 				id = -1;
 
 			m_buttons[n]->setVisible(id != -1, false);
-			m_buttons[n]->setId(id);
+			m_buttons[n]->setId(id == -1? -1 : m_class_ids[id]);
 			
 			if(id != -1)
 				bottom = max(bottom, m_buttons[n]->rect().max.y + spacing);
@@ -145,9 +175,13 @@ namespace hud {
 		m_button_up->setGreyed(m_offset == 0);
 		m_button_down->setGreyed(m_offset >= max_offset);
 	}
+		
+	void HudClass::onPCControllerSet() {
+		needsLayout();
+	}
 
 	void HudClass::onUpdate(double time_diff) {
-		int class_id = m_pc_controller? m_pc_controller->characterClass().id() : -1;
+		int class_id = m_pc_controller? m_pc_controller->classId() : -1;
 		for(auto &button : m_buttons) {
 			button->setEnabled(button->id() == class_id);
 			button->setGreyed(!m_pc_controller);

@@ -26,19 +26,21 @@ namespace hud
 		void onUpdate(double time_diff) override;
 		bool onEvent(const HudEvent&) override;
 		void onPCControllerSet() override;
+		void onLayout() override;
 
-		void updateIcon(int offset);
-		void updateControls();
-		PCharacter makeCharacter();
+		void updateIconId(int offset);
+		void updateClassId();
 
-		int m_icon_id, m_race_id;
+		PPlayableCharacter makePC();
+
+		int m_icon_id, m_race_id, m_class_id;
 		vector<pair<ProtoIndex, string>> m_icons;
+		vector<int> m_class_ids;
 		vector<ProtoIndex> m_races;
 
-		//TODO: add character class button (yes, redundant)
 		Ptr<HudCharIcon> m_icon_box;
 		PHudEditBox m_name_edit_box;
-		PHudButton m_race_button;
+		PHudButton m_race_button, m_class_button;
 		PHudButton m_icon_next, m_icon_prev;
 		PHudButton m_create_button, m_cancel_button;
 	};

@@ -21,6 +21,7 @@ namespace hud {
 		FRect subRect(rect().size());
 		subRect.min.y += topOffset();
 		subRect = inset(subRect, float2(layer_spacing, layer_spacing));
+		subRect.setHeight(300.0f);
 
 		m_grid = new HudGrid(subRect);
 		m_grid->addColumn("Nick name", 120.0f);
@@ -59,7 +60,6 @@ namespace hud {
 				}
 			}
 		}
-
 	}
 
 	void HudStats::onDraw() const {

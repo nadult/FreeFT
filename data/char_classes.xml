@@ -1,0 +1,74 @@
+<char_class tier="0" name="Civilian" actors="">
+	<inventory />
+</char>
+
+<char_class tier="0" name="Infantry" actors="male female">
+	<inventory>
+		<weapon proto_id="ak47" />
+		<armour proto_id="metal_armour" />
+		<ammo proto_id="762mm" count="200" />
+
+		<item proto_type="weapon" proto_id="rocket_launcher" />
+		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
+	</inventory>
+</char_class>
+
+<char_class tier="1" name="Infantry" actors="mutant">
+	<inventory>
+		<weapon proto_id="m60" />
+		<armour proto_id="mutant_armour" />
+		<ammo proto_id="762mm" count="300" />
+
+		<item proto_type="weapon" proto_id="rocket_launcher" />
+		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
+	</inventory>
+</char_class>
+
+
+<char_class tier="0" name="Sniper" actors="male female">
+	<inventory>
+		<weapon proto_id="laser_rifle" />
+		<armour proto_id="leather_armour" />
+		<ammo proto_id="fusion_cell" count="100" />
+
+		<item proto_type="weapon" proto_id="rocket_launcher" />
+		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
+	</inventory>
+</char_class>
+
+<char_class tier="0" name="Sniper" actors="ghoul">
+	<inventory>
+		<weapon proto_id="laser_rifle" />
+		<armour proto_id="ghoul_armour" />
+		<ammo proto_id="fusion_cell" count="100" />
+
+		<item proto_type="weapon" proto_id="rocket_launcher" />
+		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
+	</inventory>
+</char_class>
+
+
+<char_class tier="0" name="Scout" actors="male female">
+	<inventory>
+		<weapon proto_id="laser_rifle" />
+		<armour proto_id="leather_armour" />
+		<ammo proto_id="fusion_cell" count="100" />
+
+		<item proto_type="weapon" proto_id="rocket_launcher" />
+		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
+	</inventory>
+</char_class>
+
+<char_class tier="0" name="Scout" actors="ghoul">
+	<inventory>
+		<weapon proto_id="laser_rifle" />
+		<armour proto_id="ghoul_armour" />
+		<ammo proto_id="fusion_cell" count="100" />
+
+		<item proto_type="weapon" proto_id="rocket_launcher" />
+		<item proto_type="ammo" proto_id="rocket_ap" count="10" />
+	</inventory>
+</char_class>
+
+
+

@@ -16,6 +16,7 @@
 #include "game/door.h"
 #include "game/container.h"
 #include "game/actor.h"
+#include "game/character.h"
 
 namespace game {
 
@@ -105,6 +106,8 @@ namespace game {
 		else {
 			m_type = ProtoId::fromString(proto_type);
 			m_idx = findProto(node.attrib("proto_id"), m_type).m_idx;
+			if(m_idx == -1)
+				THROW("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id"), proto_type);
 			validate();
 		}
 	}
@@ -131,7 +134,7 @@ namespace game {
 	}
 
 	void ProtoIndex::validate() {
-		if(m_idx != -1 || m_type == ProtoId::invalid) {
+		if(m_idx != -1 || m_type != ProtoId::invalid) {
 			if(!ProtoId::isValid(m_type)) {
 				*this = ProtoIndex();
 				THROW("Invalid proto type: %d\n", (int)m_type);
@@ -253,6 +256,8 @@ namespace game {
 				count += countProtos((ProtoId::Type)p);
 			printf(" %d rows loaded (%.0f msec)\n", count, (getTime() - time) * 1000.0);
 		}
+		
+		CharacterClass::loadAll();
 	}
 
 

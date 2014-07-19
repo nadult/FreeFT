@@ -27,8 +27,7 @@ namespace hud {
 	}
 		
 	HudCharacter::HudCharacter(const FRect &target_rect)
-		:HudLayer(target_rect) {
-
+		:HudLayer(target_rect), m_race_id(0), m_class_id(0), m_icon_id(0) {
 		setTitle(" ");
 
 		float2 pos(spacing, spacing + topOffset());
@@ -56,6 +55,10 @@ namespace hud {
 		m_race_button = new HudClickButton(FRect(s_name_size) + pos);
 		m_race_button->setLabelStyle(HudLabelStyle::left);
 		
+		pos.y += s_name_size.y + spacing;
+		m_class_button = new HudClickButton(FRect(s_name_size) + pos);
+		m_class_button->setLabelStyle(HudLabelStyle::left);
+		
 		pos.y += s_name_size.y * 3 + spacing;
 		pos.x = rect().width() - spacing - s_button_size.x;
 		m_cancel_button = new HudClickButton(FRect(s_button_size) + pos);
@@ -75,18 +78,14 @@ namespace hud {
 		std::sort(m_races.begin(), m_races.end());
 		m_races.resize(unique(m_races.begin(), m_races.end()) - m_races.begin());
 
-		m_race_id = 0;
-		m_icon_id = -1;
-
 		attach(m_icon_box.get());
 		attach(m_name_edit_box.get());
 		attach(m_race_button.get());
+		attach(m_class_button.get());
 		attach(m_icon_prev.get());
 		attach(m_icon_next.get());
 		attach(m_cancel_button.get());
 		attach(m_create_button.get());
-
-		updateIcon(0);
 	}
 		
 	HudCharacter::~HudCharacter() { }
@@ -94,26 +93,23 @@ namespace hud {
 	bool HudCharacter::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::button_clicked && !m_pc_controller) {
 			if(event.source == m_icon_prev)
-				updateIcon(-1);
+				updateIconId(-1);
 			if(event.source == m_icon_next)
-				updateIcon(1);
+				updateIconId(1);
+			if(event.source == m_class_button)
+				m_class_id = (m_class_id + 1) % (int)CharacterClass::count();
 			if(event.source == m_race_button) {
 				m_race_id = (m_race_id + 1) % (int)m_races.size();
-				m_icon_id = -1;
-				updateIcon(0);
+				m_icon_id = 0;
 			}
-			if(event.source == m_name_edit_box) {
-				updateControls();
-			}
-			if(event.source == m_create_button && m_world) {
+			if(event.source == m_create_button && m_world && !m_pc_controller) {
+				PPlayableCharacter pc = makePC();
 				GameModeClient *game_mode = dynamic_cast<GameModeClient*>(m_world->gameMode());
-				if(game_mode)
-					game_mode->addPC(*makeCharacter());
-			}
-			if(event.source == m_cancel_button) {
-
+				if(game_mode && pc)
+					game_mode->addPC(*pc);
 			}
 
+			needsLayout();
 
 			return true;
 		}
@@ -130,47 +126,22 @@ namespace hud {
 			GameModeClient *game_mode = dynamic_cast<GameModeClient*>(m_world->gameMode());
 			if(game_mode)
 				m_name_edit_box->setText(game_mode->currentNickName());
-
-			m_race_id = 0;
-			m_icon_id = -1;
-			updateIcon(0);
+			m_race_id = m_class_id = m_icon_id = 0;
 		}
-		else
-			updateControls();
+
+		needsLayout();
 	}
 
-	void HudCharacter::updateControls() {
-		setTitle(m_pc_controller? "Character: " : "Character creation: ");
-
-		if(m_pc_controller) {
-			const PlayableCharacter &pc = m_pc_controller->pc();
-			const ActorProto &proto = dynamic_cast<const ActorProto&>(pc.character().proto());
-			m_icon_box->setCharacter(new Character(pc.character()));
-			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
-			m_name_edit_box->setText(pc.character().name());
-		}
-		else {
-			ProtoIndex index = m_races[m_race_id];
-			const ActorProto &proto = dynamic_cast<const ActorProto&>(getProto(index));
-			m_icon_box->setCharacter(new Character("", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id));
-			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
-		}
-	}
-		
-	void HudCharacter::updateIcon(int offset) {
+	void HudCharacter::updateIconId(int offset) {
 		if(m_pc_controller)
 			return;
 
-		ProtoIndex index = m_races[m_race_id];
+		ProtoIndex index = m_race_id == -1? ProtoIndex() : m_races[m_race_id];
 
-		if(m_icon_id < 0 || m_icon_id >= (int)m_icons.size() || m_icons[m_icon_id].first != index)
-			m_icon_id = -1;
-		if(m_icon_id == -1) {
+		if(m_icons[m_icon_id].first != index)
 			for(int n = 0; n < (int)m_icons.size(); n++)
 				if(m_icons[n].first == index)
 					m_icon_id = n;
-		}
-
 		if(offset) {
 			int old_id = m_icon_id;
 			m_icon_id += offset;
@@ -187,8 +158,43 @@ namespace hud {
 				}
 			}
 		}
+	}
 
-		updateControls();		
+	void HudCharacter::updateClassId() {
+		ProtoIndex index = m_races[m_race_id];
+		const ActorProto &proto = dynamic_cast<const ActorProto&>(getProto(index));
+
+		int iters = 0, default_id = CharacterClass::defaultId();
+		while((!CharacterClass::get(m_class_id).isValidForActor(proto.id) || m_class_id == default_id) && iters++ < CharacterClass::count())
+			m_class_id = (m_class_id + 1) % CharacterClass::count();
+		if(iters == CharacterClass::count())
+			m_class_id = default_id;
+	}
+
+	void HudCharacter::onLayout() {
+		HudLayer::onLayout();
+		setTitle(m_pc_controller? "Character: " : "Character creation: ");
+
+		if(m_pc_controller) {
+			const PlayableCharacter &pc = m_pc_controller->pc();
+			const ActorProto &proto = dynamic_cast<const ActorProto&>(pc.character().proto());
+			m_icon_box->setCharacter(new Character(pc.character()));
+			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
+			m_class_button->setLabel(format("Class: %s", pc.characterClass().name().c_str()));
+			m_name_edit_box->setText(pc.character().name());
+		}
+		else {
+			ProtoIndex index = m_races[m_race_id];
+			const ActorProto &proto = dynamic_cast<const ActorProto&>(getProto(index));
+
+			updateIconId(0);
+			updateClassId();
+	
+			m_icon_box->setCharacter(new Character("", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id));
+			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
+			m_class_button->setLabel(format("Class: %s", CharacterClass::get(m_class_id).name().c_str()));
+		}
+
 	}
 
 	void HudCharacter::onUpdate(double time_diff) {
@@ -201,12 +207,16 @@ namespace hud {
 		m_create_button->setGreyed((bool)m_pc_controller || m_name_edit_box->text().empty());
 	}
 
-	PCharacter HudCharacter::makeCharacter() {
-		if(m_pc_controller || m_icon_id == -1 || m_name_edit_box->text().empty())
-			return PCharacter();
+	PPlayableCharacter HudCharacter::makePC() {
+		if(m_pc_controller || m_name_edit_box->text().empty())
+			return PPlayableCharacter();
 			
-		return new Character(m_name_edit_box->text(), m_icons[m_icon_id].second, getProto(m_races[m_race_id]).id);
+		updateIconId(0);
+		updateClassId();
+			
+		return new PlayableCharacter(
+				Character(m_name_edit_box->text(), m_icons[m_icon_id].second, getProto(m_races[m_race_id]).id),
+				m_class_id );
 	}
-
 
 }

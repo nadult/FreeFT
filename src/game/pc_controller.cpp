@@ -80,16 +80,16 @@ namespace game {
 	}
 		
 		
-	const CharacterClass &PCController::characterClass() const {
-		return m_pc.characterClass();
+	int PCController::classId() const {
+		return m_pc.classId();
 	}
 
-	void PCController::setCharacterClass(const CharacterClass &char_class) {
-		m_pc.setCharacterClass(char_class);
+	void PCController::setClassId(int class_id) {
+		m_pc.setClassId(class_id);
 
 		GameModeClient *game_mode_client = dynamic_cast<GameModeClient*>(m_world.gameMode());
 		if(game_mode_client) {
-			game_mode_client->setPCClass(m_pc.character(), m_pc.characterClass());
+			game_mode_client->setPCClassId(m_pc.character(), m_pc.classId());
 		}
 	}
 

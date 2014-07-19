@@ -58,12 +58,12 @@ namespace game {
 
 		vector<pair<ProtoIndex, string>> out;
 
-		XMLNode node = doc.child("char");
+		XMLNode node = doc.child("char_icon");
 		while(node) {
 			const char *proto_name = node.attrib("proto");
 			const char *icon_name = node.attrib("icon");
 			out.push_back(make_pair(findProto(proto_name, ProtoId::actor), string(icon_name)));
-			node = node.sibling("char");
+			node = node.sibling("char_icon");
 		}
 
 		return out;
@@ -84,85 +84,70 @@ namespace game {
 		return m_name == rhs.m_name && m_icon_name == rhs.m_icon_name && m_proto_idx == rhs.m_proto_idx;
 	}
 		
-	struct StartingEquipment {
-		int tier;
-		const char *class_name;
 
-		const char *armour;
-		const char *weapon;
-		const char *ammo;
-		int ammo_count;
-	};
-
-	static StartingEquipment s_equipments[] = {
-		{ 0, "Scout",		"leather_armour",		"uzi",				"9mm_ball",		200 },
-		{ 0, "Infantry",	nullptr,				"ak47",				"762mm",		150 },
-		{ 0, "Sniper",		nullptr,				"laser_rifle",		"fusion_cell",	100 }
-	};
-
-	int CharacterClass::count() {
-		return COUNTOF(s_equipments);
-	}
-
-	const string CharacterClass::name() const {
-		return s_equipments[m_id].class_name;
+	CharacterClass::CharacterClass(XMLNode node, int id) :m_inventory(node.child("inventory")) {
+		m_name = node.attrib("name");
+		m_tier = node.intAttrib("tier");
+		m_id = id;
+		m_proto_names = toStrings(node.attrib("actors"));
 	}
 		
-	bool CharacterClass::isValidId(int id) {
-		return id >= 0 && id < count();
-	}
-
-	CharacterClass::CharacterClass(int class_id) :m_id(class_id) {
-		DASSERT(isValidId(class_id));
-		m_tier = s_equipments[m_id].tier;
-	}
-
-	const ActorInventory CharacterClass::inventory(bool equip_items) const {
-		const StartingEquipment &def = s_equipments[m_id];
-
-		ActorInventory out;
-		if(def.armour) {
-			int id = out.add(findProto(def.armour, ProtoId::item_armour), 1);
-			if(equip_items)
-				out.equip(id);
+	const ActorInventory CharacterClass::inventory(bool equip) const {
+		ActorInventory out = m_inventory;
+		if(!equip) {
+			out.unequip(ItemType::weapon);
+			out.unequip(ItemType::armour);
 		}
-		if(def.weapon) {
-			int id = out.add(findProto(def.weapon, ProtoId::item_weapon), 1);
-			if(equip_items)
-				out.equip(id);
-			
-			if(def.ammo && def.ammo_count > 0) {
-				int ammo_id = out.add(findProto(def.ammo, ProtoId::item_ammo), def.ammo_count);
-				if(equip_items)
-					out.equip(ammo_id, min(def.ammo_count, out.weapon().maxAmmo()));
-			}
-		}
-
-		out.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
-		out.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
-
 		return out;
 	}
-		
-	bool CharacterClass::operator==(const CharacterClass &rhs) const {
-		return m_tier == rhs.m_tier && m_id == rhs.m_id;
+
+	bool CharacterClass::isValidForActor(const string &proto_name) const {
+		return m_proto_names.empty() || isOneOf(proto_name, m_proto_names);
 	}
 
-	PlayableCharacter::PlayableCharacter(const Character &character)
-		:m_character(character), m_class(0) { }
+	static vector<CharacterClass> s_classes;
+
+	void CharacterClass::loadAll() {
+		if(!s_classes.empty())
+			return;
+		
+		XMLDocument doc;
+		Loader("data/char_classes.xml") >> doc;
+		
+		XMLNode class_node = doc.child("char_class");
+		int counter = 0;
+
+		while(class_node) {
+			CharacterClass new_class(class_node, counter++);
+			s_classes.emplace_back(new_class);
+			class_node = class_node.sibling("char_class");
+		}
+	}
+		
+	int CharacterClass::count() {
+		return (int)s_classes.size();
+	}
+
+	const CharacterClass &CharacterClass::get(int id) {
+		DASSERT(id >= 0 && id < (int)s_classes.size());
+		return s_classes[id];
+	}
+
+
+	PlayableCharacter::PlayableCharacter(const Character &character, int class_id)
+		:m_character(character), m_class_id( (DASSERT(CharacterClass::isValidId(class_id)), class_id) ) { }
 
 	PlayableCharacter::~PlayableCharacter() { }
 		
-	PlayableCharacter::PlayableCharacter(Stream &sr) :m_character(sr), m_class(0) {
+	PlayableCharacter::PlayableCharacter(Stream &sr) :m_character(sr), m_class_id(CharacterClass::defaultId()) {
 		sr >> m_entity_ref;
-		int class_id = sr.decodeInt();
-		ASSERT(CharacterClass::isValidId(class_id));
-		m_class = CharacterClass(class_id);
+		m_class_id = sr.decodeInt();
+		ASSERT(CharacterClass::isValidId(m_class_id));
 	}
 
 	void PlayableCharacter::save(Stream &sr) const {
 		sr << m_character << m_entity_ref;
-		sr.encodeInt(m_class.id());
+		sr.encodeInt(m_class_id);
 	}
 
 	void PlayableCharacter::load(Stream &sr) {
@@ -170,8 +155,7 @@ namespace game {
 	}
 		
 	bool PlayableCharacter::operator==(const PlayableCharacter &rhs) const {
-		return m_character == rhs.m_character && m_class == rhs.m_class && m_entity_ref == rhs.m_entity_ref;
+		return m_character == rhs.m_character && m_class_id == rhs.m_class_id && m_entity_ref == rhs.m_entity_ref;
 	}
-	
 
 }

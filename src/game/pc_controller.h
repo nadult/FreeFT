@@ -31,8 +31,8 @@ namespace game
 		void unequipItem(const Item&);
 		void dropItem(const Item&, int count);
 
-		const CharacterClass &characterClass() const;
-		void setCharacterClass(const CharacterClass&);
+		int classId() const;
+		void setClassId(int id);
 
 		void reload();
 

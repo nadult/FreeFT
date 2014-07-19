@@ -208,15 +208,14 @@ namespace game {
 		return true;
 	}
 		
-	bool GameModeClient::addPC(const Character &character) {
+	bool GameModeClient::addPC(const PlayableCharacter &new_char) {
 		if((int)m_current.pcs.size() >= m_max_pcs)
 			return false;
 
 		for(const auto &pc : m_current.pcs)
-			if(pc.character().name() == character.name())
+			if(pc.character().name() == new_char.character().name())
 				return false;
 
-		PlayableCharacter new_char(character);
 		m_current.pcs.push_back(new_char);	
 		net::TempPacket chunk;
 		chunk << MessageId::update_client;
@@ -225,10 +224,10 @@ namespace game {
 		return true;
 	}
 		
-	bool GameModeClient::setPCClass(const Character &character, const CharacterClass &char_class) {
+	bool GameModeClient::setPCClassId(const Character &character, int class_id) {
 		for(auto &pc : m_current.pcs)
 			if(pc.character() == character) {
-				pc.setCharacterClass(char_class);
+				pc.setClassId(class_id);
 				net::TempPacket chunk;
 				chunk << MessageId::update_client;
 				chunk << m_current;

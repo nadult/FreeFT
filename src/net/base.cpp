@@ -19,6 +19,7 @@ namespace net {
 
 	DEFINE_ENUM(RefuseReason,
 		"wrong password",
+		"nick name already used",
 		"server full"
 	);
 

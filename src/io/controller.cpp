@@ -99,6 +99,8 @@ namespace io {
 			m_hud->showLayer(hud::layer_options);
 		else if(event.keyDown('V'))
 			m_hud->showLayer(hud::layer_class);
+		else if(event.keyDown('S'))
+			m_hud->showLayer(hud::layer_stats);
 		else if(event.keyDown('Q'))
 			m_pc_controller->setStance(Stance::stand);
 		else if(event.keyDown('A'))

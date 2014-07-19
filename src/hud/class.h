@@ -33,11 +33,12 @@ namespace hud
 		void onUpdate(double time_diff) override;
 		bool onEvent(const HudEvent&) override;
 		void onLayout() override;
+		void onPCControllerSet() override;
 
-		int m_offset, m_class_count;
-
+		vector<int> m_class_ids;
 		vector<Ptr<HudClassButton>> m_buttons;
 		PHudButton m_button_up, m_button_down;
+		int m_offset;
 	};
 
 }

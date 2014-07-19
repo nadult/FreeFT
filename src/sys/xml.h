@@ -25,6 +25,7 @@ public:
 
 	//TODO: add function hasAttrib, use it in sys::config
 
+	//TODO: change to tryAttrib
 	// Returns nullptr if not found
 	const char *hasAttrib(const char *name) const;
 

@@ -110,6 +110,24 @@ float4 toFloat4(const char *input) {
 	return out;
 }
 
+const vector<string> toStrings(const char *input) {
+	vector<string> out;
+	const char *iptr = input;
+
+	while(*iptr) {
+		const char *next_space = strchr(iptr, ' ');
+		int len = next_space? next_space - iptr : strlen(iptr);
+
+		out.emplace_back(string(iptr, iptr + len));
+
+		if(!next_space)
+			break;
+		iptr = next_space + 1;
+	}
+
+	return out;
+}
+
 uint toFlags(const char *input, const char **strings, int num_strings, uint first_flag) {
 	const char *iptr = input;
 

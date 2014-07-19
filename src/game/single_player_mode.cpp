@@ -10,7 +10,7 @@
 namespace game {
 
 	SinglePlayerMode::SinglePlayerMode(World &world, Character character)
-		:GameMode(world), m_pc(character) {
+		:GameMode(world), m_pc(character, CharacterClass::defaultId()) {
 		ASSERT(!world.isServer() && !world.isClient());
 		attachAIs();
 

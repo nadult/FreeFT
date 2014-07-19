@@ -8,6 +8,7 @@
 
 #include "game/base.h"
 #include "game/entity.h"
+#include "game/inventory.h"
 
 namespace game
 {
@@ -45,36 +46,45 @@ namespace game
 		ProtoIndex m_proto_idx;
 	};
 
-	class CharacterClass {
+	class CharacterClass: public RefCounter {
 	public:
-		CharacterClass(int class_id);
-
-		static bool isValidId(int);
-		static int count();
+		CharacterClass(const CharacterClass&) = default;
+		CharacterClass(XMLNode node, int id);
 
 		int id() const { return m_id; }
 		int tier() const { return m_tier; }
-		const ActorInventory inventory(bool equip) const;
-		const string name() const;
+		const string &name() const { return m_name; }
 
-		bool operator==(const CharacterClass &rhs) const;
+		const ActorInventory inventory(bool equip) const;
+		bool isValidForActor(const string &proto_name) const;
+
+		bool operator==(const CharacterClass &rhs) const { return m_id == rhs.m_id; }
+
+		static void loadAll();
+		static const CharacterClass &get(int id);
+		static int count();
+		static bool isValidId(int id) { return id >= 0 && id < count(); }
+		static int defaultId() { return 0; }
 
 	private:
-		int m_tier;
-		int m_id;
+		vector<string> m_proto_names;
+		ActorInventory m_inventory;
+		string m_name;
+		int m_tier, m_id;
 	};
 
 	class PlayableCharacter: public RefCounter {
 	public:
-		PlayableCharacter(const Character &character);
+		PlayableCharacter(const Character &character, int class_id);
 		explicit PlayableCharacter(Stream&);
 		~PlayableCharacter();
 		
 		void save(Stream&) const;
 		void load(Stream&);
 
-		void setCharacterClass(const CharacterClass &char_class) { m_class = char_class; }
-		const CharacterClass &characterClass() const { return m_class; }
+		void setClassId(int id) { m_class_id = id; }
+		int classId() const { return m_class_id; }
+		const CharacterClass &characterClass() const { return CharacterClass::get(m_class_id); }
 
 		void setEntityRef(EntityRef ref) { m_entity_ref = ref; }
 		EntityRef entityRef() const { return m_entity_ref; }
@@ -84,8 +94,8 @@ namespace game
 
 	private:
 		Character m_character;
-		CharacterClass m_class;
 		EntityRef m_entity_ref;
+		int m_class_id;
 	};
 
 }

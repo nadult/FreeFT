@@ -100,8 +100,8 @@ namespace game {
 		virtual const vector<GameClientStats> stats() const { return {}; }
 
 		const string &currentNickName() const { return m_current.nick_name; }
-		bool addPC(const Character&);
-		bool setPCClass(const Character&, const CharacterClass&);
+		bool addPC(const PlayableCharacter&);
+		bool setPCClassId(const Character&, int class_id);
 
 		bool sendOrder(POrder &&order, EntityRef entity_ref) override;
 

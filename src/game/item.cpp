@@ -57,7 +57,7 @@ namespace game {
 	}
 
 	Item::Item(ProtoIndex index)
-		:m_proto( (ASSERT(ProtoId::isItemId(index.type())), static_cast<const ItemProto*>(&getProto(index))) ) { }
+		:m_proto( (ASSERT(ProtoId::isItemId(index.type())), ASSERT(index.isValid()), static_cast<const ItemProto*>(&getProto(index))) ) { }
 		
 	const Item Item::dummy() {
 		return Item(findProto("_dummy_item", ProtoId::item));

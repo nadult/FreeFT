@@ -87,6 +87,7 @@ namespace net {
 
 	DECLARE_ENUM(RefuseReason,
 		wrong_password,
+		nick_already_used,
 		server_full
 	);
 

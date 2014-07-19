@@ -79,7 +79,7 @@ namespace net {
 
 		ServerConfig m_config;
 		vector<int> m_replication_list;
-		vector<ClientInfo> m_clients;
+		vector<ClientInfo> m_clients; //TODO: change to map?
 
 		game::PWorld m_world;
 		game::GameModeServer *m_game_mode;
