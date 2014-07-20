@@ -21,7 +21,7 @@ Mustfix: -----------------------------------------------------------------------
   (sometimes tracking ends too early)
 - Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)
 - Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
-
+- HudStats are a little too big (20 pixels bigger than HudMainPanel)
 
 
 Nice to fix: --------------------------------------------------------------------------------------

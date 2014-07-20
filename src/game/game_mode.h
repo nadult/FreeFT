@@ -26,6 +26,18 @@ namespace game {
 		update_client_info
 	);
 
+	DECLARE_ENUM(UserMessageType,
+		main,
+		log
+	);
+
+	struct UserMessage {
+		UserMessage(const string &text) :text(text) { }
+		UserMessage() { }
+
+		string text;
+	};
+
 	class GameMode {
 	public:
 		GameMode(World &world) :m_world(world) { }
@@ -38,6 +50,7 @@ namespace game {
 		virtual const vector<PlayableCharacter> playableCharacters() const = 0;
 
 		virtual void onKill(EntityRef target, EntityRef killer) { }
+		virtual const UserMessage userMessage(UserMessageType::Type) { return UserMessage(); }
 
 	protected:
 		virtual void tick(double time_diff) = 0;

@@ -103,6 +103,9 @@ namespace game {
 		
 	void DeathMatchClient::tick(double time_diff) {
 		GameModeClient::tick(time_diff);
+	
+		if(m_current_info.is_respawning)
+			m_current_info.next_respawn_time -= time_diff;
 	}
 	
 	void DeathMatchClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
@@ -126,6 +129,23 @@ namespace game {
 			out.emplace_back(GameClientStats{nick_name, info.first, info.second.kills, info.second.deaths});
 		}
 		return out;
+	}
+		
+		
+	const UserMessage DeathMatchClient::userMessage(UserMessageType::Type type) {
+		if(type == UserMessageType::main) {
+			if(m_current_info.is_respawning) {
+				int time = (int)(m_current_info.next_respawn_time + 0.9999f);
+				if(time > 0)
+					return UserMessage{format("Respawning in %d...", time)};
+			}
+		}
+		else if(type == UserMessageType::log) {
+
+		}
+
+		return UserMessage();
+		
 	}
 
 }

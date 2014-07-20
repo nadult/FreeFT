@@ -53,6 +53,7 @@ namespace game {
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 		
 		const vector<GameClientStats> stats() const override;
+		const UserMessage userMessage(UserMessageType::Type) override;
 
 	private:
 		ClientInfo m_current_info;

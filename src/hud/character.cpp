@@ -202,6 +202,7 @@ namespace hud {
 		if(m_pc_controller) {
 			m_name_edit_box->setInputFocus(false);
 			m_race_button->setEnabled(false);
+			m_class_button->setEnabled(false);
 		}
 
 		m_create_button->setGreyed((bool)m_pc_controller || m_name_edit_box->text().empty());

@@ -29,8 +29,8 @@ namespace io {
 
 	static const float s_exit_anim_length = 0.7f;
 
-	Controller::Controller(const int2 &resolution, PWorld world, bool show_stats)
-	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_stats(show_stats), m_is_exiting(0) {
+	Controller::Controller(const int2 &resolution, PWorld world, bool debug_info)
+	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_debug_info(debug_info), m_is_exiting(0) {
 		DASSERT(world);
 		m_console = new hud::HudConsole(resolution);
 		m_hud = new hud::Hud(world);
@@ -44,6 +44,9 @@ namespace io {
 		
 		m_last_time = m_stats_update_time = getTime();
 		m_last_look_at = float3(0, 0, 0);
+		
+		if(m_world->isClient())
+			m_hud->showLayer(hud::layer_character);
 	}
 
 	Controller::~Controller() {
@@ -131,7 +134,7 @@ namespace io {
 				//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
 				if(m_full_isect.distance() < constant::inf && m_full_isect.distance() > -constant::inf) {
 					float3 look_at = m_screen_ray.at(m_full_isect.distance());
-					if(look_at != m_last_look_at && distance(look_at.xz(), actor->boundingBox().center().xz()) > 1.0f) {
+					if(look_at != m_last_look_at && distance(look_at.xz(), actor->boundingBox().center().xz()) > 5.0f) {
 						m_world->sendOrder(new LookAtOrder(look_at), m_actor_ref);
 						m_last_look_at = look_at;
 					}
@@ -216,6 +219,15 @@ namespace io {
 		profiler::nextFrame();
 		m_last_time = profiler::getTime();
 
+		if( GameMode *game_mode = m_world->gameMode() ) {
+			UserMessage message = game_mode->userMessage(UserMessageType::main);
+
+			bool not_empty = !message.text.empty();
+			hud::animateValue(m_main_message.anim_time, time_diff * 10.0f, not_empty);
+			if(not_empty || m_main_message.anim_time < 0.01f)
+				m_main_message.message = message;
+		}
+
 		while(true) {
 			string command = m_console->getCommand();
 			if(command.empty())
@@ -233,15 +245,10 @@ namespace io {
 		clear(Color(0, 0, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), m_resolution), m_view_pos);
 
-		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
-		Ray ray = screenRay(getMousePos() + m_view_pos);
-
 		m_viewer.addToRender(renderer);
 
 		if(!m_isect.isEmpty())
 			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
-
-		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 
 		/*const NaviMap *navi_map = m_world->naviMap(3);
 		if(navi_map)
@@ -256,13 +263,32 @@ namespace io {
 			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
 		}*/
 
-		lookAt({0, 0});
-		gfx::PFont font = gfx::Font::mgr["liberation_16"];
-		float3 isect_pos = ray.at(m_isect.distance());
+		if(m_show_debug_info)
+			drawDebugInfo();
 
+		lookAt({0, 0});
+		m_console->draw();
+		m_hud->draw();
+
+		if(!m_main_message.isEmpty()) {
+			gfx::PFont font = gfx::Font::mgr["transformers_48"];
+			FRect rect(float2(m_resolution.x, 30.0f));
+			rect += float2(0.0f, m_console->rect().height());
+			Color text_color = mulAlpha(Color::white, m_main_message.anim_time);
+			Color shadow_color = mulAlpha(Color::black, m_main_message.anim_time);
+
+			font->draw(rect, {text_color, shadow_color, HAlign::center}, m_main_message.text());
+		}
+	}
+
+	void Controller::drawDebugInfo() {
 		TextFormatter fmt(4096);
 
+		float3 isect_pos = m_screen_ray.at(m_isect.distance());
 		fmt("View:(%d %d) Ray:(%.2f %.2f %.2f)\n", m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
+		
+		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
+		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 
 		if(actor) {
 			float3 actor_pos = actor->pos();
@@ -279,19 +305,17 @@ namespace io {
 			fmt("\n\n");
 		}
 
-		if(m_show_stats)
-			fmt("%s", m_profiler_stats.c_str());
-		
+		fmt("%s", m_profiler_stats.c_str());
+
+		lookAt({0, 0});
+		gfx::PFont font = gfx::Font::mgr["liberation_16"];
+	
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
 		int2 res = getWindowSize();
 		int2 pos(res.x - extents.x - 4, res.y - extents.y - 4);
 		drawQuad(pos.x, pos.y, res.x, res.y, Color(0, 0, 0, 80));
 		font->draw(pos + int2(2, 2), {Color::white, Color::black}, fmt);
-
-		lookAt({0, 0});
-		m_console->draw();
-		m_hud->draw();
 	}
 
 }
