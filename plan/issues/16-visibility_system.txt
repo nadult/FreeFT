@@ -7,7 +7,7 @@
   - using shift key to look inside?
 - Properly computing bounding box of actors (depending on actor's stance) (2h)  DONE
 - Fix visibility system in editor (editor/view.cpp)
-
+- Quick tests: if object is the same as the shadow, then no testing is required
 
 +ESTIMATED_TIME: 13h
 +TIME_SPENT:

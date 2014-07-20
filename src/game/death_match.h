@@ -29,7 +29,7 @@ namespace game {
 			void load(Stream&);
 
 			double next_respawn_time;
-			int kills, deaths;
+			int kills, self_kills, deaths;
 			bool is_respawning;
 		};
 		
@@ -56,6 +56,8 @@ namespace game {
 		const UserMessage userMessage(UserMessageType::Type) override;
 
 	private:
+		void onClientDisconnected(int client_id) override;
+
 		ClientInfo m_current_info;
 		std::map<int, ClientInfo> m_client_infos;
 	};

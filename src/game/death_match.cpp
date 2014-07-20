@@ -11,14 +11,14 @@
 namespace game {
 
 	DeathMatchServer::ClientInfo::ClientInfo()
-		:next_respawn_time(respawn_delay), kills(0), deaths(0), is_respawning(false) { }
+		:next_respawn_time(respawn_delay), kills(0), self_kills(0), deaths(0), is_respawning(false) { }
 
 	void DeathMatchServer::ClientInfo::save(Stream &sr) const {
-		sr.pack(next_respawn_time, kills, deaths, is_respawning);
+		sr.pack(next_respawn_time, kills, self_kills, deaths, is_respawning);
 	}
 
 	void DeathMatchServer::ClientInfo::load(Stream &sr) {
-		sr.unpack(next_respawn_time, kills, deaths, is_respawning);
+		sr.unpack(next_respawn_time, kills, self_kills, deaths, is_respawning);
 	}
 
 	DeathMatchServer::DeathMatchServer(World &world) :GameModeServer(world) {
@@ -62,11 +62,16 @@ namespace game {
 		auto target = findPC(target_ref);
 		auto killer = findPC(killer_ref);
 
-		if(target.second && killer.second) {
+		bool self_kill = killer_ref == target_ref;
+		if(target.second) {
 			m_client_infos[target.first].deaths++;
-			m_client_infos[killer.first].kills++;
-
+			if(self_kill)
+				m_client_infos[target.first].self_kills++;
 			replicateClientInfo(target.first, -1);
+		}
+
+		if(target.second && killer.second && !self_kill) {
+			m_client_infos[killer.first].kills++;
 			replicateClientInfo(killer.first, -1);
 		}
 	}
@@ -121,11 +126,16 @@ namespace game {
 			GameModeClient::onMessage(sr, msg_type, source_id);
 	}
 		
+	void DeathMatchClient::onClientDisconnected(int client_id) {
+		GameModeClient::onClientDisconnected(client_id);
+		m_client_infos.erase(client_id);
+	}
+		
 	const vector<GameClientStats> DeathMatchClient::stats() const {
 		vector<GameClientStats> out;
 		for(const auto &info : m_client_infos) {
-			auto client_it = m_others.find(info.first);
-			string nick_name = client_it == m_others.end()? string() : client_it->second.nick_name;
+			auto client_it = m_clients.find(info.first);
+			string nick_name = client_it == m_clients.end()? string() : client_it->second.nick_name;
 			out.emplace_back(GameClientStats{nick_name, info.first, info.second.kills, info.second.deaths});
 		}
 		return out;

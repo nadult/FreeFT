@@ -47,20 +47,24 @@ namespace game {
 		PEntity actor = (PEntity)new Actor(proto, temp);
 
 		FBox spawn_box = spawn_zone->boundingBox();
-		float3 spawn_pos = spawn_box.center();
+		float3 bbox_size = actor->bboxSize();
+		spawn_box.max.x -= bbox_size.x;
+		spawn_box.max.z -= bbox_size.z;
 
-		actor->setPos(spawn_pos);
-		while(!m_world.findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
-			spawn_pos.y -= 1.0f;
-			actor->setPos(spawn_pos);
+		float3 spawn_pos;
+		for(int it = 0; it < 100; it++) {
+			spawn_pos = spawn_box.min + float3(frand() * spawn_box.width(), 1.0f, frand() * spawn_box.depth());
+			if(!m_world.findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
+				spawn_pos.y -= 1.0f;
+				break;
+			}
 		}
-
-		spawn_pos.y += 1.0f;
-		actor->setPos(spawn_pos);
-
-		return m_world.addEntity(std::move(actor));
-	}
 		
+		actor->setPos(spawn_pos);
+		EntityRef out = m_world.addEntity(std::move(actor));
+		m_world.refEntity<Actor>(out)->fixPosition();
+		return out;
+	}
 	
 	void GameClient::save(Stream &sr) const {
 		sr << nick_name;
@@ -145,13 +149,11 @@ namespace game {
 			for(auto &pc : del_it->second.pcs)
 				m_world.removeEntity(pc.entityRef());
 			m_clients.erase(del_it);
-
-			for(auto it = m_clients.begin(); it != m_clients.end(); ++it) {
-				net::TempPacket chunk;
-				chunk << MessageId::remove_client;
-				chunk.encodeInt(client_id);
-				m_world.sendMessage(chunk, it->first);
-			}
+				
+			net::TempPacket chunk;
+			chunk << MessageId::remove_client;
+			chunk.encodeInt(client_id);
+			m_world.sendMessage(chunk, -1);
 		}
 	}
 		
@@ -187,17 +189,18 @@ namespace game {
 			GameClient new_client;
 			int new_id = sr.decodeInt();
 			sr >> new_client;
-			m_others[new_id] = new_client;
+			m_clients[new_id] = new_client;
 
 			if(new_id == m_current_id)
 				m_current = new_client;
 		}
 		else if(msg_type == MessageId::remove_client) {
-			int remove_id = sr.decodeInt();
-			auto it = m_others.find(remove_id);
-			if(it != m_others.end())
-				m_others.erase(it);
+			onClientDisconnected(sr.decodeInt());
 		}
+	}
+	
+	void GameModeClient::onClientDisconnected(int client_id) {
+		m_clients.erase(client_id);
 	}
 	
 	bool GameModeClient::sendOrder(POrder &&order, EntityRef entity_ref) {

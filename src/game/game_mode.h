@@ -119,8 +119,10 @@ namespace game {
 		bool sendOrder(POrder &&order, EntityRef entity_ref) override;
 
 	protected:
+		virtual void onClientDisconnected(int client_id);
+
 		GameClient m_current;
-		std::map<int, GameClient> m_others;
+		std::map<int, GameClient> m_clients;
 		const int m_current_id;
 		int m_max_pcs;
 	};

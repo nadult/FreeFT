@@ -256,6 +256,9 @@ namespace net {
 			return;
 		m_timestamp++;
 
+		for(int h = 0; h < (int)m_clients.size(); h++)
+			if(m_clients[h].mode == ClientMode::to_be_removed)
+				m_game_mode->onClientDisconnected(h);
 		
 		for(int h = 0; h < numRemoteHosts(); h++) {
 			RemoteHost *host = getRemoteHost(h);
@@ -278,7 +281,6 @@ namespace net {
 		for(int h = 0; h < (int)m_clients.size(); h++) {
 			ClientInfo &client = m_clients[h];
 			if(client.mode == ClientMode::to_be_removed) {
-				m_game_mode->onClientDisconnected(h);
 				printf("Client disconnected: %s\n", getRemoteHost(h)->address().toString().c_str());
 				removeRemoteHost(h);
 				client.mode = ClientMode::invalid;
