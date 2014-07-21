@@ -14,18 +14,6 @@
 
 namespace game {
 
-	DECLARE_ENUM(MessageId,
-		sound,
-
-		actor_order,
-		class_changed,
-		update_client,
-		remove_client,
-		respawn,
-
-		update_client_info
-	);
-
 	DECLARE_ENUM(UserMessageType,
 		main,
 		log
@@ -38,41 +26,59 @@ namespace game {
 		string text;
 	};
 
-	class GameMode {
-	public:
-		GameMode(World &world) :m_world(world) { }
-		virtual ~GameMode() { }
-
-		GameMode(const GameMode&) = delete;
-		void operator=(const GameMode&) = delete;
-
-		virtual GameModeId::Type typeId() const = 0;
-		virtual const vector<PlayableCharacter> playableCharacters() const = 0;
-
-		virtual void onKill(EntityRef target, EntityRef killer) { }
-		virtual const UserMessage userMessage(UserMessageType::Type) { return UserMessage(); }
-
-	protected:
-		virtual void tick(double time_diff) = 0;
-		virtual void onMessage(Stream&, MessageId::Type, int source_id) { }
-		virtual bool sendOrder(POrder &&order, EntityRef entity_ref);
-
-		friend class World;
-
-	protected:
-		EntityRef findSpawnZone(int faction_id) const;
-		EntityRef spawnActor(EntityRef spawn_zone, const Proto &proto, const ActorInventory&);
-		void attachAIs();
-
-		World &m_world;
-	};
-
 	struct GameClient {
 		void save(Stream&) const;
 		void load(Stream&);
 
 		string nick_name;
 		vector<PlayableCharacter> pcs;
+	};
+
+	struct PCIndex {
+		PCIndex(int client_id, int pc_id)
+			:client_id(client_id), pc_id(pc_id) { }
+		PCIndex() :client_id(-1), pc_id(-1) { }
+
+		int client_id;
+		int pc_id;
+	};
+
+	class GameMode {
+	public:
+		GameMode(World &world, int current_id);
+		virtual ~GameMode();
+
+		GameMode(const GameMode&) = delete;
+		void operator=(const GameMode&) = delete;
+
+		virtual GameModeId::Type typeId() const = 0;
+
+		virtual void onKill(EntityRef target, EntityRef killer) { }
+	
+		const GameClient *currentClient() const { return client(m_current_id); }
+		const GameClient *client(int client_id) const { return const_cast<GameMode*>(this)->client(client_id); }
+		const PlayableCharacter *pc(const PCIndex &index) const { return const_cast<GameMode*>(this)->pc(index); }
+		bool isValidIndex(const PCIndex &index) const;
+		const PCIndex findPC(EntityRef) const;
+
+		GameClient *client(int client_id);
+		PlayableCharacter *pc(const PCIndex&);
+
+		virtual void tick(double time_diff) = 0;
+		virtual void onMessage(Stream&, MessageId::Type, int source_id) { }
+		virtual bool sendOrder(POrder &&order, EntityRef entity_ref);
+
+		virtual const UserMessage userMessage(UserMessageType::Type) { return UserMessage(); }
+
+	protected:
+		EntityRef findSpawnZone(int faction_id) const;
+		EntityRef spawnActor(EntityRef spawn_zone, const Proto &proto, const ActorInventory&);
+		void respawnPC(const PCIndex &index, EntityRef spawn_zone, const ActorInventory&);
+		void attachAIs();
+
+		World &m_world;
+		std::map<int, GameClient> m_clients;
+		const int m_current_id;
 	};
 
 	class GameModeServer: public GameMode {
@@ -82,18 +88,12 @@ namespace game {
 		void tick(double time_diff) override;
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
 
-		const vector<PlayableCharacter> playableCharacters() const override { return {}; };
-		void respawn(int client_id, int pc_id, EntityRef spawn_zone);
-		pair<int, PlayableCharacter*> findPC(EntityRef);
-
 	protected:
 		virtual void onClientConnected(int client_id, const string &nick_name);
 		virtual void onClientDisconnected(int client_id);
 		friend class net::Server;
 		
 		void replicateClient(int client_id, int target_id = -1);
-
-		std::map<int, GameClient> m_clients;
 	};
 
 	struct GameClientStats {
@@ -102,14 +102,13 @@ namespace game {
 		int kills, deaths;
 	};
 
+	//TODO: handle disconnect / kick
 	class GameModeClient: public GameMode {
 	public:
 		GameModeClient(World &world, int client_id, const string &nick_name);
 
 		void tick(double time_diff) override;
 		void onMessage(Stream&, MessageId::Type, int source_id) override;
-		const vector<PlayableCharacter> playableCharacters() const override { return m_current.pcs; }
-
 		virtual const vector<GameClientStats> stats() const { return {}; }
 
 		const string &currentNickName() const { return m_current.nick_name; }
@@ -122,8 +121,6 @@ namespace game {
 		virtual void onClientDisconnected(int client_id);
 
 		GameClient m_current;
-		std::map<int, GameClient> m_clients;
-		const int m_current_id;
 		int m_max_pcs;
 	};
 

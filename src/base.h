@@ -372,7 +372,7 @@ public:
 		int bit_index;
 	};
 
-	BitVector(int size = 0);
+	explicit BitVector(int size = 0);
 	void resize(int new_size, bool clear_value = false);
 
 	int size() const { return m_size; }
@@ -406,7 +406,7 @@ protected:
 
 class TextFormatter {
 public:
-	TextFormatter(int size = 1024);
+	explicit TextFormatter(int size = 1024);
 
 	void operator()(const char *format, ...);
 	const char *text() const { return m_data.data(); }

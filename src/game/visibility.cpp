@@ -183,7 +183,7 @@ namespace game {
 		return nullptr;
 	}
 
-	void WorldViewer::addToRender(gfx::SceneRenderer &renderer) {
+	void WorldViewer::addToRender(gfx::SceneRenderer &renderer) const {
 		vector<int> inds;
 		inds.reserve(8192);
 

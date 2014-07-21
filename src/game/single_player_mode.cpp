@@ -10,7 +10,15 @@
 namespace game {
 
 	SinglePlayerMode::SinglePlayerMode(World &world, Character character)
-		:GameMode(world), m_pc(character, CharacterClass::defaultId()) {
+		:GameMode(world, 0) {
+		GameClient client;
+		client.nick_name = character.name();
+		client.pcs.emplace_back(PlayableCharacter(character, CharacterClass::defaultId()));
+		m_clients[0] = client;
+
+		m_pc = pc(PCIndex(0, 0));
+		DASSERT(m_pc);
+
 		ASSERT(!world.isServer() && !world.isClient());
 		attachAIs();
 
@@ -44,7 +52,7 @@ namespace game {
 			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 300);
 		}
 
-		m_pc.setEntityRef(spawnActor(spawn_zone, getProto("male", ProtoId::actor), inventory));
+		respawnPC(PCIndex(0, 0), spawn_zone, inventory);
 	}
 		
 	void SinglePlayerMode::tick(double time_diff) {

@@ -118,6 +118,26 @@ namespace game {
 		"shooting"
 	)
 
+	DEFINE_ENUM(HealthStatus,
+		"unhurt",
+		"barely wounded",
+		"wounded",
+		"seriously wounded",
+		"near death",
+		"dead"
+	);
+
+	namespace HealthStatus {
+		Type fromHPPercentage(float health) {
+			return
+				health > 0.99f? unhurt :
+				health > 0.70f? barely_wounded :
+				health > 0.50f? wounded :
+				health > 0.20f? seriously_wounded :
+				health > 0.0f ? near_death : dead;
+		}
+	}
+
 	namespace AttackModeFlags {
 		uint fromString(const char *string) {
 			return ::toFlags(string, AttackMode::s_strings, AttackMode::count, 1);

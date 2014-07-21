@@ -52,53 +52,60 @@ namespace game {
 	void Impact::onAnimFinished() {
 		remove();
 	}
+		
+	void Impact::applyDamage() {
+		if(isClient())
+			return;
+
+		Entity *source = refEntity(m_source);
+
+		if(m_proto.type == ImpactType::area || m_proto.type == ImpactType::area_safe) {
+			float3 center = boundingBox().center();
+			FBox bbox(center - float3(1.0f, 1.0f, 1.0f) * m_proto.range, center + float3(1.0f, 1.0f, 1.0f) * m_proto.range);
+
+			vector<ObjectRef> entities;
+			findAll(entities, bbox, Flags::entity);
+
+			for(int n = 0; n < (int)entities.size(); n++) {
+				Entity *entity = refEntity(entities[n]);
+				if(m_proto.type == ImpactType::area_safe && entity->ref() == m_source)
+					continue;
+
+				float dist = distance(FBox(center, center), entity->boundingBox()) / m_proto.range;
+				float strength = dist < 0.0f? 0.0f : (1 - dist) * (1.0f - dist);
+
+				if(strength > 0.0f) {
+					Segment segment(center, entity->boundingBox().center());
+
+					if(!trace(segment, {Flags::tile | Flags::colliding, entities[n]})) {
+						//TODO: decrease damage if blocked by another entity	
+						//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
+						float3 force = segment.dir() * m_proto.force * strength * m_damage_mod;
+
+						entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force, m_source);
+					}
+				}
+			}
+		}
+		else {
+			Entity *target = refEntity(m_target);
+			
+			if(source && target && source != target) {
+				float dist = distance(source->boundingBox(), target->boundingBox());
+
+				if(m_proto.type == ImpactType::ranged || dist <= m_proto.range) {
+					float3 force = target->boundingBox().center() - source->boundingBox().center();
+					force = force * m_proto.force / length(force);
+
+					target->onImpact(m_proto.damage_type, m_proto.damage * m_damage_mod, force, m_source);
+				}
+			}
+		}
+	}
 
 	void Impact::think() {
 		if(!m_applied_damage) {
-			Entity *source = refEntity(m_source);
-
-			if(m_proto.type == ImpactType::area || m_proto.type == ImpactType::area_safe) {
-				float3 center = boundingBox().center();
-				FBox bbox(center - float3(1.0f, 1.0f, 1.0f) * m_proto.range, center + float3(1.0f, 1.0f, 1.0f) * m_proto.range);
-
-				vector<ObjectRef> entities;
-				findAll(entities, bbox, Flags::entity);
-
-				for(int n = 0; n < (int)entities.size(); n++) {
-					Entity *entity = refEntity(entities[n]);
-					if(m_proto.type == ImpactType::area_safe && entity->ref() == m_source)
-						continue;
-
-					float dist = distance(FBox(center, center), entity->boundingBox()) / m_proto.range;
-					float strength = dist < 0.0f? 0.0f : (1 - dist) * (1.0f - dist);
-
-					if(strength > 0.0f) {
-						Segment segment(center, entity->boundingBox().center());
-
-						if(!trace(segment, {Flags::tile | Flags::colliding, entities[n]})) {
-							//TODO: decrease damage if blocked by another entity	
-							//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
-							float3 force = segment.dir() * m_proto.force * strength * m_damage_mod;
-
-							entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force, m_source);
-						}
-					}
-				}
-			}
-			else {
-				Entity *target = refEntity(m_target);
-				
-				if(source && target && source != target) {
-					float dist = distance(source->boundingBox(), target->boundingBox());
-
-					if(m_proto.type == ImpactType::ranged || dist <= m_proto.range) {
-						float3 force = target->boundingBox().center() - source->boundingBox().center();
-						force = force * m_proto.force / length(force);
-
-						target->onImpact(m_proto.damage_type, m_proto.damage * m_damage_mod, force, m_source);
-					}
-				}
-			}
+			applyDamage();
 			m_applied_damage = true;
 		}
 

@@ -24,6 +24,7 @@ Mustfix: -----------------------------------------------------------------------
 - HudStats are a little too big (20 pixels bigger than HudMainPanel)
 
 
+
 Nice to fix: --------------------------------------------------------------------------------------
 
 - Wrong mouse position before moving it for the first time
@@ -36,6 +37,7 @@ Nice to fix: -------------------------------------------------------------------
 - Robots have no hit sounds
 - When changing armour, it should happen on event pickup, not when animation has finished
 - Sometimes main menu music is still being played in the game
+
 
 
 Secondary: ----------------------------------------------------------------------------------------

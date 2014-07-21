@@ -124,6 +124,31 @@ namespace game {
 		hunter
 	);
 
+	DECLARE_ENUM(HealthStatus,
+		unhurt,
+		barely_wounded,
+		wounded,
+		seriously_wounded,
+		near_death,
+		dead
+	);
+
+	namespace HealthStatus {
+		Type fromHPPercentage(float);
+	};
+
+	DECLARE_ENUM(MessageId,
+		sound,
+
+		actor_order,
+		class_changed,
+		update_client,
+		remove_client,
+		respawn,
+
+		update_client_info
+	);
+
 	DECLARE_ENUM(SoundType,
 		normal,
 		explosion,

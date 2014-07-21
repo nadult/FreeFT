@@ -13,6 +13,7 @@
 namespace hud {
 	class Hud;
 	class HudConsole;
+	class HudTargetInfo;
 }
 
 namespace io {
@@ -25,14 +26,14 @@ namespace io {
 
 		void updateView(double time_diff);
 		void update(double time_diff);
-		void draw();
+		void draw() const;
 
 		int exitRequested() const { return m_is_exiting; }
 
 	protected:
 		void updatePC();
 		void onInput(const InputEvent&);
-		void drawDebugInfo();
+		void drawDebugInfo() const;
 
 		void sendOrder(game::POrder&&);
 
@@ -59,6 +60,7 @@ namespace io {
 
 		Ptr<hud::HudConsole> m_console;
 		Ptr<hud::Hud> m_hud;
+		Ptr<hud::HudTargetInfo> m_target_info;
 
 		int2 m_resolution, m_view_pos;
 

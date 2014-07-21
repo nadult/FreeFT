@@ -63,7 +63,7 @@ namespace io {
 		  :GameLoop("game", from_main) {
 		DASSERT(world && world->mode() == World::Mode::single_player);
 		m_world = world;
-		m_world->assignGameMode<SinglePlayerMode>(Character("Player", "CORE_prefab2", "female"));
+		m_world->assignGameMode<SinglePlayerMode>(Character("Player", "CORE_prefab2", "male"));
 		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_enabled));
 	}
 

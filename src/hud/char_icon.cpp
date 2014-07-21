@@ -26,14 +26,18 @@ namespace hud {
 	
 		PTexture icon = m_character? m_character->icon() : Character::emptyIcon();
 		icon->bind();
-		float2 pos = rect.center(), icon_size(icon->dimensions());
-		pos -= icon_size * 0.5f;
+		//TODO: use mipmapped textures
+
+		float2 icon_size(icon->dimensions());
+		float scale = min(1.0f, 1.0f / max(icon_size.x / rect.width(), icon_size.y / rect.height()));
+		icon_size = icon_size * scale;
+		float2 pos = rect.center() - icon_size * 0.5f;
 
 		float hp_value = m_max_hp? clamp(float(m_current_hp) / m_max_hp, 0.0f, 1.0f) : 1.0f;
 		Color color(lerp((float4)Color(Color::red), (float4)Color(Color::green), hp_value));
 		color = lerp(color, m_style.enabled_color, 0.5f);
 
-		drawQuad(FRect(pos, pos + icon_size), color);
+		drawQuad(FRect(pos, pos + icon_size), mulAlpha(color, alpha()));
 
 		if(m_max_hp)
 			m_font->draw(rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top},

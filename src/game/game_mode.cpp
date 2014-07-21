@@ -8,10 +8,31 @@
 #include "game/actor.h"
 #include "game/inventory.h"
 #include "game/trigger.h"
-#include "net/socket.h"
+#include "net/base.h"
 
 namespace game {
 		
+	void GameClient::save(Stream &sr) const {
+		sr << nick_name;
+		sr.encodeInt((int)pcs.size());
+		for(const auto &pc : pcs)
+			sr << pc;
+	}
+
+	void GameClient::load(Stream &sr) {
+		sr >> nick_name;
+		int count = sr.decodeInt();
+		pcs.clear();
+		for(int n = 0; n < count; n++) 
+			pcs.emplace_back(PlayableCharacter(sr));
+	}
+
+
+	GameMode::GameMode(World &world, int current_id)
+			:m_world(world), m_current_id(current_id) { }
+		
+	GameMode::~GameMode() { }
+
 	bool GameMode::sendOrder(POrder &&order, EntityRef entity_ref) {
 		if( Actor *entity = m_world.refEntity<Actor>(entity_ref) )
 			return entity->setOrder(std::move(order));
@@ -65,24 +86,48 @@ namespace game {
 		m_world.refEntity<Actor>(out)->fixPosition();
 		return out;
 	}
-	
-	void GameClient::save(Stream &sr) const {
-		sr << nick_name;
-		sr.encodeInt((int)pcs.size());
-		for(int n = 0; n < (int)pcs.size(); n++)
-			sr << pcs[n];
-	}
 
-	void GameClient::load(Stream &sr) {
-		sr >> nick_name;
-		int count = sr.decodeInt();
-		pcs.clear();
-		pcs.reserve(count);
-		for(int n = 0; n < count; n++) 
-			pcs.emplace_back(PlayableCharacter(sr));
+	void GameMode::respawnPC(const PCIndex &index, EntityRef spawn_zone, const ActorInventory &inv) {
+		DASSERT(isValidIndex(index));
+
+		PlayableCharacter *pc = this->pc(index);
+		if(pc->entityRef())
+			m_world.removeEntity(pc->entityRef());
+
+		EntityRef actor_ref = spawnActor(spawn_zone, pc->character().proto(), inv);
+		pc->setEntityRef(actor_ref);
+		Actor *actor = m_world.refEntity<Actor>(actor_ref);
+		DASSERT(actor);
+		actor->setClientId(index.client_id);
 	}
 		
-	GameModeServer::GameModeServer(World &world) :GameMode(world) {
+	GameClient *GameMode::client(int client_id) {
+		auto it = m_clients.find(client_id);
+		return it == m_clients.end()? nullptr : &it->second;
+	}
+
+	PlayableCharacter *GameMode::pc(const PCIndex &index) {
+		if(!isValidIndex(index))
+			return nullptr;
+		return &m_clients[index.client_id].pcs[index.pc_id];
+	}
+
+	bool GameMode::isValidIndex(const PCIndex &index) const {
+		const GameClient *client = this->client(index.client_id);
+		return client && index.pc_id >= 0 && index.pc_id < (int)client->pcs.size();
+	}
+		
+	const PCIndex GameMode::findPC(EntityRef ref) const {
+		if( const Actor *actor = m_world.refEntity<Actor>(ref) )
+			if( const GameClient *client = this->client(actor->clientId()) )
+				for(int n = 0; n < (int)client->pcs.size(); n++)
+					if(client->pcs[n].entityRef() == ref)
+						return PCIndex(actor->clientId(), n);
+		return PCIndex();
+	}
+	
+	
+	GameModeServer::GameModeServer(World &world) :GameMode(world, -1) {
 		ASSERT(world.isServer());
 	}
 
@@ -105,25 +150,10 @@ namespace game {
 			}
 		}
 		else if(msg_type == MessageId::update_client) {
-			GameClient new_client;
-			sr >> new_client;
+			sr >> m_clients[source_id];
 			//TODO: verification?
-			m_clients[source_id] = new_client;
 			replicateClient(source_id);
 		}
-	}
-		
-	pair<int, PlayableCharacter*> GameModeServer::findPC(EntityRef ref) {
-		const Actor *actor = m_world.refEntity<Actor>(ref);
-		if(actor) {
-			auto it = m_clients.find(actor->clientId());
-			if(it != m_clients.end())
-				for(auto &pc : it->second.pcs)
-					if(pc.entityRef() == ref)
-						return make_pair(actor->clientId(), &pc);
-		}
-
-		return make_pair(-1, nullptr);
 	}
 
 	void GameModeServer::replicateClient(int client_id, int target_id) {
@@ -156,25 +186,9 @@ namespace game {
 			m_world.sendMessage(chunk, -1);
 		}
 	}
-		
-	void GameModeServer::respawn(int client_id, int pc_id, EntityRef spawn_zone) {
-		DASSERT(client_id >= 0 && client_id < (int)m_clients.size());
-		DASSERT(pc_id >= 0 && pc_id < (int)m_clients[client_id].pcs.size());
-
-		GameClient &client = m_clients[client_id];
-		PlayableCharacter &pc = client.pcs[pc_id];
-		if(pc.entityRef())
-			m_world.removeEntity(pc.entityRef());
-		EntityRef actor_ref = spawnActor(spawn_zone, pc.character().proto(), pc.characterClass().inventory(true));
-		Actor *actor = m_world.refEntity<Actor>(actor_ref);
-		DASSERT(actor);
-		actor->setClientId(client_id);
-		pc.setEntityRef(actor_ref);
-		replicateClient(client_id, -1);
-	}
 
 	GameModeClient::GameModeClient(World &world, int client_id, const string &nick_name)
-		:GameMode(world), m_current_id(client_id) {
+		:GameMode(world, client_id) {
 		m_current.nick_name = nick_name;
 		ASSERT(world.isClient());
 		m_max_pcs = 1;

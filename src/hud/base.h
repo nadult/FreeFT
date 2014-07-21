@@ -108,6 +108,7 @@ namespace hud {
 	class HudItemDesc;
 	class HudEditBox;
 	class HudGrid;
+	class HudTargetInfo;
 
 	class HudMainPanel;
 	class HudInventory;

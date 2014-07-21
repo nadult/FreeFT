@@ -118,7 +118,6 @@ namespace game {
 		void setReplicator(Replicator*);
 		void replicate(int entity_id);
 		void replicate(const Entity*);
-		void sendMessage(net::TempPacket&, int target_id = -1);
 		void onMessage(Stream&, int source_id);
 
 		//TODO: single function with replication as a parameter
@@ -127,6 +126,7 @@ namespace game {
 		void replicateSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
 
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
+		void sendMessage(net::TempPacket&, int target_id = -1);
 		
 		int filterIgnoreIndex(const FindFilter &filter) const;
 

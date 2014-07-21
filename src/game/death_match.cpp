@@ -47,7 +47,10 @@ namespace game {
 			if(info.is_respawning) {
 				info.next_respawn_time -= time_diff;
 				if(info.next_respawn_time < 0.0f) {
-					respawn(client_id, 0, findSpawnZone(0));
+					const ActorInventory &inv = pcs[0].characterClass().inventory(true);
+					respawnPC(PCIndex(client_id, 0), findSpawnZone(0), inv);
+					replicateClient(client_id);
+
 					notify_client = true;
 					info.is_respawning = false;
 				}
@@ -59,20 +62,22 @@ namespace game {
 	}
 		
 	void DeathMatchServer::onKill(EntityRef target_ref, EntityRef killer_ref) {
-		auto target = findPC(target_ref);
-		auto killer = findPC(killer_ref);
+		PCIndex target_idx = findPC(target_ref);
+		PCIndex killer_idx = findPC(killer_ref);
+		PlayableCharacter *target_pc = pc(target_idx);
+		PlayableCharacter *killer_pc = pc(killer_idx);
 
 		bool self_kill = killer_ref == target_ref;
-		if(target.second) {
-			m_client_infos[target.first].deaths++;
+		if(target_pc) {
+			m_client_infos[target_idx.client_id].deaths++;
 			if(self_kill)
-				m_client_infos[target.first].self_kills++;
-			replicateClientInfo(target.first, -1);
+				m_client_infos[target_idx.client_id].self_kills++;
+			replicateClientInfo(target_idx.client_id, -1);
 		}
 
-		if(target.second && killer.second && !self_kill) {
-			m_client_infos[killer.first].kills++;
-			replicateClientInfo(killer.first, -1);
+		if(target_pc && killer_pc && !self_kill) {
+			m_client_infos[killer_idx.client_id].kills++;
+			replicateClientInfo(killer_idx.client_id, -1);
 		}
 	}
 
@@ -94,6 +99,9 @@ namespace game {
 	void DeathMatchServer::onClientConnected(int client_id, const string &nick_name) {
 		GameModeServer::onClientConnected(client_id, nick_name);
 		m_client_infos[client_id] = ClientInfo();
+		replicateClientInfo(client_id, -1);
+		for(const auto &it : m_client_infos)
+			replicateClientInfo(it.first, client_id);
 	}
 
 	void DeathMatchServer::onClientDisconnected(int client_id) {

@@ -21,6 +21,7 @@
 #include "gfx/texture.h"
 #include "hud/console.h"
 #include "hud/hud.h"
+#include "hud/target_info.h"
 
 using namespace gfx;
 using namespace game;
@@ -28,12 +29,15 @@ using namespace game;
 namespace io {
 
 	static const float s_exit_anim_length = 0.7f;
+	static const float2 target_info_size(200.0f, 80.0f);
 
 	Controller::Controller(const int2 &resolution, PWorld world, bool debug_info)
 	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_debug_info(debug_info), m_is_exiting(0) {
 		DASSERT(world);
 		m_console = new hud::HudConsole(resolution);
 		m_hud = new hud::Hud(world);
+		m_target_info = new hud::HudTargetInfo(FRect(target_info_size));
+		m_target_info->setVisible(false, false);
 
 		m_game_mode = m_world->gameMode();
 		ASSERT(m_game_mode);
@@ -54,7 +58,8 @@ namespace io {
 		
 	//TODO: better name
 	void Controller::updatePC() {
-		const auto &pcs = m_game_mode->playableCharacters();
+		const GameClient *client = m_game_mode->currentClient();
+		const vector<PlayableCharacter> &pcs = client? client->pcs : vector<PlayableCharacter>();
 		PPlayableCharacter pc;
 
 		if( (pcs.empty() && !m_pc) || (m_pc && pcs[0] == *m_pc) )
@@ -211,6 +216,7 @@ namespace io {
 
 		m_console->update(time_diff);
 		m_hud->update(time_diff);
+		m_target_info->update(time_diff);
 
 		if(m_last_time - m_stats_update_time > 0.25) {
 			m_profiler_stats = profiler::getStats();
@@ -228,6 +234,46 @@ namespace io {
 				m_main_message.message = message;
 		}
 
+		{
+			Actor *target_actor = m_world->refEntity<Actor>(m_isect);
+			float2 info_size = m_target_info->rect().size();
+			float2 pos = (float2)getMousePos() - float2(info_size.x * 0.5f, info_size.y + 30.0f);
+			pos.x = clamp(pos.x, 0.0f, (float)m_resolution.x - info_size.x);
+			if(pos.y < 0.0f)
+				pos.y = getMousePos().y + 40.0f;
+			m_target_info->setPos(pos);
+
+			float hit_chance = 0.0f;		
+			if(actor) {
+				const Weapon &weapon = actor->inventory().weapon();
+				if(!m_isect.isEmpty() && weapon.hasRangedAttack()) {
+					FBox bbox = m_viewer.refBBox(m_isect);
+					hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
+				}
+			}
+
+			const PlayableCharacter *pc = target_actor? m_game_mode->pc(m_game_mode->findPC(target_actor->ref())) : nullptr;
+			const GameModeClient *gm_client = dynamic_cast<const GameModeClient*>(m_game_mode);
+			if(gm_client && target_actor) {
+				auto stats = gm_client->stats();
+				for(const auto &stat : stats)
+					if(stat.client_id == target_actor->clientId()) {
+						m_target_info->setStats(stat);
+						break;
+					}
+			}
+
+			if(pc) {
+				m_target_info->setCharacter(new Character(pc->character()));
+				m_target_info->setHealth(target_actor->hitPoints() / target_actor->proto().actor->hit_points);
+				m_target_info->setHitChance(hit_chance);
+				m_target_info->setName(m_game_mode->client(target_actor->clientId())->nick_name);
+			}
+				
+			m_target_info->setVisible(pc != nullptr);
+		}
+			
+
 		while(true) {
 			string command = m_console->getCommand();
 			if(command.empty())
@@ -241,7 +287,7 @@ namespace io {
 		m_viewer.update(time_diff);
 	}
 
-	void Controller::draw() {
+	void Controller::draw() const {
 		clear(Color(0, 0, 0));
 		SceneRenderer renderer(IRect(int2(0, 0), m_resolution), m_view_pos);
 
@@ -267,8 +313,10 @@ namespace io {
 			drawDebugInfo();
 
 		lookAt({0, 0});
-		m_console->draw();
+
 		m_hud->draw();
+		m_target_info->draw();
+		m_console->draw();
 
 		if(!m_main_message.isEmpty()) {
 			gfx::PFont font = gfx::Font::mgr["transformers_48"];
@@ -280,8 +328,8 @@ namespace io {
 			font->draw(rect, {text_color, shadow_color, HAlign::center}, m_main_message.text());
 		}
 	}
-
-	void Controller::drawDebugInfo() {
+		
+	void Controller::drawDebugInfo() const {
 		TextFormatter fmt(4096);
 
 		float3 isect_pos = m_screen_ray.at(m_isect.distance());

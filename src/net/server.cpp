@@ -126,8 +126,6 @@ namespace net {
 					disconnectClient(client_id);
 					break;
 				}
-				
-				m_game_mode->onClientConnected(client_id, client.nick_name);
 
 				client.is_loading_level = true;
 				client.update_map.resize(m_world->entityCount() * 2);
@@ -143,7 +141,9 @@ namespace net {
 				printf("Client connected (%d / %d): %s (%s)\n", numActiveClients(), maxPlayers(),
 						client.nick_name.c_str(), host.address().toString().c_str());
 			}
-			else if(chunk.type() == ChunkType::level_loaded && client.mode == ClientMode::connecting) {
+			else if(chunk.type() == ChunkType::level_loaded && client.mode == ClientMode::connecting) {	
+				m_game_mode->onClientConnected(client_id, client.nick_name);
+
 				//TODO: timeout for level_loaded?
 				client.mode = ClientMode::connected;
 				client.is_loading_level = false;

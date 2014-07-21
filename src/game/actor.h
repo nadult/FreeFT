@@ -137,9 +137,6 @@ namespace game {
 		Flags::Type flags() const;
 		const FBox boundingBox() const override;
 
-		void setClientId(int client_id) { m_client_id = client_id; }
-		int clientId() const { return m_client_id; }
-
 		bool setOrder(POrder&&, bool force = false);
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
@@ -163,8 +160,11 @@ namespace game {
 		bool isDead() const;
 
 		int hitPoints() const { return m_hit_points; }
+
 		int factionId() const { return m_faction_id; }
+		int clientId() const { return m_client_id; }
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
+		void setClientId(int client_id) { m_client_id = client_id; }
 
 		template <class TAI, class ...Args>
 		void attachAI(PWorld world, const Args&... args) {

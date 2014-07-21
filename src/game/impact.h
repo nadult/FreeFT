@@ -42,6 +42,7 @@ namespace game {
 	protected:
 		void onAnimFinished() override;
 		void think() override;
+		void applyDamage();
 
 		EntityRef m_target, m_source;
 		float m_damage_mod;

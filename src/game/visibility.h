@@ -45,7 +45,7 @@ namespace game {
 
 		// WorldViewer has to be updated after each world simulation
 		void update(double time_diff);
-		void addToRender(gfx::SceneRenderer&);
+		void addToRender(gfx::SceneRenderer&) const;
 
 		const FBox refBBox(ObjectRef) const;
 		const Tile *refTile(ObjectRef) const;

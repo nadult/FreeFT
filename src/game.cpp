@@ -50,6 +50,7 @@ int safe_main(int argc, char **argv)
 	net::ServerConfig server_config;
 	string map_name;
 	bool init_audio = true;
+	bool fullscreen = config.fullscreen;
 
 	for(int a = 1; a < argc; a++) {
 		if(strcmp(argv[a], "-res") == 0) {
@@ -66,9 +67,10 @@ int safe_main(int argc, char **argv)
 			ASSERT(window_pos.x >= 0 && window_pos.y >= 0);
 			a += 2;
 		}
-		else if(strcmp(argv[a], "-nosound") == 0) {
+		else if(strcmp(argv[a], "-nosound") == 0)
 			init_audio = false;
-		}
+		else if(strcmp(argv[a], "-fullscreen") == 0)
+			fullscreen = true;
 		else if(strcmp(argv[a], "-server") == 0) {
 			ASSERT(a + 1 < argc);
 			XMLDocument xml_config;
@@ -94,7 +96,7 @@ int safe_main(int argc, char **argv)
 
 	bool console_mode = server_config.isValid() && server_config.m_console_mode;
 	if(!console_mode)
-		createWindow(res, window_pos, config.fullscreen);
+		createWindow(res, window_pos, fullscreen);
 
 	io::PLoop main_loop;
 
