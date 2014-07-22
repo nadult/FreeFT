@@ -31,3 +31,4 @@
 19.07.14: 10:00 - 11:00, 11:30 - 15:30  (5h)
 20.07.14: 16:00 - 18:00, 22:00 - 23:00
 21.07.14: 14:00 - 21:00  (Wasted a lot of time on thinking about making nice interface for GameModes)
+22.07.14: 18:00 - 

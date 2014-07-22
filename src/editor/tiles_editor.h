@@ -85,10 +85,12 @@ namespace ui {
 		const IBox computeCursor(const int2 &start, const int2 &end) const;
 		
 		IBox m_selection;
+		int3 m_move_offset;
 		int m_cursor_offset;
 		int m_current_occluder;
 		int m_mouseover_tile_id;
-		bool m_is_selecting;
+		bool m_is_selecting, m_is_moving;
+		bool m_is_moving_vertically;
 	};
 
 	typedef Ptr<TilesEditor> PTilesEditor;

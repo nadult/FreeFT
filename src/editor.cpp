@@ -100,6 +100,7 @@ public:
 		attach(m_left_window.get());
 		attach(m_group_editor.get());
 
+		//loadMap("data/maps/Assault/Lost Vault_mod.xml");
 		loadMap("data/maps/mission05_mod.xml");
 
 		recreateEditors();

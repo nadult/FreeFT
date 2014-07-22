@@ -15,11 +15,7 @@ Mustfix: -----------------------------------------------------------------------
 - Attacking on stairs may caus player to get stuck
 - When trying to teleport in client, AIs react (for a single frame)
 
-- Some problems with tracking, when player wants to attack a scorpion moving towards him
-  (sometimes tracking ends too early)
-- Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)
 - HudStats are a little too big (20 pixels bigger than HudMainPanel)
-
 
 
 Nice to fix: --------------------------------------------------------------------------------------
@@ -58,3 +54,6 @@ Fixed: -------------------------------------------------------------------------
 - Some sounds weren't played when lots of AI's were present
 - AI's get stuck all the time
 - Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
+- Some problems with tracking, when player wants to attack a scorpion moving towards him
+  (sometimes tracking ends too early)
+- Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)

@@ -42,6 +42,9 @@ namespace ui {
 		:ui::Window(rect, Color(0, 0, 0)), m_view(view), m_tile_map(tile_map), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
 		m_is_selecting = false;
+		m_is_moving = false;
+		m_is_moving_vertically = false;
+		m_move_offset = int3(0, 0, 0);
 		m_mode = mode_selecting_normal;
 
 		m_cursor_offset = 0;
@@ -323,6 +326,50 @@ namespace ui {
 
 			return true;
 		}
+		else if(key == 1 && (m_mode >= mode_selecting_normal && m_mode <= mode_selecting_difference)) {
+			if(!m_is_moving) {
+				m_is_moving_vertically = isKeyPressed(Key::lshift);
+				m_is_moving = true;
+			}
+
+			if(m_is_moving_vertically)
+				m_move_offset = int3(0, screenToWorld(int2(0, start.y - current.y)).y, 0);
+			else
+				m_move_offset = asXZY(screenToWorld(current - start), 0);
+
+			if(is_final)
+				m_is_moving = false;
+
+			if(is_final > 0) {
+				vector<int> temp;
+
+				bool cancel = false;
+				int2 dims = m_tile_map.dimensions();
+
+				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
+					FBox bbox = m_tile_map[m_selected_ids[n]].bbox + m_move_offset;
+					m_tile_map.findAll(temp, bbox, m_selected_ids[n]);
+
+					if(bbox.min.x < 0 || bbox.min.y < 0 || bbox.min.z < 0 || bbox.max.x > dims.x || bbox.max.y >= Grid::max_height || bbox.max.z > dims.y)
+						cancel = true;
+				}
+
+				sort(temp.begin(), temp.end());
+				temp.resize(std::unique(temp.begin(), temp.end()) - temp.begin());
+				temp.resize(std::set_difference(temp.begin(), temp.end(), m_selected_ids.begin(), m_selected_ids.end(), temp.begin()) - temp.begin());
+
+				if(temp.empty() && !cancel)
+					for(int n = 0; n < (int)m_selected_ids.size(); n++) {
+						auto object = m_tile_map[m_selected_ids[n]];
+						const Tile *tile = object.ptr;
+						int3 new_pos = (int3)object.bbox.min + m_move_offset;
+						m_tile_map.remove(m_selected_ids[n]);
+						m_tile_map.add(tile, new_pos);
+					}
+			}
+
+			return true;
+		}
 
 		return false;
 	}
@@ -357,6 +404,11 @@ namespace ui {
 			vector<int> visible_ids;
 			visible_ids.reserve(1024 * 8);
 			m_tile_map.findAll(visible_ids, renderer.targetRect(), Flags::all | Flags::visible);
+
+			sort(visible_ids.begin(), visible_ids.end());
+			visible_ids.resize(
+				std::set_difference(visible_ids.begin(), visible_ids.end(), m_selected_ids.begin(), m_selected_ids.end(), visible_ids.begin())
+				- visible_ids.begin());
 
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
 			vector<Color> tile_colors(visible_ids.size(), Color::white);
@@ -419,12 +471,23 @@ namespace ui {
 				auto object = m_tile_map[visible_ids[i]];
 				int3 pos(object.bbox.min);
 				
-//				if(m_tile_map.findAny(object.bbox, visible_ids[i]) != -1)
-//					renderer.addBox(object.bbox, Color::red, false);
 				object.ptr->addToRender(renderer, pos, tile_colors[i]);
 			}
-			for(int i = 0; i < (int)m_selected_ids.size(); i++)
+
+			for(int i = 0; i < (int)m_selected_ids.size(); i++) {
+				auto object = m_tile_map[m_selected_ids[i]];
+				if(m_is_moving)
+					object.bbox += (float3)m_move_offset;
+
+				vector<int> temp;
+				m_tile_map.findAll(temp, object.bbox, m_selected_ids[i]);
+				sort(temp.begin(), temp.end());
+				temp.resize(std::set_difference(temp.begin(), temp.end(), m_selected_ids.begin(), m_selected_ids.end(), temp.begin()) - temp.begin());
+
+				Color color = !temp.empty()? Color::red : Color::white;
+				object.ptr->addToRender(renderer, (int3)object.bbox.min, color);
 				renderer.addBox(m_tile_map[m_selected_ids[i]].bbox);
+			}
 
 		}
 		renderer.render();
