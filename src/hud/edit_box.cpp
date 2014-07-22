@@ -36,6 +36,9 @@ namespace hud {
 	bool HudEditBox::onInput(const io::InputEvent &event) {
 		bool handled = false;
 
+		if(m_mode == mode_console && event.keyDown('`'))
+			return false;
+
 		bool mouse_over = isMouseOver(event);
 		if(event.mouseOver())
 			m_is_highlighted = mouse_over;
@@ -69,7 +72,7 @@ namespace hud {
 	}
 		
 	bool HudEditBox::isValidChar(int key) {
-		if(m_mode == mode_normal)
+		if(m_mode == mode_normal || m_mode == mode_console)
 		   return key >= 32 && key < 128;
 		else if(m_mode == mode_nick || m_mode == mode_locase_nick)
 			return (key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9') || key == '-' || key == '_';

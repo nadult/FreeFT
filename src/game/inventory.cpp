@@ -153,11 +153,17 @@ namespace game {
 		if(type == ItemType::ammo && m_weapon.proto().ammo_class_id != Ammo(item).classId())
 			return false;
 
+		Entry old_ammo = m_ammo;
 		unequip(type);
 
-		count = min(type == ItemType::ammo? count : 1, m_entries[id].count);
-		if(type == ItemType::ammo)
+		if(type == ItemType::ammo) {
+			if(old_ammo.item == item)
+				count += old_ammo.count;
 			count = min(count, m_weapon.maxAmmo());
+		}
+		else
+			count = min(count, 1);
+		count = min(count, m_entries[id].count);
 
 		remove(id, count);
 

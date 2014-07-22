@@ -74,7 +74,10 @@ namespace game {
 		TileMap &tileMap() { return m_level.tile_map; }
 		const TileMap &tileMap() const { return m_level.tile_map; }
 		
+		//TODO: updating navi map on demand
 		const NaviMap *naviMap(int agent_size) const;
+		const NaviMap *naviMap(EntityRef agent) const;
+		const NaviMap *naviMap(const FBox &agent_box) const;
 
 		const Grid::ObjectDef *refDesc(ObjectRef) const;
 		const EntityMap::ObjectDef *refEntityDesc(int index) const;
@@ -142,8 +145,6 @@ namespace game {
 		double m_last_anim_frame_time;
 		int m_anim_frame;
 
-		//TODO: updating navi map on demand
-		const NaviMap *accessNaviMap(const FBox &agent_box) const;
 
 		//TODO: remove level
 		Level		m_level;

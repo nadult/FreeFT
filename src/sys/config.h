@@ -9,11 +9,10 @@
 #include "base.h"
 
 struct Config {
-	Config() :resolution(1400, 768), window_pos(0, 0), time_multiplier(1.0f), fullscreen(false), profiler_enabled(false) { }
+	Config() :resolution(1400, 768), window_pos(0, 0), fullscreen(false), profiler_enabled(false) { }
 
 	int2 resolution;
 	int2 window_pos;
-	float time_multiplier;
 	bool fullscreen;
 	bool profiler_enabled;
 };

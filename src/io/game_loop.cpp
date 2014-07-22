@@ -70,6 +70,8 @@ namespace io {
 	GameLoop::~GameLoop() { }
 		
 	bool GameLoop::onTick(double time_diff) {
+		double multiplier = !m_world->isClient() && !m_world->isServer() && m_controller? m_controller->timeMultiplier() : 1.0;
+
 		//TODO: handle change of map
 		if(m_controller)
 			m_controller->update(time_diff);
@@ -78,7 +80,7 @@ namespace io {
 		if(m_client)
 			m_client->beginFrame();
 
-		m_world->simulate(time_diff * m_config.time_multiplier);
+		m_world->simulate(time_diff * multiplier);
 
 		if(m_server)
 			m_server->finishFrame();

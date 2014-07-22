@@ -53,8 +53,8 @@ namespace game {
 			}
 			else {
 				if(order.m_is_followup) {
-					printf("Cannot get there!\n");
-					return false;
+					//printf("Cannot get there!\n");
+					return failOrder();
 				}
 				else {
 					int3 target_pos;

@@ -202,8 +202,10 @@ namespace game {
 					}
 				}
 			}
-			else //TODO: change target if cannot do anything about it
+			else {//TODO: change target if cannot do anything about it
 				m_target = EntityRef();
+			}
+				
 
 			if(!m_target && actor->currentOrder() == OrderTypeId::idle)
 				tryRandomMove();
@@ -213,21 +215,17 @@ namespace game {
 	const float3 SimpleAI::findClosePos(float range) const {
 		Actor *actor = this->actor();
 		DASSERT(actor);
-
-		//TODO: use world::accessNaviMap
-		const NaviMap *navi_map = m_world->naviMap((int)round(max(actor->bboxSize().x, actor->bboxSize().z)));
-		DASSERT(navi_map);
-
 		float3 pos(actor->pos());
+
+		const NaviMap *navi_map = m_world->naviMap(m_actor_ref);
+		if(!navi_map)
+			return pos;
 
 		for(int iters = 0; iters < 20; iters++) {
 			float3 new_pos = pos + float3((frand() - 0.5f) * range, 5.0f, (frand() - 0.5f) * range);
-			if(navi_map->isReachable((int3)new_pos, (int3)pos)) {
-				//m_last_message = format("found %d", rand());
+			if(navi_map->isReachable((int3)new_pos, (int3)pos))
 				return new_pos;
-			}
 		}
-		//m_last_message = format("not found %d", rand());
 
 		return pos;
 	}
@@ -248,7 +246,7 @@ namespace game {
 					on_spawn_zone = true;
 			}
 
-			float range = rand() % 2 && !on_spawn_zone? frand() * 25.0f : 25.0f + frand() * 150.0f;
+			float range = rand() % 2 && !on_spawn_zone? 5.0f + frand() * 25.0f : 25.0f + frand() * 150.0f;
 
 			float3 close_pos = findClosePos(range);
 			m_world->sendOrder(new MoveOrder((int3)close_pos, false), m_actor_ref);
@@ -262,8 +260,17 @@ namespace game {
 			return string();
 		OrderTypeId::Type current_order = actor->currentOrder();
 		string order = OrderTypeId::isValid(current_order)? OrderTypeId::toString(current_order) : "invalid";
-		return format("(%.2f %.2f %.2f)\nHP: %d | order: %s (time: %.2f)\n%s", actor->pos().x, actor->pos().y, actor->pos().z,
-				actor->hitPoints(), order.c_str(), m_move_delay, m_last_message.c_str());
+
+		const Actor *target = m_world->refEntity<Actor>(m_target);
+		string target_text = target? string("| Target:") + target->proto().actor->id : "";
+
+		string out;
+//		out += format("(%.2f %.2f %.2f)\n", actor->pos().x, actor->pos().y, actor->pos().z);
+//		out += format("HP: %d | (move_time: %.2f)\n",	actor->hitPoints(), m_move_delay);
+		out += format("Order:%s %s\n", order.c_str(), target_text.c_str());
+//		out += m_last_message;
+
+		return out;
 	}
 		
 	void SimpleAI::setEnemyFactions(const vector<int> &enemies) {

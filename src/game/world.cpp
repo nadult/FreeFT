@@ -378,7 +378,12 @@ namespace game {
 		return nullptr;
 	}
 		
-	const NaviMap *World::accessNaviMap(const FBox &bbox) const {
+	const NaviMap *World::naviMap(EntityRef agent) const {
+		const Entity *entity = const_cast<World*>(this)->refEntity(agent);
+		return entity? naviMap(entity->boundingBox()) : nullptr;
+	}
+		
+	const NaviMap *World::naviMap(const FBox &bbox) const {
 		int agent_size = round(max(bbox.width(), bbox.depth()));
 		return naviMap(agent_size);
 	}
@@ -387,7 +392,7 @@ namespace game {
 		const Entity *agent = const_cast<World*>(this)->refEntity(agent_ref);
 		if(agent) {
 			FBox bbox = agent->boundingBox();
-			const NaviMap *navi_map = accessNaviMap(bbox);
+			const NaviMap *navi_map = naviMap(bbox);
 			if(navi_map)
 				return navi_map->findClosestPos(out, source, bbox.height(), target_box);
 		}
@@ -398,7 +403,7 @@ namespace game {
 	bool World::findPath(Path &out, const int3 &start, const int3 &end, EntityRef agent_ref) const {
 		const Entity *agent = const_cast<World*>(this)->refEntity(agent_ref);
 		if(agent) {
-			const NaviMap *navi_map = accessNaviMap(agent->boundingBox());
+			const NaviMap *navi_map = naviMap(agent->boundingBox());
 			if(navi_map) {
 				vector<int3> path;
 				if(navi_map->findPath(path, start, end, agent_ref.index())) {

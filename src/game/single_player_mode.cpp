@@ -12,7 +12,9 @@ namespace game {
 	SinglePlayerMode::SinglePlayerMode(World &world, Character character)
 		:GameMode(world, 0) {
 		attachAIs();
-		return;
+//		for(int n =0; n < m_world.entityCount(); n++)
+//			if(m_world.refEntity<Trigger>(n) && m_world.refEntity<Trigger>(n)->factionId() > 0)
+//				m_world.removeEntity(m_world.refEntity(n)->ref());
 
 		GameClient client;
 		client.nick_name = character.name();

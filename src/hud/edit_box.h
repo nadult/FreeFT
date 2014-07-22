@@ -14,6 +14,7 @@ namespace hud {
 	public:
 		enum EditMode {
 			mode_normal,
+			mode_console,
 			mode_nick,
 			mode_locase_nick,
 		};

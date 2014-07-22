@@ -1,8 +1,6 @@
 Mustfix: ------------------------------------------------------------------------------------------
-- AI's get stuck all the time
 - Animation glitches in multiplayer  
-- Problems with queuing orders
-- When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
+- Problems with queuing orders (rethink this)
 - When standing near a wall, you can fire through it (projectiles spawn too far away)
 - Make sure that it's impossible to impact an object behind a wall
 - Crash when shooting at the automatic doors in the long corridor with M60 (game:237 (conversion to container))
@@ -20,13 +18,13 @@ Mustfix: -----------------------------------------------------------------------
 - Some problems with tracking, when player wants to attack a scorpion moving towards him
   (sometimes tracking ends too early)
 - Sometimes players cannot find a way to the door opened nearby (on mission05 lower level, rotating doors)
-- Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle
 - HudStats are a little too big (20 pixels bigger than HudMainPanel)
 
 
 
 Nice to fix: --------------------------------------------------------------------------------------
 
+- When actor is putting the armor on, user has to wait with clicing on another armor until he finishes 
 - Wrong mouse position before moving it for the first time
 - Duplicated sprites: Robot turrets
 - Fix problem with mixed upper/lower case of paths to resources
@@ -58,3 +56,5 @@ Fixed: -------------------------------------------------------------------------
 - Problems with item icon textures stored in cache
 - Bullets shouldnt create sparks when actors are hit
 - Some sounds weren't played when lots of AI's were present
+- AI's get stuck all the time
+- Problem with tracking for AI: sometimes they move a very small amount, quickly changing animation from run to idle

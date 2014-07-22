@@ -15,13 +15,18 @@ namespace hud {
 	};
 
 	HudConsole::HudConsole(const int2 &resolution) :HudLayer(FRect(0, 0, resolution.x, console_height), HudLayer::slide_top) {
-		m_edit_box = new HudEditBox(rect(), max_command_length);
+		m_edit_box = new HudEditBox(rect(), max_command_length, HudEditBox::mode_console);
 		attach(m_edit_box.get());
 		m_edit_box->setStyle(getStyle(HudStyleId::console));
 		setVisible(false, false);
 	}
 
 	HudConsole::~HudConsole() { }
+		
+	void HudConsole::setVisible(bool is_visible, bool animate) {
+		HudWidget::setVisible(is_visible, animate);
+		m_edit_box->setInputFocus(is_visible);
+	}
 
 	bool HudConsole::onInput(const io::InputEvent &event) {
 		if(event.keyDown('`') || (event.mouseKeyDown(0) && !isMouseOver(event))) {
@@ -34,8 +39,14 @@ namespace hud {
 
 	bool HudConsole::onEvent(const HudEvent &event) {
 		if(event.type == HudEvent::text_modified && event.source == m_edit_box) {
-			m_commands.push_back(m_edit_box->text());
-			m_edit_box->setText("");
+			if(m_edit_box->text().empty()) {
+				setVisible(false);
+			}
+			else {
+				m_commands.push_back(m_edit_box->text());
+				m_edit_box->setText("");
+				m_edit_box->setInputFocus(true);
+			}
 			return true;
 		}
 
@@ -45,7 +56,6 @@ namespace hud {
 	void HudConsole::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
 
-		m_edit_box->setInputFocus(m_is_visible);
 		if(!m_is_visible)
 			m_edit_box->setText("");
 	}

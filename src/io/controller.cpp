@@ -32,7 +32,8 @@ namespace io {
 	static const float2 target_info_size(200.0f, 80.0f);
 
 	Controller::Controller(const int2 &resolution, PWorld world, bool debug_info)
-	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_debug_info(debug_info), m_is_exiting(0) {
+	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_debug_info(debug_info),
+	   m_debug_navi(false), m_debug_ai(false), m_is_exiting(0), m_time_multiplier(1.0) {
 		DASSERT(world);
 		m_console = new hud::HudConsole(resolution);
 		m_hud = new hud::Hud(world);
@@ -279,7 +280,23 @@ namespace io {
 			if(command.empty())
 				break;
 
-			printf("Invalid command: %s\n", command.c_str());
+			vector<string> strings = toStrings(command.c_str());
+			if(strings.size() != 2) {
+				printf("Invalid command: %s", command.c_str());
+				continue;
+			}
+			const char *param = strings[1].c_str();
+
+			if(strings[0] == "debug")
+				m_show_debug_info = toBool(param);
+			else if(strings[0] == "navi_debug")
+				m_debug_navi = toBool(param);
+			else if(strings[0] == "ai_debug")
+				m_debug_ai = toBool(param);
+			else if(strings[0] == "time_mul")
+				m_time_multiplier = clamp(toFloat(param), 0.0f, 10.0f);
+			else
+				printf("Invalid command: %s\n", strings[0].c_str());
 		}
 	}
 
@@ -296,10 +313,12 @@ namespace io {
 		if(!m_isect.isEmpty())
 			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
-		/*const NaviMap *navi_map = m_world->naviMap(3);
-		if(navi_map)
-			navi_map->visualize(renderer, false);
-		m_last_path.visualize(3, renderer);*/
+		if(m_debug_navi) {
+			const NaviMap *navi_map = m_world->naviMap(m_actor_ref);
+			if(navi_map)
+				navi_map->visualize(renderer, false);
+		}
+		m_last_path.visualize(3, renderer);
 		renderer.render();
 
 		/*{ // Drawing cursor
@@ -335,25 +354,37 @@ namespace io {
 		lookAt({0, 0});
 		gfx::PFont font = gfx::Font::mgr["liberation_16"];
 
-		for(int n = 0; n < m_world->entityCount(); n++) {
-			const Actor *actor = m_world->refEntity<Actor>(n);
-			const ActorAI *ai = actor? actor->AI() : nullptr;
-			if(ai) {
-				string status = ai->status();
-				FRect screen_rect = worldToScreen(actor->boundingBox());
-				FRect text_rect = FRect(float2(200, 50)) + float2(screen_rect.center().x, screen_rect.min.y) - float2(m_view_pos);
-				text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
-				font->draw(text_rect, {Color::white, Color::black, HAlign::center}, status);
+		if(m_debug_ai) {
+			for(int n = 0; n < m_world->entityCount(); n++) {
+				const Actor *actor = m_world->refEntity<Actor>(n);
+				const ActorAI *ai = actor? actor->AI() : nullptr;
+				if(ai) {
+					string status = ai->status();
+					FRect screen_rect = worldToScreen(actor->boundingBox());
+					FRect text_rect = FRect(float2(200, 50)) + float2(screen_rect.center().x, screen_rect.min.y) - float2(m_view_pos);
+					text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
+					font->draw(text_rect, {Color::white, Color::black, HAlign::center}, status);
+				}
 			}
 		}
 
 		TextFormatter fmt(4096);
 
-		float3 isect_pos = m_screen_ray.at(m_isect.distance());
-		fmt("View:(%d %d) Ray:(%.2f %.2f %.2f)\n", m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z);
-		
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
+		float3 isect_pos = m_screen_ray.at(m_isect.distance());
+
+		const char *navi_status = "";
+		if(m_debug_navi) {
+			const NaviMap *navi_map = m_world->naviMap(m_actor_ref);
+			if(navi_map) {
+				int src = navi_map->findQuad((int3)actor->pos(), actor->ref().index());
+				int dst = navi_map->findQuad((int3)isect_pos);
+				navi_status = navi_map->isReachable(src, dst)? "reachable" : "unreachable";
+			}
+		}
+		fmt("View:(%d %d)\nRay:(%.2f %.2f %.2f) %s\n", m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, navi_status);
+		
 
 		if(actor) {
 			float3 actor_pos = actor->pos();

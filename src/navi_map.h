@@ -81,7 +81,6 @@ private:
 	int m_agent_size;
 	int m_static_count;
 	vector<Quad, AlignedAllocator<Quad>> m_quads;
-	vector<int> m_groups;
 	vector<List> m_sectors;
 	int2 m_size; // in sectors
 };

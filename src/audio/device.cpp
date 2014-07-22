@@ -268,6 +268,8 @@ namespace audio
 				s_free_sources[s_num_free_sources++] = n;
 		}
 
+//		printf("active: %d\n", max_sources - s_num_free_sources);
+
 		double time = getTime();
 		double time_delta = time - s_last_time;
 		s_last_time = time;
@@ -355,13 +357,14 @@ namespace audio
 	}
 
 	static float s_sound_rolloffs[game::SoundType::count] = {
-		5.0f,
+		3.0f,
 		1.0f,
 		1.5f
 	};
 
 	void playSound(int sound_id, game::SoundType::Type sound_type, const float3 &pos, const float3 &vel) {
-		if(distanceSq(pos, s_listener_pos) > s_max_distance * s_max_distance * 1.5f)
+		DASSERT(game::SoundType::isValid(sound_type));
+		if(distance(pos, s_listener_pos) > s_max_distance / s_sound_rolloffs[sound_type])
 			return;
 
 		uint source_id = prepSource(sound_id);

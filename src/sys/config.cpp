@@ -22,7 +22,6 @@ Config loadConfig(const char *name) {
 			config.window_pos = node.int2Attrib("window_pos");
 			config.fullscreen = node.intAttrib("fullscreen") != 0;	
 			config.profiler_enabled = node.intAttrib("profiler") != 0;
-			config.time_multiplier = node.floatAttrib("time_multiplier");
 		}
 	}
 	catch(...) { }

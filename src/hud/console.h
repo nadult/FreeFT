@@ -17,6 +17,7 @@ namespace hud {
 		~HudConsole();
 
 		const string getCommand();
+		void setVisible(bool is_visible, bool animate = true) override;
 
 	protected:
 		void onUpdate(double time_diff) override;

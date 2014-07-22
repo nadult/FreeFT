@@ -366,10 +366,7 @@ void NaviMap::updateReachability() {
 	//TODO: this is probably too slow
 	//PROFILE("NaviMap::updateReachability");
 
-	m_groups.clear();
-	m_groups.resize((int)m_quads.size(), -1);
-//	for(int n = 0; n < (int)m_quads.size(); n++)
-//		m_quads[n].group_id = -1;
+	vector<int> groups(m_quads.size(), -1);
 
 	int new_group_id = 0;
 	vector<int> stack;
@@ -378,7 +375,7 @@ void NaviMap::updateReachability() {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		Quad &quad = m_quads[n];
 
-		if(m_groups[n] != -1 || quad.is_disabled)
+		if(groups[n] != -1 || quad.is_disabled)
 			continue;
 
 		int group_id = new_group_id++;
@@ -391,18 +388,21 @@ void NaviMap::updateReachability() {
 			Quad &quad = m_quads[quad_id];
 			stack.pop_back();
 
-			if(quad.is_disabled || m_groups[quad_id] != -1)
+			if(quad.is_disabled || groups[quad_id] != -1)
 				continue;
 
-			m_groups[quad_id] = group_id;
+			groups[quad_id] = group_id;
 			for(int i = 0; i < (int)quad.neighbours.size(); i++) {
 				int nid = quad.neighbours[i];
 				Quad &nquad = m_quads[nid];
-				if(!nquad.is_disabled && m_groups[nid] == -1)
+				if(!nquad.is_disabled && groups[nid] == -1)
 					stack.push_back(nid);
 			}
 		}
 	}
+
+	for(int n = 0; n < (int)m_quads.size(); n++)
+		m_quads[n].group_id = groups[n];
 }
 
 bool NaviMap::isReachable(int src_id, int target_id) const {
@@ -483,7 +483,7 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 
 	for(int n = 0; n < (int)quads.size(); n++) {
 		const Quad &quad = m_quads[quads[n]];
-		if(quad.min_height > enlarged_box.max.y || quad.max_height < enlarged_box.min.y)
+		if(quad.min_height > enlarged_box.max.y || quad.max_height < enlarged_box.min.y || quad.is_disabled)
 			continue;
 		
 		int3 new_pos = clamp(clip_pos,	asXZY(quad.rect.min, quad.min_height),

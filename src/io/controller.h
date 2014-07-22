@@ -30,6 +30,9 @@ namespace io {
 
 		int exitRequested() const { return m_is_exiting; }
 
+		double timeMultiplier() const { return m_time_multiplier; }
+		void setTimeMultiplier(double mul) { m_time_multiplier = mul; }
+
 	protected:
 		void updatePC();
 		void onInput(const InputEvent&);
@@ -66,6 +69,8 @@ namespace io {
 
 		string m_profiler_stats;
 		double m_last_time, m_stats_update_time;
+		double m_time_multiplier;
+		bool m_debug_ai, m_debug_navi;
 		bool m_show_debug_info;
 
 		Ray m_screen_ray;
