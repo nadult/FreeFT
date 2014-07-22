@@ -42,7 +42,7 @@ namespace game {
 		if((int)m_entities.size() != m_world->entityCount())
 			m_entities.resize(m_world->entityCount());
 		
-		if(!spectator) {
+		if(!m_spectator) {
 			for(int n = 0; n < (int)m_entities.size(); n++) {
 				Entity *entity = m_world->refEntity(n);
 				VisEntity &vis_entity = m_entities[n];
@@ -52,6 +52,9 @@ namespace game {
 			}
 			return;
 		}
+
+		if(!spectator)
+			return;
 
 		FBox bbox = spectator->boundingBox();
 		m_cur_pos = bbox.center();

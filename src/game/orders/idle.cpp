@@ -9,14 +9,16 @@
 
 namespace game {
 
-	IdleOrder::IdleOrder() {
+	IdleOrder::IdleOrder() :m_fancy_anim_time(2.0f) {
 	}
 
 	IdleOrder::IdleOrder(Stream &sr) :OrderImpl(sr) {
+		sr.unpack(m_fancy_anim_time);
 	}
 
 	void IdleOrder::save(Stream &sr) const {
 		OrderImpl::save(sr);
+		sr.pack(m_fancy_anim_time);
 	}
 
 	void IdleOrder::cancel() {
@@ -27,8 +29,26 @@ namespace game {
 	bool Actor::handleOrder(IdleOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
 		if(order.needCancel())
 			return false;
-		if(event == ActorEvent::anim_finished || event==ActorEvent::init_order) {
-			animate(Action::idle);
+
+		if(m_action == Action::idle)
+			order.m_fancy_anim_time -= timeDelta();
+
+		if(event == ActorEvent::anim_finished || event == ActorEvent::init_order) {
+			if(order.m_fancy_anim_time < 0.0f) {
+				order.m_fancy_anim_time = 1.5f;
+				bool fidget = rand() % 10 == 0;
+
+				if(fidget) {
+					if(!animate(Action::fidget))
+						fidget = false;
+				}
+
+				if(!fidget)
+					if(!animate(Action::breathe))
+						animate(Action::idle);
+			}
+			else
+				animate(Action::idle);
 		}
 
 		return true;

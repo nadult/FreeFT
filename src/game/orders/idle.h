@@ -18,7 +18,7 @@ namespace game {
 		void save(Stream&) const;
 		void cancel() override;
 
-		// last breathe time, etc.
+		float m_fancy_anim_time;
 	};
 
 }
