@@ -64,20 +64,30 @@ namespace game {
 		GameClient *client(int client_id);
 		PlayableCharacter *pc(const PCIndex&);
 
-		virtual void tick(double time_diff) = 0;
+		virtual void tick(double time_diff);
 		virtual void onMessage(Stream&, MessageId::Type, int source_id) { }
 		virtual bool sendOrder(POrder &&order, EntityRef entity_ref);
 
 		virtual const UserMessage userMessage(UserMessageType::Type) { return UserMessage(); }
 
+		struct AISpawnZone {
+			EntityRef ref;
+			double next_spawn_time;
+			vector<EntityRef> entities;
+		};
+
+		void initAISpawnZones();
+		void spawnAIs(double time_diff);
+
 	protected:
 		EntityRef findSpawnZone(int faction_id) const;
 		EntityRef spawnActor(EntityRef spawn_zone, const Proto &proto, const ActorInventory&);
-		void respawnPC(const PCIndex &index, EntityRef spawn_zone, const ActorInventory&);
+		bool respawnPC(const PCIndex &index, EntityRef spawn_zone, const ActorInventory&);
 		void attachAIs();
 
 		World &m_world;
 		std::map<int, GameClient> m_clients;
+		vector<AISpawnZone> m_spawn_zones;
 		const int m_current_id;
 	};
 

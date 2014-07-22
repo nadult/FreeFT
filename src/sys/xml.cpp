@@ -73,6 +73,16 @@ float XMLNode::floatAttrib(const char *name) const {
 		parsingError(name);
 	return out;
 }
+	
+int XMLNode::intAttrib(const char *name, int default_value) const {
+	const char *attrib = hasAttrib(name);
+	return attrib? toInt(attrib) : default_value;
+}
+
+float XMLNode::floatAttrib(const char *name, int default_value) const {
+	const char *attrib = hasAttrib(name);
+	return attrib? toFloat(attrib) : default_value;
+}
 
 const int2 XMLNode::int2Attrib(const char *name) const {
 	const char *str = attrib(name);

@@ -29,12 +29,16 @@ public:
 	// Returns nullptr if not found
 	const char *hasAttrib(const char *name) const;
 
+	// Returns default value if attribute is not found
+	int      intAttrib(const char *name, int default_value) const;
+	float  floatAttrib(const char *name, int default_value) const;
+
 	// If an attribute cannot be found or properly parsed,
 	// then exception is thrown
 	const char *attrib(const char *name) const;
 	float  floatAttrib(const char *name) const;
 	int      intAttrib(const char *name) const;
-	
+
 	const int2 int2Attrib(const char *name) const;
 	const int3 int3Attrib(const char *name) const;
 

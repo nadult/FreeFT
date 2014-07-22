@@ -56,6 +56,7 @@ namespace game {
 	}
 		
 	void SinglePlayerMode::tick(double time_diff) {
+		GameMode::tick(time_diff);
 	}
 
 }

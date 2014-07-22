@@ -9,6 +9,7 @@
 #include "game/inventory.h"
 #include "game/trigger.h"
 #include "net/base.h"
+#include "game/tile.h"
 
 namespace game {
 		
@@ -29,7 +30,10 @@ namespace game {
 
 
 	GameMode::GameMode(World &world, int current_id)
-			:m_world(world), m_current_id(current_id) { }
+			:m_world(world), m_current_id(current_id) {
+		if(!m_world.isClient())
+			initAISpawnZones();
+	}
 		
 	GameMode::~GameMode() { }
 
@@ -46,6 +50,60 @@ namespace game {
 				actor->attachAI<SimpleAI>(PWorld(&m_world));
 		}
 	}
+
+	void GameMode::tick(double time_diff) {
+		if(!m_world.isClient())
+			spawnAIs(time_diff);
+	}
+		
+	void GameMode::initAISpawnZones() {
+		for(int n = 0; n < m_world.entityCount(); n++) {
+			Trigger *trigger = m_world.refEntity<Trigger>(n);
+			if(trigger && trigger->classId() == TriggerClassId::spawn_zone && trigger->factionId() != 0) {
+				AISpawnZone spawn;
+				spawn.ref = trigger->ref();
+				spawn.next_spawn_time = 0.0;
+				spawn.entities.resize(trigger->spawnLimit());
+				m_spawn_zones.emplace_back(spawn);
+			}
+		}
+	}
+
+	void GameMode::spawnAIs(double time_diff) {
+		for(auto &spawn : m_spawn_zones) {
+			const Trigger *spawn_zone = m_world.refEntity<Trigger>(spawn.ref);
+			if(!spawn_zone)
+				continue;
+
+			spawn.next_spawn_time -= time_diff;
+			if(spawn.next_spawn_time <= 0.0) {
+				int idx = -1;
+
+				for(int n = 0; n < (int)spawn.entities.size(); n++) {
+					const Actor *ai = m_world.refEntity<Actor>(spawn.entities[n]);
+					bool is_dead = ai && ai->isDead();
+
+					if( (idx == -1 && is_dead) || !ai )
+						idx = n;
+				}
+
+				if(idx != -1) {
+					m_world.removeEntity(spawn.entities[idx]);
+
+					EntityRef ai = spawnActor(spawn.ref, getProto("rad_scorpion", ProtoId::actor), ActorInventory());
+					spawn.entities[idx] = ai;
+					if(ai) {
+						Actor *actor = m_world.refEntity<Actor>(ai);
+						DASSERT(actor);
+						actor->attachAI<SimpleAI>(PWorld(&m_world));
+					}
+				}
+
+				spawn.next_spawn_time = spawn_zone->spawnDelay();
+			}
+		}
+
+	}
 	
 	game::EntityRef GameMode::findSpawnZone(int faction_id) const {
 		Trigger *spawn_zone = nullptr;
@@ -53,7 +111,7 @@ namespace game {
 		vector<Trigger*> spawn_zones;
 		for(int n = 0; n < m_world.entityCount(); n++) {
 			Trigger *trigger = m_world.refEntity<Trigger>(n);
-			if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
+			if(trigger && trigger->classId() == TriggerClassId::spawn_zone && trigger->factionId() == faction_id)
 				spawn_zones.push_back(trigger);
 		}
 
@@ -65,29 +123,37 @@ namespace game {
 		DASSERT(spawn_zone);
 
 		ActorInventory temp = inv;
-		PEntity actor = (PEntity)new Actor(proto, temp);
+		PEntity entity = (PEntity)new Actor(proto, temp);
 
 		FBox spawn_box = spawn_zone->boundingBox();
-		float3 bbox_size = actor->bboxSize();
+		float3 bbox_size = entity->bboxSize();
 		spawn_box.max.x -= bbox_size.x;
 		spawn_box.max.z -= bbox_size.z;
 
 		float3 spawn_pos;
-		for(int it = 0; it < 100; it++) {
+		int it = 0, it_max = 100;
+		for(; it < it_max; it++) {
 			spawn_pos = spawn_box.min + float3(frand() * spawn_box.width(), 1.0f, frand() * spawn_box.depth());
-			if(!m_world.findAny(actor->boundingBox(), {Flags::all | Flags::colliding})) {
+			FBox bbox(spawn_pos, spawn_pos + bbox_size);
+			ObjectRef isect = m_world.findAny(bbox, {Flags::all | Flags::colliding});
+
+			if(isect.isEmpty()) {
 				spawn_pos.y -= 1.0f;
 				break;
 			}
 		}
+		if(it == it_max)
+			return EntityRef();
 		
-		actor->setPos(spawn_pos);
-		EntityRef out = m_world.addEntity(std::move(actor));
-		m_world.refEntity<Actor>(out)->fixPosition();
+		entity->setPos(spawn_pos);
+		EntityRef out = m_world.addEntity(std::move(entity));
+		Actor *actor = m_world.refEntity<Actor>(out);
+		actor->fixPosition();
+		actor->setFactionId(spawn_zone->factionId());
 		return out;
 	}
 
-	void GameMode::respawnPC(const PCIndex &index, EntityRef spawn_zone, const ActorInventory &inv) {
+	bool GameMode::respawnPC(const PCIndex &index, EntityRef spawn_zone, const ActorInventory &inv) {
 		DASSERT(isValidIndex(index));
 
 		PlayableCharacter *pc = this->pc(index);
@@ -95,10 +161,14 @@ namespace game {
 			m_world.removeEntity(pc->entityRef());
 
 		EntityRef actor_ref = spawnActor(spawn_zone, pc->character().proto(), inv);
+		if(!actor_ref)
+			return false;
+
 		pc->setEntityRef(actor_ref);
 		Actor *actor = m_world.refEntity<Actor>(actor_ref);
 		DASSERT(actor);
 		actor->setClientId(index.client_id);
+		return true;
 	}
 		
 	GameClient *GameMode::client(int client_id) {
@@ -132,6 +202,7 @@ namespace game {
 	}
 
 	void GameModeServer::tick(double time_diff) {
+		GameMode::tick(time_diff);
 	}
 
 	void GameModeServer::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
@@ -195,7 +266,7 @@ namespace game {
 	}
 	
 	void GameModeClient::tick(double time_diff) {
-
+		GameMode::tick(time_diff);
 	}
 
 	void GameModeClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {

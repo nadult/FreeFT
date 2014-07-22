@@ -22,7 +22,6 @@ namespace game {
 	}
 
 	DeathMatchServer::DeathMatchServer(World &world) :GameModeServer(world) {
-		
 	}
 
 	void DeathMatchServer::tick(double time_diff) {
@@ -48,11 +47,16 @@ namespace game {
 				info.next_respawn_time -= time_diff;
 				if(info.next_respawn_time < 0.0f) {
 					const ActorInventory &inv = pcs[0].characterClass().inventory(true);
-					respawnPC(PCIndex(client_id, 0), findSpawnZone(0), inv);
-					replicateClient(client_id);
+					if(respawnPC(PCIndex(client_id, 0), findSpawnZone(0), inv)) {
+						replicateClient(client_id);
+						info.is_respawning = false;
+					}
+					else {
+						info.next_respawn_time = respawn_delay;
+						// TODO: notify client that there was a problem while trying to respawn
+					}
 
 					notify_client = true;
-					info.is_respawning = false;
 				}
 			}
 

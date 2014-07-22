@@ -143,13 +143,30 @@ namespace ui {
 		for(int n = 0; n < TriggerClassId::count; n++)
 			m_class_id->addEntry(TriggerClassId::toString(n));
 		m_class_id->selectEntry(0);
+		m_faction_id = addControl<EditBox>(200, "Faction id: ");
+		m_faction_id_val = 0;
+		m_faction_id->setText("0");
 	}
-		
+	
+	bool TriggerPad::onEvent(const Event &ev) {
+		if(ev.type == Event::text_modified && m_faction_id == ev.source) {
+			const char *text = m_faction_id->text();
+			int tcount = max(0, atoi(text));
+			
+			char ttext[64];
+			snprintf(ttext, sizeof(ttext), "%d", tcount);
+			if(strcmp(ttext, text) != 0)
+				m_faction_id->setText(ttext);
+			m_faction_id_val = tcount;
+		}
+
+		return false;
+	}	
 	PEntity TriggerPad::makeEntity() const {
-		return (PEntity)new Trigger((TriggerClassId::Type)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1));
+		unique_ptr<Trigger> out( new Trigger((TriggerClassId::Type)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1)) );
+		out->setFactionId(m_faction_id_val);
+		return (PEntity)(out.release());
 	}
-
-
 
 	EntitiesPad::EntitiesPad(const IRect &rect, PEntitiesEditor editor)
 		:Window(rect, Color::transparent), m_editor(editor) {

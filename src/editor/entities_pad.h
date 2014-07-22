@@ -90,9 +90,12 @@ namespace ui {
 	public:
 		TriggerPad(const IRect &max_rect);
 		PEntity makeEntity() const override;
+		bool onEvent(const Event &ev) override;
 
 	protected:
 		PComboBox m_class_id;
+		PEditBox m_faction_id;
+		int m_faction_id_val;
 	};
 
 	class EntitiesPad: public Window
