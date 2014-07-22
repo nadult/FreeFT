@@ -534,7 +534,7 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 	while(node != -1) {
 		const Quad &quad = m_quads[node];
 		if(quad.rect.isInside(pos.xz()) && (!quad.is_disabled || quad.collider_id == filter_collider || find_disabled)
-				&& pos.y >= quad.min_height && pos.y <= int(quad.max_height) + 2) {
+				&& pos.y >= quad.min_height) {
 
 			if(pos.y <= quad.max_height)
 				return node;
@@ -549,7 +549,7 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 
 	return best_quad;
 }
-
+	
 // powoduje problemy jak się przechodzi diagonalnie przez rogi encji
 // (gracz się zatrzymuje bo jest kolizja)
 // This should be solved by creating paths that are trying to be in the middle

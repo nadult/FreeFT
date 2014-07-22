@@ -11,6 +11,9 @@ namespace game {
 
 	SinglePlayerMode::SinglePlayerMode(World &world, Character character)
 		:GameMode(world, 0) {
+		attachAIs();
+		return;
+
 		GameClient client;
 		client.nick_name = character.name();
 		client.pcs.emplace_back(PlayableCharacter(character, CharacterClass::defaultId()));
@@ -20,7 +23,6 @@ namespace game {
 		DASSERT(m_pc);
 
 		ASSERT(!world.isServer() && !world.isClient());
-		attachAIs();
 
 		EntityRef spawn_zone = findSpawnZone(0);
 		if(!spawn_zone)

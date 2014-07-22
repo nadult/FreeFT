@@ -2,8 +2,9 @@
 - Simple factions  DONE
 - Simple tracking  DONE
 - Attacking, looking for enemies  DONE
-- Random movement from time to time  (not really needed)
 - Using ranged weapons, using melee weapons  DONE
+- Random movement from time to time  DONE
+- Fix problem with AIs getting stuck from time to time
 
 +ESTIMATED_TIME:
 +TIME_SPENT:
@@ -13,4 +14,4 @@
 04.04.14: 9:45 - 12:45, 15:00 - 18:30, 19:00 - 19:45
 11.04.14: 14:00 - 15:15
 13.04.14: 15:30 - 18:45
-22.07.14: 9:45 - 11:30
+22.07.14: 9:45 - 11:45, 13:00 - 16:00

@@ -46,7 +46,8 @@ namespace audio
 	}
 	
 	namespace {
-		
+
+
 		const char *s_prefix = "data/sounds/";
 		const char *s_suffix = ".wav";
 
@@ -285,8 +286,15 @@ namespace audio
 		}
 		printf("\n");
 	}
+	
+	namespace {	
+		const float s_max_distance = 500.0f;
+		float3 s_listener_pos(0.0f, 0.0f, 0.0f);
+	}
 
 	void setListener(const float3 &pos, const float3 &vel, const float3 &dir) {
+		s_listener_pos = pos;
+
 		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
 		alListener3f(AL_VELOCITY, vel.x, vel.y, vel.z);
 		float v[6] = {dir.x, dir.y, dir.z, 0.0f, 1.0f, 0.0f};
@@ -339,7 +347,7 @@ namespace audio
 		uint source_id = s_sources[s_free_sources[--s_num_free_sources]];
 		alSourcei(source_id, AL_BUFFER, sound->m_id);
 		alSourcef(source_id, AL_ROLLOFF_FACTOR, 1.0f);
-		alSourcef(source_id, AL_MAX_DISTANCE, 500.0f);
+		alSourcef(source_id, AL_MAX_DISTANCE, s_max_distance);
 		alSourcef(source_id, AL_REFERENCE_DISTANCE, 10.0f);
 		alSource3f(source_id, AL_DIRECTION, 0.0f, 0.0f, 0.0f);
 		alSourcef (source_id, AL_GAIN, 1.0f);
@@ -353,6 +361,9 @@ namespace audio
 	};
 
 	void playSound(int sound_id, game::SoundType::Type sound_type, const float3 &pos, const float3 &vel) {
+		if(distanceSq(pos, s_listener_pos) > s_max_distance * s_max_distance * 1.5f)
+			return;
+
 		uint source_id = prepSource(sound_id);
 		if(!source_id)
 			return;

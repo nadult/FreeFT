@@ -549,7 +549,7 @@ namespace game {
 			bbox.min += float3(0.05, 0.05, 0.05);
 			bbox.max -= float3(0.05, 0.05, 0.05);
 
-			if(findAny(bbox, {Flags::dynamic_entity | Flags::colliding, ref()})) {
+			if(findAny(bbox, {Flags::all | Flags::colliding, ref()})) {
 				fixPosition();
 				//TODO: response to collision
 				return FollowPathResult::collided;

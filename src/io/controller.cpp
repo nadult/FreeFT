@@ -314,6 +314,8 @@ namespace io {
 
 		lookAt({0, 0});
 
+
+
 		m_hud->draw();
 		m_target_info->draw();
 		m_console->draw();
@@ -330,6 +332,21 @@ namespace io {
 	}
 		
 	void Controller::drawDebugInfo() const {
+		lookAt({0, 0});
+		gfx::PFont font = gfx::Font::mgr["liberation_16"];
+
+		for(int n = 0; n < m_world->entityCount(); n++) {
+			const Actor *actor = m_world->refEntity<Actor>(n);
+			const ActorAI *ai = actor? actor->AI() : nullptr;
+			if(ai) {
+				string status = ai->status();
+				FRect screen_rect = worldToScreen(actor->boundingBox());
+				FRect text_rect = FRect(float2(200, 50)) + float2(screen_rect.center().x, screen_rect.min.y) - float2(m_view_pos);
+				text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
+				font->draw(text_rect, {Color::white, Color::black, HAlign::center}, status);
+			}
+		}
+
 		TextFormatter fmt(4096);
 
 		float3 isect_pos = m_screen_ray.at(m_isect.distance());
@@ -356,7 +373,6 @@ namespace io {
 		fmt("%s", m_profiler_stats.c_str());
 
 		lookAt({0, 0});
-		gfx::PFont font = gfx::Font::mgr["liberation_16"];
 	
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;

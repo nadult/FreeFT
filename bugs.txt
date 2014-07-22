@@ -57,3 +57,4 @@ Fixed: -------------------------------------------------------------------------
 - In multiplayer sometimes players are stuck
 - Problems with item icon textures stored in cache
 - Bullets shouldnt create sparks when actors are hit
+- Some sounds weren't played when lots of AI's were present

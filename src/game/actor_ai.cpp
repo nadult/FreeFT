@@ -5,18 +5,25 @@
 
 #include "game/actor_ai.h"
 #include "game/actor.h"
+#include "navi_map.h"
 
 namespace game {
 
-	ActorAI::ActorAI(PWorld world, EntityRef actor)
-		:m_world(world), m_actor_ref(actor) {
+	ActorAI::ActorAI(PWorld world, EntityRef actor_ref)
+		:m_world(world), m_actor_ref(actor_ref) {
+		DASSERT(world);
+	}
+		
+	int ActorAI::factionId() const {
+		const Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
+		return actor? actor->factionId() : -1;
 	}
 		
 	Actor *ActorAI::actor() const {
 		return m_world->refEntity<Actor>(m_actor_ref);
 	}
 
-	SimpleAI::SimpleAI(PWorld world, EntityRef ref) :ActorAI(world, ref), m_delay(0.0f), m_failed_orders(0) {
+	SimpleAI::SimpleAI(PWorld world, EntityRef ref) :ActorAI(world, ref), m_delay(0.0f), m_move_delay(frand() * 3.0f), m_failed_orders(0) {
 	}
 		
 	const Weapon SimpleAI::findBestWeapon() const {
@@ -85,9 +92,10 @@ namespace game {
 		for(int n = 0; n < (int)close_ents.size(); n++) {
 			Actor *nearby = m_world->refEntity<Actor>(close_ents[n]);
 
-			if(nearby && (faction_id == nearby->factionId() || nearby->factionId() != actor->factionId()) && !nearby->isDying())
-				if(actor->canSee(nearby->ref()))
-					out.push_back(nearby->ref());
+			if(nearby && !nearby->isDying())
+				if( faction_id == nearby->factionId() || (faction_id == -1 && isEnemy(nearby->factionId())) )
+					if(actor->canSee(nearby->ref()))
+						out.push_back(nearby->ref());
 		}
 	}
 		
@@ -97,7 +105,7 @@ namespace game {
 			return;
 
 		vector<EntityRef> buddies;
-		findActors(actor->factionId(), float3(50, 20, 50), buddies);
+		findActors(factionId(), float3(50, 20, 50), buddies);
 		for(int n = 0; n < (int)buddies.size(); n++) {
 			Actor *buddy = m_world->refEntity<Actor>(buddies[n]);
 			if(buddy && buddy != actor) {
@@ -117,12 +125,13 @@ namespace game {
 		m_delay -= m_world->timeDelta();
 		if(m_delay > 0.0f)
 			return;
+
 		m_delay = 0.35f;
 
 		if(m_failed_orders >= 2)
 			m_target = EntityRef();
 
-		if(actor->currentOrder() == OrderTypeId::idle || actor->currentOrder() == OrderTypeId::track) {
+		if(isOneOf(actor->currentOrder(), OrderTypeId::idle, OrderTypeId::track, OrderTypeId::move)) {
 			if(!m_target) {
 				vector<EntityRef> enemies;
 				findActors(-1, float3(100, 30, 100), enemies);
@@ -170,6 +179,8 @@ namespace game {
 
 			Actor *target = m_world->refEntity<Actor>(m_target);
 			if(target && !target->isDying()) {
+				m_move_delay = 5.0f;
+
 				if(weapon.hasRangedAttack() && can_see) {
 					AttackMode::Type mode = weapon.attackModes() & AttackMode::toFlags(AttackMode::burst)?
 						AttackMode::burst : AttackMode::undefined;
@@ -193,8 +204,74 @@ namespace game {
 			}
 			else //TODO: change target if cannot do anything about it
 				m_target = EntityRef();
-		}
 
+			if(!m_target && actor->currentOrder() == OrderTypeId::idle)
+				tryRandomMove();
+		}
+	}
+
+	const float3 SimpleAI::findClosePos(float range) const {
+		Actor *actor = this->actor();
+		DASSERT(actor);
+
+		//TODO: use world::accessNaviMap
+		const NaviMap *navi_map = m_world->naviMap((int)round(max(actor->bboxSize().x, actor->bboxSize().z)));
+		DASSERT(navi_map);
+
+		float3 pos(actor->pos());
+
+		for(int iters = 0; iters < 20; iters++) {
+			float3 new_pos = pos + float3((frand() - 0.5f) * range, 5.0f, (frand() - 0.5f) * range);
+			if(navi_map->isReachable((int3)new_pos, (int3)pos)) {
+				//m_last_message = format("found %d", rand());
+				return new_pos;
+			}
+		}
+		//m_last_message = format("not found %d", rand());
+
+		return pos;
+	}
+
+	
+	void SimpleAI::tryRandomMove() {
+		Actor *actor = this->actor();
+		DASSERT(actor);
+		m_move_delay -= m_delay;
+
+		if(m_move_delay < 0.0f) {
+			vector<ObjectRef> isects;
+			m_world->findAll(isects, actor->boundingBox(), {Flags::trigger});
+			bool on_spawn_zone = false;
+			for(auto &isect : isects) {
+				const Trigger *trigger = m_world->refEntity<Trigger>(isect);
+				if(trigger && trigger->classId() == TriggerClassId::spawn_zone)
+					on_spawn_zone = true;
+			}
+
+			float range = rand() % 2 && !on_spawn_zone? frand() * 25.0f : 25.0f + frand() * 150.0f;
+
+			float3 close_pos = findClosePos(range);
+			m_world->sendOrder(new MoveOrder((int3)close_pos, false), m_actor_ref);
+			m_move_delay = on_spawn_zone? 0.0f : frand() * 5.0f;
+		}
+	}
+		
+	const string SimpleAI::status() const {
+		const Actor *actor = this->actor();
+		if(!actor)
+			return string();
+		OrderTypeId::Type current_order = actor->currentOrder();
+		string order = OrderTypeId::isValid(current_order)? OrderTypeId::toString(current_order) : "invalid";
+		return format("(%.2f %.2f %.2f)\nHP: %d | order: %s (time: %.2f)\n%s", actor->pos().x, actor->pos().y, actor->pos().z,
+				actor->hitPoints(), order.c_str(), m_move_delay, m_last_message.c_str());
+	}
+		
+	void SimpleAI::setEnemyFactions(const vector<int> &enemies) {
+		m_enemy_factions = enemies;
+	}
+
+	bool SimpleAI::isEnemy(int faction_id) const {
+		return m_enemy_factions.empty()? faction_id != factionId() : isOneOf(faction_id, m_enemy_factions);
 	}
 
 }
