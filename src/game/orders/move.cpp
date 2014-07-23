@@ -24,8 +24,8 @@ namespace game {
 		sr << m_please_run << m_path << m_path_pos;
 	}	
 
-	bool Actor::handleOrder(MoveOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(event == ActorEvent::init_order) {
+	bool Actor::handleOrder(MoveOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		if(event == EntityEvent::init_order) {
 			int3 cur_pos = (int3)pos();
 			if(cur_pos == order.m_target_pos)
 				return false;
@@ -39,7 +39,7 @@ namespace game {
 			if(!animate(order.m_please_run? Action::run : Action::walk))
 				return false;
 		}
-		if(event == ActorEvent::think) {
+		if(event == EntityEvent::think) {
 			if(order.needCancel()) {
 				fixPosition();
 				return false;
@@ -47,10 +47,10 @@ namespace game {
 			if(followPath(order.m_path, order.m_path_pos, order.m_please_run) != FollowPathResult::moved)
 				return false;
 		}
-		if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
+		if(event == EntityEvent::anim_finished && m_stance == Stance::crouch) {
 			animate(m_action);
 		}
-		if(event == ActorEvent::step) {
+		if(event == EntityEvent::step) {
 			SurfaceId::Type standing_surface = surfaceUnder();
 			playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 		}

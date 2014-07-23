@@ -4,10 +4,11 @@
 - Attacking, looking for enemies  DONE
 - Using ranged weapons, using melee weapons  DONE
 - Random movement from time to time  DONE
-- Fix problem with AIs getting stuck from time to time
+- Fix problem with AIs getting stuck from time to time  DONE
 
-+ESTIMATED_TIME:
-+TIME_SPENT:
++ESTIMATED_TIME: 20h
++TIME_SPENT: 18h 45 min
++FINISHED
 
 +WORK_LOG:
 30.03.14: 12:30 - 14:00, 15:30 - 18:00

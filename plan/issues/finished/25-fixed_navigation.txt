@@ -5,10 +5,12 @@
 - returning quickly when some node is unreachable (avoid searching
   the whole graph)  DONE
 - speed up updateNaviMap (but only if it's really causing any problems)
+  DONE (It's ok even with lots of AI)
 
 
-+ESTIMATED_TIME: 
-+TIME_SPENT:
++ESTIMATED_TIME: 10h 
++TIME_SPENT: 13h 30 min
++FINISHED
 
 +WORK_LOG:
 30.03.14: 18:00 - 24:00
@@ -16,3 +18,4 @@
 01.04.14: 7:30 - 9:00
 02.04.14: 18:00 - 19:30
 03.04.14: 7:30 - 9:15
+22.07.14: 16:30 - 18:00

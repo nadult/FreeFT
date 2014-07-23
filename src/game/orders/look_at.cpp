@@ -19,7 +19,7 @@ namespace game {
 		sr << m_target;
 	}
 
-	bool Actor::handleOrder(LookAtOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(LookAtOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		float3 center = boundingBox().center();
 		if(length(order.m_target - center) >= 1.0f)
 			lookAt(order.m_target);

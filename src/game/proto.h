@@ -25,7 +25,8 @@ namespace game {
 		door,
 		container,
 		actor,
-		actor_armour
+		actor_armour,
+		turret
 	);
 
 	namespace ProtoId {

@@ -4,6 +4,7 @@
  */
 
 #include "game/orders/attack.h"
+#include "game/orders/track.h"
 #include "game/actor.h"
 
 namespace game {
@@ -41,10 +42,10 @@ namespace game {
 			sr << m_target_pos;
 	}
 
-	bool Actor::handleOrder(AttackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(AttackOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		const Entity *target = refEntity(order.m_target);
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			Weapon weapon = m_inventory.weapon();
 			if(!m_proto.canUseWeapon(weapon.classId(), m_stance)) {
 				printf("Cant use weapon: %s\n", weapon.proto().id.c_str());
@@ -82,7 +83,7 @@ namespace game {
 		else
 			target_box = FBox(order.m_target_pos, order.m_target_pos);
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			float max_range = weapon.range(order.m_mode);
 			float dist = distance(boundingBox(), target_box);
 			lookAt(target_box.center());
@@ -111,7 +112,7 @@ namespace game {
 		if(AttackMode::isRanged(order.m_mode)) {
 			float inaccuracy = this->inaccuracy(weapon);
 
-			if(event == ActorEvent::fire) {
+			if(event == EntityEvent::fire) {
 				AttackMode::Type mode = order.m_mode;
 
 				if(mode != AttackMode::single && mode != AttackMode::burst)
@@ -126,7 +127,7 @@ namespace game {
 					fireProjectile(target_box, weapon, inaccuracy);
 				}
 			}
-			if(event == ActorEvent::next_frame && order.m_burst_mode) {
+			if(event == EntityEvent::next_frame && order.m_burst_mode) {
 				order.m_burst_mode++;
 				if(weapon.needAmmo() && m_inventory.useAmmo(1))
 					fireProjectile(target_box, weapon, inaccuracy * (1.0f + 0.1f * order.m_burst_mode));
@@ -136,17 +137,17 @@ namespace game {
 
 		}
 		else {
-			if(event == ActorEvent::hit) {
+			if(event == EntityEvent::hit) {
 				if(weapon.needAmmo() && !m_inventory.useAmmo(1))
 					return false;
 				makeImpact(order.m_target, weapon);
 			}
 		}
 
-		if(event == ActorEvent::anim_finished) {
+		if(event == EntityEvent::anim_finished) {
 			order.finish();
 		}
-		if(event == ActorEvent::sound) {
+		if(event == EntityEvent::sound) {
 			SoundId sound_id = weapon.soundId(order.m_mode == AttackMode::burst? WeaponSoundType::fire_burst : WeaponSoundType::normal);
 			replicateSound(sound_id, pos(), AttackMode::isRanged(order.m_mode)? SoundType::shooting : SoundType::normal);
 		}

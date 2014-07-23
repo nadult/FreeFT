@@ -3,7 +3,8 @@
    This file is part of FreeFT.
  */
 
-#include "game/orders/inventory.h"
+#include "game/orders/interact.h"
+#include "game/orders/move.h"
 #include "game/actor.h"
 #include "game/item.h"
 #include "game/world.h"
@@ -29,8 +30,8 @@ namespace game {
 		sr << m_target << m_mode << m_is_followup;
 	}
 
-	bool Actor::handleOrder(InteractOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(event == ActorEvent::init_order) {
+	bool Actor::handleOrder(InteractOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		if(event == EntityEvent::init_order) {
 			Entity *target = refEntity(order.m_target);
 			if(!target)
 				return false;
@@ -68,7 +69,7 @@ namespace game {
 				}
 			}
 		}
-		if(event == ActorEvent::pickup && order.m_mode == InteractionMode::pickup) {
+		if(event == EntityEvent::pickup && order.m_mode == InteractionMode::pickup) {
 			ItemEntity *target = refEntity<ItemEntity>(order.m_target);
 			if(target) {
 				Item item = target->item();
@@ -79,7 +80,7 @@ namespace game {
 				m_inventory.add(item, count);
 			}
 		}
-		if(event == ActorEvent::anim_finished) {
+		if(event == EntityEvent::anim_finished) {
 			if(order.m_mode == InteractionMode::normal) {
 				Entity *target = refEntity(order.m_target);
 				if(target)

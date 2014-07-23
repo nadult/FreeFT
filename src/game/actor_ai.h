@@ -13,6 +13,7 @@ namespace game {
 
 	class Actor;
 
+	//TODO: better name
 	class ActorAI {
 	public:
 		ActorAI(PWorld world, EntityRef ref);
@@ -34,10 +35,15 @@ namespace game {
 
 	typedef ClonablePtr<ActorAI> PActorAI;
 
+	template <class TAI, class ...Args>
+	void ThinkingEntity::attachAI(PWorld world, const Args&... args) {
+		m_ai = new TAI(world, ref(), args...);
+	}
+
 	class SimpleAI: public ActorAI {
 	protected:
 		SimpleAI(PWorld world, EntityRef actor);
-		friend class Actor;
+		friend class ThinkingEntity;
 
 	public:
 		void think() override;

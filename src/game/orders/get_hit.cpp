@@ -28,10 +28,10 @@ namespace game {
 		sr.pack(mode, force, force_angle, fall_time);
 	}
 
-	bool Actor::handleOrder(GetHitOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(GetHitOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		typedef GetHitOrder::Mode Mode;
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			if(order.mode == Mode::fall) {
 				float angle_diff = angleDistance(dirAngle(), order.force_angle);	
 				animate(angle_diff < constant::pi * 0.5? Action::fall_forward : Action::fall_back);
@@ -49,7 +49,7 @@ namespace game {
 					animate(Action::recoil);
 			}
 		}
-		else if(event == ActorEvent::anim_finished) {
+		else if(event == EntityEvent::anim_finished) {
 			if(order.mode == Mode::fall) {
 				fixPosition();
 				animate(m_action == Action::fall_back? Action::fallen_back : Action::fallen_forward);
@@ -58,7 +58,7 @@ namespace game {
 			else if(order.mode != Mode::fallen)
 				return false;
 		}
-		else if(event == ActorEvent::think && order.mode == Mode::fall) {
+		else if(event == EntityEvent::think && order.mode == Mode::fall) {
 			float3 vec = asXZY(angleToVector(order.force_angle), 0.0f);
 		   	float len = timeDelta() * order.force;
 			order.force -= timeDelta() * order.force * 4.0f;
@@ -83,7 +83,7 @@ namespace game {
 				}
 			}
 		}
-		else if(event == ActorEvent::think && order.mode == Mode::fallen) {
+		else if(event == EntityEvent::think && order.mode == Mode::fallen) {
 
 			order.fall_time -= timeDelta();
 			if(order.fall_time < 0.0f) {
@@ -91,7 +91,7 @@ namespace game {
 				order.mode = Mode::getup;
 			}
 		}
-		else if(event == ActorEvent::sound) {
+		else if(event == EntityEvent::sound) {
 			if(order.mode == Mode::recoil)
 				playSound(m_actor.sounds[m_sound_variation].hit, pos());
 			else if(order.mode == Mode::fall)

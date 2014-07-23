@@ -24,20 +24,20 @@ namespace game {
 		sr << m_item << m_count;
 	}
 
-	bool Actor::handleOrder(DropItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(DropItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		int item_id = m_inventory.find(order.m_item);
 		if(item_id == -1 || order.m_count <= 0)
 			return false;
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			animate(Action::pickup);
 		}
-		if(event == ActorEvent::pickup) {
+		if(event == EntityEvent::pickup) {
 			int count = min(order.m_count, m_inventory[item_id].count);
 			m_inventory.remove(item_id, count);
 			addNewEntity<ItemEntity>(pos(), order.m_item, count);
 		}
-		if(event == ActorEvent::anim_finished)
+		if(event == EntityEvent::anim_finished)
 			order.finish();
 
 		return true;
@@ -56,7 +56,7 @@ namespace game {
 		sr << m_item;
 	}
 
-	bool Actor::handleOrder(EquipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(EquipItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		int item_id = m_inventory.find(order.m_item);
 		if(item_id == -1)
 			return false;
@@ -69,7 +69,7 @@ namespace game {
 		if(item_type == ItemType::weapon && m_inventory.weapon() == order.m_item)
 			return false;
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			if(item_type == ItemType::weapon) {
 				m_inventory.equip(item_id);
 				//TODO: maybe we should make sure that animation will be properly updated for a new weapon
@@ -81,7 +81,7 @@ namespace game {
 			//TODO: magic_hi animation when object to be picked up is high enough
 			animate(item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}
-		if(event == ActorEvent::anim_finished) {
+		if(event == EntityEvent::anim_finished) {
 			int count = 1;
 			if(item_type == ItemType::ammo)
 				count = min(m_inventory.weapon().maxAmmo(), m_inventory[item_id].count);
@@ -111,8 +111,8 @@ namespace game {
 		sr << m_item_type;
 	}
 
-	bool Actor::handleOrder(UnequipItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(event == ActorEvent::init_order) {
+	bool Actor::handleOrder(UnequipItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		if(event == EntityEvent::init_order) {
 			if(order.m_item_type == ItemType::weapon) {
 				m_inventory.unequip(order.m_item_type);
 				return false;
@@ -123,7 +123,7 @@ namespace game {
 
 			animate(order.m_item_type == ItemType::armour? Action::magic_low : Action::magic);
 		}
-		if(event == ActorEvent::anim_finished) {
+		if(event == EntityEvent::anim_finished) {
 			if(m_inventory.unequip(order.m_item_type) != -1)
 				if(order.m_item_type == ItemType::armour)
 					updateArmour();
@@ -147,11 +147,11 @@ namespace game {
 		sr << m_item << m_target << m_mode << m_count;
 	}
 	
-	bool Actor::handleOrder(TransferItemOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(TransferItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		if(order.m_count <= 0)
 			return false;
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			Container *container = refEntity<Container>(order.m_target);
 
 			if(container && areAdjacent(*this, *container)) {

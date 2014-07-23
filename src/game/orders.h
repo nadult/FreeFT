@@ -7,57 +7,17 @@
 #define GAME_ORDERS_H
 
 #include "game/base.h"
+#include "game/thinking_entity.h"
 
 namespace game {
 
-	// Only actors can receive orders
-
-	//TODO: add cancel order
-	DECLARE_ENUM(OrderTypeId,
-		invalid = -1,
-	
-		idle = 0,
-		look_at,
-		move,
-		track,
-		attack,
-		change_stance,
-		interact,
-		drop_item,
-		equip_item,
-		unequip_item,
-		transfer_item,
-		get_hit,
-		die
-	);
-
-	namespace ActorEvent {
-		enum Type {
-			init_order		= 0x001,
-			think			= 0x002,
-			anim_finished	= 0x004,
-			next_frame		= 0x008,
-			sound			= 0x010,
-			step			= 0x020,
-			pickup			= 0x040,
-			fire			= 0x080,
-			hit				= 0x100,
-			impact			= 0x200,
-		};
-	};
-
-	struct ActorEventParams {
-		int3 fire_offset;
-		bool step_is_left;
-	};
-
-	class POrder: public ClonablePtr<Order> {
+/*	class POrder: public ClonablePtr<Order> {
 	public:
 		using ClonablePtr<Order>::ClonablePtr;
 
 		void save(Stream&) const;
 		void load(Stream&);
-	};
+	};*/
 
 	// Order can be cancelled forcefully without any notification
 	class Order {
@@ -102,19 +62,14 @@ namespace game {
 		OrderTypeId::Type typeId() const { return type_id_; }
 	};
 
+	template <class TOrder>
+	bool ThinkingEntity::handleOrderWrapper(Order *order, EntityEvent::Type event, const EntityEventParams &params) {
+		DASSERT(order && order->typeId() == (OrderTypeId::Type)TOrder::type_id);
+		return handleOrder(*static_cast<TOrder*>(order), event, params);
+	}
+
+
 }
 
 #endif
-
-#include "game/orders/idle.h"
-#include "game/orders/look_at.h"
-#include "game/orders/move.h"
-#include "game/orders/track.h"
-#include "game/orders/attack.h"
-#include "game/orders/change_stance.h"
-#include "game/orders/interact.h"
-#include "game/orders/inventory.h"
-#include "game/orders/die.h"
-#include "game/orders/get_hit.h"
-
 

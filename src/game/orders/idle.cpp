@@ -26,17 +26,17 @@ namespace game {
 		finish();
 	}
 		
-	bool Actor::handleOrder(IdleOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(IdleOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		if(order.needCancel())
 			return false;
 
 		if(m_action == Action::idle)
 			order.m_fancy_anim_time -= timeDelta();
 
-		if(event == ActorEvent::anim_finished || event == ActorEvent::init_order) {
+		if(event == EntityEvent::anim_finished || event == EntityEvent::init_order) {
 			if(order.m_fancy_anim_time < 0.0f) {
 				order.m_fancy_anim_time = 1.5f;
-				bool fidget = rand() % 10 == 0;
+				bool fidget = rand() % 10 == 0; //TODO: multiplayer mode?
 
 				if(fidget) {
 					if(!animate(Action::fidget))

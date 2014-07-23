@@ -12,6 +12,8 @@
 #include "game/visibility.h"
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
+#include "game/all_orders.h"
+#include "game/actor_ai.h"
 
 #include "gfx/device.h"
 #include "gfx/font.h"

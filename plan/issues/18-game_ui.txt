@@ -1,11 +1,17 @@
-- HUD: selected weapon, selected armor, bullets in mag., HP?    3h
-- Menu: view inventory, transfer items inventory <-> container  4h
-- Menu: creating game sessions, joining game sessions, single player mode?   4h   
-- InGame Menu: quit, vote for map change?   2h
-- InGame Chat: team chat, global chat   2h
-- Main Menu 8h
+- Basic inventory  DONE
+- Transferring items to/from containers
+- Main hud panel: weapon, bullets in mag. HP  DONE
+- Character creation screen  DONE
+- Class selection screen  DONE
+- Options
+- Team chat, global chat
+- Main menu  DONE
+- Main menu: joining to server  DONE
+- Main menu: creating server
+- Main menu: creating single-player
+- Menu transitions  DONE
 
-+ESTIMATED_TIME: 23h
++ESTIMATED_TIME: 23h (lol)
 +TIME_SPENT
 
 +WORK_LOG:
@@ -22,3 +28,11 @@
 23.05.15: 10:15 - 13:00, 14:00 - 21:00
 24.05.15: 10:00 - 13:00, 14:00 - 15:00 
 25.05.15: 13:00 - 14:30, 15:00 - 16:00
+11.07.14: 17:00 - 21:30  (4.5h)  (Refactoring)
+12.07.14: 19:00 - 23:00  (4h)
+13.07.14: 9:00 - 14:00, 14:30 - 16:00, 20:00 - 22:00  (8.5h)
+14.07.14: 10:00 - 11:30, 15:30 - 18:00  (4h)
+15.07.14: 8:30 - 11:00, 12:00 - 14:30, 16:00 - 18:30, 21:15 - 22:45  (9h)
+16.07.14: 13:30 - 14:30  (1h)
+
+

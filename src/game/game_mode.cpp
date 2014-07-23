@@ -8,6 +8,7 @@
 #include "game/actor.h"
 #include "game/inventory.h"
 #include "game/trigger.h"
+#include "game/actor_ai.h"
 #include "net/base.h"
 #include "game/tile.h"
 
@@ -209,7 +210,8 @@ namespace game {
 		if(msg_type == MessageId::actor_order) {
 			EntityRef actor_ref;
 			POrder order;
-			sr >> actor_ref >> order;
+			sr >> actor_ref;
+			order.reset(Order::construct(sr));
 
 			auto it = m_clients.find(source_id);
 			if(it != m_clients.end() && order) {
@@ -289,9 +291,11 @@ namespace game {
 	}
 	
 	bool GameModeClient::sendOrder(POrder &&order, EntityRef entity_ref) {
+		DASSERT(order && entity_ref);
+
 		net::TempPacket chunk;
 		chunk << MessageId::actor_order;
-		chunk << entity_ref << order;
+		chunk << entity_ref << order->typeId() << *order;
 		m_world.sendMessage(chunk);
 		return true;
 	}

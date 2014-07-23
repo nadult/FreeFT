@@ -32,6 +32,8 @@ namespace game {
 		resetAnimState();
 	}
 
+	Entity::~Entity() = default;
+
 	//TODO: redundant initialization?
 	Entity::Entity(const Sprite &sprite, const XMLNode &node) :m_sprite(sprite) {
 		m_pos = node.float3Attrib("pos");
@@ -85,7 +87,6 @@ namespace game {
 			m_oseq_idx = -1;
 			m_oframe_idx = -1;
 		}
-
 	}
 
 	void Entity::resetAnimState() {
@@ -288,7 +289,7 @@ namespace game {
 	const float2 Entity::actualDir() const {
 		return angleToVector(actualDirAngle());
 	}
-
+	
 	bool areAdjacent(const Entity &a, const Entity &b) {
 		FBox box_a = a.boundingBox(), box_b = b.boundingBox();
 

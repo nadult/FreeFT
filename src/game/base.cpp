@@ -57,6 +57,7 @@ namespace game {
 		"container",
 		"door",
 		"actor",
+		"turret",
 		"item",
 		"projectile",
 		"impact",
@@ -103,6 +104,22 @@ namespace game {
 		"throw",
 		"punch",
 		"kick"
+	)
+
+	DEFINE_ENUM(OrderTypeId,
+		"idle",
+		"look_at",
+		"move",
+		"track",
+		"attack",
+		"change_stance",
+		"interact",
+		"drop_item",
+		"equip_item",
+		"unequip_item",
+		"transfer_item",
+		"get_hit",
+		"die"
 	)
 
 	DEFINE_ENUM(GameModeId,

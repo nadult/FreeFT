@@ -6,13 +6,9 @@
 #ifndef GAME_ACTOR_H
 #define GAME_ACTOR_H
 
-#include "game/entity.h"
+#include "game/thinking_entity.h"
 #include "game/inventory.h"
-#include "game/weapon.h"
-#include "game/orders.h"
-#include "game/actor_ai.h"
 #include "game/path.h"
-#include "game/character.h"
 
 namespace game {
 
@@ -126,7 +122,7 @@ namespace game {
 		SoundId run_sound, walk_sound;
 	};
 
-	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor> {
+	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor, ThinkingEntity> {
 	public:
 		Actor(Stream&);
 		Actor(const XMLNode&);
@@ -137,7 +133,7 @@ namespace game {
 		Flags::Type flags() const;
 		const FBox boundingBox() const override;
 
-		bool setOrder(POrder&&, bool force = false);
+		bool setOrder(POrder&&, bool force = false) override;
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
 		XMLNode save(XMLNode&) const;
@@ -166,15 +162,6 @@ namespace game {
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
 		void setClientId(int client_id) { m_client_id = client_id; }
 
-		template <class TAI, class ...Args>
-		void attachAI(PWorld world, const Args&... args) {
-			m_ai = new TAI(world, ref(), args...);
-		}
-		void detachAI() {
-			m_ai.reset();
-		}
-		ActorAI *AI() const { return m_ai.get(); }
-
 		const Path currentPath() const;
 		const float3 estimateMove(float time_advance) const;
 		void followPath(const Path &path, PathPos &pos);
@@ -185,37 +172,41 @@ namespace game {
 		float interruptChance(DamageType::Type, float damage, const float3 &force) const;
 		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
 
-		const FBox shootingBox(const Weapon &weapon) const;
-		const Segment computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
-
-		float inaccuracy(const Weapon &weapon) const;
-		float estimateHitChance(const Weapon &weapon, const FBox &bbox);
-		
 		AttackMode::Type validateAttackMode(AttackMode::Type mode) const;
+	
+		const FBox shootingBox(const Weapon &weapon) const override;
+		float accuracy(const Weapon &weapon) const override;
 
 	private:
-		void think();
+		void think() override;
+		void nextFrame() override;
 
 		void updateArmour();
 
 		void lookAt(const float3 &pos, bool at_once = false);
-
-		void nextFrame();
-		void onAnimFinished();
 		
 		void addToRender(gfx::SceneRenderer &out, Color color) const override;
-
-		void onHitEvent() override;
-		void onFireEvent(const int3&) override;
-		void onSoundEvent() override;
-		void onStepEvent(bool left_foot) override;
-		void onPickupEvent() override;
 
 		void fireProjectile(const FBox &target_box, const Weapon &weapon, float randomness = 0.0f);
 		void makeImpact(EntityRef target, const Weapon &weapon);
 
 		bool animateDeath(DeathId::Type);
 		bool animate(Action::Type);
+
+		bool handleOrder(IdleOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(LookAtOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(MoveOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(TrackOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(AttackOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(ChangeStanceOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(InteractOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(DropItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(EquipItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(UnequipItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(TransferItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(GetHitOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(DieOrder&, EntityEvent::Type, const EntityEventParams&) override;
+
 
 	private:
 		bool shrinkRenderedBBox() const { return true; }
@@ -228,42 +219,7 @@ namespace game {
 
 		FollowPathResult followPath(const Path&, PathPos&, bool run);
 
-		typedef void (Actor::*HandleFunc)(Order*, ActorEvent::Type, const ActorEventParams&);
-
-		void updateOrderFunc();
-		void handleOrder(ActorEvent::Type, const ActorEventParams &params = ActorEventParams{});
-
-		template <class TOrder>
-		void handleOrder(Order *order, ActorEvent::Type event, const ActorEventParams &params) {
-			DASSERT(order && order->typeId() == (OrderTypeId::Type)TOrder::type_id);
-			if(!order->isFinished())
-				if(!handleOrder(*static_cast<TOrder*>(order), event, params))
-					order->finish();
-		}
-		void emptyHandleFunc(Order*, ActorEvent::Type, const ActorEventParams&) { }
-		bool failOrder() const;
-		
-		bool handleOrder(IdleOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(LookAtOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(MoveOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(TrackOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(AttackOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(ChangeStanceOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(InteractOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(DropItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(EquipItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(UnequipItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(TransferItemOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(GetHitOrder&, ActorEvent::Type, const ActorEventParams&);
-		bool handleOrder(DieOrder&, ActorEvent::Type, const ActorEventParams&);
-
 		const ActorProto &m_actor;
-
-		PActorAI m_ai;
-
-		POrder m_order;
-		vector<POrder> m_following_orders;
-		HandleFunc m_order_func;
 
 		float m_target_angle;
 		Stance::Type m_stance;
@@ -276,9 +232,6 @@ namespace game {
 		int m_hit_points;
 		
 		float3 m_move_vec;
-
-		vector<float3> m_aiming_points;
-		vector<float3> m_aiming_lines;
 	};
 
 

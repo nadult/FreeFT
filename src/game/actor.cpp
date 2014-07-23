@@ -8,7 +8,10 @@
 #include "game/projectile.h"
 #include "game/tile.h"
 #include "game/world.h"
+#include "game/weapon.h"
 #include "game/game_mode.h"
+#include "game/all_orders.h"
+#include "game/actor_ai.h"
 #include "sys/xml.h"
 #include "sys/data_sheet.h"
 #include "net/socket.h"
@@ -32,18 +35,7 @@ namespace game {
 		m_client_id = sr.decodeInt();
 		m_faction_id = sr.decodeInt();
 
-		if(flags & 1) {
-			sr >> m_order;
-			updateOrderFunc();
-		}
-		if(flags & 2) {
-			int count = sr.decodeInt();
-			ASSERT(count >= 1);
-			m_following_orders.resize(count);
-			for(int n = 0; n < count; n++)
-				sr >> m_following_orders[n];
-		}
-		if(flags & 4)
+		if(flags & 1)
 			sr >> m_target_angle;
 		else
 			m_target_angle = dirAngle();
@@ -58,7 +50,6 @@ namespace game {
 		m_faction_id = node.intAttrib("faction_id");
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
-		updateOrderFunc();
 	}
 
 	Actor::Actor(const Proto &proto, Stance::Type stance)
@@ -68,7 +59,6 @@ namespace game {
 		m_faction_id = 0;
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
-		updateOrderFunc();
 	}
 
 	static ProtoIndex findActorArmour(const Proto &actor, const Armour &armour) {
@@ -94,7 +84,6 @@ namespace game {
 		return proto;
 	}
 
-	//TODO: this doesn't work properly with equipped inventories
 	Actor::Actor(const Proto &proto, ActorInventory &inv) :EntityImpl(getActorArmour(proto, inv)),
 		  m_actor(*m_proto.actor), m_stance(Stance::stand), m_inventory(inv), m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
@@ -102,7 +91,6 @@ namespace game {
 		m_faction_id = 0;
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
-		updateOrderFunc();
 	}
 
 
@@ -113,7 +101,6 @@ namespace game {
 		m_faction_id = rhs.m_faction_id;
 		m_sound_variation = rhs.m_sound_variation;
 		m_hit_points = rhs.m_hit_points;
-		m_ai = rhs.m_ai;
 	}
 	
 	XMLNode Actor::save(XMLNode &parent) const {
@@ -127,9 +114,7 @@ namespace game {
 
 	void Actor::save(Stream &sr) const {
 		EntityImpl::save(sr);
-		u8 flags =	(m_order? 1 : 0) |
-					(!m_following_orders.empty()? 2 : 0) |
-					(m_target_angle != dirAngle()? 4 : 0);
+		u8 flags =	(m_target_angle != dirAngle()? 1 : 0);
 
 		sr.pack(flags, m_stance, m_action);
 		sr.encodeInt(m_hit_points);
@@ -138,13 +123,6 @@ namespace game {
 		sr.encodeInt(m_faction_id);
 
 		if(flags & 1)
-			sr << m_order;
-		if(flags & 2) {
-			sr.encodeInt((int)m_following_orders.size());
-			for(int n = 0; n < (int)m_following_orders.size(); n++)
-				sr << m_following_orders[n];
-		}
-		if(flags & 4)
 			sr << m_target_angle;
 		sr << m_inventory;
 	}
@@ -336,23 +314,8 @@ namespace game {
 	bool Actor::canChangeStance() const {
 		return m_proto.canChangeStance();
 	}
-		
-	void Actor::handleOrder(ActorEvent::Type event, const ActorEventParams &params) {
-		if(m_order) 
-			(this->*m_order_func)(m_order.get(), event, params);
-	}
-		
-	bool Actor::failOrder() const {
-		if(m_ai && m_order)
-			m_ai->onFailed(m_order->typeId());
-		return false;
-	}
 
 	bool Actor::setOrder(POrder &&order, bool force) {
-		DASSERT(order);
-		if(!world() || !order)
-			return false;
-
 		if(order->typeId() == OrderTypeId::look_at) {
 			if((m_order && m_order->typeId() != OrderTypeId::idle) || !m_following_orders.empty())
 				return false;
@@ -368,62 +331,15 @@ namespace game {
 			}
 		}
 
-		if(order) {
-			if(m_order) {
-				if(m_order->typeId() != OrderTypeId::change_stance)
-					m_order->cancel();
-			}
+		if(order && m_order && m_order->typeId() != OrderTypeId::change_stance)
+			m_order->cancel();
 
-			if(force) {
-				m_order.reset(nullptr);
-				m_following_orders.insert(m_following_orders.begin(), std::move(order));
-			}
-			else {
-				//TODO: give player possibility to clear current orders
-				//TODO: fix this! why are we clearing orders?
-			//	m_following_orders.clear();
-				m_following_orders.emplace_back(std::move(order));
-			}
-		}
-
-		replicate();
-
-		//TODO: pass information about wheter this order can be handled
-		return true;
+		return ThinkingEntity::setOrder(std::move(order), force);
 	}
 
 	void Actor::think() {
-		double time_delta = timeDelta();
-		DASSERT(world());
-
-		bool need_replicate = false;
-		while(!m_order || m_order->isFinished()) {
-			if(m_order && m_order->hasFollowup())
-				m_order = m_order->getFollowup(); //TODO: maybe followup orders shouldnt be initialized twice?
-			else {
-				if(m_following_orders.empty()) {
-					if(!m_order || m_order->typeId() != OrderTypeId::idle)
-						m_order = new IdleOrder();
-				}
-				else {
-					m_order = std::move(m_following_orders.front());
-					m_following_orders.erase(m_following_orders.begin());
-				}
-			}
-
-			updateOrderFunc();
-			handleOrder(ActorEvent::init_order);
-			need_replicate = true;
-		}
-		
-		if(need_replicate)
-			replicate();
-
+		ThinkingEntity::think();
 		m_move_vec = float3(0, 0, 0);
-		handleOrder(ActorEvent::think);
-
-		if(m_ai)
-			m_ai->think();
 	}
 
 	// sets direction
@@ -441,34 +357,8 @@ namespace game {
 	}
 
 	void Actor::nextFrame() {
-		Entity::nextFrame();
-
 		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi / 4.0f));
-		handleOrder(ActorEvent::next_frame);	
-	}
-
-	void Actor::onAnimFinished() {
-		handleOrder(ActorEvent::anim_finished);
-	}
-
-	void Actor::onPickupEvent() {
-		handleOrder(ActorEvent::pickup);
-	}
-		
-	void Actor::onFireEvent(const int3 &off) {
-		handleOrder(ActorEvent::fire, ActorEventParams{off, false});
-	}
-		
-	void Actor::onHitEvent() {
-		handleOrder(ActorEvent::hit, ActorEventParams());
-	}
-		
-	void Actor::onStepEvent(bool left_foot) {
-		handleOrder(ActorEvent::step, ActorEventParams{ int3(), left_foot });
-	}
-
-	void Actor::onSoundEvent() {
-		handleOrder(ActorEvent::sound);
+		ThinkingEntity::nextFrame();
 	}
 		
 	bool Actor::isDying() const {
@@ -609,22 +499,6 @@ namespace game {
 		}
 	}
 
-	const FBox Actor::shootingBox(const Weapon &weapon) const {
-		FBox bbox = boundingBox();
-		float3 center = bbox.center();
-		float3 size = bbox.size();
-
-		if(weapon.classId() == WeaponClass::minigun) {
-			size.y *= 0.4f;
-		}
-		else {
-			center.y += size.y * 0.3f;
-			size.y *= 0.4f;
-		}
-
-		return FBox(center - size * 0.5f, center + size * 0.5f);
-	}
-
 	void Actor::addToRender(gfx::SceneRenderer &out, Color color) const {
 		Entity::addToRender(out, color);
 
@@ -645,102 +519,23 @@ namespace game {
 #endif
 	}
 
-	const Segment Actor::computeBestShootingRay(const FBox &target_box, const Weapon &weapon) {
-		PROFILE_RARE("Actor::shootingRay");
+	const FBox Actor::shootingBox(const Weapon &weapon) const {
+		FBox bbox = boundingBox();
+		float3 center = bbox.center();
+		float3 size = bbox.size();
 
-		FBox shooting_box = shootingBox(weapon);
-		float3 center = shooting_box.center();
-		float3 dir = normalized(target_box.center() - center);
-
-		float3 source; {
-			vector<float3> sources = genPointsOnPlane(shooting_box, dir, 5, true);
-			vector<float3> targets = genPointsOnPlane(target_box, -dir, 5, false);
-
-			int best_source = -1, best_hits = 0;
-			float best_dist = 0.0f;
-
-			vector<Segment> segments;
-			for(int s = 0; s < (int)sources.size(); s++)
-				for(int t = 0; t < (int)targets.size(); t++)
-					segments.push_back(Segment(sources[s], targets[t]));
-
-			vector<Intersection> results;
-			world()->traceCoherent(segments, results, {Flags::all | Flags::colliding, ref()});
-
-			int errors = 0, ok = 0;
-			for(int s = 0; s < (int)sources.size(); s++) {
-				int num_hits = 0;
-		
-				for(int t = 0; t < (int)targets.size(); t++) {
-					const Segment &segment = segments[s * targets.size() + t];
-					const Intersection &isect = results[s * targets.size() + t];
-
-					if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
-						num_hits++;
-				}
-
-				float dist = distance(sources[s], center);
-				if(best_source == -1 || num_hits > best_hits || (num_hits == best_hits && dist < best_dist)) {
-					best_source = s;
-					best_hits = num_hits;
-					best_dist = dist;
-				}
-			}
-			
-#ifdef DEBUG_SHOOTING
-			m_aiming_points.clear();
-			m_aiming_points.insert(m_aiming_points.begin(), sources.begin(), sources.end());
-#endif
-
-			source = sources[best_source];
+		if(weapon.classId() == WeaponClass::minigun) {
+			size.y *= 0.4f;
+		}
+		else {
+			center.y += size.y * 0.3f;
+			size.y *= 0.4f;
 		}
 
-		float3 best_target = target_box.center(); {
-			float best_score = -constant::inf;
-		
-			vector<float3> targets = genPointsOnPlane(target_box, normalized(source - target_box.center()), 8, false);
-			vector<char> target_hits(targets.size(), 0);
-
-			vector<Segment> segments;
-			for(int t = 0; t < (int)targets.size(); t++)
-				segments.push_back(Segment(source, targets[t]));
-
-			vector<Intersection> isects;
-			world()->traceCoherent(segments, isects, {Flags::all | Flags::colliding, ref()});
-
-			int num_hits = 0;
-			for(int t = 0; t < (int)targets.size(); t++) {
-				const Intersection &isect = isects[t];
-				const Segment &segment = segments[t];
-				if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box)) {
-					target_hits[t] = 1;
-					num_hits++;
-				}
-			}
-
-			for(int t = 0; t < (int)targets.size(); t++) {
-				float score = 0.0f;
-				float3 current = targets[t];
-				if(!target_hits[t])
-					continue;
-
-#ifdef DEBUG_SHOOTING
-				m_aiming_points.push_back(targets[t]);
-#endif
-
-				for(int i = 0; i < (int)targets.size(); i++)
-					score += (target_hits[i]? 1.0f : 0.0f) / (1.0f + distanceSq(current, targets[i]));
-				if(score > best_score) {
-					best_score = score;
-					best_target = current;
-				}
-			}
-		}
-
-		return Segment(source, best_target);
+		return FBox(center - size * 0.5f, center + size * 0.5f);
 	}
-		
-	float Actor::inaccuracy(const Weapon &weapon) const {
+
+	float Actor::accuracy(const Weapon &weapon) const {
 		float accuracy = weapon.proto().accuracy;
 		if(m_stance == Stance::crouch)
 			accuracy *= 1.25f;
@@ -749,38 +544,9 @@ namespace game {
 
 		//TODO: increased accuracy, when player is not rotating for some time
 
-		return 1.0f / max(10.0f, accuracy);
+		return accuracy;
 	}
-		
-	float Actor::estimateHitChance(const Weapon &weapon, const FBox &target_bbox) {
-	//	PROFILE_RARE("Actor::estimateHitChance");
 
-		Segment segment = computeBestShootingRay(target_bbox, weapon);
-
-		float inaccuracy = this->inaccuracy(weapon);
-		vector<Segment> segments;
-		int density = 32;
-
-		for(int x = 0; x < density; x++)
-			for(int y = 0; y < density; y++) {
-				float mul = 1.0f / (density - 1);
-				Ray ray(segment.origin(), perturbVector(segment.dir(), float(x) * mul, float(y) *mul, inaccuracy));
-				float dist = intersection(ray, target_bbox);
-				if(dist < constant::inf)
-					segments.push_back(Segment(ray, 0.0f, dist));
-			}
-
-		vector<Intersection> isects;
-		world()->traceCoherent(segments, isects, {Flags::all | Flags::colliding, ref()});
-
-		int num_hits = 0;
-		for(int n = 0; n < (int)isects.size(); n++)
-			if(isects[n].isEmpty() || isects[n].distance() + constant::epsilon >= intersection(segments[n], target_bbox))
-			   num_hits++;	
-
-		return float(num_hits) / (density * density);
-	}
-		
 	AttackMode::Type Actor::validateAttackMode(AttackMode::Type in_mode) const {
 		AttackMode::Type mode = in_mode;
 		Weapon weapon = m_inventory.weapon();

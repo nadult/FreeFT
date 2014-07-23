@@ -5,6 +5,8 @@
 
 #include "game/actor_ai.h"
 #include "game/actor.h"
+#include "game/all_orders.h"
+#include "game/weapon.h"
 #include "navi_map.h"
 
 namespace game {

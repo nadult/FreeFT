@@ -7,36 +7,11 @@
 #include "game/orders.h"
 #include "game/container.h"
 #include "game/world.h"
+#include "game/actor_ai.h"
+#include "game/all_orders.h"
 #include <cstdio>
 
 namespace game {
-
-
-	DEFINE_ENUM(OrderTypeId,
-		"idle",
-		"look_at",
-		"move",
-		"track",
-		"attack",
-		"change_stance",
-		"interact",
-		"drop_item",
-		"equip_item",
-		"unequip_item",
-		"transfer_item",
-		"get_hit",
-		"die"
-	);
-
-	void POrder::save(Stream &sr) const {
-		sr << (isValid()? get()->typeId() : OrderTypeId::invalid);
-		if(isValid())
-			get()->save(sr);
-	}
-
-	void POrder::load(Stream &sr) {
-		reset(Order::construct(sr));
-	}
 
 	Order *Order::construct(Stream &sr) {
 		OrderTypeId::Type order_id;
@@ -72,7 +47,7 @@ namespace game {
 		sr >> flags;
 
 		if(flags & 1)
-			sr >> m_followup;
+			m_followup.reset(Order::construct(sr));
 		m_is_finished = flags & 2;
 		m_please_cancel = flags & 4;
 	}
@@ -83,28 +58,40 @@ namespace game {
 					(m_please_cancel? 4 : 0);
 		sr << flags;
 		if(m_followup)
-			sr << m_followup;
+			sr << m_followup->typeId() << *m_followup;
 	}
 
-	void Actor::updateOrderFunc() {
-		static HandleFunc s_handle_funcs[] = {
-			&Actor::handleOrder<IdleOrder>,
-			&Actor::handleOrder<LookAtOrder>,
-			&Actor::handleOrder<MoveOrder>,
-			&Actor::handleOrder<TrackOrder>,
-			&Actor::handleOrder<AttackOrder>,
-			&Actor::handleOrder<ChangeStanceOrder>,
-			&Actor::handleOrder<InteractOrder>,
-			&Actor::handleOrder<DropItemOrder>,
-			&Actor::handleOrder<EquipItemOrder>,
-			&Actor::handleOrder<UnequipItemOrder>,
-			&Actor::handleOrder<TransferItemOrder>,
-			&Actor::handleOrder<GetHitOrder>,
-			&Actor::handleOrder<DieOrder>
+	void ThinkingEntity::handleOrder(EntityEvent::Type event, const EntityEventParams &params) {
+		if(!m_order)
+			return;
+
+		static ThinkingEntity::HandleFunc handlers[] = {
+			&ThinkingEntity::handleOrderWrapper<IdleOrder>,
+			&ThinkingEntity::handleOrderWrapper<LookAtOrder>,
+			&ThinkingEntity::handleOrderWrapper<MoveOrder>,
+			&ThinkingEntity::handleOrderWrapper<TrackOrder>,
+			&ThinkingEntity::handleOrderWrapper<AttackOrder>,
+			&ThinkingEntity::handleOrderWrapper<ChangeStanceOrder>,
+			&ThinkingEntity::handleOrderWrapper<InteractOrder>,
+			&ThinkingEntity::handleOrderWrapper<DropItemOrder>,
+			&ThinkingEntity::handleOrderWrapper<EquipItemOrder>,
+			&ThinkingEntity::handleOrderWrapper<UnequipItemOrder>,
+			&ThinkingEntity::handleOrderWrapper<TransferItemOrder>,
+			&ThinkingEntity::handleOrderWrapper<GetHitOrder>,
+			&ThinkingEntity::handleOrderWrapper<DieOrder>
 		};
-		static_assert(COUNTOF(s_handle_funcs) == OrderTypeId::count, "");
+		static_assert(COUNTOF(handlers) == OrderTypeId::count, "Not all order classes are handled in ThinkingEntity::handleOrder");
 
-		m_order_func = m_order? s_handle_funcs[m_order->typeId()] : &Actor::emptyHandleFunc;
+		if(!m_order->isFinished())
+			if(!(this->*handlers[m_order->typeId()])(m_order.get(), event, params))
+				m_order->finish();
 	}
+
+	bool ThinkingEntity::failOrder() const {
+		if(m_ai && m_order)
+			m_ai->onFailed(m_order->typeId());
+		return false;
+	}
+
 
 }

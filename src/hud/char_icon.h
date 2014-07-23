@@ -7,6 +7,7 @@
 #define HUD_CHAR_ICON_H
 
 #include "hud/button.h"
+#include "game/character.h"
 
 namespace hud
 {

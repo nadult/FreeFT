@@ -14,9 +14,6 @@ namespace game {
 	class Entity;
 	class Tile;
 
-	class Order;
-	class POrder;
-
 	DECLARE_ENUM(WeaponClass,
 		unarmed,
 		club,
@@ -66,6 +63,7 @@ namespace game {
 		container,
 		door,
 		actor,
+		turret,
 		item,
 		projectile,
 		impact,
@@ -113,6 +111,25 @@ namespace game {
 		throwing,
 		punch,
 		kick
+	);
+
+	//TODO: add cancel order
+	DECLARE_ENUM(OrderTypeId,
+		invalid = -1,
+	
+		idle = 0,
+		look_at,
+		move,
+		track,
+		attack,
+		change_stance,
+		interact,
+		drop_item,
+		equip_item,
+		unequip_item,
+		transfer_item,
+		get_hit,
+		die
 	);
 
 	// TODO: better name

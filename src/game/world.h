@@ -93,10 +93,7 @@ namespace game {
 
 		template <class TEntity, class TRef>
 		TEntity *refEntity(TRef ref) {
-			Entity *entity = refEntity(ref);
-			if(entity && entity->typeId() == (EntityId::Type)TEntity::type_id)
-				return static_cast<TEntity*>(entity);
-			return nullptr;
+			return dynamic_cast<TEntity*>(refEntity(ref));
 		}
 
 		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;

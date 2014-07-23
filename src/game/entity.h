@@ -84,10 +84,6 @@ namespace game {
 		friend class World;
 	};
 
-	class EntityGameModeProxy {
-	public:
-	};
-
 	class EntityWorldProxy {
 	public:
 		int index() const { return m_index; }
@@ -155,8 +151,7 @@ namespace game {
 		Entity(const Sprite &sprite);
 		Entity(const Sprite &sprite, const XMLNode&);
 		Entity(const Sprite &sprite, Stream&);
-		Entity(const Entity&) = default;
-		virtual ~Entity() = default;
+		virtual ~Entity();
 		
 		virtual void save(Stream&) const;
 		virtual XMLNode save(XMLNode& parent) const;
@@ -199,12 +194,9 @@ namespace game {
 
 		// Assumes that object is hooked to World		
 		virtual void think() { }
-
 		virtual void nextFrame();
 
 	protected:
-		virtual void handleFrameEvent(int sprite_event_id) { }
-
 		virtual void onFireEvent(const int3 &projectile_offset) { }
 		virtual void onHitEvent() { }
 		virtual void onSoundEvent() { }
@@ -238,8 +230,8 @@ namespace game {
 		bool m_is_seq_finished;
 	};
 
-	template <class Type, class ProtoType, int type_id_>
-	class EntityImpl: public Entity
+	template <class Type, class ProtoType, int type_id_, class Base = Entity>
+	class EntityImpl: public Base
 	{
 	private:
 		static_assert(type_id_ >= 0 && type_id_ < EntityId::count, "Wrong entity type_id");
@@ -266,11 +258,11 @@ namespace game {
 		};
 
 		EntityImpl(const Initializer &init)
-			:Entity(*init.sprite), m_proto(*init.proto) { }
+			:Base(*init.sprite), m_proto(*init.proto) { }
 		EntityImpl(const Initializer &init, const XMLNode &node)
-			:Entity(*init.sprite, node), m_proto(*init.proto) { }
+			:Base(*init.sprite, node), m_proto(*init.proto) { }
 		EntityImpl(const Initializer &init, Stream &sr)
-			:Entity(*init.sprite, sr), m_proto(*init.proto) { }
+			:Base(*init.sprite, sr), m_proto(*init.proto) { }
 
 	public:
 		enum { type_id = type_id_ };
@@ -286,11 +278,11 @@ namespace game {
 		}
 		virtual void save(Stream &sr) const {
 			sr << m_proto.index();
-			Entity::save(sr);
+			Base::save(sr);
 		}
 
 		virtual XMLNode save(XMLNode &parent) const {
-			XMLNode node = Entity::save(parent);
+			XMLNode node = Base::save(parent);
 			m_proto.index().save(node);
 			return node;
 		}
@@ -305,10 +297,7 @@ namespace game {
 
 	template <class TEntity, class TRef>
 	TEntity *EntityWorldProxy::refEntity(TRef ref) {
-		Entity *entity = refEntity(ref);
-		if(entity && entity->typeId() == (EntityId::Type)TEntity::type_id)
-			return static_cast<TEntity*>(entity);
-		return nullptr;
+		return dynamic_cast<TEntity*>(refEntity(ref));
 	}
 
 	template <class TEntity, class ...Args>

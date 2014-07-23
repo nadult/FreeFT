@@ -1,0 +1,9 @@
+- Keeps a list of active servers with some basic info about each server (refreshed constantly) DONE
+- Hole punching for servers  DONE
+
++ESTIMATED_TIME: 4h
++TIME_SPENT: 5h 30 min
++FINISHED
+
++WORK_LOG:
+01.05.14: 14:00 - 15:30, 16:30 - 20:30

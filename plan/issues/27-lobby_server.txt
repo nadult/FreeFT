@@ -1,8 +1,0 @@
-- Keeps a list of active servers with some basic info about each server (refreshed constantly)
-- Hole punching for servers
-
-+ESTIMATED_TIME: 4h
-+TIME_SPENT:
-
-+WORK_LOG:
-01.05.14: 14:00 - 15:30, 16:30 - 20:30

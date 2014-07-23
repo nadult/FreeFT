@@ -20,10 +20,10 @@ namespace game {
 		sr << m_death_id << m_is_dead;
 	}
 
-	bool Actor::handleOrder(DieOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		bool play_sound = event == ActorEvent::sound;
+	bool Actor::handleOrder(DieOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		bool play_sound = event == EntityEvent::sound;
 
-		if(event == ActorEvent::init_order) {
+		if(event == EntityEvent::init_order) {
 			bool is_fallen = isOneOf(m_action, Action::fall_forward, Action::fall_back, Action::fallen_back, Action::fallen_forward);
 			bool special_death = isOneOf(order.m_death_id, DeathId::explode, DeathId::fire, DeathId::electrify, DeathId::melt);
 
@@ -48,7 +48,7 @@ namespace game {
 			if(m_actor.is_alive)
 				playSound(m_actor.human_death_sounds[order.m_death_id], pos());
 		}
-		if(event == ActorEvent::anim_finished)
+		if(event == EntityEvent::anim_finished)
 			order.m_is_dead = true;
 
 		return true;

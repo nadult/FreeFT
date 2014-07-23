@@ -5,6 +5,7 @@
 
 #include "game/orders/track.h"
 #include "game/actor.h"
+#include "game/world.h"
 
 namespace game {
 
@@ -23,8 +24,8 @@ namespace game {
 		sr << m_path << m_path_pos << m_time_for_update;
 	}
 
-	bool Actor::handleOrder(TrackOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
-		if(event == ActorEvent::init_order || event == ActorEvent::think) {
+	bool Actor::handleOrder(TrackOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		if(event == EntityEvent::init_order || event == EntityEvent::think) {
 			order.m_time_for_update -= timeDelta();
 			const Entity *target = refEntity(order.m_target);
 			if(!target)
@@ -50,7 +51,7 @@ namespace game {
 			if(distance(boundingBox(), target->boundingBox()) <= order.m_min_distance)
 				return false;
 
-			if(event == ActorEvent::init_order) {
+			if(event == EntityEvent::init_order) {
 				if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
 					order.m_please_run = 0;
 
@@ -66,10 +67,10 @@ namespace game {
 		}
 		
 		if(order.m_path.length(order.m_path_pos) > 1.0f) {
-			if(event == ActorEvent::anim_finished && m_stance == Stance::crouch) {
+			if(event == EntityEvent::anim_finished && m_stance == Stance::crouch) {
 				animate(m_action);
 			}
-			if(event == ActorEvent::step) {
+			if(event == EntityEvent::step) {
 				SurfaceId::Type standing_surface = surfaceUnder();
 				playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 			}

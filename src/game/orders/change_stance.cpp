@@ -22,14 +22,14 @@ namespace game {
 		sr << m_target_stance << m_stance_up;
 	}
 	
-	bool Actor::handleOrder(ChangeStanceOrder &order, ActorEvent::Type event, const ActorEventParams &params) {
+	bool Actor::handleOrder(ChangeStanceOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		Stance::Type target_stance = order.m_target_stance;
 
-		if(event == ActorEvent::anim_finished) {
+		if(event == EntityEvent::anim_finished) {
 			m_stance = (Stance::Type)(order.m_stance_up? m_stance + 1 : m_stance - 1);
 			m_stance = min(max(m_stance, Stance::prone), Stance::stand);
 		}
-		if(event == ActorEvent::anim_finished || event == ActorEvent::init_order) {
+		if(event == EntityEvent::anim_finished || event == EntityEvent::init_order) {
 			if(m_stance == target_stance)
 				order.finish();
 			else {

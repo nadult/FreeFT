@@ -61,7 +61,7 @@
    issues/16-visibility_system.txt
  
 - simple AI (for critters like rad-scorpions)
-   issues/17-simple_ai.txt
+   issues/finished/17-simple_ai.txt  (19 / 20)
 
 - UI: HUD + menus
    issues/18-game_ui.txt
@@ -77,9 +77,12 @@
 - improved replication
    issues/21-improved_replication.txt
 
+- lobby server
+   issues/finished/27-lobby_server.txt (5.5 / 4)
+
 4. Random, useful things
- - konsola do wygodnego wypisywania tekstu z wnętrza różnych modułów
-   issues/11-console.txt
+ - HUD Console
+   issues/finished/11-console.txt  (6 / 2)
  
  - finish refactoring of names
    issues/finished/12-code_cleanup.txt (3 / 7)

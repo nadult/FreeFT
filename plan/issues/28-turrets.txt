@@ -1,0 +1,9 @@
+- basic turrets with animation
+- make Actor's orders work with turrets
+- make AI work with turrets
+
++ESTIMATED_TIME: 6h
++TIME_SPENT:
+
++WORK_LOG:
+23.07.14: 10:00 - 14:00, 20:00 - 
