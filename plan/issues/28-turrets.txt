@@ -1,9 +1,11 @@
 - basic turrets with animation
 - make Actor's orders work with turrets
 - make AI work with turrets
+- make turrets work in multiplayer
 
 +ESTIMATED_TIME: 6h
 +TIME_SPENT:
 
 +WORK_LOG:
-23.07.14: 10:00 - 14:00, 20:00 - 
+23.07.14: 10:00 - 14:00, 20:00 - 22:20
+24.07.14: 10:00 - 12:00, 18:00 - 21:00

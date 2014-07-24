@@ -1,10 +1,12 @@
 CRC32 4f1015e7
 10296a
-<entity_map size="528 288" entity_count="6">
+<entity_map size="528 288" entity_count="8">
 	<door pos="114 1 59" proto_type="door" proto_id="bos_interior_big2"/>
 	<door pos="114 1 197" proto_type="door" proto_id="bos_interior_big2"/>
 	<trigger pos="122 1 52" box_size="33 7 30" class="spawn_zone"/>
 	<trigger pos="125 1 192" box_size="30 8 29" class="spawn_zone"/>
+	<turret pos="213 1 58" proto_type="turret" proto_id="popup"/>
+	<turret pos="213 1 214" proto_type="turret" proto_id="popup"/>
 	<trigger pos="458 1 27" box_size="24 1 30" class="spawn_zone" faction_id="1" spawn_delay="12" spawn_limit="10"/>
 	<trigger pos="470 1 220" box_size="24 1 24" class="spawn_zone" faction_id="1" spawn_delay="8" spawn_limit="10"/>
 </entity_map>

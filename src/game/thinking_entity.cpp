@@ -4,7 +4,7 @@
  */
 
 #include "game/thinking_entity.h"
-#include "game/actor_ai.h"
+#include "game/brain.h"
 #include "game/orders/idle.h"
 #include "game/weapon.h"
 #include "sys/profiler.h"
@@ -63,7 +63,7 @@ namespace game {
 	}
 	
 	bool ThinkingEntity::setOrder(POrder &&order, bool force) {
-		DASSERT(order && world());
+		DASSERT(world());
 
 		if(order) {
 			if(force) {
@@ -84,6 +84,9 @@ namespace game {
 		return true;
 	}
 
+	OrderTypeId::Type ThinkingEntity::currentOrder() const {
+		return m_order? m_order->typeId() : OrderTypeId::invalid;
+	}
 		
 	void ThinkingEntity::think() {
 		double time_delta = timeDelta();
@@ -145,12 +148,17 @@ namespace game {
 	void ThinkingEntity::onSoundEvent() {
 		handleOrder(EntityEvent::sound);
 	}
+		
+	void ThinkingEntity::onImpact(DamageType::Type dmg_type, float damage, const float3 &force, EntityRef source) {
+		if(m_ai)
+			m_ai->onImpact(dmg_type, damage, force, source);
+	}
 	
 	void ThinkingEntity::detachAI() {
 		m_ai.reset();
 	}
 
-	ActorAI *ThinkingEntity::AI() const {
+	Brain *ThinkingEntity::AI() const {
 		return m_ai.get();
 	}
 

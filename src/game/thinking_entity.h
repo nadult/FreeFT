@@ -24,8 +24,8 @@ namespace game {
 	class GetHitOrder;
 	class DieOrder;
 	
-	class ActorAI;
-	typedef ClonablePtr<ActorAI> PActorAI;
+	class Brain;
+	typedef ClonablePtr<Brain> PBrain;
 
 	DECLARE_ENUM(EntityEvent,
 		init_order,
@@ -60,7 +60,7 @@ namespace game {
 		template <class TAI, class ...Args>
 		void attachAI(PWorld world, const Args&... args);
 		void detachAI();
-		ActorAI *AI() const;
+		Brain *AI() const;
 		
 		virtual bool setOrder(POrder&&, bool force = false);
 
@@ -71,6 +71,14 @@ namespace game {
 
 		const Segment computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
 		float estimateHitChance(const Weapon &weapon, const FBox &bbox);
+		
+		OrderTypeId::Type currentOrder() const;
+		
+		virtual bool canSee(EntityRef ref, bool simple_test = false) = 0;
+		
+		virtual bool isDying() const = 0;
+		virtual bool isDead() const = 0;
+		virtual int factionId() const { return -1; }
 
 	protected:
 		void think() override;
@@ -83,6 +91,7 @@ namespace game {
 		void onPickupEvent() override;
 
 		void onAnimFinished() override;
+		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
 		void handleOrder(EntityEvent::Type, const EntityEventParams &params = EntityEventParams{});
 		bool failOrder() const;
@@ -90,7 +99,7 @@ namespace game {
 
 		POrder m_order;
 		vector<POrder> m_following_orders;
-		PActorAI m_ai;
+		PBrain m_ai;
 		
 		vector<float3> m_aiming_points;
 		vector<float3> m_aiming_lines;

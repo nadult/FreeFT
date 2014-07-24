@@ -9,6 +9,7 @@
 #include "game/sprite.h"
 
 #include "game/actor.h"
+#include "game/turret.h"
 #include "game/container.h"
 #include "game/door.h"
 #include "game/item.h"
@@ -46,6 +47,20 @@ namespace ui {
 	PEntity ActorPad::makeEntity() const {
 		const Proto& proto = getProto(m_proto_id->selectedText(), ProtoId::actor);
 		return (PEntity)new Actor(proto);
+	}
+
+
+
+	TurretPad::TurretPad(const IRect &max_rect) :EntityPad(max_rect, EntityId::turret) {
+		m_proto_id = addControl<ComboBox>(200, "Turret: ");
+		for(int n = 0; n < countProtos(ProtoId::turret); n++)
+			m_proto_id->addEntry(getProto(n, ProtoId::turret).id.c_str());
+		m_proto_id->selectEntry(0);
+	}
+		
+	PEntity TurretPad::makeEntity() const {
+		const Proto& proto = getProto(m_proto_id->selectedText(), ProtoId::turret);
+		return (PEntity)new Turret(proto);
 	}
 
 
@@ -182,6 +197,7 @@ namespace ui {
 		
 		IRect pad_rect(0, WindowStyle::line_height * 2, width, WindowStyle::line_height * 12);
 		m_pads.emplace_back((PEntityPad)new ActorPad(pad_rect));
+		m_pads.emplace_back((PEntityPad)new TurretPad(pad_rect));
 		m_pads.emplace_back((PEntityPad)new ContainerPad(pad_rect));
 		m_pads.emplace_back((PEntityPad)new DoorPad(pad_rect));
 		m_pads.emplace_back((PEntityPad)new ItemPad(pad_rect));

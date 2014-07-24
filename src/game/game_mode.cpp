@@ -6,9 +6,10 @@
 #include "game/game_mode.h"
 #include "game/world.h"
 #include "game/actor.h"
+#include "game/turret.h"
 #include "game/inventory.h"
 #include "game/trigger.h"
-#include "game/actor_ai.h"
+#include "game/brain.h"
 #include "net/base.h"
 #include "game/tile.h"
 
@@ -39,7 +40,7 @@ namespace game {
 	GameMode::~GameMode() { }
 
 	bool GameMode::sendOrder(POrder &&order, EntityRef entity_ref) {
-		if( Actor *entity = m_world.refEntity<Actor>(entity_ref) )
+		if( ThinkingEntity *entity = m_world.refEntity<ThinkingEntity>(entity_ref) )
 			return entity->setOrder(std::move(order));
 		return false;
 	}
@@ -48,7 +49,13 @@ namespace game {
 		for(int n = 0; n < m_world.entityCount(); n++) {
 			Actor *actor = m_world.refEntity<Actor>(n);
 			if(actor && actor->factionId() != 0)
-				actor->attachAI<SimpleAI>(PWorld(&m_world));
+				actor->attachAI<ActorBrain>(PWorld(&m_world));
+			Turret *turret = m_world.refEntity<Turret>(n);
+			if(turret) {
+				turret->attachAI<ActorBrain>(PWorld(&m_world));
+				ActorBrain *brain = static_cast<ActorBrain*>(turret->AI());
+				brain->setEnemyFactions({1, 2});
+			}
 		}
 	}
 
@@ -96,7 +103,7 @@ namespace game {
 					if(ai) {
 						Actor *actor = m_world.refEntity<Actor>(ai);
 						DASSERT(actor);
-						actor->attachAI<SimpleAI>(PWorld(&m_world));
+						actor->attachAI<ActorBrain>(PWorld(&m_world));
 					}
 				}
 

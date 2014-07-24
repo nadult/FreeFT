@@ -6,6 +6,7 @@
 #include "game/orders/attack.h"
 #include "game/orders/track.h"
 #include "game/actor.h"
+#include "game/turret.h"
 
 namespace game {
 
@@ -154,5 +155,84 @@ namespace game {
 
 		return true;
 	}
+
+	bool Turret::handleOrder(AttackOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		if(event == EntityEvent::init_order) {
+			if(!isOneOf(order.m_mode, AttackMode::single, AttackMode::burst))
+				return failOrder();
+		}
+
+		const Entity *target = refEntity(order.m_target);
+		const Weapon weapon(findProto("_turret_gun", ProtoId::item_weapon));
+		AttackMode::Type mode = order.m_mode;
+			
+		FBox target_box;
+		if(target) {
+			target_box = target->boundingBox();
+
+			//TODO: this is a skill, should be randomized a bit
+			if( const Actor *atarget = refEntity<Actor>(order.m_target) ) {
+				for(int n = 0; n < 4; n++) {
+					float dist = distance(boundingBox(), target_box);
+					float tdist = weapon.estimateProjectileTime(dist);
+					target_box = target->boundingBox() + atarget->estimateMove(tdist);
+				}
+			}
+			order.m_target_pos = target_box.center();
+		}
+		else
+			target_box = FBox(order.m_target_pos, order.m_target_pos);
+
+		if(event == EntityEvent::init_order) {
+			float max_range = weapon.range(mode);
+			float dist = distance(boundingBox(), target_box);
+			lookAt(target_box.center());
+
+			if(dist > max_range)
+				return failOrder();
+
+			if(!animate(mode == AttackMode::single? TurretAction::attack_single : TurretAction::attack_burst))
+				return failOrder();
+		}
+
+		{
+			float inaccuracy = this->inaccuracy(weapon);
+			//TODO: using ammo
+
+			if(event == EntityEvent::fire) {
+
+				if(mode != AttackMode::single && mode != AttackMode::burst)
+					return true;
+
+				if(mode == AttackMode::burst) {
+					order.m_burst_mode = 1;
+				}
+				else {
+				//	if(weapon.needAmmo() && !m_inventory.useAmmo(1))
+				//		return false;
+					fireProjectile(target_box, weapon, inaccuracy);
+				}
+			}
+			if(event == EntityEvent::next_frame && order.m_burst_mode) {
+				order.m_burst_mode++;
+			//	if(weapon.needAmmo() && m_inventory.useAmmo(1))
+					fireProjectile(target_box, weapon, inaccuracy * (1.0f + 0.1f * order.m_burst_mode));
+				if(order.m_burst_mode > weapon.proto().burst_ammo)
+					order.m_burst_mode = 0;
+			}
+
+		}
+
+		if(event == EntityEvent::anim_finished) {
+			order.finish();
+		}
+		if(event == EntityEvent::sound) {
+			SoundId sound_id = m_proto.sound_idx[mode == AttackMode::single? TurretSoundId::attack_single : TurretSoundId::attack_burst];
+			replicateSound(sound_id, pos(), SoundType::shooting);
+		}
+
+		return true;
+	}
+
 
 }

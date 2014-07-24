@@ -405,15 +405,27 @@ namespace audio
 		
 	void SoundIndex::save(Stream &sr) const {
 		const DSound *sound = first_idx >= 0 && first_idx < (int)s_sounds.size()? &s_sounds[first_idx] : nullptr;
+		int offset = 0;
+
+		while(sound && sound->m_map_name.empty())
+			sound = &s_sounds[first_idx - ++offset];
 		const string &name = sound? sound->m_map_name : string();
+
 		sr << name;
+		sr.encodeInt(offset);
 	}
 
 	void SoundIndex::load(Stream &sr) {
 		string name;
 		sr >> name;
-		auto it = s_sound_map.find(name);
-		*this = it == s_sound_map.end()? SoundIndex() : it->second;
+		int offset = sr.decodeInt();
+
+		*this = findSound(name.c_str());
+
+		if(first_idx != -1 && offset > 0 && offset <= variation_count) {
+			first_idx = specificId(offset - 1);
+			variation_count = 0;
+		}
 	}
 
 }

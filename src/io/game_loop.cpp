@@ -7,7 +7,7 @@
 #include "io/controller.h"
 #include "gfx/device.h"
 #include "game/actor.h"
-#include "game/actor_ai.h"
+#include "game/brain.h"
 #include "game/world.h"
 #include "game/game_mode.h"
 #include "game/single_player_mode.h"
@@ -39,12 +39,6 @@ namespace io {
 		m_server = std::move(server);
 		m_world = m_server->world();
 		
-		for(int n = 0; n < m_world->entityCount(); n++) {
-			Actor *actor = m_world->refEntity<Actor>(n);
-			if(actor && actor->factionId() != 0)
-				actor->attachAI<SimpleAI>(m_world);
-		}
-
 		if(!m_server->config().m_console_mode)
 			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_enabled));
 	}

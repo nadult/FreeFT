@@ -53,6 +53,16 @@ namespace ui {
 		PComboBox m_proto_id;
 	};
 
+	class TurretPad: public EntityPad {
+	public:
+		TurretPad(const IRect &max_rect);
+		PEntity makeEntity() const override;
+
+	protected:
+		PComboBox m_proto_id;
+	};
+
+
 	class DoorPad: public EntityPad {
 	public:
 		DoorPad(const IRect &max_rect);

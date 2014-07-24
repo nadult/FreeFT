@@ -6,6 +6,7 @@
 
 #include "game/orders/idle.h"
 #include "game/actor.h"
+#include "game/turret.h"
 
 namespace game {
 
@@ -23,7 +24,6 @@ namespace game {
 
 	void IdleOrder::cancel() {
 		Order::cancel();
-		finish();
 	}
 		
 	bool Actor::handleOrder(IdleOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
@@ -53,5 +53,41 @@ namespace game {
 
 		return true;
 	}
+
+	bool Turret::handleOrder(IdleOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		bool is_canceling = order.needCancel();
+
+		if(is_canceling && m_action == Action::idle)
+			return false;
+
+		if(m_action == TurretAction::hidden && is_canceling) {
+			replicateSound(m_proto.sound_idx[TurretSoundId::arming], pos());
+			animate(TurretAction::showing);
+		}
+
+		if(m_action == Action::idle && !is_canceling) {
+			order.m_fancy_anim_time -= timeDelta();
+			if(order.m_fancy_anim_time < 0.0f && m_proto.canHide()) {
+				replicateSound(m_proto.sound_idx[TurretSoundId::unarming], pos());
+				animate(TurretAction::hiding);
+				order.m_fancy_anim_time = 5.0f;
+			}
+		}
+
+		if(event == EntityEvent::init_order) {
+			order.m_fancy_anim_time = 5.0f;
+			animate(TurretAction::idle);
+		}
+
+		if(event == EntityEvent::anim_finished) {
+			TurretAction::Type next =
+				m_action == TurretAction::hiding? TurretAction::hidden :
+				m_action == TurretAction::hidden? TurretAction::hidden : TurretAction::idle;
+			animate(next);
+		}
+
+		return true;
+	}
+
 
 }

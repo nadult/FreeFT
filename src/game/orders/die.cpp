@@ -5,6 +5,7 @@
 
 #include "game/orders/die.h"
 #include "game/actor.h"
+#include "game/turret.h"
 
 namespace game {
 
@@ -48,6 +49,24 @@ namespace game {
 			if(m_actor.is_alive)
 				playSound(m_actor.human_death_sounds[order.m_death_id], pos());
 		}
+		if(event == EntityEvent::anim_finished)
+			order.m_is_dead = true;
+
+		return true;
+	}
+
+	bool Turret::handleOrder(DieOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		bool play_sound = event == EntityEvent::sound;
+
+		if(event == EntityEvent::init_order) {
+			if(!animateDeath(order.m_death_id))
+				animateDeath(DeathId::normal);
+		}
+		if(event == EntityEvent::sound) {
+			int sound_id = order.m_death_id == DeathId::explode? TurretSoundId::death_explode : TurretSoundId::death;
+			playSound(m_proto.sound_idx[sound_id], pos());
+		}
+
 		if(event == EntityEvent::anim_finished)
 			order.m_is_dead = true;
 

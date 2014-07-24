@@ -6,6 +6,7 @@
 
 #include "game/entity.h"
 #include "game/actor.h"
+#include "game/turret.h"
 #include "game/item.h"
 #include "game/door.h"
 #include "game/container.h"
@@ -21,6 +22,8 @@ namespace game {
 
 		if(entity_type == EntityId::actor)
 			out = new Actor(node);
+		else if(entity_type == EntityId::turret)
+			out = new Turret(node);
 		else if(entity_type == EntityId::door)
 			out = new Door(node);
 		else if(entity_type == EntityId::container)
@@ -46,6 +49,8 @@ namespace game {
 
 		if(entity_type == EntityId::actor)
 			out = new Actor(sr);
+		else if(entity_type == EntityId::turret)
+			out = new Turret(sr);
 		else if(entity_type == EntityId::door)
 			out = new Door(sr);
 		else if(entity_type == EntityId::container)

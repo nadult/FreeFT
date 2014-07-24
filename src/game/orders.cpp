@@ -7,7 +7,7 @@
 #include "game/orders.h"
 #include "game/container.h"
 #include "game/world.h"
-#include "game/actor_ai.h"
+#include "game/brain.h"
 #include "game/all_orders.h"
 #include <cstdio>
 

@@ -6,6 +6,7 @@
 
 #include "game/orders/look_at.h"
 #include "game/actor.h"
+#include "game/turret.h"
 
 namespace game {
 
@@ -25,5 +26,13 @@ namespace game {
 			lookAt(order.m_target);
 		return false;
 	}
+
+	bool Turret::handleOrder(LookAtOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+		float3 center = boundingBox().center();
+		if(length(order.m_target - center) >= 1.0f)
+			lookAt(order.m_target);
+		return false;
+	}
+
 
 }

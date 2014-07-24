@@ -140,20 +140,18 @@ namespace game {
 		void save(Stream&) const;
 
 		SurfaceId::Type surfaceUnder() const;
-
 		WeaponClass::Type equippedWeaponClass() const;
-		OrderTypeId::Type currentOrder() const;
 
 		Stance::Type stance() const { return m_stance; }
 		Action::Type action() const { return m_action; }
 
 		const ActorInventory &inventory() const { return m_inventory; }
 		
-		bool canSee(EntityRef ref, bool simple_test = false);
+		bool canSee(EntityRef ref, bool simple_test = false) override;
 		bool canEquipItem(const Item &item) const;
 		bool canChangeStance() const;
-		bool isDying() const;
-		bool isDead() const;
+		bool isDying() const override;
+		bool isDead() const override;
 
 		int hitPoints() const { return m_hit_points; }
 

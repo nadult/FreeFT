@@ -22,6 +22,7 @@ namespace game {
 	}
 
 	DeathMatchServer::DeathMatchServer(World &world) :GameModeServer(world) {
+		attachAIs();
 	}
 
 	void DeathMatchServer::tick(double time_diff) {

@@ -12,7 +12,7 @@
 namespace game {
 
 	WorldViewer::WorldViewer(PWorld world, EntityRef spectator)
-		:m_world(world), m_spectator(spectator), m_occluder_config(world->tileMap().occluderMap()) {
+		:m_world(world), m_spectator(spectator), m_occluder_config(world->tileMap().occluderMap()), m_see_all(false) {
 		DASSERT(m_world);
 	}
 
@@ -30,8 +30,8 @@ namespace game {
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {
 		EntityId::Type type_id = entity.typeId();
-		if(type_id == EntityId::actor)
-			return !static_cast<const Actor&>(entity).isDead();
+		if( const ThinkingEntity *tentity = dynamic_cast<const ThinkingEntity*>(&entity) )
+			return !(tentity->isDead() && tentity->isDying());
 		return type_id == EntityId::projectile || type_id == EntityId::impact;
 	}
 
@@ -72,7 +72,7 @@ namespace game {
 			const auto *desc = m_world->refEntityDesc(n);
 			DASSERT(desc);
 
-			bool is_visible = spectator == entity || spectator->canSee(entity->ref(), !isMovable(*entity));
+			bool is_visible = m_see_all || spectator == entity || spectator->canSee(entity->ref(), !isMovable(*entity));
 
 			if(vis_entity.ref != entity->ref()) {
 				vis_entity = VisEntity();

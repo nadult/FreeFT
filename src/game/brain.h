@@ -14,42 +14,43 @@ namespace game {
 	class Actor;
 
 	//TODO: better name
-	class ActorAI {
+	class Brain {
 	public:
-		ActorAI(PWorld world, EntityRef ref);
-		virtual ~ActorAI() = default;
+		Brain(PWorld world, EntityRef ref);
+		virtual ~Brain() = default;
 
 		virtual void think() = 0;
 		virtual void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) { }
 		virtual void onFailed(OrderTypeId::Type) { }
-		virtual ActorAI *clone() = 0;
+		virtual Brain *clone() = 0;
 		virtual const string status() const { return string(); }
 
+		ThinkingEntity *entity() const;
 		Actor *actor() const;
 		int factionId() const;
 
 	protected:
 		PWorld m_world;
-		EntityRef m_actor_ref;
+		EntityRef m_entity_ref;
 	};
 
-	typedef ClonablePtr<ActorAI> PActorAI;
+	typedef ClonablePtr<Brain> PBrain;
 
 	template <class TAI, class ...Args>
 	void ThinkingEntity::attachAI(PWorld world, const Args&... args) {
 		m_ai = new TAI(world, ref(), args...);
 	}
 
-	class SimpleAI: public ActorAI {
+	class ActorBrain: public Brain {
 	protected:
-		SimpleAI(PWorld world, EntityRef actor);
+		ActorBrain(PWorld world, EntityRef entity);
 		friend class ThinkingEntity;
 
 	public:
 		void think() override;
 		const Weapon findBestWeapon() const;
 
-		ActorAI *clone() { return new SimpleAI(*this); }
+		Brain *clone() { return new ActorBrain(*this); }
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 		void onFailed(OrderTypeId::Type) override;
 		void findActors(int faction_id, const float3 &range, vector<EntityRef> &out);

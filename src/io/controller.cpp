@@ -13,7 +13,7 @@
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
 #include "game/all_orders.h"
-#include "game/actor_ai.h"
+#include "game/brain.h"
 
 #include "gfx/device.h"
 #include "gfx/font.h"
@@ -297,6 +297,8 @@ namespace io {
 				m_debug_ai = toBool(param);
 			else if(strings[0] == "time_mul")
 				m_time_multiplier = clamp(toFloat(param), 0.0f, 10.0f);
+			else if(strings[0] == "see_all")
+				m_viewer.setSeeAll(toBool(param));
 			else
 				printf("Invalid command: %s\n", strings[0].c_str());
 		}
@@ -358,11 +360,11 @@ namespace io {
 
 		if(m_debug_ai) {
 			for(int n = 0; n < m_world->entityCount(); n++) {
-				const Actor *actor = m_world->refEntity<Actor>(n);
-				const ActorAI *ai = actor? actor->AI() : nullptr;
+				const ThinkingEntity *entity = m_world->refEntity<ThinkingEntity>(n);
+				const Brain *ai = entity? entity->AI() : nullptr;
 				if(ai) {
 					string status = ai->status();
-					FRect screen_rect = worldToScreen(actor->boundingBox());
+					FRect screen_rect = worldToScreen(entity->boundingBox());
 					FRect text_rect = FRect(float2(200, 50)) + float2(screen_rect.center().x, screen_rect.min.y) - float2(m_view_pos);
 					text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
 					font->draw(text_rect, {Color::white, Color::black, HAlign::center}, status);

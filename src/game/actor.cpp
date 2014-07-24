@@ -11,7 +11,6 @@
 #include "game/weapon.h"
 #include "game/game_mode.h"
 #include "game/all_orders.h"
-#include "game/actor_ai.h"
 #include "sys/xml.h"
 #include "sys/data_sheet.h"
 #include "net/socket.h"
@@ -251,9 +250,9 @@ namespace game {
 					replicateSound(m_actor.sounds[m_sound_variation].hit, pos());
 			}
 		}
-		
-		if(m_ai)
-			m_ai->onImpact(damage_type, damage, force, source);
+
+		//TODO: maybe this should be called first?
+		ThinkingEntity::onImpact(damage_type, damage, force, source);	
 	}
 		
 	void Actor::updateArmour() {
@@ -263,11 +262,6 @@ namespace game {
 			const Proto &new_proto = getProto(proto_idx);
 			replaceMyself(PEntity(new Actor(*this, new_proto)));
 		}
-	}
-
-
-	OrderTypeId::Type Actor::currentOrder() const {
-		return m_order? m_order->typeId() : OrderTypeId::invalid;
 	}
 
 	WeaponClass::Type Actor::equippedWeaponClass() const {

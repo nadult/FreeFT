@@ -168,5 +168,8 @@ namespace game {
 		}
 	};
 	
-	SoundId::SoundId(const char *sound_name) :m_id(audio::findSound(sound_name)) { }
+	SoundId::SoundId(const char *sound_name, int offset) {
+		audio::SoundIndex index = audio::findSound(sound_name);
+		m_id = (int)index + (offset < 0 || offset > index.variation_count? 0 : offset);
+	}
 }

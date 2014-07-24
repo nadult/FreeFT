@@ -11,7 +11,7 @@
 #include "game/tile.h"
 #include "navi_heightmap.h"
 #include "audio/device.h"
-#include "game/actor.h"
+#include "game/thinking_entity.h"
 #include "net/socket.h"
 #include <algorithm>
 
@@ -479,13 +479,13 @@ namespace game {
 		audio::playSound(sound_id, sound_type, pos);
 	}
 
-	bool World::sendOrder(POrder &&order_ptr, EntityRef actor_ref) {
+	bool World::sendOrder(POrder &&order_ptr, EntityRef entity_ref) {
 		DASSERT(order_ptr);
 
 		if(m_game_mode)
-			return m_game_mode->sendOrder(std::move(order_ptr), actor_ref);
+			return m_game_mode->sendOrder(std::move(order_ptr), entity_ref);
 
-		if( Actor *entity = refEntity<Actor>(actor_ref) )
+		if( ThinkingEntity *entity = refEntity<ThinkingEntity>(entity_ref) )
 			return entity->setOrder(std::move(order_ptr));
 		return false;
 	}

@@ -57,6 +57,8 @@ namespace game {
 		Intersection pixelIntersect(const int2 &screen_pos, const FindFilter &filter = FindFilter()) const;
 		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 
+		void setSeeAll(bool see_all) { m_see_all = see_all; }
+
 	protected:		
 		bool isMovable(const Entity &entity) const;
 
@@ -67,6 +69,7 @@ namespace game {
 
 		EntityRef m_spectator;
 		float3 m_cur_pos, m_eye_pos;
+		bool m_see_all;
 	};
 
 }

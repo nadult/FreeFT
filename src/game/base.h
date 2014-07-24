@@ -212,6 +212,7 @@ namespace game {
 			container		= entityIdToFlag(EntityId::container),
 			door			= entityIdToFlag(EntityId::door),
 			actor			= entityIdToFlag(EntityId::actor),
+			turret			= entityIdToFlag(EntityId::turret),
 			item			= entityIdToFlag(EntityId::item),
 			projectile		= entityIdToFlag(EntityId::projectile),
 			impact			= entityIdToFlag(EntityId::impact),
@@ -249,7 +250,7 @@ namespace game {
 	class SoundId {
 	public:
 		SoundId() :m_id(-1) { }
-		SoundId(const char *sound_name);
+		SoundId(const char *sound_name, int offset = 0);
 		operator int() const { return m_id; }
 		bool isValid() const { return m_id != -1; }
 

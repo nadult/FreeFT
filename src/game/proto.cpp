@@ -16,6 +16,7 @@
 #include "game/door.h"
 #include "game/container.h"
 #include "game/actor.h"
+#include "game/turret.h"
 #include "game/character.h"
 
 namespace game {
@@ -62,6 +63,7 @@ namespace game {
 		vector<ContainerProto> s_containers;
 		vector<ActorProto> s_actors;
 		vector<ActorArmourProto> s_actor_armours;
+		vector<TurretProto> s_turrets;
 
 		ProtoDef s_protos[ProtoId::count] = {
 			{ std::map<string, int>(), 0, 0, 0, 0 },
@@ -83,6 +85,7 @@ namespace game {
 			PROTO_DEF("containers", s_containers),
 			PROTO_DEF("actors", s_actors),
 			PROTO_DEF("actor_armours", s_actor_armours),
+			PROTO_DEF("turrets", s_turrets),
 
 #undef PROTO_DEF
 		};

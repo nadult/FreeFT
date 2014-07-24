@@ -25,10 +25,10 @@ SHARED_SRC=\
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
 	game/world game/entity game/entity_world_proxy game/container game/level game/visibility game/path \
 	game/door game/projectile game/impact game/item game/weapon game/armour game/ammo game/inventory game/base \
-	game/entities game/actor game/actor_ai game/actor_proto game/orders game/proto game/trigger game/character \
+	game/entities game/actor game/brain game/actor_proto game/orders game/proto game/trigger game/character \
 	game/orders/attack game/orders/change_stance game/orders/die game/orders/idle game/orders/interact \
 	game/orders/inventory game/orders/move game/orders/look_at game/orders/track game/orders/get_hit \
-	game/thinking_entity game/game_mode game/death_match game/single_player_mode game/pc_controller \
+	game/thinking_entity game/game_mode game/death_match game/single_player_mode game/pc_controller game/turret \
 	hud/base hud/widget hud/layer hud/button hud/edit_box hud/console hud/grid hud/target_info \
 	hud/char_icon hud/weapon hud/inventory hud/hud hud/main_panel hud/options hud/class hud/character hud/stats \
 	hud/multi_player_menu \
@@ -68,7 +68,7 @@ LIBS_convert=-lzip
 INCLUDES=-Isrc/
 
 NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
-		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses #-Werror
+		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual #-Werror
 
 FLAGS=-std=c++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)
 LIB_FLAGS=-O2
