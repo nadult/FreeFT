@@ -85,13 +85,22 @@ Inventory (bottom left corner):
   BMFont was used to convert fonts to bitmaps  
   [http://www.angelcode.com/products/bmfont/](http://www.angelcode.com/products/bmfont/)
 
+
+## License
+
+The code if freely available, but if you want to use it, commercially or not, please
+contact the author.
+
+
 ## Screenshots
+
+First tech-demo:
+![](http://freeft.pl/wp-content/uploads/2014/04/techdemo3a.jpg "Tech-demo #3")
+
+Third tech-demo:
+![](http://freeft.pl/wp-content/uploads/2014/07/techdemo4a.jpg "Tech-demo #4")
 
 Early version of game editor:
 ![](http://freeft.pl/wp-content/uploads/2014/03/techdemo1c.jpg "Editor")
 
-First tech-demo:
-![](http://freeft.pl/wp-content/uploads/2014/03/techdemo1b.jpg "Tech-demo #1")
 
-Third tech-demo:
-![](http://freeft.pl/wp-content/uploads/2014/04/techdemo3a.jpg "Tech-demo #3")

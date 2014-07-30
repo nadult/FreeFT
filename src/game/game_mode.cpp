@@ -298,7 +298,8 @@ namespace game {
 	}
 	
 	bool GameModeClient::sendOrder(POrder &&order, EntityRef entity_ref) {
-		DASSERT(order && entity_ref);
+		if(!order || !entity_ref)
+			return false;
 
 		net::TempPacket chunk;
 		chunk << MessageId::actor_order;
