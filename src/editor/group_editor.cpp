@@ -129,7 +129,7 @@ namespace {
 				{ Key::kp_4, 7 } };
 
 			if(m_selected_group_id != -1) {
-				for(int a = 0; a < COUNTOF(actions); a++)
+				for(int a = 0; a < arraySize(actions); a++)
 					if(isKeyDown(actions[a].key) || isKeyDown(Key::kp_5))
 						m_tile_group->setGroupSurface(m_selected_group_id, actions[a].side, m_selected_surface_id);
 			}
@@ -237,7 +237,7 @@ namespace {
 			};
 
 			lookAt(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
-			for(int n = 0; n < COUNTOF(names); n++)
+			for(int n = 0; n < arraySize(names); n++)
 				font->draw(int2(0, 10), Color::white,
 						m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
 			lookAt(-clippedRect().min);

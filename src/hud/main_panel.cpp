@@ -69,7 +69,7 @@ namespace hud {
 			FRect stance_rect(s_hud_stance_size);
 			stance_rect += float2(weapon_rect.max.x + spacing, bottom_left.y - s_hud_stance_size.y);
 
-			for(int n = 0; n < COUNTOF(s_stance_buttons); n++) {
+			for(int n = 0; n < arraySize(s_stance_buttons); n++) {
 				PHudButton stance(new HudRadioButton(stance_rect, s_stance_buttons[n].stance_id, 1));
 				stance->setIcon(s_stance_buttons[n].icon_id);
 				m_hud_stances.push_back(std::move(stance));
@@ -82,7 +82,7 @@ namespace hud {
 			FRect button_rect = align(FRect(s_hud_button_size), char_rect, align_top, spacing);
 			button_rect += float2(char_rect.min.x - button_rect.min.x, 0.0f);
 
-			for(int n = 0; n < COUNTOF(s_buttons); n++) {
+			for(int n = 0; n < arraySize(s_buttons); n++) {
 				PHudButton button(new HudToggleButton(button_rect, s_buttons[n].layer_id));
 				button->setLabel(s_buttons[n].name);
 				m_hud_buttons.emplace_back(std::move(button));

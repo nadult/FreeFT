@@ -46,7 +46,7 @@ namespace game {
 		description = parser("description");
 		weight = toFloat(parser("weight"));
 		
-		for(int n = 0; n < COUNTOF(seq_ids); n++) {
+		for(int n = 0; n < arraySize(seq_ids); n++) {
 			if(is_dummy)
 				seq_ids[n] = -1;
 			else {

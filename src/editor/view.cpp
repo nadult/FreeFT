@@ -83,7 +83,7 @@ namespace ui {
 				Key::kp_4
 			};
 			
-			for(int n = 0; n < COUNTOF(actions); n++)
+			for(int n = 0; n < arraySize(actions); n++)
 				if(isKeyDownAuto(actions[n]))
 					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_cell_size);
 		}

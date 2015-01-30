@@ -83,7 +83,7 @@ static const string locateFTPath() {
 		"c:\\Program Files (x86)\\14 Degrees East\\Fallout Tactics\\",
 	};
 
-	for(int n = 0; n < COUNTOF(std_paths); n++)
+	for(int n = 0; n < arraySize(std_paths); n++)
 		if(verifyFTPath(std_paths[n]))
 			return std_paths[n];
 
@@ -352,12 +352,12 @@ void convertAll(const char *fot_path, const string &filter) {
 	std::sort(all_files.begin(), all_files.end());
 	printf("Found: %d files\n", (int)all_files.size());
 
-	std::map<string, string> files[COUNTOF(s_paths)];
+	std::map<string, string> files[arraySize(s_paths)];
 	bool only_archives = 0;
 	unsigned long long bytes = 0;
 	
 	for(int n = 0; n < (int)all_files.size(); n++) {
-		for(int t = 0; t < COUNTOF(s_paths); t++) {
+		for(int t = 0; t < arraySize(s_paths); t++) {
 			if(only_archives && s_paths[t].type != ResTypeId::archive)
 				continue;
 
@@ -379,7 +379,7 @@ void convertAll(const char *fot_path, const string &filter) {
 	}
 
 	printf("Converting plain files...\n");
-	for(int t = 0; t < COUNTOF(s_paths); t++) {
+	for(int t = 0; t < arraySize(s_paths); t++) {
 		ResTypeId::Type type = s_paths[t].type;
 		if(type == ResTypeId::archive)
 			continue;
@@ -414,7 +414,7 @@ void convertAll(const char *fot_path, const string &filter) {
 	}
 	
 	printf("Converting archives...\n");
-	for(int t = 0; t < COUNTOF(s_paths); t++) {
+	for(int t = 0; t < arraySize(s_paths); t++) {
 		ResTypeId::Type type = s_paths[t].type;
 		if(type != ResTypeId::archive)
 			continue;
@@ -433,7 +433,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				string name;
 				int tindex = -1;
 
-				for(int t = 0; t < COUNTOF(s_paths); t++) {
+				for(int t = 0; t < arraySize(s_paths); t++) {
 					name = names[n];
 					string lo_name = toLower(name);
 					if(removePrefix(lo_name, s_paths[t].prefix)) {

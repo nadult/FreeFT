@@ -67,7 +67,7 @@ LIBS_convert=-lzip
 
 INCLUDES=-Isrc/
 
-NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized \
+NICE_FLAGS=-Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type -Wno-reorder -Wno-uninitialized -Wno-unused-function \
 		   -Wno-unused-but-set-variable -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual #-Werror
 
 FLAGS=-std=c++0x -O0 -ggdb -Wall $(NICE_FLAGS) $(INCLUDES)

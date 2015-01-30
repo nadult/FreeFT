@@ -234,7 +234,7 @@ namespace ui {
 						sides[dst_idx] = src_surf;
 					}
 				}
-				for(int n = 0; n < COUNTOF(sides); n++) {
+				for(int n = 0; n < arraySize(sides); n++) {
 					int prev = sides[(n + 7) % 8];
 					int next = sides[(n + 1) % 8];
 					if(sides[n] == -1 && (next == -1 || next == main_surf) && (prev == -1 || prev == main_surf))
@@ -242,7 +242,7 @@ namespace ui {
 				}
 
 				bool all_sides_main = true;
-				for(int n = 0; n < COUNTOF(sides); n++)
+				for(int n = 0; n < arraySize(sides); n++)
 					if(sides[n] != main_surf)
 						all_sides_main = false;
 
@@ -442,7 +442,7 @@ namespace ui {
 				
 						Color col = Color::white;
 						if(object.occluder_id != -1) {
-							col = colors[object.occluder_id % COUNTOF(colors)];
+							col = colors[object.occluder_id % arraySize(colors)];
 							if(is_occluder_selected[object.occluder_id])
 								col.a = 127;
 						}

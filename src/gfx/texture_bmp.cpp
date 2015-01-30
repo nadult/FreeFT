@@ -73,7 +73,7 @@ namespace gfx
 			sr.loadData(palette, sizeof(palette)); //TODO: check if palette is ok
 			sr.seek(offset);
 
-			for(uint n = 0; n < COUNTOF(palette); n++)
+			for(uint n = 0; n < arraySize(palette); n++)
 				palette[n].a = 255;
 
 			for(int y = height - 1; y >= 0; y--) {

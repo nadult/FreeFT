@@ -52,7 +52,7 @@ namespace io {
 
 			FRect rects[3] = { rect, rect, rect };
 			float anim_pos = pos / length;
-			for(int n = 0; n < COUNTOF(rects); n++)
+			for(int n = 0; n < arraySize(rects); n++)
 				rects[n] += float2(rect.width() * (mode == trans_right? n - 2 + 2.0f * anim_pos : n - 2.0f * anim_pos), 0.0f);
 
 			Color mid_colors[4] = { col1, col2, col2, col1 };

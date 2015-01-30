@@ -91,7 +91,7 @@ namespace io {
 			"data/music/gui/MX_MENU_WORLDMAP2.mp3"
 		};
 
-		m_music	= audio::playMusic(music_files[rand() % COUNTOF(music_files)], 1.0f);
+		m_music	= audio::playMusic(music_files[rand() % arraySize(music_files)], 1.0f);
 		m_start_music_time = -1.0;
 	}
 		

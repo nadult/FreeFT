@@ -167,7 +167,7 @@ namespace game {
 	void Door::changeState(DoorState::Type target) {
 		DoorState::Type result = m_state;
 
-		for(int n = 0; n < COUNTOF(s_transitions); n++)
+		for(int n = 0; n < arraySize(s_transitions); n++)
 			if(s_transitions[n].current == m_state && s_transitions[n].target == target) {
 				result = s_transitions[n].result;
 				break;
@@ -247,7 +247,7 @@ namespace game {
 	}
 
 	void Door::onAnimFinished() {
-		for(int n = 0; n < COUNTOF(s_transitions); n++)
+		for(int n = 0; n < arraySize(s_transitions); n++)
 			if(m_state == s_transitions[n].result) {
 				m_state = s_transitions[n].target;
 				m_bbox = computeBBox(m_state);

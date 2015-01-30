@@ -315,7 +315,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 	u8 min_height = parent->min_height;
 	u8 max_height = parent->max_height;
 
-	for(int n = 0; n < COUNTOF(rects); n++)
+	for(int n = 0; n < arraySize(rects); n++)
 		if(!rects[n].isEmpty()) {
 			m_quads.push_back(Quad(rects[n], min_height, max_height));
 			listInsert<Quad, &Quad::node>(m_quads, m_sectors[findSector(rects[n].min)], (int)m_quads.size() - 1);

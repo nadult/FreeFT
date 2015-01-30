@@ -37,7 +37,7 @@ namespace game {
 		}
 
 		int agent_sizes[] = { 2, 3, 4, 7 };
-		for(int n = 0; n < COUNTOF(agent_sizes); n++)
+		for(int n = 0; n < arraySize(agent_sizes); n++)
 			m_navi_maps.emplace_back(agent_sizes[n]);
 
 //		m_tile_map.printInfo();

@@ -89,11 +89,11 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 	box.getCorners(corners);
 	float2 xz_origin = origin.xz();
 
-	for(int n = 0; n < COUNTOF(corners); n++)
+	for(int n = 0; n < arraySize(corners); n++)
 		corners[n] = asXZY(rotateVector(corners[n].xz() - xz_origin, angle) + xz_origin, corners[n].y);
 	
 	Box<float3> out(corners[0], corners[0]);
-	for(int n = 0; n < COUNTOF(corners); n++) {
+	for(int n = 0; n < arraySize(corners); n++) {
 		out.min = min(out.min, corners[n]);
 		out.max = max(out.max, corners[n]);
 	}
@@ -371,7 +371,7 @@ bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot
 	float3 corners[8];
 	box.getCorners(corners);
 
-	for(int n = 0; n < COUNTOF(corners); n++) {
+	for(int n = 0; n < arraySize(corners); n++) {
 		float3 cvector = corners[n] - eye_pos;
 		float len = length(cvector);
 
@@ -395,7 +395,7 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 	if(distanceSq(other, origin) < constant::epsilon) {
 		float3 corners[8];
 		box.getCorners(corners);
-		for(int n = 0; n < COUNTOF(corners) && distanceSq(other, origin) < constant::epsilon; n++)
+		for(int n = 0; n < arraySize(corners) && distanceSq(other, origin) < constant::epsilon; n++)
 			other = project(corners[n], plane);
 	}
 

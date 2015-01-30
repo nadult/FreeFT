@@ -272,7 +272,7 @@ namespace game {
 				}
 			}
 
-		for(int c = 0; c < COUNTOF(m_climb_idx); c++) {
+		for(int c = 0; c < arraySize(m_climb_idx); c++) {
 			auto it = name_map.find(s_climb_names[c]);
 			m_climb_idx[c] = it == name_map.end()? invalid_id : it->second;
 		}

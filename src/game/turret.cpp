@@ -34,7 +34,7 @@ namespace game {
 		"DeathElectrify",
 		"DeathExplode"
 	};
-	static_assert(COUNTOF(s_seq_names) == TurretAction::count, "");
+	static_assert(arraySize(s_seq_names) == TurretAction::count, "");
 
 	struct TurretSound {
 		const char *name;
@@ -47,7 +47,7 @@ namespace game {
 		{ "arming", 0 },
 		{ "unarming", 0 }
 	};
-	static_assert(COUNTOF(s_sounds) == TurretSoundId::count, "");
+	static_assert(arraySize(s_sounds) == TurretSoundId::count, "");
 
 	TurretProto::TurretProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ASSERT(!is_dummy);

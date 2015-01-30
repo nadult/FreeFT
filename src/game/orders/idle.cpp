@@ -57,7 +57,7 @@ namespace game {
 	bool Turret::handleOrder(IdleOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
 		bool is_canceling = order.needCancel();
 
-		if(is_canceling && m_action == Action::idle)
+		if(is_canceling && m_action == TurretAction::idle)
 			return false;
 
 		if(m_action == TurretAction::hidden && is_canceling) {
@@ -65,7 +65,7 @@ namespace game {
 			animate(TurretAction::showing);
 		}
 
-		if(m_action == Action::idle && !is_canceling) {
+		if(m_action == TurretAction::idle && !is_canceling) {
 			order.m_fancy_anim_time -= timeDelta();
 			if(order.m_fancy_anim_time < 0.0f && m_proto.canHide()) {
 				replicateSound(m_proto.sound_idx[TurretSoundId::unarming], pos());

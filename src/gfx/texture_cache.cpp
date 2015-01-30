@@ -102,14 +102,14 @@ namespace gfx {
 			int count = 0;
 			AtlasNode &atlas_node = m_atlas_nodes[m_last_node];
 
-			for(int id = atlas_node.list.head; id != -1 && count < COUNTOF(indices) / 2;) {
+			for(int id = atlas_node.list.head; id != -1 && count < arraySize(indices) / 2;) {
 				const Resource &res = m_resources[id];
 				indices[count++] = make_pair(-res.last_update, id);
 				id = res.atlas_node.next;
 			}
 			
 			int pixel_count = 0, max_pixels = node_size * node_size;
-			for(int id = m_atlas_queue.head; id != -1 && count < COUNTOF(indices) && pixel_count < max_pixels;) {
+			for(int id = m_atlas_queue.head; id != -1 && count < arraySize(indices) && pixel_count < max_pixels;) {
 				const Resource &res = m_resources[id];
 				indices[count++] = make_pair(-res.last_update, id);
 				pixel_count += res.size.x * res.size.y;

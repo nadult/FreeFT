@@ -143,7 +143,7 @@ namespace gfx
 
 		if(is_filled) {
 			static const int front[] = {0, 1, 2, 0, 2, 3,   0, 4, 5, 0, 5, 1,   1, 5, 6, 1, 6, 2};
-			int count = is_flat? 6 : COUNTOF(front);
+			int count = is_flat? 6 : arraySize(front);
 
 			glBegin(GL_TRIANGLES);
 			glColor(col);
@@ -159,14 +159,14 @@ namespace gfx
 			glBegin(GL_LINE_STRIP);
 			if(!is_flat) {
 				glColor4ub(col.r >> 1, col.g >> 1, col.b >> 1, col.a / 2);
-				for(size_t n = 0; n < COUNTOF(back); n++)
+				for(size_t n = 0; n < arraySize(back); n++)
 					glVertex2f(pt[back[n]].x, pt[back[n]].y);
 			}
 
 			glColor(col);
-			if(is_flat) for(size_t n = 0; n < COUNTOF(front_flat); n++)
+			if(is_flat) for(size_t n = 0; n < arraySize(front_flat); n++)
 				glVertex2f(pt[front_flat[n]].x, pt[front_flat[n]].y);
-			else for(size_t n = 0; n < COUNTOF(front); n++)
+			else for(size_t n = 0; n < arraySize(front); n++)
 				glVertex2f(pt[front[n]].x, pt[front[n]].y);
 			glEnd();
 		}

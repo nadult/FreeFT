@@ -102,7 +102,8 @@ inline bool caseLess(const CString a, const CString b) {
 
 #include "sys/memory.h"
 
-#define COUNTOF(array)   ((int)(sizeof(array) / sizeof(array[0])))
+template <class T, int size>
+constexpr int arraySize(T(&)[size]) noexcept { return size; }
 
 int fromString(const char *str, const char **strings, int count);
 
@@ -116,7 +117,7 @@ int fromString(const char *str, const char **strings, int count);
 #define DEFINE_ENUM(type, ...) \
 	namespace type { \
 		static const char *s_strings[] = { __VA_ARGS__ }; \
-		static_assert(COUNTOF(s_strings) == count, "String count does not match enum count"); \
+		static_assert(arraySize(s_strings) == count, "String count does not match enum count"); \
 		const char *toString(int value) { \
 			DASSERT(isValid(value)); \
 			return s_strings[value]; \
@@ -226,7 +227,7 @@ public:
 	}
 	
 	void free(int idx) {
-		DASSERT(idx >= 0 && idx < m_objects.size());
+		DASSERT(idx >= 0 && idx < (int)m_objects.size());
 		listRemove<Elem, &Elem::first>(m_objects, m_active, idx);
 		listInsert<Elem, &Elem::first>(m_objects, m_free, idx);
 		m_list_size--;
