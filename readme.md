@@ -88,8 +88,8 @@ Inventory (bottom left corner):
 
 ## License
 
-The code if freely available, but if you want to use it, commercially or not, please
-contact the author.
+The code if freely available but if you want to use it, commercially or not, please
+contact the author (e-mail: nadult (at) fastmail.fm).
 
 
 ## Screenshots
@@ -97,10 +97,34 @@ contact the author.
 First tech-demo:
 ![](http://freeft.pl/wp-content/uploads/2014/04/techdemo3a.jpg "Tech-demo #3")
 
-Third tech-demo:
+Fourth tech-demo:
 ![](http://freeft.pl/wp-content/uploads/2014/07/techdemo4a.jpg "Tech-demo #4")
 
 Early version of game editor:
 ![](http://freeft.pl/wp-content/uploads/2014/03/techdemo1c.jpg "Editor")
 
 
+## Videos
+
+[Multi-player gamplay with bots](http://vimeo.com/101652935)
+
+[Single-player gameplay demo](http://vimeo.com/91863672)
+
+[First tech-demo](http://vimeo.com/58703722)
+
+[Editor in action](http://vimeo.com/88563626)
+
+[Path-finding demo](http://vimeo.com/58703723)
+
+## Disclaimer
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

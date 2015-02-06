@@ -71,8 +71,8 @@ namespace sys {
 				}
 
 			// TODO: fix this
-			//	if(dirp->d_type == DT_LNK)
-			//		dirp->d_type = DT_DIR;
+				if(dirp->d_type == DT_LNK)
+					dirp->d_type = DT_DIR;
 
 				bool do_accept =	( (flags & FindFiles::regular_file) && dirp->d_type == DT_REG ) ||
 									( (flags & FindFiles::directory) && (dirp->d_type == DT_DIR));
