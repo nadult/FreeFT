@@ -11,6 +11,9 @@ Micro Forte.
 More information about this project, screenshots and compiled binaries can be found here:
 [http://freeft.net](http://freeft.net)
 
+Compiled binaries can also be downloaded from SourceForge
+[http://sourceforge.net/projects/freeft](https://sourceforge.net/projects/freeft/files)
+
 
 ## Building
 For compilation, G++ in version 4.8 is required (many C++11 features are
@@ -29,11 +32,10 @@ or on Steam (when it will be available).
 
 FT has to be installed and resources converted with a convert program.
 After instaling FT just run convert.exe. It might ask you to provide a
-path to FreeFT. The conversion shouldn't take more than few minutes.  
+path to original Fallout Tactics. The conversion shouldn't take more than
+a few minutes.  
 
-To convert resources under linux, type:
-./convert -p path\_to\_ft all  
-Where path\_to\_ft is simply a path to the original game, for example:  
+To convert resources under linux, you can use this command:
 ./convert -p "/home/user_name/.wine/drive_c/tactics/" all
 
 ## Basic controls in the game
