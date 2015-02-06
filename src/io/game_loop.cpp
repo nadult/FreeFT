@@ -21,7 +21,7 @@ namespace io {
 	static const float s_transition_length = 0.7f;
 		
 	GameLoop::GameLoop(const char *config_name, bool from_main)
-		  :m_config(loadConfig(config_name)), m_from_main_menu(from_main) {
+		  :m_config(config_name), m_from_main_menu(from_main) {
 		if(from_main) {
 			m_mode = mode_transitioning;
 			m_next_mode = mode_normal;
@@ -40,7 +40,7 @@ namespace io {
 		m_world = m_server->world();
 		
 		if(!m_server->config().m_console_mode)
-			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_enabled));
+			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::GameLoop(net::PClient &&client, bool from_main)
@@ -50,7 +50,7 @@ namespace io {
 		m_world = m_client->world();
 
 		//TODO: wait until initial entity information is loaded?
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_enabled));
+		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::GameLoop(game::PWorld world, bool from_main)
@@ -58,7 +58,7 @@ namespace io {
 		DASSERT(world && world->mode() == World::Mode::single_player);
 		m_world = world;
 		m_world->assignGameMode<SinglePlayerMode>(Character("Player", "CORE_prefab2", "male"));
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_enabled));
+		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::~GameLoop() { }

@@ -9,14 +9,16 @@
 #include "base.h"
 
 struct Config {
-	Config() :resolution(1400, 768), window_pos(0, 0), fullscreen(false), profiler_enabled(false) { }
+	Config();
+	Config(const XMLNode&);
+	Config(const char *config_name);
+
+	void load(const XMLNode&);
 
 	int2 resolution;
 	int2 window_pos;
-	bool fullscreen;
-	bool profiler_enabled;
+	bool fullscreen_on;
+	bool profiler_on;
 };
-
-Config loadConfig(const char *config_name);
 
 #endif

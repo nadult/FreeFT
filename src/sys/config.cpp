@@ -6,28 +6,35 @@
 #include "sys/config.h"
 #include "sys/xml.h"
 
-Config loadConfig(const char *name) {
-	Config config;
+	
+Config::Config()
+	:resolution(0, 0), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {
+}
 
-	try {
-		XMLDocument doc;
-		doc.load("data/config.xml");
+Config::Config(const XMLNode &node) :Config() {
+	load(node);
+}
+	
+Config::Config(const char *config_name) :Config() {
+	XMLDocument doc;
+	doc.load("data/config.xml");
+		
+	XMLNode node = doc.child(config_name);
+	if(!node)
+		node = doc.child("default");
+	if(node)
+		load(node);
+}
 
-		XMLNode node = doc.child(name);
-		if(!node)
-			node = doc.child("default");
+void Config::load(const XMLNode &node) {
+	DASSERT(node);
 
-		if(node) {
-			config.resolution = node.int2Attrib("res");
-			config.window_pos = node.int2Attrib("window_pos");
-			config.fullscreen = node.intAttrib("fullscreen") != 0;	
-			config.profiler_enabled = node.intAttrib("profiler") != 0;
-		}
-	}
-	catch(...) { }
-
-	//TODO: if no configuration file is present, then
-	// it should be created with a default values
-
-	return config;
+	if(auto *res_value = node.hasAttrib("res"))
+		resolution = toInt2(res_value);
+	if(auto *window_pos_value = node.hasAttrib("window_pos"))
+		window_pos = toInt2(window_pos_value);
+	if(auto *fullscreen_value = node.hasAttrib("fullscreen"))
+		fullscreen_on = toBool(fullscreen_value);
+	if(auto *profiler_value = node.hasAttrib("profiler"))
+		profiler_on = toBool(profiler_value);
 }

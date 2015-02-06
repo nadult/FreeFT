@@ -263,12 +263,31 @@ namespace gfx
 		return !s_want_close;
 	}
 
-	const int2 getWindowSize() {
+	int2 getWindowSize() {
 		DASSERT(s_has_window);
 
 		int2 out;
 		glfwGetWindowSize(&out.x, &out.y);
 		return out;
+	}
+
+	int2 getMaxWindowSize(bool is_fullscreen) {
+		DASSERT(s_is_initialized);
+
+		GLFWvidmode desktop_mode;
+		glfwGetDesktopMode(&desktop_mode);
+
+		int2 out(desktop_mode.Width, desktop_mode.Height);
+		if(!is_fullscreen)
+			out -= int2(4, 50); //TODO: compute these values properly
+		return out;
+	}
+
+	void adjustWindowSize(int2 &size, bool is_fullscreen) {
+		int2 max_size = getMaxWindowSize(is_fullscreen);
+		if(size.x == 0 || size.y == 0)
+			size = max_size;
+		size = min(size, max_size);
 	}
 
 	void setWindowPos(const int2 &pos) {

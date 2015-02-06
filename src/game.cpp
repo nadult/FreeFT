@@ -37,20 +37,20 @@ void createWindow(const int2 &res, const int2 &pos, bool fullscreen) {
 
 int safe_main(int argc, char **argv)
 {
-	Config config = loadConfig("game");
+	Config config("game");
 
 	srand((int)getTime());
 	audio::initSoundMap();
 	game::loadData(true);
 	gfx::initDevice();
-
+	adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
 
 	int2 window_pos(-1, -1);
 	net::ServerConfig server_config;
 	string map_name;
 	bool init_audio = true;
-	bool fullscreen = config.fullscreen;
+	bool fullscreen = config.fullscreen_on;
 
 	for(int a = 1; a < argc; a++) {
 		if(strcmp(argv[a], "-res") == 0) {
@@ -125,7 +125,7 @@ int safe_main(int argc, char **argv)
 
 	if(!main_loop) {
 		if(console_mode)
-			createWindow(res, window_pos, config.fullscreen);
+			createWindow(res, window_pos, config.fullscreen_on);
 		main_loop.reset(new io::MainMenuLoop);
 	}
 

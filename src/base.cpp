@@ -62,15 +62,27 @@ bool toBool(const char *input) {
 	return toInt(input) != 0;
 }
 
-int toInt(const char *str) {
-	DASSERT(str);
+static void toInt(const char *input, int count, int *out) {
+	DASSERT(input);
+	if(!input[0]) {
+		for(int i = 0; i < count; i++)
+			out[i] = 0;
+		return;
+	}
+	if(sscanf(input, "%d %d %d %d" + (4 - count) * 3, out + 0, out + 1, out + 2, out + 3) != count)
+		THROW("Error while converting string \"%s\" to int%d", input, count);
+}
 
-	if(!str[0])
-		return 0;
 
+int toInt(const char *input) {
 	int out;
-	if(sscanf(str, "%d", &out) != 1)
-		THROW("Error while converting string \"%s\" to int", str);
+	toInt(input, 1, &out);
+	return out;
+}
+
+int2 toInt2(const char *input) {
+	int2 out;
+	toInt(input, 2, &out.x);
 	return out;
 }
 

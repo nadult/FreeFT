@@ -21,7 +21,7 @@ namespace sys {
 		Path();
 
 		void operator=(const Path &rhs) { m_path = rhs.m_path; }
-		void operator=(Path &&rhs) { m_path.swap(rhs.m_path); }
+		void operator=(Path &&rhs) { m_path = std::move(rhs.m_path); }
 
 		bool isRoot() const;
 		bool isAbsolute() const;
@@ -32,6 +32,8 @@ namespace sys {
 		bool isRegularFile() const;
 
 		const Path relative(const Path &relative_to = current()) const;
+		bool isRelative(const Path &ancestor) const;
+
 		const Path absolute() const;
 		const Path parent() const;
 
@@ -66,6 +68,10 @@ namespace sys {
 
 		string m_path; // its always non-empty
 	};
+
+	inline bool operator==(const Path &lhs, const Path &rhs) {
+		return (const string&)lhs == (const string&)rhs;
+	}
 
 	struct FileEntry {
 		Path path;

@@ -74,7 +74,10 @@ namespace gfx
 	bool pollEvents();
 	void swapBuffers();
 
-	const int2 getWindowSize();
+	int2 getWindowSize();
+	int2 getMaxWindowSize(bool is_fullscreen);
+	void adjustWindowSize(int2 &size, bool is_fullscreen);
+
 	void setWindowPos(const int2 &pos);
 	void setWindowTitle(const char *title);
 

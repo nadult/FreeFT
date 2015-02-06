@@ -261,11 +261,13 @@ public:
 
 int safe_main(int argc, char **argv)
 {
-	Config config = loadConfig("editor");
+	Config config("editor");
 	game::loadData();
 
 	gfx::initDevice();
-	createWindow(config.resolution, config.fullscreen);
+	adjustWindowSize(config.resolution, config.fullscreen_on);
+
+	createWindow(config.resolution, config.fullscreen_on);
 	setWindowTitle("FreeFT::editor; built " __DATE__ " " __TIME__);
 	grabMouse(false);
 		
@@ -311,7 +313,7 @@ int safe_main(int argc, char **argv)
 		main_window.draw();
 		lookAt({0, 0});
 
-		if(config.profiler_enabled) {
+		if(config.profiler_on) {
 			DTexture::unbind();
 			drawQuad(config.resolution - int2(280, 200), config.resolution, Color(0, 0, 0, 80));
 

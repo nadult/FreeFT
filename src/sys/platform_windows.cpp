@@ -46,7 +46,7 @@ namespace sys {
 		bool is_root = path.isRoot();
 
 		if(handle != INVALID_HANDLE_VALUE) do {
-			if(strcmp(data.cFileName, ".") == 0)
+			if(strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0)
 				continue;
 
 			bool is_dir  = data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;

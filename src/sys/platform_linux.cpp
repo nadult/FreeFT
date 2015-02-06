@@ -55,7 +55,7 @@ namespace sys {
 			struct dirent *dirp;
 
 			while ((dirp = readdir(dp))) {
-				if(strcmp(dirp->d_name, ".") == 0)
+				if(strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0)
 					continue;
 
 				if(dirp->d_type == DT_UNKNOWN) {
@@ -70,8 +70,9 @@ namespace sys {
 						dirp->d_type = DT_REG;
 				}
 
-				if(dirp->d_type == DT_LNK)
-					dirp->d_type = DT_DIR;
+			// TODO: fix this
+			//	if(dirp->d_type == DT_LNK)
+			//		dirp->d_type = DT_DIR;
 
 				bool do_accept =	( (flags & FindFiles::regular_file) && dirp->d_type == DT_REG ) ||
 									( (flags & FindFiles::directory) && (dirp->d_type == DT_DIR));

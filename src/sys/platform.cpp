@@ -106,7 +106,7 @@ namespace sys {
 		for(int n = 0; n < (int)elements.size(); n++)
 			length += elements[n].size;
 		length += (int)elements.size() - 1;
-		if(!elements.size() > 2 && elements.front().isRoot())
+		if(elements.size() > 1 && elements.front().isRoot())
 			length--;
 
 		string new_path(length, ' ');
@@ -142,6 +142,7 @@ namespace sys {
 	}
 
 	bool Path::isRoot() const {
+		// Ending backslash is stripped from folder paths
 		return m_path.back() == '/';
 	}
 
@@ -175,6 +176,21 @@ namespace sys {
 		Path out;
 		out.construct(oelems);
 		return std::move(out);
+	}
+
+	bool Path::isRelative(const Path &ref) const {
+		DASSERT(ref.isAbsolute() && isAbsolute());
+
+		vector<Element> celems, relems;
+		celems.reserve(32);
+		relems.reserve(32);
+		divide(m_path.c_str(), celems);
+		divide(ref.m_path.c_str(), relems);
+
+		for(int count = min(celems.size(), relems.size()), n = 0; n < count; n++)
+			if(! (celems[n] == relems[n]) )
+				return false;
+		return true;
 	}
 
 	const Path Path::absolute() const {

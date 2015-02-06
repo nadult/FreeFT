@@ -600,6 +600,7 @@ class TupleParser;
 
 bool  toBool(const char *input);
 int   toInt(const char *input);
+int2  toInt2(const char *input);
 
 float toFloat(const char *input);
 float2 toFloat2(const char *input);
