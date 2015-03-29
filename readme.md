@@ -96,14 +96,14 @@ contact the author (e-mail: nadult (at) fastmail.fm).
 
 ## Screenshots
 
-First tech-demo:
-![](http://freeft.pl/wp-content/uploads/2014/04/techdemo3a.jpg "Tech-demo #3")
+Third tech-demo:
+![](https://cloud.githubusercontent.com/assets/3227675/6886151/e705b616-d634-11e4-8f22-ee2f7c1dca01.jpg "Tech-demo #3")
 
 Fourth tech-demo:
-![](http://freeft.pl/wp-content/uploads/2014/07/techdemo4a.jpg "Tech-demo #4")
+![](https://cloud.githubusercontent.com/assets/3227675/6886145/be9290d2-d634-11e4-80de-95b558f82cf9.jpg "Tech-demo #4")
 
 Early version of game editor:
-![](http://freeft.pl/wp-content/uploads/2014/03/techdemo1c.jpg "Editor")
+![](https://cloud.githubusercontent.com/assets/3227675/6886143/a67135a8-d634-11e4-93ef-e98c754e5cad.jpg "Editor")
 
 
 ## Videos
