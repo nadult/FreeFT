@@ -22,6 +22,7 @@ static bool verifyFTPath(string path) {
 
 #ifdef _WIN32
 
+#define __msxml_h__
 #include <windows.h>
 #include <shlobj.h>
 
@@ -83,7 +84,7 @@ static const string locateFTPath() {
 		if(verifyFTPath(std_paths[n]))
 			return std_paths[n];
 
-	return browseFolder("Please select folder in which Fallout Tactics is installed:", Path::current());
+	return browseFolder("Please select folder in which Fallout Tactics is installed:", FilePath::current());
 }
 
 #endif

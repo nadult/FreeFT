@@ -15,7 +15,6 @@ namespace ui
 
 		if(back_tex)
 			back = DTexture::gui_mgr[back_tex];
-		printf("ack: %s %d %d\n", back_tex, back->width(), back->height());
 
 		up = DTexture::gui_mgr[up_tex];
 		down = DTexture::gui_mgr[down_tex];

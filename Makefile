@@ -66,18 +66,20 @@ MINGW_LIBS=$(LIBS) $(MINGW_FWK_LIBS)
 
 SPECIAL_LIBS_convert=-lzip 
 
-INCLUDES=-Isrc/ $(FWK_INCLUDES)
-
-NICE_FLAGS=-std=c++11 -O0 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
-		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
-LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -fopenmp
-MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS)
-
 LINUX_CXX=clang++
 LINUX_STRIP=strip
+LINUX_PKG_CONFIG=pkg-config
 
 MINGW_CXX=$(MINGW_PREFIX)g++
 MINGW_STRIP=$(MINGW_PREFIX)strip
+MINGW_PKG_CONFIG=$(MINGW_PREFIX)pkg-config
+
+INCLUDES=-Isrc/ $(FWK_INCLUDES)
+
+NICE_FLAGS=-std=c++11 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
+		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
+LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -fopenmp
+MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
 
 $(DEPS): $(BUILD_DIR)/%.dep: src/%.cpp
 	$(LINUX_CXX) $(LINUX_FLAGS) -MM $< -MT $(BUILD_DIR)/$*.o   > $@
@@ -93,7 +95,7 @@ $(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD_DIR)/%.o  $(LINUX_FWK_
 	$(LINUX_CXX) -o $@ $^ -Wl,--export-dynamic $(SPECIAL_LIBS_$@) $(LINUX_LIBS)
 
 $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(MINGW_FWK_LIB)
-	$(MINGW_CXX) -o $@ $^  $(SPECIAL_LIBS_$@) $(MINGW_LIBS)
+	$(MINGW_CXX) -o $@ $^  $(SPECIAL_LIBS_$*) $(MINGW_LIBS)
 	$(MINGW_STRIP) $@
 
 clean:

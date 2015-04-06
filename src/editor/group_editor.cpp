@@ -12,6 +12,22 @@
 
 using namespace game;
 
+#ifdef _WIN32
+
+static const char *strcasestr(const char *a, const char *b) {
+	DASSERT(a && b);
+
+	while(*a) {
+		if(strcasecmp(a, b) == 0)
+			return a;
+		a++;
+	}
+
+	return nullptr;
+}
+
+#endif
+
 namespace ui {
 
 namespace {

@@ -21,36 +21,37 @@ using namespace game;
 using namespace ui;
 
 namespace ResType {
-	enum Type {
-		empty,
-		tile,
-		sprite,
-		texture,
-	};
+enum Type {
+	empty,
+	tile,
+	sprite,
+	texture,
+};
 };
 
 class Resource {
-	Resource(ResType::Type type, int id) :m_type(type), m_id(id) {
+	Resource(ResType::Type type, int id) : m_type(type), m_id(id) {
 		m_font = Font::mgr[ui::WindowStyle::fonts[0]];
 	}
-public:
-	Resource() :Resource(ResType::empty, -1) { }
-	Resource(PTile res, int id) :Resource(ResType::tile, id) {
+
+  public:
+	Resource() : Resource(ResType::empty, -1) {}
+	Resource(PTile res, int id) : Resource(ResType::tile, id) {
 		DASSERT(res);
 		m_resource = res.get();
 		m_rect_size = res->rect().size() + int2(8, 8);
 	}
 
-	Resource(PTexture res, int id) :Resource(ResType::texture, id) {
+	Resource(PTexture res, int id) : Resource(ResType::texture, id) {
 		DASSERT(res);
 		m_resource = res.get();
 		m_rect_size = res->size();
 	}
 
-	Resource(PSprite res, int id) :Resource(ResType::sprite, id) {
+	Resource(PSprite res, int id) : Resource(ResType::sprite, id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->bboxSize() + int3{4,4,4})).size();
+		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->bboxSize() + int3{4, 4, 4})).size();
 
 		m_last_time = getTime();
 		m_frame_id = m_dir_id = m_seq_id = 0;
@@ -59,7 +60,7 @@ public:
 	void printStats(int2 pos) const {
 		char buffer[1024] = "";
 		if(m_type == ResType::sprite) {
-			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
+			const Sprite *sprite = static_cast<const Sprite *>(m_resource.get());
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 			auto &seq = (*sprite)[m_seq_id];
 
@@ -70,16 +71,17 @@ public:
 				max_frame_size = max(max_frame_size, sprite->getRect(m_seq_id, n, m_dir_id).size());
 			}
 
-			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: (%d, %d, %d)\nMax frame size: (%d, %d)",
-					m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count,
-					sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z,
-					max_frame_size.x, max_frame_size.y);
+			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: "
+											 "(%d, %d, %d)\nMax frame size: (%d, %d)",
+					 m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count,
+					 sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z,
+					 max_frame_size.x, max_frame_size.y);
 
 			m_font->draw(pos, {Color::white, Color::black}, buffer);
 			pos.y += m_font->evalExtents(buffer).height();
 
 			double time = getTime();
-			vector<pair<const char*, double>> tevents;
+			vector<pair<const char *, double>> tevents;
 			for(int n = 0; n < (int)m_events.size(); n++)
 				if(m_events[n].second > time - 1.0)
 					tevents.push_back(m_events[n]);
@@ -91,34 +93,30 @@ public:
 				pos.y += m_font->lineHeight();
 			}
 
-		
-		}
-		else if(m_type == ResType::texture) {
-			const DTexture *texture = static_cast<const DTexture*>(m_resource.get());
-			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)",
-					texture->width(), texture->height());
+		} else if(m_type == ResType::texture) {
+			const DTexture *texture = static_cast<const DTexture *>(m_resource.get());
+			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)", texture->width(), texture->height());
 			m_font->draw(pos, {Color::white, Color::black}, buffer);
 		}
 	}
 
 	void draw(int2 pos, bool is_selected) const {
-		Color outline_col = is_selected? Color::red : Color(255, 255, 255, 100);
+		Color outline_col = is_selected ? Color::red : Color(255, 255, 255, 100);
 
 		if(m_type == ResType::tile) {
-			const Tile *tile = static_cast<const Tile*>(m_resource.get());
+			const Tile *tile = static_cast<const Tile *>(m_resource.get());
 
 			lookAt(-pos + tile->rect().min);
 			IBox box(int3(0, 0, 0), tile->bboxSize());
 
-			//TODO: draw only if its visible, otherwise it might create some performance
+			// TODO: draw only if its visible, otherwise it might create some performance
 			// problems if texture cache is full
 			tile->draw(int2(0, 0));
 
 			DTexture::unbind();
 			drawBBox(box, outline_col);
-		}
-		else if(m_type == ResType::texture) {
-			const DTexture *texture = static_cast<const DTexture*>(m_resource.get());
+		} else if(m_type == ResType::texture) {
+			const DTexture *texture = static_cast<const DTexture *>(m_resource.get());
 
 			lookAt(-pos);
 			texture->bind();
@@ -136,9 +134,8 @@ public:
 				Saver svr(name);
 				tex.save(svr);
 			}
-		}
-		else if(m_type == ResType::sprite) {
-			const Sprite *sprite = static_cast<const Sprite*>(m_resource.get());
+		} else if(m_type == ResType::sprite) {
+			const Sprite *sprite = static_cast<const Sprite *>(m_resource.get());
 
 			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 
@@ -160,15 +157,15 @@ public:
 			PTexture dtex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
 			dtex->bind();
 
-			IBox box({0,0,0}, sprite->bboxSize());
-			IRect brect = worldToScreen(IBox(box.min - int3(4,4,4), box.max + int3(4,4,4)));
+			IBox box({0, 0, 0}, sprite->bboxSize());
+			IRect brect = worldToScreen(IBox(box.min - int3(4, 4, 4), box.max + int3(4, 4, 4)));
 			if(is_gui_image) {
 				rect -= rect.min;
 				brect -= brect.min;
 			}
 			lookAt(brect.min - pos);
 			drawQuad(rect.min, rect.size(), tex_rect.min, tex_rect.max);
-	
+
 			DTexture::unbind();
 			if(is_gui_image)
 				drawRect(rect, outline_col);
@@ -207,23 +204,22 @@ public:
 	int2 rectSize() const { return m_rect_size; }
 	int id() const { return m_id; }
 
-private:
+  private:
 	int2 m_rect_size;
 	Ptr<RefCounter> m_resource;
 	PFont m_font;
 	ResType::Type m_type;
 	int m_id;
-	
-	mutable vector<pair<const char *, double> > m_events;
+
+	mutable vector<pair<const char *, double>> m_events;
 	mutable double m_last_time;
 	mutable int m_frame_id, m_seq_id, m_dir_id;
 };
 
-class ResourceView: public Window
-{
-public:
+class ResourceView : public Window {
+  public:
 	virtual const char *className() const { return "ResourceView"; }
-	ResourceView(IRect rect) :Window(rect), m_selected_id(-1), m_show_selected(false) { }
+	ResourceView(IRect rect) : Window(rect), m_selected_id(-1), m_show_selected(false) {}
 
 	void clear() {
 		m_resources.clear();
@@ -243,9 +239,9 @@ public:
 		int2 mouse_pos = getMousePos();
 		bool clicked = isMouseKeyPressed(0) && clippedRect().isInside(mouse_pos);
 		int2 selected_pos(0, 0);
-		
-		//TODO: fix it
-		ResourceView *mthis = (ResourceView*)this;
+
+		// TODO: fix it
+		ResourceView *mthis = (ResourceView *)this;
 		if(clicked)
 			mthis->m_selected_id = -1;
 
@@ -286,7 +282,7 @@ public:
 			offset = int2(0, selected_pos.y);
 			m_show_selected = false;
 		}
-		if(clicked)		
+		if(clicked)
 			mthis->sendEvent(mthis, Event::element_selected, m_selected_id);
 		mthis->setInnerRect(IRect(-offset, int2(width, pos.y + cur_height) - offset));
 	}
@@ -298,46 +294,42 @@ public:
 
 		try {
 			::Resource res;
-			if(strcasecmp(file_name + len - 4, ".zar") == 0 || strcasecmp(file_name + len - 4, ".png") == 0) {
+			if(strcasecmp(file_name + len - 4, ".zar") == 0 ||
+			   strcasecmp(file_name + len - 4, ".png") == 0) {
 				PTexture tex = new DTexture;
-			//	printf("Loading image: %s\n", file_name);
+				//	printf("Loading image: %s\n", file_name);
 				Loader(file_name) >> *tex;
 				res = ::Resource(tex, id);
 				tex->setResourceName(file_name);
-			}
-			else if(strcasecmp(file_name + len - 5, ".tile") == 0) {
+			} else if(strcasecmp(file_name + len - 5, ".tile") == 0) {
 				PTile tile = new Tile;
-			//	printf("Loading tile: %s\n", file_name);
+				//	printf("Loading tile: %s\n", file_name);
 				Loader(file_name) >> *tile;
 				res = ::Resource(tile, id);
 				tile->setResourceName(file_name);
-			}
-			else if(strcasecmp(file_name + len - 7, ".sprite") == 0) {
+			} else if(strcasecmp(file_name + len - 7, ".sprite") == 0) {
 				PSprite sprite = new Sprite;
-			//	printf("Loading sprite: %s\n", file_name);
+				//	printf("Loading sprite: %s\n", file_name);
 				Loader(file_name) >> *sprite;
 				res = ::Resource(sprite, id);
 				sprite->printInfo();
 				sprite->setResourceName(file_name);
-			}
-			else
+			} else
 				return;
 
 			m_resources.push_back(res);
-		}
-		catch(const Exception &ex) { printf("%s\n", ex.what()); }
+		} catch(const Exception &ex) { printf("%s\n", ex.what()); }
 	}
 
-private:
+  private:
 	mutable bool m_show_selected;
 	int m_selected_id;
-	vector< ::Resource> m_resources;
+	vector<::Resource> m_resources;
 };
 
-class ResViewerWindow: public Window
-{
-public:
-	ResViewerWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), WindowStyle::gui_light) {
+class ResViewerWindow : public Window {
+  public:
+	ResViewerWindow(int2 res) : Window(IRect(0, 0, res.x, res.y), WindowStyle::gui_light) {
 		int left_width = 300;
 
 		m_dir_view = new ListBox(IRect(0, 0, left_width, res.y));
@@ -357,14 +349,16 @@ public:
 		m_entries.clear();
 
 		m_entries.clear();
-		findFiles(m_entries, m_current_dir, FindFiles::regular_file | FindFiles::directory | FindFiles::relative);
+		findFiles(m_entries, m_current_dir, FindFiles::regular_file | FindFiles::directory |
+												FindFiles::relative | FindFiles::include_parent);
 
 		sort(m_entries.begin(), m_entries.end());
 		for(int n = 0; n < (int)m_entries.size(); n++)
-			m_dir_view->addEntry(m_entries[n].path.c_str(), m_entries[n].is_dir? Color::yellow : Color::white);
-		
+			m_dir_view->addEntry(m_entries[n].path.c_str(),
+								 m_entries[n].is_dir ? Color::yellow : Color::white);
+
 		m_res_view->clear();
-		
+
 		for(int n = 0; n < (int)m_entries.size(); n++)
 			if(!m_entries[n].is_dir)
 				m_res_view->tryAddResource((m_current_dir / m_entries[n].path).c_str(), n);
@@ -375,31 +369,23 @@ public:
 			popup = nullptr;
 			if(ev.value == 1)
 				exit(0);
-		}
-		else if(ev.type == Event::element_selected) {
+		} else if(ev.type == Event::element_selected) {
 			if(m_dir_view.get() == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
 				const FileEntry &entry = m_entries[ev.value];
 
 				if(entry.is_dir) {
 					m_current_dir /= entry.path;
 					update();
-				}
-				else {
-					m_res_view->select(ev.value);
-				}
-			}
-			else if(m_res_view.get() == ev.source) {
-				m_dir_view->selectEntry(ev.value);
-			}
-		}
-		else if(ev.type == Event::escape) {
+				} else { m_res_view->select(ev.value); }
+			} else if(m_res_view.get() == ev.source) { m_dir_view->selectEntry(ev.value); }
+		} else if(ev.type == Event::escape) {
 			if(!popup) {
 				IRect popup_rect = IRect(-150, -40, 150, 40) + center();
 				popup = new MessageBox(popup_rect, "Do you want to quit?", MessageBoxMode::yes_no);
 				attach(popup, true);
 			}
-		}
-		else return false;
+		} else
+			return false;
 
 		return true;
 	}
@@ -407,18 +393,17 @@ public:
 	vector<FileEntry> m_entries;
 	FilePath m_current_dir;
 
-	PListBox			m_dir_view;
-	Ptr<ResourceView>	m_res_view;
+	PListBox m_dir_view;
+	Ptr<ResourceView> m_res_view;
 
 	PWindow popup;
 };
 
-
-int safe_main(int argc, char **argv)
-{
+int safe_main(int argc, char **argv) {
 	Config config("res_viewer");
 
 	initDevice();
+	adjustWindowSize(config.resolution, config.fullscreen_on);
 	createWindow(config.resolution, config.fullscreen_on);
 	setWindowTitle("FreeFT::res_viewer; built " __DATE__ " " __TIME__);
 	grabMouse(false);
@@ -444,10 +429,8 @@ int safe_main(int argc, char **argv)
 int main(int argc, char **argv) {
 	try {
 		return safe_main(argc, argv);
-	}
-	catch(const Exception &ex) {
+	} catch(const Exception &ex) {
 		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
 		return 1;
 	}
 }
-

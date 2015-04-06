@@ -3,6 +3,7 @@
    This file is part of FreeFT.
  */
 
+#include "fwk_opengl.h"
 #include "game/world.h"
 #include "ui/file_dialog.h"
 #include "ui/message_box.h"
@@ -12,8 +13,6 @@
 #include "io/game_loop.h"
 
 #include "hud/multi_player_menu.h"
-
-#include "fwk_opengl.h"
 
 #include "net/client.h"
 #include "net/server.h"
