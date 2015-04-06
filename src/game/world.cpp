@@ -6,8 +6,6 @@
 #include "game/world.h"
 #include "game/game_mode.h"
 #include "tile_map.h"
-#include "sys/xml.h"
-#include "sys/profiler.h"
 #include "game/tile.h"
 #include "navi_heightmap.h"
 #include "audio/device.h"
@@ -53,7 +51,7 @@ namespace game {
 	}
 		
 	void World::updateNaviMap(bool full_recompute) {
-		PROFILE("updateNaviMap");
+		FWK_PROFILE("updateNaviMap");
 			
 		//TODO: what about static entities that are added during the game?
 

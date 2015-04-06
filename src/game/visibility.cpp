@@ -7,7 +7,6 @@
 #include "gfx/scene_renderer.h"
 #include "game/tile.h"
 #include <algorithm>
-#include "sys/profiler.h"
 
 namespace game {
 
@@ -36,7 +35,7 @@ namespace game {
 	}
 
 	void WorldViewer::update(double time_diff) {
-		PROFILE("WorldViewer::update");
+		FWK_PROFILE("WorldViewer::update");
 		Actor *spectator = m_world->refEntity<Actor>(m_spectator);
 
 		if((int)m_entities.size() != m_world->entityCount())
@@ -186,7 +185,7 @@ namespace game {
 		return nullptr;
 	}
 
-	void WorldViewer::addToRender(gfx::SceneRenderer &renderer) const {
+	void WorldViewer::addToRender(SceneRenderer &renderer) const {
 		vector<int> inds;
 		inds.reserve(8192);
 

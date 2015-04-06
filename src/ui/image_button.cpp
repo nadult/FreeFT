@@ -4,8 +4,6 @@
  */
 
 #include "ui/image_button.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include "audio/device.h"
 
 using namespace gfx;
@@ -16,14 +14,15 @@ namespace ui
 		DASSERT(up_tex && down_tex);
 
 		if(back_tex)
-			back = gfx::DTexture::gui_mgr[back_tex];
+			back = DTexture::gui_mgr[back_tex];
+		printf("ack: %s %d %d\n", back_tex, back->width(), back->height());
 
-		up = gfx::DTexture::gui_mgr[up_tex];
-		down = gfx::DTexture::gui_mgr[down_tex];
+		up = DTexture::gui_mgr[up_tex];
+		down = DTexture::gui_mgr[down_tex];
 		if(font_name)
 			font = Font::mgr[font_name];
 
-		rect = IRect({0, 0}, back? back->dimensions() : max(up->dimensions(), down->dimensions()));
+		rect = IRect({0, 0}, back? back->size() : max(up->size(), down->size()));
 		text_rect = text_area.isEmpty()? IRect::empty() :
 			IRect(	lerp(float(rect.min.x), float(rect.max.x), text_area.min.x),
 					lerp(float(rect.min.y), float(rect.max.y), text_area.min.y),
@@ -58,11 +57,11 @@ namespace ui
 
 		if(is_pressed) {
 			m_proto.down->bind();
-			drawQuad(int2(0, 0), m_proto.down->dimensions());
+			drawQuad(int2(0, 0), m_proto.down->size());
 		}
 		else {
 			m_proto.up->bind();
-			drawQuad(int2(0, 0), m_proto.up->dimensions());
+			drawQuad(int2(0, 0), m_proto.up->size());
 		}
 
 		if(m_proto.font) {

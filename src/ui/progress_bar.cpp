@@ -4,7 +4,6 @@
  */
 
 #include "progress_bar.h"
-#include "gfx/device.h"
 
 namespace ui {
 
@@ -25,7 +24,7 @@ namespace ui {
 	void ProgressBar::setText(const char *text) {
 		m_text = text;
 		if(!m_font)
-			m_font = gfx::Font::mgr[WindowStyle::fonts[0]];
+			m_font = Font::mgr[WindowStyle::fonts[0]];
 	}
 
 	float ProgressBar::evalBarSize() const {

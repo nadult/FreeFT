@@ -6,7 +6,6 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "game/sprite.h"
-#include "sys/platform.h"
 
 namespace game {
 
@@ -231,7 +230,7 @@ namespace game {
 
 		std::map<string, int> name_map;
 		for(int n = 0; n < sprite->size(); n++)
-			name_map.emplace(sys::toLower((*sprite)[n].name), n);
+			name_map.emplace(toLower((*sprite)[n].name), n);
 
 		char text[256];
 

@@ -15,7 +15,6 @@
 #include "game/item.h"
 #include "game/trigger.h"
 
-#include "sys/platform.h"
 #include <algorithm>
 
 using namespace game;

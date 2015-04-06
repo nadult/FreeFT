@@ -5,9 +5,7 @@
 
 #include <memory.h>
 #include <cstdio>
-#include "sys/platform.h"
 #include "sys/config.h"
-#include "sys/xml.h"
 #include "net/socket.h"
 #include "net/base.h"
 #include <list>
@@ -142,7 +140,7 @@ int safe_main(int argc, char **argv)
 	}
 
 	printf("FreeFT::lobby_server; built " __DATE__ " " __TIME__ "\nPress Ctrl+C to quit\n");
-	sys::handleCtrlC(onCtrlC);
+	handleCtrlC(onCtrlC);
 	LobbyServer server(port);
 	printf("Lobby server address: %s\n", Address(port).toString().c_str());
 

@@ -8,7 +8,6 @@
 
 #include "game/sprite.h"
 #include "game/base.h"
-#include "sys/xml.h"
 
 namespace game {
 
@@ -165,7 +164,7 @@ namespace game {
 		virtual EntityId::Type typeId() const = 0;
 		virtual bool renderAsOverlay() const { return false; }
 
-		virtual void addToRender(gfx::SceneRenderer&, Color color = Color::white) const;
+		virtual void addToRender(SceneRenderer&, Color color = Color::white) const;
 		virtual void interact(const Entity *interactor) { }
 		virtual void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) { }
 

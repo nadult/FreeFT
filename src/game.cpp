@@ -3,20 +3,15 @@
    This file is part of FreeFT.
  */
 
-#include "sys/profiler.h"
-#include "sys/platform.h"
 #include "sys/config.h"
 #include "audio/device.h"
-#include "gfx/device.h"
 #include "game/base.h"
 
 #include "io/main_menu_loop.h"
 #include "io/game_loop.h"
 #include "net/server.h"
 
-using namespace gfx;
 using namespace game;
-using namespace io;
 
 static bool s_is_closing = false;
 
@@ -42,7 +37,7 @@ int safe_main(int argc, char **argv)
 	srand((int)getTime());
 	audio::initSoundMap();
 	game::loadData(true);
-	gfx::initDevice();
+	initDevice();
 	adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
 
@@ -109,7 +104,7 @@ int safe_main(int argc, char **argv)
 			server->setWorld(world);
 			main_loop.reset(new io::GameLoop(std::move(server), false));
 			if(server_config.m_console_mode)
-				sys::handleCtrlC(ctrlCHandler);
+				handleCtrlC(ctrlCHandler);
 			if(console_mode)
 				printf("Press Ctrl+C to exit...\n");
 		}
@@ -144,7 +139,8 @@ int safe_main(int argc, char **argv)
 
 		main_loop->draw();
 
-		gfx::tick();
+		TextureCache::main_cache.nextFrame();
+		fwk::tick();
 		audio::tick();
 	}
 

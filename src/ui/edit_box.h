@@ -7,7 +7,6 @@
 #define UI_EDIT_BOX_H
 
 #include "ui/window.h"
-#include "gfx/font.h"
 
 
 namespace ui {
@@ -35,7 +34,7 @@ namespace ui {
 		double m_key_down_time;
 		double m_on_key_time;
 
-		gfx::PFont m_font;
+		PFont m_font;
 		string m_text, m_old_text;
 		string m_label;
 		int m_cursor_pos;

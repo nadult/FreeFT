@@ -29,7 +29,7 @@ public:
 
 	bool test(int x, int y, int level, int agent_size) const;
 
-	const gfx::Texture toTexture(int level) const;
+	Texture toTexture(int level) const;
 	void saveLevels() const;
 	void printInfo() const;
 

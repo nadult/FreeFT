@@ -7,9 +7,7 @@
 #include "game/tile_map.h"
 #include "editor/tile_group.h"
 #include "occluder_map.h"
-#include "gfx/device.h"
-
-using namespace gfx;
+#include "gfx/drawing.h"
 
 namespace ui {
 
@@ -66,21 +64,21 @@ namespace ui {
 		}
 			
 		int height_change = getMouseWheelMove() +
-							(isKeyDownAuto(Key::pagedown)? -1 : 0) +
-							(isKeyDownAuto(Key::pageup)? 1 : 0);
+							(isKeyDownAuto(InputKey::pagedown)? -1 : 0) +
+							(isKeyDownAuto(InputKey::pageup)? 1 : 0);
 		if(height_change)
 			m_height = clamp(m_height + height_change, 0, (int)Grid::max_height);
 		
 		{
 			int actions[TileGroup::Group::side_count] = {
-				Key::kp_1, 
-				Key::kp_2,
-				Key::kp_3,
-				Key::kp_6,
-				Key::kp_9,
-				Key::kp_8,
-				Key::kp_7,
-				Key::kp_4
+				InputKey::kp_1, 
+				InputKey::kp_2,
+				InputKey::kp_3,
+				InputKey::kp_6,
+				InputKey::kp_9,
+				InputKey::kp_8,
+				InputKey::kp_7,
+				InputKey::kp_4
 			};
 			
 			for(int n = 0; n < arraySize(actions); n++)
@@ -88,7 +86,7 @@ namespace ui {
 					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_cell_size);
 		}
 
-		if((isKeyPressed(Key::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
+		if((isKeyPressed(InputKey::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));

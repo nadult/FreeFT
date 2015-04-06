@@ -4,7 +4,6 @@
  */
 
 #include "game/impact.h"
-#include "sys/xml.h"
 
 namespace game {
 
@@ -44,7 +43,7 @@ namespace game {
 		return Entity::save(parent);
 	}
 		
-	void Impact::addToRender(gfx::SceneRenderer &out, Color color) const {
+	void Impact::addToRender(SceneRenderer &out, Color color) const {
 		if(!m_target || proto().type != ImpactType::ranged)
 			Entity::addToRender(out, color);
 	}

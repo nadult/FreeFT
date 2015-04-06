@@ -12,7 +12,6 @@
 #include "game/container.h"
 #include "game/projectile.h"
 #include "game/trigger.h"
-#include <sys/xml.h>
 
 namespace game {
 

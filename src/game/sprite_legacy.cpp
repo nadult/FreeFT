@@ -74,7 +74,7 @@ namespace game
 			string name;
 			vector<IRect> rects;
 			vector<Color> palettes[layer_count];
-			vector<gfx::PackedTexture> images;
+			vector<PackedTexture> images;
 			vector<int2> points;
 			int frame_count, dir_count, offset;
 			int type;
@@ -231,7 +231,7 @@ namespace game
 				char type; imgSr >> type;
 
 				if(type == 1) {
-					gfx::Palette palette;
+					Palette palette;
 					i32 x, y; imgSr.unpack(x, y);
 					collection.points[n] = int2(x, y);
 					collection.images[n].legacyLoad(imgSr, palette);

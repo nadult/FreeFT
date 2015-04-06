@@ -3,15 +3,13 @@
    This file is part of FreeFT.
  */
 
+#include "gfx/drawing.h"
 #include "editor/group_editor.h"
 #include "editor/tile_group.h"
-#include "gfx/font.h"
-#include "gfx/device.h"
 #include <algorithm>
 #include <cstring>
 #include <tuple>
 
-using namespace gfx;
 using namespace game;
 
 namespace ui {
@@ -72,7 +70,7 @@ namespace {
 	void GroupEditor::onInput(int2 mouse_pos) {
 		ASSERT(m_tile_group);
 
-		if(isKeyDown(Key::space)) {
+		if(isKeyDown(InputKey::space)) {
 			m_offset[m_mode] = innerOffset();
 			m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);
 			updateSelector();
@@ -119,18 +117,18 @@ namespace {
 			}
 
 			struct { int key; int side; } actions[] = {
-				{ Key::kp_1, 0 },
-				{ Key::kp_2, 1 },
-				{ Key::kp_3, 2 },
-				{ Key::kp_6, 3 },
-				{ Key::kp_9, 4 },
-				{ Key::kp_8, 5 },
-				{ Key::kp_7, 6 },
-				{ Key::kp_4, 7 } };
+				{ InputKey::kp_1, 0 },
+				{ InputKey::kp_2, 1 },
+				{ InputKey::kp_3, 2 },
+				{ InputKey::kp_6, 3 },
+				{ InputKey::kp_9, 4 },
+				{ InputKey::kp_8, 5 },
+				{ InputKey::kp_7, 6 },
+				{ InputKey::kp_4, 7 } };
 
 			if(m_selected_group_id != -1) {
 				for(int a = 0; a < arraySize(actions); a++)
-					if(isKeyDown(actions[a].key) || isKeyDown(Key::kp_5))
+					if(isKeyDown(actions[a].key) || isKeyDown(InputKey::kp_5))
 						m_tile_group->setGroupSurface(m_selected_group_id, actions[a].side, m_selected_surface_id);
 			}
 
@@ -213,7 +211,7 @@ namespace {
 			drawQuad(-edit_rect.size() / 2, edit_rect.size(), Color(80, 80, 80));
 			drawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
-			PFont font = gfx::Font::mgr[WindowStyle::fonts[0]];
+			PFont font = Font::mgr[WindowStyle::fonts[0]];
 
 			for(int n = 0; n < TileGroup::Group::side_count; n++) {
 				lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));

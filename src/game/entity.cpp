@@ -6,10 +6,7 @@
 #include "game/entity.h"
 #include "game/sprite.h"
 #include "game/world.h"
-#include "gfx/device.h"
 #include "gfx/scene_renderer.h"
-#include "sys/profiler.h"
-#include "sys/xml.h"
 
 using namespace gfx;
 
@@ -146,7 +143,7 @@ namespace game {
 		return  rect + (int2)worldToScreen(pos());
 	}
 
-	void Entity::addToRender(gfx::SceneRenderer &out, Color color) const {
+	void Entity::addToRender(SceneRenderer &out, Color color) const {
 		//PROFILE("Entity::addToRender");
 		IRect rect = m_sprite.getRect(m_seq_idx, m_frame_idx, m_dir_idx);
 		if(!areOverlapping(out.targetRect(), rect + (int2)worldToScreen(m_pos)))

@@ -6,8 +6,6 @@
 #include "hud/char_icon.h"
 #include "game/actor.h"
 #include "game/world.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 
@@ -28,7 +26,7 @@ namespace hud {
 		icon->bind();
 		//TODO: use mipmapped textures
 
-		float2 icon_size(icon->dimensions());
+		float2 icon_size(icon->size());
 		float scale = min(1.0f, 1.0f / max(icon_size.x / rect.width(), icon_size.y / rect.height()));
 		icon_size = icon_size * scale;
 		float2 pos = rect.center() - icon_size * 0.5f;

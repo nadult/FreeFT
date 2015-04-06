@@ -3,13 +3,11 @@
    This file is part of FreeFT.
  */
 
-#include "gfx/font.h"
-#include "gfx/device.h"
-#include "gfx/opengl.h"
+#include "fwk_gfx.h"
+#include "fwk_opengl.h"
 #include <cstring>
 #include <cwchar>
 #include <cstdarg>
-#include "sys/xml.h"
 
 namespace gfx
 {
@@ -43,7 +41,7 @@ namespace gfx
 		ASSERT(info_node && pages_node && chars_node && common_node);
 
 		m_face_name = info_node.attrib("face");
-		m_tex_size = int2(common_node.intAttrib("scaleW"), common_node.intAttrib("scaleH"));
+		int2 tex_size(common_node.intAttrib("scaleW"), common_node.intAttrib("scaleH"));
 		m_line_height = common_node.intAttrib("lineHeight");
 		m_text_base = common_node.intAttrib("base");
 
@@ -55,7 +53,7 @@ namespace gfx
 		ASSERT(first_page_node.intAttrib("id") == 0);
 
 		m_texture = tex_mgr[first_page_node.attrib("file")];
-		ASSERT(m_texture && m_texture->dimensions() == m_tex_size);
+		ASSERT(m_texture && m_texture->size() == tex_size);
 
 		int chars_count = chars_node.intAttrib("count");
 		XMLNode char_node = chars_node.child("char");

@@ -14,7 +14,7 @@ namespace net {
 
 	Chunk::~Chunk() {
 		if(m_left_over)
-			sys::free(m_left_over);
+			free(m_left_over);
 	}
 
 	Chunk::Chunk(Chunk &&rhs) :m_left_over(rhs.m_left_over), m_node(rhs.m_node), m_chunk_id(rhs.m_chunk_id),
@@ -41,7 +41,7 @@ namespace net {
 		DASSERT(data_size >= 0 && data_size <= PacketInfo::max_size);
 		if(data_size > (int)sizeof(m_data)) {
 			int left_over_size = data_size - sizeof(m_data);
-			m_left_over = (char*)sys::alloc(left_over_size);
+			m_left_over = (char*)malloc(left_over_size);
 			memcpy(m_left_over, data + sizeof(m_data), left_over_size);
 		}
 		memcpy(m_data, data, min((int)sizeof(m_data), data_size));
@@ -58,7 +58,7 @@ namespace net {
 
 	void Chunk::clearData() {
 		if(m_left_over) {
-			sys::free(m_left_over);
+			free(m_left_over);
 			m_left_over = nullptr;
 		}
 		m_data_size = 0;

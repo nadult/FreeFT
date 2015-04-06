@@ -7,9 +7,6 @@
 #include "audio/device.h"
 #include "audio/internals.h"
 #include "audio/sound.h"
-#include "sys/platform.h"
-
-using namespace sys;
 
 namespace audio
 {

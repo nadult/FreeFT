@@ -26,7 +26,7 @@ public:
 	int2 dimensions() const { return m_size * sector_size; }
 	int agentSize() const { return m_agent_size; }
 
-	void visualize(gfx::SceneRenderer&, bool borders) const;
+	void visualize(SceneRenderer&, bool borders) const;
 	void printInfo() const;
 
 	struct Quad {

@@ -36,7 +36,7 @@ namespace game {
 
 		bool isValid(const PathPos&) const;
 		bool isEmpty() const { return m_nodes.size() <= 1; }
-		void visualize(int agent_size, gfx::SceneRenderer&) const;
+		void visualize(int agent_size, SceneRenderer&) const;
 
 		float length() const;
 		float length(const PathPos&) const;

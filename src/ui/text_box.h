@@ -7,7 +7,6 @@
 #define UI_TEXT_BOX_H
 
 #include "ui/window.h"
-#include "gfx/font.h"
 
 
 namespace ui {
@@ -23,7 +22,7 @@ namespace ui {
 		void drawContents() const;
 
 	private:
-		gfx::PFont m_font;
+		PFont m_font;
 		string m_text;
 		IRect m_text_extents;
 		bool m_is_centered;

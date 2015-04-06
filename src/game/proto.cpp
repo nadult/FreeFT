@@ -4,7 +4,6 @@
  */
 
 #include "game/proto.h"
-#include "sys/xml.h"
 #include "sys/data_sheet.h"
 
 #include "game/sprite.h"

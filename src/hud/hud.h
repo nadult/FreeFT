@@ -31,7 +31,7 @@ namespace hud
 		int exitRequested() const { return m_exit_value; }
 
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 		void onLayout() override;

@@ -8,7 +8,6 @@
 #include "game/pc_controller.h"
 #include "game/world.h"
 #include "game/game_mode.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 

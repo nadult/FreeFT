@@ -175,7 +175,7 @@ namespace game {
 	namespace AttackMode {
 		inline constexpr bool isRanged(Type t) { return t == single || t == burst || t == throwing; }
 		inline constexpr bool isMelee(Type t) { return !isRanged(t); }
-		inline constexpr uint toFlags(Type t) { return t == undefined? 0 : 1 << t; }
+		inline constexpr unsigned toFlags(Type t) { return t == undefined? 0 : 1 << t; }
 	};
 
 	namespace AttackModeFlags {
@@ -190,9 +190,9 @@ namespace game {
 			kick		= toFlags(AttackMode::kick)
 		};
 
-		uint fromString(const char*);
+		unsigned fromString(const char*);
 
-		AttackMode::Type getFirst(uint flags);
+		AttackMode::Type getFirst(unsigned flags);
 	};
 	
 	namespace Flags { enum Type : unsigned; };

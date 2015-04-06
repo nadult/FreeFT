@@ -3,11 +3,10 @@
    This file is part of FreeFT.
  */
 
+#include "gfx/drawing.h"
 #include "editor/tiles_editor.h"
 #include "editor/tile_group.h"
 #include "editor/view.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include "gfx/scene_renderer.h"
 #include "game/tile.h"
 #include "game/tile_map.h"
@@ -65,9 +64,9 @@ namespace ui {
 	void TilesEditor::onInput(int2 mouse_pos) {
 		m_selection = computeCursor(mouse_pos, mouse_pos);
 
-		if(isKeyDown(Key::kp_add))
+		if(isKeyDown(InputKey::kp_add))
 			m_cursor_offset++;
-		if(isKeyDown(Key::kp_subtract))
+		if(isKeyDown(InputKey::kp_subtract))
 			m_cursor_offset--;
 
 		m_view.update();
@@ -105,7 +104,7 @@ namespace ui {
 			}
 		}
 		else {
-			if(isKeyPressed(Key::del)) {
+			if(isKeyPressed(InputKey::del)) {
 				for(int i = 0; i < (int)m_selected_ids.size(); i++)
 					m_tile_map.remove(m_selected_ids[i]);
 				m_selected_ids.clear();
@@ -276,7 +275,7 @@ namespace ui {
 	}
 
 	bool TilesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
-		if(key == 0 && !isKeyPressed(Key::lctrl) && !isChangingOccluders()) {
+		if(key == 0 && !isKeyPressed(InputKey::lctrl) && !isChangingOccluders()) {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(is_final && is_final != -1) {
@@ -328,7 +327,7 @@ namespace ui {
 		}
 		else if(key == 1 && (m_mode >= mode_selecting_normal && m_mode <= mode_selecting_difference)) {
 			if(!m_is_moving) {
-				m_is_moving_vertically = isKeyPressed(Key::lshift);
+				m_is_moving_vertically = isKeyPressed(InputKey::lshift);
 				m_is_moving = true;
 			}
 

@@ -35,7 +35,7 @@ namespace hud {
 	Hud::Hud(PWorld world) :HudWidget(FRect::empty()), m_selected_layer(layer_none), m_exit_value(0) {
 		DASSERT(world);
 
-		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, gfx::getWindowSize().y - s_hud_main_panel_size.y - layer_spacing);
+		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, getWindowSize().y - s_hud_main_panel_size.y - layer_spacing);
 		m_main_panel = new HudMainPanel(main_rect);
 
 		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
@@ -62,7 +62,7 @@ namespace hud {
 
 	Hud::~Hud() { }
 		
-	bool Hud::onInput(const io::InputEvent &event) {
+	bool Hud::onInput(const InputEvent &event) {
 		return false;
 	}
 

@@ -104,7 +104,7 @@ namespace game {
 		}
 	}
 	
-	void Path::visualize(int agent_size, gfx::SceneRenderer &renderer) const {
+	void Path::visualize(int agent_size, SceneRenderer &renderer) const {
 		if(m_nodes.empty())
 			return;
 

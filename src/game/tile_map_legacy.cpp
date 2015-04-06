@@ -4,9 +4,7 @@
  */
 
 #include "tile_map.h"
-#include "gfx/texture.h"
 #include "game/tile.h"
-#include "sys/xml.h"
 #include <climits>
 
 //#define LOGGING

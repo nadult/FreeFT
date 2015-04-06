@@ -4,7 +4,6 @@
  */
 
 #include "game/inventory.h"
-#include "sys/xml.h"
 #include <cstdio>
 
 namespace game {

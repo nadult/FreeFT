@@ -54,7 +54,7 @@ namespace hud
 		int dropCount() const { return (int)m_drop_count; }
 
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;
 
@@ -76,7 +76,7 @@ namespace hud
 		bool canShow() const override;
 
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 		void onLayout() override;

@@ -7,7 +7,6 @@
 #include <cstdio>
 
 #include "net/client.h"
-#include "sys/platform.h"
 #include "game/actor.h"
 #include "game/world.h"
 #include "net/host.h"

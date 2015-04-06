@@ -4,8 +4,6 @@
  */
 
 #include "hud/grid.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 
@@ -81,7 +79,7 @@ namespace hud {
 		needsLayout();
 	}
 		
-	bool HudGrid::onInput(const io::InputEvent &event) {
+	bool HudGrid::onInput(const InputEvent &event) {
 		bool mouse_key_down = event.mouseKeyDown(0);
 
 		if((mouse_key_down || event.mouseOver()) && isMouseOver(event)) {

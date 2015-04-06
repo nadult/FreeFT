@@ -6,8 +6,6 @@
 #include "hud/weapon.h"
 #include "game/actor.h"
 #include "game/world.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 
@@ -24,7 +22,7 @@ namespace hud {
 
 		if(!m_weapon.isDummy()) {
 			FRect uv_rect;
-			gfx::PTexture texture = m_weapon.guiImage(false, uv_rect);
+			PTexture texture = m_weapon.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(rect.center() - size / 2);

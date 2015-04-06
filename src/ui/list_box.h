@@ -7,7 +7,6 @@
 #define UI_LIST_BOX_H
 
 #include "ui/window.h"
-#include "gfx/font.h"
 
 namespace ui {
 
@@ -49,7 +48,7 @@ namespace ui {
 		int entryId(int2 pos) const;
 
 		vector<Entry> m_entries;
-		gfx::PFont m_font;
+		PFont m_font;
 		int m_line_height;
 		int m_over_id, m_dragging_id;
 	};

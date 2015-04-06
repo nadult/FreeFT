@@ -5,7 +5,6 @@
 
 #include "io/game_loop.h"
 #include "io/controller.h"
-#include "gfx/device.h"
 #include "game/actor.h"
 #include "game/brain.h"
 #include "game/world.h"
@@ -40,7 +39,7 @@ namespace io {
 		m_world = m_server->world();
 		
 		if(!m_server->config().m_console_mode)
-			m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_on));
+			m_controller.reset(new Controller(getWindowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::GameLoop(net::PClient &&client, bool from_main)
@@ -50,7 +49,7 @@ namespace io {
 		m_world = m_client->world();
 
 		//TODO: wait until initial entity information is loaded?
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_on));
+		m_controller.reset(new Controller(getWindowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::GameLoop(game::PWorld world, bool from_main)
@@ -58,7 +57,7 @@ namespace io {
 		DASSERT(world && world->mode() == World::Mode::single_player);
 		m_world = world;
 		m_world->assignGameMode<SinglePlayerMode>(Character("Player", "CORE_prefab2", "male"));
-		m_controller.reset(new Controller(gfx::getWindowSize(), m_world, m_config.profiler_on));
+		m_controller.reset(new Controller(getWindowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::~GameLoop() { }

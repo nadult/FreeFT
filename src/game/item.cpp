@@ -6,7 +6,6 @@
 #include "game/item.h"
 #include "game/weapon.h"
 #include "game/armour.h"
-#include "sys/xml.h"
 #include "sys/data_sheet.h"
 
 namespace {
@@ -75,7 +74,7 @@ namespace game {
 		return Item(findProto("_dummy_weapon", ProtoId::item_weapon));
 	}
 		
-	gfx::PTexture Item::guiImage(bool small, FRect &tex_rect) const {
+	PTexture Item::guiImage(bool small, FRect &tex_rect) const {
 		const Sprite &sprite = Sprite::get(m_proto->sprite->index());
 		return sprite.getFrame(m_proto->seq_ids[small?2 : 1], 0, 0, tex_rect, false);
 	}
@@ -123,7 +122,7 @@ namespace game {
 		m_count = count;
 	}
 	
-	gfx::PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
+	PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
 		return m_item.guiImage(small, tex_rect);
 	}
 

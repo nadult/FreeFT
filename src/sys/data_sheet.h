@@ -10,7 +10,7 @@
 #include <map>
 
 struct TupleParser {
-	typedef std::map<CString, int> ColumnMap;
+	using ColumnMap = std::map<StringRef, int>;
 	TupleParser( const char **columns, int num_columns, const ColumnMap&);
 
 	const char *operator()(const char *name) const;

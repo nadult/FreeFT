@@ -7,8 +7,6 @@
 #include "game/brain.h"
 #include "game/orders/idle.h"
 #include "game/weapon.h"
-#include "sys/profiler.h"
-#include "sys/xml.h"
 
 using namespace gfx;
 

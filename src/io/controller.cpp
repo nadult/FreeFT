@@ -4,8 +4,6 @@
  */
 
 #include "io/controller.h"
-#include "io/input.h"
-#include "sys/profiler.h"
 
 #include "game/actor.h"
 #include "game/item.h"
@@ -15,17 +13,13 @@
 #include "game/all_orders.h"
 #include "game/brain.h"
 
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include "gfx/scene_renderer.h"
 #include "audio/device.h"
 
-#include "gfx/texture.h"
 #include "hud/console.h"
 #include "hud/hud.h"
 #include "hud/target_info.h"
 
-using namespace gfx;
 using namespace game;
 
 namespace io {
@@ -159,13 +153,13 @@ namespace io {
 				//TODO: pixel intersect always returns distance == 0
 				int3 wpos = int3(m_screen_ray.at(m_isect.distance()) + float3(0, 0.5f, 0));
 				
-				bool run = actor && !isKeyPressed(Key::lshift);// && distance(float3(wpos), actor->pos()) > 10.0f;
+				bool run = actor && !isKeyPressed(InputKey::lshift);// && distance(float3(wpos), actor->pos()) > 10.0f;
 				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
 		}
 		else if(event.mouseKeyDown(1) && actor) {
 			AttackMode::Type mode = AttackMode::undefined;
-			if(isKeyPressed(Key::lshift)) {
+			if(isKeyPressed(InputKey::lshift)) {
 				const Weapon &weapon = actor->inventory().weapon();
 				if(weapon.proto().attack_modes & AttackModeFlags::burst)
 					mode = AttackMode::burst;
@@ -190,7 +184,7 @@ namespace io {
 	}
 
 	void Controller::update(double time_diff) {
-		if((isKeyPressed(Key::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
+		if((isKeyPressed(InputKey::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
 			m_view_pos -= getMouseMove();
 		
 		updatePC();
@@ -222,11 +216,11 @@ namespace io {
 		m_target_info->update(time_diff);
 
 		if(m_last_time - m_stats_update_time > 0.25) {
-			m_profiler_stats = profiler::getStats();
+			m_profiler_stats = getProfilerStats();
 			m_stats_update_time = m_last_time;
 		}
-		profiler::nextFrame();
-		m_last_time = profiler::getTime();
+		profilerNextFrame();
+		m_last_time = getProfilerTime();
 
 		if( GameMode *game_mode = m_world->gameMode() ) {
 			UserMessage message = game_mode->userMessage(UserMessageType::main);
@@ -344,7 +338,7 @@ namespace io {
 		m_console->draw();
 
 		if(!m_main_message.isEmpty()) {
-			gfx::PFont font = gfx::Font::mgr["transformers_48"];
+			PFont font = Font::mgr["transformers_48"];
 			FRect rect(float2(m_resolution.x, 30.0f));
 			rect += float2(0.0f, m_console->rect().height());
 			Color text_color = mulAlpha(Color::white, m_main_message.anim_time);
@@ -356,7 +350,7 @@ namespace io {
 		
 	void Controller::drawDebugInfo() const {
 		lookAt({0, 0});
-		gfx::PFont font = gfx::Font::mgr["liberation_16"];
+		PFont font = Font::mgr["liberation_16"];
 
 		if(m_debug_ai) {
 			for(int n = 0; n < m_world->entityCount(); n++) {

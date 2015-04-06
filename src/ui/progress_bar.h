@@ -7,7 +7,6 @@
 #define UI_PROGRESS_BAR
 
 #include "ui/window.h"
-#include "gfx/font.h"
 
 namespace ui {
 
@@ -35,7 +34,7 @@ namespace ui {
 		IRect evalBarPos() const;
 
 		string m_text;
-		gfx::PFont m_font;
+		PFont m_font;
 		float m_bar_size, m_pos, m_start_pos;
 		bool m_mouse_press, m_mouse_over;
 		bool m_is_horizontal;

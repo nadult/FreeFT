@@ -7,7 +7,6 @@
 #define UI_BUTTON_H
 
 #include "ui/window.h"
-#include "gfx/font.h"
 
 namespace ui
 {
@@ -31,7 +30,7 @@ namespace ui
 		bool m_mouse_press;
 		IRect m_text_extents;
 		string m_text;
-		gfx::PFont m_font;
+		PFont m_font;
 	};
 
 	typedef Ptr<Button> PButton;

@@ -13,8 +13,7 @@
 
 #include "hud/multi_player_menu.h"
 
-#include "gfx/device.h"
-#include "gfx/opengl.h"
+#include "fwk_opengl.h"
 
 #include "net/client.h"
 #include "net/server.h"
@@ -41,17 +40,17 @@ namespace io {
 		return new ImageButton(pos, proto, title, ImageButton::mode_normal);
 	}
 
-	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, gfx::getWindowSize()), Color::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
-		m_back = gfx::DTexture::gui_mgr["back/flaminghelmet"];
-		m_loading = gfx::DTexture::gui_mgr["misc/worldm/OLD_moving"];
+	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, getWindowSize()), Color::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
+		m_back = DTexture::gui_mgr["back/flaminghelmet"];
+		m_loading = DTexture::gui_mgr["misc/worldm/OLD_moving"];
 
 		m_anim_pos = 0.0;
 		m_blend_time = 1.0;
 
 		IRect rect = localRect();
 		m_back_rect = (IRect)FRect(
-			float2(rect.center()) - float2(m_back->dimensions()) * 0.5f,
-			float2(rect.center()) + float2(m_back->dimensions()) * 0.5f);
+			float2(rect.center()) - float2(m_back->size()) * 0.5f,
+			float2(rect.center()) + float2(m_back->size()) * 0.5f);
 
 		m_single_player	= makeButton(m_back_rect.min + int2(500, 70), "Single player");
 		m_multi_player	= makeButton(m_back_rect.min + int2(500, 115), "Multi player");
@@ -113,7 +112,7 @@ namespace io {
 			}
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(790, 550));
-				rect += float2(gfx::getWindowSize()) * 0.5f - rect.size() * 0.5f;
+				rect += float2(getWindowSize()) * 0.5f - rect.size() * 0.5f;
 				m_multi_menu = new hud::MultiPlayerMenu(rect);
 				m_sub_menu = m_multi_menu.get();
 			//	m_mode = mode_starting_multi;
@@ -129,7 +128,7 @@ namespace io {
 		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			string path = m_file_dialog->path();
-			string map_name = sys::Path(path).absolute().relative(sys::Path("data/maps/").absolute());
+			string map_name = FilePath(path).absolute().relative(FilePath("data/maps/").absolute());
 
 			if(m_mode == mode_starting_single && ev.value) {
 				m_future_world = std::async(std::launch::async,
@@ -153,12 +152,12 @@ namespace io {
 
 	void MainMenuLoop::drawLoading(const int2 &pos, float alpha) const {
 		const char *text = "Loading";
-		gfx::PFont font = gfx::Font::mgr["transformers_30"];
+		PFont font = Font::mgr["transformers_30"];
 		Color color(1.0f, 0.8f, 0.2f, alpha);
 
 		lookAt(-pos);
 
-		int2 dims(m_loading->dimensions());
+		int2 dims(m_loading->size());
 		float2 center = float2(dims.x * 0.49f, dims.y * 0.49f);
 
 		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * constant::pi * 2.0), 8.0) * 0.1;
@@ -219,7 +218,7 @@ namespace io {
 				}
 			}
 			catch(const Exception &ex) {
-				PFont font = gfx::Font::mgr[WindowStyle::fonts[1]];
+				PFont font = Font::mgr[WindowStyle::fonts[1]];
 				IRect extents = font->evalExtents(ex.what());
 				int2 pos = rect().center(), size(min(rect().width(), extents.width() + 50), 100);
 
@@ -311,7 +310,7 @@ namespace io {
 			m_sub_menu->draw();
 
 		if(m_mode == mode_loading)
-			drawLoading(gfx::getWindowSize() - int2(180, 50), 1.0);
+			drawLoading(getWindowSize() - int2(180, 50), 1.0);
 	}
 
 }

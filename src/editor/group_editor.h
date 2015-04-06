@@ -32,7 +32,7 @@ namespace ui {
 		ui::TileList m_tile_list;
 		TileGroup *m_tile_group;
 
-		gfx::PFont m_font;
+		PFont m_font;
 		IRect m_view;
 
 		TileFilter::Type m_tile_filter;

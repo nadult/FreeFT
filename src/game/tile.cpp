@@ -3,11 +3,9 @@
    This file is part of FreeFT.
  */
 
+#include "gfx/drawing.h"
 #include "game/tile.h"
-#include "gfx/device.h"
 #include "gfx/scene_renderer.h"
-#include "sys/platform.h"
-#include <GL/gl.h>
 #include <algorithm>
 
 using namespace gfx;
@@ -32,7 +30,7 @@ namespace game
 	};
 
 	const IRect TileFrame::rect() const {
-		return IRect(m_offset, m_texture.dimensions() + m_offset);
+		return IRect(m_offset, m_texture.size() + m_offset);
 	}
 
 	TileFrame::TileFrame(const TileFrame &rhs) :m_palette_ref(nullptr) {
@@ -52,7 +50,7 @@ namespace game
 	}
 
 	int2 TileFrame::textureSize() const {
-		return m_texture.dimensions();
+		return m_texture.size();
 	}
 
 	void TileFrame::cacheUpload(Texture &tex) const {

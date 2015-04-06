@@ -7,8 +7,7 @@
 #define GAME_SPRITE_H
 
 #include "game/base.h"
-#include "gfx/texture.h"
-#include "gfx/device.h"
+#include "gfx/packed_texture.h"
 #include "gfx/texture_cache.h"
 
 namespace game {
@@ -75,22 +74,22 @@ namespace game {
 			int offset[layer_count];
 		};
 
-		struct MultiImage: public gfx::CachedTexture {
+		struct MultiImage: public CachedTexture {
 			MultiImage();
 			MultiImage(const MultiImage &rhs);
 			void operator=(const MultiImage&);
 
-			virtual void cacheUpload(gfx::Texture&) const;
+			virtual void cacheUpload(Texture&) const;
 			virtual int2 textureSize() const { return rect.size(); }
 
 			void load(Stream&);
 			void save(Stream&) const;
 
-			gfx::PTexture toTexture(const MultiPalette&, FRect&, bool put_in_atlas = true) const;
+			PTexture toTexture(const MultiPalette&, FRect&, bool put_in_atlas = true) const;
 			bool testPixel(const int2&) const;
 			int memorySize() const;
 
-			gfx::PackedTexture images[layer_count];
+			PackedTexture images[layer_count];
 			int2 points[layer_count];
 			IRect rect;
 
@@ -107,7 +106,7 @@ namespace game {
 		void updateMaxRect();
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
-		gfx::PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas = true) const;
+		PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas = true) const;
 		
 		// Search is case-insensitive
 		int findSequence(const char *name) const;
@@ -135,7 +134,7 @@ namespace game {
 
 		const int3 &bboxSize() const { return m_bbox; }
 
-		static gfx::TextureCache cache;
+		static TextureCache cache;
 
 		// Preloads basic information of all sprites
 		// load sprites in full, when requested

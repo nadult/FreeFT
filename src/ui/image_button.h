@@ -7,7 +7,6 @@
 #define UI_IMAGE_BUTTON_H
 
 #include "ui/window.h"
-#include "gfx/font.h"
 
 namespace ui
 {
@@ -16,8 +15,8 @@ namespace ui
 		ImageButtonProto(const char *back_tex, const char *up_tex, const char *down_tex, const char *font_name, FRect text_area);
 
 		IRect rect, text_rect;
-		gfx::PTexture back, up, down;
-		gfx::PFont font;
+		PTexture back, up, down;
+		PFont font;
 		string sound_name;
 	};
 

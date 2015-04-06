@@ -4,7 +4,6 @@
  */
 
 #include "game/sprite.h"
-#include "sys/platform.h"
 #include <cstring>
 #include <cstdio>
 

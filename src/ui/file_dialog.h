@@ -11,7 +11,6 @@
 #include "ui/button.h"
 #include "ui/list_box.h"
 #include "ui/edit_box.h"
-#include "sys/platform.h"
 
 namespace ui {
 
@@ -33,8 +32,8 @@ namespace ui {
 
 		Mode mode() const { return m_mode; }
 
-		void setPath(const sys::Path &path);
-		const sys::Path path() const;
+		void setPath(const FilePath &path);
+		FilePath path() const;
 
 	private:
 		void updateList();
@@ -45,7 +44,7 @@ namespace ui {
 		PEditBox m_edit_box;
 
 		Mode m_mode;
-		sys::Path m_dir_path;
+		FilePath m_dir_path;
 	};
 
 }

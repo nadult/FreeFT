@@ -33,7 +33,7 @@ namespace hud {
 		void scroll(int offset);
 
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		void onDraw() const override;
 		void onLayout() override;
 		void onUpdate(double time_diff) override;

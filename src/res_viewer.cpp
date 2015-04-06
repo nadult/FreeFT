@@ -7,8 +7,7 @@
 #include <cstdio>
 #include <algorithm>
 
-#include "gfx/device.h"
-#include "gfx/font.h"
+#include "gfx/drawing.h"
 
 #include "game/sprite.h"
 #include "game/tile.h"
@@ -16,13 +15,10 @@
 #include "ui/list_box.h"
 #include "ui/button.h"
 #include "ui/message_box.h"
-#include "sys/platform.h"
 #include "sys/config.h"
 
-using namespace gfx;
 using namespace game;
 using namespace ui;
-using namespace sys;
 
 namespace ResType {
 	enum Type {
@@ -35,7 +31,7 @@ namespace ResType {
 
 class Resource {
 	Resource(ResType::Type type, int id) :m_type(type), m_id(id) {
-		m_font = gfx::Font::mgr[ui::WindowStyle::fonts[0]];
+		m_font = Font::mgr[ui::WindowStyle::fonts[0]];
 	}
 public:
 	Resource() :Resource(ResType::empty, -1) { }
@@ -48,7 +44,7 @@ public:
 	Resource(PTexture res, int id) :Resource(ResType::texture, id) {
 		DASSERT(res);
 		m_resource = res.get();
-		m_rect_size = res->dimensions();
+		m_rect_size = res->size();
 	}
 
 	Resource(PSprite res, int id) :Resource(ResType::sprite, id) {
@@ -92,7 +88,7 @@ public:
 			for(int n = 0; n < (int)m_events.size(); n++) {
 				Color col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
 				m_font->draw(pos, {col, Color::black}, m_events[n].first);
-				pos.y += m_font->textBase();
+				pos.y += m_font->lineHeight();
 			}
 
 		
@@ -131,11 +127,11 @@ public:
 			drawRect(IRect({0, 0}, m_rect_size), outline_col);
 
 			if(isKeyDown('E')) {
-				string name = sys::Path(texture->resourceName()).relative();
+				string name = FilePath(texture->resourceName()).relative();
 				removeSuffix(name, ".zar");
 				name += ".tga";
 				printf("Exporting: %s\n", name.c_str());
-				gfx::Texture tex;
+				Texture tex;
 				texture->download(tex);
 				Saver svr(name);
 				tex.save(svr);
@@ -184,16 +180,16 @@ public:
 				m_frame_id = m_frame_id + 1;
 				m_last_time = time;
 			}
-			if(isKeyDown(Key::up))
+			if(isKeyDown(InputKey::up))
 				m_seq_id++;
-			if(isKeyDown(Key::down))
+			if(isKeyDown(InputKey::down))
 				m_seq_id--;
-			if(isKeyDown(Key::left))
+			if(isKeyDown(InputKey::left))
 				m_dir_id--;
-			if(isKeyDown(Key::right))
+			if(isKeyDown(InputKey::right))
 				m_dir_id++;
 			if(isKeyDown('P')) {
-				Path path(sprite->resourceName());
+				FilePath path(sprite->resourceName());
 				printf("Sequences for: %s\n", path.relative().c_str());
 				for(int s = 0; s < sprite->size(); s++)
 					printf("Seq %3d: %s\n", s, (*sprite)[s].name.c_str());
@@ -409,7 +405,7 @@ public:
 	}
 
 	vector<FileEntry> m_entries;
-	sys::Path m_current_dir;
+	FilePath m_current_dir;
 
 	PListBox			m_dir_view;
 	Ptr<ResourceView>	m_res_view;
@@ -420,10 +416,10 @@ public:
 
 int safe_main(int argc, char **argv)
 {
-	Config config = loadConfig("res_viewer");
+	Config config("res_viewer");
 
-	gfx::initDevice();
-	createWindow(config.resolution, config.fullscreen);
+	initDevice();
+	createWindow(config.resolution, config.fullscreen_on);
 	setWindowTitle("FreeFT::res_viewer; built " __DATE__ " " __TIME__);
 	grabMouse(false);
 
@@ -439,7 +435,7 @@ int safe_main(int argc, char **argv)
 		main_window.process();
 		main_window.draw();
 
-		gfx::tick();
+		fwk::tick();
 	}
 
 	return 0;

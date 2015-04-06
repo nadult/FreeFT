@@ -6,7 +6,6 @@
 #ifndef GFX_FONT_H
 #define GFX_FONT_H
 
-#include "gfx/device.h"
 
 namespace gfx
 {

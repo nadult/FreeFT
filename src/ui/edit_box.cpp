@@ -4,7 +4,6 @@
  */
 
 #include "edit_box.h"
-#include "gfx/device.h"
 
 using namespace gfx;
 
@@ -12,7 +11,7 @@ namespace ui {
 
 	EditBox::EditBox(const IRect &rect, int max_size, const char *label, Color col)
 		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_last_key(0), m_max_size(max_size), m_label(label) {
-		m_font = gfx::Font::mgr[WindowStyle::fonts[0]];
+		m_font = Font::mgr[WindowStyle::fonts[0]];
 	}
 
 	void EditBox::setText(const char *text) {
@@ -66,10 +65,10 @@ namespace ui {
 		else {
 			double time = getTime();
 
-			int key =	isKeyPressed(Key::right)? Key::right :
-						isKeyPressed(Key::left)? Key::left :
-						isKeyPressed(Key::del)? Key::del :
-						isKeyPressed(Key::backspace)? Key::backspace : getCharPressed();
+			int key =	isKeyPressed(InputKey::right)? InputKey::right :
+						isKeyPressed(InputKey::left)? InputKey::left :
+						isKeyPressed(InputKey::del)? InputKey::del :
+						isKeyPressed(InputKey::backspace)? InputKey::backspace : getCharPressed();
 
 			if(key != m_last_key) {
 				m_key_down_time = time;
@@ -81,7 +80,7 @@ namespace ui {
 			if(key == m_last_key && time > m_key_down_time + 0.4f && time > m_on_key_time + 0.025f)
 				onKey(key);
 		
-			bool end = isKeyDown(Key::enter);	
+			bool end = isKeyDown(InputKey::enter);	
 			if(isMouseKeyDown(0) || end) {
 				if(!end && rect().isInside(mouse_pos)) {
 					setCursorPos(mouse_pos);
@@ -107,13 +106,13 @@ namespace ui {
 	}
 
 	void EditBox::onKey(int key) {
-		if(key == Key::right && m_cursor_pos < (int)m_text.size())
+		if(key == InputKey::right && m_cursor_pos < (int)m_text.size())
 			m_cursor_pos++;
-		else if(key == Key::left && m_cursor_pos > 0)
+		else if(key == InputKey::left && m_cursor_pos > 0)
 			m_cursor_pos--;
-		else if(key == Key::del && (int)m_text.size() > m_cursor_pos)
+		else if(key == InputKey::del && (int)m_text.size() > m_cursor_pos)
 			m_text.erase(m_cursor_pos, 1);
-		else if(key == Key::backspace && m_cursor_pos > 0 && !m_text.empty())
+		else if(key == InputKey::backspace && m_cursor_pos > 0 && !m_text.empty())
 			m_text.erase(--m_cursor_pos, 1);
 		else if(key >= 32 && key < 128 && (int)m_text.size() < m_max_size)
 			m_text.insert(m_cursor_pos++, 1, key);

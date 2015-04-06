@@ -5,7 +5,6 @@
 
 #include "navi_map.h"
 #include "navi_heightmap.h"
-#include "sys/profiler.h"
 #include "gfx/scene_renderer.h"
 #include <cstring>
 #include <algorithm>
@@ -364,7 +363,7 @@ void NaviMap::removeColliders() {
 	
 void NaviMap::updateReachability() {
 	//TODO: this is probably too slow
-	//PROFILE("NaviMap::updateReachability");
+	//FWK_PROFILE("NaviMap::updateReachability");
 
 	vector<int> groups(m_quads.size(), -1);
 
@@ -575,7 +574,7 @@ namespace {
 
 	struct HeapData {
 		HeapData(SearchData *ptr) :ptr(ptr), value(ptr->dist + ptr->est_dist) { }
-		HeapData() { }
+		HeapData() = default;
 
 		bool operator<(const HeapData &rhs) const { return value < rhs.value; }
 
@@ -807,7 +806,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 }
 
 bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, int filter_collider) const {
-	PROFILE_RARE("NaviMap::findPath");
+	FWK_PROFILE_RARE("NaviMap::findPath");
 
 	int start_id = findQuad(start, filter_collider);
 	int end_id = findQuad(end, filter_collider);
@@ -897,7 +896,7 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 	return true;
 }
 
-void NaviMap::visualize(gfx::SceneRenderer &renderer, bool borders) const {
+void NaviMap::visualize(SceneRenderer &renderer, bool borders) const {
 	for(int n = 0; n < (int)m_quads.size(); n++) {
 		if(m_quads[n].is_disabled)
 			continue;

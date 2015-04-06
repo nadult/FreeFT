@@ -37,7 +37,7 @@ namespace game {
 
 		WeaponClass::Type class_id;
 		float damage_mod;
-		uint attack_modes;
+		unsigned attack_modes;
 		int max_ammo, burst_ammo;
 
 		SoundId sound_ids[WeaponSoundType::count];
@@ -64,7 +64,7 @@ namespace game {
 
 		WeaponClass::Type classId() const						{ return proto().class_id; }
 		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }
-		uint attackModes() const								{ return proto().attack_modes; }
+		unsigned attackModes() const							{ return proto().attack_modes; }
 
 		int maxAmmo() const { return proto().max_ammo; }
 		bool needAmmo() const { return !proto().ammo_class_id.empty(); }

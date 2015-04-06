@@ -3,10 +3,9 @@
    This file is part of FreeFT.
  */
 
+#include "gfx/drawing.h"
 #include "editor/tile_selector.h"
-#include "gfx/device.h"
 
-using namespace gfx;
 using game::Tile;
 
 namespace ui {

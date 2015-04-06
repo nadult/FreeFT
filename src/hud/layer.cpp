@@ -4,12 +4,10 @@
  */
 
 #include "hud/layer.h"
-#include "gfx/device.h"
 #include "game/world.h"
 #include "game/game_mode.h"
 #include "game/actor.h"
 #include "game/pc_controller.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 

@@ -1,0 +1,3 @@
+[submodule "libfwk"]
+	path = libfwk
+	url = http://github.com/nadult/libfwk

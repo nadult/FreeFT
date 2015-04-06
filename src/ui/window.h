@@ -81,8 +81,8 @@ namespace ui
 		Color backgroundColor() const { return m_background_color; }
 		void setBackgroundColor(Color col);
 
-		void setBackground(gfx::PTexture);
-		gfx::PTexture background() const { return m_background; }
+		void setBackground(PTexture);
+		PTexture background() const { return m_background; }
 
 		Window *parent() const { return m_parent; }
 		Window *mainWindow() { return m_parent? m_parent->mainWindow() : this; }
@@ -133,7 +133,7 @@ namespace ui
 
 		Window *m_parent;
 		vector<PWindow> m_children;
-		gfx::PTexture m_background;
+		PTexture m_background;
 
 		IRect  m_inner_rect;	// if its bigger than m_rect then progress bars will be added
 		IRect m_rect;			// coordinates relative to parent window

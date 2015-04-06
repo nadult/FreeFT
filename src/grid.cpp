@@ -4,7 +4,6 @@
  */
 
 #include "grid.h"
-#include "sys/profiler.h"
 
 #define INSERT(list, id) listInsert<Object, &Object::node>(m_objects, list, id)
 #define REMOVE(list, id) listRemove<Object, &Object::node>(m_objects, list, id)

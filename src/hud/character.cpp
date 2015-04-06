@@ -8,8 +8,6 @@
 #include "game/world.h"
 #include "game/pc_controller.h"
 #include "game/game_mode.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include <algorithm>
 
 using namespace gfx;
@@ -38,13 +36,13 @@ namespace hud {
 
 		m_icon_prev = new HudClickButton(FRect(s_scroll_button_size) + pos);
 		m_icon_prev->setIcon(HudIcon::up_arrow);
-		m_icon_prev->setAccelerator(Key::pageup);
+		m_icon_prev->setAccelerator(InputKey::pageup);
 		m_icon_prev->setButtonStyle(HudButtonStyle::small);
 		pos.x += s_scroll_button_size.x + spacing;
 
 		m_icon_next = new HudClickButton(FRect(s_scroll_button_size) + pos);
 		m_icon_next->setIcon(HudIcon::down_arrow);
-		m_icon_next->setAccelerator(Key::pagedown);
+		m_icon_next->setAccelerator(InputKey::pagedown);
 		m_icon_next->setButtonStyle(HudButtonStyle::small);
 
 		pos = float2(s_hud_char_icon_size.x + spacing * 2, spacing + topOffset());

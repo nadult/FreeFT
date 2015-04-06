@@ -4,7 +4,6 @@
  */
 
 #include "game/level.h"
-#include "sys/xml.h"
 #include <algorithm>
 #include <zlib.h>
 

@@ -6,34 +6,33 @@
 #ifndef GAME_TILE_H
 #define GAME_TILE_H
 
-#include "gfx/texture.h"
-#include "gfx/device.h"
+#include "gfx/packed_texture.h"
 #include "gfx/texture_cache.h"
 #include "game/base.h"
 
 namespace game
 {
 
-	class TileFrame: public gfx::CachedTexture {
+	class TileFrame: public CachedTexture {
 	public:
-		TileFrame(const gfx::Palette *palette = nullptr) :m_palette_ref(palette) { }
+		TileFrame(const Palette *palette = nullptr) :m_palette_ref(palette) { }
 		TileFrame(const TileFrame&);
 		void operator=(const TileFrame&);
 		void load(Stream&);
 		void save(Stream&) const;
 
-		virtual void cacheUpload(gfx::Texture&) const;
+		virtual void cacheUpload(Texture&) const;
 		virtual int2 textureSize() const;
 
-		int2 dimensions() const { return m_texture.dimensions(); }	
-		gfx::Texture texture() const;
-		gfx::PTexture deviceTexture(FRect &tex_rect) const;
+		int2 dimensions() const { return m_texture.size(); }	
+		Texture texture() const;
+		PTexture deviceTexture(FRect &tex_rect) const;
 	
 		const IRect rect() const;
 
 	protected:
-		const gfx::Palette *m_palette_ref;
-		gfx::PackedTexture m_texture;
+		const Palette *m_palette_ref;
+		PackedTexture m_texture;
 		int2 m_offset;
 
 		friend class Tile;
@@ -62,7 +61,7 @@ namespace game
 		static void setFrameCounter(int frame_counter);
 
 		void draw(const int2 &pos, Color color = Color::white) const;
-		void addToRender(gfx::SceneRenderer&, const int3 &pos, Color color = Color::white) const;
+		void addToRender(SceneRenderer&, const int3 &pos, Color color = Color::white) const;
 		bool testPixel(const int2 &pos) const;
 
 		const int3 &bboxSize() const { return m_bbox; }
@@ -78,7 +77,7 @@ namespace game
 	protected:
 		void updateMaxRect();
 
-		gfx::Palette m_palette;
+		Palette m_palette;
 		TileFrame m_first_frame;
 		vector<TileFrame> m_frames;
 		int2 m_offset;

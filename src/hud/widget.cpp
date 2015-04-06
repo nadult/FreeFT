@@ -3,10 +3,8 @@
    This file is part of FreeFT.
  */
 
+#include "fwk_opengl.h"
 #include "hud/widget.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
-#include "gfx/opengl.h"
 
 using namespace gfx;
 
@@ -46,12 +44,12 @@ namespace hud {
 		onInputFocus(is_focused);
 	}
 	
-	bool HudWidget::handleInput(const io::InputEvent &event) {
+	bool HudWidget::handleInput(const InputEvent &event) {
 		if(!m_is_visible)
-			if(!isOneOf(event.type(), io::InputEvent::key_up, io::InputEvent::mouse_key_up, io::InputEvent::mouse_over))
+			if(!isOneOf(event.type(), InputEvent::key_up, InputEvent::mouse_key_up, InputEvent::mouse_over))
 				return false;
 
-		io::InputEvent cevent = event;
+		InputEvent cevent = event;
 		cevent.translate(-rect().min);
 		bool focus_handled = false;
 
@@ -187,7 +185,7 @@ namespace hud {
 		return !m_is_visible && m_visible_time > 0.01f;
 	}
 		
-	bool HudWidget::isMouseOver(const io::InputEvent &event) const {
+	bool HudWidget::isMouseOver(const InputEvent &event) const {
 		return isMouseOver(event.mousePos());
 	}
 	

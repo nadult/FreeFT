@@ -8,14 +8,11 @@
 #include <algorithm>
 #include <unistd.h>
 
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include "game/tile_map.h"
 #include "game/tile.h"
 #include "game/entity_map.h"
 #include "game/level.h"
 #include "game/item.h"
-#include "sys/profiler.h"
 #include "ui/window.h"
 #include "ui/button.h"
 #include "ui/progress_bar.h"
@@ -31,13 +28,9 @@
 
 #include "editor/view.h"
 #include "ui/file_dialog.h"
-#include "sys/platform.h"
 #include "sys/config.h"
-#include "sys/xml.h"
 
-using namespace gfx;
 using namespace ui;
-using namespace sys;
 using game::Tile;
 using game::Sprite;
 using game::TileMap;
@@ -264,7 +257,7 @@ int safe_main(int argc, char **argv)
 	Config config("editor");
 	game::loadData();
 
-	gfx::initDevice();
+	initDevice();
 	adjustWindowSize(config.resolution, config.fullscreen_on);
 
 	createWindow(config.resolution, config.fullscreen_on);
@@ -278,7 +271,7 @@ int safe_main(int argc, char **argv)
 	findFiles(file_names, "data/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Loading tiles");
-	Path tiles_path = Path(Tile::mgr.prefix()).absolute();
+	FilePath tiles_path = FilePath(Tile::mgr.prefix()).absolute();
 	for(uint n = 0; n < file_names.size(); n++) {
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
@@ -286,7 +279,7 @@ int safe_main(int argc, char **argv)
 		}
 
 		try {
-			Path tile_path = file_names[n].path.relative(tiles_path);
+			FilePath tile_path = file_names[n].path.relative(tiles_path);
 			string tile_name = tile_path;
 			if(removeSuffix(tile_name, Tile::mgr.suffix()))
 				Ptr<Tile> tile = Tile::mgr.load(tile_name);
@@ -303,8 +296,8 @@ int safe_main(int argc, char **argv)
 	double start_time = getTime();
 
 	while(pollEvents()) {
-		double loop_start = profiler::getTime();
-		if(isKeyPressed(Key::lalt) && isKeyDown(Key::f4))
+		double loop_start = getProfilerTime();
+		if(isKeyPressed(InputKey::lalt) && isKeyDown(InputKey::f4))
 			break;
 		
 		Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
@@ -317,18 +310,18 @@ int safe_main(int argc, char **argv)
 			DTexture::unbind();
 			drawQuad(config.resolution - int2(280, 200), config.resolution, Color(0, 0, 0, 80));
 
-			gfx::PFont font = gfx::Font::mgr["liberation_16"];
+			PFont font = Font::mgr["liberation_16"];
 			font->draw(config.resolution - int2(280, 180), {Color::white, Color::black},prof_stats);
 		}
 
-		gfx::tick();
+		fwk::tick();
 
-		profiler::updateTimer("main_loop", profiler::getTime() - loop_start);
+		updateTimer("main_loop", getProfilerTime() - loop_start);
 		if(getTime() - stat_update_time > 0.25) {
-			prof_stats = profiler::getStats();
+			prof_stats = getProfilerStats();
 			stat_update_time = getTime();
 		}
-		profiler::nextFrame();
+		profilerNextFrame();
 	}
 
 	return 0;

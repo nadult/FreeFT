@@ -3,6 +3,8 @@
    This file is part of FreeFT.
  */
 
+#include "net/server.h"
+
 #include <memory.h>
 #include <cstdio>
 #include <list>
@@ -12,12 +14,7 @@
 #include "game/game_mode.h"
 #include "game/death_match.h"
 #include "navi_map.h"
-#include "sys/profiler.h"
-#include "sys/platform.h"
-#include "net/server.h"
-#include "sys/xml.h"
 
-using namespace gfx;
 using namespace game;
 using namespace net;
 

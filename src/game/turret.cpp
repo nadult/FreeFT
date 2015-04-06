@@ -11,12 +11,10 @@
 #include "game/weapon.h"
 #include "game/game_mode.h"
 #include "game/all_orders.h"
-#include "sys/xml.h"
 #include "sys/data_sheet.h"
 #include "net/socket.h"
 #include <cmath>
 #include <cstdio>
-#include "sys/profiler.h"
 #include "gfx/scene_renderer.h"
 
 //#define DEBUG_SHOOTING

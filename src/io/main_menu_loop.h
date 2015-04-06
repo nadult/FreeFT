@@ -56,7 +56,7 @@ namespace io {
 
 		audio::PPlayback m_music;
 
-		gfx::PTexture m_back, m_loading;
+		PTexture m_back, m_loading;
 		IRect m_back_rect;
 	
 		std::future<game::PWorld> m_future_world;

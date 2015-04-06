@@ -4,7 +4,6 @@
  */
 
 #include "ui/window.h"
-#include "gfx/device.h"
 #include <cstdlib>
 
 using namespace gfx;
@@ -63,7 +62,7 @@ namespace ui
 		setRect(rect);
 	}
 
-	void Window::setBackground(gfx::PTexture background) {
+	void Window::setBackground(PTexture background) {
 		m_background = background;
 	}
 
@@ -119,7 +118,7 @@ namespace ui
 		int2 mouse_pos = getMousePos();
 		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min;
 		int finished_dragging = 0;
-		bool escape = isKeyDown(Key::esc);
+		bool escape = isKeyDown(InputKey::esc);
 
 		if(m_dragging_mode) {
 			if(!isMouseKeyPressed(m_dragging_mode - 1) || escape)
@@ -169,9 +168,9 @@ namespace ui
 
 					if(wheel)
 						vector.y += wheel * rect().height() / 8;
-					if(isKeyDownAuto(Key::pageup, 2))
+					if(isKeyDownAuto(InputKey::pageup, 2))
 						vector.y += rect().height();
-					if(isKeyDownAuto(Key::pagedown, 2))
+					if(isKeyDownAuto(InputKey::pagedown, 2))
 						vector.y -= rect().height();
 
 					setInnerRect(m_inner_rect + vector);
@@ -195,7 +194,7 @@ namespace ui
 		lookAt(-m_clipped_rect.min);
 		setScissorRect(m_clipped_rect);
 
-		if(m_background_color.a > 0 && !(m_background && m_background->dimensions() == m_rect.size())) {
+		if(m_background_color.a > 0 && !(m_background && m_background->size() == m_rect.size())) {
 			if(m_background_color.a == 255)
 				clear(m_background_color);
 			else {
@@ -206,7 +205,7 @@ namespace ui
 
 		if(m_background) {
 			m_background->bind();
-			drawQuad(int2(0, 0), m_background->dimensions());
+			drawQuad(int2(0, 0), m_background->size());
 		}
 		
 		drawContents();

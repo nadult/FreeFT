@@ -6,8 +6,6 @@
 #include "game/tile_map.h"
 #include "game/tile.h"
 #include "gfx/scene_renderer.h"
-#include "sys/profiler.h"
-#include "sys/xml.h"
 #include <algorithm>
 
 

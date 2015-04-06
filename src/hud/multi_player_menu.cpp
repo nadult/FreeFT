@@ -6,8 +6,6 @@
 #include "hud/multi_player_menu.h"
 #include "hud/edit_box.h"
 #include "hud/grid.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include "net/client.h"
 #include "sys/config.h"
 
@@ -56,12 +54,12 @@ namespace hud {
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		PHudButton button_down = new HudClickButton(button_rect);
 		button_down->setIcon(HudIcon::down_arrow);
-		button_down->setAccelerator(Key::pagedown);
+		button_down->setAccelerator(InputKey::pagedown);
 
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		PHudButton button_up = new HudClickButton(button_rect);
 		button_up->setIcon(HudIcon::up_arrow);
-		button_up->setAccelerator(Key::pageup);
+		button_up->setAccelerator(InputKey::pageup);
 
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		button_rect.min.x -= 50.0f;
@@ -72,7 +70,7 @@ namespace hud {
 		button_rect.min.x -= 20.0f;
 		PHudButton button_connect = new HudClickButton(button_rect);
 		button_connect->setLabel("connect");
-		button_connect->setAccelerator(Key::enter);
+		button_connect->setAccelerator(InputKey::enter);
 
 		button_rect = FRect(float2(150, s_button_size.y));
 		button_rect += float2(rect.width() - button_rect.width() - spacing, spacing + topOffset());
@@ -119,8 +117,8 @@ namespace hud {
 		return alpha() * 0.6f;
 	}
 		
-	bool MultiPlayerMenu::onInput(const io::InputEvent &event) {
-		if(event.keyDown(Key::esc)) {
+	bool MultiPlayerMenu::onInput(const InputEvent &event) {
+		if(event.keyDown(InputKey::esc)) {
 			setVisible(false);
 			return true;
 		}
@@ -269,7 +267,7 @@ namespace hud {
 	}
 
 	void MultiPlayerMenu::onDraw() const {
-		FRect back_quad(gfx::getWindowSize());
+		FRect back_quad(getWindowSize());
 
 		DTexture::unbind();
 		drawQuad(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));

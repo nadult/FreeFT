@@ -4,7 +4,6 @@
  */
 
 #include "sys/data_sheet.h"
-#include "sys/xml.h"
 
 TupleParser::TupleParser(const char **columns, int num_columns, const TupleParser::ColumnMap &map)
 		:m_columns(columns), m_num_columns(num_columns), m_column_map(map) { }
@@ -33,7 +32,7 @@ static const char *getText(XMLNode cell_node) {
 
 void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser&)) {
 	vector<XMLNode> rows;
-	vector<CString> col_names;
+	vector<StringRef> col_names;
 
 	XMLNode row_node = table_node.child("table:table-row");
 	while(row_node) {
@@ -52,7 +51,7 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 		}
 	}
 	
-	std::map<CString, int> column_map;
+	std::map<StringRef, int> column_map;
 	for(int n = 0; n < (int)col_names.size(); n++)
 		if(!col_names[n].isEmpty()) {
 			if(column_map.find(col_names[n]) != column_map.end())

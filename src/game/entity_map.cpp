@@ -4,7 +4,6 @@
  */
 
 #include "entity_map.h"
-#include "sys/xml.h"
 #include <algorithm>
 
 namespace game

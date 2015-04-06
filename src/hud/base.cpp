@@ -4,7 +4,6 @@
  */
 
 #include "hud/base.h"
-#include "gfx/device.h"
 #include "audio/device.h"
 
 using namespace gfx;
@@ -16,7 +15,7 @@ namespace hud
 		Color colors[4] = { a, b, b, a };
 		if(is_vertical)
 			swap(colors[1], colors[3]);
-		gfx::drawQuad(rect, FRect(0, 0, 1, 1), colors);
+		drawQuad(rect, FRect(0, 0, 1, 1), colors);
 	}
 
 	void drawLine(float2 p1, float2 p2, Color a, Color b) {

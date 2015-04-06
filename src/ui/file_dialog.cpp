@@ -7,8 +7,6 @@
 #include "ui/text_box.h"
 #include <algorithm>
 
-using namespace sys;
-
 namespace ui {
 
 	static const char *s_ok_label[] = {
@@ -38,7 +36,7 @@ namespace ui {
 		updateList();
 	}
 	
-	void FileDialog::setPath(const Path &path) {
+	void FileDialog::setPath(const FilePath &path) {
 		if(path.isDirectory()) {
 			m_dir_path = path;
 			m_edit_box->setText("");
@@ -51,7 +49,7 @@ namespace ui {
 		updateButtons();
 	}
 
-	const Path FileDialog::path() const {
+	FilePath FileDialog::path() const {
 		return m_dir_path / m_edit_box->text();
 	}
 
@@ -68,7 +66,7 @@ namespace ui {
 		}
 		else if(event.type == Event::element_selected) {
 			if(event.value >= 0 && event.value < m_list_box->size()) {
-				Path file_path = m_dir_path / Path((*m_list_box)[event.value].text.c_str());
+				FilePath file_path = m_dir_path / FilePath((*m_list_box)[event.value].text.c_str());
 				file_path = file_path.absolute();
 
 				if(file_path.isDirectory()) {
@@ -104,7 +102,7 @@ namespace ui {
 	}
 
 	void FileDialog::updateButtons() {
-		Path file_path = m_dir_path / Path(m_edit_box->text());
+		FilePath file_path = m_dir_path / FilePath(m_edit_box->text());
 
 		if(m_mode == FileDialogMode::opening_file)
 			m_ok_button->enable(file_path.isRegularFile());

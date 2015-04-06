@@ -12,8 +12,6 @@
 #include "game/world.h"
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 

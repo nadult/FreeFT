@@ -1,7 +1,6 @@
 *.swp
 *.vim
-/src/tags
-/src/.ycm_extra_conf.pyc
+/.ycm_extra_conf.pyc
 /Makefile.local
 /editor
 /game

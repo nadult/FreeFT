@@ -7,7 +7,6 @@
 #define GAME_ITEM_H
 
 #include "game/entity.h"
-#include "gfx/device.h"
 
 namespace game {
 
@@ -65,7 +64,7 @@ namespace game {
 		const ItemProto &proto() const		{ return *m_proto; }
 		ProtoIndex index() const			{ return m_proto->index(); }
 		
-		gfx::PTexture guiImage(bool small, FRect &tex_rect) const;
+		PTexture guiImage(bool small, FRect &tex_rect) const;
 
 		void save(Stream&) const;
 
@@ -81,7 +80,7 @@ namespace game {
 
 		Flags::Type flags() const { return Flags::item | Flags::static_entity; }
 
-		gfx::PTexture guiImage(bool small, FRect &tex_rect) const;
+		PTexture guiImage(bool small, FRect &tex_rect) const;
 		const Item &item() const { return m_item; }
 		Item &item() { return m_item; }
 		

@@ -9,8 +9,6 @@
 #include "game/pc_controller.h"
 
 #include "game/world.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include <algorithm>
 
 using namespace gfx;
@@ -59,7 +57,7 @@ namespace hud {
 
 			for(auto &item : items) {
 				FRect uv_rect;
-				gfx::PTexture texture = item.first.guiImage(true, uv_rect);
+				PTexture texture = item.first.guiImage(true, uv_rect);
 				float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 				FRect irect(pos.x, rect.min.y, pos.x + max(s_min_item_width, size.x), rect.max.y);
@@ -102,12 +100,12 @@ namespace hud {
 
 		m_button_up = new HudClickButton(FRect(s_button_size));
 		m_button_up->setIcon(HudIcon::up_arrow);
-		m_button_up->setAccelerator(Key::pageup);
+		m_button_up->setAccelerator(InputKey::pageup);
 		m_button_up->setButtonStyle(HudButtonStyle::small);
 
 		m_button_down = new HudClickButton(FRect(s_button_size));
 		m_button_down->setIcon(HudIcon::down_arrow);
-		m_button_down->setAccelerator(Key::pagedown);
+		m_button_down->setAccelerator(InputKey::pagedown);
 		m_button_down->setButtonStyle(HudButtonStyle::small);
 
 		attach(m_button_up.get());

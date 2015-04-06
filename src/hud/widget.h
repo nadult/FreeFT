@@ -30,7 +30,7 @@ namespace hud
 		void update(double time_diff);
 		void draw() const;
 		
-		bool handleInput(const io::InputEvent&);
+		bool handleInput(const InputEvent&);
 		bool handleEvent(const HudEvent&);
 
 		bool handleEvent(HudWidget *widget, HudEvent::Type event_type, int value = 0) {
@@ -57,7 +57,7 @@ namespace hud
 		void setInputFocus(bool is_focused);
 		virtual void onInputFocus(bool is_focused) { }
 
-		bool isMouseOver(const io::InputEvent&) const;
+		bool isMouseOver(const InputEvent&) const;
 		bool isMouseOver(const float2 &mouse_pos) const;
 		
 		virtual float alpha() const { return m_visible_time; }
@@ -70,7 +70,7 @@ namespace hud
 	protected:
 		virtual void onUpdate(double time_diff) { }
 		virtual void onLayout() { }
-		virtual bool onInput(const io::InputEvent&) { return false; }
+		virtual bool onInput(const InputEvent&) { return false; }
 		virtual bool onEvent(const HudEvent&) { return false; }
 		virtual void onDraw() const { }
 
@@ -82,7 +82,7 @@ namespace hud
 	protected:
 		FRect m_rect;
 		HudStyle m_style;
-		gfx::PFont m_font, m_big_font;
+		PFont m_font, m_big_font;
 		vector<Ptr<HudWidget>> m_children;
 
 		float m_anim_speed;

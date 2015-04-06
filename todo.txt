@@ -56,6 +56,7 @@ Refactoring: -------------------------------------------------------------------
 - ?? Make rects and boxes store position and size, not min and max
 - Normal Inheritence for items
 - Use shared_ptr<> instead of Ptr<> ? (safety issues in multithreaded environment)
+- Use optional<> instead of unique_ptr<> in some places
 
 
 

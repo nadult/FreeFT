@@ -5,9 +5,6 @@
 
 #include "game/character.h"
 #include "game/inventory.h"
-#include "gfx/device.h"
-#include "sys/platform.h"
-#include "sys/xml.h"
 
 namespace game {
 
@@ -37,10 +34,10 @@ namespace game {
 		validate();
 	}
 		
-	gfx::PTexture Character::icon() const {
+	PTexture Character::icon() const {
 		if(!m_icon_name.empty()) {
 			try {
-				return gfx::DTexture::gui_mgr[string(s_icon_folder) + m_icon_name];
+				return DTexture::gui_mgr[string(s_icon_folder) + m_icon_name];
 			}
 			catch(...) { } //TODO: log error
 		}
@@ -48,8 +45,8 @@ namespace game {
 		return emptyIcon();
 	}
 		
-	gfx::PTexture Character::emptyIcon() {
-		return gfx::DTexture::gui_mgr[string(s_icon_folder) + s_empty_name];
+	PTexture Character::emptyIcon() {
+		return DTexture::gui_mgr[string(s_icon_folder) + s_empty_name];
 	}
 		
 	const vector<pair<ProtoIndex, string>> Character::findIcons() {

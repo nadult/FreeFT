@@ -5,7 +5,6 @@
 
 #include "hud/console.h"
 #include "hud/edit_box.h"
-#include "io/input.h"
 
 namespace hud {
 
@@ -28,7 +27,7 @@ namespace hud {
 		m_edit_box->setInputFocus(is_visible);
 	}
 
-	bool HudConsole::onInput(const io::InputEvent &event) {
+	bool HudConsole::onInput(const InputEvent &event) {
 		if(event.keyDown('`') || (event.mouseKeyDown(0) && !isMouseOver(event))) {
 			setVisible(false);
 			return true;

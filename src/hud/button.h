@@ -72,10 +72,10 @@ namespace hud
 	protected:
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		void onClick();
 
-		gfx::PTexture m_icons_tex;
+		PTexture m_icons_tex;
 		HudIcon::Type m_icon_id;
 
 		string m_label;
@@ -97,7 +97,7 @@ namespace hud
 		HudClickButton(const FRect &target_rect, int id = 0);
 	
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 
 		bool m_is_accelerator;
 	};
@@ -107,7 +107,7 @@ namespace hud
 		HudToggleButton(const FRect &target_rect, int id = 0);
 	
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 	};
 
 	class HudRadioButton: public HudButton {
@@ -115,7 +115,7 @@ namespace hud
 		HudRadioButton(const FRect &target_rect, int id = 0, int group_id = 0);
 
 	protected:
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 
 		int m_group_id;
 	};

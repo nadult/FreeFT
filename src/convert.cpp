@@ -6,22 +6,18 @@
 #include "game/tile.h"
 #include "game/sprite.h"
 #include "game/tile_map.h"
-#include "gfx/texture.h"
-#include "sys/platform.h"
-#include "sys/xml.h"
 #include "audio/sound.h"
 #include <unistd.h>
 #include <algorithm>
 #include <set>
 #include <zip.h>
 
-using namespace sys;
 using game::Sprite;
 using game::Tile;
 using game::TileMap;
 
 static bool verifyFTPath(string path) {
-	return access(Path(path) / "core");
+	return access(FilePath(path) / "core");
 }
 
 #ifdef _WIN32
@@ -90,13 +86,9 @@ static const string locateFTPath() {
 	return browseFolder("Please select folder in which Fallout Tactics is installed:", Path::current());
 }
 
-
-#else
-
-#define USE_OPENMP
 #endif
 
-#ifdef USE_OPENMP
+#ifdef ENABLE_OPENMP
 #include <omp.h>
 #endif
 
@@ -203,7 +195,7 @@ void convert(ResTypeId::Type type, Stream &ldr, Stream &svr) {
 template <class TResource>
 void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
 			bool detailed, const string &filter) {
-	Path main_path = Path(src_dir).absolute();
+	FilePath main_path = FilePath(src_dir).absolute();
 	vector<FileEntry> file_names;
 	
 	printf("Scanning...\n");
@@ -213,8 +205,8 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 
 	printf("Recreating directories...\n");
 	for(int n = 0; n < (int)file_names.size(); n++) {
-		Path path = file_names[n].path.relative(main_path);
-		Path dir = Path(dst_dir) / path.parent();
+		FilePath path = file_names[n].path.relative(main_path);
+		FilePath dir = FilePath(dst_dir) / path.parent();
 		if(access(dir.c_str(), R_OK) != 0)
 			mkdirRecursive(dir.c_str());
 	}
@@ -230,21 +222,21 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 			printf(".");
 			fflush(stdout);
 		}
-		Path full_path = file_names[n].path;
+		FilePath full_path = file_names[n].path;
 		if(((const string&)full_path).find(filter) == string::npos)
 			continue;
 		
 #pragma omp task
 		{	
-			Path path = full_path.relative(main_path);
+			FilePath path = full_path.relative(main_path);
 			string name = path.fileName();
 			string lo_name = toLower(name);
 
 			if(removeSuffix(lo_name, old_ext)) {
 				name.resize(lo_name.size());
 
-				Path new_path = Path(dst_dir) / path.parent() / (name + new_ext);
-				Path parent = new_path.parent();
+				FilePath new_path = FilePath(dst_dir) / path.parent() / (name + new_ext);
+				FilePath parent = new_path.parent();
 
 				try {
 					TResource resource;
@@ -253,7 +245,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 					resource.legacyLoad(source);
 					Saver target(new_path);
 					resource.save(target);
-					resource.setResourceName((Path(name).fileName()).c_str()); // TODO: this isprobably not needed
+					resource.setResourceName((FilePath(name).fileName()).c_str()); // TODO: this isprobably not needed
 
 					if(detailed)
 						printf("%40s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
@@ -342,7 +334,7 @@ private:
 };
 
 void convertAll(const char *fot_path, const string &filter) {
-	Path core_path = (Path(fot_path) / "core").absolute();
+	FilePath core_path = (FilePath(fot_path) / "core").absolute();
 
 	printf("FOT core: %s\n", core_path.c_str());
 
@@ -384,11 +376,11 @@ void convertAll(const char *fot_path, const string &filter) {
 		if(type == ResTypeId::archive)
 			continue;
 
-		Path target_dir = ResTypeId::s_new_path[type];
-		Path src_main_path = core_path / s_paths[t].prefix;
+		FilePath target_dir = ResTypeId::s_new_path[type];
+		FilePath src_main_path = core_path / s_paths[t].prefix;
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
-			Path dir = target_dir / Path(it->first).parent();
+			FilePath dir = target_dir / FilePath(it->first).parent();
 			if(access(dir.c_str(), R_OK) != 0)
 				mkdirRecursive(dir.c_str());
 		}
@@ -419,7 +411,7 @@ void convertAll(const char *fot_path, const string &filter) {
 		if(type != ResTypeId::archive)
 			continue;
 
-		Path src_path = core_path / s_paths[t].prefix;
+		FilePath src_path = core_path / s_paths[t].prefix;
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			char archive_path[512];
 			snprintf(archive_path, sizeof(archive_path), "%s/%s%s",
@@ -457,7 +449,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				char dst_path[512];
 				snprintf(dst_path, sizeof(dst_path), "%s/%s%s", ResTypeId::s_new_path[type], name.c_str(), ResTypeId::s_new_suffix[type]);
 
-				Path dir = Path(dst_path).parent();
+				FilePath dir = FilePath(dst_path).parent();
 				if(access(dir.c_str(), R_OK) != 0)
 					mkdirRecursive(dir.c_str());
 

@@ -7,8 +7,6 @@
 #include "hud/char_icon.h"
 #include "game/actor.h"
 #include "game/world.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 

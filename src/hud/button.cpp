@@ -4,8 +4,6 @@
  */
 
 #include "hud/button.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 
@@ -36,7 +34,7 @@ namespace hud {
 		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_greyed_time(0.0f),
 		 m_is_enabled(false), m_is_highlighted(false), m_is_greyed(false), m_icon_id(HudIcon::undefined),
 		 m_button_style(HudButtonStyle::normal), m_label_style(HudLabelStyle::center), m_id(id), m_accelerator(0), m_click_sound(HudSound::button) {
-		m_icons_tex = gfx::DTexture::mgr["icons.png"];
+		m_icons_tex = DTexture::mgr["icons.png"];
 	}
 
 	HudButton::~HudButton() { }
@@ -72,7 +70,7 @@ namespace hud {
 		}
 	}
 		
-	bool HudButton::onInput(const io::InputEvent &event) {
+	bool HudButton::onInput(const InputEvent &event) {
 		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 
@@ -133,7 +131,7 @@ namespace hud {
 	HudClickButton::HudClickButton(const FRect &target_rect, int id)
 		:HudButton(target_rect, id), m_is_accelerator(false) { }
 
-	bool HudClickButton::onInput(const io::InputEvent &event) {
+	bool HudClickButton::onInput(const InputEvent &event) {
 		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 
@@ -163,7 +161,7 @@ namespace hud {
 	HudToggleButton::HudToggleButton(const FRect &target_rect, int id)
 		:HudButton(target_rect, id) { }
 		
-	bool HudToggleButton::onInput(const io::InputEvent &event) {
+	bool HudToggleButton::onInput(const InputEvent &event) {
 		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 		
@@ -182,7 +180,7 @@ namespace hud {
 	HudRadioButton::HudRadioButton(const FRect &target_rect, int id, int group_id)
 		:HudButton(target_rect, id), m_group_id(group_id) { }
 	
-	bool HudRadioButton::onInput(const io::InputEvent &event) {
+	bool HudRadioButton::onInput(const InputEvent &event) {
 		if(event.mouseOver())
 			m_is_highlighted = isMouseOver(event);
 		

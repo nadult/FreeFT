@@ -6,7 +6,6 @@
 #include "game/container.h"
 #include "game/actor.h"
 #include "game/sprite.h"
-#include "sys/xml.h"
 #include <cstdio>
 
 namespace game {

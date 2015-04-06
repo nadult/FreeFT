@@ -183,7 +183,7 @@ namespace game {
 
 		void lookAt(const float3 &pos, bool at_once = false);
 		
-		void addToRender(gfx::SceneRenderer &out, Color color) const override;
+		void addToRender(SceneRenderer &out, Color color) const override;
 
 		void fireProjectile(const FBox &target_box, const Weapon &weapon, float randomness = 0.0f);
 		void makeImpact(EntityRef target, const Weapon &weapon);

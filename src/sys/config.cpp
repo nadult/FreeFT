@@ -4,21 +4,15 @@
  */
 
 #include "sys/config.h"
-#include "sys/xml.h"
 
-	
-Config::Config()
-	:resolution(0, 0), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {
-}
+Config::Config() : resolution(0, 0), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
 
-Config::Config(const XMLNode &node) :Config() {
-	load(node);
-}
-	
-Config::Config(const char *config_name) :Config() {
+Config::Config(const XMLNode &node) : Config() { load(node); }
+
+Config::Config(const char *config_name) : Config() {
 	XMLDocument doc;
 	doc.load("data/config.xml");
-		
+
 	XMLNode node = doc.child(config_name);
 	if(!node)
 		node = doc.child("default");

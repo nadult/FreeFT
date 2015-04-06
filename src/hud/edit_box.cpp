@@ -6,8 +6,6 @@
 #include "hud/edit_box.h"
 #include "game/actor.h"
 #include "game/world.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 
 using namespace gfx;
 
@@ -33,7 +31,7 @@ namespace hud {
 		setEnabled(is_focused);
 	}
 
-	bool HudEditBox::onInput(const io::InputEvent &event) {
+	bool HudEditBox::onInput(const InputEvent &event) {
 		bool handled = false;
 
 		if(m_mode == mode_console && event.keyDown('`'))
@@ -50,14 +48,14 @@ namespace hud {
 		}
 
 		if(isEnabled()) {
-			if(event.keyDown(Key::enter) || event.keyDown(Key::esc) || (event.mouseKeyDown(0) && !mouse_over)) {
-				if(event.keyDown(Key::esc))
+			if(event.keyDown(InputKey::enter) || event.keyDown(InputKey::esc) || (event.mouseKeyDown(0) && !mouse_over)) {
+				if(event.keyDown(InputKey::esc))
 					m_text = m_old_text;
 				setInputFocus(false);
 				handleEvent(this, HudEvent::text_modified, m_id);
 				handled = true;
 			}
-			if(isOneOf(event.type(), io::InputEvent::key_down_auto, io::InputEvent::key_down) && isEnabled()) {
+			if(isOneOf(event.type(), InputEvent::key_down_auto, InputEvent::key_down) && isEnabled()) {
 				int key = event.key();
 				if(event.keyDownAuto(key, 2) || event.keyDown(key))
 					return onKey(event.keyChar());
@@ -81,17 +79,17 @@ namespace hud {
 	}
 
 	bool HudEditBox::onKey(int key) {
-		if(key == Key::end)
+		if(key == InputKey::end)
 			m_cursor_pos = (int)m_text.size();
-		else if(key == Key::home)
+		else if(key == InputKey::home)
 			m_cursor_pos = 0;
-		else if(key == Key::right && m_cursor_pos < (int)m_text.size())
+		else if(key == InputKey::right && m_cursor_pos < (int)m_text.size())
 			m_cursor_pos++;
-		else if(key == Key::left && m_cursor_pos > 0)
+		else if(key == InputKey::left && m_cursor_pos > 0)
 			m_cursor_pos--;
-		else if(key == Key::del && (int)m_text.size() > m_cursor_pos)
+		else if(key == InputKey::del && (int)m_text.size() > m_cursor_pos)
 			m_text.erase(m_cursor_pos, 1);
-		else if(key == Key::backspace && m_cursor_pos > 0 && !m_text.empty())
+		else if(key == InputKey::backspace && m_cursor_pos > 0 && !m_text.empty())
 			m_text.erase(--m_cursor_pos, 1);
 		else if((int)m_text.size() < m_max_size && isValidChar(key))
 			m_text.insert(m_cursor_pos++, 1, m_mode == mode_locase_nick? tolower(key) : key);
@@ -130,7 +128,7 @@ namespace hud {
 		if(isEnabled() && tick <= 1) {
 			FRect ext = evalExtents(m_text.substr(0, m_cursor_pos));
 			int2 pos = (int2)target_rect.min + int2(ext.max.x + 2.0f, 0);
-			gfx::drawLine(pos, pos + int2(0, line_height), Color(255, 255, 255, 180));
+			drawLine(pos, pos + int2(0, line_height), Color(255, 255, 255, 180));
 		}
 
 	}

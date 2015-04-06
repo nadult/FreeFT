@@ -8,8 +8,6 @@
 #include "game/world.h"
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
-#include "gfx/device.h"
-#include "gfx/font.h"
 #include <algorithm>
 
 using namespace gfx;
@@ -60,7 +58,7 @@ namespace hud {
 			float ypos = topOffset() + rect.min.y;
 
 			FRect uv_rect;
-			gfx::PTexture texture = m_item.guiImage(false, uv_rect);
+			PTexture texture = m_item.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
@@ -101,7 +99,7 @@ namespace hud {
 
 		if(!m_entry.item.isDummy()) {
 			FRect uv_rect;
-			gfx::PTexture texture = m_entry.item.guiImage(true, uv_rect);
+			PTexture texture = m_entry.item.guiImage(true, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(rect.center() - size / 2);
@@ -119,7 +117,7 @@ namespace hud {
 		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
 	}
 		
-	bool HudItemButton::onInput(const io::InputEvent &event) {
+	bool HudItemButton::onInput(const InputEvent &event) {
 		bool mouse_over = isMouseOver(event);
 
 		if(event.mouseOver()) {
@@ -176,12 +174,12 @@ namespace hud {
 
 		m_button_up = new HudClickButton(FRect(s_button_size), -1);
 		m_button_up->setIcon(HudIcon::up_arrow);
-		m_button_up->setAccelerator(Key::pageup);
+		m_button_up->setAccelerator(InputKey::pageup);
 		m_button_up->setButtonStyle(HudButtonStyle::small);
 
 		m_button_down = new HudClickButton(FRect(s_button_size), 1);
 		m_button_down->setIcon(HudIcon::down_arrow);
-		m_button_down->setAccelerator(Key::pagedown);
+		m_button_down->setAccelerator(InputKey::pagedown);
 		m_button_down->setButtonStyle(HudButtonStyle::small);
 
 		attach(m_button_up.get());
@@ -197,7 +195,7 @@ namespace hud {
 		return m_pc_controller && m_pc_controller->actor();
 	}
 
-	bool HudInventory::onInput(const io::InputEvent &event) {
+	bool HudInventory::onInput(const InputEvent &event) {
 		if(event.mouseOver() && !isMouseOver(event))
 			m_out_of_item_time = s_desc_visible_time;
 		return false;

@@ -27,7 +27,7 @@ namespace hud {
 	protected:
 		void onUpdate(double time_diff) override;
 		void onDraw() const override;
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		void onInputFocus(bool is_focused) override;
 		void setCursorPos(const float2 &rect_pos);
 		const FRect evalExtents(const string &text) const;

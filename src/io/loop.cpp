@@ -4,7 +4,6 @@
  */
 
 #include "io/loop.h"
-#include "gfx/device.h"
 
 namespace io {
 
@@ -69,7 +68,7 @@ namespace io {
 		onDraw();
 
 		if(m_is_transitioning)
-			m_transition.draw(FRect(gfx::getWindowSize()));
+			m_transition.draw(FRect(getWindowSize()));
 	}
 
 }

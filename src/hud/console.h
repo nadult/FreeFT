@@ -21,7 +21,7 @@ namespace hud {
 
 	protected:
 		void onUpdate(double time_diff) override;
-		bool onInput(const io::InputEvent&) override;
+		bool onInput(const InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
 		void onDraw() const override;
 

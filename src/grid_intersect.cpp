@@ -4,7 +4,6 @@
  */
 
 #include "grid.h"
-#include "sys/profiler.h"
 
 int Grid::findAny(const FBox &box, int ignored_id, int flags) const {
 	IRect grid_box = nodeCoords(box);

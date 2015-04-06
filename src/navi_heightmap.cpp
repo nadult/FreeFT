@@ -5,7 +5,6 @@
 
 #include "navi_heightmap.h"
 #include "grid.h"
-#include "gfx/device.h"
 #include <algorithm>
 
 
@@ -80,8 +79,8 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 	}
 }
 	
-const gfx::Texture NaviHeightmap::toTexture(int level) const {
-	gfx::Texture out(m_size.x, m_size.y);
+Texture NaviHeightmap::toTexture(int level) const {
+	Texture out(m_size.x, m_size.y);
 
 	for(int y = 0; y < m_size.y; y++)
 		for(int x = 0; x < m_size.x; x++) {
@@ -95,7 +94,7 @@ const gfx::Texture NaviHeightmap::toTexture(int level) const {
 
 void NaviHeightmap::saveLevels() const {
 	for(int n = 0; n < m_level_count; n++) {
-		gfx::Texture tex = toTexture(n);
+		Texture tex = toTexture(n);
 		char name[100];
 		sprintf(name, "level%d.tga", n);
 		Saver(name) << tex;
