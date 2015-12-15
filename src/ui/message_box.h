@@ -24,10 +24,10 @@ namespace ui {
 	public:
 		typedef MessageBoxMode::Type Mode;
 		MessageBox(const IRect &rect, const char *message, Mode mode);
-		virtual const char *typeName() const { return "MessageBox"; }
+		const char *typeName() const override { return "MessageBox"; }
 
-		bool onEvent(const Event &event);
-		void drawContents() const;
+		bool onEvent(const Event &event) override;
+		void drawContents(Renderer2D&) const override;
 
 	private:
 		Mode m_mode;

@@ -12,8 +12,6 @@
 namespace game {
 
 	DECLARE_ENUM(ProtoId,
-		invalid = -1,
-
 		item,
 		item_weapon,
 		item_armour,

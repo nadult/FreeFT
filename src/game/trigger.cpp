@@ -19,10 +19,10 @@ namespace game {
 		
 	Trigger::Trigger(const XMLNode &node) :Entity(Sprite::getDummy(), node) {
 		m_class_id = TriggerClassId::fromString(node.attrib("class"));
-		m_box_size = node.float3Attrib("box_size");
-		m_faction_id = node.intAttrib("faction_id", 0);
-		m_spawn_delay = node.floatAttrib("spawn_delay", 0.0f);
-		m_spawn_limit = node.intAttrib("spawn_limit", 0);
+		m_box_size = node.attrib<float3>("box_size");
+		m_faction_id = node.attrib<int>("faction_id", 0);
+		m_spawn_delay = node.attrib<float>("spawn_delay", 0.0f);
+		m_spawn_limit = node.attrib<int>("spawn_limit", 0);
 	}
 
 	Trigger::Trigger(Stream &sr) :Entity(Sprite::getDummy(), sr) {

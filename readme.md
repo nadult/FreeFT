@@ -13,14 +13,14 @@ Compiled binaries can be downloaded from SourceForge
 
 
 ## Building
-For compilation, G++ in version 4.8 is required (many C++11 features are
-used), and following libraries:
+For compilation, G++ in version 4.8 is required or Clang 3.5
+(many C++11 features are used), and following libraries:
 
 * GLFW, libpng, zlib, OpenAL, mpg123, libzip:  
 	these should be available in your distro's package repositories
 
-* baselib:  
-	[http://github.com/nadult/baselib](http://github.com/nadult/baselib)
+* libfwk (included as submodule):  
+	[http://github.com/nadult/libfwk](http://github.com/nadult/libfwk)
 
 ## Running
 To run this program, resources from original Fallout Tactics are required.

@@ -34,7 +34,7 @@ namespace hud {
 
 	protected:
 		bool onInput(const InputEvent&) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		void onLayout() override;
 		void onUpdate(double time_diff) override;
 

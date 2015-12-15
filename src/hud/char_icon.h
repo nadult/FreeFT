@@ -20,7 +20,7 @@ namespace hud
 		void setHP(int current, int max) { m_current_hp = current; m_max_hp = max; }
 		void setCharacter(PCharacter character) {  m_character = character; }
 		
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
 	private:
 		PCharacter m_character;

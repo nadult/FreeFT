@@ -14,8 +14,8 @@ namespace hud {
 	};
 
 	HudConsole::HudConsole(const int2 &resolution) :HudLayer(FRect(0, 0, resolution.x, console_height), HudLayer::slide_top) {
-		m_edit_box = new HudEditBox(rect(), max_command_length, HudEditBox::mode_console);
-		attach(m_edit_box.get());
+		m_edit_box = make_shared<HudEditBox>(rect(), max_command_length, HudEditBox::mode_console);
+		attach(m_edit_box);
 		m_edit_box->setStyle(getStyle(HudStyleId::console));
 		setVisible(false, false);
 	}
@@ -28,16 +28,20 @@ namespace hud {
 	}
 
 	bool HudConsole::onInput(const InputEvent &event) {
-		if(event.keyDown('`') || (event.mouseKeyDown(0) && !isMouseOver(event))) {
+		if(event.keyDown('`') || (event.mouseButtonDown(InputButton::left) && !isMouseOver(event))) {
 			setVisible(false);
 			return true;
 		}
+		if(isVisible() && event.key() >= 32 && event.key() <= 127)
+			return true;
+		
+		//TODO: fixme
 
 		return false;
 	}
 
 	bool HudConsole::onEvent(const HudEvent &event) {
-		if(event.type == HudEvent::text_modified && event.source == m_edit_box) {
+		if(event.type == HudEvent::text_modified && event.source == m_edit_box.get()) {
 			if(m_edit_box->text().empty()) {
 				setVisible(false);
 			}
@@ -59,8 +63,8 @@ namespace hud {
 			m_edit_box->setText("");
 	}
 
-	void HudConsole::onDraw() const {
-//		HudLayer::onDraw();
+	void HudConsole::onDraw(Renderer2D &out) const {
+		HudLayer::onDraw(out);
 	}
 
 	const string HudConsole::getCommand() {

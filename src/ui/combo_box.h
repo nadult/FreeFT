@@ -19,7 +19,7 @@ namespace ui {
 		ComboBox(const IRect &rect, int drop_size, const char *prefix = "",
 					const char **values = nullptr, int value_count = 0);
 	
-		virtual bool onEvent(const Event &ev);
+		bool onEvent(const Event &ev) override;
 
 		void addEntry(const char *text, Color col = Color::white);
 		int findEntry(const char*) const;
@@ -46,7 +46,7 @@ namespace ui {
 		int m_drop_size;
 	};
 
-	typedef Ptr<ComboBox> PComboBox;
+	using PComboBox = shared_ptr<ComboBox>;
 
 }
 

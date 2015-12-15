@@ -11,7 +11,7 @@
 namespace hud
 {
 
-	class HudWidget: public RefCounter {
+	class HudWidget {
 	public:
 		enum {
 			spacing = 15,
@@ -28,7 +28,7 @@ namespace hud
 		void needsLayout();
 		void layout();
 		void update(double time_diff);
-		void draw() const;
+		void draw(Renderer2D&) const;
 		
 		bool handleInput(const InputEvent&);
 		bool handleEvent(const HudEvent&);
@@ -62,8 +62,8 @@ namespace hud
 		
 		virtual float alpha() const { return m_visible_time; }
 
-		void attach(Ptr<HudWidget>);
-		Ptr<HudWidget> detach(HudWidget*);
+		void attach(PHudWidget);
+		PHudWidget detach(HudWidget*);
 		
 		const vector<PHudWidget> &children() const { return m_children; }
 
@@ -72,7 +72,7 @@ namespace hud
 		virtual void onLayout() { }
 		virtual bool onInput(const InputEvent&) { return false; }
 		virtual bool onEvent(const HudEvent&) { return false; }
-		virtual void onDraw() const { }
+		virtual void onDraw(Renderer2D&) const { }
 
 		HudWidget *parent() const { return m_parent; }
 		
@@ -83,7 +83,7 @@ namespace hud
 		FRect m_rect;
 		HudStyle m_style;
 		PFont m_font, m_big_font;
-		vector<Ptr<HudWidget>> m_children;
+		vector<PHudWidget> m_children;
 
 		float m_anim_speed;
 		float m_visible_time;

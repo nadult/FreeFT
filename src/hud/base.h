@@ -12,9 +12,9 @@ namespace hud {
 
 	using namespace game;
 	
-	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical);
-	void drawLine(float2 p1, float2 p2, Color a, Color b);
-	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width);
+	void drawGradQuad(Renderer2D&, const FRect &rect, Color a, Color b, bool is_vertical);
+	void drawLine(Renderer2D&, float2 p1, float2 p2, Color a, Color b);
+	void drawBorder(Renderer2D&, const FRect &rect, Color color, const float2 &offset, float width);
 	void animateValue(float &value, float speed, bool maximize);
 
 	DECLARE_ENUM(HudSound,
@@ -121,21 +121,22 @@ namespace hud {
 	class MultiPlayerMenu;
 	class ServerMenu;
 
-	typedef Ptr<HudWidget> PHudWidget;
-	typedef Ptr<HudButton> PHudButton;
-	typedef Ptr<HudEditBox> PHudEditBox;
-	typedef Ptr<HudLayer> PHudLayer;
-	typedef Ptr<HudWeapon> PHudWeapon;
-	typedef Ptr<HudStance> PHudStance;
-	typedef Ptr<HudCharIcon> PHudCharIcon;
-	typedef Ptr<HudItemButton> PHudItemButton;
-	typedef Ptr<HudItemDesc> PHudItemDesc;
-	typedef Ptr<HudGrid> PHudGrid;
-	typedef Ptr<Hud> PHud;
+	using PHudWidget = shared_ptr<HudWidget>;
+	using PHudButton = shared_ptr<HudButton>;
+	using PHudEditBox = shared_ptr<HudEditBox>;
+	using PHudLayer = shared_ptr<HudLayer>;
+	using PHudWeapon = shared_ptr<HudWeapon>;
+	using PHudStance = shared_ptr<HudStance>;
+	using PHudCharIcon = shared_ptr<HudCharIcon>;
+	using PHudItemButton = shared_ptr<HudItemButton>;
+	using PHudItemDesc = shared_ptr<HudItemDesc>;
+	using PHudGrid = shared_ptr<HudGrid>;
+	using PHud = shared_ptr<Hud>;
+	using PHudMainPanel = shared_ptr<HudMainPanel>;
 	
-	typedef Ptr<MultiPlayerMenu> PMultiPlayerMenu;
-	typedef Ptr<SinglePlayerMenu> PSinglePlayerMenu;
-	typedef Ptr<ServerMenu> PServerMenu;
+	using PMultiPlayerMenu = shared_ptr<MultiPlayerMenu>;
+	using PSinglePlayerMenu = shared_ptr<SinglePlayerMenu>;
+	using PServerMenu = shared_ptr<ServerMenu>;
 
 }
 

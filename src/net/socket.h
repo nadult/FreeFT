@@ -81,6 +81,8 @@ namespace net {
 		int remoteId() const { return m_info.remote_id; }
 		int flags() const { return m_info.flags; }
 
+		int decodeInt() { return ::decodeInt(*this); }
+
 		template <class T>
 		void skip() {
 			T temp;

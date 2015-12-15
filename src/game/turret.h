@@ -37,6 +37,7 @@ namespace game {
 
 		bool canHide() const;
 
+		enum { invalid_anim_id = 255 };
 		u8 anim_idx[TurretAction::count];
 		SoundId sound_idx[TurretSoundId::count];
 		float hit_points;
@@ -48,20 +49,20 @@ namespace game {
 		Turret(const XMLNode&);
 		Turret(const Proto &proto);
 
-		Flags::Type flags() const;
+		Flags::Type flags() const override;
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&, bool force = false) override;
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
-		XMLNode save(XMLNode&) const;
-		void save(Stream&) const;
+		XMLNode save(XMLNode&) const override;
+		void save(Stream&) const override;
 
 		TurretAction::Type action() const { return m_action; }
 
 		bool canSee(EntityRef ref, bool simple_test = false) override;
-		bool isDying() const;
-		bool isDead() const;
+		bool isDying() const override;
+		bool isDead() const override;
 
 		int hitPoints() const { return m_hit_points; }
 		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;

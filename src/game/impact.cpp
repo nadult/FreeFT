@@ -15,10 +15,10 @@ namespace game {
 	);
 
 	ImpactProto::ImpactProto(const TupleParser &parser) :ProtoImpl(parser) {
-		damage = toFloat(parser("damage"));
+		damage = parser.get<float>("damage");
 		damage_type = DamageType::fromString(parser("damage_type"));
-		force = toFloat(parser("force"));
-		range = toFloat(parser("range"));
+		force = parser.get<float>("force");
+		range = parser.get<float>("range");
 		type = ImpactType::fromString(parser("type_id"));
 		sound_idx = SoundId(parser("sound_id"));
 		is_invisible = sprite_name == "impactfx/Projectile Invisi";
@@ -74,14 +74,18 @@ namespace game {
 				float strength = dist < 0.0f? 0.0f : (1 - dist) * (1.0f - dist);
 
 				if(strength > 0.0f) {
-					Segment segment(center, entity->boundingBox().center());
+					if(distance(center, entity->boundingBox().center()) < constant::epsilon) {
+						entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, float3(), m_source);
+					}
+					else {
+						Segment segment(center, entity->boundingBox().center());
 
-					if(!trace(segment, {Flags::tile | Flags::colliding, entities[n]})) {
-						//TODO: decrease damage if blocked by another entity	
-						//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
-						float3 force = segment.dir() * m_proto.force * strength * m_damage_mod;
-
-						entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force, m_source);
+						if(!trace(segment, {Flags::tile | Flags::colliding, entities[n]})) {
+							//TODO: decrease damage if blocked by another entity	
+							//printf("dist: %f | damage: %f  | force: %f\n", dist, m_proto.damage * m_damage_mod * strength, m_proto.force * strength);
+							float3 force = segment.dir() * m_proto.force * strength * m_damage_mod;
+							entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, force, m_source);
+						}
 					}
 				}
 			}

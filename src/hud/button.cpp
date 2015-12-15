@@ -4,6 +4,7 @@
  */
 
 #include "hud/button.h"
+#include "gfx/drawing.h"
 
 using namespace gfx;
 
@@ -34,7 +35,7 @@ namespace hud {
 		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_greyed_time(0.0f),
 		 m_is_enabled(false), m_is_highlighted(false), m_is_greyed(false), m_icon_id(HudIcon::undefined),
 		 m_button_style(HudButtonStyle::normal), m_label_style(HudLabelStyle::center), m_id(id), m_accelerator(0), m_click_sound(HudSound::button) {
-		m_icons_tex = DTexture::mgr["icons.png"];
+		m_icons_tex = res::textures()["icons.png"];
 	}
 
 	HudButton::~HudButton() { }
@@ -46,38 +47,35 @@ namespace hud {
 		m_highlighted_time = max(m_highlighted_time, m_enabled_time);
 	}
 
-	void HudButton::onDraw() const {
+	void HudButton::onDraw(Renderer2D &out) const {
 		FRect rect = this->rect();
-		DTexture::unbind();
-		drawQuad(rect, backgroundColor());
+		out.addFilledRect(rect, backgroundColor());
 
 		Color border_color = borderColor();
 		float border_offset = m_button_style == HudButtonStyle::small? 2.5f : 5.0f;
 		float offset = lerp(border_offset, 0.0f, m_highlighted_time);
-		drawBorder(rect, border_color, float2(offset, offset), 20.0f);
+		drawBorder(out, rect, border_color, float2(offset, offset), 20.0f);
 
 		if(!m_label.empty() && m_label_style != HudLabelStyle::disabled) {
 			auto halign = 
 				m_label_style == HudLabelStyle::left? HAlign::left :
 				m_label_style == HudLabelStyle::center? HAlign::center : HAlign::right;
 			FRect font_rect = inset(rect, float2(layer_spacing, 0.0f));
-			m_font->draw(font_rect, {textColor(), textShadowColor(), halign, VAlign::center}, m_label);
+			m_font->draw(out, font_rect, {textColor(), textShadowColor(), halign, VAlign::center}, m_label);
 		}
 
-		if(HudIcon::isValid(m_icon_id)) {
-			m_icons_tex->bind();
-			drawQuad(rect, s_icons[m_icon_id].uv_rect, textColor());
-		}
+		if(HudIcon::isValid(m_icon_id))
+			out.addFilledRect(rect, s_icons[m_icon_id].uv_rect, {m_icons_tex, textColor()});
 	}
 		
 	bool HudButton::onInput(const InputEvent &event) {
-		if(event.mouseOver())
+		if(event.isMouseOverEvent())
 			m_is_highlighted = isMouseOver(event);
 
 		if(isGreyed())
 			return false;
 		
-		if( (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator)) ) {
+		if( (event.mouseButtonDown(InputButton::left) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator)) ) {
 			onClick();
 			return true;
 		}
@@ -132,11 +130,11 @@ namespace hud {
 		:HudButton(target_rect, id), m_is_accelerator(false) { }
 
 	bool HudClickButton::onInput(const InputEvent &event) {
-		if(event.mouseOver())
+		if(event.isMouseOverEvent())
 			m_is_highlighted = isMouseOver(event);
 
 		if(isEnabled()) {
-			if(event.mouseKeyUp(0) && !m_is_accelerator) {
+			if(event.mouseButtonUp(InputButton::left) && !m_is_accelerator) {
 				setEnabled(false);
 				return true;
 			}
@@ -148,7 +146,7 @@ namespace hud {
 		}
 		else if(!isGreyed()) {
 			m_is_accelerator = m_accelerator && event.keyDown(m_accelerator);
-			if(m_is_accelerator || (event.mouseKeyDown(0) && isMouseOver(event))) {
+			if(m_is_accelerator || (event.mouseButtonDown(InputButton::left) && isMouseOver(event))) {
 				setEnabled(true);
 				onClick();
 				return true;
@@ -162,13 +160,13 @@ namespace hud {
 		:HudButton(target_rect, id) { }
 		
 	bool HudToggleButton::onInput(const InputEvent &event) {
-		if(event.mouseOver())
+		if(event.isMouseOverEvent())
 			m_is_highlighted = isMouseOver(event);
 		
 		if(isGreyed())
 			return false;
 
-		if((event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator))) {
+		if((event.mouseButtonDown(InputButton::left) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator))) {
 			setEnabled(!isEnabled());
 			onClick();
 			return true;
@@ -181,13 +179,13 @@ namespace hud {
 		:HudButton(target_rect, id), m_group_id(group_id) { }
 	
 	bool HudRadioButton::onInput(const InputEvent &event) {
-		if(event.mouseOver())
+		if(event.isMouseOverEvent())
 			m_is_highlighted = isMouseOver(event);
 		
 		if(isGreyed())
 			return false;
 
-		bool clicked = (event.mouseKeyDown(0) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator));
+		bool clicked = (event.mouseButtonDown(InputButton::left) && isMouseOver(event)) || (m_accelerator && event.keyDown(m_accelerator));
 		if(clicked && !isEnabled()) {
 			setEnabled(true);
 

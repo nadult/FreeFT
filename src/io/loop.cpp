@@ -4,6 +4,7 @@
  */
 
 #include "io/loop.h"
+#include "gfx/drawing.h"
 
 namespace io {
 
@@ -36,31 +37,30 @@ namespace io {
 		return m_is_transitioning;
 	}
 			
-	void Loop::Transition::draw(const FRect &rect) {
-		using namespace gfx;
-		lookAt({0, 0});
-		DTexture::unbind();
+	void Loop::Transition::draw(const IRect &rect) {
+		Renderer2D renderer(rect);
 
 		if(mode == trans_normal) {
-			drawQuad(rect, lerp(from, to, pos / length));
+			renderer.addFilledRect(rect, lerp(from, to, pos / length));
 		}
 		else {
 			Color col1 = from, col2 = to;
 			if(mode == trans_right)
 				swap(col1, col2);
 
-			FRect rects[3] = { rect, rect, rect };
+			FRect rects[3] = { FRect(rect), FRect(rect), FRect(rect) };
 			float anim_pos = pos / length;
 			for(int n = 0; n < arraySize(rects); n++)
 				rects[n] += float2(rect.width() * (mode == trans_right? n - 2 + 2.0f * anim_pos : n - 2.0f * anim_pos), 0.0f);
 
-			Color mid_colors[4] = { col1, col2, col2, col1 };
+			Color mid_colors[4] = { col1, col1, col2, col2 };
 			FRect uv_rect(0, 0, 1, 1);
 
-			drawQuad(rects[0], col1);
-			drawQuad(rects[1], uv_rect, mid_colors);
-			drawQuad(rects[2], col2);
+			renderer.addFilledRect(rects[0], col1);
+			renderer.addFilledRect(rects[1], uv_rect, mid_colors, Color::white);
+			renderer.addFilledRect(rects[2], col2);
 		}
+		renderer.render();
 
 	}
 
@@ -68,7 +68,7 @@ namespace io {
 		onDraw();
 
 		if(m_is_transitioning)
-			m_transition.draw(FRect(getWindowSize()));
+			m_transition.draw(IRect(GfxDevice::instance().windowSize()));
 	}
 
 }

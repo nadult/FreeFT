@@ -80,7 +80,7 @@ private:
 
 	int m_agent_size;
 	int m_static_count;
-	vector<Quad, AlignedAllocator<Quad>> m_quads;
+	std::vector<Quad, AlignedAllocator<Quad>> m_quads;
 	vector<List> m_sectors;
 	int2 m_size; // in sectors
 };

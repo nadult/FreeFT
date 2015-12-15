@@ -8,6 +8,7 @@
 #include "game/game_mode.h"
 #include "game/actor.h"
 #include "game/pc_controller.h"
+#include "gfx/drawing.h"
 
 using namespace gfx;
 
@@ -64,16 +65,15 @@ namespace hud {
 		return Color(Color::black, titleColor().a);
 	}
 
-	void HudLayer::onDraw() const {
-		DTexture::unbind();
+	void HudLayer::onDraw(Renderer2D& out) const {
 		FRect rect = this->rect();
 
-		drawQuad(rect, backColor());
-		drawBorder(rect, borderColor(), float2(0, 0), 100.0f);
+		out.addFilledRect(rect, backColor());
+		drawBorder(out, rect, borderColor(), float2(0, 0), 100.0f);
 
 		if(!m_title.empty()) {
 			FRect font_rect = inset(rect, float2(spacing, layer_spacing));
-			m_big_font->draw(font_rect, {titleColor(), titleShadowColor()}, m_title);
+			m_big_font->draw(out, font_rect, {titleColor(), titleShadowColor()}, m_title);
 		}
 	}
 

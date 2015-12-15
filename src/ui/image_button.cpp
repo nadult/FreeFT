@@ -5,8 +5,7 @@
 
 #include "ui/image_button.h"
 #include "audio/device.h"
-
-using namespace gfx;
+#include "gfx/drawing.h"
 
 namespace ui
 {
@@ -14,12 +13,12 @@ namespace ui
 		DASSERT(up_tex && down_tex);
 
 		if(back_tex)
-			back = DTexture::gui_mgr[back_tex];
+			back = res::guiTextures()[back_tex];
 
-		up = DTexture::gui_mgr[up_tex];
-		down = DTexture::gui_mgr[down_tex];
+		up = res::guiTextures()[up_tex];
+		down = res::guiTextures()[down_tex];
 		if(font_name)
-			font = Font::mgr[font_name];
+			font = res::getFont(font_name);
 
 		rect = IRect({0, 0}, back? back->size() : max(up->size(), down->size()));
 		text_rect = text_area.isEmpty()? IRect::empty() :
@@ -29,9 +28,9 @@ namespace ui
 					lerp(float(rect.min.y), float(rect.max.y), text_area.max.y));
 	}
 
-	ImageButton::ImageButton(const int2 &pos, const ImageButtonProto &proto, const char *text, Mode mode, int id)
-		:Window(IRect(pos, pos + proto.rect.size()), Color::transparent), m_proto(proto), m_id(id), m_mode(mode) {
-		setBackground(proto.back);
+	ImageButton::ImageButton(const int2 &pos, ImageButtonProto proto, const char *text, Mode mode, int id)
+		:Window(IRect(pos, pos + proto.rect.size()), Color::transparent), m_proto(std::move(proto)), m_id(id), m_mode(mode) {
+		setBackground(m_proto.back);
 		setText(text);
 
 		m_is_enabled = true;
@@ -50,18 +49,14 @@ namespace ui
 		}
 	}
 
-	void ImageButton::drawContents() const {
+	void ImageButton::drawContents(Renderer2D &out) const {
 		bool is_pressed =	m_mode == mode_toggle? m_is_pressed ^ m_mouse_press :
 							m_mode == mode_toggle_on? m_is_pressed || m_mouse_press : m_mouse_press;
 
-		if(is_pressed) {
-			m_proto.down->bind();
-			drawQuad(int2(0, 0), m_proto.down->size());
-		}
-		else {
-			m_proto.up->bind();
-			drawQuad(int2(0, 0), m_proto.up->size());
-		}
+		if(is_pressed)
+			out.addFilledRect(IRect(m_proto.down->size()), m_proto.down);
+		else
+			out.addFilledRect(IRect(m_proto.up->size()), m_proto.up);
 
 		if(m_proto.font) {
 			int2 rect_center = size() / 2;
@@ -69,7 +64,7 @@ namespace ui
 
 			if(m_mouse_press)
 				pos += int2(2, 2);
-			m_proto.font->draw(pos, {m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black}, m_text);
+			m_proto.font->draw(out, pos, {m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black}, m_text);
 		}
 	}
 

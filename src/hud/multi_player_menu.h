@@ -17,7 +17,7 @@ namespace hud {
 			int ping;
 		};
 
-		MultiPlayerMenu(const FRect &rect);
+		MultiPlayerMenu(const FRect &rect, int2 window_size);
 		~MultiPlayerMenu();
 
 		float backAlpha() const override;
@@ -29,7 +29,7 @@ namespace hud {
 		void onUpdate(double time_diff) override;
 		bool onInput(const InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
 		const string cellText(int server_id, int col_id) const;
 		void setMessage(const string&, Color color);
@@ -54,6 +54,7 @@ namespace hud {
 		bool m_waiting_to_connect;
 		double m_last_refresh_time;
 		double m_last_connect_time;
+		int2 m_window_size;
 	};
 
 }

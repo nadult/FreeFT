@@ -32,11 +32,11 @@ namespace hud {
 
 	}
 
-	Hud::Hud(PWorld world) :HudWidget(FRect::empty()), m_selected_layer(layer_none), m_exit_value(0) {
+	Hud::Hud(PWorld world, const int2 &window_size) :HudWidget(FRect::empty()), m_selected_layer(layer_none), m_exit_value(0) {
 		DASSERT(world);
 
-		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, getWindowSize().y - s_hud_main_panel_size.y - layer_spacing);
-		m_main_panel = new HudMainPanel(main_rect);
+		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, window_size.y - s_hud_main_panel_size.y - layer_spacing);
+		m_main_panel = make_shared<HudMainPanel>(main_rect);
 
 		FRect inv_rect = align(FRect(s_hud_inventory_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect cls_rect = align(FRect(s_hud_class_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
@@ -44,15 +44,15 @@ namespace hud {
 		FRect cha_rect = align(FRect(s_hud_character_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		FRect sta_rect = align(FRect(s_hud_stats_size) + float2(layer_spacing, 0.0f), main_rect, align_top, layer_spacing);
 		
-		m_layers[layer_inventory]	= new HudInventory(inv_rect);
-		m_layers[layer_class]		= new HudClass(cls_rect);
-		m_layers[layer_character]	= new HudCharacter(cha_rect);
-		m_layers[layer_stats]		= new HudStats(sta_rect);
-		m_layers[layer_options]		= new HudOptions(opt_rect);
+		m_layers[layer_inventory]	= make_shared<HudInventory>(inv_rect);
+		m_layers[layer_class]		= make_shared<HudClass>(cls_rect);
+		m_layers[layer_character]	= make_shared<HudCharacter>(cha_rect);
+		m_layers[layer_stats]		= make_shared<HudStats>(sta_rect);
+		m_layers[layer_options]		= make_shared<HudOptions>(opt_rect);
 
-		attach(m_main_panel.get());
+		attach(m_main_panel);
 		for(auto layer: m_layers) {
-			attach(layer.get());
+			attach(layer);
 			layer->setVisible(false, false);
 		}
 		

@@ -20,7 +20,7 @@ namespace hud
 
 	protected:
 		void onUpdate(double time_diff) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		void updateData();
 
 		PHudGrid m_grid;

@@ -21,13 +21,13 @@ namespace game {
 		impact = parser("impact_id");
 		projectile = parser("projectile_id");
 		class_id = WeaponClass::fromString(parser("class_id"));
-		damage_mod = toFloat(parser("damage_mod"));
+		damage_mod = parser.get<float>("damage_mod");
 		attack_modes = AttackModeFlags::fromString(parser("attack_modes"));
-		max_ammo = toInt(parser("max_ammo"));
-		burst_ammo = toInt(parser("burst_ammo"));
+		max_ammo = parser.get<int>("max_ammo");
+		burst_ammo = parser.get<int>("burst_ammo");
 
 		ranged_range = melee_range = 0.0f;
-		accuracy = toFloat(parser("accuracy"));
+		accuracy = parser.get<float>("accuracy");
 
 		const char *sound_prefix = parser("sound_prefix");
 		for(int n = 0; n < WeaponSoundType::count; n++) {

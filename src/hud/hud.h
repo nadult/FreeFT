@@ -17,10 +17,10 @@ namespace hud
 
 	class Hud: public HudWidget {
 	public:
-		Hud(game::PWorld world);
+		Hud(game::PWorld world, const int2 &window_size);
 		~Hud();
 
-		void setVisible(bool is_visible, bool animate = true);
+		void setVisible(bool is_visible, bool animate = true) override;
 		bool isVisible() const;
 
 		void showLayer(int layer_id);
@@ -39,7 +39,7 @@ namespace hud
 	private:
 		int m_selected_layer;
 		int m_exit_value;
-		Ptr<HudMainPanel> m_main_panel;
+		PHudMainPanel m_main_panel;
 		PHudLayer m_layers[layer_count];
 	};
 

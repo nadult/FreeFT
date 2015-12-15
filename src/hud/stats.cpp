@@ -22,12 +22,12 @@ namespace hud {
 		subRect = inset(subRect, float2(layer_spacing, layer_spacing));
 		subRect.setHeight(300.0f);
 
-		m_grid = new HudGrid(subRect);
+		m_grid = make_shared<HudGrid>(subRect);
 		m_grid->addColumn("Nick name", 120.0f);
 		m_grid->addColumn("Kills", 40.0f);
 		m_grid->addColumn("Deaths", 40.0f);
 
-		attach(m_grid.get());
+		attach(m_grid);
 	}
 		
 	HudStats::~HudStats() { }
@@ -61,8 +61,8 @@ namespace hud {
 		}
 	}
 
-	void HudStats::onDraw() const {
-		HudLayer::onDraw();
+	void HudStats::onDraw(Renderer2D &out) const {
+		HudLayer::onDraw(out);
 	}
 		
 }

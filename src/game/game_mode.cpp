@@ -17,14 +17,14 @@ namespace game {
 		
 	void GameClient::save(Stream &sr) const {
 		sr << nick_name;
-		sr.encodeInt((int)pcs.size());
+		encodeInt(sr, (int)pcs.size());
 		for(const auto &pc : pcs)
 			sr << pc;
 	}
 
 	void GameClient::load(Stream &sr) {
 		sr >> nick_name;
-		int count = sr.decodeInt();
+		int count = decodeInt(sr);
 		pcs.clear();
 		for(int n = 0; n < count; n++) 
 			pcs.emplace_back(PlayableCharacter(sr));
@@ -281,7 +281,7 @@ namespace game {
 	void GameModeClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
 		if(msg_type == MessageId::update_client) {
 			GameClient new_client;
-			int new_id = sr.decodeInt();
+			int new_id = decodeInt(sr);
 			sr >> new_client;
 			m_clients[new_id] = new_client;
 
@@ -289,7 +289,7 @@ namespace game {
 				m_current = new_client;
 		}
 		else if(msg_type == MessageId::remove_client) {
-			onClientDisconnected(sr.decodeInt());
+			onClientDisconnected(decodeInt(sr));
 		}
 	}
 	

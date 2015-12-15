@@ -557,7 +557,7 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 
 
 static float distance(const int2 &a, const int2 &b) {
-	int dist_x = abs(a.x - b.x), dist_y = abs(a.y - b.y);
+	int dist_x = fwk::abs(a.x - b.x), dist_y = fwk::abs(a.y - b.y);
 	int dist_diag = min(dist_x, dist_y);
 	return float(dist_diag) * (1.414213562f - 2.0f) + float(dist_x + dist_y);
 }

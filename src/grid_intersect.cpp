@@ -61,8 +61,8 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 }
 
 pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) const {
-	float tmin = max(segment.min(), intersection(segment, m_bounding_box));
-	float tmax = min(segment.max(), -intersection(-segment, m_bounding_box));
+	float tmin = max(0.0f, intersection(segment, m_bounding_box));
+	float tmax = min(segment.length(), -intersection(-segment, m_bounding_box));
 	
 	float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
 	int2 pos = worldToGrid((int2)p1.xz()), end = worldToGrid((int2)p2.xz());
@@ -143,8 +143,8 @@ void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float
 
 		for(int s = 0; s < (int)segments.size(); s++) {
 			const Segment &segment = segments[s];
-			float tmin = max(segment.min(), intersection(segment, m_bounding_box));
-			float tmax = min(segment.max(), -intersection(-segment, m_bounding_box));
+			float tmin = max(0.0f, intersection(segment, m_bounding_box));
+			float tmax = min(segment.length(), -intersection(-segment, m_bounding_box));
 
 			float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
 			pmin = min(pmin, min(p1, p2));
@@ -168,7 +168,7 @@ void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float
 			float tidir[3] = { segment.invDir().x, segment.invDir().y, segment.invDir().z };
 			float torigin[3] = { segment.origin().x, segment.origin().y, segment.origin().z };
 
-			max_dist = max(max_dist, segment.max());
+			max_dist = max(max_dist, segment.length());
 			for(int i = 0; i < 3; i++) {
 				idir  [i] = Interval(min(idir  [i].min, tidir  [i]), max(idir  [i].max, tidir  [i]));
 				origin[i] = Interval(min(origin[i].min, torigin[i]), max(origin[i].max, torigin[i]));

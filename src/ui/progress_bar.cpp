@@ -24,7 +24,7 @@ namespace ui {
 	void ProgressBar::setText(const char *text) {
 		m_text = text;
 		if(!m_font)
-			m_font = Font::mgr[WindowStyle::fonts[0]];
+			m_font = res::getFont(WindowStyle::fonts[0]);
 	}
 
 	float ProgressBar::evalBarSize() const {
@@ -43,7 +43,9 @@ namespace ui {
 			IRect(0, rect_size.y * pos, rect_size.x, rect_size.y * (pos + bar_size));
 	}
 
-	void ProgressBar::drawContents() const {
+	void ProgressBar::drawContents(Renderer2D &out) const {
+		//TODO: fixme
+		/*
 		drawWindow(IRect(int2(0, 0), size()), WindowStyle::gui_medium, 1);
 		drawWindow(evalBarPos(), isMouseOver()? WindowStyle::gui_light : WindowStyle::gui_dark, m_mouse_press? -2 : 2);
 
@@ -51,7 +53,7 @@ namespace ui {
 			IRect extents = m_font->evalExtents(m_text.c_str());
 			int2 pos = (size() - extents.size()) / 2 - extents.min;
 			m_font->draw((float2)pos, {Color::white, Color::black}, m_text);
-		}
+		}*/
 	}
 
 	bool ProgressBar::onMouseDrag(int2 start, int2 current, int key, int is_final) {

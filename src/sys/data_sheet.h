@@ -13,7 +13,16 @@ struct TupleParser {
 	using ColumnMap = std::map<StringRef, int>;
 	TupleParser( const char **columns, int num_columns, const ColumnMap&);
 
-	const char *operator()(const char *name) const;
+	const char *get(const char *name) const;
+	const char *operator()(const char *name) const { return get(name); }
+
+	template <class T>
+	T get(const char *name) const {
+		auto *string = get(name);
+		if(!string[0])
+			return T();
+		return xml_conversions::fromString<T>(string);
+	}
 
 private:
 	friend class DataSheet;

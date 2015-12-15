@@ -63,7 +63,7 @@ namespace game
 		return out;
 	}		
 
-	PTexture TileFrame::deviceTexture(FRect &tex_rect) const {
+	STexture TileFrame::deviceTexture(FRect &tex_rect) const {
 		if(!getCache())
 			bindToCache(TextureCache::main_cache);
 		return accessTexture(tex_rect);
@@ -72,6 +72,11 @@ namespace game
 	Tile::Tile()
 		:m_type_id(TileId::unknown), m_surface_id(SurfaceId::unknown), m_first_frame(&m_palette),
 		m_see_through(false), m_walk_through(false), m_is_invisible(false) { }
+		
+	Tile::Tile(const string &resource_name, Stream &stream) :Tile() {
+		m_resource_name = resource_name;
+		load(stream);
+	}
 		
 	Flags::Type Tile::flags() const {
 		return	tileIdToFlag(m_type_id) |
@@ -174,7 +179,7 @@ namespace game
 		const TileFrame &TileFrame = accessFrame(s_frame_counter);
 		FRect tex_coords;
 
-		PTexture tex = TileFrame.deviceTexture(tex_coords);
+		auto tex = TileFrame.deviceTexture(tex_coords);
 		tex->bind();
 		IRect rect = TileFrame.rect();
 		drawQuad(pos + rect.min - m_offset, rect.size(), tex_coords.min, tex_coords.max, col);
@@ -184,7 +189,7 @@ namespace game
 		const TileFrame &TileFrame = accessFrame(s_frame_counter);
 
 		FRect tex_coords;
-		PTexture tex = TileFrame.deviceTexture(tex_coords);
+		auto tex = TileFrame.deviceTexture(tex_coords);
 		renderer.add(tex, TileFrame.rect() - m_offset, pos, bboxSize(), color, tex_coords);
 	}
 
@@ -210,7 +215,5 @@ namespace game
 			m_max_rect = sum(m_max_rect, m_frames[n].rect());
 		m_max_rect -= m_offset;
 	}
-
-	ResourceMgr<Tile> Tile::mgr("data/tiles/", ".tile");
 
 }

@@ -4,7 +4,7 @@
  */
 
 #include "ui/window.h"
-#include <cstdlib>
+#include "gfx/drawing.h"
 
 using namespace gfx;
 
@@ -28,28 +28,32 @@ namespace ui
 		"liberation_32",
 	};
 
-	void Window::drawWindow(IRect rect, Color color, int outline) {
-		DTexture::unbind();
+	void Window::drawWindow(Renderer2D &out, IRect rect, Color color, int outline) {
 		float3 fcolor = (float3)color;
 		float falpha = float(color.a) * (1.0f / 255.0f);
 
 		Color lighter(fcolor * 1.2f, falpha);
 		Color darker(fcolor * 0.8f, falpha);
 
-		int aoutline = abs(outline);
+		int aoutline = fwk::abs(outline);
 
 		if(outline) {
 			int2 hsize(rect.width(), aoutline);
 			int2 vsize(aoutline, rect.height());
 
-			drawQuad(rect.min, hsize, outline < 0?darker : lighter);
-			drawQuad(rect.min, vsize, outline < 0?darker : lighter);
+			Color col1 = outline < 0? darker : lighter;
+			out.addFilledRect(IRect(rect.min, rect.min + hsize), col1);
+			out.addFilledRect(IRect(rect.min, rect.min + vsize), col1);
 
-			drawQuad(int2(rect.min.x, rect.max.y - aoutline), hsize, outline < 0?lighter : darker);
-			drawQuad(int2(rect.max.x - aoutline, rect.min.y) , vsize, outline < 0?lighter : darker);
+			int2 p1(rect.min.x, rect.max.y - aoutline);
+			int2 p2(rect.max.x - aoutline, rect.min.y);
+			Color col2 = outline < 0? lighter : darker;
+			out.addFilledRect(IRect(p1, p1 + hsize), col2);
+			out.addFilledRect(IRect(p2, p2 + vsize), col2);
 		}
 
-		drawQuad(rect.min + int2(aoutline, aoutline), rect.size() - int2(aoutline, aoutline) * 2, color);
+		int2 off(aoutline, aoutline);
+		out.addFilledRect(inset(rect, off, off), color);
 	}
 
 	Window::Window(const IRect &rect, Color background_color)
@@ -92,7 +96,7 @@ namespace ui
 			parent()->setFocus(set);
 	}
 
-	void Window::process() {
+	void Window::process(const InputState &state) {
 		Window *popup = nullptr;
 		m_is_focused = true;
 
@@ -111,22 +115,24 @@ namespace ui
 		}
 
 		if(popup) {
-			popup->process();
+			popup->process(state);
 			return;
 		}
 
-		int2 mouse_pos = getMousePos();
+		int2 mouse_pos = state.mousePos();
 		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min;
 		int finished_dragging = 0;
-		bool escape = isKeyDown(InputKey::esc);
+		bool escape = state.isKeyDown(InputKey::esc);
+
+		InputButton::Type button_map[3] = { InputButton::left, InputButton::right, InputButton::middle };
 
 		if(m_dragging_mode) {
-			if(!isMouseKeyPressed(m_dragging_mode - 1) || escape)
+			if(!state.isMouseButtonPressed(button_map[m_dragging_mode - 1]) || escape)
 				finished_dragging = escape? -1 : 1;
 		}
 		else {
 			for(int k = 0; k < 3; k++) {
-				if(isMouseKeyDown(k)) {
+				if(state.isMouseButtonDown(button_map[k])) {
 					m_dragging_mode = k + 1;
 					m_drag_start = local_mouse_pos;
 					break;
@@ -143,7 +149,7 @@ namespace ui
 			if(child->isVisible() && m_has_hard_focus == child->m_has_hard_focus) {
 				if(m_has_hard_focus || child->rect().isInside(focus_point)) {
 					child->m_is_mouse_over = child->clippedRect().isInside(mouse_pos);
-					child->process();
+					child->process(state);
 					is_handled = true;
 					break;
 				}
@@ -153,7 +159,7 @@ namespace ui
 		if(!is_handled) {
 			if(m_dragging_mode && !is_handled) {
 				if(m_has_inner_rect && m_dragging_mode - 1 == 2) {
-					setInnerRect(m_inner_rect + getMouseMove());
+					setInnerRect(m_inner_rect + state.mouseMove());
 					is_handled = true;
 				}
 				if(!is_handled)
@@ -163,20 +169,20 @@ namespace ui
 			}
 			if(!is_handled) {
 				if(m_has_inner_rect) {
-					int wheel = getMouseWheelMove();
+					int wheel = state.mouseWheelMove();
 					int2 vector(0, 0);
 
 					if(wheel)
 						vector.y += wheel * rect().height() / 8;
-					if(isKeyDownAuto(InputKey::pageup, 2))
+					if(state.isKeyDownAuto(InputKey::pageup, 2))
 						vector.y += rect().height();
-					if(isKeyDownAuto(InputKey::pagedown, 2))
+					if(state.isKeyDownAuto(InputKey::pagedown, 2))
 						vector.y -= rect().height();
 
 					setInnerRect(m_inner_rect + vector);
 				}
 
-				onInput(local_mouse_pos);
+				onInput(state);
 			}
 		}
 		
@@ -187,30 +193,18 @@ namespace ui
 			m_dragging_mode = 0;
 	}
 
-	void Window::draw() const {
-		if(!m_parent)
-			setScissorTest(true);
+	void Window::draw(Renderer2D &out) const {
+		out.setViewPos(-m_clipped_rect.min);
+		out.setScissorRect(m_clipped_rect);
 
-		lookAt(-m_clipped_rect.min);
-		setScissorRect(m_clipped_rect);
-
-		if(m_background_color.a > 0 && !(m_background && m_background->size() == m_rect.size())) {
-			if(m_background_color.a == 255)
-				clear(m_background_color);
-			else {
-				DTexture::unbind();
-				drawQuad(m_clipped_rect.min, m_clipped_rect.max, m_background_color);
-			}
-		}
-
-		if(m_background) {
-			m_background->bind();
-			drawQuad(int2(0, 0), m_background->size());
-		}
+		if(m_background_color.a > 0 && !(m_background && m_background->size() == m_rect.size()))
+			out.addFilledRect(IRect(m_clipped_rect.size()), m_background_color);
+		if(m_background)
+			out.addFilledRect(IRect(m_background->size()), m_background);
 		
-		drawContents();
-		lookAt(-m_clipped_rect.min);
+		drawContents(out);
 
+		out.setViewPos(-m_clipped_rect.min);
 		if(m_has_inner_rect) {
 			int2 rsize = m_rect.size();
 			int2 isize = m_inner_rect.size();
@@ -221,31 +215,29 @@ namespace ui
 			col2 = Color(int(col2.r) * 4 / 3, int(col2.g) * 4 / 3, int(col2.b) * 4 / 3, 128);
 
 			// TODO: minimum size of progress bar, coz sometimes its almost invisible
-			DTexture::unbind();
 			if(isize.x > rsize.x) {
 				float divisor = 1.0f / float(isize.x);
 				float spos = float(0       - m_inner_rect.min.x) * divisor;
 				float epos = float(rsize.x - m_inner_rect.min.x) * divisor;
 
-				drawQuad(int2(0, rsize.y - 5), int2(rsize.x, 5), col1);
-				drawQuad(int2(spos * rsize.x, rsize.y - 5), int2(epos * rsize.x, 5), col2);
+				out.addFilledRect(IRect(0, rsize.y - 5, rsize.x, rsize.y), col1);
+				out.addFilledRect(IRect(spos * rsize.x, rsize.y - 5, (spos + epos) * rsize.x, rsize.y), col2);
 			}
 			if(isize.y > rsize.y) {
 				float divisor = 1.0f / float(isize.y);
 				float spos = float(0       - m_inner_rect.min.y) * divisor;
 				float epos = float(rsize.y - m_inner_rect.min.y) * divisor;
 
-				drawQuad(int2(rsize.x - 5, 0), int2(5, rsize.y), col1);
-				drawQuad(int2(rsize.x - 5, spos * rsize.y), int2(5, (epos - spos) * rsize.y), col2);
+				out.addFilledRect(IRect(rsize.x - 5, 0, rsize.x, rsize.y), col1);
+				out.addFilledRect(IRect(rsize.x - 5, spos * rsize.y, rsize.x, epos * rsize.y), col2);
 			}
 		}
 
 		for(int n = 0; n < (int)m_children.size(); n++)
 			if(m_children[n]->isVisible())
-				m_children[n]->draw();
-		
+				m_children[n]->draw(out);
 		if(!m_parent)
-			setScissorTest(false);	
+			out.disableScissorRect();
 	}
 
 	void Window::attach(PWindow child, bool as_popup) {

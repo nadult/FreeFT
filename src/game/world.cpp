@@ -347,7 +347,7 @@ namespace game {
 			return false;
 		const FBox &box = target->boundingBox();
 
-		vector<float3> points = genPointsOnPlane(box, normalized(eye_pos - box.center()), density, false);
+		vector<float3> points = genPointsOnPlane(box, normalize(eye_pos - box.center()), density, false);
 		vector<Segment> segments(points.size());
 		for(int n = 0; n < (int)points.size(); n++)
 			segments[n] = Segment(eye_pos, points[n]);

@@ -18,11 +18,12 @@
 #include "net/server.h"
 #include "audio/device.h"
 
+#include "gfx/drawing.h"
+
 #ifdef MessageBox // Yea.. TODO: remove windows.h from includes
 #undef MessageBox
 #endif
 	
-using namespace gfx;
 using namespace ui;
 using namespace game;
 
@@ -36,12 +37,13 @@ namespace io {
 
 		ImageButtonProto proto(back_name, "btn/big/Up", "btn/big/Dn", "transformers_30", FRect(0.25f, 0.05f, 0.95f, 0.95f));
 		proto.sound_name = "butn_bigred";
-		return new ImageButton(pos, proto, title, ImageButton::mode_normal);
+		return make_shared<ImageButton>(pos, std::move(proto), title, ImageButton::mode_normal);
 	}
 
-	MainMenuLoop::MainMenuLoop() :Window(IRect({0, 0}, getWindowSize()), Color::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
-		m_back = DTexture::gui_mgr["back/flaminghelmet"];
-		m_loading = DTexture::gui_mgr["misc/worldm/OLD_moving"];
+	MainMenuLoop::MainMenuLoop()
+		:Window(IRect(GfxDevice::instance().windowSize()), Color::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
+		m_back = res::guiTextures()["back/flaminghelmet"];
+		m_loading = res::guiTextures()["misc/worldm/OLD_moving"];
 
 		m_anim_pos = 0.0;
 		m_blend_time = 1.0;
@@ -58,12 +60,12 @@ namespace io {
 		m_credits		= makeButton(m_back_rect.min + int2(500, 250), "Credits");
 		m_exit			= makeButton(m_back_rect.min + int2(500, 295), "Exit");
 
-		attach(m_single_player.get());
-		attach(m_multi_player.get());
-		attach(m_create_server.get());
-		attach(m_options.get());
-		attach(m_credits.get());
-		attach(m_exit.get());
+		attach(m_single_player);
+		attach(m_multi_player);
+		attach(m_create_server);
+		attach(m_options);
+		attach(m_credits);
+		attach(m_exit);
 
 		startMusic();
 	}
@@ -98,22 +100,23 @@ namespace io {
 			if(ev.source == m_single_player.get()) {
 				m_mode = mode_starting_single;
 				IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-				m_file_dialog = new FileDialog(dialog_rect, "Select map", FileDialogMode::opening_file);
+				m_file_dialog = make_shared<FileDialog>(dialog_rect, "Select map", FileDialogMode::opening_file);
 				m_file_dialog->setPath("data/maps/");
-				attach(m_file_dialog.get(), true);
+				attach(m_file_dialog, true);
 			}
 			else if(ev.source == m_create_server.get()) {
 				m_mode = mode_starting_server;
 				IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-				m_file_dialog = new FileDialog(dialog_rect, "Select map", FileDialogMode::opening_file);
+				m_file_dialog = make_shared<FileDialog>(dialog_rect, "Select map", FileDialogMode::opening_file);
 				m_file_dialog->setPath("data/maps/");
-				attach(m_file_dialog.get(), true);
+				attach(m_file_dialog, true);
 			}
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(790, 550));
-				rect += float2(getWindowSize()) * 0.5f - rect.size() * 0.5f;
-				m_multi_menu = new hud::MultiPlayerMenu(rect);
-				m_sub_menu = m_multi_menu.get();
+				auto window_size = GfxDevice::instance().windowSize();
+				rect += float2(window_size) * 0.5f - rect.size() * 0.5f;
+				m_multi_menu = make_shared<hud::MultiPlayerMenu>(rect, window_size);
+				m_sub_menu = m_multi_menu;
 			//	m_mode = mode_starting_multi;
 			}
 			else if(ev.source == m_exit.get()) {
@@ -149,32 +152,26 @@ namespace io {
 		return false;
 	}
 
-	void MainMenuLoop::drawLoading(const int2 &pos, float alpha) const {
+	void MainMenuLoop::drawLoading(Renderer2D &out, float alpha) const {
 		const char *text = "Loading";
-		PFont font = Font::mgr["transformers_30"];
+		PFont font = res::getFont("transformers_30");
 		Color color(1.0f, 0.8f, 0.2f, alpha);
-
-		lookAt(-pos);
 
 		int2 dims(m_loading->size());
 		float2 center = float2(dims.x * 0.49f, dims.y * 0.49f);
 
 		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * constant::pi * 2.0), 8.0) * 0.1;
 
-		FRect extents = font->draw(float2(0.0f, 0.0f), {color, Color::black, HAlign::right, VAlign::center}, text);
+		FRect extents = font->draw(out, float2(0.0f, 0.0f), {color, Color::black, HAlign::right, VAlign::center}, text);
 
-		glPushMatrix();
-		glTranslatef(extents.max.x + 8.0f + center.x, 0.0f, 0.0f);
+		out.pushViewMatrix();
+		out.mulViewMatrix(translation(extents.max.x + 8.0f + center.x, 0.0f, 0.0f));
+		out.mulViewMatrix(scaling(scale));
+		out.mulViewMatrix(rotation(float3(0, 0, 1), m_anim_pos * 2.0f * constant::pi));
+		out.mulViewMatrix(translation(-center.x, -center.y, 0.0f));
 
-		glScalef(scale, scale, scale);
-		glRotated(m_anim_pos * 360.0, 0, 0, 1);
-		glTranslatef(-center.x, -center.y, 0);
-
-		m_loading->bind();
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		drawQuad(int2(0, 0), dims, color);
-		glPopMatrix();
+		out.addFilledRect(IRect(dims), {m_loading, color});
+		out.popViewMatrix();
 	}
 
 	void MainMenuLoop::onTransitionFinished() {
@@ -217,12 +214,12 @@ namespace io {
 				}
 			}
 			catch(const Exception &ex) {
-				PFont font = Font::mgr[WindowStyle::fonts[1]];
+				PFont font = res::getFont(WindowStyle::fonts[1]);
 				IRect extents = font->evalExtents(ex.what());
 				int2 pos = rect().center(), size(min(rect().width(), extents.width() + 50), 100);
 
-				PMessageBox message_box(new ui::MessageBox(IRect(pos - size / 2, pos + size / 2), ex.what(), MessageBoxMode::ok));
-				attach(message_box.get());
+				PMessageBox message_box(make_shared<ui::MessageBox>(IRect(pos - size / 2, pos + size / 2), ex.what(), MessageBoxMode::ok));
+				attach(message_box);
 				new_loop.reset(nullptr);
 				m_mode = mode_normal;
 			}
@@ -248,11 +245,11 @@ namespace io {
 		}
 
 		if(m_mode != mode_quitting && m_mode != mode_transitioning && !m_sub_menu)
-			process();
+			process(GfxDevice::instance().inputState());
 		if(m_sub_menu) {
 			if(m_mode != mode_transitioning) {
-				vector<InputEvent> events = generateInputEvents();
-				for(auto &event: events)
+				auto &device = GfxDevice::instance();
+				for(auto &event: device.inputEvents())
 					m_sub_menu->handleInput(event);
 			}
 
@@ -289,27 +286,27 @@ namespace io {
 	}
 
 	void MainMenuLoop::onDraw() {
-		using namespace gfx;
-
 		if(m_sub_loop && m_mode != mode_transitioning) {
 			m_sub_loop->draw();
 			return;
 		}
 
-		lookAt({0, 0});
 		clear(Color(0, 0, 0));
-		m_back->bind();
-		drawQuad(m_back_rect.min, m_back_rect.size());
-	
-		lookAt({0, 0});
-		Window::draw();
+		IRect viewport(GfxDevice::instance().windowSize());
+		Renderer2D renderer(viewport);
 
-		lookAt({0, 0});
+		renderer.addFilledRect(m_back_rect, m_back);
+		Window::draw(renderer);
+
+		renderer.setViewPos(float2());
 		if(m_sub_menu)
-			m_sub_menu->draw();
+			m_sub_menu->draw(renderer);
 
-		if(m_mode == mode_loading)
-			drawLoading(getWindowSize() - int2(180, 50), 1.0);
+		if(m_mode == mode_loading) {
+			renderer.setViewPos(-(viewport.size() - int2(180, 50)));
+			drawLoading(renderer, 1.0);
+		}
+		renderer.render();
 	}
 
 }

@@ -10,6 +10,11 @@
 
 using namespace fwk;
 
+void encodeInt(Stream &sr, int value);
+int decodeInt(Stream &sr);
+
+uint toFlags(const char *input, const char **strings, int num_strings, uint first_flag);
+
 struct MoveVector {
 	MoveVector(const int2 &start, const int2 &end);
 	MoveVector();
@@ -34,6 +39,27 @@ template <class Type3> int drawingOrder(const Box<Type3> &a, const Box<Type3> &b
 	return z_ret;
 }
 
+template <class T> class ClonablePtr : public unique_ptr<T> {
+  public:
+	ClonablePtr(const ClonablePtr &rhs) : unique_ptr<T>(rhs ? rhs->clone() : nullptr) {
+		static_assert(std::is_same<decltype(&T::clone), T *(T::*)() const>::value, "");
+	}
+	ClonablePtr(ClonablePtr &&rhs) : unique_ptr<T>(std::move(rhs)) {}
+	ClonablePtr(T *ptr) : unique_ptr<T>(ptr) {}
+	ClonablePtr() {}
+
+	explicit operator bool() const { return unique_ptr<T>::operator bool(); }
+	bool isValid() const { return unique_ptr<T>::operator bool(); }
+
+	void operator=(ClonablePtr &&rhs) { unique_ptr<T>::operator=(std::move(rhs)); }
+	void operator=(const ClonablePtr &rhs) {
+		if(&rhs == this)
+			return;
+		T *clone = rhs ? rhs->clone() : nullptr;
+		unique_ptr<T>::reset(clone);
+	}
+};
+
 const float2 worldToScreen(const float3 &pos);
 const int2 worldToScreen(const int3 &pos);
 
@@ -41,6 +67,7 @@ const float2 screenToWorld(const float2 &pos);
 const int2 screenToWorld(const int2 &pos);
 
 const Ray screenRay(const int2 &screen_pos);
+const float3 project(const float3 &point, const Plane &plane);
 
 template <class Type3> const Rect<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
 	typedef decltype(Type3().xy()) Type2;
@@ -61,12 +88,49 @@ vector<float3> genPoints(const FBox &bbox, int density);
 void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3);
 float3 perturbVector(const float3 &vec, float rand1, float rand2, float strength);
 
+struct Interval {
+	Interval(float value) :min(value), max(value) { }
+	Interval(float min, float max) :min(min), max(max) { }
+	Interval() { }
+
+	Interval operator+(const Interval &rhs) const { return Interval(min + rhs.min, max + rhs.max); }
+	Interval operator-(const Interval &rhs) const { return Interval(min - rhs.max, max - rhs.min); }
+	Interval operator*(const Interval &rhs) const;
+	Interval operator*(float) const;
+	Interval operator/(float val) const { return operator*(1.0f / val); }
+
+	bool isValid() const { return min <= max; }
+	
+	float min, max;
+};
+
+Interval abs(const Interval&);
+Interval floor(const Interval&);
+Interval min(const Interval&, const Interval&);
+Interval max(const Interval&, const Interval&);
+
+float intersection(const Interval idir[3], const Interval origin[3], const Box<float3> &box);
+
+bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
+
+template <class Type2>
+inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &tl, const Type2 &br) {
+	return Rect<Type2>(rect.min + tl, rect.max - br);
+}
+	
+template <class Type2>
+inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &inset) {
+	return Rect<Type2>(rect.min + inset, rect.max - inset);
+}
+
 namespace fwk {
 namespace gfx {}
 class XMLNode;
 class XMLDocument;
 class Texture;
 }
+
+using PFont = unique_ptr<Font>;
 
 namespace ui {
 class Window;
@@ -75,11 +139,11 @@ class ImageButton;
 class FileDialog;
 class MessageBox;
 class EditBox;
-typedef Ptr<Window> PWindow;
-typedef Ptr<Button> PButton;
-typedef Ptr<ImageButton> PImageButton;
-typedef Ptr<FileDialog> PFileDialog;
-typedef Ptr<MessageBox> PMessageBox;
+using PWindow = shared_ptr<Window>;
+using PButton = shared_ptr<Button>;
+using PImageButton = shared_ptr<ImageButton>;
+using PFileDialog = shared_ptr<FileDialog>;
+using PMessageBox = shared_ptr<MessageBox>;
 };
 
 class SceneRenderer;
@@ -107,36 +171,44 @@ class Order;
 struct Item;
 struct Weapon;
 
-typedef Ptr<Sprite> PSprite;
-typedef Ptr<World> PWorld;
-typedef Ptr<Character> PCharacter;
-typedef Ptr<PlayableCharacter> PPlayableCharacter;
-typedef Ptr<PCController> PPCController;
+using PSprite = shared_ptr<Sprite>;
+using PWorld = shared_ptr<World>;
+using PCharacter = shared_ptr<Character>;
+using PPlayableCharacter = shared_ptr<PlayableCharacter>;
+using PPCController = shared_ptr<PCController>;
 
-typedef unique_ptr<GameMode> PGameMode;
-typedef unique_ptr<Entity> PEntity;
+using PGameMode = unique_ptr<GameMode>;
+using PEntity = unique_ptr<Entity>;
 
-typedef ClonablePtr<Order> POrder;
+using POrder = ::ClonablePtr<Order>;
 }
 
 namespace net {
 class Client;
 class Server;
 class TempPacket;
-typedef unique_ptr<Client> PClient;
-typedef unique_ptr<Server> PServer;
+using PClient = unique_ptr<Client>;
+using PServer = unique_ptr<Server>;
 }
 
 namespace audio {
 class Playback;
-typedef Ptr<Playback> PPlayback;
+using PPlayback = shared_ptr<Playback>;
 }
 
 namespace io {
 class Controller;
-typedef unique_ptr<Controller> PController;
+using PController = unique_ptr<Controller>;
 }
 
 struct TupleParser;
+
+namespace res {
+ResourceManager<DTexture> &guiTextures();
+ResourceManager<DTexture> &textures();
+ResourceManager<game::Tile> &tiles();
+PFont getFont(const string &name);
+}
+
 
 #endif

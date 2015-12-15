@@ -48,14 +48,17 @@ namespace game {
 	static_assert(arraySize(s_sounds) == TurretSoundId::count, "");
 
 	TurretProto::TurretProto(const TupleParser &parser) :ProtoImpl(parser) {
+		using namespace xml_conversions;
 		ASSERT(!is_dummy);
 		ASSERT(sprite);
 
-		hit_points = toFloat(parser("hit_points"));
+		hit_points = parser.get<float>("hit_points");
 	
-		for(int n = 0; n < TurretAction::count; n++)
-			anim_idx[n] = sprite->findSequence(s_seq_names[n]);
-		ASSERT(anim_idx[TurretAction::idle] != -1);
+		for(int n = 0; n < TurretAction::count; n++) {
+			int id = sprite->findSequence(s_seq_names[n]);
+			anim_idx[n] = id == -1 || id > 254? invalid_anim_id : id;
+		}
+		ASSERT(anim_idx[TurretAction::idle] != invalid_anim_id);
 		
 		string sound_prefix = parser("sound_prefix");
 		for(int n = 0; n < TurretSoundId::count; n++) {
@@ -65,14 +68,14 @@ namespace game {
 	}
 		
 	bool TurretProto::canHide() const {
-		return	anim_idx[TurretAction::hiding] != -1 &&
-				anim_idx[TurretAction::showing] != -1 &&
-				anim_idx[TurretAction::hidden] != -1;
+		return	anim_idx[TurretAction::hiding] != invalid_anim_id &&
+				anim_idx[TurretAction::showing] != invalid_anim_id &&
+				anim_idx[TurretAction::hidden] != invalid_anim_id;
 	}
 
 	Turret::Turret(Stream &sr)
 	  :EntityImpl(sr) {
-		m_hit_points = sr.decodeInt();
+		m_hit_points = decodeInt(sr);
 		sr.unpack(m_target_angle, m_action);
 	}
 
@@ -95,7 +98,7 @@ namespace game {
 
 	void Turret::save(Stream &sr) const {
 		EntityImpl::save(sr);
-		sr.encodeInt(m_hit_points);
+		encodeInt(sr, m_hit_points);
 		sr.pack(m_target_angle, m_action);
 	}
 		
@@ -211,7 +214,7 @@ namespace game {
 			death == DeathId::explode? TurretAction::death_explode :
 			death == DeathId::electrify? TurretAction::death_electrify : TurretAction::death;
 		int seq_id = m_proto.anim_idx[anim_id];
-		if(seq_id == -1)
+		if(seq_id == TurretProto::invalid_anim_id)
 			return false;
 
 		playSequence(seq_id);
@@ -221,7 +224,7 @@ namespace game {
 
 	bool Turret::animate(TurretAction::Type action) {
 		int seq_id = m_proto.anim_idx[action];
-		if(seq_id == -1)
+		if(seq_id == TurretProto::invalid_anim_id)
 			return false;
 
 		m_action = action;
@@ -235,7 +238,7 @@ namespace game {
 		if(isClient())
 			return;
 
-		Segment best_ray = computeBestShootingRay(target_box, weapon);
+		Ray best_ray = computeBestShootingRay(target_box, weapon);
 
 		if(randomness > 0.0f) {
 			float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);

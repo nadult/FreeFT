@@ -40,8 +40,8 @@ void FrameAllocator::beginFrame() {
 	//	MutexLocker locker(mutex);
 
 	if(allocatedBlocks)
-		EXCEPT("BeginFrame", "There is still some data allocated from last frame (",
-			   int(allocatedBlocks), " blocks)");
+		EXCEPT("BeginFrame", "There is still some data allocated from last frame (%d blocks)",
+			   int(allocatedBlocks));
 	allocatedBlocks = 0;
 
 	size_t newReserve = min(max(reserve, maxAllocated), maxReserve);

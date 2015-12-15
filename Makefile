@@ -36,9 +36,9 @@ SHARED_SRC=\
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box ui/image_button \
 	io/controller io/loop io/main_menu_loop io/game_loop \
-	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
+	audio/device audio/sound audio/device_music audio/mp3_decoder editor/tile_group
+#	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
-	audio/device audio/sound audio/device_music audio/mp3_decoder
 
 PROGRAM_SRC=editor game res_viewer convert lobby_server
 
@@ -60,8 +60,8 @@ all: $(LINUX_PROGRAMS) $(MINGW_PROGRAMS)
 FWK_DIR=libfwk
 include $(FWK_DIR)/Makefile.include
 
-LIBS=
-LINUX_LIBS=$(LIBS) $(LINUX_FWK_LIBS) -fopenmp 
+LIBS=-pthread
+LINUX_LIBS=$(LIBS) $(LINUX_FWK_LIBS)
 MINGW_LIBS=$(LIBS) $(MINGW_FWK_LIBS)
 
 SPECIAL_LIBS_convert=-lzip 
@@ -76,9 +76,9 @@ MINGW_PKG_CONFIG=$(MINGW_PREFIX)pkg-config
 
 INCLUDES=-Isrc/ $(FWK_INCLUDES)
 
-NICE_FLAGS=-std=c++11 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
+NICE_FLAGS=-std=c++14 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
 		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
-LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -fopenmp
+LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
 
 $(DEPS): $(BUILD_DIR)/%.dep: src/%.cpp

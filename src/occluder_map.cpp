@@ -217,14 +217,14 @@ void OccluderMap::loadFromXML(const XMLDocument &doc) {
 			m_occluders.push_back(Occluder());
 			Occluder &occluder = m_occluders.back();
 			
-			int object_count = occluder_node.intAttrib("object_count");
+			int object_count = occluder_node.attrib<int>("object_count");
 			ASSERT(object_count < m_grid.size() && object_count > 0);
 			occluder.objects.resize(object_count, -1);
 
 			XMLNode box_node = occluder_node.child("box");
 			bool first = true;
 			while(box_node) {
-				FBox bbox(box_node.float3Attrib("min"), box_node.float3Attrib("max"));
+				FBox bbox(box_node.attrib<float3>("min"), box_node.attrib<float3>("max"));
 				occluder.bbox = first? bbox : sum(occluder.bbox, bbox);
 				first = false;
 

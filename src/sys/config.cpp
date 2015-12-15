@@ -22,13 +22,8 @@ Config::Config(const char *config_name) : Config() {
 
 void Config::load(const XMLNode &node) {
 	DASSERT(node);
-
-	if(auto *res_value = node.hasAttrib("res"))
-		resolution = toInt2(res_value);
-	if(auto *window_pos_value = node.hasAttrib("window_pos"))
-		window_pos = toInt2(window_pos_value);
-	if(auto *fullscreen_value = node.hasAttrib("fullscreen"))
-		fullscreen_on = toBool(fullscreen_value);
-	if(auto *profiler_value = node.hasAttrib("profiler"))
-		profiler_on = toBool(profiler_value);
+	resolution = node.attrib<int2>("res", int2());
+	window_pos = node.attrib<int2>("window_pos", int2());
+	fullscreen_on = node.attrib<bool>("fullscreen", false);
+	profiler_on = node.attrib<bool>("profiler", false);
 }

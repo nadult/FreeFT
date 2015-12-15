@@ -9,9 +9,9 @@ namespace ui {
 
 	ComboBox::ComboBox(const IRect &rect, int drop_size, const char *prefix, const char **values, int value_count)
 		:Window(rect), m_drop_size(drop_size), m_prefix(prefix) {
-		m_button = new Button(IRect(int2(0, 0), rect.size()), "");
-		m_dummy = new ListBox(IRect(0, 0, 10, 10));
-		attach(m_button.get());
+		m_button = make_shared<Button>(IRect(int2(0, 0), rect.size()), "");
+		m_dummy = make_shared<ListBox>(IRect(0, 0, 10, 10));
+		attach(m_button);
 
 		if(values) {
 			for(int n = 0; n < value_count; n++)
@@ -38,14 +38,14 @@ namespace ui {
 				IRect clip_rect = clippedRect();
 				IRect rect(clip_rect.min, int2(clip_rect.max.x, clip_rect.min.y + popup_size));
 
-				m_popup = new ListBox(rect, WindowStyle::gui_popup);
+				m_popup = make_shared<ListBox>(rect, WindowStyle::gui_popup);
 				for(int n = 0; n < size(); n++) {
 					const ListBox::Entry &entry = (*m_dummy)[n];
 					m_popup->addEntry(entry.text.c_str(), entry.color);
 				}
 				m_popup->selectEntry(m_dummy->selectedId());
 				m_popup->setInnerOffset(int2(0, m_dummy->selectedId() * m_dummy->lineHeight()));
-				mainWindow()->attach(m_popup.get(), true);
+				mainWindow()->attach(m_popup, true);
 			}
 			else if(size() > 1) {
 				int next_id = (selectedId() + 1) % size();

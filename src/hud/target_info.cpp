@@ -32,9 +32,9 @@ namespace hud {
 
 		FRect icon_rect(s_char_icon_size);
 		icon_rect += float2(rect.width() - icon_rect.width() - layer_spacing, rect.center().y - icon_rect.height() * 0.5f);
-		m_char_icon = new HudCharIcon(icon_rect);
+		m_char_icon = make_shared<HudCharIcon>(icon_rect);
 		m_char_icon->setEnabled(true, false);
-		attach(m_char_icon.get());
+		attach(m_char_icon);
 	}
 		
 	HudTargetInfo::~HudTargetInfo() { }
@@ -53,8 +53,8 @@ namespace hud {
 		m_char_icon->setVisible(m_is_visible);
 	}
 
-	void HudTargetInfo::onDraw() const {
-		HudLayer::onDraw();
+	void HudTargetInfo::onDraw(Renderer2D &out) const {
+		HudLayer::onDraw(out);
 
 		HealthStatus::Type health = HealthStatus::fromHPPercentage(m_health);
 		const char *health_desc = HealthStatus::toString(health);
@@ -66,16 +66,16 @@ namespace hud {
 		FRect font_rect = rect() + float2(layer_spacing, 0.0f);
 		font_rect.max.y = font_rect.min.y + font_rect.height() / 4.0f;
 		float2 offset = float2(0.0f, font_rect.height());
-		m_font->draw(font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, m_name);
+		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, m_name);
 
 		font_rect += offset;
-		m_font->draw(font_rect, {health_color, shadow_color, HAlign::left, VAlign::center}, health_desc);
+		m_font->draw(out, font_rect, {health_color, shadow_color, HAlign::left, VAlign::center}, health_desc);
 		
 		font_rect += offset;
-		m_font->draw(font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("k/d: %d/%d", m_kills, m_deaths));
+		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("k/d: %d/%d", m_kills, m_deaths));
 
 		font_rect += offset;
-		m_font->draw(font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("Hit chance: %.0f%%", m_hit_chance * 100.0f));
+		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("Hit chance: %.0f%%", m_hit_chance * 100.0f));
 	}
 
 }

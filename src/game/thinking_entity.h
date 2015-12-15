@@ -25,7 +25,7 @@ namespace game {
 	class DieOrder;
 	
 	class Brain;
-	typedef ClonablePtr<Brain> PBrain;
+	using PBrain = ::ClonablePtr<Brain>;
 
 	DECLARE_ENUM(EntityEvent,
 		init_order,

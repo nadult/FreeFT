@@ -69,7 +69,7 @@ namespace audio {
 	class MP3Decoder;
 
 	//TODO: make audio device multithreaded?
-	class Playback: public RefCounter {
+	class Playback {
 	public:
 		Playback(const string &file_name, float volume);
 		~Playback();
@@ -102,7 +102,7 @@ namespace audio {
 		float m_blend_time, m_blend_pos;
 	};
 
-	typedef Ptr<Playback> PPlayback;
+	using PPlayback = shared_ptr<Playback>;
 
 	const PPlayback playMusic(const string &file_name, float volume);
 

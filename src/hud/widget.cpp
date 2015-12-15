@@ -46,15 +46,15 @@ namespace hud {
 	
 	bool HudWidget::handleInput(const InputEvent &event) {
 		if(!m_is_visible)
-			if(!isOneOf(event.type(), InputEvent::key_up, InputEvent::mouse_key_up, InputEvent::mouse_over))
+			if(!isOneOf(event.type(), InputEvent::key_up, InputEvent::mouse_button_up, InputEvent::mouse_over))
 				return false;
 
 		InputEvent cevent = event;
-		cevent.translate(-rect().min);
+		cevent.offset(int2(-rect().min));
 		bool focus_handled = false;
 
 		HudWidget *handled = nullptr;
-		if(m_input_focus && !cevent.mouseOver()) {
+		if(m_input_focus && !cevent.isMouseOverEvent()) {
 			handled = m_input_focus;
 			if(m_input_focus->handleInput(cevent))
 				return true;
@@ -92,16 +92,16 @@ namespace hud {
 	
 	void HudWidget::setStyle(const HudStyle &style) {
 		m_style = style;
-		m_font = Font::mgr[style.font_name];
-		m_big_font = Font::mgr[style.big_font_name];
+		m_font = res::getFont(style.font_name);
+		m_big_font = res::getFont(style.big_font_name);
 
 		for(auto &child: m_children)
 			child->setStyle(style);
 	}
 		
-	Ptr<HudWidget> HudWidget::detach(HudWidget *widget) {
+	PHudWidget HudWidget::detach(HudWidget *widget) {
 		DASSERT(widget->m_parent == this);
-		Ptr<HudWidget> out;
+		PHudWidget out;
 
 		setInputFocus(false);
 		widget->m_parent = nullptr;
@@ -117,7 +117,7 @@ namespace hud {
 		return std::move(out);
 	}
 		
-	void HudWidget::attach(Ptr<HudWidget> child) {
+	void HudWidget::attach(PHudWidget child) {
 		DASSERT(child);
 		child->setStyle(m_style);
 		child->m_parent = this;
@@ -149,19 +149,19 @@ namespace hud {
 		layout();
 	}
 	
-	void HudWidget::draw() const {
+	void HudWidget::draw(Renderer2D &out) const {
 		DASSERT(!m_needs_layout);
 
 		if(isVisible()) {
-			onDraw();
+			onDraw(out);
 	
 			float2 offset = rect().min;
 
-			glPushMatrix();
-			glTranslatef(offset.x, offset.y, 0.0f);
+			out.pushViewMatrix();
+			out.mulViewMatrix(translation(offset.x, offset.y, 0.0f));
 			for(const auto &child: m_children)
-				child->draw();
-			glPopMatrix();
+				child->draw(out);
+			out.popViewMatrix();
 		}
 	}
 		

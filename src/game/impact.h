@@ -33,11 +33,11 @@ namespace game {
 		Impact(const ImpactProto&, EntityRef source, EntityRef target, float damage_mod);
 		Impact(Stream&);
 
-		void save(Stream&) const;
-		XMLNode save(XMLNode& parent) const;
+		void save(Stream&) const override;
+		XMLNode save(XMLNode& parent) const override;
 		void addToRender(SceneRenderer &out, Color color) const override;
 
-		Flags::Type flags() const { return Flags::impact | Flags::dynamic_entity; }
+		Flags::Type flags() const override { return Flags::impact | Flags::dynamic_entity; }
 	
 	protected:
 		void onAnimFinished() override;

@@ -29,42 +29,42 @@ namespace hud {
 		setTitle(" ");
 
 		float2 pos(spacing, spacing + topOffset());
-		m_icon_box = new HudCharIcon(FRect(s_hud_char_icon_size) + pos);
+		m_icon_box = make_shared<HudCharIcon>(FRect(s_hud_char_icon_size) + pos);
 		
 		pos.y += s_hud_char_icon_size.y + HudButton::spacing;
 		pos.x = m_icon_box->rect().center().x - s_scroll_button_size.x - spacing * 0.5f;
 
-		m_icon_prev = new HudClickButton(FRect(s_scroll_button_size) + pos);
+		m_icon_prev = make_shared<HudClickButton>(FRect(s_scroll_button_size) + pos);
 		m_icon_prev->setIcon(HudIcon::up_arrow);
 		m_icon_prev->setAccelerator(InputKey::pageup);
 		m_icon_prev->setButtonStyle(HudButtonStyle::small);
 		pos.x += s_scroll_button_size.x + spacing;
 
-		m_icon_next = new HudClickButton(FRect(s_scroll_button_size) + pos);
+		m_icon_next = make_shared<HudClickButton>(FRect(s_scroll_button_size) + pos);
 		m_icon_next->setIcon(HudIcon::down_arrow);
 		m_icon_next->setAccelerator(InputKey::pagedown);
 		m_icon_next->setButtonStyle(HudButtonStyle::small);
 
 		pos = float2(s_hud_char_icon_size.x + spacing * 2, spacing + topOffset());
-		m_name_edit_box = new HudEditBox(FRect(s_name_size) + pos, Character::max_name_size, HudEditBox::mode_locase_nick);
+		m_name_edit_box = make_shared<HudEditBox>(FRect(s_name_size) + pos, Character::max_name_size, HudEditBox::mode_locase_nick);
 		m_name_edit_box->setLabel("Name: ");
 
 		pos.y += s_name_size.y + spacing;
-		m_race_button = new HudClickButton(FRect(s_name_size) + pos);
+		m_race_button = make_shared<HudClickButton>(FRect(s_name_size) + pos);
 		m_race_button->setLabelStyle(HudLabelStyle::left);
 		
 		pos.y += s_name_size.y + spacing;
-		m_class_button = new HudClickButton(FRect(s_name_size) + pos);
+		m_class_button = make_shared<HudClickButton>(FRect(s_name_size) + pos);
 		m_class_button->setLabelStyle(HudLabelStyle::left);
 		
 		pos.y += s_name_size.y * 3 + spacing;
 		pos.x = rect().width() - spacing - s_button_size.x;
-		m_cancel_button = new HudClickButton(FRect(s_button_size) + pos);
+		m_cancel_button = make_shared<HudClickButton>(FRect(s_button_size) + pos);
 		m_cancel_button->setLabel("cancel");
 		m_cancel_button->setButtonStyle(HudButtonStyle::small);
 		pos.x -= s_button_size.x + spacing;
 
-		m_create_button = new HudClickButton(FRect(s_button_size) + pos);
+		m_create_button = make_shared<HudClickButton>(FRect(s_button_size) + pos);
 		m_create_button->setLabel("create");
 		m_create_button->setButtonStyle(HudButtonStyle::small);
 
@@ -76,14 +76,14 @@ namespace hud {
 		std::sort(m_races.begin(), m_races.end());
 		m_races.resize(unique(m_races.begin(), m_races.end()) - m_races.begin());
 
-		attach(m_icon_box.get());
-		attach(m_name_edit_box.get());
-		attach(m_race_button.get());
-		attach(m_class_button.get());
-		attach(m_icon_prev.get());
-		attach(m_icon_next.get());
-		attach(m_cancel_button.get());
-		attach(m_create_button.get());
+		attach(m_icon_box);
+		attach(m_name_edit_box);
+		attach(m_race_button);
+		attach(m_class_button);
+		attach(m_icon_prev);
+		attach(m_icon_next);
+		attach(m_cancel_button);
+		attach(m_create_button);
 	}
 		
 	HudCharacter::~HudCharacter() { }
@@ -176,7 +176,7 @@ namespace hud {
 		if(m_pc_controller) {
 			const PlayableCharacter &pc = m_pc_controller->pc();
 			const ActorProto &proto = dynamic_cast<const ActorProto&>(pc.character().proto());
-			m_icon_box->setCharacter(new Character(pc.character()));
+			m_icon_box->setCharacter(make_shared<Character>(pc.character()));
 			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
 			m_class_button->setLabel(format("Class: %s", pc.characterClass().name().c_str()));
 			m_name_edit_box->setText(pc.character().name());
@@ -188,7 +188,7 @@ namespace hud {
 			updateIconId(0);
 			updateClassId();
 	
-			m_icon_box->setCharacter(new Character("", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id));
+			m_icon_box->setCharacter(make_shared<Character>("", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id));
 			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
 			m_class_button->setLabel(format("Class: %s", CharacterClass::get(m_class_id).name().c_str()));
 		}
@@ -213,7 +213,7 @@ namespace hud {
 		updateIconId(0);
 		updateClassId();
 			
-		return new PlayableCharacter(
+		return make_shared<PlayableCharacter>(
 				Character(m_name_edit_box->text(), m_icons[m_icon_id].second, getProto(m_races[m_race_id]).id),
 				m_class_id );
 	}

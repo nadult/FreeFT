@@ -27,10 +27,10 @@ namespace game {
 
 		u8 flags;
 		sr.unpack(flags, m_stance, m_action);
-		m_hit_points = sr.decodeInt();
-		m_sound_variation = sr.decodeInt();
-		m_client_id = sr.decodeInt();
-		m_faction_id = sr.decodeInt();
+		m_hit_points = decodeInt(sr);
+		m_sound_variation = decodeInt(sr);
+		m_client_id = decodeInt(sr);
+		m_faction_id = decodeInt(sr);
 
 		if(flags & 1)
 			sr >> m_target_angle;
@@ -40,11 +40,11 @@ namespace game {
 	}
 
 	Actor::Actor(const XMLNode &node)
-	  :EntityImpl(node), m_actor(*m_proto.actor), m_inventory(node.child("inventory")), m_stance(Stance::stand),
+	  :EntityImpl(node), m_actor(*m_proto.actor), m_stance(Stance::stand), m_inventory(node.child("inventory")),
 	      m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
-		m_sound_variation = node.intAttrib("sound_variation") % m_actor.sounds.size();
-		m_faction_id = node.intAttrib("faction_id");
+		m_sound_variation = node.attrib<int>("sound_variation") % m_actor.sounds.size();
+		m_faction_id = node.attrib<int>("faction_id");
 		m_hit_points = m_actor.hit_points;
 		animate(Action::idle);
 	}
@@ -114,10 +114,10 @@ namespace game {
 		u8 flags =	(m_target_angle != dirAngle()? 1 : 0);
 
 		sr.pack(flags, m_stance, m_action);
-		sr.encodeInt(m_hit_points);
-		sr.encodeInt(m_sound_variation);
-		sr.encodeInt(m_client_id);
-		sr.encodeInt(m_faction_id);
+		encodeInt(sr, m_hit_points);
+		encodeInt(sr, m_sound_variation);
+		encodeInt(sr, m_client_id);
+		encodeInt(sr, m_faction_id);
 
 		if(flags & 1)
 			sr << m_target_angle;
@@ -460,7 +460,7 @@ namespace game {
 		if(isClient())
 			return;
 
-		Segment best_ray = computeBestShootingRay(target_box, weapon);
+		Ray best_ray = computeBestShootingRay(target_box, weapon);
 
 		if(randomness > 0.0f) {
 			float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);

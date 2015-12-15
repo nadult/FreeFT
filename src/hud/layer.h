@@ -40,7 +40,7 @@ namespace hud
 		virtual bool canShow() const { return true; }
 
 	protected:
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		
 		game::PWorld m_world;
 		game::PPCController m_pc_controller;

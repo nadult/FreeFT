@@ -9,12 +9,12 @@ namespace ui {
 
 	TextBox::TextBox(const IRect &rect, const char *text, bool is_centered, Color col)
 		:Window(rect, col), m_is_centered(is_centered) {
-		m_font = Font::mgr[WindowStyle::fonts[0]];
+		m_font = res::getFont(WindowStyle::fonts[0]);
 		setText(text);
 	}
 
 	void TextBox::setFont(const char *font_name) {
-		m_font = Font::mgr[font_name];
+		m_font = res::getFont(font_name);
 		m_text_extents = m_font->evalExtents(m_text.c_str());
 	}
 
@@ -23,11 +23,11 @@ namespace ui {
 		m_text_extents = m_font->evalExtents(text);
 	}
 
-	void TextBox::drawContents() const {
+	void TextBox::drawContents(Renderer2D &out) const {
 		int2 pos = (size() - m_text_extents.size()) / 2 - m_text_extents.min;
 		if(!m_is_centered)
 			pos.x = 5;
-		m_font->draw(pos, {Color::white, Color::black}, m_text);
+		m_font->draw(out, pos, {Color::white, Color::black}, m_text);
 	}
 
 }

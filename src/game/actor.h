@@ -130,14 +130,14 @@ namespace game {
 		Actor(const Actor &rhs, const Proto &new_proto);
 		Actor(const Proto &proto, ActorInventory &inventory);
 
-		Flags::Type flags() const;
+		Flags::Type flags() const override;
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&, bool force = false) override;
 		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
 
-		XMLNode save(XMLNode&) const;
-		void save(Stream&) const;
+		XMLNode save(XMLNode&) const override;
+		void save(Stream&) const override;
 
 		SurfaceId::Type surfaceUnder() const;
 		WeaponClass::Type equippedWeaponClass() const;
@@ -155,7 +155,7 @@ namespace game {
 
 		int hitPoints() const { return m_hit_points; }
 
-		int factionId() const { return m_faction_id; }
+		int factionId() const override { return m_faction_id; }
 		int clientId() const { return m_client_id; }
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
 		void setClientId(int client_id) { m_client_id = client_id; }
@@ -207,7 +207,7 @@ namespace game {
 
 
 	private:
-		bool shrinkRenderedBBox() const { return true; }
+		bool shrinkRenderedBBox() const override { return true; }
 
 		enum class FollowPathResult {
 			moved,

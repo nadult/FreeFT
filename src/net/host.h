@@ -96,7 +96,7 @@ namespace net {
 		void acceptPacket(int packet_idx);
 
 		Address m_address;
-		vector<Chunk, AlignedAllocator<Chunk, 128>> m_chunks;
+		std::vector<Chunk, AlignedAllocator<Chunk, 128>> m_chunks;
 		vector<UChunk> m_uchunks;
 		vector<Channel> m_channels;
 		vector<int> m_ichunk_indices;

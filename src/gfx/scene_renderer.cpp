@@ -13,7 +13,7 @@ SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
 	m_elements.reserve(1024);
 }
 
-bool SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color,
+bool SceneRenderer::add(STexture texture, IRect rect, float3 pos, FBox bbox, Color color,
 						FRect tex_rect, bool is_overlay) {
 	DASSERT(texture);
 
@@ -44,7 +44,6 @@ void SceneRenderer::addBox(FBox bbox, Color color, bool is_filled) {
 		return;
 
 	Element new_elem;
-	new_elem.texture = nullptr;
 	new_elem.bbox = bbox;
 	new_elem.rect = rect;
 	new_elem.color = color;
@@ -137,7 +136,7 @@ void SceneRenderer::render() {
 	vector<std::pair<int, int>> grid;
 	grid.reserve(m_elements.size() * 4);
 
-	updateCounter("SceneRenderer::total_count", m_elements.size());
+	FWK_PROFILE_COUNTER("SceneRenderer::total_count", m_elements.size());
 	for(int n = 0; n < (int)m_elements.size(); n++) {
 		const Element &elem = m_elements[n];
 		IRect rect = elem.rect - m_view_pos;
@@ -238,7 +237,7 @@ void SceneRenderer::render() {
 		grid_rect.max = min(grid_rect.max, m_viewport.max);
 		setScissorRect(grid_rect);
 
-		updateCounter("SceneRenderer::rendered_count", count);
+		FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);
 		for(int i = count - 1; i >= 0; i--) {
 			const Element &elem = m_elements[gdata[i].second];
 

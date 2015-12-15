@@ -28,15 +28,15 @@ namespace game {
 		
 		void addToRender(SceneRenderer &out, Color color) const override;
 
-		void save(Stream&) const;
-		XMLNode save(XMLNode& parent) const;
+		void save(Stream&) const override;
+		XMLNode save(XMLNode& parent) const override;
 
-		Flags::Type flags() const { return Flags::projectile | Flags::dynamic_entity; }
+		Flags::Type flags() const override { return Flags::projectile | Flags::dynamic_entity; }
 
 	protected:
-		virtual void think();
-		void nextFrame();
-		void onAnimFinished();
+		void think() override;
+		void nextFrame() override;
+		void onAnimFinished() override;
 		void makeImpact(float3 new_pos, ObjectRef hit = ObjectRef());
 
 	private:

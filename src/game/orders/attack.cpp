@@ -21,7 +21,7 @@ namespace game {
 	AttackOrder::AttackOrder(Stream &sr) :OrderImpl(sr) {
 		u8 flags;
 		sr.unpack(flags, m_mode);
-		m_burst_mode = sr.decodeInt();
+		m_burst_mode = decodeInt(sr);
 		m_is_kick_weapon = flags & 1;
 		m_is_followup = flags & 2;
 		if(flags & 4)
@@ -36,7 +36,7 @@ namespace game {
 					(m_is_followup? 2 : 0) |
 					(m_target? 4 : 0);
 		sr.pack(flags, m_mode);
-		sr.encodeInt(m_burst_mode);
+		encodeInt(sr, m_burst_mode);
 		if(m_target)
 			sr << m_target;
 		else

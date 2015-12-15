@@ -1,6 +1,10 @@
 - DOWNSCALE, remove unnecessary features
+- use unique_ptr in UI & HUD
 
 Must-have: ----------------------------------------------------------------------------------------
+
+- THINK: do we want to still support devices without OpenGL ES 2.0? libfwk requires that, but in this
+  game it's not really needed
 
 - Better targeting, which should work in 3D (if user wants to aim at a wall)
 - Displaying hit percentage close to cursor

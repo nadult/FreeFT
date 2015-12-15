@@ -125,11 +125,11 @@ void TileGroup::loadFromXML(const XMLDocument &doc) {
 
 	while(node) {
 		Entry entry;
-		PTile tile = Tile::mgr[node.attrib("tile")];
+		PTile tile = res::tiles()[node.attrib("tile")];
 
 		entry.tile = &*tile;
-		entry.group_id = node.intAttrib("group_id");
-		entry.is_dirty = node.intAttrib("is_dirty") != 0;
+		entry.group_id = node.attrib<int>("group_id");
+		entry.is_dirty = node.attrib<int>("is_dirty") != 0;
 		m_entries.push_back(entry);
 
 		node = node.sibling("entry");
@@ -143,7 +143,7 @@ void TileGroup::loadFromXML(const XMLDocument &doc) {
 	while(node) {
 		Group group;
 		for(int s = 0; s < Group::side_count; s++)
-			group.m_side_surf[s] = node.intAttrib(side_names[s]);
+			group.m_side_surf[s] = node.attrib<int>(side_names[s]);
 		m_groups.push_back(group);
 		node = node.sibling("group");
 	}

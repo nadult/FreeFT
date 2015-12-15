@@ -11,9 +11,9 @@
 class SceneRenderer {
   public:
 	SceneRenderer(IRect viewport, int2 view_pos);
-	bool add(PTexture tex, IRect rect, float3 pos, FBox bbox, Color col = Color::white,
+	bool add(STexture tex, IRect rect, float3 pos, FBox bbox, Color col = Color::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false);
-	bool add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white,
+	bool add(STexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false) {
 		return add(tex, rect, pos, FBox(float3(0, 0, 0), bbox), col, tex_rect, is_overlay);
 	}
@@ -29,8 +29,7 @@ class SceneRenderer {
 
   protected:
 	struct Element {
-		// TODO: change to weak ptr to texture, make sure that textures exist
-		PTexture texture;
+		STexture texture;
 		IRect rect;
 		FBox bbox;
 		FRect tex_rect;

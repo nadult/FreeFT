@@ -22,7 +22,7 @@ namespace hud
 		void setAmmoCount(int count) { m_ammo_count = count; }
 		void setAttackMode(AttackMode::Type mode) { m_attack_mode = mode; }
 
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
 	private:
 		Weapon m_weapon;

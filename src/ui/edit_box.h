@@ -14,34 +14,30 @@ namespace ui {
 	class EditBox: public Window
 	{
 	public:
-		EditBox(const IRect &rect, int max_size, const char *label = "", Color col = Color::transparent);
-		virtual const char *typeName() const { return "EditBox"; }
+		EditBox(const IRect &rect, int max_size, StringRef label = StringRef(), Color col = Color::transparent);
+		const char *typeName() const override { return "EditBox"; }
 
-		void setText(const char *text);
-		const char *text() const { return m_text.c_str(); }
+		void setText(wstring);
+		const wstring &text() const { return m_text; }
 		void reset(bool is_editing);
 
-		void drawContents() const;
-		void onInput(int2);
-		bool onEvent(const Event&);
+		void drawContents(Renderer2D&) const override;
+		void onInput(const InputState&) override;
+		bool onEvent(const Event&) override;
+		//TODO: what if text character is not available in the font?
 
 	private:
-		void onKey(int key);
 		void setCursorPos(int2);
 
-		int m_max_size;
-		int m_last_key;
-		double m_key_down_time;
-		double m_on_key_time;
-
 		PFont m_font;
-		string m_text, m_old_text;
-		string m_label;
+		wstring m_text, m_old_text;
+		wstring m_label;
 		int m_cursor_pos;
+		int m_max_size;
 		bool m_is_editing;
 	};
 
-	typedef Ptr<EditBox> PEditBox;
+	using PEditBox = shared_ptr<EditBox>;
 
 }
 

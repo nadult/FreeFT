@@ -36,7 +36,7 @@ namespace hud
 		float alpha() const override;
 
 	protected:
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
 		Item m_item;
 	};
@@ -56,7 +56,7 @@ namespace hud
 	protected:
 		bool onInput(const InputEvent&) override;
 		void onUpdate(double time_diff) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
 		HudItemEntry m_entry;
 		double m_drop_count;
@@ -80,10 +80,11 @@ namespace hud
 		bool onEvent(const HudEvent&) override;
 		void onUpdate(double time_diff) override;
 		void onLayout() override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
 	private:
 		int m_row_offset, m_max_row_offset;
+		int2 m_last_mouse_pos;
 
 		vector<HudItemEntry> m_entries;
 		vector<PHudItemButton> m_buttons;

@@ -43,7 +43,7 @@ namespace game {
 	ItemProto::ItemProto(const TupleParser &parser) :ProtoImpl(parser) {
 		name = parser("name");
 		description = parser("description");
-		weight = toFloat(parser("weight"));
+		weight = parser.get<float>("weight");
 		
 		for(int n = 0; n < arraySize(seq_ids); n++) {
 			if(is_dummy)
@@ -74,7 +74,7 @@ namespace game {
 		return Item(findProto("_dummy_weapon", ProtoId::item_weapon));
 	}
 		
-	PTexture Item::guiImage(bool small, FRect &tex_rect) const {
+	STexture Item::guiImage(bool small, FRect &tex_rect) const {
 		const Sprite &sprite = Sprite::get(m_proto->sprite->index());
 		return sprite.getFrame(m_proto->seq_ids[small?2 : 1], 0, 0, tex_rect, false);
 	}
@@ -90,19 +90,19 @@ namespace game {
 	}
 
 	ItemEntity::ItemEntity(const XMLNode &node) :EntityImpl(node), m_item(m_proto) {
-		m_count = node.intAttrib("item_count");
+		m_count = node.attrib<int>("item_count");
 		playSequence(m_proto.seq_ids[0], false);
 	}
 
 	ItemEntity::ItemEntity(Stream &sr) :EntityImpl(sr), m_item(m_proto) {
-		m_count = sr.decodeInt();
+		m_count = decodeInt(sr);
 		ASSERT(m_count > 0);
 		playSequence(m_proto.seq_ids[0], false);
 	}
 
 	void ItemEntity::save(Stream &sr) const {
 		EntityImpl::save(sr);
-		sr.encodeInt(m_count);
+		encodeInt(sr, m_count);
 	}
 	
 	XMLNode ItemEntity::save(XMLNode &parent) const {
@@ -122,7 +122,7 @@ namespace game {
 		m_count = count;
 	}
 	
-	PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
+	STexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
 		return m_item.guiImage(small, tex_rect);
 	}
 

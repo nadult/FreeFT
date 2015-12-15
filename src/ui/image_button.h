@@ -29,11 +29,11 @@ namespace ui
 			mode_toggle_on
 		};
 
-		ImageButton(const int2 &pos, const ImageButtonProto &proto, const char *text, Mode mode, int id = 0);
-		virtual const char *typeName() const { return "ImageButton"; }
+		ImageButton(const int2 &pos, ImageButtonProto proto, const char *text, Mode mode, int id = 0);
+		const char *typeName() const override { return "ImageButton"; }
 
-		virtual void drawContents() const;
-		virtual bool onMouseDrag(int2, int2, int key, int is_final);
+		void drawContents(Renderer2D&) const override;
+		bool onMouseDrag(int2, int2, int key, int is_final) override;
 		virtual void setText(const char *text);
 
 		bool isPressed() const { return m_mode != mode_normal && m_is_pressed; }

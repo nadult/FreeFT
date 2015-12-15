@@ -27,10 +27,10 @@ namespace hud
 		void setName(const string &name) { m_name = name; }
 		
 	protected:
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		void onUpdate(double) override;
 
-		Ptr<HudCharIcon> m_char_icon;
+		PHudCharIcon m_char_icon;
 		string m_name;
 		float m_hit_chance;
 		float m_health;

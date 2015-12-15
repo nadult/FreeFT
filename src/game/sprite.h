@@ -13,7 +13,7 @@
 namespace game {
 
 	//TODO: naming: toTexture, getFrame etc
-	class Sprite: public Resource {
+	class Sprite: public immutable_base<Sprite> {
 	public:
 		Sprite();
 		void legacyLoad(Stream &sr);
@@ -85,7 +85,7 @@ namespace game {
 			void load(Stream&);
 			void save(Stream&) const;
 
-			PTexture toTexture(const MultiPalette&, FRect&, bool put_in_atlas = true) const;
+			STexture toTexture(const MultiPalette&, FRect&, bool put_in_atlas = true) const;
 			bool testPixel(const int2&) const;
 			int memorySize() const;
 
@@ -106,7 +106,7 @@ namespace game {
 		void updateMaxRect();
 		bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 		
-		PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas = true) const;
+		STexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas = true) const;
 		
 		// Search is case-insensitive
 		int findSequence(const char *name) const;
@@ -151,12 +151,15 @@ namespace game {
 		bool isPartial() const { return m_is_partial; }
 		int index() const { return m_index; }
 		void setIndex(int index) { m_index = index; }
+		const string &resourceName() const { return m_resource_name; }
+		void setResourceName(const string &name) { m_resource_name = name; }
 
 	private:
 		vector<Sequence> m_sequences;
 		vector<Frame> m_frames;
 		vector<MultiPalette> m_palettes;
 		vector<MultiImage> m_images;
+		string m_resource_name;
 
 		IRect m_max_rect;
 		int2 m_offset;
@@ -166,7 +169,7 @@ namespace game {
 		int m_index;
 	};
 
-	typedef Ptr<Sprite> PSprite;
+	using PSprite = shared_ptr<Sprite>;
 
 };
 	

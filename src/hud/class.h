@@ -18,9 +18,11 @@ namespace hud
 
 		HudClassButton(const FRect &rect);
 
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		Color backgroundColor() const override;
 	};
+
+	using PHudClassButton = shared_ptr<HudClassButton>;
 
 	class HudClass: public HudLayer {
 	public:
@@ -36,7 +38,7 @@ namespace hud
 		void onPCControllerSet() override;
 
 		vector<int> m_class_ids;
-		vector<Ptr<HudClassButton>> m_buttons;
+		vector<PHudClassButton> m_buttons;
 		PHudButton m_button_up, m_button_down;
 		int m_offset;
 	};

@@ -13,7 +13,7 @@
 namespace game
 {
 
-	class Character: public RefCounter {
+	class Character: public immutable_base<Character> {
 	public:
 		enum {
 			max_name_size = 14,
@@ -46,7 +46,7 @@ namespace game
 		ProtoIndex m_proto_idx;
 	};
 
-	class CharacterClass: public RefCounter {
+	class CharacterClass: public immutable_base<CharacterClass> {
 	public:
 		CharacterClass(const CharacterClass&) = default;
 		CharacterClass(XMLNode node, int id);
@@ -73,7 +73,7 @@ namespace game
 		int m_tier, m_id;
 	};
 
-	class PlayableCharacter: public RefCounter {
+	class PlayableCharacter: public immutable_base<PlayableCharacter> {
 	public:
 		PlayableCharacter(const Character &character, int class_id);
 		explicit PlayableCharacter(Stream&);

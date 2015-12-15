@@ -86,7 +86,7 @@ namespace ui {
 					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_cell_size);
 		}
 
-		if((isKeyPressed(InputKey::lctrl) && isMouseKeyPressed(0)) || isMouseKeyPressed(2))
+		if((isKeyPressed(InputKey::lctrl) && isMouseKeyPressed(InputButton::left)) || isMouseKeyPressed(InputButton::middle))
 			m_view_pos -= getMouseMove();
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));

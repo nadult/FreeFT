@@ -131,13 +131,13 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 		u8 prev = heights[ty == 0? 0 : ty - 1][0];
 		for(int tx = 0; tx < extents; tx++) {
 			u8 height = m_data[index(x + tx, y + ty, level)];
-			if(abs(height - prev) > 1 || height == invalid_value)
+			if(fwk::abs(height - prev) > 1 || height == invalid_value)
 				for(int l = 0; l < m_level_count; l++) {
 					height = m_data[index(x + tx, y + ty, l)];
-					if(height >= 0 && abs(height - prev) <= 1)
+					if(height >= 0 && fwk::abs(height - prev) <= 1)
 						break;
 				}
-			if(abs(height - prev) > 1 || height == invalid_value)
+			if(fwk::abs(height - prev) > 1 || height == invalid_value)
 				return false;
 			heights[ty][tx] = prev = height;
 		}
@@ -146,8 +146,8 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 	extents--;
 	for(int ty = 0; ty < extents; ty++)
 		for(int tx = 0; tx < extents; tx++)
-			if(	abs(heights[ty][tx] - heights[ty + 1][tx + 0]) > 1 ||
-				abs(heights[ty][tx] - heights[ty + 1][tx + 1]) > 1)
+			if(	fwk::abs(heights[ty][tx] - heights[ty + 1][tx + 0]) > 1 ||
+				fwk::abs(heights[ty][tx] - heights[ty + 1][tx + 1]) > 1)
 				return false;
 
 	return true;

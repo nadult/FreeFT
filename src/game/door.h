@@ -54,7 +54,7 @@ namespace game
 		Door(const XMLNode&);
 		Door(const DoorProto &proto);
 
-		Flags::Type flags() const { return Flags::door | Flags::dynamic_entity | Flags::occluding | Flags::colliding; }
+		Flags::Type flags() const override { return Flags::door | Flags::dynamic_entity | Flags::occluding | Flags::colliding; }
 		
 		void interact(const Entity*) override;
 		void onSoundEvent() override;
@@ -62,7 +62,7 @@ namespace game
 		bool isOpened() const { return m_state == DoorState::opened_in || m_state == DoorState::opened_out; }
 		DoorClassId::Type classId() const { return m_proto.class_id; }
 		void setKey(const Item&);
-		void setDirAngle(float angle);
+		void setDirAngle(float angle) override;
 
 		XMLNode save(XMLNode&) const override;
 		void save(Stream&) const override;

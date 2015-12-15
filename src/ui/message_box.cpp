@@ -14,17 +14,17 @@ namespace ui {
 		:Window(rect), m_mode(mode) {
 		int w = width(), h = height();
 
-		PTextBox text_box = new TextBox(IRect(5, 5, w - 5, h - 30), message);
+		PTextBox text_box = make_shared<TextBox>(IRect(5, 5, w - 5, h - 30), message);
 		text_box->setFont(WindowStyle::fonts[1]);
-		attach(text_box.get());
+		attach(text_box);
 
 		if(mode == MessageBoxMode::ok) {
-			attach(new Button(IRect(w/2 - 40, h - 25, w/2 + 40, h - 5), "ok", 0));
+			attach(make_shared<Button>(IRect(w/2 - 40, h - 25, w/2 + 40, h - 5), "ok", 0));
 		}
 		else {
-			attach(new Button(IRect(w/2 - 50, h - 25, w/2 - 2, h - 5),
+			attach(make_shared<Button>(IRect(w/2 - 50, h - 25, w/2 - 2, h - 5),
 					mode == MessageBoxMode::yes_no? "yes" : "ok", 1));
-			attach(new Button(IRect(w/2 + 2, h - 25, w/2 + 50, h - 5),
+			attach(make_shared<Button>(IRect(w/2 + 2, h - 25, w/2 + 50, h - 5),
 					mode == MessageBoxMode::yes_no? "no" : "cancel", 0));
 		}
 	}
@@ -40,8 +40,8 @@ namespace ui {
 		return true;
 	}
 
-	void MessageBox::drawContents() const {
-		drawWindow(IRect({0, 0}, rect().size()), WindowStyle::gui_dark, 3);
+	void MessageBox::drawContents(Renderer2D &out) const {
+		drawWindow(out, IRect({0, 0}, rect().size()), WindowStyle::gui_dark, 3);
 	}
 
 }

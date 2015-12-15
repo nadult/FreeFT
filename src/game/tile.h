@@ -26,7 +26,7 @@ namespace game
 
 		int2 dimensions() const { return m_texture.size(); }	
 		Texture texture() const;
-		PTexture deviceTexture(FRect &tex_rect) const;
+		STexture deviceTexture(FRect &tex_rect) const;
 	
 		const IRect rect() const;
 
@@ -40,16 +40,15 @@ namespace game
 
 
 	// TODO: naming convention, attribute hiding
-	class Tile: public Resource {
+	class Tile: public immutable_base<Tile> {
 	public:
 		Tile();
+		Tile(const string &resource_name, Stream&);
 
 		void legacyLoad(Stream &sr, const char *alternate_name = nullptr);
 		void load(Stream &sr);
 		void save(Stream &sr) const;
 		
-		static ResourceMgr<Tile> mgr;
-
 		Flags::Type flags() const;
 
 		TileId::Type type() const { return m_type_id; }
@@ -74,6 +73,9 @@ namespace game
 		const TileFrame &accessFrame(int frame_counter) const;
 		int frameCount() const { return 1 + (int)m_frames.size(); }
 
+		const string &resourceName() const { return m_resource_name; }
+		void setResourceName(const string &name) { m_resource_name = name; }
+
 	protected:
 		void updateMaxRect();
 
@@ -83,6 +85,7 @@ namespace game
 		int2 m_offset;
 		int3 m_bbox;
 		IRect m_max_rect;
+		string m_resource_name;
 
 		TileId::Type m_type_id;
 		SurfaceId::Type m_surface_id;
@@ -91,7 +94,7 @@ namespace game
 		bool m_is_invisible;
 	};
 
-	typedef Ptr<Tile> PTile;
+	using PTile = immutable_ptr<Tile>;
 
 }
 

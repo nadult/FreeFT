@@ -30,6 +30,8 @@ namespace net {
 		const char *data() const { return m_data; }
 		int spaceLeft() const { return sizeof(m_data) - m_pos; }
 
+		void encodeInt(int value) { ::encodeInt(*this, value); }
+
 	protected:
 		virtual void v_save(const void *ptr, int size) final;
 

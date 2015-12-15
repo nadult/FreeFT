@@ -15,7 +15,7 @@ namespace game {
 	class EntityRef;
 	class Entity;
 
-	typedef std::unique_ptr<Entity> PEntity;
+	using PEntity = unique_ptr<Entity>;
 	
 	struct EntityProto: public Proto {
 		EntityProto(const TupleParser&);

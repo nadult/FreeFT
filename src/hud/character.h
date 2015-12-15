@@ -38,7 +38,7 @@ namespace hud
 		vector<int> m_class_ids;
 		vector<ProtoIndex> m_races;
 
-		Ptr<HudCharIcon> m_icon_box;
+		PHudCharIcon m_icon_box;
 		PHudEditBox m_name_edit_box;
 		PHudButton m_race_button, m_class_button;
 		PHudButton m_icon_next, m_icon_prev;

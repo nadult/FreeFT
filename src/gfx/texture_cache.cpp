@@ -13,7 +13,7 @@
 CachedTexture::CachedTexture() : m_cache(nullptr), m_id(-1) {}
 CachedTexture::~CachedTexture() { unbindFromCache(); }
 
-PTexture CachedTexture::accessTexture(FRect &tex_rect, bool put_in_atlas) const {
+STexture CachedTexture::accessTexture(FRect &tex_rect, bool put_in_atlas) const {
 	DASSERT(m_cache && m_id != -1);
 	return m_cache->access(m_id, put_in_atlas, tex_rect);
 }
@@ -39,7 +39,7 @@ void CachedTexture::onCacheDestroy() {
 	m_cache = nullptr;
 }
 
-static int textureMemorySize(PTexture tex) {
+static int textureMemorySize(STexture tex) {
 	TextureFormat format = tex->format();
 	return format.evalImageSize(tex->width(), tex->height());
 }
@@ -56,7 +56,6 @@ TextureCache::TextureCache(int bytes)
 			at_height /= 2;
 	}
 	m_atlas_size = int2(at_width, at_height);
-	m_atlas.incRefs();
 }
 
 TextureCache::~TextureCache() {
@@ -73,17 +72,17 @@ TextureCache::~TextureCache() {
 void TextureCache::nextFrame() {
 	FWK_PROFILE("TextureCache::nextFrame");
 
-	if(!m_atlas.isValid()) {
+	if(!m_atlas) {
 		int max_size = 2048;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
 
 		m_atlas_size = min(m_atlas_size, int2(max_size, max_size));
 		ASSERT(m_atlas_size.x >= node_size && m_atlas_size.y >= node_size);
 
-		m_atlas.resize(TI_A8B8G8R8, m_atlas_size.x, m_atlas_size.y);
-		m_memory_limit -= textureMemorySize(PTexture(&m_atlas));
+		m_atlas = make_shared<DTexture>(TextureFormatId::rgba, m_atlas_size);
+		m_memory_limit -= textureMemorySize(m_atlas);
 #ifdef LOGGING
-		printf("Atlas size: %dKB\n", textureMemorySize(PTexture(&m_atlas)) / 1024);
+		printf("Atlas size: %dKB\n", textureMemorySize(STexture(&m_atlas)) / 1024);
 #endif
 
 		int x_nodes = m_atlas_size.x / node_size, y_nodes = m_atlas_size.y / node_size;
@@ -155,7 +154,7 @@ void TextureCache::nextFrame() {
 			res.res_ptr->cacheUpload(tex);
 			DASSERT(tex.size() == res.size);
 			res.atlas_pos = pos + atlas_node.rect.min;
-			m_atlas.upload(tex, res.atlas_pos);
+			m_atlas->upload(tex, res.atlas_pos);
 
 			if(res.atlas_node_id == -1) {
 #ifdef LOGGING
@@ -187,7 +186,7 @@ void TextureCache::nextFrame() {
 
 int TextureCache::add(CachedTexture *res_ptr, const int2 &size) {
 	DASSERT(res_ptr);
-	Resource new_res{res_ptr, PTexture(nullptr), size, int2(0, 0), -1, 0};
+	Resource new_res{res_ptr, STexture(nullptr), size, int2(0, 0), -1, 0};
 	if(m_free_list.isEmpty()) {
 		m_resources.push_back(new_res);
 		return (int)m_resources.size() - 1;
@@ -228,7 +227,7 @@ void TextureCache::remove(int res_id) {
 	m_resources[res_id].res_ptr = nullptr;
 }
 
-PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
+STexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 	DASSERT(isValidId(res_id));
 
 	Resource &res = m_resources[res_id];
@@ -239,7 +238,7 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 			unload(res_id);
 		float2 mul(1.0f / float(m_atlas_size.x), 1.0f / float(m_atlas_size.y));
 		tex_rect = FRect(float2(res.atlas_pos) * mul, float2(res.atlas_pos + res.size) * mul);
-		return PTexture(&m_atlas);
+		return m_atlas;
 	} else if(put_in_atlas && res.atlas_node.prev == -1 && res.atlas_node.next == -1 &&
 			  m_atlas_queue.head != res_id) {
 		DASSERT(res.atlas_node_id == -1);
@@ -251,20 +250,8 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 		DASSERT(res.res_ptr);
 		Texture temp_tex;
 		res.res_ptr->cacheUpload(temp_tex);
-		res.device_texture = new DTexture;
+		res.device_texture = make_shared<DTexture>(temp_tex);
 		res.size = int2(temp_tex.width(), temp_tex.height());
-
-		if(isExtensionSupported(OpenglExtension::arb_texture_non_power_of_two)) {
-			res.device_texture->set(temp_tex);
-		} else {
-			int2 p2size(1, 1);
-			while(p2size.x < res.size.x)
-				p2size.x *= 2;
-			while(p2size.y < res.size.y)
-				p2size.y *= 2;
-			res.device_texture->resize(temp_tex.format(), p2size.x, p2size.y);
-			res.device_texture->upload(temp_tex);
-		}
 
 		int new_size = textureMemorySize(res.device_texture);
 #ifdef LOGGING

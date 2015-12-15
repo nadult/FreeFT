@@ -11,21 +11,19 @@ namespace ui {
 
 
 	ListBox::ListBox(const IRect &rect, Color color) :Window(rect, color), m_over_id(-1), m_dragging_id(-1) {
-		m_font = Font::mgr[WindowStyle::fonts[0]];
+		m_font = res::getFont(WindowStyle::fonts[0]);
 		m_line_height = m_font->lineHeight();
 	}
 		
-	void ListBox::drawContents() const {
+	void ListBox::drawContents(Renderer2D &out) const {
 		int2 offset = innerOffset();
 		int2 vis_entries = visibleEntriesIds();
 		
-
-		DTexture::unbind();
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
 			const Entry &entry = m_entries[n];
 			IRect rect = entryRect(n) - offset;
 
-			drawLine(int2(rect.min.x, rect.max.y), rect.max, WindowStyle::gui_medium);
+			out.addLine(int2(rect.min.x, rect.max.y), rect.max, WindowStyle::gui_medium);
 
 			Color col = Color::transparent;
 			
@@ -35,15 +33,15 @@ namespace ui {
 				col = WindowStyle::gui_light;
 
 			if(col != Color(Color::transparent))
-				drawQuad(rect.min, rect.size(), col);
+				out.addFilledRect(rect, col);
 		}
 		
 		if(isPopup())
-			drawRect(IRect(1, 0, width(), height() - 1), backgroundColor());
+			out.addRect(IRect(1, 0, width(), height() - 1), backgroundColor());
 
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
 			int2 pos = int2(0, m_line_height * n) - offset;
-			m_font->draw(pos + int2(5, 0), {m_entries[n].color, Color::black}, m_entries[n].text);
+			m_font->draw(out, pos + int2(5, 0), {m_entries[n].color, Color::black}, m_entries[n].text);
 		}
 	}
 
@@ -74,8 +72,8 @@ namespace ui {
 		return false;
 	}
 
-	void ListBox::onInput(int2 mouse_pos) {
-		m_over_id = entryId(mouse_pos);
+	void ListBox::onInput(const InputState &state) {
+		m_over_id = entryId(state.mousePos() - clippedRect().min);
 	}
 
 	bool ListBox::onMouseDrag(int2 start, int2 end, int key, int is_final) {

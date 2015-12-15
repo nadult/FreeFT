@@ -16,7 +16,7 @@ namespace game {
 		mode = Mode::fall;
 		force = length(force_vec);
 		float3 vec = force_vec / force;
-		force_angle	= vectorToAngle(vec.xz());
+		force_angle	= vectorToAngle(normalize(vec.xz()));
 	}
 
 	GetHitOrder::GetHitOrder(Stream &sr) :OrderImpl(sr) {

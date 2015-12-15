@@ -103,8 +103,8 @@ namespace game
 			return;
 		}
 
-		int2 size = main_node.int2Attrib("size");
-		int tile_count = main_node.intAttrib("entity_count");
+		int2 size = main_node.attrib<int2>("size");
+		int tile_count = main_node.attrib<int>("entity_count");
 
 		//TODO: duplicated code here and in TileMap
 		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);

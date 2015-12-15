@@ -115,8 +115,6 @@ namespace game {
 
 	//TODO: add cancel order
 	DECLARE_ENUM(OrderTypeId,
-		invalid = -1,
-	
 		idle = 0,
 		look_at,
 		move,

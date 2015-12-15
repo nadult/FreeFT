@@ -8,9 +8,8 @@
 #include "game/world.h"
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
+#include "gfx/drawing.h"
 #include <algorithm>
-
-using namespace gfx;
 
 namespace hud {
 	
@@ -50,20 +49,19 @@ namespace hud {
 		setTitle(m_item.proto().name);
 	}
 	
-	void HudItemDesc::onDraw() const {
-		HudLayer::onDraw();
+	void HudItemDesc::onDraw(Renderer2D &out) const {
+		HudLayer::onDraw(out);
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
 			float ypos = topOffset() + rect.min.y;
 
 			FRect uv_rect;
-			PTexture texture = m_item.guiImage(false, uv_rect);
+			auto texture = m_item.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
-			texture->bind();
-			drawQuad(FRect(pos, pos + size), uv_rect, mulAlpha(Color::white, alpha()));
+			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, mulAlpha(Color::white, alpha())});
 
 			ypos += size.y + 10.0f;
 			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
@@ -77,7 +75,7 @@ namespace hud {
 			else if(m_item.type() == ItemType::armour)
 				params_desc = Armour(m_item).paramDesc();
 
-			m_font->draw(float2(rect.min.x + 5.0f, ypos), {titleColor(), titleShadowColor()}, params_desc);
+			m_font->draw(out, float2(rect.min.x + 5.0f, ypos), {titleColor(), titleShadowColor()}, params_desc);
 		}
 	}
 
@@ -93,23 +91,22 @@ namespace hud {
 		setEnabled(entry.is_equipped, false);
 	}
 
-	void HudItemButton::onDraw() const {
-		HudButton::onDraw();
+	void HudItemButton::onDraw(Renderer2D &out) const {
+		HudButton::onDraw(out);
 		FRect rect = this->rect();
 
 		if(!m_entry.item.isDummy()) {
 			FRect uv_rect;
-			PTexture texture = m_entry.item.guiImage(true, uv_rect);
+			auto texture = m_entry.item.guiImage(true, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(rect.center() - size / 2);
-			texture->bind();
-			drawQuad(FRect(pos, pos + size), uv_rect);
+			out.addFilledRect(FRect(pos, pos + size), texture);
 
 			if(m_entry.count > 1)
-				m_font->draw(rect, {textColor(), textShadowColor(), HAlign::right}, format("%d", m_entry.count));
+				m_font->draw(out, rect, {textColor(), textShadowColor(), HAlign::right}, format("%d", m_entry.count));
 			if(isDropping())
-				m_font->draw(rect, {textColor(true), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
+				m_font->draw(out, rect, {textColor(true), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
 		}
 	}
 		
@@ -118,19 +115,18 @@ namespace hud {
 	}
 		
 	bool HudItemButton::onInput(const InputEvent &event) {
-		bool mouse_over = isMouseOver(event);
-
-		if(event.mouseOver()) {
-			setHighlighted(mouse_over);
-			if(mouse_over && isVisible())
+		bool is_mouse_over = isMouseOver(event);
+		if(event.isMouseOverEvent()) {
+			setHighlighted(is_mouse_over);
+			if(is_mouse_over && isVisible())
 				handleEvent(this, HudEvent::item_focused);
 
 
 		}
-		if(event.mouseKeyDown(0) && mouse_over)
+		if(event.mouseButtonDown(InputButton::left) && is_mouse_over)
 			handleEvent(this, isEnabled()? HudEvent::item_unequip : HudEvent::item_equip);
 
-		if(event.mouseKeyDown(1) && mouse_over) {
+		if(event.mouseButtonDown(InputButton::right) && is_mouse_over) {
 			if(isEnabled()) {
 				handleEvent(this, HudEvent::item_unequip);
 			}
@@ -140,9 +136,9 @@ namespace hud {
 			}
 		}
 
-		if(event.mouseKeyPressed(1) && isDropping())
+		if(event.mouseButtonPressed(InputButton::right) && isDropping())
 			m_drop_diff = (event.mousePos().y - m_drop_start_pos.y) / 20.0f;
-		if(event.mouseKeyUp(1) && isDropping()) {
+		if(event.mouseButtonUp(InputButton::right) && isDropping()) {
 			if(dropCount() > 0)
 				handleEvent(this, HudEvent::item_drop, dropCount());
 			m_drop_count = -1.0f;
@@ -168,24 +164,24 @@ namespace hud {
 				float2 pos(s_item_size.x * x + item_spacing * (x + 1), s_item_size.y * y + item_spacing * (y + 1) + topOffset());
 				PHudItemButton item(new HudItemButton(FRect(pos, pos + s_item_size)));
 
-				attach(item.get());
+				attach(item);
 				m_buttons.emplace_back(std::move(item));
 			}
 
-		m_button_up = new HudClickButton(FRect(s_button_size), -1);
+		m_button_up = make_shared<HudClickButton>(FRect(s_button_size), -1);
 		m_button_up->setIcon(HudIcon::up_arrow);
 		m_button_up->setAccelerator(InputKey::pageup);
 		m_button_up->setButtonStyle(HudButtonStyle::small);
 
-		m_button_down = new HudClickButton(FRect(s_button_size), 1);
+		m_button_down = make_shared<HudClickButton>(FRect(s_button_size), 1);
 		m_button_down->setIcon(HudIcon::down_arrow);
 		m_button_down->setAccelerator(InputKey::pagedown);
 		m_button_down->setButtonStyle(HudButtonStyle::small);
 
-		attach(m_button_up.get());
-		attach(m_button_down.get());
+		attach(m_button_up);
+		attach(m_button_down);
 
-		m_item_desc = new HudItemDesc(FRect(s_item_desc_size) + float2(layer_spacing, layer_spacing));
+		m_item_desc = make_shared<HudItemDesc>(FRect(s_item_desc_size) + float2(layer_spacing, layer_spacing));
 		m_item_desc->setVisible(false, false);
 	}
 		
@@ -196,8 +192,10 @@ namespace hud {
 	}
 
 	bool HudInventory::onInput(const InputEvent &event) {
-		if(event.mouseOver() && !isMouseOver(event))
+		if(event.isMouseOverEvent() && !isMouseOver(event))
 			m_out_of_item_time = s_desc_visible_time;
+		if(event.isMouseEvent())
+			m_last_mouse_pos = event.mousePos();
 		return false;
 	}
 
@@ -208,9 +206,9 @@ namespace hud {
 			return false;
 
 		if(event.type == HudEvent::button_clicked) {
-			if(m_button_up == event.source && m_row_offset > 0)
+			if(m_button_up.get() == event.source && m_row_offset > 0)
 				m_row_offset--;
-			if(m_button_down == event.source && m_row_offset < m_max_row_offset)
+			if(m_button_down.get() == event.source && m_row_offset < m_max_row_offset)
 				m_row_offset++;
 				
 			needsLayout();
@@ -312,7 +310,7 @@ namespace hud {
 
 	void HudInventory::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
-		float2 mouse_pos = float2(getMousePos()) - rect().min;
+		float2 mouse_pos = float2(m_last_mouse_pos) - rect().min;
 			
 		updateData();
 
@@ -327,9 +325,9 @@ namespace hud {
 		m_item_desc->layout();
 	}
 		
-	void HudInventory::onDraw() const {
-		HudLayer::onDraw();
-		m_item_desc->draw();
+	void HudInventory::onDraw(Renderer2D &out) const {
+		HudLayer::onDraw(out);
+		m_item_desc->draw(out);
 	}
 
 }

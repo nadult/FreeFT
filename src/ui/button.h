@@ -15,10 +15,10 @@ namespace ui
 	{
 	public:
 		Button(IRect rect, const char *text, int id = 0);
-		virtual const char *typeName() const { return "Button"; }
+		const char *typeName() const override { return "Button"; }
 
-		virtual void drawContents() const;
-		virtual bool onMouseDrag(int2, int2, int key, int is_final);
+		void drawContents(Renderer2D&) const override;
+		bool onMouseDrag(int2, int2, int key, int is_final) override;
 		virtual void setText(const char *text);
 
 		void enable(bool);
@@ -33,7 +33,7 @@ namespace ui
 		PFont m_font;
 	};
 
-	typedef Ptr<Button> PButton;
+	using PButton = shared_ptr<Button>;
 
 }
 

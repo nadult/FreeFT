@@ -157,7 +157,7 @@ namespace game {
 
 	namespace AttackModeFlags {
 		uint fromString(const char *string) {
-			return ::toFlags(string, AttackMode::s_strings, AttackMode::count, 1);
+			return toFlags(string, AttackMode::s_strings, AttackMode::count, 1);
 		}
 
 		AttackMode::Type getFirst(uint flags) {

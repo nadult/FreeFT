@@ -93,7 +93,7 @@ namespace ui {
 		m_current_occluder = m_mouseover_tile_id == -1? -1 : m_tile_map[m_mouseover_tile_id].occluder_id;
 
 		if(isChangingOccluders()) {
-			if(isMouseKeyDown(0)) {
+			if(isMouseKeyDown(InputButton::left)) {
 				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
 					m_current_occluder = occmap.addOccluder(m_mouseover_tile_id, m_view.gridHeight());
 				else {

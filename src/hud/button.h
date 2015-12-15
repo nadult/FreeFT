@@ -71,7 +71,7 @@ namespace hud
 
 	protected:
 		void onUpdate(double time_diff) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		bool onInput(const InputEvent&) override;
 		void onClick();
 

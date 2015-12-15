@@ -29,7 +29,7 @@ namespace game {
 
 	class GameMode;
 
-	class World: public RefCounter {
+	class World {
 	public:
 		enum class Mode { //TODO: better name
 			client,
@@ -158,7 +158,7 @@ namespace game {
 		friend class EntityWorldProxy;
 	};
 
-	typedef Ptr<World> PWorld;
+	using PWorld = shared_ptr<World>;
 
 }
 

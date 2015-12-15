@@ -21,15 +21,15 @@ namespace hud {
 		setTitle("Options:");
 		
 		float2 pos = float2((rect().width() - s_button_size.x) * 0.5f , spacing + topOffset());
-		m_exit_to_menu = new HudClickButton(FRect(s_button_size) + pos);
+		m_exit_to_menu = make_shared<HudClickButton>(FRect(s_button_size) + pos);
 		m_exit_to_menu->setLabel("Exit to menu");
 
 		pos += float2(0.0f, s_button_size.y + spacing);
-		m_exit_to_system = new HudClickButton(FRect(s_button_size) + pos);
+		m_exit_to_system = make_shared<HudClickButton>(FRect(s_button_size) + pos);
 		m_exit_to_system->setLabel("Exit to system");
 
-		attach(m_exit_to_menu.get());
-		attach(m_exit_to_system.get());
+		attach(m_exit_to_menu);
+		attach(m_exit_to_system);
 	}
 		
 	

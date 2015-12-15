@@ -95,7 +95,7 @@ namespace game {
 	ProtoIndex::ProtoIndex(Stream &sr) {
 		sr >> m_type;
 		if(ProtoId::isValid(m_type)) {
-			m_idx = sr.decodeInt();
+			m_idx = decodeInt(sr);
 			validate();
 		}
 		else
@@ -118,7 +118,7 @@ namespace game {
 	void ProtoIndex::save(Stream &sr) const {
 		if(isValid()) {
 			sr << m_type;
-			sr.encodeInt(m_idx);
+			encodeInt(sr, m_idx);
 		}
 		else {
 			sr << ProtoId::invalid;

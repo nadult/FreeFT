@@ -71,18 +71,18 @@ namespace game {
 
 		clear();
 
-		int2 size = main_node.int2Attrib("size");
-		int tile_count = main_node.intAttrib("tile_count");
+		int2 size = main_node.attrib<int2>("size");
+		int tile_count = main_node.attrib<int>("tile_count");
 
 		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 		resize(size);
 
 		XMLNode tnode = main_node.child("tile");
 		while(tnode) {
-			const Tile *tile = &*Tile::mgr[tnode.attrib("name")];
+			const Tile *tile = res::tiles()[tnode.attrib("name")].get();
 			XMLNode inode = tnode.child("i");
 			while(inode) {
-				int3 pos = inode.int3Attrib("pos");
+				int3 pos = inode.attrib<int3>("pos");
 				add(tile, pos);
 				inode = inode.sibling("i");
 			}
@@ -107,7 +107,7 @@ namespace game {
 			const auto &obj1 = (*this)[a];
 			const auto &obj2 = (*this)[b];
 
-			int cmp = strcmp(obj1.ptr->resourceName(), obj2.ptr->resourceName());
+			int cmp = strcmp(obj1.ptr->resourceName().c_str(), obj2.ptr->resourceName().c_str());
 			if(cmp == 0) {
 				const float3 p1 = obj1.bbox.min, p2 = obj2.bbox.min;
 				return p1.x == p2.x? p1.y == p2.y? p1.z < p2.z : p1.y < p2.y : p1.x < p2.x;

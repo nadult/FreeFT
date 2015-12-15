@@ -9,9 +9,9 @@
 #include "game/pc_controller.h"
 
 #include "game/world.h"
+#include "gfx/drawing.h"
 #include <algorithm>
 
-using namespace gfx;
 
 namespace hud {
 	
@@ -26,8 +26,8 @@ namespace hud {
 	HudClassButton::HudClassButton(const FRect &rect)
 		:HudRadioButton(rect, -1, 1) { }
 		
-	void HudClassButton::onDraw() const {
-		HudButton::onDraw();
+	void HudClassButton::onDraw(Renderer2D &out) const {
+		HudButton::onDraw(out);
 		FRect rect = this->rect();
 
 		if(m_id != -1) {
@@ -57,26 +57,25 @@ namespace hud {
 
 			for(auto &item : items) {
 				FRect uv_rect;
-				PTexture texture = item.first.guiImage(true, uv_rect);
+				auto texture = item.first.guiImage(true, uv_rect);
 				float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 				FRect irect(pos.x, rect.min.y, pos.x + max(s_min_item_width, size.x), rect.max.y);
 				if(irect.max.x > rect.width())
 					break;
 
-				texture->bind();
-				drawQuad(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f), uv_rect);
+				out.addFilledRect(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f), uv_rect, texture);
 
 				if(item.second > 1) {
 					FRect trect = irect;
 					trect.max.y -= 5.0;
-					m_font->draw(trect, {textColor(), textShadowColor(), HAlign::right, VAlign::bottom}, format("%d", item.second));
+					m_font->draw(out, trect, {textColor(), textShadowColor(), HAlign::right, VAlign::bottom}, format("%d", item.second));
 				}
 				
 				pos.x += irect.width() + spacing;
 			}
 
-			m_font->draw(rect, {textColor(), textShadowColor(), HAlign::left, VAlign::top}, char_class.name());
+			m_font->draw(out, rect, {textColor(), textShadowColor(), HAlign::left, VAlign::top}, char_class.name());
 		}
 	}
 		
@@ -93,23 +92,23 @@ namespace hud {
 			float diff = s_item_height + spacing * 2;
 			float2 pos(HudButton::spacing, HudButton::spacing + (s_item_height + HudButton::spacing) * n + topOffset());
 			FRect rect(pos, pos + float2(target_rect.width() - HudButton::spacing * 2, s_item_height));
-			Ptr<HudClassButton> button(new HudClassButton(rect));
-			attach(button.get());
+			auto button = make_shared<HudClassButton>(rect);
+			attach(button);
 			m_buttons.push_back(std::move(button));
 		}
 
-		m_button_up = new HudClickButton(FRect(s_button_size));
+		m_button_up = make_shared<HudClickButton>(FRect(s_button_size));
 		m_button_up->setIcon(HudIcon::up_arrow);
 		m_button_up->setAccelerator(InputKey::pageup);
 		m_button_up->setButtonStyle(HudButtonStyle::small);
 
-		m_button_down = new HudClickButton(FRect(s_button_size));
+		m_button_down = make_shared<HudClickButton>(FRect(s_button_size));
 		m_button_down->setIcon(HudIcon::down_arrow);
 		m_button_down->setAccelerator(InputKey::pagedown);
 		m_button_down->setButtonStyle(HudButtonStyle::small);
 
-		attach(m_button_up.get());
-		attach(m_button_down.get());
+		attach(m_button_up);
+		attach(m_button_down);
 	}
 		
 	HudClass::~HudClass() { }

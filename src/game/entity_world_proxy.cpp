@@ -11,16 +11,16 @@ namespace game {
 
 	void EntityRef::save(Stream &sr) const {
 		if(m_index == -1)
-			sr.encodeInt(-1);
+			encodeInt(sr, -1);
 		else {
-			sr.encodeInt(m_index);
-			sr.encodeInt(m_unique_id);
+			encodeInt(sr, m_index);
+			encodeInt(sr, m_unique_id);
 		}
 	}
 
 	void EntityRef::load(Stream &sr) {
-		m_index = sr.decodeInt();
-		m_unique_id = m_index == -1? -1 : sr.decodeInt();
+		m_index = decodeInt(sr);
+		m_unique_id = m_index == -1? -1 : decodeInt(sr);
 	}
 
 	static int getUniqueId() {
@@ -31,7 +31,7 @@ namespace game {
 	EntityWorldProxy::EntityWorldProxy() :m_index(-1), m_unique_id(getUniqueId()), m_world(nullptr) { }
 
 	EntityWorldProxy::EntityWorldProxy(Stream &sr) :m_index(-1), m_world(nullptr) {
-		m_unique_id = sr.decodeInt();
+		m_unique_id = decodeInt(sr);
 	}
 
 	EntityWorldProxy::EntityWorldProxy(const EntityWorldProxy &rhs) :EntityWorldProxy() { }
@@ -64,7 +64,7 @@ namespace game {
 	}
 
 	void EntityWorldProxy::save(Stream &sr) const {
-		sr.encodeInt(m_unique_id);
+		encodeInt(sr, m_unique_id);
 	}
 
 	void EntityWorldProxy::remove() {

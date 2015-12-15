@@ -24,31 +24,31 @@ namespace net {
 	);
 
 	void encodeInt3(Stream &sr, const int3 &value) {
-		sr.encodeInt(value.x);
-		sr.encodeInt(value.y);
-		sr.encodeInt(value.z);
+		encodeInt(sr, value.x);
+		encodeInt(sr, value.y);
+		encodeInt(sr, value.z);
 	}
 
 	const int3 decodeInt3(Stream &sr) {
 		int3 out;
-		out.x = sr.decodeInt();
-		out.y = sr.decodeInt();
-		out.z = sr.decodeInt();
+		out.x = decodeInt(sr);
+		out.y = decodeInt(sr);
+		out.z = decodeInt(sr);
 		return out;
 	}
 
 	void ServerStatusChunk::save(Stream &sr) const {
 		sr.pack(address.ip, address.port, game_mode, is_passworded);
 		sr << server_name << map_name;
-		sr.encodeInt(num_players);
-		sr.encodeInt(max_players);
+		encodeInt(sr, num_players);
+		encodeInt(sr, max_players);
 	}
 
 	void ServerStatusChunk::load(Stream &sr) {
 		sr.unpack(address.ip, address.port, game_mode, is_passworded);
 		sr >> server_name >> map_name;
-		num_players = sr.decodeInt();
-		max_players = sr.decodeInt();
+		num_players = decodeInt(sr);
+		max_players = decodeInt(sr);
 	}
 
 

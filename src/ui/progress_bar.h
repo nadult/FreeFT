@@ -14,7 +14,7 @@ namespace ui {
 	class ProgressBar: public Window {
 	public:
 		ProgressBar(const IRect &rect, bool is_horizontal);
-		virtual const char *typeName() const { return "ProgressBar"; }
+		const char *typeName() const override { return "ProgressBar"; }
 
 		void setText(const char*);
 
@@ -26,8 +26,8 @@ namespace ui {
 		float pos() const { return m_pos; }
 		float barSize() const { return m_bar_size; }
 
-		virtual void drawContents() const;
-		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
+		void drawContents(Renderer2D&) const override;
+		bool onMouseDrag(int2 start, int2 current, int key, int is_final) override;
 
 	protected:
 		float evalBarSize() const;
@@ -40,7 +40,7 @@ namespace ui {
 		bool m_is_horizontal;
 	};
 
-	typedef Ptr<ProgressBar> PProgressBar;
+	using PProgressBar = shared_ptr<ProgressBar>;
 
 }
 

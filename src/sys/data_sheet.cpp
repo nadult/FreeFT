@@ -6,9 +6,9 @@
 #include "sys/data_sheet.h"
 
 TupleParser::TupleParser(const char **columns, int num_columns, const TupleParser::ColumnMap &map)
-		:m_columns(columns), m_num_columns(num_columns), m_column_map(map) { }
+	: m_columns(columns), m_num_columns(num_columns), m_column_map(map) { }
 
-const char *TupleParser::operator()(const char *col_name) const {
+const char *TupleParser::get(const char *col_name) const {
 	DASSERT(col_name);
 
 	auto it = m_column_map.find(col_name);
@@ -16,7 +16,7 @@ const char *TupleParser::operator()(const char *col_name) const {
 		THROW("missing column: %s", col_name);
 	return m_columns[it->second];
 }
-	
+
 static const char *getText(XMLNode cell_node) {
 	const char *val_type = cell_node.hasAttrib("office:value-type");
 	if(val_type) {
@@ -30,7 +30,7 @@ static const char *getText(XMLNode cell_node) {
 	return "";
 }
 
-void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser&)) {
+void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser &)) {
 	vector<XMLNode> rows;
 	vector<StringRef> col_names;
 
@@ -50,20 +50,21 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 			cell_node = cell_node.sibling("table:table-cell");
 		}
 	}
-	
+
 	std::map<StringRef, int> column_map;
 	for(int n = 0; n < (int)col_names.size(); n++)
-		if(!col_names[n].isEmpty()) {
+		if(!col_names[n].empty()) {
 			if(column_map.find(col_names[n]) != column_map.end())
-				THROW("Duplicate argument: %s", col_names[n]);
+				THROW("Duplicate argument: %s", col_names[n].c_str());
 			column_map.emplace(col_names[n], n);
 		}
 
-	vector<const char*> columns;
+	vector<const char *> columns;
 	columns.reserve(col_names.size());
 	bool errors = false;
 
-	int id_column = 0; {
+	int id_column = 0;
+	{
 		auto it = column_map.find("id");
 		if(it == column_map.end())
 			THROW("Id column must be defined");
@@ -75,18 +76,16 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 
 		int cell_idx = 0;
 		XMLNode cell = row.child("table:table-cell");
-		
+
 		columns.clear();
 		while(cell && cell_idx < (int)col_names.size()) {
 			const char *value = getText(cell);
-		
-			const char *repeat_attrib = cell.hasAttrib("table:number-columns-repeated");
-			int num_repeat = repeat_attrib? toInt(repeat_attrib) : 1;
+			int num_repeat = cell.attrib<int>("table:number-columns-repeated", 1);
 
 			for(int i = 0; i < num_repeat; i++)
 				columns.push_back(value);
 			cell_idx += num_repeat;
-			
+
 			cell = cell.sibling("table:table-cell");
 		}
 
@@ -111,11 +110,9 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 
 			int index = add_func(parser);
 			map.emplace(std::move(id), index);
-		}
-		catch(const Exception &ex) {
+		} catch(const Exception &ex) {
 			errors = true;
-			printf("Error while parsing row: %d (id: %s):\n%s\n",
-					r, columns[id_column], ex.what());
+			printf("Error while parsing row: %d (id: %s):\n%s\n", r, columns[id_column], ex.what());
 		}
 	}
 

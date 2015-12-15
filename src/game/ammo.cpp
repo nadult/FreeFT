@@ -3,7 +3,7 @@
 namespace game
 {
 	AmmoProto::AmmoProto(const TupleParser &parser) :ProtoImpl(parser) {
-		damage_mod = toFloat(parser("damage_mod"));
+		damage_mod = parser.get<float>("damage_mod");
 		class_id = parser("class_id");
 	}
 

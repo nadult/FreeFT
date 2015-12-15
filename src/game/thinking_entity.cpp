@@ -31,7 +31,7 @@ namespace game {
 		if(flags & flag_has_order)
 			m_order.reset(Order::construct(sr));
 		if(flags & flag_has_following_orders) {
-			int count = sr.decodeInt();
+			int count = decodeInt(sr);
 			ASSERT(count >= 1);
 			m_following_orders.resize(count);
 			for(int n = 0; n < count; n++)
@@ -54,7 +54,7 @@ namespace game {
 		if(flags & flag_has_order)
 			sr << m_order->typeId() << *m_order;
 		if(flags & flag_has_following_orders) {
-			sr.encodeInt((int)m_following_orders.size());
+			encodeInt(sr, (int)m_following_orders.size());
 			for(int n = 0; n < (int)m_following_orders.size(); n++)
 				sr << m_following_orders[n]->typeId() << *m_following_orders[n];
 		}
@@ -177,11 +177,13 @@ namespace game {
 
 		FBox shooting_box = shootingBox(weapon);
 		float3 center = shooting_box.center();
-		float3 dir = normalized(target_box.center() - center);
+		float3 dir = normalize(target_box.center() - center);
 
 		float3 source; {
 			vector<float3> sources = genPointsOnPlane(shooting_box, dir, 5, true);
 			vector<float3> targets = genPointsOnPlane(target_box, -dir, 5, false);
+			DASSERT(!sources.empty());
+			DASSERT(!targets.empty());
 
 			int best_source = -1, best_hits = 0;
 			float best_dist = 0.0f;
@@ -225,7 +227,7 @@ namespace game {
 		float3 best_target = target_box.center(); {
 			float best_score = -constant::inf;
 		
-			vector<float3> targets = genPointsOnPlane(target_box, normalized(source - target_box.center()), 8, false);
+			vector<float3> targets = genPointsOnPlane(target_box, normalize(source - target_box.center()), 8, false);
 			vector<char> target_hits(targets.size(), 0);
 
 			vector<Segment> segments;
@@ -282,7 +284,7 @@ namespace game {
 				Ray ray(segment.origin(), perturbVector(segment.dir(), float(x) * mul, float(y) *mul, inaccuracy));
 				float dist = intersection(ray, target_bbox);
 				if(dist < constant::inf)
-					segments.push_back(Segment(ray, 0.0f, dist));
+					segments.push_back(Segment(ray.origin(), ray.at(dist)));
 			}
 
 		vector<Intersection> isects;

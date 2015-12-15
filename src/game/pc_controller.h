@@ -13,7 +13,7 @@ namespace game
 {
 
 	// Playable character controller
-	class PCController: public RefCounter {
+	class PCController {
 	public:
 		PCController(World&, const PlayableCharacter&);
 		~PCController();

@@ -5,20 +5,21 @@
 
 #include "hud/base.h"
 #include "audio/device.h"
+#include "gfx/drawing.h"
 
 using namespace gfx;
 
 namespace hud
 {
 
-	void drawGradQuad(const FRect &rect, Color a, Color b, bool is_vertical) {
-		Color colors[4] = { a, b, b, a };
+	void drawGradQuad(Renderer2D &out, const FRect &rect, Color a, Color b, bool is_vertical) {
+		Color colors[4] = { a, a, b, b };
 		if(is_vertical)
 			swap(colors[1], colors[3]);
-		drawQuad(rect, FRect(0, 0, 1, 1), colors);
+		out.addFilledRect(rect, FRect(0, 0, 1, 1), colors, Color::white);
 	}
 
-	void drawLine(float2 p1, float2 p2, Color a, Color b) {
+	void drawLine(Renderer2D &out, float2 p1, float2 p2, Color a, Color b) {
 		if(p1.x > p2.x) {
 			swap(p1.x, p2.x);
 			swap(a, b);
@@ -39,25 +40,25 @@ namespace hud
 			p2.y++;
 		}
 
-		drawGradQuad(FRect(p1, p2), a, b, is_vertical);
+		drawGradQuad(out, FRect(p1, p2), a, b, is_vertical);
 	}
 
-	void drawBorder(const FRect &rect, Color color, const float2 &offset, float width) {
+	void drawBorder(Renderer2D &out, const FRect &rect, Color color, const float2 &offset, float width) {
 		float2 min = rect.min - offset, max = rect.max + offset;
-		width = ::min(width, (max.x - min.x) * 0.5f - 2.0f);
+		width = fwk::min(width, (max.x - min.x) * 0.5f - 2.0f);
 		Color transparent = Color(color, 0);
 
 		DTexture::unbind();
 	
 		// left
-		drawLine(float2(min.x, min.y), float2(min.x, max.y), color, color);
-		drawLine(float2(min.x + width, min.y), float2(min.x, min.y), transparent, color);
-		drawLine(float2(min.x + width, max.y), float2(min.x, max.y), transparent, color);
+		drawLine(out, float2(min.x, min.y), float2(min.x, max.y), color, color);
+		drawLine(out, float2(min.x + width, min.y), float2(min.x, min.y), transparent, color);
+		drawLine(out, float2(min.x + width, max.y), float2(min.x, max.y), transparent, color);
 			
 		// right
-		drawLine(float2(max.x, min.y), float2(max.x, max.y), color, color);
-		drawLine(float2(max.x - width, min.y), float2(max.x, min.y), transparent, color);
-		drawLine(float2(max.x - width, max.y), float2(max.x, max.y), transparent, color);
+		drawLine(out, float2(max.x, min.y), float2(max.x, max.y), color, color);
+		drawLine(out, float2(max.x - width, min.y), float2(max.x, min.y), transparent, color);
+		drawLine(out, float2(max.x - width, max.y), float2(max.x, max.y), transparent, color);
 	}
 	
 	const FRect align(const FRect &rect, const FRect &relative_to, Alignment mode, float spacing) {

@@ -18,7 +18,7 @@ namespace game {
 			Entry new_entry;
 			new_entry.item = Item(ProtoIndex(child));
 			if( const char *count_attrib = child.hasAttrib("count") )
-				new_entry.count = toInt(count_attrib);
+				new_entry.count = xml_conversions::fromString<int>(count_attrib);
 			else
 				new_entry.count = 1;
 			m_entries.push_back(new_entry);
@@ -83,20 +83,20 @@ namespace game {
 	}
 
 	void Inventory::save(Stream &sr) const {
-		sr.encodeInt(size());
+		encodeInt(sr, size());
 		for(int n = 0; n < size(); n++) {
-			sr.encodeInt(m_entries[n].count);
+			encodeInt(sr, m_entries[n].count);
 			sr << m_entries[n].item;
 		}
 	}
 
 	void Inventory::load(Stream &sr) {
-		int count = sr.decodeInt();
+		int count = decodeInt(sr);
 		ASSERT(count >= 0 && count <= max_entries);
 
 		m_entries.clear();
 		for(int n = 0; n < count; n++) {
-			int icount = sr.decodeInt();
+			int icount = decodeInt(sr);
 			ASSERT(icount > 0);
 
 			Item item(sr);
@@ -123,7 +123,7 @@ namespace game {
 			m_armour = Item(findProto(armour_node.attrib("proto_id"), ProtoId::item_armour));
 		if(ammo_node) {
 			Item ammo(findProto(ammo_node.attrib("proto_id"), ProtoId::item_ammo));
-			int count = ammo_node.intAttrib("count");
+			int count = ammo_node.attrib<int>("count");
 			int id = add(ammo, count);
 			equip(id, count);
 		}
@@ -258,7 +258,7 @@ namespace game {
 			sr << m_armour;
 		if(!m_ammo.item.isDummy()) {
 			sr << m_ammo.item;
-			sr.encodeInt(m_ammo.count);
+			encodeInt(sr, m_ammo.count);
 		}
 	}
 
@@ -270,7 +270,7 @@ namespace game {
 		m_weapon = flags & 1? Weapon(Item(sr)) : m_dummy_weapon;
 		m_armour = flags & 2? Armour(Item(sr)) : Item::dummyArmour();
 		m_ammo.item = flags & 4? Item(sr) : Item::dummyAmmo();
-		m_ammo.count = flags & 4? sr.decodeInt() : 0;
+		m_ammo.count = flags & 4? decodeInt(sr) : 0;
 	}
 		
 	void ActorInventory::setDummyWeapon(Weapon dummy) {

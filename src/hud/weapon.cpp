@@ -6,8 +6,8 @@
 #include "hud/weapon.h"
 #include "game/actor.h"
 #include "game/world.h"
+#include "gfx/drawing.h"
 
-using namespace gfx;
 
 namespace hud {
 
@@ -16,25 +16,24 @@ namespace hud {
 		setClickSound(HudSound::none);
 	}
 		
-	void HudWeapon::onDraw() const {
-		HudButton::onDraw();
+	void HudWeapon::onDraw(Renderer2D &out) const {
+		HudButton::onDraw(out);
 		FRect rect = this->rect();
 
 		if(!m_weapon.isDummy()) {
 			FRect uv_rect;
-			PTexture texture = m_weapon.guiImage(false, uv_rect);
+			auto texture = m_weapon.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (int2)(rect.center() - size / 2);
-			texture->bind();
-			drawQuad(FRect(pos, pos + size), uv_rect);
+			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, Color::white});
 
 			//TODO: print current attack mode
 			if(m_weapon.proto().max_ammo) {
 				TextFormatter fmt;
 				fmt("%d/%d", m_ammo_count, m_weapon.proto().max_ammo);
 				//TODO: alpha for shadow color
-				m_font->draw(rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top}, fmt);
+				m_font->draw(out, rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top}, fmt);
 			}
 		}
 	}

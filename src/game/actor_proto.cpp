@@ -144,19 +144,20 @@ namespace game {
 	}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
+		using namespace xml_conversions;
 		punch_weapon = parser("punch_weapon");
 		kick_weapon = parser("kick_weapon");
 		sound_prefix = parser("sound_prefix");
-		is_heavy = toBool(parser("is_heavy"));
-		is_alive = toBool(parser("is_alive"));
+		is_heavy = parser.get<bool>("is_heavy");
+		is_alive = parser.get<bool>("is_alive");
 
-		float4 speed_vec = toFloat4(parser("speeds"));
+		float4 speed_vec = parser.get<float4>("speeds");
 		speeds[0] = speed_vec.x;
 		speeds[1] = speed_vec.y;
 		speeds[2] = speed_vec.z;
 		speeds[3] = speed_vec.w;
 
-		hit_points = toFloat(parser("hit_points"));
+		hit_points = parser.get<float>("hit_points");
 	}
 
 

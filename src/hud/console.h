@@ -23,9 +23,9 @@ namespace hud {
 		void onUpdate(double time_diff) override;
 		bool onInput(const InputEvent&) override;
 		bool onEvent(const HudEvent&) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 
-		Ptr<HudEditBox> m_edit_box;
+		PHudEditBox m_edit_box;
 		vector<string> m_commands;
 	};
 

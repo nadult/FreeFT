@@ -9,28 +9,27 @@ using namespace gfx;
 
 namespace ui {
 
-	EditBox::EditBox(const IRect &rect, int max_size, const char *label, Color col)
-		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_last_key(0), m_max_size(max_size), m_label(label) {
-		m_font = Font::mgr[WindowStyle::fonts[0]];
+	EditBox::EditBox(const IRect &rect, int max_size, StringRef label, Color col)
+		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size), m_label(toWideString(label)) {
+		m_font = res::getFont(WindowStyle::fonts[0]);
 	}
 
-	void EditBox::setText(const char *text) {
-		m_text = text;
+	void EditBox::setText(wstring new_text) {
+		m_text = std::move(new_text);
 		if((int)m_text.size() > m_max_size)
 			m_text.resize(m_max_size);
 	}
 
-	void EditBox::drawContents() const {
+	void EditBox::drawContents(Renderer2D &out) const {
 		int line_height = m_font->lineHeight();
 
 		int2 pos(5, height() / 2 - line_height / 2);
-		m_font->draw(pos, {Color::white, Color::black}, format("%s%s", m_label.c_str(), m_text.c_str()));
+		m_font->draw(out, pos, {Color::white, Color::black}, m_label + m_text);
 
-		DTexture::unbind();
 		if(m_is_editing) {
 			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
-			drawLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), Color(255, 255, 255, 180));
-			drawRect(IRect(2, 1, width() - 1, height() - 2), Color(255, 255, 255, 80));	
+			out.addLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), Color(255, 255, 255, 180));
+			out.addRect(IRect(2, 1, width() - 1, height() - 2), Color(255, 255, 255, 80));	
 		}
 	}
 	
@@ -39,7 +38,7 @@ namespace ui {
 
 		//TODO: speed up
 		for(int n = 0; n < (int)m_text.size(); n++) {
-			string text = m_label + m_text.substr(0, n);
+			auto text = m_label + m_text.substr(0, n);
 			IRect ext = m_font->evalExtents(text.c_str());
 			if(ext.max.x + 8 > rect_pos.x) {
 				m_cursor_pos = max(0, n);
@@ -51,40 +50,43 @@ namespace ui {
 	void EditBox::reset(bool is_editing) {
 		m_cursor_pos = 0;
 		setFocus( (m_is_editing = is_editing) );
-		m_old_text = m_text = "";
+		m_old_text = m_text = wstring();
 	}
 
-	void EditBox::onInput(int2 mouse_pos) {
+	void EditBox::onInput(const InputState &state) {
+		auto mouse_pos = state.mousePos() - clippedRect().min;
+
 		if(!m_is_editing) {
-			if(isMouseKeyDown(0)) {
+			if(state.isMouseButtonDown(InputButton::left)) {
 				setCursorPos(mouse_pos);
 				setFocus( (m_is_editing = true) );
 				m_old_text = m_text;
 			}
 		}
 		else {
-			double time = getTime();
-
-			int key =	isKeyPressed(InputKey::right)? InputKey::right :
-						isKeyPressed(InputKey::left)? InputKey::left :
-						isKeyPressed(InputKey::del)? InputKey::del :
-						isKeyPressed(InputKey::backspace)? InputKey::backspace : getCharPressed();
-
-			if(key != m_last_key) {
-				m_key_down_time = time;
-				m_last_key = key;
-				onKey(key);
+			if(!state.text().empty()) {
+				m_text.insert(m_cursor_pos, state.text());
+				m_cursor_pos += (int)state.text().size();
+			}
+			else {
+				if(state.isKeyDownAuto(InputKey::right) && m_cursor_pos < (int)m_text.size())
+					m_cursor_pos++;
+				else if(state.isKeyDownAuto(InputKey::left) && m_cursor_pos > 0)
+					m_cursor_pos--;
+				else if(state.isKeyDownAuto(InputKey::del) && (int)m_text.size() > m_cursor_pos) {
+					printf("erase\n");
+					m_text.erase(m_cursor_pos, 1);
+				}
+				else if(state.isKeyDownAuto(InputKey::backspace) && m_cursor_pos > 0 && !m_text.empty()) {
+					printf("erase\n");
+					m_text.erase(--m_cursor_pos, 1);
+				}
 			}
 
-			//TODO: use isKeyDownauto
-			if(key == m_last_key && time > m_key_down_time + 0.4f && time > m_on_key_time + 0.025f)
-				onKey(key);
-		
-			bool end = isKeyDown(InputKey::enter);	
-			if(isMouseKeyDown(0) || end) {
+			bool end = state.isKeyDown(InputKey::enter);	
+			if(state.isMouseButtonDown(InputButton::left) || end) {
 				if(!end && rect().isInside(mouse_pos)) {
 					setCursorPos(mouse_pos);
-					m_last_key = 0;
 				}
 				else {
 					setFocus( (m_is_editing = false) );
@@ -103,23 +105,6 @@ namespace ui {
 		}
 
 		return false;
-	}
-
-	void EditBox::onKey(int key) {
-		if(key == InputKey::right && m_cursor_pos < (int)m_text.size())
-			m_cursor_pos++;
-		else if(key == InputKey::left && m_cursor_pos > 0)
-			m_cursor_pos--;
-		else if(key == InputKey::del && (int)m_text.size() > m_cursor_pos)
-			m_text.erase(m_cursor_pos, 1);
-		else if(key == InputKey::backspace && m_cursor_pos > 0 && !m_text.empty())
-			m_text.erase(--m_cursor_pos, 1);
-		else if(key >= 32 && key < 128 && (int)m_text.size() < m_max_size)
-			m_text.insert(m_cursor_pos++, 1, key);
-		else
-			return;
-
-		m_on_key_time = getTime();
 	}
 
 }

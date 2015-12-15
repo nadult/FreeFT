@@ -165,7 +165,7 @@ namespace ui {
 					if(m_trigger_mode == 0) {
 						m_trigger_box = m_view.computeCursor(start, current, int3(1, 1, 1), m_cursor_pos.y, 0);
 					
-						if(isMouseKeyDown(1)) {
+						if(isMouseKeyDown(InputButton::right)) {
 							m_trigger_mode = 1;
 							m_trigger_offset = current;
 						}

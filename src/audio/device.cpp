@@ -131,10 +131,9 @@ namespace audio
 
 		s_sounds.clear();
 
-		vector<FileEntry> file_entries;
 		vector<std::map<string, SoundIndex>::iterator> iters;
 
-		findFiles(file_entries, s_prefix);
+		auto file_entries = findFiles(s_prefix);
 		iters.resize(file_entries.size(), s_sound_map.end());
 
 		string suffix = s_suffix;
@@ -409,13 +408,13 @@ namespace audio
 		const string &name = sound? sound->m_map_name : string();
 
 		sr << name;
-		sr.encodeInt(offset);
+		encodeInt(sr, offset);
 	}
 
 	void SoundIndex::load(Stream &sr) {
 		string name;
 		sr >> name;
-		int offset = sr.decodeInt();
+		int offset = decodeInt(sr);
 
 		*this = findSound(name.c_str());
 

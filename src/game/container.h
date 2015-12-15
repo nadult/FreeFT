@@ -43,14 +43,14 @@ namespace game
 		Container(const XMLNode&);
 		Container(const ContainerProto&);
 
-		Flags::Type flags() const { return Flags::container | Flags::static_entity | Flags::occluding | Flags::colliding; }
+		Flags::Type flags() const override { return Flags::container | Flags::static_entity | Flags::occluding | Flags::colliding; }
 
 		void open();
 		void close();
 		void setKey(const Item&);
 
-		virtual void interact(const Entity*);
-		virtual void onSoundEvent();
+		void interact(const Entity*) override;
+		void onSoundEvent() override;
 
 		bool isOpened() const { return m_state == ContainerState::opened; }
 		bool isAlwaysOpened() const { return m_proto.is_always_opened; }
@@ -58,12 +58,12 @@ namespace game
 		const Inventory &inventory() const { return m_inventory; }
 		Inventory &inventory() { return m_inventory; }
 		
-		virtual XMLNode save(XMLNode&) const;
-		virtual void save(Stream&) const;
+		XMLNode save(XMLNode&) const override;
+		void save(Stream&) const override;
 		
 	private:
-		virtual void think();
-		virtual void onAnimFinished();
+		void think() override;
+		void onAnimFinished() override;
 		void initialize();
 
 		Inventory m_inventory;

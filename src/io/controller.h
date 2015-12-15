@@ -25,7 +25,7 @@ namespace io {
 		~Controller();
 
 		void updateView(double time_diff);
-		void update(double time_diff);
+		void update(GfxDevice &device, double time_diff);
 		void draw() const;
 
 		int exitRequested() const { return m_is_exiting; }
@@ -36,7 +36,7 @@ namespace io {
 	protected:
 		void updatePC();
 		void onInput(const InputEvent&);
-		void drawDebugInfo() const;
+		void drawDebugInfo(Renderer2D&) const;
 
 		void sendOrder(game::POrder&&);
 
@@ -59,13 +59,14 @@ namespace io {
 		game::GameMode *m_game_mode;
 		game::PPlayableCharacter m_pc;
 		game::EntityRef m_actor_ref;
-		Ptr<game::PCController> m_pc_controller;
+		shared_ptr<game::PCController> m_pc_controller;
 
-		Ptr<hud::HudConsole> m_console;
-		Ptr<hud::Hud> m_hud;
-		Ptr<hud::HudTargetInfo> m_target_info;
+		shared_ptr<hud::HudConsole> m_console;
+		shared_ptr<hud::Hud> m_hud;
+		shared_ptr<hud::HudTargetInfo> m_target_info;
 
 		int2 m_resolution, m_view_pos;
+		int2 m_last_mouse_pos;
 
 		string m_profiler_stats;
 		double m_last_time, m_stats_update_time;

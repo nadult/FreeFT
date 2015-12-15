@@ -6,8 +6,7 @@
 #include "hud/char_icon.h"
 #include "game/actor.h"
 #include "game/world.h"
-
-using namespace gfx;
+#include "gfx/drawing.h"
 
 namespace hud {
 
@@ -18,12 +17,11 @@ namespace hud {
 		
 	HudCharIcon::~HudCharIcon() { }
 
-	void HudCharIcon::onDraw() const {
-		HudButton::onDraw();
+	void HudCharIcon::onDraw(Renderer2D &out) const {
+		HudButton::onDraw(out);
 		FRect rect = this->rect();
 	
 		PTexture icon = m_character? m_character->icon() : Character::emptyIcon();
-		icon->bind();
 		//TODO: use mipmapped textures
 
 		float2 icon_size(icon->size());
@@ -35,10 +33,10 @@ namespace hud {
 		Color color(lerp((float4)Color(Color::red), (float4)Color(Color::green), hp_value));
 		color = lerp(color, m_style.enabled_color, 0.5f);
 
-		drawQuad(FRect(pos, pos + icon_size), mulAlpha(color, alpha()));
+		out.addFilledRect(FRect(pos, pos + icon_size), {icon, mulAlpha(color, alpha())});
 
 		if(m_max_hp)
-			m_font->draw(rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top},
+			m_font->draw(out, rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top},
 						 format(hp_value <= 0.0f? "DEAD" : "%d/%d", m_current_hp, m_max_hp));
 	}
 

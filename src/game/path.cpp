@@ -11,12 +11,12 @@
 namespace game {
 
 	void PathPos::save(Stream &sr) const {
-		sr.encodeInt(node_id);
+		encodeInt(sr, node_id);
 		sr << delta;
 	}
 
 	void PathPos::load(Stream &sr) {
-		node_id = sr.decodeInt();
+		node_id = decodeInt(sr);
 		sr >> delta;
 	}
 		
@@ -80,7 +80,7 @@ namespace game {
 	}
 
 	void Path::save(Stream &sr) const {
-		sr.encodeInt((int)m_nodes.size());
+		encodeInt(sr, (int)m_nodes.size());
 		if(m_nodes.empty())
 			return;
 
@@ -90,7 +90,7 @@ namespace game {
 	}
 
 	void Path::load(Stream &sr) {
-		int count = sr.decodeInt();
+		int count = decodeInt(sr);
 		ASSERT(count >= 0);
 		m_nodes.resize(count);
 

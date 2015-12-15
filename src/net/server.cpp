@@ -25,14 +25,16 @@ namespace net {
 	}
 
 	ServerConfig::ServerConfig(const XMLNode &node) :ServerConfig() {
+		using namespace xml_conversions;
+
 		if(const char *attrib = node.hasAttrib("max_players")) {
-			m_max_players = toInt(attrib);
+			m_max_players = fromString<int>(attrib);
 			ASSERT(m_max_players >= 1 && m_max_players <= Server::max_remote_hosts);
 		}
 		if(const char *attrib = node.hasAttrib("console_mode"))
-			m_console_mode = toBool(attrib);
+			m_console_mode = fromString<bool>(attrib);
 		if(const char *attrib = node.hasAttrib("port")) {
-			m_port = toInt(attrib);
+			m_port = fromString<int>(attrib);
 			ASSERT(m_port > 0 && m_port < 65536);
 		}
 		if(const char *attrib = node.hasAttrib("password"))

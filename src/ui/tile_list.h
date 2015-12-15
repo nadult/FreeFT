@@ -29,12 +29,12 @@ namespace ui
 		bool test(const game::Tile *tile, int filter);
 	};
 
-	struct TileListModel: public RefCounter {
+	struct TileListModel {
 		virtual ~TileListModel() { }
 		virtual int size() const = 0;
 		virtual const game::Tile* get(int idx, int &group_id) const = 0;
 	};
-	typedef Ptr<TileListModel> PTileListModel;
+	using PTileListModel = shared_ptr<TileListModel>;
 
 	PTileListModel allTilesModel();
 	PTileListModel groupedTilesModel(const TileGroup&, bool only_uniform);

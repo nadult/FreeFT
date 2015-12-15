@@ -8,9 +8,9 @@
 #include "hud/grid.h"
 #include "net/client.h"
 #include "sys/config.h"
+#include "gfx/drawing.h"
 
 using namespace net;
-using namespace gfx;
 
 //#define GEN_RANDOM
 
@@ -33,7 +33,8 @@ namespace hud {
 		button_nickname,
 	};
 		
-	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect) :HudLayer(rect, HudLayer::slide_top), m_please_refresh(true) {
+	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, int2 window_size)
+		:HudLayer(rect, HudLayer::slide_top), m_please_refresh(true), m_window_size(window_size) {
 		enum { spacing = layer_spacing };
 
 		setTitle("Connecting to server:");
@@ -48,70 +49,70 @@ namespace hud {
 		FRect button_rect(s_button_size);
 		button_rect += float2(rect.width() - spacing, rect.height() - spacing) - button_rect.size();
 
-		PHudButton button_close = new HudClickButton(button_rect);
+		PHudButton button_close = make_shared<HudClickButton>(button_rect);
 		button_close->setIcon(HudIcon::close);
 
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
-		PHudButton button_down = new HudClickButton(button_rect);
+		PHudButton button_down = make_shared<HudClickButton>(button_rect);
 		button_down->setIcon(HudIcon::down_arrow);
 		button_down->setAccelerator(InputKey::pagedown);
 
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
-		PHudButton button_up = new HudClickButton(button_rect);
+		PHudButton button_up = make_shared<HudClickButton>(button_rect);
 		button_up->setIcon(HudIcon::up_arrow);
 		button_up->setAccelerator(InputKey::pageup);
 
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
 		button_rect.min.x -= 50.0f;
-		PHudButton button_refresh = new HudClickButton(button_rect);
+		PHudButton button_refresh = make_shared<HudClickButton>(button_rect);
 		button_refresh->setLabel("refresh");
 		
 		button_rect -= float2(button_rect.width() + spacing * 2, 0.0f);
 		button_rect.min.x -= 20.0f;
-		PHudButton button_connect = new HudClickButton(button_rect);
+		PHudButton button_connect = make_shared<HudClickButton>(button_rect);
 		button_connect->setLabel("connect");
 		button_connect->setAccelerator(InputKey::enter);
 
-		button_rect = FRect(float2(150, s_button_size.y));
+		button_rect = FRect(float2(185, s_button_size.y));
 		button_rect += float2(rect.width() - button_rect.width() - spacing, spacing + topOffset());
-		m_password = new HudEditBox(button_rect, net::limits::max_password_size);
+		m_password = make_shared<HudEditBox>(button_rect, net::limits::max_password_size);
 		m_password->setLabel("Pass: ");
 		
 		button_rect -= float2(button_rect.width() + spacing * 2, 0.0f);
-		button_rect.min.x = button_rect.max.x - 235;
-		m_nick_name = new HudEditBox(button_rect, net::limits::max_nick_name_size, HudEditBox::mode_nick);
+		button_rect.min.x = button_rect.max.x - 230;
+		m_nick_name = make_shared<HudEditBox>(button_rect, net::limits::max_nick_name_size, HudEditBox::mode_nick);
 		m_nick_name->setLabel("Nick: ");
 		m_nick_name->setText("random_dude");
 
 		FRect sub_rect(rect.size());
 		sub_rect.min += float2(spacing, spacing * 2 + topOffset() + s_button_size.y);
 		sub_rect.max -= float2(spacing, spacing * 2 + s_button_size.y);
-		m_grid = new HudGrid(sub_rect);
+		m_grid = make_shared<HudGrid>(sub_rect);
 		
 		m_grid->addColumn("Server name",	150.0f);
 		m_grid->addColumn("Map name",	150.0f);
 		m_grid->addColumn("Num players",	80.0f);
 		m_grid->addColumn("Game mode",	80.0f);
 		m_grid->addColumn("Ping",		50.0f);
-		attach(m_grid.get());
+		attach(m_grid);
 
 		m_buttons.push_back(button_close);
 		m_buttons.push_back(button_up);
 		m_buttons.push_back(button_down);
 		m_buttons.push_back(button_refresh);
 		m_buttons.push_back(button_connect);
-		m_buttons.push_back(m_password.get());
-		m_buttons.push_back(m_nick_name.get());
+		m_buttons.push_back(m_password);
+		m_buttons.push_back(m_nick_name);
 
 		for(auto &button : m_buttons) {
 			button->setButtonStyle(HudButtonStyle::small);
-			attach(button.get());
+			attach(button);
 		}
 
 		m_client.reset(new net::Client());
 	}
 		
-	MultiPlayerMenu::~MultiPlayerMenu() { }
+	MultiPlayerMenu::~MultiPlayerMenu() = default;
 	
 	float MultiPlayerMenu::backAlpha() const {
 		return alpha() * 0.6f;
@@ -266,20 +267,18 @@ namespace hud {
 		}
 	}
 
-	void MultiPlayerMenu::onDraw() const {
-		FRect back_quad(getWindowSize());
+	void MultiPlayerMenu::onDraw(Renderer2D &out) const {
+		FRect back_quad(m_window_size);
 
-		DTexture::unbind();
-		drawQuad(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
-
-		HudLayer::onDraw();
+		out.addFilledRect(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
+		HudLayer::onDraw(out);
 
 		if(!m_message.empty()) {
 			double msg_time = getTime() - m_message_time;
 			double alpha = min(1.0, 5.0 - msg_time);
 
 			if(msg_time < 5.0)
-				m_font->draw(rect() + float2(spacing, 0.0f),
+				m_font->draw(out, rect() + float2(spacing, 0.0f),
 						     {mulAlpha(m_message_color, alpha), mulAlpha(Color::black, alpha), HAlign::left, VAlign::bottom}, m_message);
 		}
 	}

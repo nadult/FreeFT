@@ -33,13 +33,9 @@ namespace game {
 
 	//TODO: redundant initialization?
 	Entity::Entity(const Sprite &sprite, const XMLNode &node) :m_sprite(sprite) {
-		m_pos = node.float3Attrib("pos");
+		m_pos = node.attrib<float3>("pos");
 		resetAnimState();
-
-		float angle = 0.0f;
-		if( const char *angle_attr = node.hasAttrib("angle") )
-			angle = toFloat(angle_attr);
-		setDirAngle(angle);
+		setDirAngle(node.attrib<float>("angle", 0.0f));
 	}
 
 	XMLNode Entity::save(XMLNode &parent) const {
@@ -77,8 +73,8 @@ namespace game {
 			sr.unpack(m_seq_idx, m_frame_idx, m_dir_idx);
 
 		if(flags & flag_has_overlay) {
-			m_oseq_idx = sr.decodeInt();
-			m_oframe_idx = sr.decodeInt();
+			m_oseq_idx = decodeInt(sr);
+			m_oframe_idx = decodeInt(sr);
 		}
 		else {
 			m_oseq_idx = -1;
@@ -116,8 +112,8 @@ namespace game {
 			sr.pack(m_seq_idx, m_frame_idx, m_dir_idx);
 
 		if(flags & flag_has_overlay) {
-			sr.encodeInt(m_oseq_idx);
-			sr.encodeInt(m_oframe_idx);
+			encodeInt(sr, m_oseq_idx);
+			encodeInt(sr, m_oframe_idx);
 		}
 	}
 
@@ -156,13 +152,13 @@ namespace game {
 		bool as_overlay = renderAsOverlay();
 
 		FRect tex_rect;
-		PTexture tex = m_sprite.getFrame(m_seq_idx, m_frame_idx, m_dir_idx, tex_rect);
+		auto tex = m_sprite.getFrame(m_seq_idx, m_frame_idx, m_dir_idx, tex_rect);
 		bool added = out.add(tex, rect, m_pos, bbox, color, tex_rect, as_overlay);
 	
 	 	if(added && m_oseq_idx != -1 && m_oframe_idx != -1) {
 			//TODO: overlay may be visible, while normal sprite is not!
 			rect = m_sprite.getRect(m_oseq_idx, m_oframe_idx, m_dir_idx);
-			PTexture ov_tex = m_sprite.getFrame(m_oseq_idx, m_oframe_idx, m_dir_idx, tex_rect);
+			auto ov_tex = m_sprite.getFrame(m_oseq_idx, m_oframe_idx, m_dir_idx, tex_rect);
 			out.add(ov_tex, rect, m_pos, bbox, color, tex_rect, true);
 		}
 

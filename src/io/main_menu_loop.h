@@ -21,7 +21,7 @@ namespace io {
 
 		void stopMusic();
 		void startMusic();
-		void drawLoading(const int2 &pos, float alpha = 1.0f) const;
+		void drawLoading(Renderer2D&, float alpha = 1.0f) const;
 
 	private:
 		bool onTick(double) override;

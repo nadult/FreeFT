@@ -16,7 +16,7 @@ namespace ui {
 	{
 	public:
 		ListBox(const IRect &rect, Color color = WindowStyle::gui_dark);
-		virtual const char *typeName() const { return "ListBox"; }
+		const char *typeName() const override { return "ListBox"; }
 
 		struct Entry {
 			Color color;
@@ -24,10 +24,10 @@ namespace ui {
 			mutable bool is_selected;
 		};
 		
-		virtual bool onEvent(const Event&);
-		virtual void drawContents() const;
-		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 end, int key, int is_final);
+		bool onEvent(const Event&) override;
+		void drawContents(Renderer2D&) const override;
+		void onInput(const InputState&) override;
+		bool onMouseDrag(int2 start, int2 end, int key, int is_final) override;
 
 		void addEntry(const char *text, Color col = Color::white);
 		int findEntry(const char*) const;
@@ -53,7 +53,7 @@ namespace ui {
 		int m_over_id, m_dragging_id;
 	};
 
-	typedef Ptr<ListBox> PListBox;
+	using PListBox = shared_ptr<ListBox>;
 
 
 }

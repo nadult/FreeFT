@@ -39,7 +39,7 @@ namespace io {
 		m_world = m_server->world();
 		
 		if(!m_server->config().m_console_mode)
-			m_controller.reset(new Controller(getWindowSize(), m_world, m_config.profiler_on));
+			m_controller.reset(new Controller(GfxDevice::instance().windowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::GameLoop(net::PClient &&client, bool from_main)
@@ -49,7 +49,7 @@ namespace io {
 		m_world = m_client->world();
 
 		//TODO: wait until initial entity information is loaded?
-		m_controller.reset(new Controller(getWindowSize(), m_world, m_config.profiler_on));
+		m_controller.reset(new Controller(GfxDevice::instance().windowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::GameLoop(game::PWorld world, bool from_main)
@@ -57,7 +57,7 @@ namespace io {
 		DASSERT(world && world->mode() == World::Mode::single_player);
 		m_world = world;
 		m_world->assignGameMode<SinglePlayerMode>(Character("Player", "CORE_prefab2", "male"));
-		m_controller.reset(new Controller(getWindowSize(), m_world, m_config.profiler_on));
+		m_controller.reset(new Controller(GfxDevice::instance().windowSize(), m_world, m_config.profiler_on));
 	}
 
 	GameLoop::~GameLoop() { }
@@ -67,7 +67,7 @@ namespace io {
 
 		//TODO: handle change of map
 		if(m_controller)
-			m_controller->update(time_diff);
+			m_controller->update(GfxDevice::instance(), time_diff);
 		if(m_server)
 			m_server->beginFrame();
 		if(m_client)

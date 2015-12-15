@@ -35,7 +35,7 @@ namespace io {
 
 	private:
 		struct Transition {
-			void draw(const FRect &rect);
+			void draw(const IRect &rect);
 
 			Color from, to;
 			TransitionMode mode;
@@ -47,7 +47,7 @@ namespace io {
 		bool m_is_exiting;
 	};
 
-	typedef unique_ptr<Loop> PLoop;
+	using PLoop = unique_ptr<Loop>;
 
 }
 

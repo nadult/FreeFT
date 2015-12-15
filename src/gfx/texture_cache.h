@@ -17,7 +17,7 @@ class CachedTexture {
 	void operator=(const CachedTexture &);
 	virtual ~CachedTexture();
 
-	PTexture accessTexture(FRect &, bool put_in_atlas = true) const;
+	STexture accessTexture(FRect &, bool put_in_atlas = true) const;
 	TextureCache *getCache() const { return m_cache; }
 	int cacheId() const { return m_id; }
 	void bindToCache(TextureCache &) const;
@@ -52,8 +52,8 @@ class TextureCache {
 	int size() const { return (int)m_resources.size(); }
 
 	void unload(int res_id);
-	PTexture access(int res_id, bool put_in_atlas, FRect &);
-	PTexture atlas() { return PTexture(&m_atlas); }
+	STexture access(int res_id, bool put_in_atlas, FRect &);
+	STexture atlas() { return m_atlas; }
 
 	void setMemoryLimit(int bytes) { m_memory_limit = bytes; }
 	int memoryLimit() const { return m_memory_limit; }
@@ -70,7 +70,7 @@ class TextureCache {
   protected:
 	struct Resource {
 		CachedTexture *res_ptr;
-		PTexture device_texture;
+		STexture device_texture;
 
 		int2 size, atlas_pos;
 		int atlas_node_id;
@@ -88,7 +88,7 @@ class TextureCache {
 	};
 
 	PodArray<AtlasNode> m_atlas_nodes;
-	DTexture m_atlas;
+	STexture m_atlas;
 	int2 m_atlas_size;
 	int m_atlas_counter;
 

@@ -10,6 +10,7 @@
 #include "io/main_menu_loop.h"
 #include "io/game_loop.h"
 #include "net/server.h"
+#include <clocale>
 
 using namespace game;
 
@@ -20,14 +21,35 @@ void ctrlCHandler() {
 	s_is_closing = true;
 }
 
-void createWindow(const int2 &res, const int2 &pos, bool fullscreen) {
-	createWindow(res, fullscreen);
-	grabMouse(false);
-
-	if(pos != int2(-1, -1))
-		setWindowPos(pos);
+void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
 	//TODO: date is refreshed only when game.o is being rebuilt
-	setWindowTitle("FreeFT alpha (built " __DATE__ " " __TIME__ ")");
+	auto title = "FreeFT alpha (built " __DATE__ " " __TIME__ ")";
+	uint flags = (fullscreen ? GfxDevice::flag_fullscreen : 0) | GfxDevice::flag_resizable |
+				 GfxDevice::flag_vsync;
+	device.createWindow(title, res, flags);
+	device.grabMouse(false);
+//	if(pos != int2(-1, -1))
+//		setWindowPos(pos);
+}
+
+static io::PLoop s_main_loop;
+static double last_time = getTime() - 1.0f / 60.0f;
+
+static bool main_loop(GfxDevice &device) {
+	double time = getTime();
+	double time_diff = (time - last_time);
+	last_time = time;
+
+	if(s_is_closing)
+		s_main_loop->exit();
+	if(!s_main_loop->tick(time_diff))
+		return false;
+	s_main_loop->draw();
+
+	TextureCache::main_cache.nextFrame();
+	audio::tick();
+
+	return true;
 }
 
 int safe_main(int argc, char **argv)
@@ -37,8 +59,10 @@ int safe_main(int argc, char **argv)
 	srand((int)getTime());
 	audio::initSoundMap();
 	game::loadData(true);
-	initDevice();
-	adjustWindowSize(config.resolution, config.fullscreen_on);
+
+	Profiler profiler;
+	GfxDevice gfx_device;
+	//adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
 
 	int2 window_pos(-1, -1);
@@ -91,9 +115,7 @@ int safe_main(int argc, char **argv)
 
 	bool console_mode = server_config.isValid() && server_config.m_console_mode;
 	if(!console_mode)
-		createWindow(res, window_pos, fullscreen);
-
-	io::PLoop main_loop;
+		createWindow(gfx_device, res, window_pos, fullscreen);
 
 	try {
 		if(server_config.isValid()) {
@@ -102,7 +124,7 @@ int safe_main(int argc, char **argv)
 			net::PServer server(new net::Server(server_config));
 			PWorld world(new World(map_name, World::Mode::server));
 			server->setWorld(world);
-			main_loop.reset(new io::GameLoop(std::move(server), false));
+			s_main_loop.reset(new io::GameLoop(std::move(server), false));
 			if(server_config.m_console_mode)
 				handleCtrlC(ctrlCHandler);
 			if(console_mode)
@@ -111,40 +133,21 @@ int safe_main(int argc, char **argv)
 		else if(!map_name.empty()) {
 			printf("Loading: %s\n", map_name.c_str());
 			game::PWorld world(new World(map_name, World::Mode::single_player));
-			main_loop.reset(new io::GameLoop(world, false));
+			s_main_loop.reset(new io::GameLoop(world, false));
 		}
 	}
 	catch(const Exception &ex) {
 		printf("Failed: %s\n", ex.what());
 	}
 
-	if(!main_loop) {
+	if(!s_main_loop) {
 		if(console_mode)
-			createWindow(res, window_pos, config.fullscreen_on);
-		main_loop.reset(new io::MainMenuLoop);
+			createWindow(gfx_device, res, window_pos, config.fullscreen_on);
+		s_main_loop.reset(new io::MainMenuLoop);
 	}
 
-
-	double last_time = getTime() - targetFrameTime();
-	while(pollEvents()) {
-		double time = getTime();
-		double time_diff = (time - last_time);
-		last_time = time;
-
-		if(s_is_closing)
-			main_loop->exit();
-
-		if(!main_loop->tick(time_diff))
-			break;
-
-		main_loop->draw();
-
-		TextureCache::main_cache.nextFrame();
-		fwk::tick();
-		audio::tick();
-	}
-
-	main_loop.reset(nullptr);
+	gfx_device.runMainLoop(main_loop);
+	s_main_loop.reset(nullptr);
 
 /*	PTexture atlas = TextureCache::main_cache.atlas();
 	Texture tex;
@@ -156,10 +159,12 @@ int safe_main(int argc, char **argv)
 
 int main(int argc, char **argv) {
 	try {
+		std::setlocale(LC_ALL, "en_US.UTF8");
+		std::setlocale(LC_NUMERIC, "C");
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
 		return 1;
 	}
 }

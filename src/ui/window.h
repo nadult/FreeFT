@@ -46,7 +46,7 @@ namespace ui
 		static const char *fonts[3];
 	};
 
-	class Window: public RefCounter
+	class Window
 	{
 	public:
 		Window(const IRect &rect, Color background = Color::transparent);
@@ -56,8 +56,8 @@ namespace ui
 		Window(const Window&) = delete;
 		void operator=(const Window&) = delete;
 		
-		virtual void process();
-		virtual void draw() const;
+		virtual void process(const InputState&);
+		virtual void draw(Renderer2D&) const;
 
 		void close(int return_value);
 
@@ -105,13 +105,13 @@ namespace ui
 		// Override this method to receive events
 		virtual bool onEvent(const Event &event) { return false; }
 		
-		static void drawWindow(IRect rect, Color color, int outline);
+		static void drawWindow(Renderer2D&, IRect rect, Color color, int outline);
 
 		void setInnerOffset(const int2&);
 	
 	protected:
-		virtual void drawContents() const { }
-		virtual void onInput(int2 mouse_pos) { }
+		virtual void drawContents(Renderer2D&) const { }
+		virtual void onInput(const InputState&) { }
 
 		// each on*** function should return true if the event was handled
 		// TODO: pass key_modifier along with key (so when user presses LMB with CTRL, it will

@@ -80,8 +80,9 @@ namespace ui
 
 	PTileListModel allTilesModel() {
 		vector<const Tile*> tiles;
-		Tile::mgr.iterateOver( [&](const string&, const Tile &tile) { tiles.push_back(&tile); } );
-		return new VectorBasedModel(tiles);
+		for(auto elem : res::tiles())
+			tiles.emplace_back(elem.second.get());
+		return make_shared<VectorBasedModel>(tiles);
 	}
 
 	PTileListModel groupedTilesModel(const TileGroup &tile_group, bool only_uniform) {
@@ -92,15 +93,15 @@ namespace ui
 				tiles[group_id] = tile_group.entryTile(n);
 		}
 		tiles.resize(remove(tiles.begin(), tiles.end(), nullptr) - tiles.begin());
-		return new VectorBasedModel(tiles);
+		return make_shared<VectorBasedModel>(tiles);
 	}
 
 	PTileListModel filteredTilesModel(PTileListModel model, TileFilter::Type param) {
-		return new FilteredModel(model, TileFilter::filter, param);
+		return make_shared<FilteredModel>(model, TileFilter::filter, param);
 	}
 
 	bool TileList::Entry::operator<(const TileList::Entry &rhs) const {
-		return group_id == rhs.group_id? strcmp(tile->resourceName(), rhs.tile->resourceName()) < 0 : group_id < rhs.group_id;
+		return std::tie(group_id, tile->resourceName()) < std::tie(rhs.group_id, rhs.tile->resourceName());
 	}
 
 	TileList::TileList(int max_width, int spacing)

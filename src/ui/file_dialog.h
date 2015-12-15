@@ -27,8 +27,8 @@ namespace ui {
 		typedef FileDialogMode::Type Mode;
 
 		FileDialog(const IRect &rect, const char *title, Mode mode);
-		virtual void drawContents() const;
-		virtual bool onEvent(const Event &event);
+		void drawContents(Renderer2D&) const override;
+		bool onEvent(const Event &event) override;
 
 		Mode mode() const { return m_mode; }
 

@@ -129,7 +129,7 @@ namespace game {
 	void DeathMatchClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
 		if(msg_type == MessageId::update_client_info) {
 			ClientInfo new_info;
-			int client_id = sr.decodeInt();
+			int client_id = decodeInt(sr);
 			sr >> new_info;
 			m_client_infos[client_id] = new_info;
 			if(client_id == m_current_id)

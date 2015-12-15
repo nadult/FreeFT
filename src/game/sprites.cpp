@@ -23,7 +23,7 @@ namespace game {
 		sprite.setIndex(idx);
 
 		char file_name[1024];
-		snprintf(file_name, sizeof(file_name), "%s%s%s", s_prefix, sprite.resourceName(), s_suffix);
+		snprintf(file_name, sizeof(file_name), "%s%s%s", s_prefix, sprite.resourceName().c_str(), s_suffix);
 		Loader ldr(file_name);
 		sprite.load(ldr, full);
 	}
@@ -32,8 +32,7 @@ namespace game {
 		if(!s_sprite_map.empty())
 			return;
 
-		vector<FileEntry> file_entries;
-		findFiles(file_entries, s_prefix, FindFiles::regular_file | FindFiles::recursive);
+		auto file_entries = findFiles(s_prefix, FindFiles::regular_file | FindFiles::recursive);
 
 		string suffix = s_suffix;
 		int sprite_count = 0;

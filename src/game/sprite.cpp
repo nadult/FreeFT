@@ -115,7 +115,7 @@ namespace game
 		}
 	}
 
-	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect, bool put_in_atlas) const {
+	STexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect, bool put_in_atlas) const {
 		if(cacheId() == -1) {
 			bindToCache(TextureCache::main_cache);
 			prev_palette = &palette;
@@ -189,7 +189,7 @@ namespace game
 		return out;
 	}
 
-	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas) const {
+	STexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas) const {
 		DASSERT(!isPartial());
 
 		const MultiPalette &palette = m_palettes[m_sequences[seq_id].palette_id];
@@ -261,7 +261,7 @@ namespace game
 			pal_bytes += (int)m_palettes[p].colors.size() * sizeof(Color);
 
 		printf("%30s: %6d KB (images: %6d KB, palettes: %4dKB)\n",
-			resourceName(), bytes/1024, img_bytes/1024, pal_bytes/1024);
+			m_resource_name.c_str(), bytes/1024, img_bytes/1024, pal_bytes/1024);
 	}
 
 	void Sprite::printSequencesInfo() const {

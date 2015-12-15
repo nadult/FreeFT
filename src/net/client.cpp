@@ -125,7 +125,7 @@ namespace net {
 
 				if(chunk.type() == ChunkType::join_accept) {
 					host->verify(true);
-					m_client_id = chunk.decodeInt();
+					m_client_id = decodeInt(chunk);
 					chunk >> m_level_info;
 					m_mode = Mode::waiting_for_world_update;
 				}

@@ -37,7 +37,7 @@ namespace game {
 	PTexture Character::icon() const {
 		if(!m_icon_name.empty()) {
 			try {
-				return DTexture::gui_mgr[string(s_icon_folder) + m_icon_name];
+				return res::guiTextures()[string(s_icon_folder) + m_icon_name];
 			}
 			catch(...) { } //TODO: log error
 		}
@@ -46,7 +46,7 @@ namespace game {
 	}
 		
 	PTexture Character::emptyIcon() {
-		return DTexture::gui_mgr[string(s_icon_folder) + s_empty_name];
+		return res::guiTextures()[string(s_icon_folder) + s_empty_name];
 	}
 		
 	const vector<pair<ProtoIndex, string>> Character::findIcons() {
@@ -84,9 +84,9 @@ namespace game {
 
 	CharacterClass::CharacterClass(XMLNode node, int id) :m_inventory(node.child("inventory")) {
 		m_name = node.attrib("name");
-		m_tier = node.intAttrib("tier");
+		m_tier = node.attrib<int>("tier");
 		m_id = id;
-		m_proto_names = toStrings(node.attrib("actors"));
+		m_proto_names = node.attrib<vector<string>>("actors");
 	}
 		
 	const ActorInventory CharacterClass::inventory(bool equip) const {
@@ -138,13 +138,13 @@ namespace game {
 		
 	PlayableCharacter::PlayableCharacter(Stream &sr) :m_character(sr), m_class_id(CharacterClass::defaultId()) {
 		sr >> m_entity_ref;
-		m_class_id = sr.decodeInt();
+		m_class_id = decodeInt(sr);
 		ASSERT(CharacterClass::isValidId(m_class_id));
 	}
 
 	void PlayableCharacter::save(Stream &sr) const {
 		sr << m_character << m_entity_ref;
-		sr.encodeInt(m_class_id);
+		encodeInt(sr, m_class_id);
 	}
 
 	void PlayableCharacter::load(Stream &sr) {

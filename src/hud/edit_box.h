@@ -26,18 +26,15 @@ namespace hud {
 
 	protected:
 		void onUpdate(double time_diff) override;
-		void onDraw() const override;
+		void onDraw(Renderer2D&) const override;
 		bool onInput(const InputEvent&) override;
 		void onInputFocus(bool is_focused) override;
 		void setCursorPos(const float2 &rect_pos);
 		const FRect evalExtents(const string &text) const;
-
-		bool onKey(int key);
 		bool isValidChar(int key);
 	
 		string m_text, m_old_text;
-		int m_max_size;
-		int m_cursor_pos;
+		int m_max_size, m_cursor_pos;
 		EditMode m_mode;
 		double m_show_time;
 	};

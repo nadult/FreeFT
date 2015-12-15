@@ -60,8 +60,8 @@ namespace hud {
 		FRect weapon_rect(s_hud_weapon_size);
 		weapon_rect += float2(char_rect.max.x + spacing, bottom_left.y - weapon_rect.height());
 
-		m_hud_char_icon = new HudCharIcon(char_rect);
-		m_hud_weapon = new HudWeapon(weapon_rect);
+		m_hud_char_icon = make_shared<HudCharIcon>(char_rect);
+		m_hud_weapon = make_shared<HudWeapon>(weapon_rect);
 
 		{
 			FRect stance_rect(s_hud_stance_size);
@@ -88,12 +88,12 @@ namespace hud {
 			}
 		}
 
-		attach(m_hud_weapon.get());
-		attach(m_hud_char_icon.get());
+		attach(m_hud_weapon);
+		attach(m_hud_char_icon);
 		for(int n = 0; n < (int)m_hud_buttons.size(); n++)
-			attach(m_hud_buttons[n].get());
+			attach(m_hud_buttons[n]);
 		for(int n = 0; n < (int)m_hud_stances.size(); n++)
-			attach(m_hud_stances[n].get());
+			attach(m_hud_stances[n]);
 	}
 
 	HudMainPanel::~HudMainPanel() { }
@@ -111,7 +111,7 @@ namespace hud {
 			if(isOneOf(source, m_hud_stances) && m_pc_controller->canChangeStance()) {
 				m_pc_controller->setStance((Stance::Type)event.value);
 			}
-			if(m_hud_weapon == source)
+			if(m_hud_weapon.get() == source)
 				m_pc_controller->reload();
 				
 			return true;
@@ -148,7 +148,7 @@ namespace hud {
 		}
 		m_hud_weapon->setGreyed(!actor || actor->isDead());
 			
-		m_hud_char_icon->setCharacter(character? new Character(*character) : nullptr);
+		m_hud_char_icon->setCharacter(character? make_shared<Character>(*character) : PCharacter());
 
 		if(actor) {
 			m_hud_char_icon->setHP(actor->hitPoints(), actor->proto().actor->hit_points);

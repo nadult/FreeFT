@@ -11,7 +11,6 @@
 namespace game {
 
 	DECLARE_ENUM(ItemType,
-		invalid = -1,
 		weapon = 0,
 		armour,
 		ammo,
@@ -64,7 +63,7 @@ namespace game {
 		const ItemProto &proto() const		{ return *m_proto; }
 		ProtoIndex index() const			{ return m_proto->index(); }
 		
-		PTexture guiImage(bool small, FRect &tex_rect) const;
+		STexture guiImage(bool small, FRect &tex_rect) const;
 
 		void save(Stream&) const;
 
@@ -80,7 +79,7 @@ namespace game {
 
 		Flags::Type flags() const { return Flags::item | Flags::static_entity; }
 
-		PTexture guiImage(bool small, FRect &tex_rect) const;
+		STexture guiImage(bool small, FRect &tex_rect) const;
 		const Item &item() const { return m_item; }
 		Item &item() { return m_item; }
 		
@@ -99,7 +98,7 @@ namespace game {
 		int m_count;
 	};
 
-	typedef Ptr<ItemEntity> PItem;
+	using PItem = shared_ptr<ItemEntity>;
 
 }
 

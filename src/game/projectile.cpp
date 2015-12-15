@@ -9,10 +9,11 @@
 namespace game {
 
 	ProjectileProto::ProjectileProto(const TupleParser &parser) :ProtoImpl(parser) {
+		using namespace xml_conversions;
 		impact = parser("impact_id");
-		blend_angles = toBool(parser("blend_angles"));
-		speed = toFloat(parser("speed"));
-		max_range = toFloat(parser("max_range"));
+		blend_angles = parser.get<bool>("blend_angles");
+		speed = parser.get<float>("speed");
+		max_range = parser.get<float>("max_range");
 	}
 
 	void ProjectileProto::link() {
@@ -23,7 +24,7 @@ namespace game {
 		:EntityImpl(proto), m_dir(dir), m_spawner(spawner), m_distance(0.0f), m_damage_mod(damage_mod), m_impact_created(false) {
 			m_dir *= 1.0f / length(m_dir);
 			setDirAngle(initial_angle);
-			m_target_angle = vectorToAngle(m_dir.xz());
+			m_target_angle = vectorToAngle(normalize(m_dir.xz()));
 			if(!proto.blend_angles)
 				setDirAngle(m_target_angle);
 			m_speed = proto.speed;
@@ -72,7 +73,7 @@ namespace game {
 			return;
 		}
 
-		Intersection isect = trace(Segment(ray, 0.0f, ray_pos), {Flags::all | Flags::colliding, m_spawner});
+		Intersection isect = trace(Segment(ray.origin(), ray.at(ray_pos)), {Flags::all | Flags::colliding, m_spawner});
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		m_distance += length(new_pos - pos());
 		setPos(new_pos);

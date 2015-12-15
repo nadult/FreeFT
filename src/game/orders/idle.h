@@ -15,7 +15,7 @@ namespace game {
 		IdleOrder();
 		IdleOrder(Stream&);
 
-		void save(Stream&) const;
+		void save(Stream&) const override;
 		void cancel() override;
 
 		float m_fancy_anim_time;

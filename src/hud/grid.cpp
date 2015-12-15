@@ -4,8 +4,7 @@
  */
 
 #include "hud/grid.h"
-
-using namespace gfx;
+#include "gfx/drawing.h"
 
 namespace hud {
 
@@ -80,9 +79,9 @@ namespace hud {
 	}
 		
 	bool HudGrid::onInput(const InputEvent &event) {
-		bool mouse_key_down = event.mouseKeyDown(0);
+		bool mouse_key_down = event.mouseButtonDown(InputButton::left);
 
-		if((mouse_key_down || event.mouseOver()) && isMouseOver(event)) {
+		if((mouse_key_down || event.isMouseOverEvent()) && isMouseOver(event)) {
 			if(mouse_key_down)
 				m_selected_row = -1;
 			else
@@ -105,14 +104,13 @@ namespace hud {
 		return false;
 	}
 
-	void HudGrid::onDraw() const {
+	void HudGrid::onDraw(Renderer2D &out) const {
 		for(int col = 0; col < (int)m_columns.size(); col++) {
 			const Column &column = m_columns[col];
 			FRect rect = column.rect;
 
-			DTexture::unbind();
-			drawQuad(rect, mulAlpha(lerp(Color::white, Color::green, col & 1? 0.3f : 0.6f), 0.5f));
-			m_font->draw(rect, {Color::white, Color::black, HAlign::center, VAlign::top}, column.title);
+			out.addFilledRect(rect, mulAlpha(lerp(Color::white, Color::green, col & 1? 0.3f : 0.6f), 0.5f));
+			m_font->draw(out, rect, {Color::white, Color::black, HAlign::center, VAlign::top}, column.title);
 		
 			int counter = 0;	
 			for(auto &row_it : m_rows) {
@@ -122,7 +120,7 @@ namespace hud {
 
 				const Row &row = row_it.second;
 				const string &cell_value = col > (int)row.cells.size()? string() : row.cells[col];
-				m_font->draw(FRect(rect.min.x, row.rect.min.y, rect.max.x, row.rect.max.y),
+				m_font->draw(out, FRect(rect.min.x, row.rect.min.y, rect.max.x, row.rect.max.y),
 							 {lerp(Color(200, 200, 200), Color::white, row.highlighted_time), Color::black, HAlign::center}, cell_value);
 			}
 		}
@@ -132,7 +130,7 @@ namespace hud {
 			bool is_selected = row_it.first == m_selected_row;
 
 			float2 offset = float2(50.0f, 50.0f) * (is_selected? 1.0f - row.selection_time : 0.0f);
-			drawBorder(row.rect, mulAlpha(Color(200, 255, 200, 255), pow(row.selection_time, 2.0f)), offset, 500.0f);
+			drawBorder(out, row.rect, mulAlpha(Color(200, 255, 200, 255), pow(row.selection_time, 2.0f)), offset, 500.0f);
 		}
 	}
 

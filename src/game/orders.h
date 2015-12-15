@@ -7,7 +7,6 @@
 #define GAME_ORDERS_H
 
 #include "game/base.h"
-#include "game/thinking_entity.h"
 
 namespace game {
 
@@ -61,6 +60,12 @@ namespace game {
 		Order *clone() const { return new TOrder(*static_cast<const TOrder*>(this)); }
 		OrderTypeId::Type typeId() const { return type_id_; }
 	};
+
+}
+
+#include "game/thinking_entity.h"
+
+namespace game {
 
 	template <class TOrder>
 	bool ThinkingEntity::handleOrderWrapper(Order *order, EntityEvent::Type event, const EntityEventParams &params) {
