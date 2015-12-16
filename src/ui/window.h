@@ -143,7 +143,6 @@ namespace ui
 		int2 m_drag_start;
 		int m_closing_value;
 		int m_dragging_mode : 4;
-		bool m_is_dragging : 1;
 		bool m_is_visible : 1;
 		bool m_has_inner_rect : 1;
 		bool m_is_popup : 1;

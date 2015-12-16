@@ -117,11 +117,11 @@ int fastDrawingOrder(const FBox &a, const FBox &b) {
 
 void SceneRenderer::render() {
 	FWK_PROFILE("SceneRenderer::render");
+	Renderer2D out(m_viewport);
 
 	enum { node_size = 128 };
 
-	setScissorTest(true);
-	lookAt(m_view_pos - m_viewport.min);
+	out.setViewPos(m_view_pos - m_viewport.min);
 	IRect view(m_view_pos, m_view_pos + m_viewport.size());
 
 	int xNodes = (m_viewport.width() + node_size - 1) / node_size;
@@ -235,20 +235,16 @@ void SceneRenderer::render() {
 		int2 grid_tl = m_viewport.min + int2(grid_x * node_size, grid_y * node_size);
 		IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
 		grid_rect.max = min(grid_rect.max, m_viewport.max);
-		setScissorRect(grid_rect);
+		out.setScissorRect(grid_rect);
 
 		FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);
 		for(int i = count - 1; i >= 0; i--) {
 			const Element &elem = m_elements[gdata[i].second];
 
-			if(elem.texture) {
-				elem.texture->bind();
-				drawQuad(elem.rect.min, elem.rect.size(), elem.tex_rect.min, elem.tex_rect.max,
-						 elem.color);
-			} else {
-				DTexture::unbind();
-				drawBBox(elem.bbox, elem.color, true);
-			}
+			if(elem.texture)
+				out.addFilledRect(FRect(elem.rect), elem.tex_rect, {elem.texture, elem.color});
+			else
+				drawBBox(out, elem.bbox, elem.color, false);
 		}
 
 		g += count;
@@ -256,16 +252,14 @@ void SceneRenderer::render() {
 
 	//		printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
-	setScissorRect(m_viewport);
-	DTexture::unbind();
+	out.setScissorRect(m_viewport);
 	for(int n = 0; n < (int)m_lines.size(); n++) {
 		const LineElement &line = m_lines[n];
-		drawLine(line.begin, line.end, line.color);
+		out.addLine(worldToScreen(line.begin), worldToScreen(line.end), line.color);
 	}
 	for(int n = 0; n < (int)m_wire_boxes.size(); n++) {
 		const BoxElement &elem = m_wire_boxes[n];
-		drawBBox(elem.bbox, elem.color);
+		drawBBox(out, elem.bbox, elem.color);
 	}
-
-	setScissorTest(false);
+	out.render();
 }

@@ -48,6 +48,8 @@ static bool main_loop(GfxDevice &device) {
 
 	TextureCache::main_cache.nextFrame();
 	audio::tick();
+	auto *profiler = Profiler::instance();
+	profiler->nextFrame();
 
 	return true;
 }

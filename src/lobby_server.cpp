@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
 		return 1;
 	}
 }

@@ -69,7 +69,6 @@ namespace io {
 		int2 m_last_mouse_pos;
 
 		string m_profiler_stats;
-		double m_last_time, m_stats_update_time;
 		double m_time_multiplier;
 		bool m_debug_ai, m_debug_navi;
 		bool m_show_debug_info;

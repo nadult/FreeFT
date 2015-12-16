@@ -175,14 +175,11 @@ namespace game
 		sr << m_first_frame << m_frames << m_palette;
 	}
 
-	void Tile::draw(const int2 &pos, Color col) const {
+	void Tile::draw(Renderer2D &out, const int2 &pos, Color col) const {
 		const TileFrame &TileFrame = accessFrame(s_frame_counter);
 		FRect tex_coords;
-
 		auto tex = TileFrame.deviceTexture(tex_coords);
-		tex->bind();
-		IRect rect = TileFrame.rect();
-		drawQuad(pos + rect.min - m_offset, rect.size(), tex_coords.min, tex_coords.max, col);
+		out.addFilledRect(FRect(TileFrame.rect() + (pos - m_offset)), tex_coords, {tex, col});
 	}
 
 	void Tile::addToRender(SceneRenderer &renderer, const int3 &pos, Color color) const {

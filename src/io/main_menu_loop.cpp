@@ -18,8 +18,6 @@
 #include "net/server.h"
 #include "audio/device.h"
 
-#include "gfx/drawing.h"
-
 #ifdef MessageBox // Yea.. TODO: remove windows.h from includes
 #undef MessageBox
 #endif
@@ -291,7 +289,7 @@ namespace io {
 			return;
 		}
 
-		clear(Color(0, 0, 0));
+		GfxDevice::clearColor(Color(0, 0, 0));
 		IRect viewport(GfxDevice::instance().windowSize());
 		Renderer2D renderer(viewport);
 

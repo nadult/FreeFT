@@ -5,7 +5,7 @@
 
 ## Introduction
 FreeFT is an open-source, real-time, isometric action game engine
-inspired by Fallout Tactics, a game from 2001 done by Australian company,
+inspired by Fallout Tactics, a game from 2001 created by an Australian company,
 Micro Forte.
  
 Compiled binaries can be downloaded from SourceForge
@@ -13,14 +13,15 @@ Compiled binaries can be downloaded from SourceForge
 
 
 ## Building
-For compilation, G++ in version 4.8 is required or Clang 3.5
-(many C++11 features are used), and following libraries:
+For compilation, G++ in version 4.9 is required or Clang 3.4
+(many C++14 features are used), and following libraries:
 
-* GLFW, libpng, zlib, OpenAL, mpg123, libzip:  
-	these should be available in your distro's package repositories
-
-* libfwk (included as submodule):  
+* libfwk (included as submodule):
 	[http://github.com/nadult/libfwk](http://github.com/nadult/libfwk)
+    This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2)
+
+* zlib, OpenAL, mpg123, libzip:  
+	these should be available in your distro's package repositories
 
 ## Running
 To run this program, resources from original Fallout Tactics are required.
@@ -52,16 +53,6 @@ Inventory (bottom left corner):
 * E key: equip / unequip selected item
 
 ## Used libraries and resources
-* **GLFW**  
-	[http://glfw.sourceforge.net/](http://glfw.sourceforge.net/)
-
-* **rapidxml**  
-	included in libs/rapidxml*/, licensed under Boost Software License  
-	[http://www.nih.at/libzip/](http://rapidxml.sourceforge.net/)
-
-* **libpng**  
-	[http://libpng.org](http://libpng.org)
-
 * **mpg123**  
 	[http://www.mpg123.de/index.shtml](http://www.mpg123.de/index.shtml)
 
@@ -70,10 +61,6 @@ Inventory (bottom left corner):
 
 * **libzip**  
 	[http://www.nih.at/libzip/](http://www.nih.at/libzip/)
-
-* **lz4**  
-	included in libs/lz4/, licensed under BSD license  
-	[http://fastcompression.blogspot.com/p/lz4.html](http://fastcompression.blogspot.com/p/lz4.html)
 
 * **OpenAL**
 

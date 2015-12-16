@@ -19,7 +19,6 @@
 #include "hud/console.h"
 #include "hud/hud.h"
 #include "hud/target_info.h"
-#include "gfx/drawing.h"
 
 using namespace game;
 
@@ -29,8 +28,9 @@ namespace io {
 	static const float2 target_info_size(200.0f, 80.0f);
 
 	Controller::Controller(const int2 &resolution, PWorld world, bool debug_info)
-	  :m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0), m_show_debug_info(debug_info),
-	   m_debug_navi(false), m_debug_ai(false), m_is_exiting(0), m_time_multiplier(1.0) {
+		: m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0),
+		  m_show_debug_info(debug_info), m_debug_navi(false), m_debug_ai(false), m_is_exiting(0),
+		  m_time_multiplier(1.0) {
 		DASSERT(world);
 		m_console = make_shared<hud::HudConsole>(resolution);
 		m_hud = make_shared<hud::Hud>(world, resolution);
@@ -41,60 +41,59 @@ namespace io {
 		ASSERT(m_game_mode);
 		updatePC();
 
-		if( const Actor *actor = getActor() )
+		if(const Actor *actor = getActor())
 			m_view_pos = int2(worldToScreen(actor->pos())) - resolution / 2;
-		
-		m_last_time = m_stats_update_time = getTime();
+
 		m_last_look_at = float3(0, 0, 0);
-		
+
 		if(m_world->isClient())
 			m_hud->showLayer(hud::layer_character);
 	}
 
-	Controller::~Controller() {
-	}
-		
-	//TODO: better name
+	Controller::~Controller() {}
+
+	// TODO: better name
 	void Controller::updatePC() {
 		const GameClient *client = m_game_mode->currentClient();
-		const vector<PlayableCharacter> &pcs = client? client->pcs : vector<PlayableCharacter>();
+		const vector<PlayableCharacter> &pcs = client ? client->pcs : vector<PlayableCharacter>();
 		PPlayableCharacter pc;
 
-		if( (pcs.empty() && !m_pc) || (m_pc && pcs[0] == *m_pc) )
+		if((pcs.empty() && !m_pc) || (m_pc && pcs[0] == *m_pc))
 			return;
 
 		m_pc = make_shared<PlayableCharacter>(pcs[0]);
-		m_pc_controller = m_pc? make_shared<PCController>(*m_world, *m_pc) : nullptr;
+		m_pc_controller = m_pc ? make_shared<PCController>(*m_world, *m_pc) : nullptr;
 
-		m_actor_ref = m_pc? m_pc->entityRef() : EntityRef();
+		m_actor_ref = m_pc ? m_pc->entityRef() : EntityRef();
 		m_viewer.setSpectator(m_actor_ref);
 		m_hud->setPCController(m_pc_controller);
 	}
-		
+
 	Actor *Controller::getActor() {
 		Actor *actor = nullptr;
 		if(m_pc)
 			actor = m_world->refEntity<Actor>(m_pc->entityRef());
 		return actor;
 	}
-		
+
 	void Controller::sendOrder(game::POrder &&order) {
 		if(m_pc && m_world)
 			m_world->sendOrder(std::move(order), m_pc->entityRef());
 	}
-		
+
 	void Controller::onInput(const InputEvent &event) {
 		if(m_console->handleInput(event) || m_hud->handleInput(event))
 			return;
 
-		if((event.mouseButtonPressed(InputButton::left) && event.hasModifier(InputEvent::mod_lctrl)) ||
+		if((event.mouseButtonPressed(InputButton::left) &&
+			event.hasModifier(InputEvent::mod_lctrl)) ||
 		   event.mouseButtonPressed(InputButton::middle))
 			m_view_pos -= event.mouseMove();
 		if(event.isMouseEvent())
 			m_last_mouse_pos = event.mousePos();
 
 		bool mouse_over_hud = m_console->isMouseOver(event) || m_hud->isMouseOver(event);
-		
+
 		Actor *actor = getActor();
 		if(actor && actor->isDead())
 			actor = nullptr;
@@ -124,48 +123,56 @@ namespace io {
 
 		if(event.isMouseOverEvent() && mouse_over_hud) {
 			m_isect = m_full_isect = Intersection();
-		}
-		else if(event.isMouseOverEvent() && !mouse_over_hud) {
+		} else if(event.isMouseOverEvent() && !mouse_over_hud) {
 			m_screen_ray = screenRay((int2)event.mousePos() + m_view_pos);
 
-			Flags::Type flags = Flags::walkable_tile | (Flags::entity & ~(Flags::projectile | Flags::impact | Flags::trigger));
-			m_isect = m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, {flags, m_actor_ref});
+			Flags::Type flags =
+				Flags::walkable_tile |
+				(Flags::entity & ~(Flags::projectile | Flags::impact | Flags::trigger));
+			m_isect =
+				m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, {flags, m_actor_ref});
 			Segment screen_ray(m_screen_ray.origin(), m_screen_ray.at(1024.0f));
 			if(m_isect.isEmpty() || m_isect.isTile())
 				m_isect = m_viewer.trace(screen_ray, {flags, m_actor_ref});
-	
-			//TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
+
+			// TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 			// has to intersect bounding box of the object
-			m_full_isect = m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, m_actor_ref);
+			m_full_isect =
+				m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, m_actor_ref);
 			if(m_full_isect.isEmpty())
 				m_full_isect = m_viewer.trace(screen_ray, m_actor_ref);
 
 			if(!m_full_isect.isEmpty() && actor) {
-				//TODO: send it only, when no other order is in progress (or has been sent and wasn't finished)
-				if(m_full_isect.distance() < constant::inf && m_full_isect.distance() > -constant::inf) {
+				// TODO: send it only, when no other order is in progress (or has been sent and
+				// wasn't
+				// finished)
+				if(m_full_isect.distance() < constant::inf &&
+				   m_full_isect.distance() > -constant::inf) {
 					float3 look_at = m_screen_ray.at(m_full_isect.distance());
-					if(look_at != m_last_look_at && distance(look_at.xz(), actor->boundingBox().center().xz()) > 5.0f) {
+					if(look_at != m_last_look_at &&
+					   distance(look_at.xz(), actor->boundingBox().center().xz()) > 5.0f) {
 						m_world->sendOrder(new LookAtOrder(look_at), m_actor_ref);
 						m_last_look_at = look_at;
 					}
 				}
 			}
-		}
-		else if(event.mouseButtonDown(InputButton::left) && !event.hasModifier(InputEvent::mod_lctrl)) {
+		} else if(event.mouseButtonDown(InputButton::left) &&
+				  !event.hasModifier(InputEvent::mod_lctrl)) {
 			Entity *entity = m_world->refEntity(m_isect);
 
 			if(entity) {
 				m_world->sendOrder(new InteractOrder(entity->ref()), m_actor_ref);
-			}
-			else if(m_isect.isTile()) {
-				//TODO: pixel intersect always returns distance == 0
+			} else if(m_isect.isTile()) {
+				// TODO: pixel intersect always returns distance == 0
 				int3 wpos = int3(m_screen_ray.at(m_isect.distance()) + float3(0, 0.5f, 0));
-				
-				bool run = actor && !event.hasModifier(InputEvent::mod_lshift);// && distance(float3(wpos), actor->pos()) > 10.0f;
+
+				bool run =
+					actor &&
+					!event.hasModifier(
+						InputEvent::mod_lshift); // && distance(float3(wpos), actor->pos()) > 10.0f;
 				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
-		}
-		else if(event.mouseButtonDown(InputButton::right) && actor) {
+		} else if(event.mouseButtonDown(InputButton::right) && actor) {
 			AttackMode::Type mode = AttackMode::undefined;
 			if(event.hasModifier(InputEvent::mod_lshift)) {
 				const Weapon &weapon = actor->inventory().weapon();
@@ -179,12 +186,11 @@ namespace io {
 				Entity *entity = m_world->refEntity(m_isect);
 				if(entity) {
 					m_world->sendOrder(new AttackOrder(mode, entity->ref()), m_actor_ref);
-				}
-				else
-					m_world->sendOrder(new AttackOrder(mode, m_screen_ray.at(m_isect.distance())), m_actor_ref);
+				} else
+					m_world->sendOrder(new AttackOrder(mode, m_screen_ray.at(m_isect.distance())),
+									   m_actor_ref);
 			}
-		}
-		else if(event.keyDown('T') && !m_isect.isEmpty() && actor) {
+		} else if(event.keyDown('T') && !m_isect.isEmpty() && actor) {
 			float3 pos = m_screen_ray.at(m_isect.distance());
 			actor->setPos(int3(pos + float3(0.5f, 0.5f, 0.5f)));
 			actor->fixPosition();
@@ -196,7 +202,8 @@ namespace io {
 
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor)
-			audio::setListener(actor->pos(), actor->estimateMove(1.0f), normalize(float3(-1, 0, -1)));
+			audio::setListener(actor->pos(), actor->estimateMove(1.0f),
+							   normalize(float3(-1, 0, -1)));
 		else {
 			Ray mid_ray = screenRay(m_view_pos + m_resolution / 2);
 			auto isect = m_world->trace(Segment(mid_ray.origin(), mid_ray.at(1024.0f)));
@@ -219,17 +226,10 @@ namespace io {
 		m_hud->update(time_diff);
 		m_target_info->update(time_diff);
 
-		if( auto *profiler = Profiler::instance() ) {
-			//TODO: this is not required, too quick updating is handled inside profiler now
-			if(m_last_time - m_stats_update_time > 0.25) {
-				m_profiler_stats = profiler->getStats("");
-				m_stats_update_time = m_last_time;
-			}
-			profiler->nextFrame(1.0f / 60.0f);
-			m_last_time = profiler->getTime();
-		}
+		if(auto *profiler = Profiler::instance())
+			m_profiler_stats = profiler->getStats("");
 
-		if( GameMode *game_mode = m_world->gameMode() ) {
+		if(GameMode *game_mode = m_world->gameMode()) {
 			UserMessage message = game_mode->userMessage(UserMessageType::main);
 
 			bool not_empty = !message.text.empty();
@@ -247,7 +247,7 @@ namespace io {
 				pos.y = m_last_mouse_pos.y + 40.0f;
 			m_target_info->setPos(pos);
 
-			float hit_chance = 0.0f;		
+			float hit_chance = 0.0f;
 			if(actor) {
 				const Weapon &weapon = actor->inventory().weapon();
 				if(!m_isect.isEmpty() && weapon.hasRangedAttack()) {
@@ -256,8 +256,9 @@ namespace io {
 				}
 			}
 
-			const PlayableCharacter *pc = target_actor? m_game_mode->pc(m_game_mode->findPC(target_actor->ref())) : nullptr;
-			const GameModeClient *gm_client = dynamic_cast<const GameModeClient*>(m_game_mode);
+			const PlayableCharacter *pc =
+				target_actor ? m_game_mode->pc(m_game_mode->findPC(target_actor->ref())) : nullptr;
+			const GameModeClient *gm_client = dynamic_cast<const GameModeClient *>(m_game_mode);
 			if(gm_client && target_actor) {
 				auto stats = gm_client->stats();
 				for(const auto &stat : stats)
@@ -269,14 +270,14 @@ namespace io {
 
 			if(pc) {
 				m_target_info->setCharacter(make_shared<Character>(pc->character()));
-				m_target_info->setHealth(target_actor->hitPoints() / target_actor->proto().actor->hit_points);
+				m_target_info->setHealth(target_actor->hitPoints() /
+										 target_actor->proto().actor->hit_points);
 				m_target_info->setHitChance(hit_chance);
 				m_target_info->setName(m_game_mode->client(target_actor->clientId())->nick_name);
 			}
-				
+
 			m_target_info->setVisible(pc != nullptr);
 		}
-			
 
 		while(true) {
 			string command = m_console->getCommand();
@@ -307,43 +308,34 @@ namespace io {
 		}
 	}
 
-	void Controller::updateView(double time_diff) {
-		m_viewer.update(time_diff);
-	}
+	void Controller::updateView(double time_diff) { m_viewer.update(time_diff); }
 
 	void Controller::draw() const {
-		initViewport(m_resolution);
-		clear(Color(0, 0, 0));
-		lookAt({0, 0});
-		SceneRenderer renderer(IRect(int2(0, 0), m_resolution), m_view_pos);
+		GfxDevice::clearColor(Color(0, 0, 0));
 
-		m_viewer.addToRender(renderer);
+		IRect viewport(m_resolution);
+		SceneRenderer scene_renderer(viewport, m_view_pos);
+		m_viewer.addToRender(scene_renderer);
 
 		if(!m_isect.isEmpty())
-			renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
+			scene_renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
 		if(m_debug_navi) {
 			const NaviMap *navi_map = m_world->naviMap(m_actor_ref);
 			if(navi_map)
-				navi_map->visualize(renderer, false);
+				navi_map->visualize(scene_renderer, false);
 		}
-		m_last_path.visualize(3, renderer);
-		renderer.render();
+		m_last_path.visualize(3, scene_renderer);
+		scene_renderer.render();
 
-		/*{ // Drawing cursor
-			lookAt({0, 0});
-			DTexture::unbind();
-			drawLine(getMousePos() - int2(5, 0), getMousePos() + int2(5, 0));
-			drawLine(getMousePos() - int2(0, 5), getMousePos() + int2(0, 5));
-		}*/
+		Renderer2D ui_renderer(viewport);
 
-		Renderer2D renderer_2d(IRect({0, 0}, m_resolution));
 		if(m_show_debug_info)
-			drawDebugInfo(renderer_2d);
+			drawDebugInfo(ui_renderer);
 
-		m_hud->draw(renderer_2d);
-		m_target_info->draw(renderer_2d);
-		m_console->draw(renderer_2d);
+		m_hud->draw(ui_renderer);
+		m_target_info->draw(ui_renderer);
+		m_console->draw(ui_renderer);
 
 		if(!m_main_message.isEmpty()) {
 			PFont font = res::getFont("transformers_48");
@@ -352,25 +344,28 @@ namespace io {
 			Color text_color = mulAlpha(Color::white, m_main_message.anim_time);
 			Color shadow_color = mulAlpha(Color::black, m_main_message.anim_time);
 
-			font->draw(renderer_2d, rect, {text_color, shadow_color, HAlign::center}, m_main_message.text());
+			font->draw(ui_renderer, rect, {text_color, shadow_color, HAlign::center},
+					   m_main_message.text());
 		}
-		renderer_2d.render();
+		ui_renderer.render();
 	}
-		
+
 	void Controller::drawDebugInfo(Renderer2D &out) const {
-		lookAt({0, 0});
 		PFont font = res::getFont("liberation_16");
 
 		if(m_debug_ai) {
 			for(int n = 0; n < m_world->entityCount(); n++) {
 				const ThinkingEntity *entity = m_world->refEntity<ThinkingEntity>(n);
-				const Brain *ai = entity? entity->AI() : nullptr;
+				const Brain *ai = entity ? entity->AI() : nullptr;
 				if(ai) {
 					string status = ai->status();
 					FRect screen_rect = worldToScreen(entity->boundingBox());
-					FRect text_rect = FRect(float2(200, 50)) + float2(screen_rect.center().x, screen_rect.min.y) - float2(m_view_pos);
+					FRect text_rect = FRect(float2(200, 50)) +
+									  float2(screen_rect.center().x, screen_rect.min.y) -
+									  float2(m_view_pos);
 					text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
-					font->draw(out, text_rect, {Color::white, Color::black, HAlign::center}, status);
+					font->draw(out, text_rect, {Color::white, Color::black, HAlign::center},
+							   status);
 				}
 			}
 		}
@@ -387,15 +382,16 @@ namespace io {
 			if(navi_map) {
 				int src = navi_map->findQuad((int3)actor->pos(), actor->ref().index());
 				int dst = navi_map->findQuad((int3)isect_pos);
-				navi_status = navi_map->isReachable(src, dst)? "reachable" : "unreachable";
+				navi_status = navi_map->isReachable(src, dst) ? "reachable" : "unreachable";
 			}
 		}
-		fmt("View:(%d %d)\nRay:(%.2f %.2f %.2f) %s\n", m_view_pos.x, m_view_pos.y, isect_pos.x, isect_pos.y, isect_pos.z, navi_status);
-		
+		fmt("View:(%d %d)\nRay:(%.2f %.2f %.2f) %s\n", m_view_pos.x, m_view_pos.y, isect_pos.x,
+			isect_pos.y, isect_pos.z, navi_status);
 
 		if(actor) {
 			float3 actor_pos = actor->pos();
-			fmt("Actor pos:(%.0f %.0f %.0f)\nHP: %d ", actor_pos.x, actor_pos.y, actor_pos.z, actor->hitPoints());
+			fmt("Actor pos:(%.0f %.0f %.0f)\nHP: %d ", actor_pos.x, actor_pos.y, actor_pos.z,
+				actor->hitPoints());
 			if(target_actor)
 				fmt("Target HP: %d", target_actor->hitPoints());
 
@@ -410,14 +406,11 @@ namespace io {
 
 		fmt("%s", m_profiler_stats.c_str());
 
-		lookAt({0, 0});
-	
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
 		int2 res = m_resolution;
 		int2 pos(res.x - extents.x - 4, res.y - extents.y - 4);
-		drawQuad(FRect(pos, pos + res), Color(0, 0, 0, 80));
+		out.addFilledRect(FRect(pos, pos + res), Color(0, 0, 0, 80));
 		font->draw(out, pos + int2(2, 2), {Color::white, Color::black}, fmt);
 	}
-
 }

@@ -61,8 +61,8 @@ FWK_DIR=libfwk
 include $(FWK_DIR)/Makefile.include
 
 LIBS=-pthread
-LINUX_LIBS=$(LIBS) $(LINUX_FWK_LIBS)
-MINGW_LIBS=$(LIBS) $(MINGW_FWK_LIBS)
+LINUX_LIBS=$(LIBS) $(LINUX_FWK_LIBS) -lz -lmpg123
+MINGW_LIBS=$(LIBS) $(MINGW_FWK_LIBS) -lz -lmpg123
 
 SPECIAL_LIBS_convert=-lzip 
 

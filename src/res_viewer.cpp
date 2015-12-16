@@ -57,18 +57,20 @@ class Resource {
 		} else if(m_type == ResType::sprite) {
 			//	printf("Loading sprite: %s\n", file_name);
 			m_sprite = make_shared<Sprite>();
+			m_sprite->setResourceName(file_name);
 			loader >> *m_sprite;
 			m_sprite->printInfo();
 			m_rect_size =
 				worldToScreen(IBox({-4, -4, -4}, m_sprite->bboxSize() + int3{4, 4, 4})).size();
 			m_last_time = getTime();
 			m_frame_id = m_dir_id = m_seq_id = 0;
-			update();
+			updateFrameId();
 		}
 	}
 
 	void printStats(Renderer2D &out, int2 pos) const {
-		char buffer[1024] = "";
+		TextFormatter fmt;
+
 		if(m_type == ResType::sprite) {
 			bool is_gui_image = (*m_sprite)[m_seq_id].name.find("gui") != string::npos;
 			auto &seq = (*m_sprite)[m_seq_id];
@@ -81,14 +83,14 @@ class Resource {
 					max(max_frame_size, m_sprite->getRect(m_seq_id, n, m_dir_id).size());
 			}
 
-			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: "
-											 "(%d, %d, %d)\nMax frame size: (%d, %d)",
-					 m_seq_id, (int)m_sprite->size(), seq.name.c_str(), seq.frame_count,
-					 m_sprite->bboxSize().x, m_sprite->bboxSize().y, m_sprite->bboxSize().z,
-					 max_frame_size.x, max_frame_size.y);
+			fmt("Sequence: %d / %d\n%s\nFrames: %d\nBounding box: "
+				"(%d, %d, %d)\nMax frame size: (%d, %d)",
+				m_seq_id, (int)m_sprite->size(), seq.name.c_str(), seq.frame_count,
+				m_sprite->bboxSize().x, m_sprite->bboxSize().y, m_sprite->bboxSize().z,
+				max_frame_size.x, max_frame_size.y);
 
-			m_font->draw(out, pos, {Color::white, Color::black}, buffer);
-			pos.y += m_font->evalExtents(buffer).height();
+			m_font->draw(out, pos, {Color::white, Color::black}, fmt);
+			pos.y += m_font->evalExtents(fmt).height();
 
 			double time = getTime();
 			for(int n = 0; n < (int)m_events.size(); n++) {
@@ -98,33 +100,38 @@ class Resource {
 			}
 
 		} else if(m_type == ResType::texture) {
-			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)", m_texture->width(),
-					 m_texture->height());
-			m_font->draw(out, pos, {Color::white, Color::black}, buffer);
+			fmt("Size: (%d, %d)", m_texture->width(), m_texture->height());
+			m_font->draw(out, pos, {Color::white, Color::black}, fmt);
 		}
 	}
 
-	void update() {
+	void updateFrameId() {
+		if(m_type != ResType::sprite)
+			return;
+
+		int id;
+		while((id = m_sprite->frame(m_seq_id, m_frame_id).id) < 0) {
+			const char *event_name = Sprite::eventIdToString((Sprite::EventId)id);
+			if(id == Sprite::ev_overlay)
+				event_name = "overlay";
+			if(event_name)
+				m_events.push_back(make_pair(event_name, getTime()));
+
+			m_frame_id++;
+			if(m_frame_id == m_sprite->frameCount(m_seq_id))
+				m_frame_id = 0;
+		}
+	}
+
+	void update(double time) {
 		if(m_type == ResType::sprite) {
-			double time = getTime();
 			if(time - m_last_time > 1 / 15.0) {
 				m_frame_id = m_frame_id + 1;
+				m_frame_id %= m_sprite->frameCount(m_seq_id);
 				m_last_time = time;
 			}
 
-			int id;
-			while((id = m_sprite->frame(m_seq_id, m_frame_id).id) < 0) {
-				const char *event_name = Sprite::eventIdToString((Sprite::EventId)id);
-				if(id == Sprite::ev_overlay)
-					event_name = "overlay";
-				if(event_name)
-					m_events.push_back(make_pair(event_name, getTime()));
-
-				m_frame_id++;
-				if(m_frame_id == m_sprite->frameCount(m_seq_id))
-					m_frame_id = 0;
-			}
-			m_frame_id %= m_sprite->frameCount(m_seq_id);
+			updateFrameId();
 
 			vector<pair<const char *, double>> tevents;
 			for(int n = 0; n < (int)m_events.size(); n++)
@@ -169,9 +176,8 @@ class Resource {
 			int dir_count = m_sprite->dirCount(m_seq_id);
 			m_dir_id = (m_dir_id + dir_count) % dir_count;
 			m_frame_id %= m_sprite->frameCount(m_seq_id);
+			updateFrameId();
 		}
-
-		update();
 	}
 
 	void draw(Renderer2D &out, int2 pos, bool is_selected) const {
@@ -180,11 +186,8 @@ class Resource {
 		if(m_type == ResType::tile) {
 			out.setViewPos(-pos + m_tile->rect().min);
 			IBox box(int3(0, 0, 0), m_tile->bboxSize());
-
-			// TODO: draw only if its visible, otherwise it might create some performance
-			// problems if texture cache is full
-			m_tile->draw(int2(0, 0));
-			drawBBox(box, outline_col);
+			m_tile->draw(out, int2(0, 0));
+			drawBBox(out, box, outline_col);
 		} else if(m_type == ResType::texture) {
 			out.setViewPos(-pos);
 			out.addFilledRect(IRect(m_rect_size), m_texture);
@@ -192,6 +195,7 @@ class Resource {
 		} else if(m_type == ResType::sprite) {
 			bool is_gui_image = (*m_sprite)[m_seq_id].name.find("gui") != string::npos;
 
+			DASSERT(m_sprite->frame(m_seq_id, m_frame_id).id >= 0);
 			IRect rect = m_sprite->getRect(m_seq_id, m_frame_id, m_dir_id);
 			FRect tex_rect;
 			auto dtex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
@@ -208,7 +212,7 @@ class Resource {
 			if(is_gui_image)
 				out.addRect(rect, outline_col);
 			else
-				drawBBox(box, outline_col);
+				drawBBox(out, box, outline_col);
 		}
 	}
 
@@ -279,8 +283,9 @@ class ResourceView : public Window {
 	}
 
 	void update() {
+		double time = getTime();
 		for(auto &resource : m_resources)
-			resource->update();
+			resource->update(time);
 	}
 
 	void onInput(const InputState &state) override {
@@ -445,7 +450,7 @@ static bool main_loop(GfxDevice &device) {
 	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
 	TextureCache::main_cache.nextFrame();
 
-	clear(Color(0, 0, 0));
+	GfxDevice::clearColor(Color(0, 0, 0));
 	Renderer2D out(IRect(device.windowSize()));
 
 	main_window->process(device.inputState());

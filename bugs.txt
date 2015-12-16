@@ -2,6 +2,7 @@ Mustfix: -----------------------------------------------------------------------
 - Input focus in console's edito box is broken
 - Firing rocket under feet doesn't hurt
 - Resizing window in-game causes problems
+
 - Animation glitches in multiplayer  
 - Problems with queuing orders (rethink this)
 - When standing near a wall, you can fire through it (projectiles spawn too far away)
