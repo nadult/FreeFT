@@ -21,17 +21,18 @@ namespace io {
 	class Controller {
 	public:
 
-		Controller(const int2 &resolution, game::PWorld world, bool debug_info);
+		Controller(game::PWorld world, bool debug_info);
 		~Controller();
 
 		void updateView(double time_diff);
-		void update(GfxDevice &device, double time_diff);
+		void update(double time_diff);
 		void draw() const;
 
 		int exitRequested() const { return m_is_exiting; }
 
 		double timeMultiplier() const { return m_time_multiplier; }
 		void setTimeMultiplier(double mul) { m_time_multiplier = mul; }
+		static void setProfilerStats(string);
 
 	protected:
 		void updatePC();
@@ -65,10 +66,9 @@ namespace io {
 		shared_ptr<hud::Hud> m_hud;
 		shared_ptr<hud::HudTargetInfo> m_target_info;
 
-		int2 m_resolution, m_view_pos;
+		int2 m_view_pos;
 		int2 m_last_mouse_pos;
 
-		string m_profiler_stats;
 		double m_time_multiplier;
 		bool m_debug_ai, m_debug_navi;
 		bool m_show_debug_info;

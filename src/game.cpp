@@ -9,12 +9,14 @@
 
 #include "io/main_menu_loop.h"
 #include "io/game_loop.h"
+#include "io/controller.h"
 #include "net/server.h"
 #include <clocale>
 
 using namespace game;
 
 static bool s_is_closing = false;
+
 
 void ctrlCHandler() {
 	printf("Closing...\n");
@@ -33,12 +35,12 @@ void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool full
 }
 
 static io::PLoop s_main_loop;
-static double last_time = getTime() - 1.0f / 60.0f;
+static double s_last_time = getTime() - 1.0f / 60.0f;
 
 static bool main_loop(GfxDevice &device) {
 	double time = getTime();
-	double time_diff = (time - last_time);
-	last_time = time;
+	double time_diff = (time - s_last_time);
+	s_last_time = time;
 
 	if(s_is_closing)
 		s_main_loop->exit();
@@ -49,6 +51,7 @@ static bool main_loop(GfxDevice &device) {
 	TextureCache::main_cache.nextFrame();
 	audio::tick();
 	auto *profiler = Profiler::instance();
+	io::Controller::setProfilerStats(profiler->getStats(""));
 	profiler->nextFrame();
 
 	return true;

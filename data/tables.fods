@@ -1163,7 +1163,7 @@
       <text:p>generic</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
-      <text:p>robots/RobotTurrets/GenericTurret</text:p>
+      <text:p>Robots/RobotTurrets/GenericTurret</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="float" office:value="100" calcext:value-type="float">
       <text:p>100</text:p>
@@ -1183,7 +1183,7 @@
       <text:p>popup</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="string" calcext:value-type="string">
-      <text:p>robots/RobotTurrets/PopupTurret</text:p>
+      <text:p>Robots/RobotTurrets/PopupTurret</text:p>
      </table:table-cell>
      <table:table-cell office:value-type="float" office:value="80" calcext:value-type="float">
       <text:p>80</text:p>

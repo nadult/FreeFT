@@ -26,11 +26,19 @@ namespace io {
 
 	static const float s_exit_anim_length = 0.7f;
 	static const float2 target_info_size(200.0f, 80.0f);
+	
+	static string s_profiler_stats;
 
-	Controller::Controller(const int2 &resolution, PWorld world, bool debug_info)
-		: m_world(world), m_viewer(world), m_resolution(resolution), m_view_pos(0, 0),
+	void Controller::setProfilerStats(string stats) {
+		s_profiler_stats = std::move(stats);
+	}
+
+	Controller::Controller(PWorld world, bool debug_info)
+		: m_world(world), m_viewer(world),  m_view_pos(0, 0),
 		  m_show_debug_info(debug_info), m_debug_navi(false), m_debug_ai(false), m_is_exiting(0),
 		  m_time_multiplier(1.0) {
+		auto resolution = GfxDevice::instance().windowSize();
+
 		DASSERT(world);
 		m_console = make_shared<hud::HudConsole>(resolution);
 		m_hud = make_shared<hud::Hud>(world, resolution);
@@ -197,15 +205,17 @@ namespace io {
 		}
 	}
 
-	void Controller::update(GfxDevice &device, double time_diff) {
+	void Controller::update(double time_diff) {
 		updatePC();
 
+		auto &device = GfxDevice::instance();
+		auto resolution = device.windowSize();
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor)
 			audio::setListener(actor->pos(), actor->estimateMove(1.0f),
 							   normalize(float3(-1, 0, -1)));
 		else {
-			Ray mid_ray = screenRay(m_view_pos + m_resolution / 2);
+			Ray mid_ray = screenRay(m_view_pos + resolution / 2);
 			auto isect = m_world->trace(Segment(mid_ray.origin(), mid_ray.at(1024.0f)));
 			if(isect) {
 				float3 listener_pos = mid_ray.at(isect.distance());
@@ -226,9 +236,6 @@ namespace io {
 		m_hud->update(time_diff);
 		m_target_info->update(time_diff);
 
-		if(auto *profiler = Profiler::instance())
-			m_profiler_stats = profiler->getStats("");
-
 		if(GameMode *game_mode = m_world->gameMode()) {
 			UserMessage message = game_mode->userMessage(UserMessageType::main);
 
@@ -242,7 +249,7 @@ namespace io {
 			Actor *target_actor = m_world->refEntity<Actor>(m_isect);
 			float2 info_size = m_target_info->rect().size();
 			float2 pos = (float2)m_last_mouse_pos - float2(info_size.x * 0.5f, info_size.y + 30.0f);
-			pos.x = clamp(pos.x, 0.0f, (float)m_resolution.x - info_size.x);
+			pos.x = clamp(pos.x, 0.0f, (float)resolution.x - info_size.x);
 			if(pos.y < 0.0f)
 				pos.y = m_last_mouse_pos.y + 40.0f;
 			m_target_info->setPos(pos);
@@ -313,7 +320,8 @@ namespace io {
 	void Controller::draw() const {
 		GfxDevice::clearColor(Color(0, 0, 0));
 
-		IRect viewport(m_resolution);
+		auto resolution = GfxDevice::instance().windowSize();
+		IRect viewport(resolution);
 		SceneRenderer scene_renderer(viewport, m_view_pos);
 		m_viewer.addToRender(scene_renderer);
 
@@ -339,7 +347,7 @@ namespace io {
 
 		if(!m_main_message.isEmpty()) {
 			PFont font = res::getFont("transformers_48");
-			FRect rect(float2(m_resolution.x, 30.0f));
+			FRect rect(float2(resolution.x, 30.0f));
 			rect += float2(0.0f, m_console->rect().height());
 			Color text_color = mulAlpha(Color::white, m_main_message.anim_time);
 			Color shadow_color = mulAlpha(Color::black, m_main_message.anim_time);
@@ -404,13 +412,12 @@ namespace io {
 			fmt("\n\n");
 		}
 
-		fmt("%s", m_profiler_stats.c_str());
+		fmt("%s", s_profiler_stats.c_str());
 
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
-		int2 res = m_resolution;
-		int2 pos(res.x - extents.x - 4, res.y - extents.y - 4);
-		out.addFilledRect(FRect(pos, pos + res), Color(0, 0, 0, 80));
+		int2 pos = out.viewport().max - extents - int2(4, 4);
+		out.addFilledRect(FRect(pos, out.viewport().size()), Color(0, 0, 0, 80));
 		font->draw(out, pos + int2(2, 2), {Color::white, Color::black}, fmt);
 	}
 }

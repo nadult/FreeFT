@@ -89,7 +89,7 @@ static const string locateFTPath() {
 
 #endif
 
-#ifdef ENABLE_OPENMP
+#ifdef USE_OPENMP
 #include <omp.h>
 #endif
 
@@ -197,11 +197,10 @@ template <class TResource>
 void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
 			bool detailed, const string &filter) {
 	FilePath main_path = FilePath(src_dir).absolute();
-	vector<FileEntry> file_names;
 	
 	printf("Scanning...\n");
-	findFiles(file_names, main_path, FindFiles::regular_file | FindFiles::recursive);
-	std::sort(file_names.begin(), file_names.end());
+	auto file_names = findFiles(main_path, FindFiles::regular_file | FindFiles::recursive);
+	std::sort(begin(file_names), end(file_names));
 	int total_before = 0, total_after = 0;
 
 	printf("Recreating directories...\n");
@@ -257,7 +256,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 #pragma omp atomic
 						total_after += target.size();
 				} catch(const Exception &ex) {
-					printf("Error while converting: %s:\n%s\n%s\n\n", full_path.c_str(), ex.what(), ex.backtrace());
+					printf("Error while converting: %s:\n%s\n%s\n\n", full_path.c_str(), ex.what(), ex.backtrace().c_str());
 				}
 			}
 		}
@@ -339,10 +338,9 @@ void convertAll(const char *fot_path, const string &filter) {
 
 	printf("FOT core: %s\n", core_path.c_str());
 
-	vector<FileEntry> all_files;
 	printf("Scanning...\n");
-	findFiles(all_files, core_path, FindFiles::regular_file | FindFiles::recursive);
-	std::sort(all_files.begin(), all_files.end());
+	auto all_files = findFiles(core_path, FindFiles::regular_file | FindFiles::recursive);
+	std::sort(begin(all_files), end(all_files));
 	printf("Found: %d files\n", (int)all_files.size());
 
 	std::map<string, string> files[arraySize(s_paths)];
@@ -590,7 +588,7 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
 		return 1;
 	}
 	catch(...) { return 1; }
