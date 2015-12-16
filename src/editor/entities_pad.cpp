@@ -59,7 +59,7 @@ namespace ui {
 		
 	PEntity TurretPad::makeEntity() const {
 		const Proto& proto = getProto(m_proto_id->selectedText(), ProtoId::turret);
-		return (PEntity)new Turret(proto);
+		return make_unique<Turret>(proto);
 	}
 
 
@@ -74,7 +74,7 @@ namespace ui {
 	PEntity DoorPad::makeEntity() const {
 		const DoorProto &proto =
 			static_cast<const DoorProto&>(getProto(m_proto_id->selectedId(), ProtoId::door));
-		return (PEntity)new Door(proto);
+		return make_unique<Door>(proto);
 	}
 
 
@@ -89,7 +89,7 @@ namespace ui {
 	PEntity ContainerPad::makeEntity() const {
 		const ContainerProto &proto =
 			static_cast<const ContainerProto&>(getProto(m_proto_id->selectedId(), ProtoId::container));
-		return (PEntity)new Container(proto);
+		return make_unique<Container>(proto);
 	}
 
 
@@ -102,7 +102,7 @@ namespace ui {
 		m_proto_id = addControl<ComboBox>(200, "Item id: ");
 
 		m_count = addControl<EditBox>(20, "Count: ");
-		m_count->setText("1");
+		m_count->setText(L"1");
 		m_count_val = 1;
 
 		updateItemIds();
@@ -112,7 +112,7 @@ namespace ui {
 		ItemType::Type type = (ItemType::Type)m_type_id->selectedId();
 		ProtoId::Type proto_id = ItemType::toProtoId(type);
 		ProtoIndex index = findProto((*m_proto_id)[m_proto_id->selectedId()].text, proto_id);
-		return (PEntity)new ItemEntity(Item(index), m_count_val);
+		return make_unique<ItemEntity>(Item(index), m_count_val);
 	}
 
 	void ItemPad::updateItemIds() {
@@ -136,14 +136,12 @@ namespace ui {
 			updateItemIds();
 		}
 		else if(ev.type == Event::text_modified && m_count.get() == ev.source) {
-			const char *text = m_count->text();
-			int tcount = atoi(text);
-			tcount = max(1, tcount);
-			
-			char ttext[64];
-			snprintf(ttext, sizeof(ttext), "%d", tcount);
-			if(strcmp(ttext, text) != 0)
-				m_count->setText(ttext);
+			using namespace xml_conversions;
+			auto text = fromWideString(m_count->text());
+			int tcount = max(1, fromString<int>(text));
+			string new_text = toString(tcount).text();
+			if(text != new_text)
+				m_count->setText(toWideString(new_text));
 			m_count_val = tcount;
 		}
 
@@ -159,25 +157,24 @@ namespace ui {
 		m_class_id->selectEntry(0);
 		m_faction_id = addControl<EditBox>(200, "Faction id: ");
 		m_faction_id_val = 0;
-		m_faction_id->setText("0");
+		m_faction_id->setText(L"0");
 	}
 	
 	bool TriggerPad::onEvent(const Event &ev) {
 		if(ev.type == Event::text_modified && m_faction_id == ev.source) {
-			const char *text = m_faction_id->text();
-			int tcount = max(0, atoi(text));
-			
-			char ttext[64];
-			snprintf(ttext, sizeof(ttext), "%d", tcount);
-			if(strcmp(ttext, text) != 0)
-				m_faction_id->setText(ttext);
+			using namespace xml_conversions;
+			auto text = fromWideString(m_faction_id->text());
+			int tcount = max(0, fromString<int>(text));
+			string new_text = toString(tcount).text();
+			if(text != new_text)
+				m_faction_id->setText(toWideString(new_text));
 			m_faction_id_val = tcount;
 		}
 
 		return false;
 	}	
 	PEntity TriggerPad::makeEntity() const {
-		unique_ptr<Trigger> out( new Trigger((TriggerClassId::Type)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1)) );
+		auto out = make_unique<Trigger>((TriggerClassId::Type)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1));
 		out->setFactionId(m_faction_id_val);
 		return (PEntity)(out.release());
 	}
@@ -186,27 +183,27 @@ namespace ui {
 		:Window(rect, Color::transparent), m_editor(editor) {
 		int width = rect.width();
 
-		m_editor_mode_box = new ComboBox(IRect(0, 0, width, WindowStyle::line_height), 200, "Editing mode: ");
+		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 0, width, WindowStyle::line_height), 200, "Editing mode: ");
 		for(int n = 0; n < Mode::count; n++)
 			m_editor_mode_box->addEntry(EntitiesEditorMode::toString(n));
 		m_editor_mode_box->selectEntry(m_editor->mode());
 
 
-		m_entity_type = new ComboBox(IRect(0, WindowStyle::line_height, width, WindowStyle::line_height * 2), 200, "Entity type: ");
+		m_entity_type = make_shared<ComboBox>(IRect(0, WindowStyle::line_height, width, WindowStyle::line_height * 2), 200, "Entity type: ");
 		
 		IRect pad_rect(0, WindowStyle::line_height * 2, width, WindowStyle::line_height * 12);
-		m_pads.emplace_back((PEntityPad)new ActorPad(pad_rect));
-		m_pads.emplace_back((PEntityPad)new TurretPad(pad_rect));
-		m_pads.emplace_back((PEntityPad)new ContainerPad(pad_rect));
-		m_pads.emplace_back((PEntityPad)new DoorPad(pad_rect));
-		m_pads.emplace_back((PEntityPad)new ItemPad(pad_rect));
-		m_pads.emplace_back((PEntityPad)new TriggerPad(pad_rect));
+		m_pads.emplace_back(make_shared<ActorPad>(pad_rect));
+		m_pads.emplace_back(make_shared<TurretPad>(pad_rect));
+		m_pads.emplace_back(make_shared<ContainerPad>(pad_rect));
+		m_pads.emplace_back(make_shared<DoorPad>(pad_rect));
+		m_pads.emplace_back(make_shared<ItemPad>(pad_rect));
+		m_pads.emplace_back(make_shared<TriggerPad>(pad_rect));
 
-		attach(m_editor_mode_box.get());
-		attach(m_entity_type.get());
+		attach(m_editor_mode_box);
+		attach(m_entity_type);
 
 		for(int n = 0; n < (int)m_pads.size(); n++) {
-			attach((PWindow)m_pads[n].get());
+			attach(m_pads[n]);
 			m_entity_type->addEntry(EntityId::toString(m_pads[n]->typeId()));
 		}
 		m_entity_type->selectEntry(0);

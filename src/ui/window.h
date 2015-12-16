@@ -116,10 +116,10 @@ namespace ui
 		// each on*** function should return true if the event was handled
 		// TODO: pass key_modifier along with key (so when user presses LMB with CTRL, it will
 		// be passed until LMB is released)
-		virtual bool onMouseClick(int2 pos, int key, bool up) { return false; }
+		virtual bool onMouseClick(const InputState&, int2 pos, int key, bool up) { return false; }
 
 		// is_final == -1: dragging has been cancelled (with esc-key)
-		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final) { return false; }
+		virtual bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) { return false; }
 
 		// relative to normal rect
 		// IRect(0, 0, rect.width(), rect.height()) is default

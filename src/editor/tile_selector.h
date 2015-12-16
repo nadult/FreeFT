@@ -19,8 +19,8 @@ namespace ui {
 	public:
 		TileSelector(IRect rect);
 
-		virtual void drawContents() const;
-		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
+		void drawContents(Renderer2D&) const override;
+		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
 
 		void setModel(PTileListModel);
 		void update(); // call every time model changes
@@ -33,7 +33,7 @@ namespace ui {
 		const TileList::Entry *m_selection;
 	};
 
-	typedef Ptr<TileSelector> PTileSelector;
+	using PTileSelector = shared_ptr<TileSelector>;
 
 }
 

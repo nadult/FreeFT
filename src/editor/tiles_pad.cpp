@@ -12,22 +12,22 @@ namespace ui {
 		:Window(rect, Color::transparent), m_editor(editor), m_group(group) {
 		int width = rect.width();
 
-		m_filter_box = new ComboBox(IRect(0, 0, width/2, 22), 200,
+		m_filter_box = make_shared<ComboBox>(IRect(0, 0, width/2, 22), 200,
 				"Filter: ", TileFilter::strings(), TileFilter::count);
 		m_filter_box->selectEntry(0);
-		m_dirty_bar = new ProgressBar(IRect(width/2, 0, width, 22), true);
-		m_editor_mode_box = new ComboBox(IRect(0, 22, width, 44), 200, "Editing mode: ",
+		m_dirty_bar = make_shared<ProgressBar>(IRect(width/2, 0, width, 22), true);
+		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 22, width, 44), 200, "Editing mode: ",
 				TilesEditor::modeStrings(), TilesEditor::mode_count);
 		
-		m_selector = new TileSelector(IRect(0, 44, width, rect.height()));
+		m_selector = make_shared<TileSelector>(IRect(0, 44, width, rect.height()));
 		
 		m_is_grouped_model = false;
 		updateTileList();
 
-		attach(m_filter_box.get());
-		attach(m_dirty_bar.get());
-		attach(m_editor_mode_box.get());
-		attach(m_selector.get());
+		attach(m_filter_box);
+		attach(m_dirty_bar);
+		attach(m_editor_mode_box);
+		attach(m_selector);
 
 		updateDirtyBar();
 	}

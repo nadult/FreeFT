@@ -18,9 +18,9 @@ namespace ui {
 	public:
 		GroupEditor(IRect rect);
 
-		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
-		virtual void drawContents() const;
+		void drawContents(Renderer2D&) const override;
+		void onInput(const InputState&) override;
+		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
 
 		void setTarget(TileGroup* tile_group);
 		void setTileFilter(TileFilter::Type);
@@ -49,7 +49,7 @@ namespace ui {
 		} m_mode;
 	};
 
-	typedef Ptr<GroupEditor> PGroupEditor;
+	using PGroupEditor = shared_ptr<GroupEditor>;
 
 }
 

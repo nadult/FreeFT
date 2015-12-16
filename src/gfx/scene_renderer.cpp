@@ -244,13 +244,13 @@ void SceneRenderer::render() {
 			if(elem.texture)
 				out.addFilledRect(FRect(elem.rect), elem.tex_rect, {elem.texture, elem.color});
 			else
-				drawBBox(out, elem.bbox, elem.color, false);
+				drawBBox(out, elem.bbox, elem.color, true);
 		}
 
 		g += count;
 	}
 
-	//		printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
+	//	printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
 	out.setScissorRect(m_viewport);
 	for(int n = 0; n < (int)m_lines.size(); n++) {

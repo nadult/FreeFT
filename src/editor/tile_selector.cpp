@@ -36,7 +36,7 @@ namespace ui {
 			}
 	}
 		
-	void TileSelector::drawContents() const {
+	void TileSelector::drawContents(Renderer2D &out) const {
 		int2 offset = innerOffset();
 		IRect clip_rect(int2(0, 0), clippedRect().size());
 
@@ -46,22 +46,20 @@ namespace ui {
 			int2 pos = m_tile_list[n].pos - tile_rect.min - offset;
 
 			if(areOverlapping(clip_rect, tile_rect + pos))
-				tile->draw(pos);
+				tile->draw(out, pos);
 		}
 		
-		DTexture::unbind();
-
 		if(m_selection) {
 			int2 pos = m_selection->pos - offset;
 
-			lookAt(-clippedRect().min - pos + m_selection->tile->rect().min);
+			out.setViewPos(-clippedRect().min - pos + m_selection->tile->rect().min);
 			IBox box(int3(0, 0, 0), m_selection->tile->bboxSize());
-			drawBBox(box);
-		//	drawRect(IRect(pos, pos + m_selection->size));
+			drawBBox(out, box);
+		//	out.addFilledRect(IRect(pos, pos + m_selection->size));
 		}
 	}
 		
-	bool TileSelector::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+	bool TileSelector::onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) {
 		if(key == 0) {
 			m_selection = m_tile_list.find(current + innerOffset());
 			sendEvent(this, Event::element_selected);

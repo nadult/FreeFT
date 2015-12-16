@@ -17,7 +17,7 @@ namespace ui {
 		updateVisibility();
 	}
 
-	void View::drawGrid() const {
+	void View::drawGrid(Renderer2D &out) const {
 		if(!m_is_visible)
 			return;
 
@@ -36,17 +36,15 @@ namespace ui {
 		int2 tmax = max(max(p[0], p[1]), max(p[2], p[3]));
 		IRect box(max(tmin, int2(0, 0)), min(tmax, tile_map_size));
 
-		DTexture::unbind();
 		Color color(255, 255, 255, 64);
-
 		for(int x = box.min.x - box.min.x % m_cell_size; x <= box.max.x; x += m_cell_size)
-			drawLine(int3(x, m_height, box.min.y), int3(x, m_height, box.max.y), color);
+			drawLine(out, int3(x, m_height, box.min.y), int3(x, m_height, box.max.y), color);
 		for(int y = box.min.y - box.min.y % m_cell_size; y <= box.max.y; y += m_cell_size)
-			drawLine(int3(box.min.x, m_height, y), int3(box.max.x, m_height, y), color);
+			drawLine(out, int3(box.min.x, m_height, y), int3(box.max.x, m_height, y), color);
 	}
 
-	void View::update() {
-		if(isKeyDown('G')) {
+	void View::update(const InputState &state) {
+		if(state.isKeyDown('g')) {
 			if(m_is_visible) {
 				if(m_cell_size == 3)
 					m_cell_size = 6;
@@ -63,9 +61,9 @@ namespace ui {
 			}
 		}
 			
-		int height_change = getMouseWheelMove() +
-							(isKeyDownAuto(InputKey::pagedown)? -1 : 0) +
-							(isKeyDownAuto(InputKey::pageup)? 1 : 0);
+		int height_change = state.mouseWheelMove() +
+							(state.isKeyDownAuto(InputKey::pagedown)? -1 : 0) +
+							(state.isKeyDownAuto(InputKey::pageup)? 1 : 0);
 		if(height_change)
 			m_height = clamp(m_height + height_change, 0, (int)Grid::max_height);
 		
@@ -82,12 +80,13 @@ namespace ui {
 			};
 			
 			for(int n = 0; n < arraySize(actions); n++)
-				if(isKeyDownAuto(actions[n]))
+				if(state.isKeyDownAuto(actions[n]))
 					m_view_pos += worldToScreen(TileGroup::Group::s_side_offsets[n] * m_cell_size);
 		}
 
-		if((isKeyPressed(InputKey::lctrl) && isMouseKeyPressed(InputButton::left)) || isMouseKeyPressed(InputButton::middle))
-			m_view_pos -= getMouseMove();
+		if((state.isKeyPressed(InputKey::lctrl) && state.isMouseButtonPressed(InputButton::left)) ||
+		   state.isMouseButtonPressed(InputButton::middle))
+			m_view_pos -= state.mouseMove();
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));
 		m_view_pos = clamp(m_view_pos, rect.min, rect.max - m_view_size);
@@ -129,7 +128,7 @@ namespace ui {
 			end_pos = start_pos;
 		
 		int3 dir(end_pos.x >= start_pos.x? 1 : -1, 1, end_pos.z >= start_pos.z? 1 : -1);
-		int3 size(abs(end_pos.x - start_pos.x), 1, abs(end_pos.z - start_pos.z));
+		int3 size(::abs(end_pos.x - start_pos.x), 1, ::abs(end_pos.z - start_pos.z));
 		size += bbox - int3(1, 1, 1);
 		size.x -= size.x % bbox.x;
 		size.z -= size.z % bbox.z;

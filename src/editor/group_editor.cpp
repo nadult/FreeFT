@@ -12,22 +12,6 @@
 
 using namespace game;
 
-#ifdef _WIN32
-
-static const char *strcasestr(const char *a, const char *b) {
-	DASSERT(a && b);
-
-	while(*a) {
-		if(strcasecmp(a, b) == 0)
-			return a;
-		a++;
-	}
-
-	return nullptr;
-}
-
-#endif
-
 namespace ui {
 
 namespace {
@@ -52,7 +36,7 @@ namespace {
 		m_tile_group = nullptr;
 		m_current_entry = nullptr;
 
-		m_font = Font::mgr[WindowStyle::fonts[1]];
+		m_font = res::getFont(WindowStyle::fonts[1]);
 		m_mode = mAddRemove;
 		memset(m_offset, 0, sizeof(m_offset));
 		m_selected_group_id = 0;
@@ -72,7 +56,7 @@ namespace {
 	void GroupEditor::updateSelector() {
 		PTileListModel model =
 			m_mode == mAddRemove? allTilesModel() :
-				m_tile_group? new TileGroupModel(*m_tile_group) : nullptr;
+				m_tile_group? make_shared<TileGroupModel>(*m_tile_group) : nullptr;
 
 		m_current_entry = nullptr;
 		m_tile_list.setModel(filteredTilesModel(model, m_tile_filter));
@@ -83,30 +67,30 @@ namespace {
 		setInnerRect(IRect(pos, pos + size));
 	}
 
-	void GroupEditor::onInput(int2 mouse_pos) {
+	void GroupEditor::onInput(const InputState &state) {
 		ASSERT(m_tile_group);
 
-		if(isKeyDown(InputKey::space)) {
+		if(state.isKeyDown(InputKey::space)) {
 			m_offset[m_mode] = innerOffset();
 			m_mode = (m_mode == mAddRemove ? mModify : mAddRemove);
 			updateSelector();
 			return;
 		}
 			
-		const ui::TileList::Entry *entry = m_tile_list.find(mouse_pos + innerOffset());
+		const ui::TileList::Entry *entry = m_tile_list.find(state.mousePos() + innerOffset());
 		m_current_entry = entry;
 		
 		if(m_mode == mModify) {
-			if(isKeyDown('D') && entry) {
+			if(state.isKeyDown('D') && entry) {
 				int entry_id = m_tile_group->findEntry(entry->tile);
 				m_tile_group->setEntryDirty(entry_id, !m_tile_group->isEntryDirty(entry_id));
 			}
-			if(isKeyDown('G') && entry && m_selected_group_id != -1) {
+			if(state.isKeyDown('G') && entry && m_selected_group_id != -1) {
 				m_tile_group->setEntryGroup(m_tile_group->findEntry(entry->tile),
 					entry->group_id == m_selected_group_id? m_tile_group->groupCount() : m_selected_group_id);
 				m_tile_list.update();
 			}
-			if(isKeyDown('A') && entry && m_selected_group_id == entry->group_id) {
+			if(state.isKeyDown('A') && entry && m_selected_group_id == entry->group_id) {
 				enum { subgroup_count = 3 };
 				const char *infixes[subgroup_count] = {
 					"CONCAVE_",
@@ -118,7 +102,7 @@ namespace {
 
 				for(int n = 0; n < m_tile_group->entryCount(); n++) {
 					if(m_tile_group->entryGroup(n) == m_selected_group_id) {
-						const char *name = m_tile_group->entryTile(n)->resourceName();
+						const char *name = m_tile_group->entryTile(n)->resourceName().c_str();
 
 						for(int s = 0; s < subgroup_count; s++)
 							if(strcasestr(name, infixes[s])) {
@@ -144,19 +128,19 @@ namespace {
 
 			if(m_selected_group_id != -1) {
 				for(int a = 0; a < arraySize(actions); a++)
-					if(isKeyDown(actions[a].key) || isKeyDown(InputKey::kp_5))
+					if(state.isKeyDown(actions[a].key) || state.isKeyDown(InputKey::kp_5))
 						m_tile_group->setGroupSurface(m_selected_group_id, actions[a].side, m_selected_surface_id);
 			}
 
 			for(int n = 0; n <= 9; n++)
-				if(isKeyDown('0' + n))
+				if(state.isKeyDown('0' + n))
 					m_selected_surface_id = n;
-			if(isKeyDown('-'))
+			if(state.isKeyDown('-'))
 				m_selected_surface_id = -1;
 		}
 	}
 		
-	bool GroupEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+	bool GroupEditor::onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) {
 		if(key == 0) {
 			const ui::TileList::Entry *entry = m_tile_list.find(current + innerOffset());
 			m_current_entry = entry;
@@ -187,7 +171,7 @@ namespace {
 		return false;
 	}
 
-	void GroupEditor::drawContents() const {
+	void GroupEditor::drawContents(Renderer2D &out) const {
 		int2 offset = innerOffset();
 
 		for(int n = 0; n < m_tile_group->entryCount(); n++)
@@ -205,7 +189,7 @@ namespace {
 			int2 pos = entry.pos - tile_rect.min - offset;
 
 			if(areOverlapping(clip_rect, tile_rect + pos))
-				entry.tile->draw(pos);
+				entry.tile->draw(out, pos);
 		}
 		
 		DTexture::unbind();
@@ -216,26 +200,27 @@ namespace {
 		
 			Color col = m_tile_group->isEntryDirty(entry.tile->m_temp)? Color::red : Color::white;	
 			int2 pos = entry.pos - offset;
-			drawRect(IRect(pos, pos + entry.size), col);
+			out.addRect(IRect(pos, pos + entry.size), col);
 		}
 
 		if(m_mode == mModify && m_selected_group_id != -1) {	
 			IRect edit_rect(clippedRect().max - int2(280, 250), clippedRect().max - int2(5, 0));
 			int2 center = edit_rect.center();
 
-			lookAt(-center);
-			drawQuad(-edit_rect.size() / 2, edit_rect.size(), Color(80, 80, 80));
-			drawBBox(IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
+			out.setViewPos(-center);
+			int2 half_size = edit_rect.size() / 2;
+			out.addFilledRect(IRect(-half_size, half_size), Color(80, 80, 80));
+			drawBBox(out, IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
 
-			PFont font = Font::mgr[WindowStyle::fonts[0]];
+			auto font = res::getFont(WindowStyle::fonts[0]);
 
 			for(int n = 0; n < TileGroup::Group::side_count; n++) {
-				lookAt(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
-				font->draw(int2(0, 0), Color::white, format("%d", m_tile_group->groupSurface(m_selected_group_id, n)));
+				out.setViewPos(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
+				font->draw(out, int2(0, 0), Color::white, format("%d", m_tile_group->groupSurface(m_selected_group_id, n)));
 			}
 				
-			lookAt(-center +edit_rect.size() / 2);
-			font->draw(int2(0, 0), {Color::white}, format("setting surface: %d", m_selected_surface_id));
+			out.setViewPos(-center +edit_rect.size() / 2);
+			font->draw(out, int2(0, 0), {Color::white}, format("setting surface: %d", m_selected_surface_id));
 
 			/*
 			const char *names[] = {
@@ -250,15 +235,16 @@ namespace {
 				"green goo",
 			};
 
-			lookAt(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
+			out.setViewPos(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
 			for(int n = 0; n < arraySize(names); n++)
 				font->draw(int2(0, 10), Color::white,
 						m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
-			lookAt(-clippedRect().min);
+			out.setViewPos(-clippedRect().min);
 		}
 
 		if(m_current_entry)
-			m_font->draw(int2(5, height() - 20), {Color::white, Color::black}, format("%s", m_current_entry->tile->resourceName()));
+			m_font->draw(out, int2(5, height() - 20), {Color::white, Color::black},
+					format("%s", m_current_entry->tile->resourceName().c_str()));
 	}
 
 	void GroupEditor::setTarget(TileGroup* tile_group) {

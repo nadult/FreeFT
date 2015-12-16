@@ -37,7 +37,7 @@ namespace ui {
 		bool			m_is_grouped_model;
 	};
 	
-	typedef Ptr<TilesPad> PTilesPad;
+	using PTilesPad = shared_ptr<TilesPad>;
 
 }
 

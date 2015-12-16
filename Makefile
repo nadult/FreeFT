@@ -36,8 +36,8 @@ SHARED_SRC=\
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
 	ui/file_dialog ui/edit_box ui/combo_box ui/image_button \
 	io/controller io/loop io/main_menu_loop io/game_loop \
-	audio/device audio/sound audio/device_music audio/mp3_decoder editor/tile_group
-#	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
+	audio/device audio/sound audio/device_music audio/mp3_decoder \
+	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
 
 PROGRAM_SRC=editor game res_viewer convert lobby_server

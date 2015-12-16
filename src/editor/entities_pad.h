@@ -23,11 +23,11 @@ namespace ui {
 		virtual ~EntityPad() = default;
 
 		template <class TControl, class ...Args>
-		Ptr<TControl> addControl(const Args&... args) {
+		shared_ptr<TControl> addControl(const Args&... args) {
 			IRect pad_rect = rect();
 			IRect crect(0, pad_rect.height(), pad_rect.width(), pad_rect.height() + WindowStyle::line_height);
-			Ptr<TControl> control(new TControl(crect, args...));
-			addControl((PWindow)control.get());
+			auto control = make_shared<TControl>(crect, args...);
+			addControl((PWindow)control);
 			return control;
 		}
 
@@ -42,7 +42,7 @@ namespace ui {
 		IRect m_max_rect;
 	};
 
-	typedef Ptr<EntityPad> PEntityPad;
+	using PEntityPad = shared_ptr<EntityPad>;
 
 	class ActorPad: public EntityPad {
 	public:
@@ -129,7 +129,7 @@ namespace ui {
 		vector<PEntityPad> m_pads;
 	};
 	
-	typedef Ptr<EntitiesPad> PEntitiesPad;
+	using PEntitiesPad = shared_ptr<EntitiesPad>;
 
 }
 

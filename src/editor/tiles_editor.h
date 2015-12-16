@@ -22,9 +22,9 @@ namespace ui {
 		void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
 		void setNewTile(const game::Tile *tile) { m_new_tile = tile; }
 			
-		virtual void drawContents() const;
-		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
+		void drawContents(Renderer2D&) const override;
+		void onInput(const InputState&) override;
+		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
 
 		enum Mode {
 			mode_selecting_normal,
@@ -81,7 +81,7 @@ namespace ui {
 
 		int findAt(const int3 &pos) const;
 
-		void drawBoxHelpers(const IBox &box) const;
+		void drawBoxHelpers(Renderer2D&, const IBox &box) const;
 		const IBox computeCursor(const int2 &start, const int2 &end) const;
 		
 		IBox m_selection;
@@ -93,7 +93,7 @@ namespace ui {
 		bool m_is_moving_vertically;
 	};
 
-	typedef Ptr<TilesEditor> PTilesEditor;
+	using PTilesEditor = shared_ptr<TilesEditor>;
 
 }
 

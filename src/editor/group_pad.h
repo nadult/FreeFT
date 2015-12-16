@@ -16,14 +16,14 @@ namespace ui {
 	public:
 		GroupPad(const IRect &rect, PGroupEditor editor, TileGroup *group);
 		TileFilter::Type currentFilter() const;
-		virtual bool onEvent(const Event &ev);
+		bool onEvent(const Event&) override;
 
 		PComboBox		m_filter_box;
 		TileGroup		*m_group;
 		PGroupEditor	m_editor;
 	};
 
-	typedef Ptr<GroupPad> PGroupPad;
+	using PGroupPad = shared_ptr<GroupPad>;
 
 }
 

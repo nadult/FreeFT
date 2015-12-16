@@ -76,7 +76,7 @@ namespace ui {
 		m_over_id = entryId(state.mousePos() - clippedRect().min);
 	}
 
-	bool ListBox::onMouseDrag(int2 start, int2 end, int key, int is_final) {
+	bool ListBox::onMouseDrag(const InputState&, int2 start, int2 end, int key, int is_final) {
 		if(key == 0) {
 			m_over_id = entryId(end);
 			m_dragging_id = entryId(start);

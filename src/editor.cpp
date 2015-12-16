@@ -74,24 +74,24 @@ public:
 		m_entity_map.resize(int2(1024, 1024));
 
 		loadTileGroup("data/tile_group.xml");
-		m_group_editor = new GroupEditor(IRect(m_left_width, 0, res.x, res.y));
+		m_group_editor = make_shared<GroupEditor>(IRect(m_left_width, 0, res.x, res.y));
 		m_group_editor->setTarget(&m_group);
 
-		m_mode_box = new ComboBox(IRect(0, 0, m_left_width * 1 / 2, 22), 0,
+		m_mode_box = make_shared<ComboBox>(IRect(0, 0, m_left_width * 1 / 2, 22), 0,
 				"Mode: ", s_mode_names, editing_modes_count);
-		m_save_button = new Button(IRect(m_left_width * 1 / 2, 0, m_left_width * 3 / 4, 22), "Save");
-		m_load_button = new Button(IRect(m_left_width * 3 / 4, 0, m_left_width, 22), "Load");
+		m_save_button = make_shared<Button>(IRect(m_left_width * 1 / 2, 0, m_left_width * 3 / 4, 22), "Save");
+		m_load_button = make_shared<Button>(IRect(m_left_width * 3 / 4, 0, m_left_width, 22), "Load");
 
-		m_group_pad = new GroupPad(IRect(0, 22, m_left_width, res.y), m_group_editor, &m_group);
+		m_group_pad = make_shared<GroupPad>(IRect(0, 22, m_left_width, res.y), m_group_editor, &m_group);
 
-		m_left_window = new Window(IRect(0, 0, m_left_width, res.y), WindowStyle::gui_dark);
-		m_left_window->attach(m_mode_box.get());
-		m_left_window->attach(m_save_button.get());
-		m_left_window->attach(m_load_button.get());
-		m_left_window->attach(m_group_pad.get());
+		m_left_window = make_shared<Window>(IRect(0, 0, m_left_width, res.y), WindowStyle::gui_dark);
+		m_left_window->attach(m_mode_box);
+		m_left_window->attach(m_save_button);
+		m_left_window->attach(m_load_button);
+		m_left_window->attach(m_group_pad);
 
-		attach(m_left_window.get());
-		attach(m_group_editor.get());
+		attach(m_left_window);
+		attach(m_group_editor);
 
 		//loadMap("data/maps/Assault/Lost Vault_mod.xml");
 		loadMap("data/maps/mission05_mod.xml");
@@ -102,10 +102,10 @@ public:
 	void freeEditors() {
 		if(m_tiles_editor) {
 			DASSERT(m_left_window);
-			m_left_window->detach((PWindow)m_tiles_pad.get());
-			m_left_window->detach((PWindow)m_entities_pad.get());
-			detach((PWindow)m_tiles_editor.get());
-			detach((PWindow)m_entities_editor.get());
+			m_left_window->detach(m_tiles_pad);
+			m_left_window->detach(m_entities_pad);
+			detach(m_tiles_editor);
+			detach(m_entities_editor);
 
 			m_tiles_editor = nullptr;
 			m_entities_editor = nullptr;
@@ -118,18 +118,18 @@ public:
 		freeEditors();
 
 		IRect rect(m_left_width, 0, width(), height());
-		m_view = PView(new View(m_tile_map, m_entity_map, rect.size()));
-		m_tiles_editor = new TilesEditor(m_tile_map, *m_view.get(), rect);
-		m_entities_editor = new EntitiesEditor(m_tile_map, m_entity_map, *m_view.get(), rect);
+		m_view = make_unique<View>(m_tile_map, m_entity_map, rect.size());
+		m_tiles_editor = make_shared<TilesEditor>(m_tile_map, *m_view.get(), rect);
+		m_entities_editor = make_shared<EntitiesEditor>(m_tile_map, m_entity_map, *m_view.get(), rect);
 		m_tiles_editor->setTileGroup(&m_group);
 
-		m_tiles_pad = new TilesPad(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
-		m_entities_pad = new EntitiesPad(IRect(0, 22, m_left_width, height()), m_entities_editor);
+		m_tiles_pad = make_shared<TilesPad>(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
+		m_entities_pad = make_shared<EntitiesPad>(IRect(0, 22, m_left_width, height()), m_entities_editor);
 		
-		attach(m_tiles_editor.get());
-		attach(m_entities_editor.get());
-		m_left_window->attach(m_tiles_pad.get());
-		m_left_window->attach(m_entities_pad.get());
+		attach(m_tiles_editor);
+		attach(m_entities_editor);
+		m_left_window->attach(m_tiles_pad);
+		m_left_window->attach(m_entities_pad);
 		
 		updateVisibility();
 	}
@@ -155,15 +155,15 @@ public:
 		}
 		else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			m_file_dialog = new FileDialog(dialog_rect, s_load_dialog_names[m_mode], FileDialogMode::opening_file);
+			m_file_dialog = make_shared<FileDialog>(dialog_rect, s_load_dialog_names[m_mode], FileDialogMode::opening_file);
 			m_file_dialog->setPath("data/");
-			attach(m_file_dialog.get(), true);
+			attach(m_file_dialog, true);
 		}
 		else if(ev.type == Event::button_clicked && m_save_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			m_file_dialog = new FileDialog(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
+			m_file_dialog = make_shared<FileDialog>(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
 			m_file_dialog->setPath("data/");
-			attach(m_file_dialog.get(), true);
+			attach(m_file_dialog, true);
 		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
@@ -252,26 +252,43 @@ public:
 	int m_left_width;
 };
 
-int safe_main(int argc, char **argv)
-{
-	Config config("editor");
-	game::loadData();
+void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
+	// TODO: date is refreshed only when game.o is being rebuilt
+	auto title = "FreeFT::editor; built " __DATE__ " " __TIME__;
+	uint flags = (fullscreen ? GfxDevice::flag_fullscreen : 0) | GfxDevice::flag_resizable |
+				 GfxDevice::flag_vsync;
+	device.createWindow(title, res, flags);
+	device.grabMouse(false);
+}
 
-	initDevice();
-	adjustWindowSize(config.resolution, config.fullscreen_on);
+unique_ptr<EditorWindow> s_main_window;
+static double s_start_time = getTime();
 
-	createWindow(config.resolution, config.fullscreen_on);
-	setWindowTitle("FreeFT::editor; built " __DATE__ " " __TIME__);
-	grabMouse(false);
-		
-	setBlendingMode(bmNormal);
+static bool main_loop(GfxDevice &device) {
+	DASSERT(s_main_window);
 
+	Tile::setFrameCounter((int)((getTime() - s_start_time) * 15.0));
+	TextureCache::main_cache.nextFrame();
+
+	GfxDevice::clearColor(Color(0, 0, 0));
+	Renderer2D out(IRect(device.windowSize()));
+
+	s_main_window->process(device.inputState());
+	s_main_window->draw(out);
+
+	out.render();
+	Profiler::instance()->nextFrame();
+
+	return true;
+}
+
+void preloadTiles() {
 	printf("Enumerating tiles\n");
-	vector<FileEntry> file_names;
-	findFiles(file_names, "data/tiles/", FindFiles::regular_file | FindFiles::recursive);
+	auto file_names = findFiles("data/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
-	printf("Loading tiles");
-	FilePath tiles_path = FilePath(Tile::mgr.prefix()).absolute();
+	printf("Preloading tiles");
+	auto &tile_mgr = res::tiles();
+	FilePath tiles_path = FilePath(tile_mgr.constructor().filePrefix()).absolute();
 	for(uint n = 0; n < file_names.size(); n++) {
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
@@ -281,48 +298,27 @@ int safe_main(int argc, char **argv)
 		try {
 			FilePath tile_path = file_names[n].path.relative(tiles_path);
 			string tile_name = tile_path;
-			if(removeSuffix(tile_name, Tile::mgr.suffix()))
-				Ptr<Tile> tile = Tile::mgr.load(tile_name);
+			if(removeSuffix(tile_name, tile_mgr.constructor().fileSuffix()))
+				tile_mgr.accessResource(tile_name);
 		} catch(const Exception &ex) {
 			printf("Error: %s\n", ex.what());
 		}
 	}
 	printf("\n");
+}
 
-	EditorWindow main_window(config.resolution);
-	clear(Color(0, 0, 0));
-	string prof_stats;
-	double stat_update_time = getTime();
-	double start_time = getTime();
+int safe_main(int argc, char **argv) {
+	Config config("editor");
+	preloadTiles();
+	game::loadData(true);
 
-	while(pollEvents()) {
-		double loop_start = getProfilerTime();
-		if(isKeyPressed(InputKey::lalt) && isKeyDown(InputKey::f4))
-			break;
-		
-		Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
+	Profiler profiler;
+	GfxDevice gfx_device;
+	createWindow(gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
-		main_window.process();
-		main_window.draw();
-		lookAt({0, 0});
-
-		if(config.profiler_on) {
-			DTexture::unbind();
-			drawQuad(config.resolution - int2(280, 200), config.resolution, Color(0, 0, 0, 80));
-
-			PFont font = Font::mgr["liberation_16"];
-			font->draw(config.resolution - int2(280, 180), {Color::white, Color::black},prof_stats);
-		}
-
-		fwk::tick();
-
-		updateTimer("main_loop", getProfilerTime() - loop_start);
-		if(getTime() - stat_update_time > 0.25) {
-			prof_stats = getProfilerStats();
-			stat_update_time = getTime();
-		}
-		profilerNextFrame();
-	}
+	s_main_window = make_unique<EditorWindow>(gfx_device.windowSize());
+	gfx_device.runMainLoop(main_loop);
+	s_main_window.reset();
 
 	return 0;
 }
@@ -332,7 +328,7 @@ int main(int argc, char **argv) {
 		return safe_main(argc, argv);
 	}
 	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
 		return 1;
 	}
 	catch(...) { return 1; }

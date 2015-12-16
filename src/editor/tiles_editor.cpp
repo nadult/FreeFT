@@ -38,7 +38,7 @@ namespace ui {
 	const char **TilesEditor::modeStrings() { return s_mode_strings; }
 
 	TilesEditor::TilesEditor(TileMap &tile_map, View &view, IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_view(view), m_tile_map(tile_map), m_new_tile(nullptr) {
+		:ui::Window(rect, Color::transparent), m_view(view), m_tile_map(tile_map), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
 		m_is_selecting = false;
 		m_is_moving = false;
@@ -61,25 +61,26 @@ namespace ui {
 		sendEvent(this, Event::button_clicked, m_mode);
 	}
 
-	void TilesEditor::onInput(int2 mouse_pos) {
+	void TilesEditor::onInput(const InputState &state) {
+		auto mouse_pos = state.mousePos() - clippedRect().min;
 		m_selection = computeCursor(mouse_pos, mouse_pos);
 
-		if(isKeyDown(InputKey::kp_add))
+		if(state.isKeyDown(InputKey::kp_add))
 			m_cursor_offset++;
-		if(isKeyDown(InputKey::kp_subtract))
+		if(state.isKeyDown(InputKey::kp_subtract))
 			m_cursor_offset--;
 
-		m_view.update();
+		m_view.update(state);
 
-		if(isKeyDown('S'))
+		if(state.isKeyDown('s'))
 			setMode(isSelecting() && m_mode != mode_selecting_difference? (Mode)(m_mode + 1) : mode_selecting_normal);
-		if(isKeyDown('P'))
+		if(state.isKeyDown('p'))
 			setMode(m_mode == mode_placing? mode_replacing : mode_placing);
-		if(isKeyDown('R'))
+		if(state.isKeyDown('r'))
 			setMode(m_mode == mode_placing_random? mode_replacing_random : mode_placing_random);
-		if(isKeyDown('F'))
+		if(state.isKeyDown('f'))
 			setMode(mode_filling);
-		if(isKeyDown('O'))
+		if(state.isKeyDown('o'))
 			setMode(mode_occluders);
 
 		OccluderMap &occmap = m_tile_map.occluderMap();
@@ -87,13 +88,15 @@ namespace ui {
 		Ray screen_ray = screenRay(screen_pos);
 		
 		m_mouseover_tile_id = m_tile_map.pixelIntersect(screen_pos, Flags::all | Flags::visible);
-		if(m_mouseover_tile_id == -1)
-			m_mouseover_tile_id = m_tile_map.trace(screen_ray).first;
+		if(m_mouseover_tile_id == -1) {
+			Segment screen_seg(screen_ray.origin(), screen_ray.at(1024.0f));
+			m_mouseover_tile_id = m_tile_map.trace(screen_seg).first;
+		}
 			
 		m_current_occluder = m_mouseover_tile_id == -1? -1 : m_tile_map[m_mouseover_tile_id].occluder_id;
 
 		if(isChangingOccluders()) {
-			if(isMouseKeyDown(InputButton::left)) {
+			if(state.isMouseButtonDown(InputButton::left)) {
 				if(m_current_occluder == -1 && m_mouseover_tile_id != -1)
 					m_current_occluder = occmap.addOccluder(m_mouseover_tile_id, m_view.gridHeight());
 				else {
@@ -104,7 +107,7 @@ namespace ui {
 			}
 		}
 		else {
-			if(isKeyPressed(InputKey::del)) {
+			if(state.isKeyPressed(InputKey::del)) {
 				for(int i = 0; i < (int)m_selected_ids.size(); i++)
 					m_tile_map.remove(m_selected_ids[i]);
 				m_selected_ids.clear();
@@ -274,8 +277,8 @@ namespace ui {
 		fill(fill_box, true, main_group_id);
 	}
 
-	bool TilesEditor::onMouseDrag(int2 start, int2 current, int key, int is_final) {
-		if(key == 0 && !isKeyPressed(InputKey::lctrl) && !isChangingOccluders()) {
+	bool TilesEditor::onMouseDrag(const InputState &state, int2 start, int2 current, int key, int is_final) {
+		if(key == 0 && !state.isKeyPressed(InputKey::lctrl) && !isChangingOccluders()) {
 			m_selection = computeCursor(start, current);
 			m_is_selecting = !is_final;
 			if(is_final && is_final != -1) {
@@ -327,7 +330,7 @@ namespace ui {
 		}
 		else if(key == 1 && (m_mode >= mode_selecting_normal && m_mode <= mode_selecting_difference)) {
 			if(!m_is_moving) {
-				m_is_moving_vertically = isKeyPressed(InputKey::lshift);
+				m_is_moving_vertically = state.isKeyPressed(InputKey::lshift);
 				m_is_moving = true;
 			}
 
@@ -373,29 +376,27 @@ namespace ui {
 		return false;
 	}
 
-	void TilesEditor::drawBoxHelpers(const IBox &box) const {
-		DTexture::unbind();
-
+	void TilesEditor::drawBoxHelpers(Renderer2D &out, const IBox &box) const {
 		int3 pos = box.min, bbox = box.max - box.min;
 		int3 tsize = asXZY(m_tile_map.dimensions(), 32);
 
-		drawLine(int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
-		drawLine(int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
+		drawLine(out, int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
+		drawLine(out, int3(0, pos.y, pos.z + bbox.z), int3(tsize.x, pos.y, pos.z + bbox.z), Color(0, 255, 0, 127));
 		
-		drawLine(int3(pos.x, pos.y, 0), int3(pos.x, pos.y, tsize.z), Color(0, 255, 0, 127));
-		drawLine(int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, tsize.z), Color(0, 255, 0, 127));
+		drawLine(out, int3(pos.x, pos.y, 0), int3(pos.x, pos.y, tsize.z), Color(0, 255, 0, 127));
+		drawLine(out, int3(pos.x + bbox.x, pos.y, 0), int3(pos.x + bbox.x, pos.y, tsize.z), Color(0, 255, 0, 127));
 
 		int3 tpos(pos.x, 0, pos.z);
-		drawBBox(IBox(tpos, tpos + int3(bbox.x, pos.y, bbox.z)), Color(0, 0, 255, 127));
+		drawBBox(out, IBox(tpos, tpos + int3(bbox.x, pos.y, bbox.z)), Color(0, 0, 255, 127));
 		
-		drawLine(int3(0, 0, pos.z), int3(tsize.x, 0, pos.z), Color(0, 0, 255, 127));
-		drawLine(int3(0, 0, pos.z + bbox.z), int3(tsize.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
+		drawLine(out, int3(0, 0, pos.z), int3(tsize.x, 0, pos.z), Color(0, 0, 255, 127));
+		drawLine(out, int3(0, 0, pos.z + bbox.z), int3(tsize.x, 0, pos.z + bbox.z), Color(0, 0, 255, 127));
 		
-		drawLine(int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
-		drawLine(int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
+		drawLine(out, int3(pos.x, 0, 0), int3(pos.x, 0, tsize.z), Color(0, 0, 255, 127));
+		drawLine(out, int3(pos.x + bbox.x, 0, 0), int3(pos.x + bbox.x, 0, tsize.z), Color(0, 0, 255, 127));
 	}
 	
-	void TilesEditor::drawContents() const {
+	void TilesEditor::drawContents(Renderer2D &out) const {
 		m_view.updateVisibility(m_cursor_offset);
 		SceneRenderer renderer(clippedRect(), m_view.pos());
 
@@ -491,10 +492,9 @@ namespace ui {
 		}
 		renderer.render();
 
-		setScissorRect(clippedRect());
-		setScissorTest(true);
-		lookAt(-clippedRect().min + m_view.pos());
-		m_view.drawGrid();
+		out.setScissorRect(clippedRect());
+		out.setViewPos(-clippedRect().min + m_view.pos());
+		m_view.drawGrid(out);
 		
 		if(m_new_tile && (isPlacing() || isPlacingRandom() || isFilling()) && m_new_tile) {
 			int3 bbox = m_new_tile->bboxSize();
@@ -506,39 +506,37 @@ namespace ui {
 					bool collides = m_tile_map.findAny(FBox(pos, pos + bbox)) != -1;
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
-					m_new_tile->draw(int2(worldToScreen(pos)), color);
-					DTexture::unbind();
-					drawBBox(IBox(pos, pos + bbox));
+					m_new_tile->draw(out, int2(worldToScreen(pos)), color);
+					drawBBox(out, IBox(pos, pos + bbox));
 				}
-	//		m_tile_map.drawBoxHelpers(IBox(pos, pos + m_new_tile->bbox));
+	//		m_tile_map.drawBoxHelpers(out, IBox(pos, pos + m_new_tile->bbox));
 		}
 
-	//	m_tile_map.drawBoxHelpers(m_selection);
-		DTexture::unbind();
+	//	m_tile_map.drawBoxHelpers(out, m_selection);
 
 		if(!isChangingOccluders()) {
 			IBox under = m_selection;
 			under.max.y = under.min.y;
 			under.min.y = m_view.gridHeight();
 
-			drawBBox(under, Color(127, 127, 127, 255));
-			drawBBox(m_selection);
+			drawBBox(out, under, Color(127, 127, 127, 255));
+			drawBBox(out, m_selection);
 		}
 		
-		lookAt(-clippedRect().min);
-		PFont font = Font::mgr[WindowStyle::fonts[1]];
+		out.setViewPos(-clippedRect().min);
+		auto font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(int2(0, 0), {Color::white, Color::black}, format("Tile count: %d\n", m_tile_map.size()));
+		font->draw(out, int2(0, 0), {Color::white, Color::black}, format("Tile count: %d\n", m_tile_map.size()));
 		if(isChangingOccluders() && m_current_occluder != -1) {
 			auto &occluder = m_tile_map.occluderMap()[m_current_occluder];
-			font->draw(int2(0, 25), {Color::white, Color::black},
+			font->draw(out, int2(0, 25), {Color::white, Color::black},
 						format("Occluder: %d (%d objects)\n", m_current_occluder, (int)occluder.objects.size()));
 		}
 
 		if(m_new_tile)
-			font->draw(int2(0, clippedRect().height() - 50), {Color::white, Color::black},
-					format("Tile: %s\n", m_new_tile->resourceName()));
-		font->draw(int2(0, clippedRect().height() - 25), {Color::white, Color::black},
+			font->draw(out, int2(0, clippedRect().height() - 50), {Color::white, Color::black},
+					format("Tile: %s\n", m_new_tile->resourceName().c_str()));
+		font->draw(out, int2(0, clippedRect().height() - 25), {Color::white, Color::black},
 				format("Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]));
 	}

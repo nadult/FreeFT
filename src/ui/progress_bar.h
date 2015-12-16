@@ -27,7 +27,7 @@ namespace ui {
 		float barSize() const { return m_bar_size; }
 
 		void drawContents(Renderer2D&) const override;
-		bool onMouseDrag(int2 start, int2 current, int key, int is_final) override;
+		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
 
 	protected:
 		float evalBarSize() const;

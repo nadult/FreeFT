@@ -163,9 +163,9 @@ namespace ui
 					is_handled = true;
 				}
 				if(!is_handled)
-					is_handled = onMouseDrag(m_drag_start, local_mouse_pos, m_dragging_mode - 1, finished_dragging);
+					is_handled = onMouseDrag(state, m_drag_start, local_mouse_pos, m_dragging_mode - 1, finished_dragging);
 				if(!is_handled)
-					is_handled = onMouseClick(local_mouse_pos, m_dragging_mode - 1, finished_dragging);
+					is_handled = onMouseClick(state, local_mouse_pos, m_dragging_mode - 1, finished_dragging);
 			}
 			if(!is_handled) {
 				if(m_has_inner_rect) {

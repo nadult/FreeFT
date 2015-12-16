@@ -18,7 +18,7 @@ namespace ui
 		const char *typeName() const override { return "Button"; }
 
 		void drawContents(Renderer2D&) const override;
-		bool onMouseDrag(int2, int2, int key, int is_final) override;
+		bool onMouseDrag(const InputState&, int2, int2, int key, int is_final) override;
 		virtual void setText(const char *text);
 
 		void enable(bool);

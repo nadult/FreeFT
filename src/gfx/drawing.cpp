@@ -5,6 +5,7 @@
 
 #include "gfx/drawing.h"
 
+
 void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 	float2 vx = worldToScreen(float3(box.width(), 0, 0));
 	float2 vy = worldToScreen(float3(0, box.height(), 0));
@@ -51,4 +52,8 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 
 void drawBBox(Renderer2D &out, const IBox &wbox, Color col, bool is_filled) {
 	drawBBox(out, FBox(wbox), col, is_filled);
+}
+
+void drawLine(Renderer2D &out, int3 wp1, int3 wp2, Color color) {
+	out.addLine(worldToScreen(wp1), worldToScreen(wp2), color);
 }

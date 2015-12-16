@@ -26,9 +26,9 @@ namespace ui {
 
 		EntitiesEditor(game::TileMap&, game::EntityMap&, View&, IRect rect);
 
-		virtual void drawContents() const;
-		virtual void onInput(int2 mouse_pos);
-		virtual bool onMouseDrag(int2 start, int2 current, int key, int is_final);
+		void drawContents(Renderer2D&) const override;
+		void onInput(const InputState&) override;
+		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
 
 		Mode mode() const { return m_mode; }
 		void setMode(Mode mode) { m_mode = mode; }
@@ -47,8 +47,8 @@ namespace ui {
 		game::PEntity m_proto;
 		int m_proto_angle;
 		
-		void drawBoxHelpers(const IBox &box) const;
-		void computeCursor(int2 start, int2 end);
+		void drawBoxHelpers(Renderer2D&, const IBox &box) const;
+		void computeCursor(int2 start, int2 end, bool floor_mode);
 
 		IRect m_selection;
 		float3 m_cursor_pos;	
@@ -63,7 +63,7 @@ namespace ui {
 		bool m_is_moving;
 	};
 
-	typedef Ptr<EntitiesEditor> PEntitiesEditor;
+	using PEntitiesEditor = shared_ptr<EntitiesEditor>;
 
 }
 

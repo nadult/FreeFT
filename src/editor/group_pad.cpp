@@ -9,9 +9,9 @@ namespace ui {
 
 	GroupPad::GroupPad(const IRect &rect, PGroupEditor editor, TileGroup *group)
 		:Window(rect), m_editor(editor), m_group(group) {
-		m_filter_box = new ComboBox(IRect(0, 0, rect.width(), 22), 200,
+		m_filter_box = make_shared<ComboBox>(IRect(0, 0, rect.width(), 22), 200,
 				"Filter: ", TileFilter::strings(), TileFilter::count);
-		attach(m_filter_box.get());
+		attach(m_filter_box);
 		m_filter_box->selectEntry(editor->tileFilter());
 	}
 

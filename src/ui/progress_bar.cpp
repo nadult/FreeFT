@@ -56,7 +56,7 @@ namespace ui {
 		}*/
 	}
 
-	bool ProgressBar::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+	bool ProgressBar::onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) {
 		if(key != 0)
 			return false;
 

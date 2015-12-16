@@ -2,6 +2,7 @@ Mustfix: -----------------------------------------------------------------------
 - Input focus in console's edito box is broken
 - Firing rocket under feet doesn't hurt
 - Crash when trying to create character in server mode
+- Entities editor is broken (try place some new entities)
 
 - Animation glitches in multiplayer  
 - Problems with queuing orders (rethink this)

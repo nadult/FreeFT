@@ -68,7 +68,7 @@ namespace ui
 		}
 	}
 
-	bool ImageButton::onMouseDrag(int2 start, int2 current, int key, int is_final) {
+	bool ImageButton::onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) {
 		if(key == 0 && !m_mouse_press && !m_proto.sound_name.empty() && !(m_mode == mode_toggle_on && m_is_pressed))
 			audio::playSound(m_proto.sound_name.c_str(), 1.0f);
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;

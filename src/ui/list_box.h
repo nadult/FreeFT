@@ -27,7 +27,7 @@ namespace ui {
 		bool onEvent(const Event&) override;
 		void drawContents(Renderer2D&) const override;
 		void onInput(const InputState&) override;
-		bool onMouseDrag(int2 start, int2 end, int key, int is_final) override;
+		bool onMouseDrag(const InputState&, int2 start, int2 end, int key, int is_final) override;
 
 		void addEntry(const char *text, Color col = Color::white);
 		int findEntry(const char*) const;

@@ -17,8 +17,8 @@ namespace ui {
 	public:
 		View(game::TileMap&, game::EntityMap&, const int2 &view_size);
 
-		void drawGrid() const;
-		void update();
+		void drawGrid(Renderer2D&) const;
+		void update(const InputState&);
 
 		void setGridHeight(int new_height) { m_height = new_height; }
 		int gridHeight() const { return m_height; }
@@ -40,7 +40,7 @@ namespace ui {
 		const int2 m_view_size;
 	};
 
-	typedef unique_ptr<View> PView;
+	using PView = unique_ptr<View>;
 
 }
 
