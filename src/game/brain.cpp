@@ -12,7 +12,7 @@
 
 namespace game {
 
-	Brain::Brain(PWorld world, EntityRef entity_ref)
+	Brain::Brain(World *world, EntityRef entity_ref)
 		:m_world(world), m_entity_ref(entity_ref) {
 		DASSERT(world);
 	}
@@ -30,7 +30,7 @@ namespace game {
 		return m_world->refEntity<Actor>(m_entity_ref);
 	}
 
-	ActorBrain::ActorBrain(PWorld world, EntityRef ref)
+	ActorBrain::ActorBrain(World *world, EntityRef ref)
 		:Brain(world, ref), m_delay(0.0f), m_move_delay(frand() * 3.0f), m_failed_orders(0) {
 	}
 		

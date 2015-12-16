@@ -49,10 +49,10 @@ namespace game {
 		for(int n = 0; n < m_world.entityCount(); n++) {
 			Actor *actor = m_world.refEntity<Actor>(n);
 			if(actor && actor->factionId() != 0)
-				actor->attachAI<ActorBrain>(PWorld(&m_world));
+				actor->attachAI<ActorBrain>(&m_world);
 			Turret *turret = m_world.refEntity<Turret>(n);
 			if(turret) {
-				turret->attachAI<ActorBrain>(PWorld(&m_world));
+				turret->attachAI<ActorBrain>(&m_world);
 				ActorBrain *brain = static_cast<ActorBrain*>(turret->AI());
 				brain->setEnemyFactions({1, 2});
 			}
@@ -103,7 +103,7 @@ namespace game {
 					if(ai) {
 						Actor *actor = m_world.refEntity<Actor>(ai);
 						DASSERT(actor);
-						actor->attachAI<ActorBrain>(PWorld(&m_world));
+						actor->attachAI<ActorBrain>(&m_world);
 					}
 				}
 

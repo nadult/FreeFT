@@ -58,7 +58,7 @@ namespace game {
 		void save(Stream&) const override;
 		
 		template <class TAI, class ...Args>
-		void attachAI(PWorld world, const Args&... args);
+		void attachAI(World *world, const Args&... args);
 		void detachAI();
 		Brain *AI() const;
 		

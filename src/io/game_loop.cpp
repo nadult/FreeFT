@@ -98,13 +98,13 @@ namespace io {
 
 		if(m_mode == mode_exiting_to_system) {
 			if(m_controller)
-				m_controller.reset(nullptr);
+				m_controller.reset();
 			if(m_world)
 				m_world.reset();
 			if(m_client)
-				m_client.reset(nullptr);
+				m_client.reset();
 			if(m_server)
-				m_server.reset(nullptr);
+				m_server.reset();
 			::exit(0);
 		}
 

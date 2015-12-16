@@ -16,7 +16,7 @@ namespace game {
 	//TODO: better name
 	class Brain {
 	public:
-		Brain(PWorld world, EntityRef ref);
+		Brain(World *world, EntityRef ref);
 		virtual ~Brain() = default;
 
 		virtual void think() = 0;
@@ -30,20 +30,20 @@ namespace game {
 		int factionId() const;
 
 	protected:
-		PWorld m_world;
+		World *m_world;
 		EntityRef m_entity_ref;
 	};
 
 	using PBrain = ::ClonablePtr<Brain>;
 
 	template <class TAI, class ...Args>
-	void ThinkingEntity::attachAI(PWorld world, const Args&... args) {
+	void ThinkingEntity::attachAI(World *world, const Args&... args) {
 		m_ai = new TAI(world, ref(), args...);
 	}
 
 	class ActorBrain: public Brain {
 	protected:
-		ActorBrain(PWorld world, EntityRef entity);
+		ActorBrain(World *world, EntityRef entity);
 		friend class ThinkingEntity;
 
 	public:
