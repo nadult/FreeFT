@@ -20,127 +20,100 @@
 using namespace game;
 using namespace ui;
 
-namespace ResType {
-enum Type {
-	empty,
+enum class ResType {
+	unknown,
 	tile,
 	sprite,
 	texture,
 };
-};
+
+ResType classifyFileName(const string &file_name) {
+	auto locase_name = toLower(file_name);
+
+	if(removeSuffix(locase_name, ".zar") || removeSuffix(locase_name, ".png"))
+		return ResType::texture;
+	else if(removeSuffix(locase_name, ".tile"))
+		return ResType::tile;
+	else if(removeSuffix(locase_name, ".sprite"))
+		return ResType::sprite;
+
+	return ResType::unknown;
+}
 
 class Resource {
-	Resource(ResType::Type type, int id) : m_type(type), m_id(id) {
-		m_font = Font::mgr[ui::WindowStyle::fonts[0]];
-	}
-
   public:
-	Resource() : Resource(ResType::empty, -1) {}
-	Resource(PTile res, int id) : Resource(ResType::tile, id) {
-		DASSERT(res);
-		m_resource = res.get();
-		m_rect_size = res->rect().size() + int2(8, 8);
+	Resource(const FilePath &current_dir, const string &file_name)
+		: m_file_name(file_name), m_type(classifyFileName(file_name)) {
+		DASSERT(m_type != ResType::unknown);
+		m_font = res::getFont(ui::WindowStyle::fonts[0]);
+
+		Loader loader(current_dir / file_name);
+		if(m_type == ResType::tile) {
+			m_tile = make_immutable<Tile>("", loader);
+			m_rect_size = m_tile->rect().size() + int2(8, 8);
+		} else if(m_type == ResType::texture) {
+			m_texture = make_immutable<DTexture>("", loader);
+			m_rect_size = m_texture->size();
+		} else if(m_type == ResType::sprite) {
+			//	printf("Loading sprite: %s\n", file_name);
+			m_sprite = make_shared<Sprite>();
+			loader >> *m_sprite;
+			m_sprite->printInfo();
+			m_rect_size =
+				worldToScreen(IBox({-4, -4, -4}, m_sprite->bboxSize() + int3{4, 4, 4})).size();
+			m_last_time = getTime();
+			m_frame_id = m_dir_id = m_seq_id = 0;
+			update();
+		}
 	}
 
-	Resource(PTexture res, int id) : Resource(ResType::texture, id) {
-		DASSERT(res);
-		m_resource = res.get();
-		m_rect_size = res->size();
-	}
-
-	Resource(PSprite res, int id) : Resource(ResType::sprite, id) {
-		DASSERT(res);
-		m_resource = res.get();
-		m_rect_size = worldToScreen(IBox({-4, -4, -4}, res->bboxSize() + int3{4, 4, 4})).size();
-
-		m_last_time = getTime();
-		m_frame_id = m_dir_id = m_seq_id = 0;
-	}
-
-	void printStats(int2 pos) const {
+	void printStats(Renderer2D &out, int2 pos) const {
 		char buffer[1024] = "";
 		if(m_type == ResType::sprite) {
-			const Sprite *sprite = static_cast<const Sprite *>(m_resource.get());
-			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
-			auto &seq = (*sprite)[m_seq_id];
+			bool is_gui_image = (*m_sprite)[m_seq_id].name.find("gui") != string::npos;
+			auto &seq = (*m_sprite)[m_seq_id];
 
 			int2 max_frame_size(0, 0);
 			for(int n = 0; n < seq.frame_count; n++) {
-				if(sprite->frame(m_seq_id, n).id < 0)
+				if(m_sprite->frame(m_seq_id, n).id < 0)
 					continue;
-				max_frame_size = max(max_frame_size, sprite->getRect(m_seq_id, n, m_dir_id).size());
+				max_frame_size =
+					max(max_frame_size, m_sprite->getRect(m_seq_id, n, m_dir_id).size());
 			}
 
 			snprintf(buffer, sizeof(buffer), "Sequence: %d / %d\n%s\nFrames: %d\nBounding box: "
 											 "(%d, %d, %d)\nMax frame size: (%d, %d)",
-					 m_seq_id, (int)sprite->size(), seq.name.c_str(), seq.frame_count,
-					 sprite->bboxSize().x, sprite->bboxSize().y, sprite->bboxSize().z,
+					 m_seq_id, (int)m_sprite->size(), seq.name.c_str(), seq.frame_count,
+					 m_sprite->bboxSize().x, m_sprite->bboxSize().y, m_sprite->bboxSize().z,
 					 max_frame_size.x, max_frame_size.y);
 
-			m_font->draw(pos, {Color::white, Color::black}, buffer);
+			m_font->draw(out, pos, {Color::white, Color::black}, buffer);
 			pos.y += m_font->evalExtents(buffer).height();
 
 			double time = getTime();
-			vector<pair<const char *, double>> tevents;
-			for(int n = 0; n < (int)m_events.size(); n++)
-				if(m_events[n].second > time - 1.0)
-					tevents.push_back(m_events[n]);
-			m_events.swap(tevents);
-
 			for(int n = 0; n < (int)m_events.size(); n++) {
 				Color col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
-				m_font->draw(pos, {col, Color::black}, m_events[n].first);
+				m_font->draw(out, pos, {col, Color::black}, m_events[n].first);
 				pos.y += m_font->lineHeight();
 			}
 
 		} else if(m_type == ResType::texture) {
-			const DTexture *texture = static_cast<const DTexture *>(m_resource.get());
-			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)", texture->width(), texture->height());
-			m_font->draw(pos, {Color::white, Color::black}, buffer);
+			snprintf(buffer, sizeof(buffer), "Size: (%d, %d)", m_texture->width(),
+					 m_texture->height());
+			m_font->draw(out, pos, {Color::white, Color::black}, buffer);
 		}
 	}
 
-	void draw(int2 pos, bool is_selected) const {
-		Color outline_col = is_selected ? Color::red : Color(255, 255, 255, 100);
-
-		if(m_type == ResType::tile) {
-			const Tile *tile = static_cast<const Tile *>(m_resource.get());
-
-			lookAt(-pos + tile->rect().min);
-			IBox box(int3(0, 0, 0), tile->bboxSize());
-
-			// TODO: draw only if its visible, otherwise it might create some performance
-			// problems if texture cache is full
-			tile->draw(int2(0, 0));
-
-			DTexture::unbind();
-			drawBBox(box, outline_col);
-		} else if(m_type == ResType::texture) {
-			const DTexture *texture = static_cast<const DTexture *>(m_resource.get());
-
-			lookAt(-pos);
-			texture->bind();
-			drawQuad({0, 0}, m_rect_size);
-			DTexture::unbind();
-			drawRect(IRect({0, 0}, m_rect_size), outline_col);
-
-			if(isKeyDown('E')) {
-				string name = FilePath(texture->resourceName()).relative();
-				removeSuffix(name, ".zar");
-				name += ".tga";
-				printf("Exporting: %s\n", name.c_str());
-				Texture tex;
-				texture->download(tex);
-				Saver svr(name);
-				tex.save(svr);
+	void update() {
+		if(m_type == ResType::sprite) {
+			double time = getTime();
+			if(time - m_last_time > 1 / 15.0) {
+				m_frame_id = m_frame_id + 1;
+				m_last_time = time;
 			}
-		} else if(m_type == ResType::sprite) {
-			const Sprite *sprite = static_cast<const Sprite *>(m_resource.get());
-
-			bool is_gui_image = (*sprite)[m_seq_id].name.find("gui") != string::npos;
 
 			int id;
-			while((id = sprite->frame(m_seq_id, m_frame_id).id) < 0) {
+			while((id = m_sprite->frame(m_seq_id, m_frame_id).id) < 0) {
 				const char *event_name = Sprite::eventIdToString((Sprite::EventId)id);
 				if(id == Sprite::ev_overlay)
 					event_name = "overlay";
@@ -148,240 +121,293 @@ class Resource {
 					m_events.push_back(make_pair(event_name, getTime()));
 
 				m_frame_id++;
-				if(m_frame_id == sprite->frameCount(m_seq_id))
+				if(m_frame_id == m_sprite->frameCount(m_seq_id))
 					m_frame_id = 0;
 			}
+			m_frame_id %= m_sprite->frameCount(m_seq_id);
 
-			IRect rect = sprite->getRect(m_seq_id, m_frame_id, m_dir_id);
+			vector<pair<const char *, double>> tevents;
+			for(int n = 0; n < (int)m_events.size(); n++)
+				if(m_events[n].second > time - 1.0)
+					tevents.push_back(m_events[n]);
+			m_events.swap(tevents);
+		}
+	}
+
+	void onInput(const InputState &state) {
+		if(m_type == ResType::texture) {
+			if(state.isKeyDown('E')) {
+				string name = FilePath(m_file_name).relative();
+				THROW("fixme");
+				removeSuffix(name, ".zar");
+				name += ".tga";
+				printf("Exporting: %s\n", name.c_str());
+				Texture tex;
+				m_texture->download(tex);
+				Saver svr(name);
+				tex.save(svr);
+			}
+		}
+		if(m_type == ResType::sprite) {
+			if(state.isKeyDown(InputKey::up))
+				m_seq_id++;
+			if(state.isKeyDown(InputKey::down))
+				m_seq_id--;
+			if(state.isKeyDown(InputKey::left))
+				m_dir_id--;
+			if(state.isKeyDown(InputKey::right))
+				m_dir_id++;
+			if(state.isKeyDown('P')) {
+				FilePath path(m_file_name);
+				printf("Sequences for: %s\n", path.relative().c_str());
+				for(int s = 0; s < m_sprite->size(); s++)
+					printf("Seq %3d: %s\n", s, (*m_sprite)[s].name.c_str());
+				printf("\n");
+			}
+
+			m_seq_id = (m_seq_id + (int)m_sprite->size()) % (int)m_sprite->size();
+			int dir_count = m_sprite->dirCount(m_seq_id);
+			m_dir_id = (m_dir_id + dir_count) % dir_count;
+			m_frame_id %= m_sprite->frameCount(m_seq_id);
+		}
+
+		update();
+	}
+
+	void draw(Renderer2D &out, int2 pos, bool is_selected) const {
+		Color outline_col = is_selected ? Color::red : Color(255, 255, 255, 100);
+
+		if(m_type == ResType::tile) {
+			out.setViewPos(-pos + m_tile->rect().min);
+			IBox box(int3(0, 0, 0), m_tile->bboxSize());
+
+			// TODO: draw only if its visible, otherwise it might create some performance
+			// problems if texture cache is full
+			m_tile->draw(int2(0, 0));
+			drawBBox(box, outline_col);
+		} else if(m_type == ResType::texture) {
+			out.setViewPos(-pos);
+			out.addFilledRect(IRect(m_rect_size), m_texture);
+			out.addRect(IRect({0, 0}, m_rect_size), outline_col);
+		} else if(m_type == ResType::sprite) {
+			bool is_gui_image = (*m_sprite)[m_seq_id].name.find("gui") != string::npos;
+
+			IRect rect = m_sprite->getRect(m_seq_id, m_frame_id, m_dir_id);
 			FRect tex_rect;
-			PTexture dtex = sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
-			dtex->bind();
+			auto dtex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
 
-			IBox box({0, 0, 0}, sprite->bboxSize());
+			IBox box({0, 0, 0}, m_sprite->bboxSize());
 			IRect brect = worldToScreen(IBox(box.min - int3(4, 4, 4), box.max + int3(4, 4, 4)));
 			if(is_gui_image) {
 				rect -= rect.min;
 				brect -= brect.min;
 			}
-			lookAt(brect.min - pos);
-			drawQuad(rect.min, rect.size(), tex_rect.min, tex_rect.max);
+			out.setViewPos(brect.min - pos);
+			out.addFilledRect(FRect(rect), tex_rect, dtex);
 
-			DTexture::unbind();
 			if(is_gui_image)
-				drawRect(rect, outline_col);
+				out.addRect(rect, outline_col);
 			else
 				drawBBox(box, outline_col);
-
-			double time = getTime();
-			if(time - m_last_time > 1 / 15.0) {
-				m_frame_id = m_frame_id + 1;
-				m_last_time = time;
-			}
-			if(isKeyDown(InputKey::up))
-				m_seq_id++;
-			if(isKeyDown(InputKey::down))
-				m_seq_id--;
-			if(isKeyDown(InputKey::left))
-				m_dir_id--;
-			if(isKeyDown(InputKey::right))
-				m_dir_id++;
-			if(isKeyDown('P')) {
-				FilePath path(sprite->resourceName());
-				printf("Sequences for: %s\n", path.relative().c_str());
-				for(int s = 0; s < sprite->size(); s++)
-					printf("Seq %3d: %s\n", s, (*sprite)[s].name.c_str());
-				printf("\n");
-			}
-
-			m_seq_id = (m_seq_id + (int)sprite->size()) % (int)sprite->size();
-			int dir_count = sprite->dirCount(m_seq_id);
-			m_dir_id = (m_dir_id + dir_count) % dir_count;
-			m_frame_id %= sprite->frameCount(m_seq_id);
 		}
 	}
 
-	ResType::Type type() const { return m_type; }
+	ResType type() const { return m_type; }
 	int2 rectSize() const { return m_rect_size; }
-	int id() const { return m_id; }
+	const string &fileName() const { return m_file_name; }
 
   private:
-	int2 m_rect_size;
-	Ptr<RefCounter> m_resource;
-	PFont m_font;
-	ResType::Type m_type;
-	int m_id;
+	string m_file_name;
+	ResType m_type;
+	unique_ptr<Font> m_font;
 
-	mutable vector<pair<const char *, double>> m_events;
-	mutable double m_last_time;
-	mutable int m_frame_id, m_seq_id, m_dir_id;
+	int2 m_rect_size;
+	PTile m_tile;
+	PTexture m_texture;
+	PSprite m_sprite;
+
+	vector<pair<const char *, double>> m_events;
+	double m_last_time;
+	int m_frame_id, m_seq_id, m_dir_id;
 };
 
 class ResourceView : public Window {
   public:
 	virtual const char *className() const { return "ResourceView"; }
-	ResourceView(IRect rect) : Window(rect), m_selected_id(-1), m_show_selected(false) {}
-
-	void clear() {
-		m_resources.clear();
-		m_selected_id = -1;
-	}
-
-	void select(int new_id) {
-		m_show_selected = new_id != m_selected_id;
-		m_selected_id = new_id;
-	}
-
-	void drawContents() const {
-		int spacing = 4;
-
-		int2 pos(spacing, spacing + 100), offset = innerOffset() - clippedRect().min;
-		int width = clippedRect().width(), cur_height = 0;
-		int2 mouse_pos = getMousePos();
-		bool clicked = isMouseKeyPressed(0) && clippedRect().isInside(mouse_pos);
-		int2 selected_pos(0, 0);
-
-		// TODO: fix it
-		ResourceView *mthis = (ResourceView *)this;
-		if(clicked)
-			mthis->m_selected_id = -1;
-
-		for(int n = 0; n < (int)m_resources.size(); n++) {
-			const ::Resource &res = m_resources[n];
-			if(clicked && IRect(pos - offset, pos - offset + res.rectSize()).isInside(mouse_pos))
-				mthis->m_selected_id = res.id();
-
-			bool is_selected = m_selected_id == res.id();
-			if(is_selected)
-				selected_pos = pos;
-
-			res.draw(pos - offset, is_selected);
-			cur_height = max(cur_height, res.rectSize().y);
-
-			if(n + 1 == (int)m_resources.size())
-				break;
-
-			pos.x += res.rectSize().x + spacing;
-
-			if(m_resources[n + 1].rectSize().x + pos.x > width) {
-				pos.x = spacing;
-				pos.y += cur_height + spacing;
-				cur_height = 0;
+	ResourceView(IRect rect, FilePath current_dir, vector<string> file_names)
+		: Window(rect), m_selected_id(-1) {
+		for(auto file_name : file_names) {
+			auto res_type = classifyFileName(file_name);
+			if(res_type != ResType::unknown) {
+				try {
+					auto new_res = make_unique<Resource>(current_dir, file_name);
+					m_resources.emplace_back(std::move(new_res));
+				} catch(const Exception &ex) {
+					printf("When loading %s:\n%s\n", file_name.c_str(), ex.what());
+				}
 			}
 		}
 
-		if(m_selected_id != -1) {
-			lookAt(-clippedRect().min);
-			for(int n = 0; n < (int)m_resources.size(); n++)
-				if(m_resources[n].id() == m_selected_id) {
-					m_resources[n].printStats(int2(0, 0));
-					break;
+		int spacing = 4, width = clippedRect().width(), cur_height = 0;
+		int2 pos(spacing, spacing + 100);
+
+		for(int n = 0; n < (int)m_resources.size(); n++) {
+			auto &res = m_resources[n];
+			m_positions.emplace_back(pos);
+			cur_height = max(cur_height, res->rectSize().y);
+
+			if(n + 1 < (int)m_resources.size()) {
+				pos.x += res->rectSize().x + spacing;
+				if(m_resources[n + 1]->rectSize().x + pos.x > width) {
+					pos.x = spacing;
+					pos.y += cur_height + spacing;
+					cur_height = 0;
 				}
+			}
 		}
 
-		if(m_show_selected) {
-			offset = int2(0, selected_pos.y);
-			m_show_selected = false;
-		}
-		if(clicked)
-			mthis->sendEvent(mthis, Event::element_selected, m_selected_id);
-		mthis->setInnerRect(IRect(-offset, int2(width, pos.y + cur_height) - offset));
+		setInnerRect(IRect(int2(width, pos.y + cur_height)));
 	}
 
-	void tryAddResource(const char *file_name, int id) {
-		int len = (int)strlen(file_name);
-		if(len < 4)
-			return;
-
-		try {
-			::Resource res;
-			if(strcasecmp(file_name + len - 4, ".zar") == 0 ||
-			   strcasecmp(file_name + len - 4, ".png") == 0) {
-				PTexture tex = new DTexture;
-				//	printf("Loading image: %s\n", file_name);
-				Loader(file_name) >> *tex;
-				res = ::Resource(tex, id);
-				tex->setResourceName(file_name);
-			} else if(strcasecmp(file_name + len - 5, ".tile") == 0) {
-				PTile tile = new Tile;
-				//	printf("Loading tile: %s\n", file_name);
-				Loader(file_name) >> *tile;
-				res = ::Resource(tile, id);
-				tile->setResourceName(file_name);
-			} else if(strcasecmp(file_name + len - 7, ".sprite") == 0) {
-				PSprite sprite = new Sprite;
-				//	printf("Loading sprite: %s\n", file_name);
-				Loader(file_name) >> *sprite;
-				res = ::Resource(sprite, id);
-				sprite->printInfo();
-				sprite->setResourceName(file_name);
-			} else
-				return;
-
-			m_resources.push_back(res);
-		} catch(const Exception &ex) { printf("%s\n", ex.what()); }
-	}
-
-  private:
-	mutable bool m_show_selected;
-	int m_selected_id;
-	vector<::Resource> m_resources;
-};
-
-class ResViewerWindow : public Window {
-  public:
-	ResViewerWindow(int2 res) : Window(IRect(0, 0, res.x, res.y), WindowStyle::gui_light) {
-		int left_width = 300;
-
-		m_dir_view = new ListBox(IRect(0, 0, left_width, res.y));
-		m_res_view = new ResourceView(IRect(left_width + 2, 0, res.x, res.y));
-
-		attach(m_dir_view.get());
-		attach(m_res_view.get());
-
-		m_current_dir = "data/";
-		m_current_dir = m_current_dir.absolute();
-
-		update();
+	void select(const string &file_name) {
+		for(int n = 0; n < (int)m_resources.size(); n++)
+			if(m_resources[n]->fileName() == file_name) {
+				if(m_selected_id != n)
+					setInnerOffset(int2(0, m_positions[n].y - 5));
+				m_selected_id = n;
+			}
 	}
 
 	void update() {
-		m_dir_view->clear();
-		m_entries.clear();
-
-		m_entries.clear();
-		findFiles(m_entries, m_current_dir, FindFiles::regular_file | FindFiles::directory |
-												FindFiles::relative | FindFiles::include_parent);
-
-		sort(m_entries.begin(), m_entries.end());
-		for(int n = 0; n < (int)m_entries.size(); n++)
-			m_dir_view->addEntry(m_entries[n].path.c_str(),
-								 m_entries[n].is_dir ? Color::yellow : Color::white);
-
-		m_res_view->clear();
-
-		for(int n = 0; n < (int)m_entries.size(); n++)
-			if(!m_entries[n].is_dir)
-				m_res_view->tryAddResource((m_current_dir / m_entries[n].path).c_str(), n);
+		for(auto &resource : m_resources)
+			resource->update();
 	}
 
-	virtual bool onEvent(const Event &ev) {
+	void onInput(const InputState &state) override {
+		m_last_mouse_pos = state.mousePos();
+		int2 offset = innerOffset() - clippedRect().min;
+
+		for(auto &resource : m_resources)
+			resource->onInput(state);
+
+		bool clicked = state.isMouseButtonPressed(InputButton::left);
+
+		if(clicked)
+			m_selected_id = -1;
+		for(int n = 0; n < (int)m_resources.size(); n++) {
+			const auto &res = m_resources[n];
+			int2 pos = m_positions[n] - offset;
+			if(clicked && IRect(pos, pos + res->rectSize()).isInside(m_last_mouse_pos))
+				m_selected_id = n;
+		}
+		if(clicked)
+			sendEvent(this, Event::element_selected, m_selected_id);
+	}
+
+	void drawContents(Renderer2D &out) const override {
+		int2 offset = innerOffset() - clippedRect().min;
+
+		for(int n = 0; n < (int)m_resources.size(); n++) {
+			const auto &res = m_resources[n];
+
+			auto pos = m_positions[n] - offset;
+			if(pos.y + res->rectSize().y < clippedRect().min.y)
+				continue;
+			if(pos.y > clippedRect().max.y)
+				break;
+
+			res->draw(out, m_positions[n] - offset, n == m_selected_id);
+		}
+
+		if(m_selected_id != -1) {
+			out.setViewPos(-clippedRect().min);
+			m_resources[m_selected_id]->printStats(out, int2(0, 0));
+		}
+	}
+
+	const auto &operator[](int res_id) const {
+		DASSERT(res_id >= 0 && res_id < (int)m_resources.size());
+		return *m_resources[res_id];
+	}
+
+  private:
+	int m_selected_id;
+	int2 m_last_mouse_pos;
+	vector<unique_ptr<Resource>> m_resources;
+	vector<int2> m_positions;
+};
+
+enum class Command { empty, change_dir, exit };
+
+class ResViewerWindow : public Window {
+  public:
+	ResViewerWindow(int2 res, const string &path)
+		: Window(IRect(res), WindowStyle::gui_light), m_current_dir(FilePath(path).absolute()) {
+		m_command = make_pair(Command::empty, string());
+
+		int left_width = 300;
+		m_dir_view = make_shared<ListBox>(IRect(0, 0, left_width, res.y));
+
+		m_entries = findFiles(m_current_dir, FindFiles::regular_file | FindFiles::directory |
+												 FindFiles::relative | FindFiles::include_parent);
+		sort(m_entries.begin(), m_entries.end());
+		vector<string> names;
+
+		for(auto entry : m_entries) {
+			m_dir_view->addEntry(entry.path.c_str(), entry.is_dir ? Color::yellow : Color::white);
+			if(!entry.is_dir)
+				names.emplace_back(entry.path);
+		}
+
+		m_res_view =
+			make_shared<ResourceView>(IRect(left_width + 2, 0, res.x, res.y), m_current_dir, names);
+
+		attach(m_dir_view);
+		attach(m_res_view);
+	}
+
+	void resize(const int2 &new_size) {
+		setRect(IRect(new_size));
+		// TODO: resize controls
+	}
+
+	pair<Command, string> command() const { return m_command; }
+	string currentDir() const { return m_current_dir; }
+
+	void process(const InputState &state) override {
+		m_res_view->update();
+		Window::process(state);
+	}
+
+	bool onEvent(const Event &ev) override {
 		if(ev.type == Event::window_closed && ev.source == popup) {
 			popup = nullptr;
 			if(ev.value == 1)
-				exit(0);
+				m_command = make_pair(Command::exit, string());
 		} else if(ev.type == Event::element_selected) {
 			if(m_dir_view.get() == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
 				const FileEntry &entry = m_entries[ev.value];
 
 				if(entry.is_dir) {
-					m_current_dir /= entry.path;
-					update();
-				} else { m_res_view->select(ev.value); }
-			} else if(m_res_view.get() == ev.source) { m_dir_view->selectEntry(ev.value); }
+					m_command = make_pair(Command::change_dir, m_current_dir / entry.path);
+				} else {
+					m_res_view->select((*m_dir_view)[ev.value].text);
+				}
+			} else if(m_res_view.get() == ev.source) {
+				int id = ev.value;
+				if(id != -1) {
+					auto &res = (*m_res_view)[id];
+					for(int n = 0; n < m_dir_view->size(); n++)
+						if((*m_dir_view)[n].text == res.fileName())
+							id = n;
+				}
+				m_dir_view->selectEntry(id);
+			}
 		} else if(ev.type == Event::escape) {
 			if(!popup) {
 				IRect popup_rect = IRect(-150, -40, 150, 40) + center();
-				popup = new MessageBox(popup_rect, "Do you want to quit?", MessageBoxMode::yes_no);
+				popup = make_shared<MessageBox>(popup_rect, "Do you want to quit?",
+												MessageBoxMode::yes_no);
 				attach(popup, true);
 			}
 		} else
@@ -390,47 +416,74 @@ class ResViewerWindow : public Window {
 		return true;
 	}
 
+  private:
 	vector<FileEntry> m_entries;
 	FilePath m_current_dir;
+	pair<Command, string> m_command;
 
 	PListBox m_dir_view;
-	Ptr<ResourceView> m_res_view;
+	shared_ptr<ResourceView> m_res_view;
 
 	PWindow popup;
 };
 
+void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
+	// TODO: date is refreshed only when game.o is being rebuilt
+	auto title = "FreeFT::res_viewer; built " __DATE__ " " __TIME__;
+	uint flags = (fullscreen ? GfxDevice::flag_fullscreen : 0) | GfxDevice::flag_resizable |
+				 GfxDevice::flag_vsync;
+	device.createWindow(title, res, flags);
+	device.grabMouse(false);
+}
+
+static unique_ptr<ResViewerWindow> main_window;
+static double start_time = getTime();
+
+static bool main_loop(GfxDevice &device) {
+	DASSERT(main_window);
+
+	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
+	TextureCache::main_cache.nextFrame();
+
+	clear(Color(0, 0, 0));
+	Renderer2D out(IRect(device.windowSize()));
+
+	main_window->process(device.inputState());
+	auto command = main_window->command();
+	if(command.first == Command::exit)
+		return false;
+	if(command.first == Command::change_dir)
+		main_window = make_unique<ResViewerWindow>(device.windowSize(), command.second);
+	if(main_window->size() != device.windowSize())
+		main_window->resize(device.windowSize());
+
+	main_window->draw(out);
+	out.render();
+
+	return true;
+}
 int safe_main(int argc, char **argv) {
 	Config config("res_viewer");
 
-	initDevice();
-	adjustWindowSize(config.resolution, config.fullscreen_on);
-	createWindow(config.resolution, config.fullscreen_on);
-	setWindowTitle("FreeFT::res_viewer; built " __DATE__ " " __TIME__);
-	grabMouse(false);
+	Profiler profiler;
+	GfxDevice gfx_device;
+	createWindow(gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
-	setBlendingMode(bmNormal);
+	main_window = make_unique<ResViewerWindow>(gfx_device.windowSize(), "data/");
+	gfx_device.runMainLoop(main_loop);
 
-	ResViewerWindow main_window(config.resolution);
-	clear(Color(0, 0, 0));
-
-	double start_time = getTime();
-	while(pollEvents()) {
-		Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
-
-		main_window.process();
-		main_window.draw();
-
-		fwk::tick();
-	}
+	main_window.reset();
 
 	return 0;
 }
 
 int main(int argc, char **argv) {
 	try {
+		std::setlocale(LC_ALL, "en_US.UTF8");
+		std::setlocale(LC_NUMERIC, "C");
 		return safe_main(argc, argv);
 	} catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), cppFilterBacktrace(ex.backtrace()).c_str());
+		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
 		return 1;
 	}
 }

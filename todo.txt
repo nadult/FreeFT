@@ -1,5 +1,6 @@
 - DOWNSCALE, remove unnecessary features
 - use unique_ptr in UI & HUD
+- remove drawing module, use Renderer2D
 
 Must-have: ----------------------------------------------------------------------------------------
 

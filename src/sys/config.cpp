@@ -5,7 +5,7 @@
 
 #include "sys/config.h"
 
-Config::Config() : resolution(0, 0), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
+Config::Config() : resolution(800, 600), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
 
 Config::Config(const XMLNode &node) : Config() { load(node); }
 
