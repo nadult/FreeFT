@@ -60,11 +60,20 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 	clearDisables();
 }
 
+pair<int, float> Grid::trace(const Ray &ray, int ignored_id, int flags) const {
+	float tmin = max(0.0f, intersection(ray, m_bounding_box));
+	float tmax = -intersection(-ray, m_bounding_box);
+	return trace(ray, tmin, tmax, ignored_id, flags);
+}
+
 pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) const {
 	float tmin = max(0.0f, intersection(segment, m_bounding_box));
 	float tmax = min(segment.length(), -intersection(-segment, m_bounding_box));
+	return trace(segment, tmin, tmax, ignored_id, flags);
+}
 	
-	float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
+pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored_id, int flags) const {
+	float3 p1 = ray.at(tmin), p2 = ray.at(tmax);
 	int2 pos = worldToGrid((int2)p1.xz()), end = worldToGrid((int2)p2.xz());
 	
 	//TODO: verify for rays going out of grid space
@@ -95,12 +104,12 @@ pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) 
 		int node_id = nodeAt(pos);
 		const Node &node = m_nodes[node_id];
 
-		if(flagTest(node.obj_flags, flags) && intersection(segment, node.bbox) < out_dist) {
+		if(flagTest(node.obj_flags, flags) && intersection(ray, node.bbox) < out_dist) {
 			const Object *objects[node.size];
 			int count = extractObjects(node_id, objects, ignored_id, flags);
 
 			for(int n = 0; n < count; n++) {
-				float dist = intersection(segment, objects[n]->bbox);
+				float dist = intersection(ray, objects[n]->bbox);
 				if(dist < out_dist) {
 					out_dist = dist;
 					out = objects[n] - &m_objects[0];

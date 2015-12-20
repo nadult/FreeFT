@@ -72,6 +72,9 @@ public:
 	void findAll(vector<int> &out, const FBox &box, int ignored_id = -1, int flags = object_flags) const;
 
 	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = object_flags) const;
+	pair<int, float> trace(const Ray &ray, int ignored_id = -1, int flags = object_flags) const;
+	pair<int, float> trace(const Ray &ray, float tmin, float tmax, int ignored_id, int flags) const;
+
 	void traceCoherent(const vector<Segment> &segments, vector<pair<int, float> > &out, int ignored_id = -1, int flags = object_flags) const;
 	
 	void findAll(vector<int> &out, const IRect &view_rect, int flags = object_flags) const;

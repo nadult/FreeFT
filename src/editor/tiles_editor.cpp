@@ -88,10 +88,8 @@ namespace ui {
 		Ray screen_ray = screenRay(screen_pos);
 		
 		m_mouseover_tile_id = m_tile_map.pixelIntersect(screen_pos, Flags::all | Flags::visible);
-		if(m_mouseover_tile_id == -1) {
-			Segment screen_seg(screen_ray.origin(), screen_ray.at(1024.0f));
-			m_mouseover_tile_id = m_tile_map.trace(screen_seg).first;
-		}
+		if(m_mouseover_tile_id == -1)
+			m_mouseover_tile_id = m_tile_map.trace(screen_ray).first;
 			
 		m_current_occluder = m_mouseover_tile_id == -1? -1 : m_tile_map[m_mouseover_tile_id].occluder_id;
 

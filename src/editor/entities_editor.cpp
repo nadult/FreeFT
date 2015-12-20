@@ -85,8 +85,7 @@ namespace ui {
 		if(floor_mode)
 			flags = flags & ~(Flags::wall_tile | Flags::object_tile);
 
-		Segment seg(ray.origin(), ray.at(1024.0f));
-		auto isect = m_tile_map.trace(seg, -1, flags | Flags::visible);
+		auto isect = m_tile_map.trace(ray, -1, flags | Flags::visible);
 		float3 pos = isect.first == -1? (float3)asXZ(screenToWorld(start)) : ray.at(isect.second);
 
 		m_cursor_pos = (float3)round(pos);

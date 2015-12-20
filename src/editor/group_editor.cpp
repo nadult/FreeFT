@@ -105,7 +105,7 @@ namespace {
 						const char *name = m_tile_group->entryTile(n)->resourceName().c_str();
 
 						for(int s = 0; s < subgroup_count; s++)
-							if(strcasestr(name, infixes[s])) {
+							if(!caseEqual(name, infixes[s])) {
 								if(subgroup_id[s] == -1)
 									subgroup_id[s] = m_tile_group->groupCount();
 								m_tile_group->setEntryGroup(n, subgroup_id[s]);
