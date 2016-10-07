@@ -11,13 +11,7 @@
 
 namespace game {
 
-	DEFINE_ENUM(InteractionMode,
-		"normal",
-		"pickup",
-		"use_item"
-	);
-
-	InteractOrder::InteractOrder(EntityRef target, InteractionMode::Type mode)
+	InteractOrder::InteractOrder(EntityRef target, Maybe<InteractionMode> mode)
 		:m_target(target), m_mode(mode), m_is_followup(false) {
 	}
 
@@ -30,13 +24,13 @@ namespace game {
 		sr << m_target << m_mode << m_is_followup;
 	}
 
-	bool Actor::handleOrder(InteractOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(InteractOrder &order, EntityEvent event, const EntityEventParams &params) {
 		if(event == EntityEvent::init_order) {
 			Entity *target = refEntity(order.m_target);
 			if(!target)
 				return false;
 
-			if(order.m_mode == InteractionMode::undefined) {
+			if(!order.m_mode) {
 				if(target->typeId() == EntityId::item)
 					order.m_mode = InteractionMode::pickup;
 				else

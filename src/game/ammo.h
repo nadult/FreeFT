@@ -11,8 +11,8 @@
 
 namespace game {
 
-	struct AmmoProto: public ProtoImpl<AmmoProto, ItemProto, ProtoId::item_ammo> {
-		ItemType::Type itemType() const { return ItemType::ammo; }
+	struct AmmoProto: public ProtoImpl<AmmoProto, ItemProto, ProtoId::ammo> {
+		ItemType itemType() const { return ItemType::ammo; }
 		AmmoProto(const TupleParser&);
 
 		string class_id;

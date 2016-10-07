@@ -49,10 +49,10 @@ namespace game
 		void load(Stream &sr);
 		void save(Stream &sr) const;
 		
-		Flags::Type flags() const;
+		FlagsType flags() const;
 
-		TileId::Type type() const { return m_type_id; }
-		SurfaceId::Type surfaceId() const { return m_surface_id; }
+		TileId type() const { return m_type_id; }
+		SurfaceId surfaceId() const { return m_surface_id; }
 
 		const IRect rect(int frame_id) const;
 		const IRect &rect() const { return m_max_rect; }
@@ -87,8 +87,8 @@ namespace game
 		IRect m_max_rect;
 		string m_resource_name;
 
-		TileId::Type m_type_id;
-		SurfaceId::Type m_surface_id;
+		TileId m_type_id;
+		SurfaceId m_surface_id;
 		bool m_see_through;
 		bool m_walk_through;
 		bool m_is_invisible;

@@ -14,17 +14,12 @@
 
 namespace ui {
 
-	namespace FileDialogMode {
-		enum Type {
-			opening_file,
-			saving_file,
-		};
-	};
+	DEFINE_ENUM(FileDialogMode, opening_file, saving_file);
 
 	class FileDialog: public Window
 	{
 	public:
-		typedef FileDialogMode::Type Mode;
+		typedef FileDialogMode Mode;
 
 		FileDialog(const IRect &rect, const char *title, Mode mode);
 		void drawContents(Renderer2D&) const override;

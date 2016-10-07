@@ -414,8 +414,8 @@ namespace game {
 		return false;
 	}
 		
-	GameModeId::Type World::gameModeId() const {
-		return m_game_mode? m_game_mode->typeId() : GameModeId::undefined;
+	Maybe<GameModeId> World::gameModeId() const {
+		return m_game_mode? m_game_mode->typeId() : Maybe<GameModeId>();
 	}
 		
 	void World::setReplicator(Replicator *replicator) {
@@ -439,13 +439,13 @@ namespace game {
 	}
 
 	void World::onMessage(Stream &sr, int source_id) {
-		MessageId::Type message_id;
+		MessageId message_id;
 		sr >> message_id;
 
 		if(message_id == MessageId::sound) {
 			if(isClient()) {
 				audio::SoundIndex sound_id;
-				SoundType::Type sound_type;
+				SoundType sound_type;
 				sr >> sound_type >> sound_id;
 				float3 pos = (float3)net::decodeInt3(sr);
 				audio::playSound(sound_id, sound_type, pos);
@@ -457,7 +457,7 @@ namespace game {
 		}
 	}
 		
-	void World::replicateSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+	void World::replicateSound(SoundId sound_id, const float3 &pos, SoundType sound_type) {
 		if(m_mode == Mode::single_player) {
 			playSound(sound_id, pos, sound_type);
 			return;
@@ -473,7 +473,7 @@ namespace game {
 		}
 	}
 		
-	void World::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+	void World::playSound(SoundId sound_id, const float3 &pos, SoundType sound_type) {
 		audio::playSound(sound_id, sound_type, pos);
 	}
 

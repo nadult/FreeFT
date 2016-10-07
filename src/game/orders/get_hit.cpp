@@ -28,7 +28,7 @@ namespace game {
 		sr.pack(mode, force, force_angle, fall_time);
 	}
 
-	bool Actor::handleOrder(GetHitOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(GetHitOrder &order, EntityEvent event, const EntityEventParams &params) {
 		typedef GetHitOrder::Mode Mode;
 
 		if(event == EntityEvent::init_order) {

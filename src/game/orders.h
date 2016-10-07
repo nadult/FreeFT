@@ -32,7 +32,7 @@ namespace game {
 		POrder &&getFollowup() { return std::move(m_followup); }
 		bool hasFollowup() const { return (bool)m_followup; }
 		
-		virtual OrderTypeId::Type typeId() const = 0;
+		virtual OrderTypeId typeId() const = 0;
 		virtual Order *clone() const = 0;
 
 		bool isFinished() const { return m_is_finished; }
@@ -47,18 +47,18 @@ namespace game {
 		bool m_please_cancel;
 	};
 
-	template <class TOrder,  OrderTypeId::Type type_id_>
+	template <class TOrder,  OrderTypeId type_id_>
 	class OrderImpl: public Order {
 	public:
 		enum {
-			type_id = type_id_,
+			type_id = (int)type_id_,
 		};
 
 		OrderImpl() { }
 		OrderImpl(Stream &sr) :Order(sr) { }
 
 		Order *clone() const { return new TOrder(*static_cast<const TOrder*>(this)); }
-		OrderTypeId::Type typeId() const { return type_id_; }
+		OrderTypeId typeId() const { return type_id_; }
 	};
 
 }
@@ -68,8 +68,8 @@ namespace game {
 namespace game {
 
 	template <class TOrder>
-	bool ThinkingEntity::handleOrderWrapper(Order *order, EntityEvent::Type event, const EntityEventParams &params) {
-		DASSERT(order && order->typeId() == (OrderTypeId::Type)TOrder::type_id);
+	bool ThinkingEntity::handleOrderWrapper(Order *order, EntityEvent event, const EntityEventParams &params) {
+		DASSERT(order && order->typeId() == (OrderTypeId)TOrder::type_id);
 		return handleOrder(*static_cast<TOrder*>(order), event, params);
 	}
 

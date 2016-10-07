@@ -10,16 +10,16 @@
 
 namespace game {
 
-	DECLARE_ENUM(TriggerClassId,
+	DEFINE_ENUM(TriggerClassId,
 		generic,
 		spawn_zone
 	);
 
 	class Trigger: public Entity {
 	public:
-		enum { type_id = EntityId::trigger };
+		enum { type_id = (int)EntityId::trigger };
 
-		Trigger(TriggerClassId::Type class_id, const FBox &box);
+		Trigger(TriggerClassId class_id, const FBox &box);
 		Trigger(const XMLNode&);
 		Trigger(Stream&);
 		
@@ -28,8 +28,8 @@ namespace game {
 		
 		Entity *clone() const override;
 
-		Flags::Type flags() const override { return Flags::trigger; }
-		EntityId::Type typeId() const override { return EntityId::trigger; }
+		FlagsType flags() const override { return Flags::trigger; }
+		EntityId typeId() const override { return EntityId::trigger; }
 		const FBox boundingBox() const override;
 		
 		const IRect screenRect() const override;
@@ -37,7 +37,7 @@ namespace game {
 
 		void setBox(const FBox &box);
 
-		TriggerClassId::Type classId() const { return m_class_id; }
+		TriggerClassId classId() const { return m_class_id; }
 
 		void setFactionId(int faction_id) { m_faction_id = faction_id; }
 		int factionId() const { return m_faction_id; }
@@ -49,7 +49,7 @@ namespace game {
 		int spawnLimit() const { return m_spawn_limit; }
 
 	private:
-		TriggerClassId::Type m_class_id;
+		TriggerClassId m_class_id;
 		int m_faction_id, m_spawn_limit;
 		float m_spawn_delay;
 		float3 m_box_size;

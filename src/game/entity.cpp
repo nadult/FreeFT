@@ -39,7 +39,7 @@ namespace game {
 	}
 
 	XMLNode Entity::save(XMLNode &parent) const {
-		XMLNode node = parent.addChild(EntityId::toString(typeId()));
+		XMLNode node = parent.addChild(toString(typeId()));
 		node.addAttrib("pos", m_pos);
 		if(m_dir_angle != 0.0f)
 			node.addAttrib("angle", m_dir_angle);

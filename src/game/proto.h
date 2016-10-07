@@ -11,12 +11,12 @@
 
 namespace game {
 
-	DECLARE_ENUM(ProtoId,
+	DEFINE_ENUM(ProtoId,
 		item,
-		item_weapon,
-		item_armour,
-		item_ammo,
-		item_other,
+		weapon,
+		armour,
+		ammo,
+		other,
 
 		projectile,
 		impact,
@@ -27,19 +27,14 @@ namespace game {
 		turret
 	);
 
-	namespace ProtoId {
-		enum {
-			item_first = item_weapon,
-			item_last = item_other
-		};
-
-		inline constexpr bool isItemId(int id) { return id >= item_first && id <= item_last; }
-	};
+	inline constexpr bool isItem(ProtoId id) {
+		return isOneOf(id, ProtoId::weapon, ProtoId::armour, ProtoId::ammo, ProtoId::other);
+	}
 
 	class ProtoIndex {
 	public:
-		ProtoIndex(int idx, ProtoId::Type type) :m_idx(idx), m_type(type) { validate(); }
-		ProtoIndex() :m_idx(-1), m_type(ProtoId::invalid) { }
+		ProtoIndex(int idx, ProtoId type) :m_idx(idx), m_type(type) { validate(); }
+		ProtoIndex() = default;
 		ProtoIndex(Stream&);
 		ProtoIndex(const XMLNode&);
 		explicit operator bool() const { return isValid(); }
@@ -48,17 +43,17 @@ namespace game {
 		void save(XMLNode) const;
 
 		void validate();
-		bool isValid() const { return m_type != ProtoId::invalid; }
+		bool isValid() const { return (bool)m_type; }
 
 		bool operator==(const ProtoIndex &rhs) const { return m_idx == rhs.m_idx && m_type == rhs.m_type; }
 		bool operator<(const ProtoIndex &rhs) const { return m_type == rhs.m_type? m_idx < rhs.m_idx : m_type < rhs.m_type; }
 
-		ProtoId::Type type() const { return m_type; }
+		ProtoId type() const { DASSERT(isValid()); return *m_type; }
 		int index() const { return m_idx; }
 
 	protected:
-		int m_idx;
-		ProtoId::Type m_type;
+		int m_idx = -1;
+		Maybe<ProtoId> m_type; // TODO: do we really want to deal with this? Just make only valid protos
 	};
 
 	struct Proto {
@@ -66,8 +61,8 @@ namespace game {
 
 		virtual ~Proto() { }
 		virtual void link() { }
-		virtual ProtoId::Type protoId() const = 0;
-		virtual bool validProtoId(ProtoId::Type type) const { return false; }
+		virtual ProtoId protoId() const = 0;
+		virtual bool validProtoId(ProtoId type) const { return false; }
 		ProtoIndex index() const { return ProtoIndex(idx, protoId()); }
 
 		string id;
@@ -81,22 +76,22 @@ namespace game {
 		bool is_dummy;
 	};
 
-	template <class Type, class Base, ProtoId::Type proto_id_>
+	template <class Type, class Base, ProtoId proto_id_>
 	struct ProtoImpl: public Base {
 		template <class... Args>
 		ProtoImpl(const Args&... args) :Base(args...) { }
 
-		enum { proto_id = proto_id_ };
-		virtual ProtoId::Type protoId() const { return proto_id_; }
-		virtual bool validProtoId(ProtoId::Type type) const { return type == proto_id_ || Base::validProtoId(type); }
+		enum { proto_id = (int)proto_id_ };
+		virtual ProtoId protoId() const { return proto_id_; }
+		virtual bool validProtoId(ProtoId type) const { return type == proto_id_ || Base::validProtoId(type); }
 	};
 
-	int countProtos(ProtoId::Type);
-	ProtoIndex findProto(const string &name, ProtoId::Type id = ProtoId::invalid);	
+	int countProtos(ProtoId);
+	ProtoIndex findProto(const string &name, Maybe<ProtoId> id = none);
 	const Proto &getProto(ProtoIndex);
-	const Proto &getProto(const string &name, ProtoId::Type id = ProtoId::invalid);
+	const Proto &getProto(const string &name, Maybe<ProtoId> id = none);
 
-	inline const Proto &getProto(int index, ProtoId::Type type)
+	inline const Proto &getProto(int index, ProtoId type)
 		{ return getProto(ProtoIndex(index, type)); }
 
 	//TODO: store pointer instead of ProtoIndex
@@ -112,7 +107,7 @@ namespace game {
 		void link() {
 			if(m_id.empty())
 				return;
-			m_index = findProto(m_id, (ProtoId::Type)ProtoType::proto_id);
+			m_index = findProto(m_id, (ProtoId)ProtoType::proto_id);
 		}
 
 		operator const ProtoType*() const {
@@ -135,4 +130,3 @@ namespace game {
 }
 
 #endif
-

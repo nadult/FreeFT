@@ -14,10 +14,8 @@
 namespace game {
 
 	Order *Order::construct(Stream &sr) {
-		OrderTypeId::Type order_id;
+		OrderTypeId order_id;
 		sr >> order_id;
-		if(order_id == OrderTypeId::invalid)
-			return nullptr;
 
 		switch(order_id) {
 		case OrderTypeId::idle:				return new IdleOrder(sr);
@@ -61,7 +59,7 @@ namespace game {
 			sr << m_followup->typeId() << *m_followup;
 	}
 
-	void ThinkingEntity::handleOrder(EntityEvent::Type event, const EntityEventParams &params) {
+	void ThinkingEntity::handleOrder(EntityEvent event, const EntityEventParams &params) {
 		if(!m_order)
 			return;
 
@@ -80,10 +78,11 @@ namespace game {
 			&ThinkingEntity::handleOrderWrapper<GetHitOrder>,
 			&ThinkingEntity::handleOrderWrapper<DieOrder>
 		};
-		static_assert(arraySize(handlers) == OrderTypeId::count, "Not all order classes are handled in ThinkingEntity::handleOrder");
+		static_assert(arraySize(handlers) == count<OrderTypeId>(),
+				      "Not all order classes are handled in ThinkingEntity::handleOrder");
 
 		if(!m_order->isFinished())
-			if(!(this->*handlers[m_order->typeId()])(m_order.get(), event, params))
+			if(!(this->*handlers[(int)m_order->typeId()])(m_order.get(), event, params))
 				m_order->finish();
 	}
 

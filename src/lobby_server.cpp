@@ -51,7 +51,7 @@ public:
 				continue;
 			
 			try {
-				LobbyChunkId::Type chunk_id;
+				LobbyChunkId chunk_id;
 				packet >> chunk_id;
 
 				if(chunk_id == LobbyChunkId::server_status) {
@@ -142,7 +142,7 @@ int safe_main(int argc, char **argv)
 	printf("FreeFT::lobby_server; built " __DATE__ " " __TIME__ "\nPress Ctrl+C to quit\n");
 	handleCtrlC(onCtrlC);
 	LobbyServer server(port);
-	printf("Lobby server address: %s\n", Address(port).toString().c_str());
+	printf("Lobby server port: %d\n", port);
 
 	while(!s_is_closing) {
 		server.tick();

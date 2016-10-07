@@ -28,7 +28,7 @@ namespace game {
 	}
 		
 	bool WorldViewer::isMovable(const Entity &entity) const {
-		EntityId::Type type_id = entity.typeId();
+		EntityId type_id = entity.typeId();
 		if( const ThinkingEntity *tentity = dynamic_cast<const ThinkingEntity*>(&entity) )
 			return !(tentity->isDead() && tentity->isDying());
 		return type_id == EntityId::projectile || type_id == EntityId::impact;

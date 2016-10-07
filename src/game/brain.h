@@ -20,8 +20,8 @@ namespace game {
 		virtual ~Brain() = default;
 
 		virtual void think() = 0;
-		virtual void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) { }
-		virtual void onFailed(OrderTypeId::Type) { }
+		virtual void onImpact(DamageType, float damage, const float3 &force, EntityRef source) { }
+		virtual void onFailed(OrderTypeId) { }
 		virtual Brain *clone() const = 0;
 		virtual const string status() const { return string(); }
 
@@ -51,8 +51,8 @@ namespace game {
 		const Weapon findBestWeapon() const;
 
 		Brain *clone() const override { return new ActorBrain(*this); }
-		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
-		void onFailed(OrderTypeId::Type) override;
+		void onImpact(DamageType, float damage, const float3 &force, EntityRef source) override;
+		void onFailed(OrderTypeId) override;
 		void findActors(int faction_id, const float3 &range, vector<EntityRef> &out);
 		void informBuddies(EntityRef enemy);
 		

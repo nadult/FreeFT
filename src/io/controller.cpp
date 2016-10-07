@@ -134,7 +134,7 @@ namespace io {
 		} else if(event.isMouseOverEvent() && !mouse_over_hud) {
 			m_screen_ray = screenRay((int2)event.mousePos() + m_view_pos);
 
-			Flags::Type flags =
+			FlagsType flags =
 				Flags::walkable_tile |
 				(Flags::entity & ~(Flags::projectile | Flags::impact | Flags::trigger));
 			m_isect =
@@ -181,7 +181,7 @@ namespace io {
 				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
 		} else if(event.mouseButtonDown(InputButton::right) && actor) {
-			AttackMode::Type mode = AttackMode::undefined;
+			Maybe<AttackMode> mode;
 			if(event.hasModifier(InputEvent::mod_lshift)) {
 				const Weapon &weapon = actor->inventory().weapon();
 				if(weapon.proto().attack_modes & AttackModeFlags::burst)

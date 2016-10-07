@@ -19,10 +19,12 @@ using namespace game;
 
 namespace ui {
 
-	DEFINE_ENUM(EntitiesEditorMode,
+	static const EnumMap<EntitiesEditorMode, const char*> s_mode_desc = {
 		"[S]electing entities",
 		"[P]lacing entities"
-	);
+	};
+	
+	const char *describe(EntitiesEditorMode mode) { return s_mode_desc[mode]; }
 
 	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, View &view, IRect rect)
 		:ui::Window(rect, Color::transparent), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map) {
@@ -46,11 +48,11 @@ namespace ui {
 
 		if(state.isKeyDown('s')) {
 			m_mode = Mode::selecting;
-			sendEvent(this, Event::button_clicked, m_mode);
+			sendEvent(this, Event::button_clicked, (int)m_mode);
 		}
 		if(state.isKeyDown('p')) {
 			m_mode = Mode::placing;
-			sendEvent(this, Event::button_clicked, m_mode);
+			sendEvent(this, Event::button_clicked, (int)m_mode);
 		}
 
 		if(m_proto) {
@@ -81,14 +83,14 @@ namespace ui {
 
 		Ray ray = screenRay(start);
 
-		Flags::Type flags = Flags::all;
+		FlagsType flags = Flags::all;
 		if(floor_mode)
 			flags = flags & ~(Flags::wall_tile | Flags::object_tile);
 
 		auto isect = m_tile_map.trace(ray, -1, flags | Flags::visible);
 		float3 pos = isect.first == -1? (float3)asXZ(screenToWorld(start)) : ray.at(isect.second);
 
-		m_cursor_pos = (float3)round(pos);
+		m_cursor_pos = (float3)::round(pos);
 		m_selection = IRect(min(start, end), max(start, end));
 	}
 		
@@ -358,7 +360,7 @@ namespace ui {
 
 		font->draw(out, int2(0, clippedRect().height() - 25), {Color::white, Color::black},
 				format("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
-				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), EntitiesEditorMode::toString(m_mode)));
+				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_desc[m_mode]));
 	}
 
 }

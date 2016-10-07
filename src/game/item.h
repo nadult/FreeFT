@@ -10,21 +10,18 @@
 
 namespace game {
 
-	DECLARE_ENUM(ItemType,
-		weapon = 0,
+	DEFINE_ENUM(ItemType,
+		weapon,
 		armour,
 		ammo,
 		other
 	);
 
-	namespace ItemType {
-		ProtoId::Type toProtoId(int id);
-		static_assert(ProtoId::item_last - ProtoId::item_first + 1 == ItemType::count, "Invalid item count in ProtoId");
-	}
+	ProtoId toProtoId(ItemType);
 
 	struct ItemProto: public ProtoImpl<ItemProto, EntityProto, ProtoId::item> {
 		ItemProto(const TupleParser&);
-		virtual ItemType::Type itemType() const = 0;
+		virtual ItemType itemType() const = 0;
 
 		string description;
 		string name;
@@ -32,8 +29,8 @@ namespace game {
 		int seq_ids[3];
 	};
 
-	struct OtherItemProto: public ProtoImpl<OtherItemProto, ItemProto, ProtoId::item_other> {
-		ItemType::Type itemType() const { return ItemType::other; }
+	struct OtherItemProto: public ProtoImpl<OtherItemProto, ItemProto, ProtoId::other> {
+		ItemType itemType() const { return ItemType::other; }
 		OtherItemProto(const TupleParser &parser) :ProtoImpl(parser) { }
 	};
 
@@ -53,7 +50,7 @@ namespace game {
 
 		bool operator==(const Item &rhs) const { return index() == rhs.index(); }
 
-		ItemType::Type type() const			{ return m_proto->itemType(); }
+		ItemType type() const			{ return m_proto->itemType(); }
 		bool isDummy() const				{ return m_proto->is_dummy; }
 		const string &spriteName() const	{ return m_proto->sprite_name; }
 		const string &name() const			{ return m_proto->name; }
@@ -77,7 +74,7 @@ namespace game {
 		ItemEntity(const XMLNode&);
 		ItemEntity(const Item &item, int count);
 
-		Flags::Type flags() const { return Flags::item | Flags::static_entity; }
+		FlagsType flags() const { return Flags::item | Flags::static_entity; }
 
 		STexture guiImage(bool small, FRect &tex_rect) const;
 		const Item &item() const { return m_item; }

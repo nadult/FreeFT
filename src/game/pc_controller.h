@@ -23,7 +23,7 @@ namespace game
 		bool hasActor() const;
 
 		bool canChangeStance() const;
-		void setStance(Stance::Type);
+		void setStance(Stance);
 		int targetStance() const { return m_target_stance; }
 
 		bool canEquipItem(const Item&) const;

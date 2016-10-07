@@ -24,7 +24,7 @@ namespace game {
 		sr << m_path << m_path_pos << m_time_for_update;
 	}
 
-	bool Actor::handleOrder(TrackOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(TrackOrder &order, EntityEvent event, const EntityEventParams &params) {
 		if(event == EntityEvent::init_order || event == EntityEvent::think) {
 			order.m_time_for_update -= timeDelta();
 			const Entity *target = refEntity(order.m_target);
@@ -71,7 +71,7 @@ namespace game {
 				animate(m_action);
 			}
 			if(event == EntityEvent::step) {
-				SurfaceId::Type standing_surface = surfaceUnder();
+				SurfaceId standing_surface = surfaceUnder();
 				playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 			}
 		}

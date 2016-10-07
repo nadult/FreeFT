@@ -34,12 +34,12 @@ namespace game {
 
 	class UnequipItemOrder: public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item> {
 	public:
-		UnequipItemOrder(ItemType::Type);
+		UnequipItemOrder(ItemType);
 		UnequipItemOrder(Stream&);
 
 		void save(Stream&) const;
 		
-		ItemType::Type m_item_type;
+		ItemType m_item_type;
 	};
 
 	enum TransferMode: char {

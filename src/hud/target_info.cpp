@@ -15,7 +15,7 @@ namespace hud {
 	namespace {
 		const float2 s_char_icon_size(52.0f, 70.0f);
 
-		Color s_health_colors[HealthStatus::count] = {
+		static const EnumMap<HealthStatus, Color> s_health_colors = {
 			Color::white,
 			Color::green,
 			Color::yellow,
@@ -56,8 +56,8 @@ namespace hud {
 	void HudTargetInfo::onDraw(Renderer2D &out) const {
 		HudLayer::onDraw(out);
 
-		HealthStatus::Type health = HealthStatus::fromHPPercentage(m_health);
-		const char *health_desc = HealthStatus::toString(health);
+		HealthStatus health = healthStatusFromHP(m_health);
+		const char *health_desc = toString(health);
 
 		Color text_color = mulAlpha(Color::white, alpha());
 		Color shadow_color = mulAlpha(Color::black, alpha());

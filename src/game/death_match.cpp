@@ -86,7 +86,7 @@ namespace game {
 		}
 	}
 
-	void DeathMatchServer::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
+	void DeathMatchServer::onMessage(Stream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::update_client_info) {
 		}
 		else
@@ -126,7 +126,7 @@ namespace game {
 			m_current_info.next_respawn_time -= time_diff;
 	}
 	
-	void DeathMatchClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
+	void DeathMatchClient::onMessage(Stream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::update_client_info) {
 			ClientInfo new_info;
 			int client_id = decodeInt(sr);
@@ -155,7 +155,7 @@ namespace game {
 	}
 		
 		
-	const UserMessage DeathMatchClient::userMessage(UserMessageType::Type type) {
+	const UserMessage DeathMatchClient::userMessage(UserMessageType type) {
 		if(type == UserMessageType::main) {
 			if(m_current_info.is_respawning) {
 				int time = (int)(m_current_info.next_respawn_time + 0.9999f);

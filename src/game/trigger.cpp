@@ -7,18 +7,13 @@
 
 namespace game {
 
-	DEFINE_ENUM(TriggerClassId,
-		"generic",
-		"spawn_zone"
-	);
-
-	Trigger::Trigger(TriggerClassId::Type class_id, const FBox &box)
+	Trigger::Trigger(TriggerClassId class_id, const FBox &box)
 		:Entity(Sprite::getDummy()), m_class_id(class_id), m_faction_id(0), m_spawn_delay(0.0f), m_spawn_limit(0) {
 		setBox(box);
 	}
 		
 	Trigger::Trigger(const XMLNode &node) :Entity(Sprite::getDummy(), node) {
-		m_class_id = TriggerClassId::fromString(node.attrib("class"));
+		m_class_id = fromString<TriggerClassId>(node.attrib("class"));
 		m_box_size = node.attrib<float3>("box_size");
 		m_faction_id = node.attrib<int>("faction_id", 0);
 		m_spawn_delay = node.attrib<float>("spawn_delay", 0.0f);
@@ -37,7 +32,7 @@ namespace game {
 	XMLNode Trigger::save(XMLNode &parent) const {
 		XMLNode out = Entity::save(parent);
 		out.addAttrib("box_size", m_box_size);
-		out.addAttrib("class", TriggerClassId::toString(m_class_id));
+		out.addAttrib("class", toString(m_class_id));
 		if(m_faction_id != 0)
 			out.addAttrib("faction_id", m_faction_id);
 		if(m_spawn_delay != 0.0f)

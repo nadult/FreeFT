@@ -352,14 +352,13 @@ namespace audio
 		return (int)source_id;
 	}
 
-	static float s_sound_rolloffs[game::SoundType::count] = {
+	static const EnumMap<game::SoundType, float> s_sound_rolloffs = {
 		3.0f,
 		1.0f,
 		1.5f
 	};
 
-	void playSound(int sound_id, game::SoundType::Type sound_type, const float3 &pos, const float3 &vel) {
-		DASSERT(game::SoundType::isValid(sound_type));
+	void playSound(int sound_id, game::SoundType sound_type, const float3 &pos, const float3 &vel) {
 		if(distance(pos, s_listener_pos) > s_max_distance / s_sound_rolloffs[sound_type])
 			return;
 

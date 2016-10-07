@@ -66,7 +66,7 @@ int decodeInt(Stream &sr) {
 	}
 }
 
-uint toFlags(const char *input, const char **strings, int num_strings, uint first_flag) {
+uint toFlags(const char *input, CRange<const char *> strings, uint first_flag) {
 	const char *iptr = input;
 
 	uint out_value = 0;
@@ -75,7 +75,7 @@ uint toFlags(const char *input, const char **strings, int num_strings, uint firs
 		int len = next_space ? next_space - iptr : strlen(iptr);
 
 		bool found = false;
-		for(int e = 0; e < num_strings; e++)
+		for(int e = 0; e < strings.size(); e++)
 			if(strncmp(iptr, strings[e], len) == 0 && strings[e][len] == 0) {
 				out_value |= first_flag << e;
 				found = true;
@@ -84,9 +84,9 @@ uint toFlags(const char *input, const char **strings, int num_strings, uint firs
 
 		if(!found) {
 			char flags[1024], *ptr = flags;
-			for(int i = 0; i < num_strings; i++)
+			for(int i = 0; i < strings.size(); i++)
 				ptr += snprintf(ptr, sizeof(flags) - (ptr - flags), "%s ", strings[i]);
-			if(num_strings)
+			if(strings.size())
 				ptr[-1] = 0;
 
 			THROW("Error while converting string \"%s\" to flags (%s)", input, flags);

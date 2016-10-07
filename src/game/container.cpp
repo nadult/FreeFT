@@ -10,12 +10,7 @@
 
 namespace game {
 
-	DEFINE_ENUM(ContainerSoundType,
-		"open",
-		"close"
-	)
-
-	static const char *s_seq_names[ContainerState::count] = {
+	static const EnumMap<ContainerState, const char*> s_seq_names = {
 		"Closed",
 		"Opened",
 		"Opening",
@@ -29,16 +24,16 @@ namespace game {
 		name = parser("name");
 
 		const char *sound_prefix = parser("sound_prefix");
-		for(int n = 0; n < ContainerSoundType::count; n++) {
+		for(auto cst : all<ContainerSoundType>()) {
 			char name[256];
-			snprintf(name, sizeof(name), "%s%s", sound_prefix, ContainerSoundType::toString(n));
-			sound_ids[n] = SoundId(name);
+			snprintf(name, sizeof(name), "%s%s", sound_prefix, toString(cst));
+			sound_ids[cst] = SoundId(name);
 		}
 
 		is_always_opened = false;
-		for(int n = 0; n < ContainerState::count; n++) {
-			seq_ids[n] = sprite->findSequence(s_seq_names[n]);
-			if(seq_ids[n] == -1)
+		for(auto cs : all<ContainerState>()) {
+			seq_ids[cs] = sprite->findSequence(s_seq_names[cs]);
+			if(seq_ids[cs] == -1)
 				is_always_opened = true;
 		}
 	}
@@ -99,7 +94,7 @@ namespace game {
 	
 	void Container::onSoundEvent() {
 		bool is_opening = m_state == ContainerState::opening;
-		ContainerSoundType::Type sound_type = is_opening? ContainerSoundType::opening : ContainerSoundType::closing;
+		ContainerSoundType sound_type = is_opening? ContainerSoundType::opening : ContainerSoundType::closing;
 		replicateSound(m_proto.sound_ids[sound_type], pos());
 	}
 	

@@ -26,18 +26,8 @@ namespace {
 
 namespace game {
 	
-	DEFINE_ENUM(ItemType,
-		"weapon",
-		"armour",
-		"ammo",
-		"other"
-	);
-	
-	namespace ItemType {	
-		ProtoId::Type toProtoId(int id) {
-			DASSERT(isValid(id));
-			return (ProtoId::Type)(id + ProtoId::item_first);
-		}
+	ProtoId toProtoId(ItemType id) {
+		return (ProtoId)((int)id + (int)ProtoId::item + 1);
 	}
 	
 	ItemProto::ItemProto(const TupleParser &parser) :ProtoImpl(parser) {
@@ -56,22 +46,22 @@ namespace game {
 	}
 
 	Item::Item(ProtoIndex index)
-		:m_proto( (ASSERT(ProtoId::isItemId(index.type())), ASSERT(index.isValid()), static_cast<const ItemProto*>(&getProto(index))) ) { }
+		:m_proto( (ASSERT(isItem(index.type())), ASSERT(index.isValid()), static_cast<const ItemProto*>(&getProto(index))) ) { }
 		
 	const Item Item::dummy() {
 		return Item(findProto("_dummy_item", ProtoId::item));
 	}
 
 	const Item Item::dummyAmmo() {
-		return Item(findProto("_dummy_ammo", ProtoId::item_ammo));
+		return Item(findProto("_dummy_ammo", ProtoId::ammo));
 	}
 
 	const Item Item::dummyArmour() {
-		return Item(findProto("_dummy_armour", ProtoId::item_armour));
+		return Item(findProto("_dummy_armour", ProtoId::armour));
 	}
 
 	const Item Item::dummyWeapon() {
-		return Item(findProto("_dummy_weapon", ProtoId::item_weapon));
+		return Item(findProto("_dummy_weapon", ProtoId::weapon));
 	}
 		
 	STexture Item::guiImage(bool small, FRect &tex_rect) const {

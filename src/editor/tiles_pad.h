@@ -19,7 +19,7 @@ namespace ui {
 	public:
 		TilesPad(const IRect &rect, PTilesEditor editor, TileGroup *group);
 
-		TileFilter::Type currentFilter() const;
+		TileFilter currentFilter() const;
 		void updateTileList();
 		void updateDirtyBar();
 		virtual bool onEvent(const Event &ev);

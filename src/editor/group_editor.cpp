@@ -48,7 +48,7 @@ namespace {
 		updateSelector();
 	}
 
-	void GroupEditor::setTileFilter(TileFilter::Type filter) {
+	void GroupEditor::setTileFilter(TileFilter filter) {
 		m_tile_filter = filter;
 		updateSelector();
 	}

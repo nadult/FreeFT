@@ -36,7 +36,7 @@ namespace game
 		void update(int index);
 		void remove(int index);
 		
-		int pixelIntersect(const int2 &pos, Flags::Type flags = Flags::all) const;
+		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 		
 		void loadFromXML(const XMLDocument&);
 		void saveToXML(XMLDocument&) const;

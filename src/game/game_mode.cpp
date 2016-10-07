@@ -213,7 +213,7 @@ namespace game {
 		GameMode::tick(time_diff);
 	}
 
-	void GameModeServer::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
+	void GameModeServer::onMessage(Stream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::actor_order) {
 			EntityRef actor_ref;
 			POrder order;
@@ -278,7 +278,7 @@ namespace game {
 		GameMode::tick(time_diff);
 	}
 
-	void GameModeClient::onMessage(Stream &sr, MessageId::Type msg_type, int source_id) {
+	void GameModeClient::onMessage(Stream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::update_client) {
 			GameClient new_client;
 			int new_id = decodeInt(sr);

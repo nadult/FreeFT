@@ -34,22 +34,6 @@ namespace game {
 		Proto& (*get_func)(int);
 	};
 
-	DEFINE_ENUM(ProtoId,
-		"item",
-		"weapon",
-		"armour",
-		"ammo",
-		"other",
-
-		"projectile",
-		"impact",
-		"door",
-		"container",
-		"actor",
-		"actor_armour",
-		"turret"
-	);
-
 	namespace {
 		vector<WeaponProto> s_weapons;
 		vector<ArmourProto> s_armours;
@@ -64,7 +48,7 @@ namespace game {
 		vector<ActorArmourProto> s_actor_armours;
 		vector<TurretProto> s_turrets;
 
-		ProtoDef s_protos[ProtoId::count] = {
+		EnumMap<ProtoId, ProtoDef> s_protos = {
 			{ std::map<string, int>(), 0, 0, 0, 0 },
 
 #define PROTO_DEF(table_name, container) \
@@ -94,7 +78,7 @@ namespace game {
 		
 	ProtoIndex::ProtoIndex(Stream &sr) {
 		sr >> m_type;
-		if(ProtoId::isValid(m_type)) {
+		if(m_type) {
 			m_idx = decodeInt(sr);
 			validate();
 		}
@@ -107,7 +91,7 @@ namespace game {
 		if(strcmp(proto_type, "invalid") == 0)
 			*this = ProtoIndex();
 		else {
-			m_type = ProtoId::fromString(proto_type);
+			m_type = fromString<ProtoId>(proto_type);
 			m_idx = findProto(node.attrib("proto_id"), m_type).m_idx;
 			if(m_idx == -1)
 				THROW("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id"), proto_type);
@@ -116,19 +100,15 @@ namespace game {
 	}
 		
 	void ProtoIndex::save(Stream &sr) const {
-		if(isValid()) {
-			sr << m_type;
+		sr << m_type;
+		if(isValid())
 			encodeInt(sr, m_idx);
-		}
-		else {
-			sr << ProtoId::invalid;
-		}
 	}
 
 	void ProtoIndex::save(XMLNode node) const {
 		if(isValid()) {
 			const Proto &proto = getProto(*this);
-			node.addAttrib("proto_type", ProtoId::toString(m_type));
+			node.addAttrib("proto_type", m_type? toString(*m_type) : "invalid");
 			node.addAttrib("proto_id", node.own(proto.id));
 		}
 		else {
@@ -137,26 +117,26 @@ namespace game {
 	}
 
 	void ProtoIndex::validate() {
-		if(m_idx != -1 || m_type != ProtoId::invalid) {
-			if(!ProtoId::isValid(m_type)) {
+		if(m_idx != -1 || m_type) {
+			if(!m_type || !validEnum(*m_type)) {
 				*this = ProtoIndex();
-				THROW("Invalid proto type: %d\n", (int)m_type);
+				THROW("Invalid proto type: %d\n", m_type? (int)*m_type : -1);
 				return;
 			}
 
-			int count = s_protos[m_type].count;
+			int count = s_protos[*m_type].count;
 			if(m_idx < 0 || m_idx >= count) {
-				ProtoId::Type type = m_type;
+				ProtoId type = *m_type;
 				*this = ProtoIndex();
 				THROW("Invalid proto index: %d (type: %s, count: %d)\n",
-						m_idx, ProtoId::toString(type), count);
+						m_idx, toString(type), count);
 			}
 		}
 	}
 	
 	static ProtoIndex findItemProto(const string &name) {
-		for(int n = ProtoId::item_first; n <= ProtoId::item_last; n++) {
-			ProtoIndex index = findProto(name, (ProtoId::Type)n);
+		for(auto id : all<ProtoId>()) if(isItem(id)) {
+			ProtoIndex index = findProto(name, id);
 			if(index.isValid())
 				return index;
 		}
@@ -164,21 +144,19 @@ namespace game {
 		return ProtoIndex();
 	}
 
-	ProtoIndex findProto(const string &name, ProtoId::Type id) {
-		if(id == ProtoId::invalid) {
+	ProtoIndex findProto(const string &name, Maybe<ProtoId> id) {
+		if(!id)
 			return ProtoIndex();
-		}
 		if(id == ProtoId::item)
 			return findItemProto(name);
 
-		DASSERT(ProtoId::isValid(id));
-		const ProtoDef &def = s_protos[id];
+		DASSERT(validEnum(*id));
+		const ProtoDef &def = s_protos[*id];
 		auto it = def.map.find(name);
-		return it == def.map.end()? ProtoIndex() : ProtoIndex(it->second, id);
+		return it == def.map.end()? ProtoIndex() : ProtoIndex(it->second, *id);
 	}
 	
-	int countProtos(ProtoId::Type id) {
-		DASSERT(ProtoId::isValid(id));
+	int countProtos(ProtoId id) {
 		return s_protos[id].count;
 	}
 
@@ -187,11 +165,10 @@ namespace game {
 		return s_protos[index.type()].get_func(index.index());
 	}
 	
-	const Proto &getProto(const string &name, ProtoId::Type id) {
+	const Proto &getProto(const string &name, Maybe<ProtoId> id) {
 		ProtoIndex index = findProto(name, id);
 		if(!index.isValid())
-			THROW("Proto (type: %s) not found: %s",
-					id == ProtoId::invalid? "invalid" : ProtoId::toString(id), name.c_str());
+			THROW("Proto (type: %s) not found: %s", id? toString(*id) : "invalid", name.c_str());
 		return getProto(index);
 	}
 
@@ -212,7 +189,7 @@ namespace game {
 		XMLNode spreadsheet_node = body_node.child("office:spreadsheet");
 		ASSERT(spreadsheet_node);
 
-		for(int p = 0; p < ProtoId::count; p++) {
+		for(auto p : all<ProtoId>()) {
 			ProtoDef &def = s_protos[p];
 			if(!def.table_name)
 				continue;
@@ -228,7 +205,7 @@ namespace game {
 			def.count = (int)def.map.size();
 		}
 
-		for(int p = 0; p < ProtoId::count; p++) {
+		for(auto p : all<ProtoId>()) {
 			ProtoDef &def = s_protos[p];
 			for(int n = 0; n < def.count; n++) {
 				Proto &proto = s_protos[p].get_func(n);
@@ -255,8 +232,8 @@ namespace game {
 
 		if(verbose) {
 			int count = 0;
-			for(int p = 0; p < ProtoId::count; p++)
-				count += countProtos((ProtoId::Type)p);
+			for(auto p : all<ProtoId>())
+				count += countProtos((ProtoId)p);
 			printf(" %d rows loaded (%.0f msec)\n", count, (getTime() - time) * 1000.0);
 		}
 		

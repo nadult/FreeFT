@@ -39,8 +39,8 @@ namespace hud {
 		};
 
 		struct StanceButton {
-			Stance::Type stance_id;
-			HudIcon::Type icon_id;
+			Stance stance_id;
+			HudIcon icon_id;
 		};
 
 		static StanceButton s_stance_buttons[] = {
@@ -68,7 +68,7 @@ namespace hud {
 			stance_rect += float2(weapon_rect.max.x + spacing, bottom_left.y - s_hud_stance_size.y);
 
 			for(int n = 0; n < arraySize(s_stance_buttons); n++) {
-				PHudButton stance(new HudRadioButton(stance_rect, s_stance_buttons[n].stance_id, 1));
+				PHudButton stance(new HudRadioButton(stance_rect, (int)s_stance_buttons[n].stance_id, 1));
 				stance->setIcon(s_stance_buttons[n].icon_id);
 				m_hud_stances.push_back(std::move(stance));
 
@@ -109,7 +109,7 @@ namespace hud {
 				return false;
 
 			if(isOneOf(source, m_hud_stances) && m_pc_controller->canChangeStance()) {
-				m_pc_controller->setStance((Stance::Type)event.value);
+				m_pc_controller->setStance((Stance)event.value);
 			}
 			if(m_hud_weapon.get() == source)
 				m_pc_controller->reload();
@@ -140,7 +140,7 @@ namespace hud {
 
 		int stance = m_pc_controller? m_pc_controller->targetStance() : -1;
 		if(actor && actor->isDead())
-			stance = Stance::prone;
+			stance = (int)Stance::prone;
 
 		for(auto &button: m_hud_stances) {
 			button->setEnabled(button->id() == stance);

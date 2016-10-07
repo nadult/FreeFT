@@ -13,11 +13,11 @@ namespace ui {
 		int width = rect.width();
 
 		m_filter_box = make_shared<ComboBox>(IRect(0, 0, width/2, 22), 200,
-				"Filter: ", TileFilter::strings(), TileFilter::count);
+				"Filter: ", enumStrings(TileFilter()));
 		m_filter_box->selectEntry(0);
 		m_dirty_bar = make_shared<ProgressBar>(IRect(width/2, 0, width, 22), true);
 		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 22, width, 44), 200, "Editing mode: ",
-				TilesEditor::modeStrings(), TilesEditor::mode_count);
+				TilesEditor::modeStrings());
 		
 		m_selector = make_shared<TileSelector>(IRect(0, 44, width, rect.height()));
 		
@@ -32,9 +32,9 @@ namespace ui {
 		updateDirtyBar();
 	}
 
-	TileFilter::Type TilesPad::currentFilter() const {
-		TileFilter::Type filter = (TileFilter::Type)m_filter_box->selectedId();
-		DASSERT(filter >= 0 && filter < TileFilter::count);
+	TileFilter TilesPad::currentFilter() const {
+		TileFilter filter = (TileFilter)m_filter_box->selectedId();
+		DASSERT(validEnum(filter));
 		return filter;
 	}
 

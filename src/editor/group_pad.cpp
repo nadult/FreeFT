@@ -10,14 +10,14 @@ namespace ui {
 	GroupPad::GroupPad(const IRect &rect, PGroupEditor editor, TileGroup *group)
 		:Window(rect), m_editor(editor), m_group(group) {
 		m_filter_box = make_shared<ComboBox>(IRect(0, 0, rect.width(), 22), 200,
-				"Filter: ", TileFilter::strings(), TileFilter::count);
+				"Filter: ", enumStrings(TileFilter()));
 		attach(m_filter_box);
-		m_filter_box->selectEntry(editor->tileFilter());
+		m_filter_box->selectEntry((int)editor->tileFilter());
 	}
 
-	TileFilter::Type GroupPad::currentFilter() const {
-		TileFilter::Type filter = (TileFilter::Type)m_filter_box->selectedId();
-		DASSERT(filter >= 0 && filter < TileFilter::count);
+	TileFilter GroupPad::currentFilter() const {
+		TileFilter filter = (TileFilter)m_filter_box->selectedId();
+		DASSERT(validEnum(filter));
 		return filter;
 	}
 

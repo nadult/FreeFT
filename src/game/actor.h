@@ -65,31 +65,31 @@ namespace game {
 		void link();
 
 		int climbAnimId(Action::Type);
-		int attackAnimId(AttackMode::Type, Stance::Type, WeaponClass::Type) const;
-		int deathAnimId(DeathId::Type) const;
-		int simpleAnimId(Action::Type, Stance::Type) const;
-		int animId(Action::Type, Stance::Type, WeaponClass::Type) const;
+		int attackAnimId(AttackMode, Stance, WeaponClass) const;
+		int deathAnimId(DeathId) const;
+		int simpleAnimId(Action::Type, Stance) const;
+		int animId(Action::Type, Stance, WeaponClass) const;
 
 		bool canChangeStance() const;
-		bool canEquipWeapon(WeaponClass::Type) const;
-		bool canUseWeapon(WeaponClass::Type, Stance::Type) const;
+		bool canEquipWeapon(WeaponClass) const;
+		bool canUseWeapon(WeaponClass, Stance) const;
 
 		ProtoRef<ArmourProto> armour;
 		ProtoRef<ActorProto> actor;
 
-		SoundId step_sounds[Stance::count][SurfaceId::count];
+		EnumMap<Stance, EnumMap<SurfaceId, SoundId>> step_sounds;
 		SoundId fall_sound;
 
 	private:
 		void initAnims();
 
 		u8 m_climb_idx[3];
-		u8 m_death_idx[DeathId::count];
-		u8 m_simple_idx[Action::_special - Action::_simple][Stance::count];
-		u8 m_normal_idx[Action::_simple  - Action::_normal][Stance::count][WeaponClass::count];
-		u8 m_attack_idx[WeaponClass::count][AttackMode::count][Stance::count];
-		bool m_can_equip_weapon[WeaponClass::count];
-		bool m_can_use_weapon[WeaponClass::count][Stance::count];
+		EnumMap<DeathId, u8> m_death_idx;
+		EnumMap<Stance, u8> m_simple_idx[Action::_special - Action::_simple];
+		EnumMap<Stance, EnumMap<WeaponClass, u8>> m_normal_idx[Action::_simple  - Action::_normal];
+		EnumMap<WeaponClass, EnumMap<AttackMode, EnumMap<Stance, u8>>> m_attack_idx;
+		EnumMap<WeaponClass, bool> m_can_equip_weapon;
+		EnumMap<WeaponClass, EnumMap<Stance, bool>> m_can_use_weapon;
 		bool m_can_change_stance;
 		bool m_is_actor;
 	};
@@ -106,19 +106,19 @@ namespace game {
 		bool is_alive;
 
 		// prone, crouch, walk, run
-		float speeds[Stance::count + 1];
+		float speeds[count<Stance>() + 1];
 
 		float hit_points;
 
 		struct Sounds {
-			SoundId death[DeathId::count];
+			EnumMap<DeathId, SoundId> death;
 			SoundId hit;
 			SoundId get_up;
 		};
 
 		// Different sound variations; At least one is always present
 		vector<Sounds> sounds;
-		SoundId human_death_sounds[DeathId::count];
+		EnumMap<DeathId, SoundId> human_death_sounds;
 		SoundId run_sound, walk_sound;
 	};
 
@@ -126,23 +126,23 @@ namespace game {
 	public:
 		Actor(Stream&);
 		Actor(const XMLNode&);
-		Actor(const Proto &proto, Stance::Type stance = Stance::stand);
+		Actor(const Proto &proto, Stance stance = Stance::stand);
 		Actor(const Actor &rhs, const Proto &new_proto);
 		Actor(const Proto &proto, ActorInventory &inventory);
 
-		Flags::Type flags() const override;
+		FlagsType flags() const override;
 		const FBox boundingBox() const override;
 
 		bool setOrder(POrder&&, bool force = false) override;
-		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
+		void onImpact(DamageType, float damage, const float3 &force, EntityRef source) override;
 
 		XMLNode save(XMLNode&) const override;
 		void save(Stream&) const override;
 
-		SurfaceId::Type surfaceUnder() const;
-		WeaponClass::Type equippedWeaponClass() const;
+		SurfaceId surfaceUnder() const;
+		WeaponClass equippedWeaponClass() const;
 
-		Stance::Type stance() const { return m_stance; }
+		Stance stance() const { return m_stance; }
 		Action::Type action() const { return m_action; }
 
 		const ActorInventory &inventory() const { return m_inventory; }
@@ -165,12 +165,12 @@ namespace game {
 		void followPath(const Path &path, PathPos &pos);
 		void fixPosition();
 
-		float dodgeChance(DamageType::Type, float damage) const;
-		float fallChance(DamageType::Type, float damage, const float3 &force) const;
-		float interruptChance(DamageType::Type, float damage, const float3 &force) const;
-		DeathId::Type deathType(DamageType::Type, float damage, const float3 &force) const;
+		float dodgeChance(DamageType, float damage) const;
+		float fallChance(DamageType, float damage, const float3 &force) const;
+		float interruptChance(DamageType, float damage, const float3 &force) const;
+		DeathId deathType(DamageType, float damage, const float3 &force) const;
 
-		AttackMode::Type validateAttackMode(AttackMode::Type mode) const;
+		Maybe<AttackMode> validateAttackMode(Maybe<AttackMode>) const;
 	
 		const FBox shootingBox(const Weapon &weapon) const override;
 		float accuracy(const Weapon &weapon) const override;
@@ -188,22 +188,22 @@ namespace game {
 		void fireProjectile(const FBox &target_box, const Weapon &weapon, float randomness = 0.0f);
 		void makeImpact(EntityRef target, const Weapon &weapon);
 
-		bool animateDeath(DeathId::Type);
+		bool animateDeath(DeathId);
 		bool animate(Action::Type);
 
-		bool handleOrder(IdleOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(LookAtOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(MoveOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(TrackOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(AttackOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(ChangeStanceOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(InteractOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(DropItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(EquipItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(UnequipItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(TransferItemOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(GetHitOrder&, EntityEvent::Type, const EntityEventParams&) override;
-		bool handleOrder(DieOrder&, EntityEvent::Type, const EntityEventParams&) override;
+		bool handleOrder(IdleOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(LookAtOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(MoveOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(TrackOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(AttackOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(ChangeStanceOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(InteractOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(DropItemOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(EquipItemOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(UnequipItemOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(TransferItemOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(GetHitOrder&, EntityEvent, const EntityEventParams&) override;
+		bool handleOrder(DieOrder&, EntityEvent, const EntityEventParams&) override;
 
 
 	private:
@@ -220,7 +220,7 @@ namespace game {
 		const ActorProto &m_actor;
 
 		float m_target_angle;
-		Stance::Type m_stance;
+		Stance m_stance;
 		Action::Type m_action;
 		int m_faction_id, m_client_id;
 		int m_sound_variation;

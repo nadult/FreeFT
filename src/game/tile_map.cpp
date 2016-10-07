@@ -58,7 +58,7 @@ namespace game {
 		THROW("WRITE ME");
 	}
 		
-	int TileMap::pixelIntersect(const int2 &pos, Flags::Type flags) const {
+	int TileMap::pixelIntersect(const int2 &pos, FlagsType flags) const {
 		return Grid::pixelIntersect(pos,
 			[](const Grid::ObjectDef &object, const int2 &pos)
 				{ return ((const Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); },

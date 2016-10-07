@@ -16,7 +16,7 @@ namespace game {
 	PCController::PCController(World &world, const PlayableCharacter &pc)
 		:m_world(world), m_pc(pc) {
 		const Actor *actor = this->actor();
-		m_target_stance = actor? actor->stance() : -1;
+		m_target_stance = actor? (int)actor->stance() : -1;
 	}
 		
 	PCController::~PCController() { }
@@ -38,10 +38,10 @@ namespace game {
 		return hasActor();
 	}
 
-	void PCController::setStance(Stance::Type stance) {
+	void PCController::setStance(Stance stance) {
 		DASSERT(canChangeStance());
 		sendOrder(new ChangeStanceOrder(stance));
-		m_target_stance = stance;
+		m_target_stance = (int)stance;
 	}
 		
 	bool PCController::canEquipItem(const Item &item) const {

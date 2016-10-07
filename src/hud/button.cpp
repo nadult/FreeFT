@@ -16,7 +16,7 @@ namespace hud {
 			FRect uv_rect;
 		};
 
-		IconInfo s_icons[HudIcon::count] = {
+		static const EnumMap<HudIcon, IconInfo> s_icons = {
 			{ FRect(0.00f, 0.00f, 0.25f, 0.25f) },
 			{ FRect(0.25f, 0.00f, 0.50f, 0.25f) },
 			{ FRect(0.50f, 0.00f, 0.75f, 0.25f) },
@@ -32,9 +32,7 @@ namespace hud {
 	}
 
 	HudButton::HudButton(const FRect &rect, int id)
-		:HudWidget(rect), m_highlighted_time(0.0f), m_enabled_time(0.0f), m_greyed_time(0.0f),
-		 m_is_enabled(false), m_is_highlighted(false), m_is_greyed(false), m_icon_id(HudIcon::undefined),
-		 m_button_style(HudButtonStyle::normal), m_label_style(HudLabelStyle::center), m_id(id), m_accelerator(0), m_click_sound(HudSound::button) {
+		:HudWidget(rect), m_button_style(HudButtonStyle::normal), m_label_style(HudLabelStyle::center), m_id(id) {
 		m_icons_tex = res::textures()["icons.png"];
 	}
 
@@ -64,8 +62,8 @@ namespace hud {
 			m_font->draw(out, font_rect, {textColor(), textShadowColor(), halign, VAlign::center}, m_label);
 		}
 
-		if(HudIcon::isValid(m_icon_id))
-			out.addFilledRect(rect, s_icons[m_icon_id].uv_rect, {m_icons_tex, textColor()});
+		if(m_icon_id)
+			out.addFilledRect(rect, s_icons[*m_icon_id].uv_rect, {m_icons_tex, textColor()});
 	}
 		
 	bool HudButton::onInput(const InputEvent &event) {

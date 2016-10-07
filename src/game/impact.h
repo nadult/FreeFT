@@ -11,7 +11,7 @@
 
 namespace game {
 	
-	DECLARE_ENUM(ImpactType,
+	DEFINE_ENUM(ImpactType,
 		ranged,
 		melee,
 		area,
@@ -22,9 +22,9 @@ namespace game {
 		ImpactProto(const TupleParser &parser);
 
 		SoundId sound_idx;
-		DamageType::Type damage_type;
+		DamageType damage_type;
 		float damage, force, range;
-		ImpactType::Type type;
+		ImpactType type;
 		bool is_invisible;
 	};
 
@@ -37,7 +37,7 @@ namespace game {
 		XMLNode save(XMLNode& parent) const override;
 		void addToRender(SceneRenderer &out, Color color) const override;
 
-		Flags::Type flags() const override { return Flags::impact | Flags::dynamic_entity; }
+		FlagsType flags() const override { return Flags::impact | Flags::dynamic_entity; }
 	
 	protected:
 		void onAnimFinished() override;

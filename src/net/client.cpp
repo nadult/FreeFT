@@ -29,7 +29,7 @@ namespace net {
 
 		while(getLobbyPacket(packet)) {
 			try {
-				LobbyChunkId::Type chunk_id;
+				LobbyChunkId chunk_id;
 				packet >> chunk_id;
 
 				if(chunk_id == LobbyChunkId::server_list) {

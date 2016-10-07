@@ -7,18 +7,16 @@
 
 namespace ui {
 
-	ComboBox::ComboBox(const IRect &rect, int drop_size, const char *prefix, const char **values, int value_count)
+	ComboBox::ComboBox(const IRect &rect, int drop_size, const char *prefix, CRange<const char*> values)
 		:Window(rect), m_drop_size(drop_size), m_prefix(prefix) {
 		m_button = make_shared<Button>(IRect(int2(0, 0), rect.size()), "");
 		m_dummy = make_shared<ListBox>(IRect(0, 0, 10, 10));
 		attach(m_button);
 
-		if(values) {
-			for(int n = 0; n < value_count; n++)
-				addEntry(values[n], Color::white);
-			if(value_count)
-				selectEntry(0);
-		}
+		for(auto value : values)
+			addEntry(value, Color::white);
+		if(!values.empty())
+			selectEntry(0);
 	}
 
 	bool ComboBox::onEvent(const Event &ev) {

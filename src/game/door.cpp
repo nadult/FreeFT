@@ -10,19 +10,7 @@
 
 namespace game {
 
-	DEFINE_ENUM(DoorClassId,
-		"rotating",
-		"sliding",
-		"rotating_in",
-		"rotating_out"
-	)
-
-	DEFINE_ENUM(DoorSoundType,
-		"open",
-		"close"
-	)
-
-	static const char *s_seq_names[DoorState::count] = {
+	static const EnumMap<DoorState, const char*> s_seq_names = {
 		"Closed",
 		"OpenedIn",
 		"OpeningIn",
@@ -36,17 +24,17 @@ namespace game {
 		ASSERT(!is_dummy);
 		name = parser("name");
 
-		class_id = DoorClassId::fromString(parser("class_id"));
+		class_id = fromString<DoorClassId>(parser("class_id"));
 		const char *sound_prefix = parser("sound_prefix");
 
-		for(int n = 0; n < DoorSoundType::count; n++) {
+		for(auto dstype : all<DoorSoundType>()) {
 			char name[256];
-			snprintf(name, sizeof(name), "%s%s", sound_prefix, DoorSoundType::toString(n));
-			sound_ids[n] = SoundId(name);
+			snprintf(name, sizeof(name), "%s%s", sound_prefix, toString(dstype));
+			sound_ids[dstype] = SoundId(name);
 		}
 		
-		for(int n = 0; n < DoorState::count; n++)
-			seq_ids[n] = sprite->findSequence(s_seq_names[n]);
+		for(auto ds : all<DoorState>())
+			seq_ids[ds] = sprite->findSequence(s_seq_names[ds]);
 		
 		if(seq_ids[DoorState::closed] == -1)
 			THROW("Missing sequence: %s", s_seq_names[DoorState::closed]);
@@ -74,7 +62,7 @@ namespace game {
 			THROW("Invalid sequence combination");
 	}
 
-	struct Transition { DoorState::Type current, target, result; };
+	struct Transition { DoorState current, target, result; };
 	static Transition s_transitions[] = {
 		{ DoorState::closed,		DoorState::opened_in,	DoorState::opening_in },
 		{ DoorState::closed,		DoorState::opened_out,	DoorState::opening_out },
@@ -137,7 +125,7 @@ namespace game {
 	}
 
 	void Door::interact(const Entity *interactor) {
-		DoorState::Type target;
+		DoorState target;
 
 		if(isOpened())
 			target = DoorState::closed;
@@ -163,8 +151,8 @@ namespace game {
 		//TODO: open direction should depend on interactor's position		
 	}
 		
-	void Door::changeState(DoorState::Type target) {
-		DoorState::Type result = m_state;
+	void Door::changeState(DoorState target) {
+		DoorState result = m_state;
 
 		for(int n = 0; n < arraySize(s_transitions); n++)
 			if(s_transitions[n].current == m_state && s_transitions[n].target == target) {
@@ -195,10 +183,10 @@ namespace game {
 		
 	void Door::onSoundEvent() {
 		bool is_opening = m_state == DoorState::opening_in || m_state == DoorState::opening_out;
-		replicateSound(m_proto.sound_ids[is_opening? DoorSoundType::opening : DoorSoundType::closing], pos());
+		replicateSound(m_proto.sound_ids[is_opening? DoorSoundType::open : DoorSoundType::close], pos());
 	}
 	
-	FBox Door::computeBBox(DoorState::Type state) const {	
+	FBox Door::computeBBox(DoorState state) const {	
 		float3 size = m_sprite.bboxSize();
 		float maxs = max(size.x, size.z);
 		
@@ -257,7 +245,7 @@ namespace game {
 			}
 	}
 		
-	void Door::onImpact(DamageType::Type damage_type, float damage, const float3 &force, EntityRef source) {
+	void Door::onImpact(DamageType damage_type, float damage, const float3 &force, EntityRef source) {
 		if(!isOpened() && damage_type == DamageType::bludgeoning) {
 			float door_force = dot(force.xz(), m_open_in_dir);
 			if(fabs(door_force) >= 8.0f && classId() != DoorClassId::sliding) {

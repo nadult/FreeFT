@@ -24,7 +24,7 @@ namespace game {
 		sr << m_item << m_count;
 	}
 
-	bool Actor::handleOrder(DropItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(DropItemOrder &order, EntityEvent event, const EntityEventParams &params) {
 		int item_id = m_inventory.find(order.m_item);
 		if(item_id == -1 || order.m_count <= 0)
 			return false;
@@ -56,11 +56,11 @@ namespace game {
 		sr << m_item;
 	}
 
-	bool Actor::handleOrder(EquipItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(EquipItemOrder &order, EntityEvent event, const EntityEventParams &params) {
 		int item_id = m_inventory.find(order.m_item);
 		if(item_id == -1)
 			return false;
-		ItemType::Type item_type = order.m_item.type();
+		ItemType item_type = order.m_item.type();
 
 		if(item_type == ItemType::ammo   && m_inventory.ammo().item == order.m_item && m_inventory.ammo().count == m_inventory.weapon().maxAmmo())
 			return false;
@@ -98,7 +98,7 @@ namespace game {
 
 
 
-	UnequipItemOrder::UnequipItemOrder(ItemType::Type item_type) :m_item_type(item_type) {
+	UnequipItemOrder::UnequipItemOrder(ItemType item_type) :m_item_type(item_type) {
 
 	}
 
@@ -111,7 +111,7 @@ namespace game {
 		sr << m_item_type;
 	}
 
-	bool Actor::handleOrder(UnequipItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(UnequipItemOrder &order, EntityEvent event, const EntityEventParams &params) {
 		if(event == EntityEvent::init_order) {
 			if(order.m_item_type == ItemType::weapon) {
 				m_inventory.unequip(order.m_item_type);
@@ -147,7 +147,7 @@ namespace game {
 		sr << m_item << m_target << m_mode << m_count;
 	}
 	
-	bool Actor::handleOrder(TransferItemOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(TransferItemOrder &order, EntityEvent event, const EntityEventParams &params) {
 		if(order.m_count <= 0)
 			return false;
 

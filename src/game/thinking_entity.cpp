@@ -82,8 +82,8 @@ namespace game {
 		return true;
 	}
 
-	OrderTypeId::Type ThinkingEntity::currentOrder() const {
-		return m_order? m_order->typeId() : OrderTypeId::invalid;
+	Maybe<OrderTypeId> ThinkingEntity::currentOrder() const {
+		return m_order? m_order->typeId() : Maybe<OrderTypeId>();
 	}
 		
 	void ThinkingEntity::think() {
@@ -147,7 +147,7 @@ namespace game {
 		handleOrder(EntityEvent::sound);
 	}
 		
-	void ThinkingEntity::onImpact(DamageType::Type dmg_type, float damage, const float3 &force, EntityRef source) {
+	void ThinkingEntity::onImpact(DamageType dmg_type, float damage, const float3 &force, EntityRef source) {
 		if(m_ai)
 			m_ai->onImpact(dmg_type, damage, force, source);
 	}

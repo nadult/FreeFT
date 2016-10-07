@@ -49,7 +49,7 @@ namespace game {
 		animate(Action::idle);
 	}
 
-	Actor::Actor(const Proto &proto, Stance::Type stance)
+	Actor::Actor(const Proto &proto, Stance stance)
 		:EntityImpl(proto), m_actor(*m_proto.actor), m_stance(stance), m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 		m_sound_variation = rand() % m_actor.sounds.size();
@@ -124,8 +124,8 @@ namespace game {
 		sr << m_inventory;
 	}
 		
-	Flags::Type Actor::flags() const {
-		return Flags::actor | Flags::dynamic_entity | (isDead()? (Flags::Type)0 : Flags::colliding);
+	FlagsType Actor::flags() const {
+		return Flags::actor | Flags::dynamic_entity | (isDead()? (FlagsType)0 : Flags::colliding);
 	}
 		
 	const FBox Actor::boundingBox() const {
@@ -140,7 +140,7 @@ namespace game {
 		return FBox(pos(), pos() + float3(bbox_size));
 	}
 
-	SurfaceId::Type Actor::surfaceUnder() const {
+	SurfaceId Actor::surfaceUnder() const {
 		//TODO: make it more robust
 		FBox box_under = boundingBox();
 		box_under.max.y = box_under.min.y;
@@ -155,13 +155,13 @@ namespace game {
 		return tile? tile->surfaceId() : SurfaceId::unknown;
 	}
 		
-	float Actor::dodgeChance(DamageType::Type type, float damage) const {
+	float Actor::dodgeChance(DamageType type, float damage) const {
 		return	type == DamageType::bludgeoning ||
 				type == DamageType::slashing ||
 				type == DamageType::piercing? 0.2f : 0.0f;
 	}
 
-	float Actor::fallChance(DamageType::Type type, float damage, const float3 &force_vec) const {
+	float Actor::fallChance(DamageType type, float damage, const float3 &force_vec) const {
 		float force = length(force_vec) * (m_action == Action::walk? 1.25f : m_action == Action::run? 1.5f : 1.0f) * 0.2f - 0.5f;
 		if(type == DamageType::bludgeoning || type == DamageType::explosive)
 			force *= 1.25f;
@@ -172,7 +172,7 @@ namespace game {
 		return pow(force / (force + 1.0f), 2.0f);
 	}
 	
-	float Actor::interruptChance(DamageType::Type type, float damage, const float3 &force_vec) const {
+	float Actor::interruptChance(DamageType type, float damage, const float3 &force_vec) const {
 		//TODO: work on it
 		if(damage < m_actor.hit_points * 0.05f && length(force_vec) < 1.0f)
 			return 0.25f;
@@ -181,7 +181,7 @@ namespace game {
 		return 0.5f;
 	}
 
-	DeathId::Type Actor::deathType(DamageType::Type damage_type, float damage, const float3 &force_vec) const {
+	DeathId Actor::deathType(DamageType damage_type, float damage, const float3 &force_vec) const {
 		float damage_rate = damage / float(m_actor.hit_points);
 		
 		if(damage_type == DamageType::plasma || damage_type == DamageType::laser)
@@ -203,7 +203,7 @@ namespace game {
 		return DeathId::normal;	
 	}
 
-	void Actor::onImpact(DamageType::Type damage_type, float damage, const float3 &force, EntityRef source) {
+	void Actor::onImpact(DamageType damage_type, float damage, const float3 &force, EntityRef source) {
 		float damage_res = clamp(1.0f - m_inventory.armour().proto().damage_resistance, 0.0f, 1.0f);
 		damage *= damage_res;
 
@@ -226,7 +226,7 @@ namespace game {
 			m_hit_points -= int(damage);
 
 		if(m_hit_points <= 0.0f) {
-			DeathId::Type death_id = deathType(damage_type, damage, force);
+			DeathId death_id = deathType(damage_type, damage, force);
 			setOrder(new DieOrder(death_id), true);
 			onKill(ref(), source);
 		}
@@ -240,7 +240,7 @@ namespace game {
 					setOrder(new GetHitOrder(force, fall_time), true);
 			}
 			else if(!current) {
-				OrderTypeId::Type current_type_id = m_order? m_order->typeId() : OrderTypeId::invalid;
+				auto current_type_id = m_order? m_order->typeId() : Maybe<OrderTypeId>();
 
 				if(current_type_id != OrderTypeId::change_stance && (current_type_id == OrderTypeId::idle || random() > 0.5f))
 					setOrder(new GetHitOrder(will_dodge), true);
@@ -262,7 +262,7 @@ namespace game {
 		}
 	}
 
-	WeaponClass::Type Actor::equippedWeaponClass() const {
+	WeaponClass Actor::equippedWeaponClass() const {
 		return m_inventory.weapon().classId();
 	}
 		
@@ -378,7 +378,7 @@ namespace game {
 		return true;
 	}
 		
-	bool Actor::animateDeath(DeathId::Type death_type) {
+	bool Actor::animateDeath(DeathId death_type) {
 		int anim_id = m_proto.deathAnimId(death_type);
 		if(anim_id == -1)
 			return false;
@@ -399,7 +399,7 @@ namespace game {
 	}
 
 	Actor::FollowPathResult Actor::followPath(const Path &path, PathPos &path_pos, bool run) {
-		float speed = m_actor.speeds[run && m_stance == Stance::stand? 3 : m_stance];
+		float speed = m_actor.speeds[run && m_stance == Stance::stand? 3 : (int)m_stance];
 		float dist = speed * timeDelta();
 		float max_step = 1.0f;
 		bool has_finished = false;
@@ -539,16 +539,16 @@ namespace game {
 		return accuracy;
 	}
 
-	AttackMode::Type Actor::validateAttackMode(AttackMode::Type in_mode) const {
-		AttackMode::Type mode = in_mode;
+	Maybe<AttackMode> Actor::validateAttackMode(Maybe<AttackMode> in_mode) const {
+		Maybe<AttackMode> mode = in_mode;
 		Weapon weapon = m_inventory.weapon();
 
 		uint modes = weapon.attackModes();
-		if(mode != AttackMode::undefined)	
-			modes &= AttackMode::toFlags(mode);
+		if(mode)
+			modes &= toFlags(*mode);
 		mode = AttackModeFlags::getFirst(modes);
 	
-		if(mode == AttackMode::undefined)
+		if(!mode)
 			if(weapon.canKick() && in_mode == AttackMode::kick && m_actor.kick_weapon.isValid())
 				return AttackMode::kick;
 		return mode;

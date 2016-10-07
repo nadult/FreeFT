@@ -62,7 +62,7 @@ namespace audio {
 	const SoundIndex findSound(const char *locase_name);
 
 	void loadSound(int id);
-	void playSound(int id, game::SoundType::Type sound_type, const float3 &pos, const float3 &vel = float3(0.0f, 0.0f, 0.0f));
+	void playSound(int id, game::SoundType sound_type, const float3 &pos, const float3 &vel = float3(0.0f, 0.0f, 0.0f));
 	void playSound(int id, float volume = 1.0f);
 	void playSound(const char *locase_name, float volume = 1.0f);
 

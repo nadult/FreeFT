@@ -17,7 +17,7 @@ namespace hud {
 	void drawBorder(Renderer2D&, const FRect &rect, Color color, const float2 &offset, float width);
 	void animateValue(float &value, float speed, bool maximize);
 
-	DECLARE_ENUM(HudSound,
+	DEFINE_ENUM(HudSound,
 		none,
 		button,
 		item_equip,
@@ -61,7 +61,7 @@ namespace hud {
 	};
 
 
-	void playSound(HudSound::Type);
+	void playSound(HudSound);
 
 	enum Alignment {
 		align_top,
@@ -88,13 +88,13 @@ namespace hud {
 		const char *big_font_name;
 	};
 
-	DECLARE_ENUM(HudStyleId,
+	DEFINE_ENUM(HudStyleId,
 		green_white,
 		red_green,
 		console
 	);
 
-	HudStyle getStyle(HudStyleId::Type);
+	HudStyle getStyle(HudStyleId);
 	inline HudStyle defaultStyle() { return getStyle(HudStyleId::green_white); }
 
 	class Hud;

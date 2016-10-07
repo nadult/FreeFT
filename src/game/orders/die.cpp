@@ -9,7 +9,7 @@
 
 namespace game {
 
-	DieOrder::DieOrder(DeathId::Type death_id) :m_death_id(death_id), m_is_dead(false) {
+	DieOrder::DieOrder(DeathId death_id) :m_death_id(death_id), m_is_dead(false) {
 	}
 
 	DieOrder::DieOrder(Stream &sr) :OrderImpl(sr) {
@@ -21,7 +21,7 @@ namespace game {
 		sr << m_death_id << m_is_dead;
 	}
 
-	bool Actor::handleOrder(DieOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(DieOrder &order, EntityEvent event, const EntityEventParams &params) {
 		bool play_sound = event == EntityEvent::sound;
 
 		if(event == EntityEvent::init_order) {
@@ -55,7 +55,7 @@ namespace game {
 		return true;
 	}
 
-	bool Turret::handleOrder(DieOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Turret::handleOrder(DieOrder &order, EntityEvent event, const EntityEventParams &params) {
 		bool play_sound = event == EntityEvent::sound;
 
 		if(event == EntityEvent::init_order) {
@@ -63,7 +63,7 @@ namespace game {
 				animateDeath(DeathId::normal);
 		}
 		if(event == EntityEvent::sound) {
-			int sound_id = order.m_death_id == DeathId::explode? TurretSoundId::death_explode : TurretSoundId::death;
+			auto sound_id = order.m_death_id == DeathId::explode? TurretSoundId::death_explode : TurretSoundId::death;
 			playSound(m_proto.sound_idx[sound_id], pos());
 		}
 

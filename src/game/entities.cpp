@@ -16,7 +16,7 @@
 namespace game {
 
 	Entity* Entity::construct(const XMLNode &node) {
-		EntityId::Type entity_type = EntityId::fromString(node.name());
+		auto entity_type = fromString<EntityId>(node.name());
 		Entity *out = nullptr;
 
 		if(entity_type == EntityId::actor)
@@ -41,7 +41,7 @@ namespace game {
 	//TODO: properly saving enums (so that they take less space)
 	//TODO: endianess
 	Entity* Entity::construct(Stream &sr) {
-		EntityId::Type entity_type;
+		EntityId entity_type;
 		sr >> entity_type;
 
 		Entity *out = nullptr;

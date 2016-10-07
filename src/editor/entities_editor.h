@@ -14,15 +14,17 @@ namespace ui {
 
 	class View;
 
-	DECLARE_ENUM(EntitiesEditorMode,
+	DEFINE_ENUM(EntitiesEditorMode,
 		selecting,
 		placing
 	);
 
+	const char *describe(EntitiesEditorMode);
+
 	class EntitiesEditor: public ui::Window
 	{
 	public:
-		typedef EntitiesEditorMode::Type Mode;
+		typedef EntitiesEditorMode Mode;
 
 		EntitiesEditor(game::TileMap&, game::EntityMap&, View&, IRect rect);
 

@@ -26,7 +26,7 @@ namespace game {
 		Order::cancel();
 	}
 		
-	bool Actor::handleOrder(IdleOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(IdleOrder &order, EntityEvent event, const EntityEventParams &params) {
 		if(order.needCancel())
 			return false;
 
@@ -54,7 +54,7 @@ namespace game {
 		return true;
 	}
 
-	bool Turret::handleOrder(IdleOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Turret::handleOrder(IdleOrder &order, EntityEvent event, const EntityEventParams &params) {
 		bool is_canceling = order.needCancel();
 
 		if(is_canceling && m_action == TurretAction::idle)
@@ -80,7 +80,7 @@ namespace game {
 		}
 
 		if(event == EntityEvent::anim_finished) {
-			TurretAction::Type next =
+			TurretAction next =
 				m_action == TurretAction::hiding? TurretAction::hidden :
 				m_action == TurretAction::hidden? TurretAction::hidden : TurretAction::idle;
 			animate(next);

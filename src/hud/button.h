@@ -11,8 +11,7 @@
 namespace hud
 {
 
-	DECLARE_ENUM(HudIcon,
-		undefined = -1,
+	DEFINE_ENUM(HudIcon,
 		stance_stand,
 		stance_crouch,
 		stance_prone,
@@ -25,12 +24,12 @@ namespace hud
 		close
 	);
 
-	DECLARE_ENUM(HudButtonStyle,
+	DEFINE_ENUM(HudButtonStyle,
 		normal,
 		small
 	);
 
-	DECLARE_ENUM(HudLabelStyle,
+	DEFINE_ENUM(HudLabelStyle,
 		left,
 		center,
 		right,
@@ -42,10 +41,10 @@ namespace hud
 		HudButton(const FRect &target_rect, int id = 0);
 		~HudButton();
 
-		void setButtonStyle(HudButtonStyle::Type style) { m_button_style = style; }
-		void setLabelStyle(HudLabelStyle::Type style) { m_label_style = style; }
+		void setButtonStyle(HudButtonStyle style) { m_button_style = style; }
+		void setLabelStyle(HudLabelStyle style) { m_label_style = style; }
 
-		void setClickSound(HudSound::Type sound) { m_click_sound = sound; }
+		void setClickSound(HudSound sound) { m_click_sound = sound; }
 		void setId(int id) { m_id = id; }
 		int id() const { return m_id; }
 		
@@ -66,7 +65,7 @@ namespace hud
 		void setLabel(const string &label) { m_label = label; }
 		const string &label() const { return m_label; }
 
-		void setIcon(HudIcon::Type icon) { m_icon_id = icon; }
+		void setIcon(HudIcon icon) { m_icon_id = icon; }
 		void setAccelerator(int accel) { m_accelerator = accel; }
 
 	protected:
@@ -76,20 +75,20 @@ namespace hud
 		void onClick();
 
 		PTexture m_icons_tex;
-		HudIcon::Type m_icon_id;
+		Maybe<HudIcon> m_icon_id;
 
 		string m_label;
-		float m_enabled_time;
-		float m_highlighted_time;
-		float m_greyed_time;
-		HudButtonStyle::Type m_button_style;
-		HudLabelStyle::Type m_label_style;
-		HudSound::Type m_click_sound;
-		int m_id, m_group_id, m_accelerator;
+		float m_enabled_time = 0.0f;
+		float m_highlighted_time = 0.0f;
+		float m_greyed_time = 0.0f;
+		HudButtonStyle m_button_style;
+		HudLabelStyle m_label_style;
+		HudSound m_click_sound = HudSound::button;
+		int m_id, m_group_id, m_accelerator = 0;
 
-		bool m_is_greyed;
-		bool m_is_enabled;
-		bool m_is_highlighted;
+		bool m_is_greyed = false;
+		bool m_is_enabled = false;
+		bool m_is_highlighted = false;
 	};
 
 	class HudClickButton: public HudButton {

@@ -15,7 +15,7 @@ namespace ui {
 	{
 	public:
 		GroupPad(const IRect &rect, PGroupEditor editor, TileGroup *group);
-		TileFilter::Type currentFilter() const;
+		TileFilter currentFilter() const;
 		bool onEvent(const Event&) override;
 
 		PComboBox		m_filter_box;

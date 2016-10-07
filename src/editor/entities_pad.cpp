@@ -21,7 +21,7 @@ using namespace game;
 
 namespace ui {
 
-	EntityPad::EntityPad(const IRect &max_rect, EntityId::Type type_id)
+	EntityPad::EntityPad(const IRect &max_rect, EntityId type_id)
 		:Window(IRect(max_rect.min, int2(max_rect.max.x, max_rect.min.y + 1))), m_max_rect(max_rect), m_type_id(type_id) { }
 
 	void EntityPad::addControl(PWindow window) {
@@ -96,8 +96,8 @@ namespace ui {
 
 	ItemPad::ItemPad(const IRect &max_rect) :EntityPad(max_rect, EntityId::item) {
 		m_type_id = addControl<ComboBox>(200, "Item type: ");
-		for(int n = 0; n < ItemType::count; n++)
-			m_type_id->addEntry(ItemType::toString(n));
+		for(auto item : all<ItemType>())
+			m_type_id->addEntry(toString(item));
 		m_type_id->selectEntry(0);
 		m_proto_id = addControl<ComboBox>(200, "Item id: ");
 
@@ -109,16 +109,16 @@ namespace ui {
 	}
 		
 	PEntity ItemPad::makeEntity() const {
-		ItemType::Type type = (ItemType::Type)m_type_id->selectedId();
-		ProtoId::Type proto_id = ItemType::toProtoId(type);
+		ItemType type = (ItemType)m_type_id->selectedId();
+		ProtoId proto_id = toProtoId(type);
 		ProtoIndex index = findProto((*m_proto_id)[m_proto_id->selectedId()].text, proto_id);
 		return make_unique<ItemEntity>(Item(index), m_count_val);
 	}
 
 	void ItemPad::updateItemIds() {
-		ItemType::Type type = (ItemType::Type)m_type_id->selectedId();
-		DASSERT(ItemType::isValid(type));
-		ProtoId::Type proto_id = ItemType::toProtoId(type);
+		ItemType type = (ItemType)m_type_id->selectedId();
+		DASSERT(validEnum(type));
+		ProtoId proto_id = toProtoId(type);
 
 		m_proto_id->clear();
 		for(int n = 0; n < countProtos(proto_id); n++) {
@@ -152,8 +152,8 @@ namespace ui {
 
 	TriggerPad::TriggerPad(const IRect &max_rect) :EntityPad(max_rect, EntityId::trigger) {
 		m_class_id = addControl<ComboBox>(200, "Trigger class: ");
-		for(int n = 0; n < TriggerClassId::count; n++)
-			m_class_id->addEntry(TriggerClassId::toString(n));
+		for(auto tcid : all<TriggerClassId>())
+			m_class_id->addEntry(toString(tcid));
 		m_class_id->selectEntry(0);
 		m_faction_id = addControl<EditBox>(200, "Faction id: ");
 		m_faction_id_val = 0;
@@ -174,7 +174,7 @@ namespace ui {
 		return false;
 	}	
 	PEntity TriggerPad::makeEntity() const {
-		auto out = make_unique<Trigger>((TriggerClassId::Type)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1));
+		auto out = make_unique<Trigger>((TriggerClassId)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1));
 		out->setFactionId(m_faction_id_val);
 		return (PEntity)(out.release());
 	}
@@ -184,9 +184,9 @@ namespace ui {
 		int width = rect.width();
 
 		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 0, width, WindowStyle::line_height), 200, "Editing mode: ");
-		for(int n = 0; n < Mode::count; n++)
-			m_editor_mode_box->addEntry(EntitiesEditorMode::toString(n));
-		m_editor_mode_box->selectEntry(m_editor->mode());
+		for(auto mode : all<Mode>())
+			m_editor_mode_box->addEntry(describe(mode));
+		m_editor_mode_box->selectEntry((int)m_editor->mode());
 
 
 		m_entity_type = make_shared<ComboBox>(IRect(0, WindowStyle::line_height, width, WindowStyle::line_height * 2), 200, "Entity type: ");
@@ -204,7 +204,7 @@ namespace ui {
 
 		for(int n = 0; n < (int)m_pads.size(); n++) {
 			attach(m_pads[n]);
-			m_entity_type->addEntry(EntityId::toString(m_pads[n]->typeId()));
+			m_entity_type->addEntry(toString(m_pads[n]->typeId()));
 		}
 		m_entity_type->selectEntry(0);
 
@@ -214,8 +214,8 @@ namespace ui {
 
 	bool EntitiesPad::onEvent(const Event &ev) {
 		if(ev.type == Event::button_clicked && m_editor.get() == ev.source) {
-			if(m_editor_mode_box->selectedId() != m_editor->mode())
-				m_editor_mode_box->selectEntry(m_editor->mode());
+			if(m_editor_mode_box->selectedId() != (int)m_editor->mode())
+				m_editor_mode_box->selectEntry((int)m_editor->mode());
 		}
 		else if(ev.type == Event::element_selected && m_editor_mode_box.get() == ev.source)
 			m_editor->setMode((EntitiesEditor::Mode)ev.value);
@@ -232,7 +232,7 @@ namespace ui {
 		return true;
 	}
 
-	EntityId::Type EntitiesPad::selectedTypeId() const {
+	EntityId EntitiesPad::selectedTypeId() const {
 		return m_pads[m_entity_type->selectedId()]->typeId();
 	}
 

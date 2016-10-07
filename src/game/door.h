@@ -13,19 +13,19 @@
 namespace game
 {
 
-	DECLARE_ENUM(DoorClassId,
+	DEFINE_ENUM(DoorClassId,
 		rotating,
 		sliding,
 		rotating_in,
 		rotating_out
 	)
 
-	DECLARE_ENUM(DoorSoundType,
-		opening,
-		closing
+	DEFINE_ENUM(DoorSoundType,
+		open,
+		close,
 	)
 
-	DECLARE_ENUM(DoorState,
+	DEFINE_ENUM(DoorState,
 		closed,
 
 		opened_in,
@@ -42,9 +42,9 @@ namespace game
 
 		string sprite_name;
 		string name;
-		DoorClassId::Type class_id;
-		SoundId sound_ids[DoorSoundType::count];
-		int seq_ids[DoorState::count];
+		DoorClassId class_id;
+		EnumMap<DoorSoundType, SoundId> sound_ids;
+		EnumMap<DoorState, int> seq_ids;
 	};
 
 	class Door: public EntityImpl<Door, DoorProto, EntityId::door>
@@ -54,13 +54,13 @@ namespace game
 		Door(const XMLNode&);
 		Door(const DoorProto &proto);
 
-		Flags::Type flags() const override { return Flags::door | Flags::dynamic_entity | Flags::occluding | Flags::colliding; }
+		FlagsType flags() const override { return Flags::door | Flags::dynamic_entity | Flags::occluding | Flags::colliding; }
 		
 		void interact(const Entity*) override;
 		void onSoundEvent() override;
 
 		bool isOpened() const { return m_state == DoorState::opened_in || m_state == DoorState::opened_out; }
-		DoorClassId::Type classId() const { return m_proto.class_id; }
+		DoorClassId classId() const { return m_proto.class_id; }
 		void setKey(const Item&);
 		void setDirAngle(float angle) override;
 
@@ -68,7 +68,7 @@ namespace game
 		void save(Stream&) const override;
 		const FBox boundingBox() const override;
 
-		void onImpact(DamageType::Type damage_type, float damage, const float3 &force, EntityRef source) override;
+		void onImpact(DamageType damage_type, float damage, const float3 &force, EntityRef source) override;
 		
 	private:
 		void initialize();
@@ -76,12 +76,12 @@ namespace game
 
 		void think() override;
 		void onAnimFinished() override;
-		FBox computeBBox(DoorState::Type) const;
-		void changeState(DoorState::Type);
+		FBox computeBBox(DoorState) const;
+		void changeState(DoorState);
 
 		FBox m_bbox;
 		Item m_key;
-		DoorState::Type m_state;
+		DoorState m_state;
 		double m_close_time;
 		float2 m_open_in_dir;
 		bool m_update_anim;

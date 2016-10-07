@@ -99,27 +99,19 @@ namespace hud
 		value = clamp(value, 0.0f, 1.0f);
 	}
 
-	DEFINE_ENUM(HudSound,	
+	static EnumMap<HudSound, const char*> s_sounds = {
 		"",
 		"butn_text",
 		"butn_itemswitch",
 		"butn_optionknob"
-	);
+	};
 
-	void playSound(HudSound::Type id) {
+	void playSound(HudSound id) {
 		if(id != HudSound::none)
-			audio::playSound(HudSound::toString(id));
+			audio::playSound(s_sounds[id]);
 	}
 
-
-	DEFINE_ENUM(HudStyleId,
-		"Whiteish Green",
-		"Greenish Red",
-		"Console"
-	);
-		
-	HudStyle getStyle(HudStyleId::Type style_id) {
-		DASSERT(HudStyleId::isValid(style_id));
+	HudStyle getStyle(HudStyleId style_id) {
 		if(style_id == HudStyleId::green_white)
 			return HudStyle{	Color(150, 200, 150),	Color(30, 255, 60),		Color(30, 255, 60),		Color::white,
 								"transformers_20",		"transformers_30" };

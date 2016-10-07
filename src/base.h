@@ -7,13 +7,60 @@
 #define BASE_H
 
 #include "fwk.h"
+#include <boost/optional.hpp>
+
+template <class T> using Maybe = boost::optional<T>;
+using boost::none;
+
+namespace fwk {
+
+template <class T>
+void loadFromStream(Maybe<T> &obj, Stream &sr) {
+	char exists;
+	sr >> exists;
+	if(exists) {
+		T tmp;
+		sr >> tmp;
+		obj = tmp;
+	}
+	else {
+		obj = {};
+	}
+}
+
+template <class T>
+void saveToStream(const Maybe<T> &obj, Stream &sr) {
+	sr << char(obj? 1 : 0);
+	if(obj)
+		sr << *obj;
+}
+
+// TODO: validation of data from files / net / etc.
+// TODO: serialization of enum should automatically verify the enum
+template <class T> auto validEnum(T value) -> typename std::enable_if<IsEnum<T>::value, bool>::type {
+	return (int)value >= 0 && (int)value < count<T>();
+}
+
+inline int abs(int value) { return value < 0? -value : value; }
+
+}
 
 using namespace fwk;
 
+inline int2 round(const float2 &v) { return int2(v.x + 0.5f, v.y + 0.5f); }
+inline int3 round(const float3 &v) { return int3(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f); }
+
+inline int2 ceil(const float2 &v) {
+	return int2(v.x + (1.0f - constant::epsilon), v.y + (1.0f - constant::epsilon));
+}
+inline int3 ceil(const float3 &v) {
+	return int3(v.x + (1.0f - constant::epsilon), v.y + (1.0f - constant::epsilon),
+				v.z + (1.0f - constant::epsilon));
+}
 void encodeInt(Stream &sr, int value);
 int decodeInt(Stream &sr);
 
-uint toFlags(const char *input, const char **strings, int num_strings, uint first_flag);
+uint toFlags(const char *input, CRange<const char*> strings, uint first_flag);
 
 struct MoveVector {
 	MoveVector(const int2 &start, const int2 &end);

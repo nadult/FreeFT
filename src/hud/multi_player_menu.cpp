@@ -174,7 +174,7 @@ namespace hud {
 				m_waiting_to_connect = false;
 			}
 			else if(m_client->mode() == Client::Mode::refused) {
-				setMessage(format("Connection refused: %s", RefuseReason::toString(m_client->refuseReason())), s_error_color);
+				setMessage(format("Connection refused: %s", describe(m_client->refuseReason())), s_error_color);
 				m_waiting_to_connect = false;
 			}
 			else if(getTime() - m_last_connect_time > 5.0) {
@@ -199,7 +199,7 @@ namespace hud {
 
 		for(int n = 0; n < 30; n++) {
 			ServerInfo info;
-			info.game_mode = (game::GameModeId::Type)(rand() % game::GameModeId::count);
+			info.game_mode = (game::GameModeId)(rand() % game::GameModeId::count);
 			info.max_players = rand() % 2? rand() % 2? 4 : 8 : 16;
 			info.num_players = rand() % info.max_players + 1;
 			info.ping = rand() % 2? rand() % 200 : rand() % 500;
@@ -294,7 +294,7 @@ namespace hud {
 		else if(col_id == 2)
 			return format("%d / %d", row.num_players, row.max_players);
 		else if(col_id == 3)
-			return game::GameModeId::toString(row.game_mode);
+			return toString(row.game_mode);
 		else if(col_id == 4)
 			return format("%d", row.ping);
 

@@ -118,11 +118,11 @@ namespace game {
 		XMLNode ammo_node = node.child("ammo");
 
 		if(weapon_node)
-			m_weapon = Item(findProto(weapon_node.attrib("proto_id"), ProtoId::item_weapon));
+			m_weapon = Item(findProto(weapon_node.attrib("proto_id"), ProtoId::weapon));
 		if(armour_node)
-			m_armour = Item(findProto(armour_node.attrib("proto_id"), ProtoId::item_armour));
+			m_armour = Item(findProto(armour_node.attrib("proto_id"), ProtoId::armour));
 		if(ammo_node) {
-			Item ammo(findProto(ammo_node.attrib("proto_id"), ProtoId::item_ammo));
+			Item ammo(findProto(ammo_node.attrib("proto_id"), ProtoId::ammo));
 			int count = ammo_node.attrib<int>("count");
 			int id = add(ammo, count);
 			equip(id, count);
@@ -146,7 +146,7 @@ namespace game {
 		DASSERT(isValidId(id) && count > 0);
 
 		Item item = m_entries[id].item;
-		ItemType::Type type = item.type();
+		ItemType type = item.type();
 		if((type != ItemType::weapon && type != ItemType::armour && type != ItemType::ammo) || !count)
 			return false;
 		if(type == ItemType::ammo && m_weapon.proto().ammo_class_id != Ammo(item).classId())
@@ -178,7 +178,7 @@ namespace game {
 		return true;
 	}
 
-	bool ActorInventory::isEquipped(ItemType::Type item_type) {
+	bool ActorInventory::isEquipped(ItemType item_type) {
 		if(item_type == ItemType::weapon) 
 			return !m_weapon.isDummy();
 		else if(item_type == ItemType::armour)
@@ -189,7 +189,7 @@ namespace game {
 		return false;
 	}
 
-	int ActorInventory::unequip(ItemType::Type item_type) {
+	int ActorInventory::unequip(ItemType item_type) {
 		int ret = -1;
 
 		if(item_type == ItemType::weapon) {

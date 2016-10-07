@@ -34,7 +34,7 @@ namespace game {
 		"climbdown",
 	};
 
-	static const char *s_simple_names[Action::_special - Action::_simple][Stance::count] = {
+	static const EnumMap<Stance, const char*> s_simple_names[Action::_special - Action::_simple] = {
 		// prone, 			crouch,				stand,
 		{ "fallback",		"fallback",			"fallback" },
 		{ "fallenback",		"fallenback",		"fallenback" },
@@ -68,28 +68,28 @@ namespace game {
 
 		initAnims();
 
-		for(int w = 0; w < WeaponClass::count; w++) {
+		for(auto w : all<WeaponClass>()) {
 			m_can_equip_weapon[w] = false;
 
-			for(int s = 0; s < Stance::count; s++) {
+			for(auto s : all<Stance>()) {
 				m_can_use_weapon[w][s] = false;
 
-				for(int a = 0; a < AttackMode::count; a++)
-					if(attackAnimId((AttackMode::Type)a, (Stance::Type)s, (WeaponClass::Type)w) != -1) {
+				for(auto a : all<AttackMode>())
+					if(attackAnimId(a, s, w) != -1) {
 						m_can_equip_weapon[w] = true;
 						m_can_use_weapon[w][s] = true;
 					}
-				if(	animId(Action::idle, (Stance::Type)s, (WeaponClass::Type)w) == -1 ||
-					animId(Action::walk, (Stance::Type)s, (WeaponClass::Type)w) == -1)
+				if(	animId(Action::idle, (Stance)s, (WeaponClass)w) == -1 ||
+					animId(Action::walk, (Stance)s, (WeaponClass)w) == -1)
 					m_can_use_weapon[w][s] = false;
 			}
 		}
 
 		m_can_change_stance = true;
-		for(int s = 0; s < Stance::count; s++) {
-			if(animId(Action::idle, (Stance::Type)s, WeaponClass::unarmed) == -1)
+		for(auto s : all<Stance>()) {
+			if(animId(Action::idle, (Stance)s, WeaponClass::unarmed) == -1)
 				m_can_change_stance = false;
-			if(animId(Action::walk, (Stance::Type)s, WeaponClass::unarmed) == -1)
+			if(animId(Action::walk, (Stance)s, WeaponClass::unarmed) == -1)
 				m_can_change_stance = false;
 		}
 		if(	simpleAnimId(Action::stance_up, Stance::prone) == -1 ||
@@ -99,14 +99,11 @@ namespace game {
 			m_can_change_stance = false;
 	}
 		
-	bool ActorArmourProto::canEquipWeapon(WeaponClass::Type weapon) const {
-		DASSERT(WeaponClass::isValid(weapon));
+	bool ActorArmourProto::canEquipWeapon(WeaponClass weapon) const {
 		return m_can_equip_weapon[weapon];
 	}
 
-	bool ActorArmourProto::canUseWeapon(WeaponClass::Type weapon, Stance::Type stance) const {
-		DASSERT(WeaponClass::isValid(weapon));
-		DASSERT(Stance::isValid(stance));
+	bool ActorArmourProto::canUseWeapon(WeaponClass weapon, Stance stance) const {
 		return m_can_use_weapon[weapon][stance];
 	}
 
@@ -122,17 +119,17 @@ namespace game {
 		ASSERT(actor);
 		armour.link();
 
-		for(int st = 0; st < Stance::count; st++)
-			for(int su = 0; su < SurfaceId::count; su++) {
+		for(auto st : all<Stance>())
+			for(auto su : all<SurfaceId>()) {
 				char name[256];
 				snprintf(name, sizeof(name), "%s%s%s%s",
 						st == Stance::prone? "prone" : "stand", actor->is_heavy? "heavy" : "normal",
-						armour->sound_prefix.c_str(), SurfaceId::toString(su));
+						armour->sound_prefix.c_str(), toString(su));
 				step_sounds[st][su] = SoundId(name);
 			}
 
 		{
-			ArmourClass::Type class_id = armour? armour->class_id : ArmourClass::none;
+			ArmourClass class_id = armour? armour->class_id : ArmourClass::none;
 			const char *postfix =
 				class_id == ArmourClass::leather? "leath" :
 				class_id == ArmourClass::metal? "metal" :
@@ -161,7 +158,7 @@ namespace game {
 	}
 
 
-	static const char *s_death_names[DeathId::count] = {
+	static const EnumMap<DeathId, const char *> s_death_names = {
 		"",
 		"bighole",
 		"cutinhalf",
@@ -172,7 +169,7 @@ namespace game {
 		"riddled"
 	};
 
-	static const char *deathName(int death) {
+	static const char *deathName(DeathId death) {
 		return death == DeathId::normal? "death" : s_death_names[death];
 	}
 
@@ -182,7 +179,7 @@ namespace game {
 		kick_weapon.link();
 		
 		char text[256];
-		for(int d = 0; d < DeathId::count; d++) {
+		for(auto d : all<DeathId>()) {
 			snprintf(text, sizeof(text), "human%s", deathName(d));
 			human_death_sounds[d] = SoundId(text);
 		}
@@ -195,13 +192,16 @@ namespace game {
 
 		for(int n = 0;; n++) {
 			char var_name[128];
-			snprintf(var_name, sizeof(var_name), n == 0? "%s" : "%s%d", sound_prefix.c_str(), n);
+			if(n == 0)
+				snprintf(var_name, sizeof(var_name), "%s", sound_prefix.c_str());
+			else
+				snprintf(var_name, sizeof(var_name), "%s%d", sound_prefix.c_str(), n);
 
 			Sounds sounds;
 
 			bool any_sound = false;
 
-			for(int d = 0; d < DeathId::count; d++) {
+			for(auto d : all<DeathId>()) {
 				snprintf(text, sizeof(text), "%s%s", var_name, deathName(d));
 				sounds.death[d] = SoundId(text);
 				any_sound |= sounds.death[d].isValid();
@@ -235,19 +235,19 @@ namespace game {
 
 		char text[256];
 
-		for(int d = 0; d < DeathId::count; d++) {
+		for(auto d : all<DeathId>()) {
 			snprintf(text, sizeof(text), "death%s", s_death_names[d]);
 			auto it = name_map.find(text);
 			m_death_idx[d] = it == name_map.end()? invalid_id : it->second;
 		}
 
-		for(int w = 0; w < WeaponClass::count; w++)
-			for(int a = 0; a < AttackMode::count; a++)
-				for(int s = 0; s < Stance::count; s++) {
+		for(auto w : all<WeaponClass>())
+			for(auto a : all<AttackMode>())
+				for(auto s : all<Stance>()) {
 					const char *attack_mode =	a == AttackMode::punch? "one" :
-												a == AttackMode::kick? "two" : AttackMode::toString(a);
+												a == AttackMode::kick? "two" : toString(a);
 
-					snprintf(text, sizeof(text), "%sattack%s%s", Stance::toString(s), WeaponClass::toString(w), attack_mode);
+					snprintf(text, sizeof(text), "%sattack%s%s", toString(s), toString(w), attack_mode);
 					auto it = name_map.find(text);
 					m_attack_idx[w][a][s] = it == name_map.end()? invalid_id : it->second;
 				//	if(it != name_map.end())
@@ -255,18 +255,18 @@ namespace game {
 				}
 
 		for(int a = 0; a < Action::count; a++)
-			for(int s = 0; s < Stance::count; s++) {
+			for(auto s : all<Stance>()) {
 				if(Action::isNormal(a)) {
-					for(int w = 0; w < WeaponClass::count; w++) {
-						snprintf(text, sizeof(text), "%s%s%s", Stance::toString(s), s_normal_names[a],
-									w == WeaponClass::unarmed? "" : WeaponClass::toString(w));
+					for(auto w : all<WeaponClass>()) {
+						snprintf(text, sizeof(text), "%s%s%s", toString(s), s_normal_names[a],
+									w == WeaponClass::unarmed? "" : toString(w));
 						auto it = name_map.find(text);
 						m_normal_idx[a][s][w] = it == name_map.end()? invalid_id : it->second;
 					//	printf("%s: %s\n", text, m_normal_idx[a][s][w] == 255? "NOT FOUND" : "OK");
 					}
 				}
 				else if(Action::isSimple(a)) {
-					snprintf(text, sizeof(text), "%s%s", Stance::toString(s), s_simple_names[a - Action::_simple][s]);
+					snprintf(text, sizeof(text), "%s%s", toString(s), s_simple_names[a - Action::_simple][s]);
 					auto it = name_map.find(text);
 					m_simple_idx[a - Action::_simple][s] = it == name_map.end()? invalid_id : it->second;
 				}
@@ -277,10 +277,10 @@ namespace game {
 			m_climb_idx[c] = it == name_map.end()? invalid_id : it->second;
 		}
 
-		for(int w = 0; w < WeaponClass::count; w++)
-			for(int s = Stance::prone; s <= Stance::crouch; s++)
+		for(auto w : all<WeaponClass>())
+			for(auto s = Stance::prone; s <= Stance::crouch; s = enumNext(s))
 			if(m_normal_idx[Action::walk][s][w] == invalid_id)
-				m_normal_idx[Action::walk][s][w] = m_normal_idx[Action::walk][s][0];
+				m_normal_idx[Action::walk][s][w] = m_normal_idx[Action::walk][s][WeaponClass::unarmed];
 
 		ASSERT(animId(Action::idle, Stance::stand, WeaponClass::unarmed) != -1);
 	}
@@ -292,34 +292,25 @@ namespace game {
 		return anim_id == invalid_id? -1 : anim_id;
 	}
 
-	int ActorArmourProto::attackAnimId(AttackMode::Type mode, Stance::Type stance, WeaponClass::Type weapon) const {
-		DASSERT(Stance::isValid(stance));
-		DASSERT(WeaponClass::isValid(weapon));
-		DASSERT(AttackMode::isValid(mode));
-
+	int ActorArmourProto::attackAnimId(AttackMode mode, Stance stance, WeaponClass weapon) const {
 		int anim_id = m_attack_idx[weapon][mode][stance];
 		return anim_id == invalid_id? -1 : anim_id;
 	}
 
-	int ActorArmourProto::deathAnimId(DeathId::Type id) const {
-		DASSERT(DeathId::isValid(id));
-
+	int ActorArmourProto::deathAnimId(DeathId id) const {
 		int anim_id = m_death_idx[id];
 		return anim_id == invalid_id? -1 : anim_id;
 	}
 
-	int ActorArmourProto::simpleAnimId(Action::Type action, Stance::Type stance) const {
+	int ActorArmourProto::simpleAnimId(Action::Type action, Stance stance) const {
 		DASSERT(Action::isSimple(action));
-		DASSERT(Stance::isValid(stance));
 
 		int anim_id = m_simple_idx[action - Action::_simple][stance];
 		return anim_id == invalid_id? -1 : anim_id;
 	}
 
-	int ActorArmourProto::animId(Action::Type action, Stance::Type stance, WeaponClass::Type weapon) const {
+	int ActorArmourProto::animId(Action::Type action, Stance stance, WeaponClass weapon) const {
 		DASSERT(!Action::isSpecial(action));
-		DASSERT(Stance::isValid(stance));
-		DASSERT(WeaponClass::isValid(weapon));
 
 		int anim_id = Action::isSimple(action)? simpleAnimId(action, stance) : m_normal_idx[action][stance][weapon];
 		return anim_id == invalid_id? -1 : anim_id;

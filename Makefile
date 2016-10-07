@@ -44,7 +44,7 @@ PROGRAM_SRC=editor game res_viewer convert lobby_server
 
 ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC)
 
-DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.dep)
+DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d)
 
 LINUX_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%.o)
 MINGW_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%_.o)
@@ -81,12 +81,8 @@ NICE_FLAGS=-std=c++14 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werro
 LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
 
-$(DEPS): $(BUILD_DIR)/%.dep: src/%.cpp
-	$(LINUX_CXX) $(LINUX_FLAGS) -MM $< -MT $(BUILD_DIR)/$*.o   > $@
-	$(MINGW_CXX) $(MINGW_FLAGS) -MM $< -MT $(BUILD_DIR)/$*_.o >> $@
-
 $(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp
-	$(LINUX_CXX) $(LINUX_FLAGS) -c src/$*.cpp -o $@
+	$(LINUX_CXX) -MMD $(LINUX_FLAGS) -c src/$*.cpp -o $@
 
 $(MINGW_OBJECTS): $(BUILD_DIR)/%_.o: src/%.cpp
 	$(MINGW_CXX) $(MINGW_FLAGS) -c src/$*.cpp -o $@
@@ -100,21 +96,12 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(MINGW_FWK_
 
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
-			$(MINGW_PROGRAMS) $(DEPS) $(BUILD_DIR)/.depend
+			$(MINGW_PROGRAMS) $(DEPS)
 	-rmdir $(BUILD_DIR)/game/orders $(BUILD_DIR)/net $(BUILD_DIR)/io
 	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui $(BUILD_DIR)/game $(BUILD_DIR)/hud $(BUILD_DIR)/editor
 	-rmdir $(BUILD_DIR)
 
-$(BUILD_DIR)/.depend: $(DEPS)
-	cat $(DEPS) > $(BUILD_DIR)/.depend
+.PHONY: clean $(LINUX_FWK_LIB) $(MINGW_FWK_LIB)
 
-depend: $(BUILD_DIR)/.depend
-
-.PHONY: clean depend $(LINUX_FWK_LIB) $(MINGW_FWK_LIB)
-
-DEPEND_FILE=$(BUILD_DIR)/.depend
-DEP=$(wildcard $(DEPEND_FILE))
-ifneq "$(DEP)" ""
-include $(DEP)
-endif
+-include $(DEPS)
 

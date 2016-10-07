@@ -21,7 +21,7 @@
 
 namespace game {
 
-	static const char *s_seq_names[] = {
+	static const EnumMap<TurretAction, const char*> s_seq_names = {
 		"StandArmed",
 		"StandAttackUnarmedTwo",
 		"StandAttackUnarmedThree",
@@ -32,12 +32,12 @@ namespace game {
 		"DeathElectrify",
 		"DeathExplode"
 	};
-	static_assert(arraySize(s_seq_names) == TurretAction::count, "");
 
 	struct TurretSound {
 		const char *name;
 		int index;
-	} static const s_sounds[] = {
+	};
+   	static const EnumMap<TurretSoundId, TurretSound> s_sounds = {
 		{ "death", 0 },
 		{ "death", 1 },
 		{ "attack", 1 },
@@ -45,7 +45,6 @@ namespace game {
 		{ "arming", 0 },
 		{ "unarming", 0 }
 	};
-	static_assert(arraySize(s_sounds) == TurretSoundId::count, "");
 
 	TurretProto::TurretProto(const TupleParser &parser) :ProtoImpl(parser) {
 		using namespace xml_conversions;
@@ -54,16 +53,16 @@ namespace game {
 
 		hit_points = parser.get<float>("hit_points");
 	
-		for(int n = 0; n < TurretAction::count; n++) {
-			int id = sprite->findSequence(s_seq_names[n]);
-			anim_idx[n] = id == -1 || id > 254? invalid_anim_id : id;
+		for(auto taction : all<TurretAction>()) {
+			int id = sprite->findSequence(s_seq_names[taction]);
+			anim_idx[taction] = id == -1 || id > 254? invalid_anim_id : id;
 		}
 		ASSERT(anim_idx[TurretAction::idle] != invalid_anim_id);
 		
 		string sound_prefix = parser("sound_prefix");
-		for(int n = 0; n < TurretSoundId::count; n++) {
-			string sound_name = sound_prefix + s_sounds[n].name;
-			sound_idx[n] = SoundId(sound_name.c_str(), s_sounds[n].index);
+		for(auto tsound : all<TurretSoundId>()) {
+			string sound_name = sound_prefix + s_sounds[tsound].name;
+			sound_idx[tsound] = SoundId(sound_name.c_str(), s_sounds[tsound].index);
 		}
 	}
 		
@@ -102,7 +101,7 @@ namespace game {
 		sr.pack(m_target_angle, m_action);
 	}
 		
-	Flags::Type Turret::flags() const {
+	FlagsType Turret::flags() const {
 		return Flags::turret | Flags::dynamic_entity | Flags::colliding;
 	}
 	
@@ -115,7 +114,7 @@ namespace game {
 		return FBox(pos(), pos() + float3(bbox_size));
 	}
 		
-	DeathId::Type Turret::deathType(DamageType::Type damage_type, float damage, const float3 &force_vec) const {
+	DeathId Turret::deathType(DamageType damage_type, float damage, const float3 &force_vec) const {
 		float damage_rate = damage / float(m_proto.hit_points);
 
 		if(damage_type == DamageType::electric)
@@ -125,7 +124,7 @@ namespace game {
 		return DeathId::normal;
 	}
 
-	void Turret::onImpact(DamageType::Type damage_type, float damage, const float3 &force, EntityRef source) {
+	void Turret::onImpact(DamageType damage_type, float damage, const float3 &force, EntityRef source) {
 		float resistance = 0.7f;
 		damage *= 1.0f - resistance;
 
@@ -136,7 +135,7 @@ namespace game {
 			
 		m_hit_points -= int(damage);
 		if(m_hit_points <= 0.0f) {
-			DeathId::Type death_id = deathType(damage_type, damage, force);
+			DeathId death_id = deathType(damage_type, damage, force);
 			setOrder(new DieOrder(death_id), true);
 			onKill(ref(), source);
 		}
@@ -209,8 +208,8 @@ namespace game {
 					static_cast<DieOrder*>(m_order.get())->m_is_dead;
 	}
 		
-	bool Turret::animateDeath(DeathId::Type death) {
-		int anim_id =
+	bool Turret::animateDeath(DeathId death) {
+		auto anim_id =
 			death == DeathId::explode? TurretAction::death_explode :
 			death == DeathId::electrify? TurretAction::death_electrify : TurretAction::death;
 		int seq_id = m_proto.anim_idx[anim_id];
@@ -222,7 +221,7 @@ namespace game {
 		return true;
 	}
 
-	bool Turret::animate(TurretAction::Type action) {
+	bool Turret::animate(TurretAction action) {
 		int seq_id = m_proto.anim_idx[action];
 		if(seq_id == TurretProto::invalid_anim_id)
 			return false;

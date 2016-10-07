@@ -13,7 +13,7 @@ namespace game {
 
 	//TODO: melee sounds
 
-	DECLARE_ENUM(WeaponSoundType,
+	DEFINE_ENUM(WeaponSoundType,
 		normal,
 		fire_single,
 		fire_burst,
@@ -21,8 +21,8 @@ namespace game {
 		out_of_ammo
 	);
 
-	struct WeaponProto: public ProtoImpl<WeaponProto, ItemProto, ProtoId::item_weapon> {
-		ItemType::Type itemType() const { return ItemType::weapon; }
+	struct WeaponProto: public ProtoImpl<WeaponProto, ItemProto, ProtoId::weapon> {
+		ItemType itemType() const { return ItemType::weapon; }
 		WeaponProto(const TupleParser&);
 		void link();
 
@@ -35,12 +35,12 @@ namespace game {
 		ProtoRef<ProjectileProto> projectile;
 		ProtoRef<ImpactProto> impact;
 
-		WeaponClass::Type class_id;
+		WeaponClass class_id;
 		float damage_mod;
 		unsigned attack_modes;
 		int max_ammo, burst_ammo;
 
-		SoundId sound_ids[WeaponSoundType::count];
+		EnumMap<WeaponSoundType, SoundId> sound_ids;
 	};
 
 	struct Weapon: public Item
@@ -54,7 +54,7 @@ namespace game {
 		
 		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
 
-		float range(AttackMode::Type mode) const;
+		float range(AttackMode mode) const;
 		bool canKick() const;
 
 		bool hasMeleeAttack() const;
@@ -62,8 +62,8 @@ namespace game {
 		float estimateDamage(bool include_burst = true) const;
 		float estimateProjectileTime(float distance) const;
 
-		WeaponClass::Type classId() const						{ return proto().class_id; }
-		const SoundId soundId(WeaponSoundType::Type type) const	{ return proto().sound_ids[type]; }
+		WeaponClass classId() const						{ return proto().class_id; }
+		const SoundId soundId(WeaponSoundType type) const	{ return proto().sound_ids[type]; }
 		unsigned attackModes() const							{ return proto().attack_modes; }
 
 		int maxAmmo() const { return proto().max_ammo; }

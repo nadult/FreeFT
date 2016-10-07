@@ -12,12 +12,12 @@ namespace game {
 
 	class ChangeStanceOrder: public OrderImpl<ChangeStanceOrder, OrderTypeId::change_stance> {
 	public:
-		ChangeStanceOrder(Stance::Type target_stance);
+		ChangeStanceOrder(Stance target_stance);
 		ChangeStanceOrder(Stream&);
 
 		void save(Stream&) const;
 
-		Stance::Type m_target_stance;
+		Stance m_target_stance;
 		bool m_stance_up;
 	};
 

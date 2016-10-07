@@ -68,16 +68,16 @@ namespace game {
 	//TODO: it shouldnt be here...
 	class FindFilter {
 	public:
-		FindFilter(Flags::Type flags, EntityRef ignore) :m_flags(flags), m_ignore_entity_ref(ignore) { }
-		FindFilter(Flags::Type flags, ObjectRef ignore) :m_flags(flags), m_ignore_object_ref(ignore) { DASSERT(ignore.isEntity()); }
+		FindFilter(FlagsType flags, EntityRef ignore) :m_flags(flags), m_ignore_entity_ref(ignore) { }
+		FindFilter(FlagsType flags, ObjectRef ignore) :m_flags(flags), m_ignore_object_ref(ignore) { DASSERT(ignore.isEntity()); }
 		FindFilter(EntityRef ignore) :m_flags(Flags::all), m_ignore_entity_ref(ignore) { }
 		FindFilter(ObjectRef ignore) :m_flags(Flags::all), m_ignore_object_ref(ignore) { DASSERT(ignore.isEntity()); }
-		FindFilter(Flags::Type flags = Flags::all) :m_flags(flags) { }
+		FindFilter(FlagsType flags = Flags::all) :m_flags(flags) { }
 
-		Flags::Type flags() const { return m_flags; }
+		FlagsType flags() const { return m_flags; }
 
 	protected:
-		Flags::Type m_flags;
+		FlagsType m_flags;
 		EntityRef m_ignore_entity_ref;
 		ObjectRef m_ignore_object_ref;
 		friend class World;
@@ -115,8 +115,8 @@ namespace game {
 		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;
 		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
 
-		void playSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
-		void replicateSound(SoundId, const float3 &pos, SoundType::Type sound_type = SoundType::normal);
+		void playSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
+		void replicateSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
 		
 		void onKill(EntityRef target, EntityRef killer);
 	
@@ -160,13 +160,13 @@ namespace game {
 
 		virtual Entity *clone() const = 0;
 
-		virtual Flags::Type flags() const = 0;
-		virtual EntityId::Type typeId() const = 0;
+		virtual FlagsType flags() const = 0;
+		virtual EntityId typeId() const = 0;
 		virtual bool renderAsOverlay() const { return false; }
 
 		virtual void addToRender(SceneRenderer&, Color color = Color::white) const;
 		virtual void interact(const Entity *interactor) { }
-		virtual void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) { }
+		virtual void onImpact(DamageType, float damage, const float3 &force, EntityRef source) { }
 
 		//TODO: in some classes, some of these functions should be hidden
 		// (for example setDir in Doors; dir can be changed only initially
@@ -229,12 +229,10 @@ namespace game {
 		bool m_is_seq_finished;
 	};
 
-	template <class Type, class ProtoType, int type_id_, class Base = Entity>
+	template <class Type, class ProtoType, EntityId entity_id, class Base = Entity>
 	class EntityImpl: public Base
 	{
 	private:
-		static_assert(type_id_ >= 0 && type_id_ < EntityId::count, "Wrong entity type_id");
-
 		struct Initializer {
 			Initializer(ProtoIndex index) {
 				ASSERT(index.isValid());
@@ -243,7 +241,7 @@ namespace game {
 				sprite = &Sprite::get(proto->sprite->index());
 			}
 			Initializer(const Proto &proto_) {
-				DASSERT(proto_.validProtoId((ProtoId::Type)ProtoType::proto_id));
+				DASSERT(proto_.validProtoId((ProtoId)ProtoType::proto_id));
 				proto = static_cast<const ProtoType*>(&proto_);
 				ASSERT(!proto->is_dummy);
 				sprite = &Sprite::get(proto->sprite->index());
@@ -264,7 +262,7 @@ namespace game {
 			:Base(*init.sprite, sr), m_proto(*init.proto) { }
 
 	public:
-		enum { type_id = type_id_ };
+		enum { type_id = (int)entity_id };
 		EntityImpl(const Proto &proto) :EntityImpl(Initializer(proto)) { }
 		EntityImpl(const XMLNode &node) :EntityImpl(Initializer(node), node) { }
 		EntityImpl(Stream &sr) :EntityImpl(Initializer(sr), sr) { }
@@ -272,8 +270,8 @@ namespace game {
 		virtual Entity *clone() const {
 			return new Type(*static_cast<const Type*>(this));
 		}
-		virtual EntityId::Type typeId() const {
-			return EntityId::Type(type_id_);
+		virtual EntityId typeId() const {
+			return entity_id;
 		}
 		virtual void save(Stream &sr) const {
 			sr << m_proto.index();

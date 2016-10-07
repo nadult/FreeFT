@@ -11,8 +11,7 @@
 
 namespace game {
 
-	DECLARE_ENUM(InteractionMode,
-		undefined = -1,
+	DEFINE_ENUM(InteractionMode,
 		normal,
 		pickup,
 		use_item
@@ -20,13 +19,13 @@ namespace game {
 
 	class InteractOrder: public OrderImpl<InteractOrder, OrderTypeId::interact> {
 	public:
-		InteractOrder(EntityRef target, InteractionMode::Type mode = InteractionMode::undefined);
+		InteractOrder(EntityRef target, Maybe<InteractionMode> mode = none);
 		InteractOrder(Stream&);
 
 		void save(Stream&) const;
 		
 		EntityRef m_target;
-		InteractionMode::Type m_mode;
+		Maybe<InteractionMode> m_mode;
 		bool m_is_followup;
 	};
 

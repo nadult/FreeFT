@@ -13,12 +13,12 @@
 namespace game
 {
 	
-	DECLARE_ENUM(ContainerSoundType,
+	DEFINE_ENUM(ContainerSoundType,
 		opening,
 		closing
 	)
 
-	DECLARE_ENUM(ContainerState,
+	DEFINE_ENUM(ContainerState,
 		closed,
 		opened,
 		opening,
@@ -30,8 +30,8 @@ namespace game
 		ContainerProto(const TupleParser&);
 
 		string name;
-		SoundId sound_ids[ContainerSoundType::count];
-		int seq_ids[ContainerState::count];
+		EnumMap<ContainerSoundType, SoundId> sound_ids;
+		EnumMap<ContainerState, int> seq_ids;
 		bool is_always_opened;
 	};
 
@@ -43,7 +43,7 @@ namespace game
 		Container(const XMLNode&);
 		Container(const ContainerProto&);
 
-		Flags::Type flags() const override { return Flags::container | Flags::static_entity | Flags::occluding | Flags::colliding; }
+		FlagsType flags() const override { return Flags::container | Flags::static_entity | Flags::occluding | Flags::colliding; }
 
 		void open();
 		void close();
@@ -69,7 +69,7 @@ namespace game
 		Inventory m_inventory;
 		Item m_key;
 
-		ContainerState::Type m_state, m_target_state;
+		ContainerState m_state, m_target_state;
 		bool m_is_always_opened;
 		bool m_update_anim;
 	};

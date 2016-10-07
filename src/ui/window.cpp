@@ -34,7 +34,6 @@ namespace ui
 
 		Color lighter(fcolor * 1.2f, falpha);
 		Color darker(fcolor * 0.8f, falpha);
-
 		int aoutline = fwk::abs(outline);
 
 		if(outline) {
@@ -124,7 +123,7 @@ namespace ui
 		int finished_dragging = 0;
 		bool escape = state.isKeyDown(InputKey::esc);
 
-		InputButton::Type button_map[3] = { InputButton::left, InputButton::right, InputButton::middle };
+		InputButton button_map[3] = { InputButton::left, InputButton::right, InputButton::middle };
 
 		if(m_dragging_mode) {
 			if(!state.isMouseButtonPressed(button_map[m_dragging_mode - 1]) || escape)

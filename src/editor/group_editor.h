@@ -23,8 +23,8 @@ namespace ui {
 		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
 
 		void setTarget(TileGroup* tile_group);
-		void setTileFilter(TileFilter::Type);
-		TileFilter::Type tileFilter() const { return m_tile_filter; }
+		void setTileFilter(TileFilter);
+		TileFilter tileFilter() const { return m_tile_filter; }
 
 	protected:
 		void updateSelector();
@@ -35,7 +35,7 @@ namespace ui {
 		PFont m_font;
 		IRect m_view;
 
-		TileFilter::Type m_tile_filter;
+		TileFilter m_tile_filter;
 
 		int2 m_offset[3];
 		const ui::TileList::Entry *m_current_entry;

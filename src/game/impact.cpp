@@ -7,19 +7,12 @@
 
 namespace game {
 
-	DEFINE_ENUM(ImpactType,
-		"ranged",
-		"melee",
-		"area",
-		"area_safe"
-	);
-
 	ImpactProto::ImpactProto(const TupleParser &parser) :ProtoImpl(parser) {
 		damage = parser.get<float>("damage");
-		damage_type = DamageType::fromString(parser("damage_type"));
+		damage_type = fromString<DamageType>(parser("damage_type"));
 		force = parser.get<float>("force");
 		range = parser.get<float>("range");
-		type = ImpactType::fromString(parser("type_id"));
+		type = fromString<ImpactType>(parser("type_id"));
 		sound_idx = SoundId(parser("sound_id"));
 		is_invisible = sprite_name == "impactfx/Projectile Invisi";
 	}

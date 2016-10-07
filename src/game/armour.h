@@ -11,11 +11,11 @@
 
 namespace game {
 
-	struct ArmourProto: public ProtoImpl<ArmourProto, ItemProto, ProtoId::item_armour> {
-		ItemType::Type itemType() const { return ItemType::armour; }
+	struct ArmourProto: public ProtoImpl<ArmourProto, ItemProto, ProtoId::armour> {
+		ItemType itemType() const { return ItemType::armour; }
 		ArmourProto(const TupleParser&);
 
-		ArmourClass::Type class_id;
+		ArmourClass class_id;
 		float damage_resistance;
 		float melee_mod;
 		string sound_prefix;
@@ -30,7 +30,7 @@ namespace game {
 		
 		const string paramDesc() const;
 
-		ArmourClass::Type classId() const		{ return proto().class_id; }
+		ArmourClass classId() const		{ return proto().class_id; }
 
 		const ArmourProto &proto() const		{ return static_cast<const ArmourProto&>(*m_proto); }
 	};

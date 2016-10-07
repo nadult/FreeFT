@@ -71,7 +71,7 @@ namespace game {
 		return best_weapon;
 	}
 		
-	void ActorBrain::onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) {
+	void ActorBrain::onImpact(DamageType, float damage, const float3 &force, EntityRef source) {
 		ThinkingEntity *entity = this->entity();
 		if(!entity)
 			return;
@@ -82,7 +82,7 @@ namespace game {
 		}
 	}
 
-	void ActorBrain::onFailed(OrderTypeId::Type) {
+	void ActorBrain::onFailed(OrderTypeId) {
 		m_failed_orders++;
 	}
 		
@@ -192,8 +192,7 @@ namespace game {
 					m_move_delay = 5.0f;
 
 					if(weapon.hasRangedAttack() && can_see) {
-						AttackMode::Type mode = weapon.attackModes() & AttackMode::toFlags(AttackMode::burst)?
-							AttackMode::burst : AttackMode::undefined;
+						auto mode = weapon.attackModes() & toFlags(AttackMode::burst)? AttackMode::burst : Maybe<AttackMode>();
 
 						if(actor->estimateHitChance(weapon, target->boundingBox()) > 0.3)
 							m_world->sendOrder(new AttackOrder(mode, m_target), m_entity_ref);
@@ -204,7 +203,7 @@ namespace game {
 					else {
 						FBox target_box = target->boundingBox();
 						if(distance(actor->boundingBox(), target_box) <= 3.0f) {
-							AttackMode::Type mode = rand() % 4 == 0? AttackMode::kick : AttackMode::undefined;
+							auto mode = rand() % 4 == 0? AttackMode::kick : Maybe<AttackMode>();
 							m_world->sendOrder(new AttackOrder(mode, m_target), m_entity_ref);
 						}
 						else {
@@ -223,8 +222,8 @@ namespace game {
 			else {
 				Actor *target = m_world->refEntity<Actor>(m_target);
 				if(target && !target->isDying() && can_see) {
-					AttackMode::Type mode = AttackMode::burst;
-					if(entity->estimateHitChance(Weapon(findProto("_turret_gun", ProtoId::item_weapon)), target->boundingBox()) > 0.3)
+					AttackMode mode = AttackMode::burst;
+					if(entity->estimateHitChance(Weapon(findProto("_turret_gun", ProtoId::weapon)), target->boundingBox()) > 0.3)
 						m_world->sendOrder(new AttackOrder(mode, m_target), m_entity_ref);
 				}
 				else {//TODO: change target if cannot do anything about it
@@ -283,8 +282,8 @@ namespace game {
 		const ThinkingEntity *entity = this->entity();
 		if(!entity)
 			return string();
-		OrderTypeId::Type current_order = entity->currentOrder();
-		string order = OrderTypeId::isValid(current_order)? OrderTypeId::toString(current_order) : "invalid";
+		auto current_order = entity->currentOrder();
+		string order = current_order? toString(*current_order) : "invalid";
 
 		const Actor *target = m_world->refEntity<Actor>(m_target);
 		string target_text = target? string("| Target:") + target->proto().actor->id : "";

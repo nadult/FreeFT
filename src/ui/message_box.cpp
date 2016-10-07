@@ -10,7 +10,7 @@
 
 namespace ui {
 
-	MessageBox::MessageBox(const IRect &rect, const char *message, MessageBoxMode::Type mode)
+	MessageBox::MessageBox(const IRect &rect, const char *message, MessageBoxMode mode)
 		:Window(rect), m_mode(mode) {
 		int w = width(), h = height();
 

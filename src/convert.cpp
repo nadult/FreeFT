@@ -152,7 +152,7 @@ namespace ResTypeId {
 	};
 };
 
-void convert(ResTypeId::Type type, Stream &ldr, Stream &svr) {
+void convert(ResTypeId type, Stream &ldr, Stream &svr) {
 	ASSERT(type != ResTypeId::archive);
 
 	try {
@@ -270,7 +270,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 
 struct ResPath {
 	const char *prefix;
-	ResTypeId::Type type;
+	ResTypeId type;
 };
 
 static ResPath s_paths[] = {
@@ -371,7 +371,7 @@ void convertAll(const char *fot_path, const string &filter) {
 
 	printf("Converting plain files...\n");
 	for(int t = 0; t < arraySize(s_paths); t++) {
-		ResTypeId::Type type = s_paths[t].type;
+		ResTypeId type = s_paths[t].type;
 		if(type == ResTypeId::archive)
 			continue;
 
@@ -406,7 +406,7 @@ void convertAll(const char *fot_path, const string &filter) {
 	
 	printf("Converting archives...\n");
 	for(int t = 0; t < arraySize(s_paths); t++) {
-		ResTypeId::Type type = s_paths[t].type;
+		ResTypeId type = s_paths[t].type;
 		if(type != ResTypeId::archive)
 			continue;
 
@@ -440,7 +440,7 @@ void convertAll(const char *fot_path, const string &filter) {
 
 				if(tindex == -1 || files[tindex].find(name) != files[tindex].end())
 					continue;
-				ResTypeId::Type type = s_paths[tindex].type;
+				ResTypeId type = s_paths[tindex].type;
 
 				vector<char> data;
 				archive.readFile(n, data);

@@ -31,29 +31,29 @@ namespace game {
 			THROW("Spawn zone not found!\n");
 
 		ActorInventory inventory; {
-			inventory.add(findProto("plasma_rifle", ProtoId::item_weapon), 1);
-			inventory.add(findProto("laser_rifle", ProtoId::item_weapon), 1);
-			inventory.add(findProto("heavy_laser_rifle", ProtoId::item_weapon), 1);
-			inventory.add(findProto("uzi", ProtoId::item_weapon), 1);
-			inventory.add(findProto("rocket_launcher", ProtoId::item_weapon), 1);
-			inventory.add(findProto("ak47", ProtoId::item_weapon), 1);
-			inventory.add(findProto("beretta", ProtoId::item_weapon), 1);
-			inventory.add(findProto("gatling_laser", ProtoId::item_weapon), 1);
-			inventory.add(findProto("m60", ProtoId::item_weapon), 1);
-			inventory.add(findProto("pulse_rifle", ProtoId::item_weapon), 1);
+			inventory.add(findProto("plasma_rifle", ProtoId::weapon), 1);
+			inventory.add(findProto("laser_rifle", ProtoId::weapon), 1);
+			inventory.add(findProto("heavy_laser_rifle", ProtoId::weapon), 1);
+			inventory.add(findProto("uzi", ProtoId::weapon), 1);
+			inventory.add(findProto("rocket_launcher", ProtoId::weapon), 1);
+			inventory.add(findProto("ak47", ProtoId::weapon), 1);
+			inventory.add(findProto("beretta", ProtoId::weapon), 1);
+			inventory.add(findProto("gatling_laser", ProtoId::weapon), 1);
+			inventory.add(findProto("m60", ProtoId::weapon), 1);
+			inventory.add(findProto("pulse_rifle", ProtoId::weapon), 1);
 
-			inventory.add(findProto("leather_armour", ProtoId::item_armour), 1);
-			inventory.add(findProto("power_armour", ProtoId::item_armour), 1);
-			inventory.add(findProto("metal_armour", ProtoId::item_armour), 1);
-			inventory.add(findProto("mutant_armour", ProtoId::item_armour), 1);
-			inventory.add(findProto("ghoul_armour", ProtoId::item_armour), 1);
+			inventory.add(findProto("leather_armour", ProtoId::armour), 1);
+			inventory.add(findProto("power_armour", ProtoId::armour), 1);
+			inventory.add(findProto("metal_armour", ProtoId::armour), 1);
+			inventory.add(findProto("mutant_armour", ProtoId::armour), 1);
+			inventory.add(findProto("ghoul_armour", ProtoId::armour), 1);
 			
-			inventory.add(findProto("762mm", ProtoId::item_ammo), 250);
-			inventory.add(findProto("9mm_ap", ProtoId::item_ammo), 100);
-			inventory.add(findProto("9mm_ball", ProtoId::item_ammo), 100);
-			inventory.add(findProto("9mm_jhp", ProtoId::item_ammo), 100);
-			inventory.add(findProto("rocket_ap", ProtoId::item_ammo), 100);
-			inventory.add(findProto("fusion_cell", ProtoId::item_ammo), 300);
+			inventory.add(findProto("762mm", ProtoId::ammo), 250);
+			inventory.add(findProto("9mm_ap", ProtoId::ammo), 100);
+			inventory.add(findProto("9mm_ball", ProtoId::ammo), 100);
+			inventory.add(findProto("9mm_jhp", ProtoId::ammo), 100);
+			inventory.add(findProto("rocket_ap", ProtoId::ammo), 100);
+			inventory.add(findProto("fusion_cell", ProtoId::ammo), 300);
 		}
 
 		respawnPC(PCIndex(0, 0), spawn_zone, inventory);

@@ -11,18 +11,12 @@
 
 namespace ui { 
 
-	namespace MessageBoxMode {
-		enum Type {
-			yes_no,
-			ok_cancel,
-			ok,
-		};
-	}
+	DEFINE_ENUM(MessageBoxMode, yes_no, ok_cancel, ok);
 
 	class MessageBox: public Window
 	{
 	public:
-		typedef MessageBoxMode::Type Mode;
+		using Mode = MessageBoxMode;
 		MessageBox(const IRect &rect, const char *message, Mode mode);
 		const char *typeName() const override { return "MessageBox"; }
 

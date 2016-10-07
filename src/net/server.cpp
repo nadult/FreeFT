@@ -101,7 +101,7 @@ namespace net {
 				chunk >> password;
 
 				bool disconnect = false;
-				RefuseReason::Type refuse_reason;
+				RefuseReason refuse_reason;
 
 				if(!m_config.m_password.empty() && password != m_config.m_password) {
 					refuse_reason = RefuseReason::wrong_password;
@@ -218,7 +218,7 @@ namespace net {
 		LocalHost::receive();
 
 		while(getLobbyPacket(packet)) {
-			LobbyChunkId::Type id;
+			LobbyChunkId id;
 			packet >> id;
 			Address target;
 			packet >> target.ip >> target.port;

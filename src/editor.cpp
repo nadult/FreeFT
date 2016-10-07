@@ -78,7 +78,7 @@ public:
 		m_group_editor->setTarget(&m_group);
 
 		m_mode_box = make_shared<ComboBox>(IRect(0, 0, m_left_width * 1 / 2, 22), 0,
-				"Mode: ", s_mode_names, editing_modes_count);
+				"Mode: ", s_mode_names);
 		m_save_button = make_shared<Button>(IRect(m_left_width * 1 / 2, 0, m_left_width * 3 / 4, 22), "Save");
 		m_load_button = make_shared<Button>(IRect(m_left_width * 3 / 4, 0, m_left_width, 22), "Load");
 

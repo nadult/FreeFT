@@ -8,19 +8,19 @@
 
 namespace game {
 
-	DEFINE_ENUM(WeaponSoundType,
+	static const EnumMap<WeaponSoundType, const char*> s_suffixes = {
 		"",
 		"single",
 		"burst",
 		"reload",
 		"outofammo"
-	);
+	};
 
 	WeaponProto::WeaponProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ammo_class_id = parser("ammo_class_id");
 		impact = parser("impact_id");
 		projectile = parser("projectile_id");
-		class_id = WeaponClass::fromString(parser("class_id"));
+		class_id = fromString<WeaponClass>(parser("class_id"));
 		damage_mod = parser.get<float>("damage_mod");
 		attack_modes = AttackModeFlags::fromString(parser("attack_modes"));
 		max_ammo = parser.get<int>("max_ammo");
@@ -30,10 +30,10 @@ namespace game {
 		accuracy = parser.get<float>("accuracy");
 
 		const char *sound_prefix = parser("sound_prefix");
-		for(int n = 0; n < WeaponSoundType::count; n++) {
+		for(auto wstype : all<WeaponSoundType>()) {
 			char name[256];
-			snprintf(name, sizeof(name), "%s%s", sound_prefix, WeaponSoundType::toString(n));
-			sound_ids[n] = SoundId(name);
+			snprintf(name, sizeof(name), "%s%s", sound_prefix, s_suffixes[wstype]);
+			sound_ids[wstype] = SoundId(name);
 		}
 		if(!sound_ids[WeaponSoundType::normal].isValid())
 			sound_ids[WeaponSoundType::normal] = sound_ids[WeaponSoundType::fire_single];
@@ -56,8 +56,8 @@ namespace game {
 		}
 	}
 	
-	float Weapon::range(AttackMode::Type mode) const {
-		return AttackMode::isRanged(mode)? proto().ranged_range : proto().melee_range;
+	float Weapon::range(AttackMode mode) const {
+		return isRanged(mode)? proto().ranged_range : proto().melee_range;
 	}
 
 	bool Weapon::canKick() const {
@@ -65,18 +65,18 @@ namespace game {
 	}
 		
 	bool Weapon::hasMeleeAttack() const {
-		for(uint n = 0; n < AttackMode::count; n++) {
-			AttackMode::Type mode = (AttackMode::Type)n;
-			if(AttackMode::isMelee(mode) && proto().attack_modes & AttackMode::toFlags(mode))
+		for(uint n = 0; n < count<AttackMode>(); n++) {
+			AttackMode mode = (AttackMode)n;
+			if(isMelee(mode) && proto().attack_modes & toFlags(mode))
 				return true;
 		}
 		return false;
 	}
 
 	bool Weapon::hasRangedAttack() const {
-		for(uint n = 0; n < AttackMode::count; n++) {
-			AttackMode::Type mode = (AttackMode::Type)n;
-			if(AttackMode::isRanged(mode) && proto().attack_modes & AttackMode::toFlags(mode))
+		for(uint n = 0; n < count<AttackMode>(); n++) {
+			AttackMode mode = (AttackMode)n;
+			if(isRanged(mode) && proto().attack_modes & toFlags(mode))
 				return true;
 		}
 		return false;

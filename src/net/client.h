@@ -48,7 +48,7 @@ namespace net {
 
 		game::PWorld world() { return m_world; }
 
-		RefuseReason::Type refuseReason() const {
+		RefuseReason refuseReason() const {
 			DASSERT(m_mode == Mode::refused);
 			return m_refuse_reason;
 		}
@@ -64,7 +64,7 @@ namespace net {
 		string m_nick_name;
 		Address m_server_address;
 		int m_server_id, m_client_id;
-		RefuseReason::Type m_refuse_reason;
+		RefuseReason m_refuse_reason;
 		Mode m_mode;
 	};
 

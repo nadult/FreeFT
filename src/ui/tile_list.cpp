@@ -14,35 +14,20 @@ using namespace game;
 namespace ui
 {
 
-	namespace TileFilter {
+	static const EnumMap<TileFilter, Maybe<TileId>> s_filters = {
+		none,
+		TileId::floor,
+		TileId::wall,
+		TileId::roof,
+		TileId::object,
+		TileId::unknown,
+	};
 
-		static const char *s_strings[TileFilter::count] = {
-			"all",
-			"floors",
-			"walls",
-			"roofs",
-			"objects",
-			"other",
-		};
-
-		static int s_filters[TileFilter::count] = {
-			-1,
-			TileId::floor,
-			TileId::wall,
-			TileId::roof,
-			TileId::object,
-			TileId::unknown,
-		};
-
-		const char **strings() {
-			return s_strings;
-		}
-
-		bool filter(const Tile *tile, int filter) {
-			DASSERT(tile);
-			DASSERT(filter < TileFilter::count && filter >= 0);
-			return s_filters[filter] == -1 || tile->type() == s_filters[filter];
-		}
+	static bool tileFilterFunc(const Tile *tile, int ifilter) {
+		DASSERT(tile);
+		TileFilter filter = TileFilter(ifilter);
+		DASSERT(validEnum(filter));
+		return tile->type() == s_filters[filter];
 	}
 
 	namespace {
@@ -96,8 +81,8 @@ namespace ui
 		return make_shared<VectorBasedModel>(tiles);
 	}
 
-	PTileListModel filteredTilesModel(PTileListModel model, TileFilter::Type param) {
-		return make_shared<FilteredModel>(model, TileFilter::filter, param);
+	PTileListModel filteredTilesModel(PTileListModel model, TileFilter param) {
+		return make_shared<FilteredModel>(model, tileFilterFunc, (int)param);
 	}
 
 	bool TileList::Entry::operator<(const TileList::Entry &rhs) const {

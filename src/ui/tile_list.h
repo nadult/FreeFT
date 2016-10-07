@@ -13,21 +13,8 @@ class TileGroup;
 namespace ui
 {
 
-	namespace TileFilter {
-		enum Type {
-			all,
-			floors,
-			walls,
-			roofs,
-			objects,
-			other,
-
-			count,
-		};
-
-		const char **strings();
-		bool test(const game::Tile *tile, int filter);
-	};
+	DEFINE_ENUM(TileFilter, all, floors, walls, roofs, objects, other);
+	//bool test(const game::Tile *tile, int filter);
 
 	struct TileListModel {
 		virtual ~TileListModel() { }
@@ -38,7 +25,7 @@ namespace ui
 
 	PTileListModel allTilesModel();
 	PTileListModel groupedTilesModel(const TileGroup&, bool only_uniform);
-	PTileListModel filteredTilesModel(PTileListModel, TileFilter::Type);
+	PTileListModel filteredTilesModel(PTileListModel, TileFilter);
 
 
 	class TileList

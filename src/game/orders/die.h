@@ -12,12 +12,12 @@ namespace game {
 
 	class DieOrder: public OrderImpl<DieOrder, OrderTypeId::die> {
 	public:
-		DieOrder(DeathId::Type death_id);
+		DieOrder(DeathId death_id);
 		DieOrder(Stream&);
 
 		void save(Stream&) const;
 		
-		DeathId::Type m_death_id;
+		DeathId m_death_id;
 		bool m_is_dead;
 	};
 

@@ -14,192 +14,75 @@ namespace game {
 	class Entity;
 	class Tile;
 
-	DECLARE_ENUM(WeaponClass,
-		unarmed,
-		club,
-		heavy,
-		knife,
-		minigun,
-		pistol,
-		rifle,
-		rocket,
-		smg,
-		spear
-	);
+	DEFINE_ENUM(WeaponClass, unarmed, club, heavy, knife, minigun, pistol, rifle, rocket, smg,
+				spear);
 
-	DECLARE_ENUM(ArmourClass,
-		none,
-		leather,
-		metal,
-		environmental,
-		power
-	);
+	DEFINE_ENUM(ArmourClass, none, leather, metal, environmental, power);
 
-	DECLARE_ENUM(DamageType,
-		undefined = -1,
-		bludgeoning,
-		slashing,
-		piercing,
-		bullet,
-		fire,
-		plasma,
-		laser,
-		electric,
-		explosive
-	);
+	DEFINE_ENUM(DamageType, bludgeoning, slashing, piercing, bullet, fire, plasma, laser, electric,
+				explosive);
 
-	DECLARE_ENUM(DeathId,
-		normal,
-		big_hole,
-		cut_in_half,
-		electrify,
-		explode,
-		fire,
-		melt,
-		riddled
-	);
+	DEFINE_ENUM(DeathId, normal, big_hole, cut_in_half, electrify, explode, fire, melt, riddled);
 
-	DECLARE_ENUM(EntityId,
-		container,
-		door,
-		actor,
-		turret,
-		item,
-		projectile,
-		impact,
-		trigger
-	);
+	DEFINE_ENUM(EntityId, container, door, actor, turret, item, projectile, impact, trigger);
 
-	DECLARE_ENUM(TileId,
-		wall,
-		floor,
-		object,
-		stairs,
-		roof,
-		unknown
-	);
+	DEFINE_ENUM(TileId, wall, floor, object, stairs, roof, unknown);
 
-	DECLARE_ENUM(SurfaceId,
-		stone,
-		gravel,
-		metal,
-		wood,
-		water,
-		snow,
-		unknown
-	);
+	DEFINE_ENUM(SurfaceId, stone, gravel, metal, wood, water, snow, unknown);
 
-	DECLARE_ENUM(Stance,
-		prone,
-		crouch,
-		stand
-	);
+	DEFINE_ENUM(Stance, prone, crouch, stand);
 
-	DECLARE_ENUM(SentryMode,
-		passive,
-		defensive,
-		aggresive
-	);
+	DEFINE_ENUM(SentryMode, passive, defensive, aggresive);
 
-	DECLARE_ENUM(AttackMode,
-		undefined = -1,
-		single = 0,
-		burst,
-		thrust,
-		slash,
-		swing,
-		throwing,
-		punch,
-		kick
-	);
+	DEFINE_ENUM(AttackMode, single, burst, thrust, slash, swing, throwing, punch, kick);
 
-	//TODO: add cancel order
-	DECLARE_ENUM(OrderTypeId,
-		idle = 0,
-		look_at,
-		move,
-		track,
-		attack,
-		change_stance,
-		interact,
-		drop_item,
-		equip_item,
-		unequip_item,
-		transfer_item,
-		get_hit,
-		die
-	);
+	// TODO: add cancel order
+	DEFINE_ENUM(OrderTypeId, idle, look_at, move, track, attack, change_stance, interact, drop_item,
+				equip_item, unequip_item, transfer_item, get_hit, die);
 
 	// TODO: better name
-	DECLARE_ENUM(GameModeId,
-		undefined = -1,
-		single_player,
-		death_match,
-		trench_war,
-		hunter
-	);
+	DEFINE_ENUM(GameModeId, single_player, death_match, trench_war, hunter);
 
-	DECLARE_ENUM(HealthStatus,
-		unhurt,
-		barely_wounded,
-		wounded,
-		seriously_wounded,
-		near_death,
-		dead
-	);
+	DEFINE_ENUM(HealthStatus, unhurt, barely_wounded, wounded, seriously_wounded, near_death, dead);
 
-	namespace HealthStatus {
-		Type fromHPPercentage(float);
-	};
+	const char *describe(HealthStatus);
+	HealthStatus healthStatusFromHP(float);
 
-	DECLARE_ENUM(MessageId,
-		sound,
+	DEFINE_ENUM(MessageId, sound, actor_order, class_changed, update_client, remove_client, respawn,
+				update_client_info);
 
-		actor_order,
-		class_changed,
-		update_client,
-		remove_client,
-		respawn,
+	DEFINE_ENUM(SoundType, normal, explosion, shooting);
 
-		update_client_info
-	);
-
-	DECLARE_ENUM(SoundType,
-		normal,
-		explosion,
-		shooting
-	);
-
-	namespace AttackMode {
-		inline constexpr bool isRanged(Type t) { return t == single || t == burst || t == throwing; }
-		inline constexpr bool isMelee(Type t) { return !isRanged(t); }
-		inline constexpr unsigned toFlags(Type t) { return t == undefined? 0 : 1 << t; }
-	};
+	inline constexpr bool isRanged(AttackMode t) {
+		return isOneOf(t, AttackMode::single, AttackMode::burst, AttackMode::throwing);
+	}
+	inline constexpr bool isMelee(AttackMode t) { return !isRanged(t); }
+	inline constexpr unsigned toFlags(AttackMode t) { return 1 << (uint)t; }
 
 	namespace AttackModeFlags {
 		enum Type {
-			single		= toFlags(AttackMode::single),
-			burst		= toFlags(AttackMode::burst),
-			thrust		= toFlags(AttackMode::thrust),
-			slash		= toFlags(AttackMode::slash),
-			swing		= toFlags(AttackMode::swing),
-			throwing	= toFlags(AttackMode::throwing),
-			punch		= toFlags(AttackMode::punch),
-			kick		= toFlags(AttackMode::kick)
+			single = toFlags(AttackMode::single),
+			burst = toFlags(AttackMode::burst),
+			thrust = toFlags(AttackMode::thrust),
+			slash = toFlags(AttackMode::slash),
+			swing = toFlags(AttackMode::swing),
+			throwing = toFlags(AttackMode::throwing),
+			punch = toFlags(AttackMode::punch),
+			kick = toFlags(AttackMode::kick)
 		};
 
-		unsigned fromString(const char*);
-
-		AttackMode::Type getFirst(unsigned flags);
+		unsigned fromString(const char *);
+		Maybe<AttackMode> getFirst(unsigned flags);
 	};
-	
+
 	namespace Flags { enum Type : unsigned; };
+	using FlagsType = Flags::Type;
 
-	inline constexpr Flags::Type entityIdToFlag(EntityId::Type id) { return (Flags::Type)(1u << (4 + id)); }
-	inline constexpr Flags::Type tileIdToFlag(TileId::Type id) { return (Flags::Type)(1u << (16 + id)); }
+	inline constexpr FlagsType entityIdToFlag(EntityId id) { return (FlagsType)(1u << (4 + (uint)id)); }
+	inline constexpr FlagsType tileIdToFlag(TileId id) { return (FlagsType)(1u << (16 + (uint)id)); }
 
-	static_assert(EntityId::count <= 12, "Flag limit reached");
-	static_assert(TileId::count <= 8, "Flag limit reached");
+	static_assert(count<EntityId>() <= 12, "Flag limit reached");
+	static_assert(count<TileId>() <= 8, "Flag limit reached");
 
 	namespace Flags {
 		enum Type :unsigned {

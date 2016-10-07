@@ -28,7 +28,7 @@ namespace game
 		Grid::swap(new_map);
 	}
 
-	int EntityMap::pixelIntersect(const int2 &pos, Flags::Type flags) const {
+	int EntityMap::pixelIntersect(const int2 &pos, FlagsType flags) const {
 		return Grid::pixelIntersect(pos, [](const Grid::ObjectDef &object, const int2 &pos)
 			{ return ((const Entity*)object.ptr)->testPixel(pos); },  flags);
 	}

@@ -20,14 +20,14 @@ namespace game {
 		sr << m_target;
 	}
 
-	bool Actor::handleOrder(LookAtOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Actor::handleOrder(LookAtOrder &order, EntityEvent event, const EntityEventParams &params) {
 		float3 center = boundingBox().center();
 		if(length(order.m_target - center) >= 1.0f)
 			lookAt(order.m_target);
 		return false;
 	}
 
-	bool Turret::handleOrder(LookAtOrder &order, EntityEvent::Type event, const EntityEventParams &params) {
+	bool Turret::handleOrder(LookAtOrder &order, EntityEvent event, const EntityEventParams &params) {
 		float3 center = boundingBox().center();
 		if(length(order.m_target - center) >= 1.0f)
 			lookAt(order.m_target);

@@ -19,9 +19,9 @@ namespace game {
 		//TODO: decrease data sent over the net
 		DeathMatchServer(World &world);
 
-		GameModeId::Type typeId() const override { return GameModeId::death_match; }
+		GameModeId typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
-		void onMessage(Stream&, MessageId::Type, int source_id) override;
+		void onMessage(Stream&, MessageId, int source_id) override;
 
 		struct ClientInfo {
 			ClientInfo();
@@ -48,12 +48,12 @@ namespace game {
 
 		DeathMatchClient(World &world, int client_id, const string &nick_name);
 
-		GameModeId::Type typeId() const override { return GameModeId::death_match; }
+		GameModeId typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
-		void onMessage(Stream&, MessageId::Type, int source_id) override;
+		void onMessage(Stream&, MessageId, int source_id) override;
 		
 		const vector<GameClientStats> stats() const override;
-		const UserMessage userMessage(UserMessageType::Type) override;
+		const UserMessage userMessage(UserMessageType) override;
 
 	private:
 		void onClientDisconnected(int client_id) override;

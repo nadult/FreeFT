@@ -14,12 +14,12 @@
 		
 namespace ui {
 
-	namespace EntityId = game::EntityId;
+	using EntityId = game::EntityId;
 	using game::PEntity;
 
 	class EntityPad: public Window {
 	public:
-		EntityPad(const IRect &max_rect, EntityId::Type);
+		EntityPad(const IRect &max_rect, EntityId);
 		virtual ~EntityPad() = default;
 
 		template <class TControl, class ...Args>
@@ -31,14 +31,14 @@ namespace ui {
 			return control;
 		}
 
-		EntityId::Type typeId() const { return m_type_id; }
+		EntityId typeId() const { return m_type_id; }
 
 		virtual PEntity makeEntity() const = 0;
 
 	private:
 		void addControl(PWindow);
 
-		EntityId::Type m_type_id;
+		EntityId m_type_id;
 		IRect m_max_rect;
 	};
 
@@ -114,14 +114,14 @@ namespace ui {
 		EntitiesPad(const IRect &rect, PEntitiesEditor editor);
 		bool onEvent(const Event &ev) override;
 		
-		EntityId::Type selectedTypeId() const;
+		EntityId selectedTypeId() const;
 		PEntity makeEntity() const;
 
 	protected:
 		void updateEntity();
 		void updateVisibility();
 
-		typedef EntitiesEditorMode::Type Mode;
+		typedef EntitiesEditorMode Mode;
 
 		PEntitiesEditor	m_editor;
 		PComboBox m_editor_mode_box;

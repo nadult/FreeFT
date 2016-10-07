@@ -83,12 +83,12 @@ namespace game {
 			m_world->m_replace_list.emplace_back(std::move(new_entity), -1);
 	}
 		
-	void EntityWorldProxy::playSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+	void EntityWorldProxy::playSound(SoundId sound_id, const float3 &pos, SoundType sound_type) {
 		DASSERT(isHooked());
 		m_world->playSound(sound_id, pos, sound_type);
 	}
 	
-	void EntityWorldProxy::replicateSound(SoundId sound_id, const float3 &pos, SoundType::Type sound_type) {
+	void EntityWorldProxy::replicateSound(SoundId sound_id, const float3 &pos, SoundType sound_type) {
 		DASSERT(isHooked());
 		m_world->replicateSound(sound_id, pos, sound_type);
 	}

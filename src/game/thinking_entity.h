@@ -27,7 +27,7 @@ namespace game {
 	class Brain;
 	using PBrain = ::ClonablePtr<Brain>;
 
-	DECLARE_ENUM(EntityEvent,
+	DEFINE_ENUM(EntityEvent,
 		init_order,
 		think,
 		anim_finished,
@@ -72,7 +72,7 @@ namespace game {
 		const Segment computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
 		float estimateHitChance(const Weapon &weapon, const FBox &bbox);
 		
-		OrderTypeId::Type currentOrder() const;
+		Maybe<OrderTypeId> currentOrder() const;
 		
 		virtual bool canSee(EntityRef ref, bool simple_test = false) = 0;
 		
@@ -91,9 +91,9 @@ namespace game {
 		void onPickupEvent() override;
 
 		void onAnimFinished() override;
-		void onImpact(DamageType::Type, float damage, const float3 &force, EntityRef source) override;
+		void onImpact(DamageType, float damage, const float3 &force, EntityRef source) override;
 
-		void handleOrder(EntityEvent::Type, const EntityEventParams &params = EntityEventParams{});
+		void handleOrder(EntityEvent, const EntityEventParams &params = EntityEventParams{});
 		bool failOrder() const;
 		
 
@@ -105,24 +105,24 @@ namespace game {
 		vector<float3> m_aiming_lines;
 
 	private:
-		typedef bool (ThinkingEntity::*HandleFunc)(Order*, EntityEvent::Type, const EntityEventParams&);
+		typedef bool (ThinkingEntity::*HandleFunc)(Order*, EntityEvent, const EntityEventParams&);
 
 		template <class TOrder>
-		bool handleOrderWrapper(Order *order, EntityEvent::Type event, const EntityEventParams &params);
+		bool handleOrderWrapper(Order *order, EntityEvent event, const EntityEventParams &params);
 		
-		virtual bool handleOrder(IdleOrder&, EntityEvent::Type, const EntityEventParams&) = 0;
-		virtual bool handleOrder(LookAtOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(MoveOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(TrackOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(AttackOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(ChangeStanceOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(InteractOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(DropItemOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(EquipItemOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(UnequipItemOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(TransferItemOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(GetHitOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
-		virtual bool handleOrder(DieOrder&, EntityEvent::Type, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(IdleOrder&, EntityEvent, const EntityEventParams&) = 0;
+		virtual bool handleOrder(LookAtOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(MoveOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(TrackOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(AttackOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(ChangeStanceOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(InteractOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(DropItemOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(EquipItemOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(UnequipItemOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(TransferItemOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(GetHitOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
+		virtual bool handleOrder(DieOrder&, EntityEvent, const EntityEventParams&) { return failOrder(); }
 	};
 
 }

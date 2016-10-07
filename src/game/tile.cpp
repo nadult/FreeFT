@@ -19,7 +19,7 @@ namespace game
 		s_frame_counter = counter;
 	}
 
-	struct TypeName { TileId::Type type; const char *name; } s_type_names[] = {
+	struct TypeName { TileId type; const char *name; } s_type_names[] = {
 		{ TileId::floor,	"_floor_" },
 		{ TileId::wall,		"_wall_" },
 		{ TileId::roof,		"_roof_" },
@@ -78,10 +78,10 @@ namespace game
 		load(stream);
 	}
 		
-	Flags::Type Tile::flags() const {
+	FlagsType Tile::flags() const {
 		return	tileIdToFlag(m_type_id) |
-				(m_see_through? (Flags::Type)0 : Flags::occluding) |
-				(m_walk_through? (Flags::Type)0 : Flags::colliding);
+				(m_see_through? (FlagsType)0 : Flags::occluding) |
+				(m_walk_through? (FlagsType)0 : Flags::colliding);
 	}
 			
 	void Tile::legacyLoad(Stream &sr, const char *name) {
@@ -110,8 +110,8 @@ namespace game
 
 		u8 ttype, material, flags;
 		sr.unpack(ttype, material, flags);
-		m_type_id = ttype >= TileId::count? TileId::unknown : (TileId::Type)ttype;
-		m_surface_id = material >= SurfaceId::count? SurfaceId::unknown : (SurfaceId::Type)material;
+		m_type_id = ttype >= count<TileId>()? TileId::unknown : (TileId)ttype;
+		m_surface_id = material >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)material;
 		m_see_through = flags & 8;
 		m_walk_through = flags & 1;
 		m_is_invisible = strstr(sr.name(), "Invisible Tile") != nullptr;
@@ -160,8 +160,10 @@ namespace game
 
 	void Tile::load(Stream &sr) {
 		sr.signature("TILE", 4);
-		sr.unpack(m_type_id, m_surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
-		ASSERT(TileId::isValid(m_type_id));
+		unsigned char type_id, surface_id;
+		sr.unpack(type_id, surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
+		m_type_id = type_id >= count<TileId>()? TileId::unknown : (TileId)type_id;
+		m_surface_id = surface_id >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)surface_id;
 		sr >> m_first_frame >> m_frames >> m_palette;
 
 		for(int n = 0; n < (int)m_frames.size(); n++)

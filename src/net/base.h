@@ -79,7 +79,7 @@ namespace net {
 	void encodeInt3(Stream&, const int3 &value);
 	const int3 decodeInt3(Stream&);
 
-	DECLARE_ENUM(LobbyChunkId,
+	DEFINE_ENUM(LobbyChunkId,
 		server_status,
 		server_down,
 		server_list,
@@ -87,11 +87,13 @@ namespace net {
 		join_request
 	);
 
-	DECLARE_ENUM(RefuseReason,
+	DEFINE_ENUM(RefuseReason,
 		wrong_password,
 		nick_already_used,
 		server_full
 	);
+
+	const char *describe(RefuseReason);
 
 	struct ServerStatusChunk {
 		ServerStatusChunk() :num_players(0), max_players(0), is_passworded(false) { }
@@ -102,7 +104,7 @@ namespace net {
 		Address address;
 		string server_name;
 		string map_name;
-		game::GameModeId::Type game_mode;
+		game::GameModeId game_mode;
 		int num_players, max_players;
 		bool is_passworded;
 	};
@@ -114,7 +116,7 @@ namespace net {
 		bool isValid() const { return !map_name.empty(); }
 
 		string map_name;
-		game::GameModeId::Type game_mode;
+		Maybe<game::GameModeId> game_mode;
 	};
 
 }

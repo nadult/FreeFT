@@ -17,11 +17,15 @@ namespace net {
 			m_size = m_pos;
 	}
 
-	DEFINE_ENUM(RefuseReason,
+	static const EnumMap<RefuseReason, const char*> s_descs = {
 		"wrong password",
 		"nick name already used",
 		"server full"
-	);
+	};
+
+	const char *describe(RefuseReason reason) {
+		return s_descs[reason];
+	}
 
 	void encodeInt3(Stream &sr, const int3 &value) {
 		encodeInt(sr, value.x);

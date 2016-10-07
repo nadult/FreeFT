@@ -14,7 +14,7 @@ namespace game {
 	public:
 		SinglePlayerMode(World &world, Character character);
 
-		GameModeId::Type typeId() const override { return GameModeId::single_player; }
+		GameModeId typeId() const override { return GameModeId::single_player; }
 		void tick(double time_diff) override;
 
 	private:

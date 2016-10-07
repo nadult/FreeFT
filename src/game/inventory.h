@@ -57,8 +57,8 @@ namespace game {
 		void save(XMLNode) const;
 
 		bool equip(int id, int count = 1);
-		bool isEquipped(ItemType::Type);
-		int unequip(ItemType::Type);
+		bool isEquipped(ItemType);
+		int unequip(ItemType);
 		bool isEmpty() const;
 		float weight() const;
 
