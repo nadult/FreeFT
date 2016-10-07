@@ -242,8 +242,8 @@ namespace game {
 		return weight;
 	}
 		
-	bool ActorInventory::isEmpty() const {
-		return Inventory::isEmpty() && m_weapon.isDummy() && m_armour.isDummy() && (m_ammo.item.isDummy() || m_ammo.count == 0);
+	bool ActorInventory::empty() const {
+		return Inventory::empty() && m_weapon.isDummy() && m_armour.isDummy() && (m_ammo.item.isDummy() || m_ammo.count == 0);
 	}
 
 	void ActorInventory::save(Stream &sr) const {

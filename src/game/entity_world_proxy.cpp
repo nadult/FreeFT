@@ -48,7 +48,7 @@ namespace game {
 	}
 		
 	const FBox EntityWorldProxy::refBBox(ObjectRef ref) const {
-		return m_world? m_world->refBBox(ref) : FBox::empty();
+		return m_world? m_world->refBBox(ref) : FBox();
 	}
 
 	const Tile *EntityWorldProxy::refTile(ObjectRef ref) const {

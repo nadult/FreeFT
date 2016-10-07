@@ -108,7 +108,7 @@ namespace game
 		DASSERT(prev_palette);
 
 		tex.resize(rect.width(), rect.height());
-		if(!tex.isEmpty()) {
+		if(!tex.empty()) {
 			memset(tex.line(0), 0, rect.width() * rect.height() * sizeof(Color));
 			for(int l = 0; l < Sprite::layer_count; l++)
 				images[l].blit(tex, points[l], prev_palette->access(l), prev_palette->size(l));
@@ -204,7 +204,7 @@ namespace game
 
 	void Sprite::updateMaxRect() {
 		if(m_images.empty())
-			m_max_rect = IRect::empty();
+			m_max_rect = IRect();
 
 		IRect out = m_images[0].rect;
 		for(int n = 1; n < (int)m_images.size(); n++)

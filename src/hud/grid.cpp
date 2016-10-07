@@ -8,16 +8,13 @@
 
 namespace hud {
 
-	HudGrid::Row::Row()
-		:rect(FRect::empty()), selection_time(0.0f), highlighted_time(0.0f) { }
-
 	HudGrid::HudGrid(const FRect &rect)
-		  :HudWidget(rect), m_max_visible_rows(0), m_scroll_pos(0), m_selected_row(-1), m_highlighted_row(-1) {
+		  :HudWidget(rect) {
 		m_anim_speed = 5.0f;
 	}
 		
 	void HudGrid::addColumn(const char *title, float min_size) {
-		m_columns.emplace_back(Column{title, min_size, FRect::empty()});
+		m_columns.emplace_back(Column{title, min_size, {}});
 		needsLayout();
 	}
 		
@@ -88,7 +85,7 @@ namespace hud {
 				m_highlighted_row = -1;
 
 			for(const auto &row :m_rows)
-				if(row.second.rect.isInside(event.mousePos())) {
+				if(row.second.rect.isInside((float2)event.mousePos())) {
 					if(mouse_key_down) {
 						m_selected_row = row.first;
 						handleEvent(this, HudEvent::row_clicked, m_selected_row);
@@ -167,7 +164,7 @@ namespace hud {
 		for(auto &row : m_rows) {
 			int view_index = counter++ - m_scroll_pos;
 			if(view_index < 0 || view_index >= m_max_visible_rows) {
-				row.second.rect = FRect::empty();
+				row.second.rect = {};
 				continue;
 			}
 

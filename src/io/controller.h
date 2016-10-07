@@ -47,7 +47,7 @@ namespace io {
 			ShownMessage() :anim_time(0.0f) { }
 			ShownMessage(game::UserMessage msg) :message(msg), anim_time(0.0f) { }
 
-			bool isEmpty() const { return message.text.empty(); }
+			bool empty() const { return message.text.empty(); }
 			const string text() const { return message.text; }
 
 			game::UserMessage message;

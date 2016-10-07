@@ -187,7 +187,7 @@ void TextureCache::nextFrame() {
 int TextureCache::add(CachedTexture *res_ptr, const int2 &size) {
 	DASSERT(res_ptr);
 	Resource new_res{res_ptr, STexture(nullptr), size, int2(0, 0), -1, 0};
-	if(m_free_list.isEmpty()) {
+	if(m_free_list.empty()) {
 		m_resources.push_back(new_res);
 		return (int)m_resources.size() - 1;
 	}

@@ -7,10 +7,6 @@
 #define BASE_H
 
 #include "fwk.h"
-#include <boost/optional.hpp>
-
-template <class T> using Maybe = boost::optional<T>;
-using boost::none;
 
 namespace fwk {
 

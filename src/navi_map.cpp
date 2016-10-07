@@ -298,7 +298,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 	Quad *parent = &m_quads[parent_id];
 	IRect prect = parent->rect;
 	IRect crect(max(rect.min, prect.min), min(rect.max, prect.max));
-	if(crect.isEmpty())
+	if(crect.empty())
 		return;
 
 	IRect rects[4];
@@ -315,7 +315,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 	u8 max_height = parent->max_height;
 
 	for(int n = 0; n < arraySize(rects); n++)
-		if(!rects[n].isEmpty()) {
+		if(!rects[n].empty()) {
 			m_quads.push_back(Quad(rects[n], min_height, max_height));
 			listInsert<Quad, &Quad::node>(m_quads, m_sectors[findSector(rects[n].min)], (int)m_quads.size() - 1);
 		}
@@ -331,7 +331,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 }
 
 void NaviMap::addCollider(const IBox &box, int collider_id) {
-	if(box.isEmpty())
+	if(box.empty())
 		return;
 
 	IBox ext_box(box.min - int3(m_agent_size - 1, 2, m_agent_size - 1), box.max);
@@ -466,7 +466,7 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 	
 	int3 closest_pos = pos;
 	float min_distance = constant::inf, min_distance2 = 0.0f;
-	FRect ftarget_rect(target_box.min.xz(), target_box.max.xz());
+	FRect ftarget_rect((float2)target_box.min.xz(), (float2)target_box.max.xz());
 
 	int3 clip_pos = pos;
 	if(pos.x + m_agent_size < target_box.min.x)
@@ -488,8 +488,8 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 		int3 new_pos = clamp(clip_pos,	asXZY(quad.rect.min, quad.min_height),
 								 		asXZY(quad.rect.max - int2(1, 1), quad.max_height));
 
-		float dist  = distanceSq(ftarget_rect, FRect(new_pos.xz(), float2(new_pos.xz()) + float2(m_agent_size, m_agent_size)));
-		float dist2 = distanceSq(new_pos, pos);
+		float dist  = distanceSq(ftarget_rect, FRect((float2)new_pos.xz(), float2(new_pos.xz()) + float2(m_agent_size, m_agent_size)));
+		float dist2 = distanceSq((float3)new_pos, (float3)pos);
 
 		if(dist < min_distance || (fabs(dist - min_distance) <= constant::epsilon && dist2 < min_distance2)) {
 			if(isReachable(src_quad, quads[n])) {
@@ -903,7 +903,7 @@ void NaviMap::visualize(SceneRenderer &renderer, bool borders) const {
 		const IRect &rect = m_quads[n].rect;
 		int height = m_quads[n].max_height;
 
-		FBox bbox(asXZY(rect.min, height), asXZY(rect.max, height));
+		FBox bbox((float3)asXZY(rect.min, height), (float3)asXZY(rect.max, height));
 		bbox.min.x += 0.3f;
 		bbox.min.z += 0.3f;
 

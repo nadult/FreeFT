@@ -44,7 +44,7 @@ namespace game {
 				Action::Type action = order.m_mode == InteractionMode::pickup? Action::pickup :
 					other_box.max.y < my_box.max.y * 2 / 3? Action::magic_low : Action::magic;
 				animate(action);
-				lookAt(other_box.center());
+				lookAt((float3)other_box.center());
 			}
 			else {
 				if(order.m_is_followup) {

@@ -21,7 +21,7 @@ namespace ui
 			font = res::getFont(font_name);
 
 		rect = IRect({0, 0}, back? back->size() : max(up->size(), down->size()));
-		text_rect = text_area.isEmpty()? IRect::empty() :
+		text_rect = text_area.empty()? IRect() :
 			IRect(	lerp(float(rect.min.x), float(rect.max.x), text_area.min.x),
 					lerp(float(rect.min.y), float(rect.max.y), text_area.min.y),
 					lerp(float(rect.min.x), float(rect.max.x), text_area.max.x),
@@ -64,7 +64,7 @@ namespace ui
 
 			if(m_mouse_press)
 				pos += int2(2, 2);
-			m_proto.font->draw(out, pos, {m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black}, m_text);
+			m_proto.font->draw(out, (float2)pos, {m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black}, m_text);
 		}
 	}
 

@@ -106,7 +106,7 @@ namespace ui {
 	}
 		
 	const IBox View::computeCursor(const int2 &start, const int2 &end, const int3 &bbox, int height, int offset) const {
-		float2 height_off = worldToScreen(int3(0, height, 0));
+		float2 height_off = worldToScreen(float3(0, height, 0));
 		int3 gbox(cellSize(), 1, cellSize());
 
 		int3 start_pos = asXZ((int2)( screenToWorld(float2(start + pos()) - height_off) + float2(0.5f, 0.5f)));

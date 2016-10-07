@@ -29,8 +29,8 @@ public:
 
 	template <typename PtrBase>
 	struct TObjectDef {
-		TObjectDef(PtrBase* ptr = nullptr, const FBox &bbox = FBox::empty(),
-				const IRect &rect = IRect::empty(), int flags = ~0)
+		TObjectDef(PtrBase* ptr = nullptr, const FBox &bbox = FBox(),
+				const IRect &rect = IRect(), int flags = ~0)
 			:ptr(ptr), bbox(bbox), rect_pos(rect.min), rect_size(rect.size()), flags(flags),
 				occluder_id(-1), occluded_by(-1) {
 			DASSERT(rect.size() == (int2)rect_size);

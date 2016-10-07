@@ -46,7 +46,7 @@ namespace game {
 		while(step > 0.0f) {
 			int3 prev_node = m_nodes[path_pos.node_id], next_node = m_nodes[path_pos.node_id + 1];
 
-			float3 diff = next_node - prev_node;
+			float3 diff(next_node - prev_node);
 			float diff_len = ::length(diff);
 			float3 diff_vec = diff / diff_len;
 
@@ -145,7 +145,7 @@ namespace game {
 			out += distance((float3)m_nodes[n - 1], (float3)m_nodes[n]);
 
 		if(pos.node_id < (int)m_nodes.size() - 1)
-			out += distance(m_nodes[pos.node_id], m_nodes[pos.node_id + 1]) * pos.delta;
+			out += distance((float3)m_nodes[pos.node_id], (float3)m_nodes[pos.node_id + 1]) * pos.delta;
 		return out;
 	}
 

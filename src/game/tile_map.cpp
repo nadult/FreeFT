@@ -28,7 +28,7 @@ namespace game {
 	int TileMap::add(const Tile *tile, const int3 &pos) {
 		DASSERT(tile);
 
-		FBox bbox(pos, pos + tile->bboxSize());
+		FBox bbox((float3)pos, float3(pos + tile->bboxSize()));
 		IRect rect = tile->rect() + worldToScreen(pos);
 		ASSERT(findAny(bbox) == -1);
 		int index = findFreeObject();

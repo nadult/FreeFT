@@ -211,7 +211,7 @@ namespace game {
 				return m_entity_map[ref.m_index].bbox;
 		}
 
-		return FBox::empty();
+		return FBox();
 	}
 
 	const Tile *World::refTile(ObjectRef ref) const {
@@ -357,7 +357,7 @@ namespace game {
 
 		for(int n = 0; n < (int)points.size(); n++) {
 			const Intersection &isect = isects[n];
-			if(isect.isEmpty() || isect.distance() >= intersection(segments[n], box) - constant::epsilon)
+			if(isect.empty() || isect.distance() >= intersection(segments[n], box) - constant::epsilon)
 				return true;
 		}
 

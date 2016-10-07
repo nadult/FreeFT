@@ -104,7 +104,7 @@ namespace game {
 		XMLNode node = EntityImpl::save(parent);
 		node.addAttrib("faction_id", m_faction_id);
 		node.addAttrib("sound_variation", m_sound_variation);
-		if(!m_inventory.isEmpty())
+		if(!m_inventory.empty())
 			m_inventory.save(node.addChild("inventory"));
 		return node;
 	}
@@ -450,7 +450,7 @@ namespace game {
 		
 	void Actor::fixPosition() {
 		int3 new_pos(pos() + float3(0.5f, -0.5f, 0.5f));
-		setPos(new_pos);
+		setPos((float3)new_pos);
 
 		for(int i = 0; i < 2 && findAny(boundingBox(), Flags::tile | Flags::colliding); i++)
 			setPos(pos() + float3(0.0f, 1.0f, 0.0f));

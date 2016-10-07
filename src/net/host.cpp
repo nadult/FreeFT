@@ -486,7 +486,7 @@ ERROR:;
 	}
 
 	const Chunk *RemoteHost::getIChunk() {
-		if(m_out_ichunks.isEmpty())
+		if(m_out_ichunks.empty())
 			return nullptr;
 
 		int idx = m_out_ichunks.tail;

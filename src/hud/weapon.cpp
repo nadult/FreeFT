@@ -25,7 +25,7 @@ namespace hud {
 			auto texture = m_weapon.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-			float2 pos = (int2)(rect.center() - size / 2);
+			float2 pos = (float2)(int2)(rect.center() - size / 2);
 			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, Color::white});
 
 			//TODO: print current attack mode

@@ -228,7 +228,7 @@ namespace game {
 				
 				FBox bbox = desc.bbox;
 				
-				if(out.isEmpty() || drawingOrder(bbox, out_bbox) == 1)
+				if(out.empty() || drawingOrder(bbox, out_bbox) == 1)
 					if(desc.ptr->testPixel(screen_pos - worldToScreen((int3)bbox.min))) {
 						out = ObjectRef(inds[i], false);
 						out_bbox = bbox;
@@ -248,14 +248,14 @@ namespace game {
 				FBox bbox = entity->boundingBox();
 
 				//TODO: check this
-				if(out.isEmpty() || drawingOrder(bbox, out_bbox) == 1) {
+				if(out.empty() || drawingOrder(bbox, out_bbox) == 1) {
 					out = ObjectRef(n, true);
 					out_bbox = bbox;
 				}
 			}
 		}
 
-		if(out.isEmpty())
+		if(out.empty())
 			return Intersection();
 		return Intersection(out, intersection(screenRay(screen_pos), out_bbox));
 	}

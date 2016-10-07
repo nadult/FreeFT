@@ -1,5 +1,6 @@
 - DOWNSCALE, remove unnecessary features
 - use unique_ptr in UI & HUD
+- font too low in hud edit box (password in multiplayer menu) (broken after port to libfwk)
 
 Must-have: ----------------------------------------------------------------------------------------
 

@@ -18,7 +18,7 @@ class Palette {
 	void resize(int size);
 	void clear();
 	int size() const { return m_data.size(); }
-	bool isEmpty() const { return m_data.isEmpty(); }
+	bool empty() const { return m_data.empty(); }
 	bool operator==(const Palette &) const;
 
 	void set(int idx, Color col) { m_data[idx] = Color(col, 255); }

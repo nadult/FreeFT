@@ -103,7 +103,7 @@ namespace game {
 			
 		
 	const FBox ItemEntity::boundingBox() const {
-		float3 bbox_size = m_sprite.bboxSize();
+		float3 bbox_size = (float3)m_sprite.bboxSize();
 		return FBox(0, 0, 0, bbox_size.x, 0.0f, bbox_size.z) + pos();
 	}
 		

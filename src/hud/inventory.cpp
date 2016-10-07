@@ -60,7 +60,7 @@ namespace hud {
 			auto texture = m_item.guiImage(false, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-			float2 pos = (int2)(float2(rect.center().x - size.x * 0.5f, ypos));
+			float2 pos = (float2)(int2)(float2(rect.center().x - size.x * 0.5f, ypos));
 			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, mulAlpha(Color::white, alpha())});
 
 			ypos += size.y + 10.0f;
@@ -100,7 +100,7 @@ namespace hud {
 			auto texture = m_entry.item.guiImage(true, uv_rect);
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-			float2 pos = (int2)(rect.center() - size / 2);
+			float2 pos = (float2)(int2)(rect.center() - size / 2);
 			out.addFilledRect(FRect(pos, pos + size), texture);
 
 			if(m_entry.count > 1)
@@ -132,7 +132,7 @@ namespace hud {
 			}
 			else {
 				m_drop_count = 1.0;
-				m_drop_start_pos = event.mousePos();
+				m_drop_start_pos = (float2)event.mousePos();
 			}
 		}
 

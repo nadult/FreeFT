@@ -187,7 +187,7 @@ namespace game {
 	}
 	
 	FBox Door::computeBBox(DoorState state) const {	
-		float3 size = m_sprite.bboxSize();
+		float3 size = (float3)m_sprite.bboxSize();
 		float maxs = max(size.x, size.z);
 		
 		FBox box;
@@ -204,9 +204,9 @@ namespace game {
 
 		//TODO: this is still wrong
 		FBox out = rotateY(box, size * 0.5f, dirAngle());
-		out.min = (int3)out.min;
-		out.max = (int3)out.max;
-		DASSERT(classId() == DoorClassId::sliding || !out.isEmpty());
+		out.min = (float3)(int3)out.min;
+		out.max = (float3)(int3)out.max;
+		DASSERT(classId() == DoorClassId::sliding || !out.empty());
 		return out;
 	}
 		

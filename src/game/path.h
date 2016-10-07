@@ -35,7 +35,7 @@ namespace game {
 		float3 pos(const PathPos &pos) const;
 
 		bool isValid(const PathPos&) const;
-		bool isEmpty() const { return m_nodes.size() <= 1; }
+		bool empty() const { return m_nodes.size() <= 1; }
 		void visualize(int agent_size, SceneRenderer&) const;
 
 		float length() const;

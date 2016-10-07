@@ -32,7 +32,7 @@ namespace hud {
 
 	}
 
-	Hud::Hud(PWorld world, const int2 &window_size) :HudWidget(FRect::empty()), m_selected_layer(layer_none), m_exit_value(0) {
+	Hud::Hud(PWorld world, const int2 &window_size) :HudWidget({}), m_selected_layer(layer_none), m_exit_value(0) {
 		DASSERT(world);
 
 		FRect main_rect = FRect(s_hud_main_panel_size) + float2(layer_spacing, window_size.y - s_hud_main_panel_size.y - layer_spacing);

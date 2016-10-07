@@ -186,7 +186,7 @@ namespace hud {
 	}
 		
 	bool HudWidget::isMouseOver(const InputEvent &event) const {
-		return isMouseOver(event.mousePos());
+		return isMouseOver((float2)event.mousePos());
 	}
 	
 	bool HudWidget::isMouseOver(const float2 &mouse_pos) const {

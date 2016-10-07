@@ -140,17 +140,17 @@ namespace io {
 			m_isect =
 				m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, {flags, m_actor_ref});
 			Segment screen_ray(m_screen_ray.origin(), m_screen_ray.at(1024.0f));
-			if(m_isect.isEmpty() || m_isect.isTile())
+			if(m_isect.empty() || m_isect.isTile())
 				m_isect = m_viewer.trace(screen_ray, {flags, m_actor_ref});
 
 			// TODO: pixel intersect may find an intersection, but the ray doesn't necessarily
 			// has to intersect bounding box of the object
 			m_full_isect =
 				m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, m_actor_ref);
-			if(m_full_isect.isEmpty())
+			if(m_full_isect.empty())
 				m_full_isect = m_viewer.trace(screen_ray, m_actor_ref);
 
-			if(!m_full_isect.isEmpty() && actor) {
+			if(!m_full_isect.empty() && actor) {
 				// TODO: send it only, when no other order is in progress (or has been sent and
 				// wasn't
 				// finished)
@@ -190,7 +190,7 @@ namespace io {
 					mode = AttackMode::kick;
 			}
 
-			if(!m_isect.isEmpty()) {
+			if(!m_isect.empty()) {
 				Entity *entity = m_world->refEntity(m_isect);
 				if(entity) {
 					m_world->sendOrder(new AttackOrder(mode, entity->ref()), m_actor_ref);
@@ -198,9 +198,9 @@ namespace io {
 					m_world->sendOrder(new AttackOrder(mode, m_screen_ray.at(m_isect.distance())),
 									   m_actor_ref);
 			}
-		} else if(event.keyDown('T') && !m_isect.isEmpty() && actor) {
+		} else if(event.keyDown('T') && !m_isect.empty() && actor) {
 			float3 pos = m_screen_ray.at(m_isect.distance());
-			actor->setPos(int3(pos + float3(0.5f, 0.5f, 0.5f)));
+			actor->setPos((float3)int3(pos + float3(0.5f, 0.5f, 0.5f)));
 			actor->fixPosition();
 		}
 	}
@@ -257,7 +257,7 @@ namespace io {
 			float hit_chance = 0.0f;
 			if(actor) {
 				const Weapon &weapon = actor->inventory().weapon();
-				if(!m_isect.isEmpty() && weapon.hasRangedAttack()) {
+				if(!m_isect.empty() && weapon.hasRangedAttack()) {
 					FBox bbox = m_viewer.refBBox(m_isect);
 					hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
 				}
@@ -325,7 +325,7 @@ namespace io {
 		SceneRenderer scene_renderer(viewport, m_view_pos);
 		m_viewer.addToRender(scene_renderer);
 
-		if(!m_isect.isEmpty())
+		if(!m_isect.empty())
 			scene_renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
 
 		if(m_debug_navi) {
@@ -345,7 +345,7 @@ namespace io {
 		m_target_info->draw(ui_renderer);
 		m_console->draw(ui_renderer);
 
-		if(!m_main_message.isEmpty()) {
+		if(!m_main_message.empty()) {
 			PFont font = res::getFont("transformers_48");
 			FRect rect(float2(resolution.x, 30.0f));
 			rect += float2(0.0f, m_console->rect().height());
@@ -404,7 +404,7 @@ namespace io {
 				fmt("Target HP: %d", target_actor->hitPoints());
 
 			const Weapon &weapon = actor->inventory().weapon();
-			if(!m_isect.isEmpty() && weapon.hasRangedAttack()) {
+			if(!m_isect.empty() && weapon.hasRangedAttack()) {
 				FBox bbox = m_viewer.refBBox(m_isect);
 				float hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
 				fmt("\nHit chance: %.0f%%", hit_chance * 100.0f);
@@ -417,7 +417,7 @@ namespace io {
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
 		int2 pos = out.viewport().max - extents - int2(4, 4);
-		out.addFilledRect(FRect(pos, out.viewport().size()), Color(0, 0, 0, 80));
-		font->draw(out, pos + int2(2, 2), {Color::white, Color::black}, fmt);
+		out.addFilledRect(FRect((float2)pos, (float2)out.viewport().size()), Color(0, 0, 0, 80));
+		font->draw(out, (float2)(pos + int2(2, 2)), {Color::white, Color::black}, fmt);
 	}
 }

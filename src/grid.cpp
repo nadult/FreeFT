@@ -14,11 +14,11 @@
 
 //TODO: better names, refactoring, remove copy&pasted code in intersection functions 
 Grid::Node::Node()
-	:size(0), is_dirty(false), bbox(FBox::empty()), rect(IRect::empty()), obj_flags(0) { }
+	:size(0), is_dirty(false), bbox(FBox()), rect(IRect()), obj_flags(0) { }
 	
 
 Grid::Grid(const int2 &size) {
-	m_bounding_box = FBox::empty();
+	m_bounding_box = FBox();
 	m_size = worldToGrid(size + int2(node_size - 1, node_size - 1));
 	if(m_size.x * m_size.y > 0) {
 		m_nodes.resize(m_size.x * m_size.y);
@@ -32,7 +32,7 @@ Grid::Grid(const int2 &size) {
 }
 
 int Grid::findFreeObject() {
-	if(m_free_objects.isEmpty()) {
+	if(m_free_objects.empty()) {
 		m_objects.emplace_back(Object());
 		INSERT(m_free_objects, (int)m_objects.size() - 1);
 	}
@@ -41,7 +41,7 @@ int Grid::findFreeObject() {
 }
 	
 int Grid::findFreeOverlap() {
-	if(m_free_overlaps.isEmpty()) {
+	if(m_free_overlaps.empty()) {
 		m_overlaps.emplace_back(Overlap());
 		OV_INSERT(m_free_overlaps, (int)m_overlaps.size() - 1);
 	}
@@ -60,7 +60,7 @@ void Grid::add(int object_id, const ObjectDef &def) {
 
 	REMOVE(m_free_objects, object_id);
 
-	m_bounding_box = m_bounding_box.isEmpty()? def.bbox : sum(m_bounding_box, def.bbox);
+	m_bounding_box = m_bounding_box.empty()? def.bbox : sum(m_bounding_box, def.bbox);
 	IRect grid_box = nodeCoords(def.bbox);
 
 	for(int y = grid_box.min.y; y <= grid_box.max.y; y++) {
@@ -196,8 +196,8 @@ void Grid::updateNode(int id) const {
 		}
 	}
 	else {
-		node.bbox = FBox::empty();
-		node.rect = IRect::empty();
+		node.bbox = FBox();
+		node.rect = IRect();
 		node.obj_flags = 0;
 	}
 

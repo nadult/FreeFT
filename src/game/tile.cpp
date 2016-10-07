@@ -189,7 +189,7 @@ namespace game
 
 		FRect tex_coords;
 		auto tex = TileFrame.deviceTexture(tex_coords);
-		renderer.add(tex, TileFrame.rect() - m_offset, pos, bboxSize(), color, tex_coords);
+		renderer.add(tex, TileFrame.rect() - m_offset, (float3)pos, bboxSize(), color, tex_coords);
 	}
 
 	bool Tile::testPixel(const int2 &pos) const {

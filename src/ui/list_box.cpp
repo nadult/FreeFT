@@ -41,7 +41,7 @@ namespace ui {
 
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
 			int2 pos = int2(0, m_line_height * n) - offset;
-			m_font->draw(out, pos + int2(5, 0), {m_entries[n].color, Color::black}, m_entries[n].text);
+			m_font->draw(out, (float2)(pos + int2(5, 0)), {m_entries[n].color, Color::black}, m_entries[n].text);
 		}
 	}
 

@@ -45,19 +45,17 @@ namespace hud {
 		};
 
 		struct Row {
-			Row();
-
 			vector<string> cells;
 			FRect rect;
 
-			float highlighted_time;
-			float selection_time;
+			float highlighted_time = 0.0f;
+			float selection_time = 0.0f;
 		};
 
 		vector<Column> m_columns;
 		std::map<int, Row> m_rows;
-		int m_scroll_pos, m_max_visible_rows;
-		int m_selected_row, m_highlighted_row;
+		int m_scroll_pos = 0, m_max_visible_rows = 0;
+		int m_selected_row = -1, m_highlighted_row = -1;
 	};
 
 }

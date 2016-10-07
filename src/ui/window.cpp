@@ -257,7 +257,7 @@ namespace ui
 
 	void Window::setRect(const IRect &rect) {
 		DASSERT(!m_dragging_mode);
-		DASSERT(!rect.isEmpty());
+		DASSERT(!rect.empty());
 
 		m_rect = rect;
 		setInnerRect(IRect({0, 0}, m_rect.size()));

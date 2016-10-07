@@ -32,7 +32,7 @@ namespace ui {
 		m_is_moving = false;
 
 		m_mode = Mode::selecting;
-		m_selection = IRect::empty();
+		m_selection = IRect();
 		m_cursor_pos = float3(0, 0, 0);
 		m_proto_angle = 0;
 		m_trigger_mode = 0;
@@ -76,7 +76,7 @@ namespace ui {
 	}
 
 	void EntitiesEditor::computeCursor(int2 start, int2 end, bool floor_mode) {
-		float2 height_off = worldToScreen(int3(0, 0, 0));
+		float2 height_off = worldToScreen(float3(0, 0, 0));
 
 		start += m_view.pos();
 		  end += m_view.pos();
@@ -259,7 +259,7 @@ namespace ui {
 
 		if(over_ground)
 			return FBox(asXZY(bbox.min.xz(), bbox.min.y - over_ground), asXZY(bbox.max.xz(), bbox.min.y));
-		return FBox::empty();
+		return FBox();
 	}
 	
 	void EntitiesEditor::drawContents(Renderer2D &out) const {
@@ -320,7 +320,7 @@ namespace ui {
 					if(!is_colliding)
 						renderer.addBox(bbox, Color::white);
 					FBox overground_box = computeOvergroundBox(bbox);
-					if(!overground_box.isEmpty())
+					if(!overground_box.empty())
 						renderer.addBox(overground_box, Color::yellow);
 				}
 			}
@@ -343,7 +343,7 @@ namespace ui {
 				bbox.max.y += 1.0f;
 
 			FBox overground_box = computeOvergroundBox(bbox);
-			if(!overground_box.isEmpty())
+			if(!overground_box.empty())
 				renderer.addBox(overground_box, Color::yellow);
 		}
 
@@ -358,7 +358,7 @@ namespace ui {
 		out.setViewPos(-clippedRect().min);
 		auto font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(out, int2(0, clippedRect().height() - 25), {Color::white, Color::black},
+		font->draw(out, float2(0, clippedRect().height() - 25), {Color::white, Color::black},
 				format("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
 				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_desc[m_mode]));
 	}

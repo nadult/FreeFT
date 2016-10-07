@@ -178,7 +178,7 @@ namespace game {
 			for(int n = 0; n < (int)instances.size(); n++) {
 				Instance &inst = instances[n];
 				try {
-					float3 pos = inst.pos - box.min;
+					float3 pos = float3(inst.pos - box.min);
 					TileParams &params = tile_params[inst.tile_id];
 					FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
 					ASSERT(findAny(bbox) == -1);

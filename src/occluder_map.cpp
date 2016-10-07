@@ -348,18 +348,18 @@ bool OccluderConfig::update(const FBox &bbox) {
 		const OccluderMap::Occluder &occluder = m_map[n];
 
 		if(overlaps[n] == 1) {
-			FBox bbox_around(bbox.min - int3(16, 0, 16), bbox.max + int3(16, 0, 16));
+			FBox bbox_around(bbox.min - float3(16, 0, 16), bbox.max + float3(16, 0, 16));
 			bbox_around.min.y = 0;
 			bbox_around.max.y = Grid::max_height;
 
 			temp2.clear();
 			grid.findAll(temp2, bbox_around);
-			FBox local_box = FBox::empty();
+			FBox local_box = FBox();
 
 			for(int i = 0; i < (int)temp2.size(); i++) {
 				const auto &object = grid[temp2[i]];
 				if(object.occluder_id == n)
-					local_box = local_box.isEmpty()? object.bbox : sum(local_box, object.bbox);
+					local_box = local_box.empty()? object.bbox : sum(local_box, object.bbox);
 			}
 
 			is_overlapping = local_box.min.y > mid_point.y;

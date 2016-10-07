@@ -268,7 +268,7 @@ namespace hud {
 	}
 
 	void MultiPlayerMenu::onDraw(Renderer2D &out) const {
-		FRect back_quad(m_window_size);
+		FRect back_quad((float2)m_window_size);
 
 		out.addFilledRect(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
 		HudLayer::onDraw(out);

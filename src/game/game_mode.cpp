@@ -145,7 +145,7 @@ namespace game {
 			FBox bbox(spawn_pos, spawn_pos + bbox_size);
 			ObjectRef isect = m_world.findAny(bbox, {Flags::all | Flags::colliding});
 
-			if(isect.isEmpty()) {
+			if(isect.empty()) {
 				spawn_pos.y -= 1.0f;
 				break;
 			}

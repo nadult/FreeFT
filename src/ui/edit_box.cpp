@@ -24,7 +24,7 @@ namespace ui {
 		int line_height = m_font->lineHeight();
 
 		int2 pos(5, height() / 2 - line_height / 2);
-		m_font->draw(out, pos, {Color::white, Color::black}, m_label + m_text);
+		m_font->draw(out, (float2)pos, {Color::white, Color::black}, m_label + m_text);
 
 		if(m_is_editing) {
 			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());

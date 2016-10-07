@@ -97,9 +97,7 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(MINGW_FWK_
 clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
 			$(MINGW_PROGRAMS) $(DEPS)
-	-rmdir $(BUILD_DIR)/game/orders $(BUILD_DIR)/net $(BUILD_DIR)/io
-	-rmdir $(BUILD_DIR)/gfx $(BUILD_DIR)/sys $(BUILD_DIR)/ui $(BUILD_DIR)/game $(BUILD_DIR)/hud $(BUILD_DIR)/editor
-	-rmdir $(BUILD_DIR)
+	find $(BUILD_DIR) -type d -empty -delete
 
 .PHONY: clean $(LINUX_FWK_LIB) $(MINGW_FWK_LIB)
 

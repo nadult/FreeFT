@@ -204,7 +204,7 @@ namespace game {
 					const Segment &segment = segments[s * targets.size() + t];
 					const Intersection &isect = results[s * targets.size() + t];
 
-					if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
+					if(isect.empty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
 						num_hits++;
 				}
 
@@ -241,7 +241,7 @@ namespace game {
 			for(int t = 0; t < (int)targets.size(); t++) {
 				const Intersection &isect = isects[t];
 				const Segment &segment = segments[t];
-				if(isect.isEmpty() || isect.distance() + constant::epsilon >= intersection(segment, target_box)) {
+				if(isect.empty() || isect.distance() + constant::epsilon >= intersection(segment, target_box)) {
 					target_hits[t] = 1;
 					num_hits++;
 				}
@@ -292,7 +292,7 @@ namespace game {
 
 		int num_hits = 0;
 		for(int n = 0; n < (int)isects.size(); n++)
-			if(isects[n].isEmpty() || isects[n].distance() + constant::epsilon >= intersection(segments[n], target_bbox))
+			if(isects[n].empty() || isects[n].distance() + constant::epsilon >= intersection(segments[n], target_bbox))
 			   num_hits++;	
 
 		return float(num_hits) / (density * density);

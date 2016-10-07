@@ -37,7 +37,7 @@ namespace game {
 		float weight() const;
 
 		bool isValidId(int id) const { return id >= 0 && id < size(); }
-		bool isEmpty() const { return m_entries.empty(); }
+		bool empty() const { return m_entries.empty(); }
 
 		int size() const { return (int)m_entries.size(); }
 		const Entry &operator[](int idx) const { return m_entries[idx]; }
@@ -59,7 +59,7 @@ namespace game {
 		bool equip(int id, int count = 1);
 		bool isEquipped(ItemType);
 		int unequip(ItemType);
-		bool isEmpty() const;
+		bool empty() const;
 		float weight() const;
 
 		int findAmmo(const Weapon &weapon) const;

@@ -52,7 +52,7 @@ namespace ui {
 		m_current_occluder = -1;
 		m_mouseover_tile_id = -1;
 
-		m_selection = IBox::empty();
+		m_selection = IBox();
 	}
 
 	void TilesEditor::setMode(Mode mode) {
@@ -171,7 +171,7 @@ namespace ui {
 	}
 
 	int TilesEditor::findAt(const int3 &pos) const {
-		return m_tile_map.findAny(FBox(pos, pos + int3(1, 1, 1)));
+		return m_tile_map.findAny(FBox((float3)pos, float3(pos + int3(1, 1, 1))));
 	}
 
 	void TilesEditor::fillHoles(int main_group_id, const IBox &fill_box) {
@@ -282,7 +282,7 @@ namespace ui {
 			if(is_final && is_final != -1) {
 				if(isSelecting()) {
 					vector<int> new_ids;
-					m_tile_map.findAll(new_ids, FBox(m_selection.min, m_selection.max + int3(0, 1, 0)));
+					m_tile_map.findAll(new_ids, FBox((float3)m_selection.min, float3(m_selection.max + int3(0, 1, 0))));
 					std::sort(new_ids.begin(), new_ids.end());
 
 					if(m_mode == mode_selecting_normal)
@@ -347,7 +347,7 @@ namespace ui {
 				int2 dims = m_tile_map.dimensions();
 
 				for(int n = 0; n < (int)m_selected_ids.size(); n++) {
-					FBox bbox = m_tile_map[m_selected_ids[n]].bbox + m_move_offset;
+					FBox bbox = m_tile_map[m_selected_ids[n]].bbox + float3(m_move_offset);
 					m_tile_map.findAll(temp, bbox, m_selected_ids[n]);
 
 					if(bbox.min.x < 0 || bbox.min.y < 0 || bbox.min.z < 0 || bbox.max.x > dims.x || bbox.max.y >= Grid::max_height || bbox.max.z > dims.y)
@@ -501,7 +501,7 @@ namespace ui {
 				for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
 					int3 pos(x, m_selection.min.y, z);
 
-					bool collides = m_tile_map.findAny(FBox(pos, pos + bbox)) != -1;
+					bool collides = m_tile_map.findAny(FBox((float3)pos, float3(pos + bbox))) != -1;
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
 
 					m_new_tile->draw(out, int2(worldToScreen(pos)), color);
@@ -524,17 +524,17 @@ namespace ui {
 		out.setViewPos(-clippedRect().min);
 		auto font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(out, int2(0, 0), {Color::white, Color::black}, format("Tile count: %d\n", m_tile_map.size()));
+		font->draw(out, float2(0, 0), {Color::white, Color::black}, format("Tile count: %d\n", m_tile_map.size()));
 		if(isChangingOccluders() && m_current_occluder != -1) {
 			auto &occluder = m_tile_map.occluderMap()[m_current_occluder];
-			font->draw(out, int2(0, 25), {Color::white, Color::black},
+			font->draw(out, float2(0, 25), {Color::white, Color::black},
 						format("Occluder: %d (%d objects)\n", m_current_occluder, (int)occluder.objects.size()));
 		}
 
 		if(m_new_tile)
-			font->draw(out, int2(0, clippedRect().height() - 50), {Color::white, Color::black},
+			font->draw(out, float2(0, clippedRect().height() - 50), {Color::white, Color::black},
 					format("Tile: %s\n", m_new_tile->resourceName().c_str()));
-		font->draw(out, int2(0, clippedRect().height() - 25), {Color::white, Color::black},
+		font->draw(out, float2(0, clippedRect().height() - 25), {Color::white, Color::black},
 				format("Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]));
 	}

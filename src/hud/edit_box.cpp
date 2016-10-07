@@ -74,7 +74,7 @@ namespace hud {
 					m_text.erase(--m_cursor_pos, 1);
 			}
 			if(event.mouseButtonPressed(InputButton::left) && isMouseOver(event)) {
-				setCursorPos(event.mousePos() - (int2)rect().min);
+				setCursorPos(float2(event.mousePos() - (int2)rect().min));
 			}
 		}
 
