@@ -89,19 +89,19 @@ class Resource {
 				m_sprite->bboxSize().x, m_sprite->bboxSize().y, m_sprite->bboxSize().z,
 				max_frame_size.x, max_frame_size.y);
 
-			m_font->draw(out, pos, {Color::white, Color::black}, fmt);
+			m_font->draw(out, (float2)pos, {Color::white, Color::black}, fmt);
 			pos.y += m_font->evalExtents(fmt).height();
 
 			double time = getTime();
 			for(int n = 0; n < (int)m_events.size(); n++) {
 				Color col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
-				m_font->draw(out, pos, {col, Color::black}, m_events[n].first);
+				m_font->draw(out, (float2)pos, {col, Color::black}, m_events[n].first);
 				pos.y += m_font->lineHeight();
 			}
 
 		} else if(m_type == ResType::texture) {
 			fmt("Size: (%d, %d)", m_texture->width(), m_texture->height());
-			m_font->draw(out, pos, {Color::white, Color::black}, fmt);
+			m_font->draw(out, (float2)pos, {Color::white, Color::black}, fmt);
 		}
 	}
 

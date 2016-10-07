@@ -108,48 +108,36 @@ struct SoundProxy: public audio::Sound {
 	void setResourceName(const char*) { }
 };
 
-namespace ResTypeId {
-	enum Type {
-		sprite,
-		tile,
-		map,
-		sound,
-		image,
-		music,
-		archive,
+DEFINE_ENUM(ResTypeId, sprite, tile, map, sound, image, music, archive);
 
-		count
-	};
+static const EnumMap<ResTypeId, const char*> s_old_suffix = {
+	".spr",
+	".til",
+	".mis",
+	".wav",
+	".zar",
+	".mp3",
+	".bos"
+};
 
-	static const char *s_old_suffix[count] = {
-		".spr",
-		".til",
-		".mis",
-		".wav",
-		".zar",
-		".mp3",
-		".bos"
-	};
+static const EnumMap<ResTypeId, const char*> s_new_suffix = {
+	".sprite",
+	".tile",
+	".xml",
+	".wav",
+	".zar",
+	".mp3",
+	nullptr
+};
 
-	static const char *s_new_suffix[count] = {
-		".sprite",
-		".tile",
-		".xml",
-		".wav",
-		".zar",
-		".mp3",
-		nullptr
-	};
-
-	static const char *s_new_path[count] = {
-		"data/sprites/",
-		"data/tiles/",
-		"data/maps/",
-		"data/sounds/",
-		"data/gui/",
-		"data/music/",
-		nullptr,
-	};
+static const EnumMap<ResTypeId, const char*> s_new_path = {
+	"data/sprites/",
+	"data/tiles/",
+	"data/maps/",
+	"data/sounds/",
+	"data/gui/",
+	"data/music/",
+	nullptr
 };
 
 void convert(ResTypeId type, Stream &ldr, Stream &svr) {
@@ -360,7 +348,7 @@ void convertAll(const char *fot_path, const string &filter) {
 
 			if(removePrefix(name, s_paths[t].prefix)) {
 				string lo_name = toLower(name);
-				if(removeSuffix(lo_name, ResTypeId::s_old_suffix[s_paths[t].type])) {
+				if(removeSuffix(lo_name, s_old_suffix[s_paths[t].type])) {
 					name.resize(lo_name.size());
 					files[t][name] = orig_name;
 					break;
@@ -375,7 +363,7 @@ void convertAll(const char *fot_path, const string &filter) {
 		if(type == ResTypeId::archive)
 			continue;
 
-		FilePath target_dir = ResTypeId::s_new_path[type];
+		FilePath target_dir = s_new_path[type];
 		FilePath src_main_path = core_path / s_paths[t].prefix;
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
@@ -388,7 +376,7 @@ void convertAll(const char *fot_path, const string &filter) {
 			char src_path[512], dst_path[512];
 			snprintf(src_path, sizeof(src_path), "%s/%s", core_path.c_str(), it->second.c_str());
 			snprintf(dst_path, sizeof(dst_path), "%s/%s%s",
-					ResTypeId::s_new_path[type], it->first.c_str(), ResTypeId::s_new_suffix[type]);
+					s_new_path[type], it->first.c_str(), s_new_suffix[type]);
 
 			Loader ldr(src_path);
 			Saver svr(dst_path);
@@ -414,7 +402,7 @@ void convertAll(const char *fot_path, const string &filter) {
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			char archive_path[512];
 			snprintf(archive_path, sizeof(archive_path), "%s/%s%s",
-					src_path.c_str(), it->first.c_str(), ResTypeId::s_old_suffix[type]);
+					src_path.c_str(), it->first.c_str(), s_old_suffix[type]);
 
 			Archive archive(archive_path);
 			printf("Archive %s: %d\n", it->first.c_str(), archive.fileCount());
@@ -430,7 +418,7 @@ void convertAll(const char *fot_path, const string &filter) {
 					if(removePrefix(lo_name, s_paths[t].prefix)) {
 						name = name.substr(name.size() - lo_name.size());
 						lo_name = toLower(name);
-					   	if(removeSuffix(lo_name, ResTypeId::s_old_suffix[s_paths[t].type])) {
+					   	if(removeSuffix(lo_name, s_old_suffix[s_paths[t].type])) {
 							name.resize(lo_name.size());
 							tindex = t;
 							break;
@@ -446,7 +434,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				archive.readFile(n, data);
 
 				char dst_path[512];
-				snprintf(dst_path, sizeof(dst_path), "%s/%s%s", ResTypeId::s_new_path[type], name.c_str(), ResTypeId::s_new_suffix[type]);
+				snprintf(dst_path, sizeof(dst_path), "%s/%s%s", s_new_path[type], name.c_str(), s_new_suffix[type]);
 
 				FilePath dir = FilePath(dst_path).parent();
 				if(access(dir.c_str(), R_OK) != 0)
