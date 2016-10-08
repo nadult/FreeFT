@@ -39,7 +39,7 @@ namespace io {
 	}
 
 	MainMenuLoop::MainMenuLoop()
-		:Window(IRect(GfxDevice::instance().windowSize()), Color::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
+		:Window(IRect(GfxDevice::instance().windowSize()), ColorId::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
 		m_back = res::guiTextures()["back/flaminghelmet"];
 		m_loading = res::guiTextures()["misc/worldm/OLD_moving"];
 
@@ -153,14 +153,14 @@ namespace io {
 	void MainMenuLoop::drawLoading(Renderer2D &out, float alpha) const {
 		const char *text = "Loading";
 		PFont font = res::getFont("transformers_30");
-		Color color(1.0f, 0.8f, 0.2f, alpha);
+		FColor color(1.0f, 0.8f, 0.2f, alpha);
 
 		int2 dims(m_loading->size());
 		float2 center = float2(dims.x * 0.49f, dims.y * 0.49f);
 
 		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * constant::pi * 2.0), 8.0) * 0.1;
 
-		FRect extents = font->draw(out, float2(0.0f, 0.0f), {color, Color::black, HAlign::right, VAlign::center}, text);
+		FRect extents = font->draw(out, float2(0.0f, 0.0f), {color, ColorId::black, HAlign::right, VAlign::center}, text);
 
 		out.pushViewMatrix();
 		out.mulViewMatrix(translation(extents.max.x + 8.0f + center.x, 0.0f, 0.0f));

@@ -326,7 +326,7 @@ namespace io {
 		m_viewer.addToRender(scene_renderer);
 
 		if(!m_isect.empty())
-			scene_renderer.addBox(m_world->refBBox(m_isect), Color::yellow);
+			scene_renderer.addBox(m_world->refBBox(m_isect), ColorId::yellow);
 
 		if(m_debug_navi) {
 			const NaviMap *navi_map = m_world->naviMap(m_actor_ref);
@@ -349,8 +349,8 @@ namespace io {
 			PFont font = res::getFont("transformers_48");
 			FRect rect(float2(resolution.x, 30.0f));
 			rect += float2(0.0f, m_console->rect().height());
-			Color text_color = mulAlpha(Color::white, m_main_message.anim_time);
-			Color shadow_color = mulAlpha(Color::black, m_main_message.anim_time);
+			auto text_color = mulAlpha(ColorId::white, m_main_message.anim_time);
+			auto shadow_color = mulAlpha(ColorId::black, m_main_message.anim_time);
 
 			font->draw(ui_renderer, rect, {text_color, shadow_color, HAlign::center},
 					   m_main_message.text());
@@ -372,7 +372,7 @@ namespace io {
 									  float2(screen_rect.center().x, screen_rect.min.y) -
 									  float2(m_view_pos);
 					text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
-					font->draw(out, text_rect, {Color::white, Color::black, HAlign::center},
+					font->draw(out, text_rect, {ColorId::white, ColorId::black, HAlign::center},
 							   status);
 				}
 			}
@@ -417,7 +417,7 @@ namespace io {
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
 		int2 pos = out.viewport().max - extents - int2(4, 4);
-		out.addFilledRect(FRect((float2)pos, (float2)out.viewport().size()), Color(0, 0, 0, 80));
-		font->draw(out, (float2)(pos + int2(2, 2)), {Color::white, Color::black}, fmt);
+		out.addFilledRect(FRect((float2)pos, (float2)out.viewport().size()), FColor(0.0f, 0.0f, 0.0f, 0.3f));
+		font->draw(out, (float2)(pos + int2(2, 2)), {ColorId::white, ColorId::black}, fmt);
 	}
 }

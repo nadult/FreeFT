@@ -9,7 +9,7 @@ using namespace gfx;
 
 namespace ui {
 
-	EditBox::EditBox(const IRect &rect, int max_size, StringRef label, Color col)
+	EditBox::EditBox(const IRect &rect, int max_size, StringRef label, FColor col)
 		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size), m_label(toWideString(label)) {
 		m_font = res::getFont(WindowStyle::fonts[0]);
 	}
@@ -24,12 +24,12 @@ namespace ui {
 		int line_height = m_font->lineHeight();
 
 		int2 pos(5, height() / 2 - line_height / 2);
-		m_font->draw(out, (float2)pos, {Color::white, Color::black}, m_label + m_text);
+		m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, m_label + m_text);
 
 		if(m_is_editing) {
 			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
-			out.addLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), Color(255, 255, 255, 180));
-			out.addRect(IRect(2, 1, width() - 1, height() - 2), Color(255, 255, 255, 80));	
+			out.addLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), FColor(ColorId::white, 0.7f));
+			out.addRect(IRect(2, 1, width() - 1, height() - 2), FColor(ColorId::white, 0.3f));	
 		}
 	}
 	

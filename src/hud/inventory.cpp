@@ -61,7 +61,7 @@ namespace hud {
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (float2)(int2)(float2(rect.center().x - size.x * 0.5f, ypos));
-			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, mulAlpha(Color::white, alpha())});
+			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, mulAlpha(ColorId::white, alpha())});
 
 			ypos += size.y + 10.0f;
 			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
@@ -111,7 +111,7 @@ namespace hud {
 	}
 		
 	Color HudItemButton::backgroundColor() const {
-		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
+		return (Color)lerp((FColor)HudButton::backgroundColor(), FColor(ColorId::white), m_enabled_time * 0.5f);
 	}
 		
 	bool HudItemButton::onInput(const InputEvent &event) {

@@ -106,8 +106,9 @@ namespace hud {
 			const Column &column = m_columns[col];
 			FRect rect = column.rect;
 
-			out.addFilledRect(rect, mulAlpha(lerp(Color::white, Color::green, col & 1? 0.3f : 0.6f), 0.5f));
-			m_font->draw(out, rect, {Color::white, Color::black, HAlign::center, VAlign::top}, column.title);
+			auto fcolor = mulAlpha(lerp(FColor(ColorId::white), FColor(ColorId::green), col & 1? 0.3f : 0.6f), 0.5f);
+			out.addFilledRect(rect, fcolor);
+			m_font->draw(out, rect, {ColorId::white, ColorId::black, HAlign::center, VAlign::top}, column.title);
 		
 			int counter = 0;	
 			for(auto &row_it : m_rows) {
@@ -117,8 +118,9 @@ namespace hud {
 
 				const Row &row = row_it.second;
 				const string &cell_value = col > (int)row.cells.size()? string() : row.cells[col];
+				auto fcolor = lerp((FColor)Color(200, 200, 200), FColor(ColorId::white), row.highlighted_time);
 				m_font->draw(out, FRect(rect.min.x, row.rect.min.y, rect.max.x, row.rect.max.y),
-							 {lerp(Color(200, 200, 200), Color::white, row.highlighted_time), Color::black, HAlign::center}, cell_value);
+							 {Color(fcolor), ColorId::black, HAlign::center}, cell_value);
 			}
 		}
 
@@ -127,7 +129,8 @@ namespace hud {
 			bool is_selected = row_it.first == m_selected_row;
 
 			float2 offset = float2(50.0f, 50.0f) * (is_selected? 1.0f - row.selection_time : 0.0f);
-			drawBorder(out, row.rect, mulAlpha(Color(200, 255, 200, 255), pow(row.selection_time, 2.0f)), offset, 500.0f);
+			auto fcolor = mulAlpha((FColor)Color(200, 255, 200, 255), pow(row.selection_time, 2.0f));
+			drawBorder(out, row.rect, (Color)fcolor, offset, 500.0f);
 		}
 	}
 

@@ -43,6 +43,14 @@ inline int abs(int value) { return value < 0? -value : value; }
 
 using namespace fwk;
 
+// TODO: remove this mapping
+using Color = IColor;
+
+inline Color swapBR(Color col) {
+	swap(col.b, col.r);
+	return col;
+}
+
 inline int2 round(const float2 &v) { return int2(v.x + 0.5f, v.y + 0.5f); }
 inline int3 round(const float3 &v) { return int3(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f); }
 

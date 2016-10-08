@@ -27,7 +27,7 @@ namespace ui {
 	const char *describe(EntitiesEditorMode mode) { return s_mode_desc[mode]; }
 
 	EntitiesEditor::EntitiesEditor(game::TileMap &tile_map, game::EntityMap &entity_map, View &view, IRect rect)
-		:ui::Window(rect, Color::transparent), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map) {
+		:ui::Window(rect, ColorId::transparent), m_view(view), m_tile_map(tile_map), m_entity_map(entity_map) {
 		m_is_selecting = false;
 		m_is_moving = false;
 
@@ -274,7 +274,7 @@ namespace ui {
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
 				auto &object = m_tile_map[visible_ids[i]];
 				int3 pos(object.bbox.min);
-				object.ptr->addToRender(renderer, pos, Color::white);
+				object.ptr->addToRender(renderer, pos, ColorId::white);
 			}
 
 			visible_ids.clear();
@@ -306,8 +306,8 @@ namespace ui {
 				FBox bbox = object.ptr->boundingBox();
 
 				if(object.ptr->typeId() == EntityId::trigger) {
-					renderer.addBox(bbox, Color(Color::green, 64), true);
-					renderer.addBox(FBox(bbox.min + float3(0.1, 0.1, 0.1), bbox.max - float3(0.1, 0.1, 0.1)), Color::green);
+					renderer.addBox(bbox, Color(ColorId::green, 64), true);
+					renderer.addBox(FBox(bbox.min + float3(0.1, 0.1, 0.1), bbox.max - float3(0.1, 0.1, 0.1)), ColorId::green);
 				}
 				else {
 					object.ptr->addToRender(renderer);
@@ -315,13 +315,13 @@ namespace ui {
 
 				bool is_colliding = m_tile_map.findAny(bbox) != -1 || m_entity_map.findAny(bbox, visible_ids[n]) != -1;
 				if(is_colliding)
-					renderer.addBox(bbox, Color::red);
+					renderer.addBox(bbox, ColorId::red);
 				if(is_selected) {
 					if(!is_colliding)
-						renderer.addBox(bbox, Color::white);
+						renderer.addBox(bbox, ColorId::white);
 					FBox overground_box = computeOvergroundBox(bbox);
 					if(!overground_box.empty())
-						renderer.addBox(overground_box, Color::yellow);
+						renderer.addBox(overground_box, ColorId::yellow);
 				}
 			}
 
@@ -338,18 +338,18 @@ namespace ui {
 			FBox bbox = m_proto->boundingBox();
 
 			bool is_colliding = m_tile_map.findAny(bbox) != -1 || m_entity_map.findAny(bbox) != -1;
-			renderer.addBox(bbox, is_colliding? Color::red : Color::white);
+			renderer.addBox(bbox, is_colliding? ColorId::red : ColorId::white);
 			if(bbox.max.y == bbox.min.y)
 				bbox.max.y += 1.0f;
 
 			FBox overground_box = computeOvergroundBox(bbox);
 			if(!overground_box.empty())
-				renderer.addBox(overground_box, Color::yellow);
+				renderer.addBox(overground_box, ColorId::yellow);
 		}
 
 		renderer.render();
 		if(m_mode == Mode::selecting && m_is_selecting)
-			out.addRect(m_selection - m_view.pos(), Color::white);
+			out.addRect(m_selection - m_view.pos(), ColorId::white);
 
 		out.setScissorRect(clippedRect());
 		out.setViewPos(-clippedRect().min + m_view.pos());
@@ -358,7 +358,7 @@ namespace ui {
 		out.setViewPos(-clippedRect().min);
 		auto font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(out, float2(0, clippedRect().height() - 25), {Color::white, Color::black},
+		font->draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
 				format("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
 				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_desc[m_mode]));
 	}

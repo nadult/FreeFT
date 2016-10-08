@@ -29,7 +29,7 @@ namespace ui
 	}
 
 	ImageButton::ImageButton(const int2 &pos, ImageButtonProto proto, const char *text, Mode mode, int id)
-		:Window(IRect(pos, pos + proto.rect.size()), Color::transparent), m_proto(std::move(proto)), m_id(id), m_mode(mode) {
+		:Window(IRect(pos, pos + proto.rect.size()), ColorId::transparent), m_proto(std::move(proto)), m_id(id), m_mode(mode) {
 		setBackground(m_proto.back);
 		setText(text);
 
@@ -64,7 +64,7 @@ namespace ui
 
 			if(m_mouse_press)
 				pos += int2(2, 2);
-			m_proto.font->draw(out, (float2)pos, {m_is_enabled? Color(255, 200, 0) : Color::gray, Color::black}, m_text);
+			m_proto.font->draw(out, (float2)pos, {m_is_enabled? Color(255, 200, 0) : ColorId::gray, ColorId::black}, m_text);
 		}
 	}
 

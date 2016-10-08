@@ -14,7 +14,7 @@ namespace ui {
 	class TextBox: public Window
 	{
 	public:
-		TextBox(const IRect &rect, const char *text, bool is_centered = true, Color col = Color::transparent);
+		TextBox(const IRect &rect, const char *text, bool is_centered = true, Color col = ColorId::transparent);
 		const char *typeName() const override { return "TextBox"; }
 
 		void setFont(const char *font_name);

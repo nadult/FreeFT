@@ -59,8 +59,8 @@ namespace game
 
 		static void setFrameCounter(int frame_counter);
 
-		void draw(Renderer2D&, const int2 &pos, Color color = Color::white) const;
-		void addToRender(SceneRenderer&, const int3 &pos, Color color = Color::white) const;
+		void draw(Renderer2D&, const int2 &pos, Color color = ColorId::white) const;
+		void addToRender(SceneRenderer&, const int3 &pos, Color color = ColorId::white) const;
 		bool testPixel(const int2 &pos) const;
 
 		const int3 &bboxSize() const { return m_bbox; }

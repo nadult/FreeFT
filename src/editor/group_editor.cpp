@@ -198,7 +198,7 @@ namespace {
 			if(!entry.is_selected)
 				continue;
 		
-			Color col = m_tile_group->isEntryDirty(entry.tile->m_temp)? Color::red : Color::white;	
+			Color col = m_tile_group->isEntryDirty(entry.tile->m_temp)? ColorId::red : ColorId::white;	
 			int2 pos = entry.pos - offset;
 			out.addRect(IRect(pos, pos + entry.size), col);
 		}
@@ -209,18 +209,18 @@ namespace {
 
 			out.setViewPos(-center);
 			int2 half_size = edit_rect.size() / 2;
-			out.addFilledRect(IRect(-half_size, half_size), Color(80, 80, 80));
-			drawBBox(out, IBox({-9, 0, -9}, {9, 1, 9}), Color(255, 255, 255));
+			out.addFilledRect(IRect(-half_size, half_size), FColor(0.3f, 0.3f, 0.3f));
+			drawBBox(out, IBox({-9, 0, -9}, {9, 1, 9}), ColorId::white);
 
 			auto font = res::getFont(WindowStyle::fonts[0]);
 
 			for(int n = 0; n < TileGroup::Group::side_count; n++) {
 				out.setViewPos(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
-				font->draw(out, float2(0, 0), Color::white, format("%d", m_tile_group->groupSurface(m_selected_group_id, n)));
+				font->draw(out, float2(0, 0), {ColorId::white}, format("%d", m_tile_group->groupSurface(m_selected_group_id, n)));
 			}
 				
 			out.setViewPos(-center +edit_rect.size() / 2);
-			font->draw(out, float2(0, 0), {Color::white}, format("setting surface: %d", m_selected_surface_id));
+			font->draw(out, float2(0, 0), {ColorId::white}, format("setting surface: %d", m_selected_surface_id));
 
 			/*
 			const char *names[] = {
@@ -237,13 +237,13 @@ namespace {
 
 			out.setViewPos(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
 			for(int n = 0; n < arraySize(names); n++)
-				font->draw(int2(0, 10), Color::white,
+				font->draw(int2(0, 10), ColorId::white,
 						m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
 			out.setViewPos(-clippedRect().min);
 		}
 
 		if(m_current_entry)
-			m_font->draw(out, float2(5, height() - 20), {Color::white, Color::black},
+			m_font->draw(out, float2(5, height() - 20), {ColorId::white, ColorId::black},
 					format("%s", m_current_entry->tile->resourceName().c_str()));
 	}
 

@@ -30,14 +30,15 @@ namespace hud {
 		float2 pos = rect.center() - icon_size * 0.5f;
 
 		float hp_value = m_max_hp? clamp(float(m_current_hp) / m_max_hp, 0.0f, 1.0f) : 1.0f;
-		Color color(lerp((float4)Color(Color::red), (float4)Color(Color::green), hp_value));
-		color = lerp(color, m_style.enabled_color, 0.5f);
+		FColor color(lerp(FColor(ColorId::red), FColor(ColorId::green), hp_value));
+		color = lerp(color, FColor(m_style.enabled_color), 0.5f);
 
 		out.addFilledRect(FRect(pos, pos + icon_size), {icon, mulAlpha(color, alpha())});
 
-		if(m_max_hp)
-			m_font->draw(out, rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top},
-						 format(hp_value <= 0.0f? "DEAD" : "%d/%d", m_current_hp, m_max_hp));
+		if(m_max_hp) {
+			auto text = hp_value <= 0.0f? "DEAD" : format("%d/%d", m_current_hp, m_max_hp);
+			m_font->draw(out, rect, {m_style.enabled_color, ColorId::black, HAlign::right, VAlign::top}, text);
+		}
 	}
 
 }

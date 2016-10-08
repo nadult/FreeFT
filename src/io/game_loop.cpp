@@ -90,9 +90,9 @@ namespace io {
 				m_next_mode = to_main? mode_exiting_to_main : mode_exiting_to_system;
 
 				if(to_main)
-					startTransition(Color(0, 0, 0, 0), Color::black, trans_left, s_transition_length);
+					startTransition(Color(0, 0, 0, 0), ColorId::black, trans_left, s_transition_length);
 				else
-					startTransition(Color(255, 255, 255, 0), Color::white, trans_normal, 1.0f);
+					startTransition(Color(255, 255, 255, 0), ColorId::white, trans_normal, 1.0f);
 			}
 		}
 

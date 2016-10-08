@@ -38,7 +38,7 @@ namespace ui {
 	CRange<const char*> TilesEditor::modeStrings() { return s_mode_strings; }
 
 	TilesEditor::TilesEditor(TileMap &tile_map, View &view, IRect rect)
-		:ui::Window(rect, Color::transparent), m_view(view), m_tile_map(tile_map), m_new_tile(nullptr) {
+		:ui::Window(rect, ColorId::transparent), m_view(view), m_tile_map(tile_map), m_new_tile(nullptr) {
 		m_tile_group = nullptr;
 		m_is_selecting = false;
 		m_is_moving = false;
@@ -409,7 +409,7 @@ namespace ui {
 				- visible_ids.begin());
 
 			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
-			vector<Color> tile_colors(visible_ids.size(), Color::white);
+			vector<Color> tile_colors(visible_ids.size(), ColorId::white);
 
 			if(isChangingOccluders()) {
 				OccluderMap &occmap = m_tile_map.occluderMap();
@@ -438,7 +438,7 @@ namespace ui {
 						auto object = m_tile_map[visible_ids[n]];
 						int3 pos(object.bbox.min);
 				
-						Color col = Color::white;
+						Color col = ColorId::white;
 						if(object.occluder_id != -1) {
 							col = colors[object.occluder_id % arraySize(colors)];
 							if(is_occluder_selected[object.occluder_id])
@@ -457,8 +457,8 @@ namespace ui {
 					int3 pos(object.bbox.min);
 
 					IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
-					Color col =	box.max.y < m_selection.min.y? Color::gray :
-								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : Color::white;
+					Color col =	box.max.y < m_selection.min.y? ColorId::gray :
+								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : ColorId::white;
 					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
 						col.r = col.g = 255;
 					tile_colors[n] = col;
@@ -482,7 +482,7 @@ namespace ui {
 				sort(temp.begin(), temp.end());
 				temp.resize(std::set_difference(temp.begin(), temp.end(), m_selected_ids.begin(), m_selected_ids.end(), temp.begin()) - temp.begin());
 
-				Color color = !temp.empty()? Color::red : Color::white;
+				Color color = !temp.empty()? ColorId::red : ColorId::white;
 				object.ptr->addToRender(renderer, (int3)object.bbox.min, color);
 				renderer.addBox(m_tile_map[m_selected_ids[i]].bbox);
 			}
@@ -524,17 +524,17 @@ namespace ui {
 		out.setViewPos(-clippedRect().min);
 		auto font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(out, float2(0, 0), {Color::white, Color::black}, format("Tile count: %d\n", m_tile_map.size()));
+		font->draw(out, float2(0, 0), {ColorId::white, ColorId::black}, format("Tile count: %d\n", m_tile_map.size()));
 		if(isChangingOccluders() && m_current_occluder != -1) {
 			auto &occluder = m_tile_map.occluderMap()[m_current_occluder];
-			font->draw(out, float2(0, 25), {Color::white, Color::black},
+			font->draw(out, float2(0, 25), {ColorId::white, ColorId::black},
 						format("Occluder: %d (%d objects)\n", m_current_occluder, (int)occluder.objects.size()));
 		}
 
 		if(m_new_tile)
-			font->draw(out, float2(0, clippedRect().height() - 50), {Color::white, Color::black},
+			font->draw(out, float2(0, clippedRect().height() - 50), {ColorId::white, ColorId::black},
 					format("Tile: %s\n", m_new_tile->resourceName().c_str()));
-		font->draw(out, float2(0, clippedRect().height() - 25), {Color::white, Color::black},
+		font->draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
 				format("Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]));
 	}

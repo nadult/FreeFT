@@ -25,7 +25,7 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 		int count = is_flat ? 6 : arraySize(front);
 		for(int n = 0; n < count; n++)
 			verts[n] = pt[front[n]];
-		out.addTris(CRange<float2>(verts, verts + count), {}, {}, col);
+		out.addTris(CRange<float2>(verts, verts + count), {}, {}, FColor(col));
 	} else {
 		static const int back[] = {7, 3, 7, 6, 7, 4};
 		static const int front[] = {5, 4, 5, 6, 5, 1, 6, 2, 0, 4, 0, 1, 1, 2, 2, 3, 3, 0};

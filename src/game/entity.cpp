@@ -163,7 +163,7 @@ namespace game {
 		}
 
 //		if(findAny(boundingBox(), {Flags::all | Flags::colliding, ref()}))
-//			out.addBox(bbox + pos(), Color::red);
+//			out.addBox(bbox + pos(), ColorId::red);
 	}
 		
 	bool Entity::testPixel(const int2 &screen_pos) const {

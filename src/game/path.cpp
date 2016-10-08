@@ -109,14 +109,14 @@ namespace game {
 			return;
 
 		IBox box(0, 0, 0, agent_size, 0, agent_size);
-		renderer.addBox(box + m_nodes.front(), Color::red);
+		renderer.addBox(box + m_nodes.front(), ColorId::red);
 
 		for(int n = 1; n < (int)m_nodes.size(); n++) {
 			int3 begin = m_nodes[n - 1], end = m_nodes[n];
 			bool first = true;
 
 			IBox start_box = box + begin, end_box = box + end;
-			renderer.addBox(end_box, Color::red);
+			renderer.addBox(end_box, ColorId::red);
 			MoveVector vec(begin.xz(), end.xz());
 
 			if(vec.vec == int2(1, 1) || vec.vec == int2(-1, -1)) {

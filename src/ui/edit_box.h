@@ -14,7 +14,7 @@ namespace ui {
 	class EditBox: public Window
 	{
 	public:
-		EditBox(const IRect &rect, int max_size, StringRef label = StringRef(), Color col = Color::transparent);
+		EditBox(const IRect &rect, int max_size, StringRef label = StringRef(), FColor col = ColorId::transparent);
 		const char *typeName() const override { return "EditBox"; }
 
 		void setText(wstring);

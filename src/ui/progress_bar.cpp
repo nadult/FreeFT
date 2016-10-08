@@ -7,7 +7,7 @@
 
 namespace ui {
 
-	ProgressBar::ProgressBar(const IRect &rect, bool is_horizontal) :Window(rect, Color::transparent),
+	ProgressBar::ProgressBar(const IRect &rect, bool is_horizontal) :Window(rect, ColorId::transparent),
 		m_bar_size(0.1f), m_pos(0.0f), m_mouse_press(false), m_is_horizontal(is_horizontal) {
 	}
 
@@ -52,7 +52,7 @@ namespace ui {
 		if(!m_text.empty()) {
 			IRect extents = m_font->evalExtents(m_text.c_str());
 			int2 pos = (size() - extents.size()) / 2 - extents.min;
-			m_font->draw((float2)pos, {Color::white, Color::black}, m_text);
+			m_font->draw((float2)pos, {ColorId::white, ColorId::black}, m_text);
 		}*/
 	}
 

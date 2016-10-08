@@ -55,9 +55,9 @@ namespace game {
 	}
 		
 	void Projectile::addToRender(SceneRenderer &out, Color color) const {
-		float4 fcolor(color);
+		FColor fcolor(color);
 		float alpha = m_speed == 0.0f? 1.0f : clamp((m_distance - 10.0f) * 0.05f, 0.0f, 1.0f);
-		fcolor.w *= alpha;
+		fcolor.a *= alpha;
 		Entity::addToRender(out, Color(fcolor));
 	}
 

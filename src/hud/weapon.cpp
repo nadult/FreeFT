@@ -26,14 +26,14 @@ namespace hud {
 			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
 			float2 pos = (float2)(int2)(rect.center() - size / 2);
-			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, Color::white});
+			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, ColorId::white});
 
 			//TODO: print current attack mode
 			if(m_weapon.proto().max_ammo) {
 				TextFormatter fmt;
 				fmt("%d/%d", m_ammo_count, m_weapon.proto().max_ammo);
 				//TODO: alpha for shadow color
-				m_font->draw(out, rect, {m_style.enabled_color, Color::black, HAlign::right, VAlign::top}, fmt);
+				m_font->draw(out, rect, {m_style.enabled_color, ColorId::black, HAlign::right, VAlign::top}, fmt);
 			}
 		}
 	}

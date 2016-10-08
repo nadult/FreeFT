@@ -21,7 +21,7 @@ namespace ui {
 	
 		bool onEvent(const Event &ev) override;
 
-		void addEntry(const char *text, Color col = Color::white);
+		void addEntry(const char *text, Color col = ColorId::white);
 		int findEntry(const char*) const;
 		int selectedId() const;
 		void selectEntry(int id);

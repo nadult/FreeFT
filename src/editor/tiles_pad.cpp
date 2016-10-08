@@ -9,7 +9,7 @@
 namespace ui {
 
 	TilesPad::TilesPad(const IRect &rect, PTilesEditor editor, TileGroup *group)
-		:Window(rect, Color::transparent), m_editor(editor), m_group(group) {
+		:Window(rect, ColorId::transparent), m_editor(editor), m_group(group) {
 		int width = rect.width();
 
 		m_filter_box = make_shared<ComboBox>(IRect(0, 0, width/2, 22), 200,

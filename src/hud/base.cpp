@@ -13,10 +13,10 @@ namespace hud
 {
 
 	void drawGradQuad(Renderer2D &out, const FRect &rect, Color a, Color b, bool is_vertical) {
-		Color colors[4] = { a, a, b, b };
+		FColor colors[4] = { a, a, b, b };
 		if(is_vertical)
 			swap(colors[1], colors[3]);
-		out.addFilledRect(rect, FRect(0, 0, 1, 1), colors, Color::white);
+		out.addFilledRect(rect, FRect(0, 0, 1, 1), colors, FColor(ColorId::white));
 	}
 
 	void drawLine(Renderer2D &out, float2 p1, float2 p2, Color a, Color b) {
@@ -113,13 +113,13 @@ namespace hud
 
 	HudStyle getStyle(HudStyleId style_id) {
 		if(style_id == HudStyleId::green_white)
-			return HudStyle{	Color(150, 200, 150),	Color(30, 255, 60),		Color(30, 255, 60),		Color::white,
+			return HudStyle{	Color(150, 200, 150),	Color(30, 255, 60),		Color(30, 255, 60),		ColorId::white,
 								"transformers_20",		"transformers_30" };
 		else if(style_id == HudStyleId::red_green)
-			return HudStyle{	Color::green,			Color(255, 60, 30),		Color(255, 60, 30),		Color::white,
+			return HudStyle{	ColorId::green,			Color(255, 60, 30),		Color(255, 60, 30),		ColorId::white,
 								"transformers_20",		"transformers_30" };
 		else //if(style_id == HudStyleId::console)
-			return HudStyle{	Color::green,			Color(255, 60, 30),		Color(255, 60, 30),		Color::white,
+			return HudStyle{	ColorId::green,			Color(255, 60, 30),		Color(255, 60, 30),		ColorId::white,
 								"liberation_16",		"liberation_24"   };
 	}
 }

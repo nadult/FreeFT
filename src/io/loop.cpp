@@ -29,7 +29,7 @@ namespace io {
 	}
 		
 	void Loop::startTransition(Color from, Color to, TransitionMode mode, float length) {
-		m_transition = Transition{ from, to, mode, 0.0f, length };
+		m_transition = Transition{ FColor(from), FColor(to), mode, 0.0f, length };
 		m_is_transitioning = true;
 	}
 		
@@ -44,7 +44,7 @@ namespace io {
 			renderer.addFilledRect(rect, lerp(from, to, pos / length));
 		}
 		else {
-			Color col1 = from, col2 = to;
+			FColor col1 = from, col2 = to;
 			if(mode == trans_right)
 				swap(col1, col2);
 
@@ -53,11 +53,11 @@ namespace io {
 			for(int n = 0; n < arraySize(rects); n++)
 				rects[n] += float2(rect.width() * (mode == trans_right? n - 2 + 2.0f * anim_pos : n - 2.0f * anim_pos), 0.0f);
 
-			Color mid_colors[4] = { col1, col1, col2, col2 };
+			FColor mid_colors[4] = { col1, col1, col2, col2 };
 			FRect uv_rect(0, 0, 1, 1);
 
 			renderer.addFilledRect(rects[0], col1);
-			renderer.addFilledRect(rects[1], uv_rect, mid_colors, Color::white);
+			renderer.addFilledRect(rects[1], uv_rect, mid_colors, FColor(ColorId::white));
 			renderer.addFilledRect(rects[2], col2);
 		}
 		renderer.render();

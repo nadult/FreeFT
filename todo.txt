@@ -1,6 +1,7 @@
 - DOWNSCALE, remove unnecessary features
 - use unique_ptr in UI & HUD
 - font too low in hud edit box (password in multiplayer menu) (broken after port to libfwk)
+- use FColor instead of Color (unless it's being sent or stored, where memory matters)
 
 Must-have: ----------------------------------------------------------------------------------------
 

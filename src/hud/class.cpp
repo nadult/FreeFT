@@ -80,7 +80,7 @@ namespace hud {
 	}
 		
 	Color HudClassButton::backgroundColor() const {
-		return lerp(HudButton::backgroundColor(), Color::white, m_enabled_time * 0.5f);
+		return (Color)lerp((FColor)HudButton::backgroundColor(), FColor(ColorId::white), m_enabled_time * 0.5f);
 	}
 
 	HudClass::HudClass(const FRect &target_rect)

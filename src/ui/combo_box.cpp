@@ -14,7 +14,7 @@ namespace ui {
 		attach(m_button);
 
 		for(auto value : values)
-			addEntry(value, Color::white);
+			addEntry(value, ColorId::white);
 		if(!values.empty())
 			selectEntry(0);
 	}

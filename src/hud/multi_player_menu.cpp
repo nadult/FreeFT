@@ -19,7 +19,7 @@ namespace hud {
 	namespace {
 
 		const float2 s_button_size(17, 17);
-		static const Color s_error_color = lerp(Color::red, Color::white, 0.5f);
+		static const Color s_error_color = (Color)lerp((FColor)ColorId::red, (FColor)ColorId::white, 0.5f);
 
 	}
 
@@ -228,7 +228,7 @@ namespace hud {
 
 			//TODO: support for data send in multiple packets
 			if(new_data.empty()) {
-				setMessage("No servers active", Color::white);
+				setMessage("No servers active", ColorId::white);
 				m_servers.clear();
 			}
 
@@ -270,7 +270,7 @@ namespace hud {
 	void MultiPlayerMenu::onDraw(Renderer2D &out) const {
 		FRect back_quad((float2)m_window_size);
 
-		out.addFilledRect(back_quad, mulAlpha(Color::black, m_visible_time * 0.8f));
+		out.addFilledRect(back_quad, mulAlpha(ColorId::black, m_visible_time * 0.8f));
 		HudLayer::onDraw(out);
 
 		if(!m_message.empty()) {
@@ -279,7 +279,7 @@ namespace hud {
 
 			if(msg_time < 5.0)
 				m_font->draw(out, rect() + float2(spacing, 0.0f),
-						     {mulAlpha(m_message_color, alpha), mulAlpha(Color::black, alpha), HAlign::left, VAlign::bottom}, m_message);
+						     {mulAlpha(m_message_color, alpha), mulAlpha(ColorId::black, alpha), HAlign::left, VAlign::bottom}, m_message);
 		}
 	}
 		

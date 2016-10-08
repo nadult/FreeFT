@@ -164,7 +164,7 @@ namespace game {
 		virtual EntityId typeId() const = 0;
 		virtual bool renderAsOverlay() const { return false; }
 
-		virtual void addToRender(SceneRenderer&, Color color = Color::white) const;
+		virtual void addToRender(SceneRenderer&, Color color = ColorId::white) const;
 		virtual void interact(const Entity *interactor) { }
 		virtual void onImpact(DamageType, float damage, const float3 &force, EntityRef source) { }
 

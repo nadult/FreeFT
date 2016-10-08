@@ -210,7 +210,7 @@ namespace game {
 				vis_entity.shadow.get() : m_world->refEntity(vis_entity.ref);
 
 			if(entity && m_occluder_config.isVisible(vis_entity.occluder_id))
-				entity->addToRender(renderer, Color(1.0f, 1.0f, 1.0f, blend_value));
+				entity->addToRender(renderer, (IColor)FColor(1.0f, 1.0f, 1.0f, blend_value));
 		}
 	}
 		

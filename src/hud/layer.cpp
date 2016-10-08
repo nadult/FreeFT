@@ -50,25 +50,26 @@ namespace hud {
 	}
 		
 	Color HudLayer::backColor() const {
-		return mulAlpha(m_style.layer_color, backAlpha());
+		return (Color)mulAlpha(m_style.layer_color, backAlpha());
 	}
 
 	Color HudLayer::borderColor() const {
-		return mulAlpha(m_style.layer_color, min(backAlpha(), 1.0f));
+		return (Color)mulAlpha(m_style.layer_color, min(backAlpha(), 1.0f));
 	}
 
 	Color HudLayer::titleColor() const {
-		return mulAlpha(m_style.enabled_color, (0.25f + 0.75f * pow(m_visible_time, 4.0f)) * alpha());
+		float new_alpha = (0.25f + 0.75f * pow(m_visible_time, 4.0f)) * alpha();
+		return (Color)mulAlpha(FColor(m_style.enabled_color), new_alpha);
 	}
 		
 	Color HudLayer::titleShadowColor() const {
-		return Color(Color::black, titleColor().a);
+		return Color(ColorId::black, titleColor().a);
 	}
 
 	void HudLayer::onDraw(Renderer2D& out) const {
 		FRect rect = this->rect();
 
-		out.addFilledRect(rect, backColor());
+		out.addFilledRect(rect, (FColor)backColor());
 		drawBorder(out, rect, borderColor(), float2(0, 0), 100.0f);
 
 		if(!m_title.empty()) {

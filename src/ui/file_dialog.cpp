@@ -15,7 +15,7 @@ namespace ui {
 	};
 
 	FileDialog::FileDialog(const IRect &rect, const char *title, Mode mode)
-		:Window(rect, Color::transparent), m_mode(mode) {
+		:Window(rect, ColorId::transparent), m_mode(mode) {
 		int w = width(), h = height();
 
 		PTextBox title_box = make_shared<TextBox>(IRect(5, 5, w - 5, 25), title);
@@ -98,7 +98,7 @@ namespace ui {
 
 		std::sort(files.begin(), files.end());
 		for(int n = 0; n < (int)files.size(); n++)
-			m_list_box->addEntry(files[n].path.c_str(), files[n].is_dir? Color::yellow : Color::white);
+			m_list_box->addEntry(files[n].path.c_str(), files[n].is_dir? ColorId::yellow : ColorId::white);
 	}
 
 	void FileDialog::updateButtons() {

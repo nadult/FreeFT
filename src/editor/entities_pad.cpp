@@ -180,7 +180,7 @@ namespace ui {
 	}
 
 	EntitiesPad::EntitiesPad(const IRect &rect, PEntitiesEditor editor)
-		:Window(rect, Color::transparent), m_editor(editor) {
+		:Window(rect, ColorId::transparent), m_editor(editor) {
 		int width = rect.width();
 
 		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 0, width, WindowStyle::line_height), 200, "Editing mode: ");

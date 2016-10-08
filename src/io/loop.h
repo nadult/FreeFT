@@ -37,7 +37,7 @@ namespace io {
 		struct Transition {
 			void draw(const IRect &rect);
 
-			Color from, to;
+			FColor from, to;
 			TransitionMode mode;
 			float pos, length;
 		};

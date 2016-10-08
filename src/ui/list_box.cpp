@@ -10,7 +10,7 @@ using namespace gfx;
 namespace ui {
 
 
-	ListBox::ListBox(const IRect &rect, Color color) :Window(rect, color), m_over_id(-1), m_dragging_id(-1) {
+	ListBox::ListBox(const IRect &rect, FColor color) :Window(rect, color), m_over_id(-1), m_dragging_id(-1) {
 		m_font = res::getFont(WindowStyle::fonts[0]);
 		m_line_height = m_font->lineHeight();
 	}
@@ -25,14 +25,14 @@ namespace ui {
 
 			out.addLine(int2(rect.min.x, rect.max.y), rect.max, WindowStyle::gui_medium);
 
-			Color col = Color::transparent;
+			FColor col = ColorId::transparent;
 			
 			if((m_over_id == n && m_dragging_id == -1) || m_dragging_id == n)
 				col = WindowStyle::gui_medium;
 			if((m_dragging_id == n && m_over_id == n) || entry.is_selected)
 				col = WindowStyle::gui_light;
 
-			if(col != Color(Color::transparent))
+			if(col.a > 0.0f)
 				out.addFilledRect(rect, col);
 		}
 		
@@ -41,7 +41,7 @@ namespace ui {
 
 		for(int n = vis_entries.x; n < vis_entries.y; n++) {
 			int2 pos = int2(0, m_line_height * n) - offset;
-			m_font->draw(out, (float2)(pos + int2(5, 0)), {m_entries[n].color, Color::black}, m_entries[n].text);
+			m_font->draw(out, (float2)(pos + int2(5, 0)), {m_entries[n].color, ColorId::black}, m_entries[n].text);
 		}
 	}
 
@@ -104,7 +104,7 @@ namespace ui {
 		return IRect(0, pos, rect().width(), pos + m_line_height);
 	}
 
-	void ListBox::addEntry(const char *text, Color col) {
+	void ListBox::addEntry(const char *text, FColor col) {
 		m_entries.push_back(Entry{col, text, false});
 		update();
 	}

@@ -11,18 +11,18 @@
 class SceneRenderer {
   public:
 	SceneRenderer(IRect viewport, int2 view_pos);
-	bool add(STexture tex, IRect rect, float3 pos, FBox bbox, Color col = Color::white,
+	bool add(STexture tex, IRect rect, float3 pos, FBox bbox, Color col = ColorId::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false);
-	bool add(STexture tex, IRect rect, float3 pos, int3 bbox, Color col = Color::white,
+	bool add(STexture tex, IRect rect, float3 pos, int3 bbox, Color col = ColorId::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false) {
 		return add(tex, rect, pos, FBox(float3(0, 0, 0), float3(bbox)), col, tex_rect, is_overlay);
 	}
 
-	void addBox(FBox box, Color col = Color::white, bool is_filled = false);
-	void addBox(IBox box, Color col = Color::white, bool is_filled = false) {
+	void addBox(FBox box, Color col = ColorId::white, bool is_filled = false);
+	void addBox(IBox box, Color col = ColorId::white, bool is_filled = false) {
 		addBox((FBox)box, col, is_filled);
 	}
-	void addLine(int3, int3, Color = Color::white);
+	void addLine(int3, int3, Color = ColorId::white);
 	void render();
 
 	const IRect &targetRect() const { return m_target_rect; }

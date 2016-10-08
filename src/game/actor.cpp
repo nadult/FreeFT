@@ -496,9 +496,9 @@ namespace game {
 
 #ifdef DEBUG_SHOOTING
 	//	for(int n = 0; n < (int)m_aiming_points.size(); n++)
-	//		out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), Color::red, true);
+	//		out.addBox(FBox(m_aiming_points[n] - float3(1,1,1) * 0.1f, m_aiming_points[n] + float3(1,1,1) * 0.1f), ColorId::red, true);
 	//	for(int n = 0; n < (int)m_aiming_lines.size(); n+=2)
-	//		out.addLine((int3)m_aiming_lines[n], (int3)m_aiming_lines[n + 1], Color::red);
+	//		out.addLine((int3)m_aiming_lines[n], (int3)m_aiming_lines[n + 1], ColorId::red);
 
 		const AttackOrder *attack = m_order && m_order->typeId() == OrderTypeId::attack? static_cast<AttackOrder*>(m_order.get()) : nullptr;
 		if(attack) {

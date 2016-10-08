@@ -89,19 +89,19 @@ class Resource {
 				m_sprite->bboxSize().x, m_sprite->bboxSize().y, m_sprite->bboxSize().z,
 				max_frame_size.x, max_frame_size.y);
 
-			m_font->draw(out, (float2)pos, {Color::white, Color::black}, fmt);
+			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt);
 			pos.y += m_font->evalExtents(fmt).height();
 
 			double time = getTime();
 			for(int n = 0; n < (int)m_events.size(); n++) {
-				Color col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
-				m_font->draw(out, (float2)pos, {col, Color::black}, m_events[n].first);
+				FColor col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
+				m_font->draw(out, (float2)pos, {col, ColorId::black}, m_events[n].first);
 				pos.y += m_font->lineHeight();
 			}
 
 		} else if(m_type == ResType::texture) {
 			fmt("Size: (%d, %d)", m_texture->width(), m_texture->height());
-			m_font->draw(out, (float2)pos, {Color::white, Color::black}, fmt);
+			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt);
 		}
 	}
 
@@ -181,7 +181,7 @@ class Resource {
 	}
 
 	void draw(Renderer2D &out, int2 pos, bool is_selected) const {
-		Color outline_col = is_selected ? Color::red : Color(255, 255, 255, 100);
+		Color outline_col = is_selected ? ColorId::red : Color(255, 255, 255, 100);
 
 		if(m_type == ResType::tile) {
 			out.setViewPos(-pos + m_tile->rect().min);
@@ -359,7 +359,7 @@ class ResViewerWindow : public Window {
 		vector<string> names;
 
 		for(auto entry : m_entries) {
-			m_dir_view->addEntry(entry.path.c_str(), entry.is_dir ? Color::yellow : Color::white);
+			m_dir_view->addEntry(entry.path.c_str(), entry.is_dir ? ColorId::yellow : ColorId::white);
 			if(!entry.is_dir)
 				names.emplace_back(entry.path);
 		}

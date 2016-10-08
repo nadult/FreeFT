@@ -27,7 +27,7 @@ namespace ui {
 		int2 pos = (size() - m_text_extents.size()) / 2 - m_text_extents.min;
 		if(!m_is_centered)
 			pos.x = 5;
-		m_font->draw(out, (float2)pos, {Color::white, Color::black}, m_text);
+		m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, m_text);
 	}
 
 }

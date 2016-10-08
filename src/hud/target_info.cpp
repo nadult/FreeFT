@@ -16,12 +16,12 @@ namespace hud {
 		const float2 s_char_icon_size(52.0f, 70.0f);
 
 		static const EnumMap<HealthStatus, Color> s_health_colors = {
-			Color::white,
-			Color::green,
-			Color::yellow,
+			ColorId::white,
+			ColorId::green,
+			ColorId::yellow,
 			Color(255, 150, 0),
-			Color::red,
-			Color::black
+			ColorId::red,
+			ColorId::black
 		};
 	}
 
@@ -59,9 +59,9 @@ namespace hud {
 		HealthStatus health = healthStatusFromHP(m_health);
 		const char *health_desc = toString(health);
 
-		Color text_color = mulAlpha(Color::white, alpha());
-		Color shadow_color = mulAlpha(Color::black, alpha());
-		Color health_color = mulAlpha(s_health_colors[health], alpha());
+		Color text_color = (Color)mulAlpha(ColorId::white, alpha());
+		Color shadow_color = (Color)mulAlpha(ColorId::black, alpha());
+		Color health_color = (Color)mulAlpha(s_health_colors[health], alpha());
 		
 		FRect font_rect = rect() + float2(layer_spacing, 0.0f);
 		font_rect.max.y = font_rect.min.y + font_rect.height() / 4.0f;

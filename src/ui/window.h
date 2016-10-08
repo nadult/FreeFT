@@ -33,10 +33,10 @@ namespace ui
 
 	//TODO: windows could be customizable with different styles
 	struct WindowStyle {
-		static Color gui_dark;
-		static Color gui_medium;
-		static Color gui_light;
-		static Color gui_popup;
+		static FColor gui_dark;
+		static FColor gui_medium;
+		static FColor gui_light;
+		static FColor gui_popup;
 		
 		enum {
 			line_height = 24
@@ -49,7 +49,7 @@ namespace ui
 	class Window
 	{
 	public:
-		Window(const IRect &rect, Color background = Color::transparent);
+		Window(const IRect &rect, FColor background = ColorId::transparent);
 
 		virtual ~Window() { }
 		virtual const char *typeName() const { return "Window"; }
@@ -78,8 +78,8 @@ namespace ui
 		int2 size() const { return m_rect.size(); }
 		int2 center() const { return m_rect.center(); }
 
-		Color backgroundColor() const { return m_background_color; }
-		void setBackgroundColor(Color col);
+		FColor backgroundColor() const { return m_background_color; }
+		void setBackgroundColor(FColor);
 
 		void setBackground(PTexture);
 		PTexture background() const { return m_background; }
@@ -105,7 +105,7 @@ namespace ui
 		// Override this method to receive events
 		virtual bool onEvent(const Event &event) { return false; }
 		
-		static void drawWindow(Renderer2D&, IRect rect, Color color, int outline);
+		static void drawWindow(Renderer2D&, IRect, FColor, int outline);
 
 		void setInnerOffset(const int2&);
 	
@@ -138,7 +138,7 @@ namespace ui
 		IRect  m_inner_rect;	// if its bigger than m_rect then progress bars will be added
 		IRect m_rect;			// coordinates relative to parent window
 		IRect m_clipped_rect;	// absolute coordinates, clipped to parent window
-		Color m_background_color;
+		FColor m_background_color;
 
 		int2 m_drag_start;
 		int m_closing_value;

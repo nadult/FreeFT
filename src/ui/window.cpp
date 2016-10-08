@@ -17,10 +17,10 @@ namespace ui
 	Color WindowStyle::gui_light (0x4c, 0x86, 0xfe);
 	Color WindowStyle::gui_popup (0x60, 0xa0, 0xff); */
 	
-	Color WindowStyle::gui_dark  (0.10f, 0.50f, 0.10f);
-	Color WindowStyle::gui_medium(0.15f, 0.60f, 0.15f);
-	Color WindowStyle::gui_light (0.20f, 0.70f, 0.20f);
-	Color WindowStyle::gui_popup (0.30f, 0.80f, 0.30f);
+	FColor WindowStyle::gui_dark  (0.10f, 0.50f, 0.10f);
+	FColor WindowStyle::gui_medium(0.15f, 0.60f, 0.15f);
+	FColor WindowStyle::gui_light (0.20f, 0.70f, 0.20f);
+	FColor WindowStyle::gui_popup (0.30f, 0.80f, 0.30f);
 
 	const char *WindowStyle::fonts[3] = {
 		"liberation_16",
@@ -28,25 +28,22 @@ namespace ui
 		"liberation_32",
 	};
 
-	void Window::drawWindow(Renderer2D &out, IRect rect, Color color, int outline) {
-		float3 fcolor = (float3)color;
-		float falpha = float(color.a) * (1.0f / 255.0f);
-
-		Color lighter(fcolor * 1.2f, falpha);
-		Color darker(fcolor * 0.8f, falpha);
+	void Window::drawWindow(Renderer2D &out, IRect rect, FColor color, int outline) {
+		FColor lighter(color.rgb() * 1.2f, color.a);
+		FColor darker(color.rgb() * 0.8f, color.a);
 		int aoutline = fwk::abs(outline);
 
 		if(outline) {
 			int2 hsize(rect.width(), aoutline);
 			int2 vsize(aoutline, rect.height());
 
-			Color col1 = outline < 0? darker : lighter;
+			FColor col1 = outline < 0? darker : lighter;
 			out.addFilledRect(IRect(rect.min, rect.min + hsize), col1);
 			out.addFilledRect(IRect(rect.min, rect.min + vsize), col1);
 
 			int2 p1(rect.min.x, rect.max.y - aoutline);
 			int2 p2(rect.max.x - aoutline, rect.min.y);
-			Color col2 = outline < 0? lighter : darker;
+			FColor col2 = outline < 0? lighter : darker;
 			out.addFilledRect(IRect(p1, p1 + hsize), col2);
 			out.addFilledRect(IRect(p2, p2 + vsize), col2);
 		}
@@ -55,7 +52,7 @@ namespace ui
 		out.addFilledRect(inset(rect, off, off), color);
 	}
 
-	Window::Window(const IRect &rect, Color background_color)
+	Window::Window(const IRect &rect, FColor background_color)
 		:m_parent(nullptr), m_is_visible(true), m_is_popup(false), m_is_closing(false),
 			m_is_focused(false), m_has_hard_focus(false), m_is_mouse_over(false) {
 		m_drag_start = int2(0, 0);
@@ -69,7 +66,7 @@ namespace ui
 		m_background = background;
 	}
 
-	void Window::setBackgroundColor(Color col) {
+	void Window::setBackgroundColor(FColor col) {
 		m_background_color = col;
 	}
 
@@ -196,7 +193,7 @@ namespace ui
 		out.setViewPos(-m_clipped_rect.min);
 		out.setScissorRect(m_clipped_rect);
 
-		if(m_background_color.a > 0 && !(m_background && m_background->size() == m_rect.size()))
+		if(m_background_color.a > 0.0f && !(m_background && m_background->size() == m_rect.size()))
 			out.addFilledRect(IRect(m_clipped_rect.size()), m_background_color);
 		if(m_background)
 			out.addFilledRect(IRect(m_background->size()), m_background);
@@ -208,10 +205,10 @@ namespace ui
 			int2 rsize = m_rect.size();
 			int2 isize = m_inner_rect.size();
 
-			Color col1 = WindowStyle::gui_dark;
-			Color col2 = WindowStyle::gui_light;
-			col1 = Color(int(col1.r) * 4 / 5, int(col1.g) * 4 / 5, int(col1.b) * 4 / 5, 128);
-			col2 = Color(int(col2.r) * 4 / 3, int(col2.g) * 4 / 3, int(col2.b) * 4 / 3, 128);
+			auto col1 = WindowStyle::gui_dark;
+			auto col2 = WindowStyle::gui_light;
+			col1 = FColor(col1.rgb() * 0.8f, 0.5f);
+			col2 = FColor(col2.rgb() * 1.333f, 0.5f);
 
 			// TODO: minimum size of progress bar, coz sometimes its almost invisible
 			if(isize.x > rsize.x) {

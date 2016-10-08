@@ -15,11 +15,11 @@ namespace ui {
 	class ListBox: public ui::Window
 	{
 	public:
-		ListBox(const IRect &rect, Color color = WindowStyle::gui_dark);
+		ListBox(const IRect &rect, FColor color = WindowStyle::gui_dark);
 		const char *typeName() const override { return "ListBox"; }
 
 		struct Entry {
-			Color color;
+			FColor color;
 			string text;
 			mutable bool is_selected;
 		};
@@ -29,7 +29,7 @@ namespace ui {
 		void onInput(const InputState&) override;
 		bool onMouseDrag(const InputState&, int2 start, int2 end, int key, int is_final) override;
 
-		void addEntry(const char *text, Color col = Color::white);
+		void addEntry(const char *text, FColor col = ColorId::white);
 		int findEntry(const char*) const;
 		int selectedId() const;
 		void selectEntry(int id);

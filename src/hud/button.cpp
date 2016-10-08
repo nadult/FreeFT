@@ -47,7 +47,7 @@ namespace hud {
 
 	void HudButton::onDraw(Renderer2D &out) const {
 		FRect rect = this->rect();
-		out.addFilledRect(rect, backgroundColor());
+		out.addFilledRect(rect, (FColor)backgroundColor());
 
 		Color border_color = borderColor();
 		float border_offset = m_button_style == HudButtonStyle::small? 2.5f : 5.0f;
@@ -87,23 +87,24 @@ namespace hud {
 	}
 		
 	Color HudButton::textColor(bool force_enabled) const {
-		Color out = lerp(Color(m_style.enabled_color, 160), m_style.enabled_color, force_enabled? 1.0f : m_enabled_time);
-		return Color(out, u8(float(out.a) * alpha()));
+		auto fcolor = lerp((FColor)Color(m_style.enabled_color, 160), FColor(m_style.enabled_color), force_enabled? 1.0f : m_enabled_time);
+		fcolor.a *= alpha();
+		return (Color)fcolor;
 	}
 		
 	Color HudButton::textShadowColor() const {
-		return mulAlpha(Color::black, alpha());
+		return (Color)mulAlpha(ColorId::black, alpha());
 	}
 
 	Color HudButton::backgroundColor() const {
 		Color color(m_style.back_color, (int)(alpha() * 127));
-		return desaturate(color, m_greyed_time);
+		return (Color)desaturate(color, m_greyed_time);
 	}
 		
 	Color HudButton::borderColor() const {
 		u8 border_alpha = clamp((int)(255 * alpha() * (0.3f + 0.7f * m_enabled_time * m_highlighted_time)), 0, 255);
 		Color color(m_style.border_color, border_alpha);
-		return desaturate(color, m_greyed_time);
+		return (Color)desaturate(color, m_greyed_time);
 	}
 		
 	void HudButton::setHighlighted(bool is_highlighted, bool animate) {
