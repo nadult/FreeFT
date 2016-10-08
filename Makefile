@@ -81,8 +81,12 @@ NICE_FLAGS=-std=c++14 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werro
 LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
 
-$(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp
-	$(LINUX_CXX) -MMD $(LINUX_FLAGS) -c src/$*.cpp -o $@
+PCH_FILE=$(BUILD_DIR)/pch.h.pch
+$(PCH_FILE): src/pch.h
+	clang -x c++-header -MMD $(LINUX_FLAGS) src/pch.h -emit-pch -o $@
+
+$(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_FILE)
+	$(LINUX_CXX) -MMD $(LINUX_FLAGS) -include-pch $(PCH_FILE) -c src/$*.cpp -o $@
 
 $(MINGW_OBJECTS): $(BUILD_DIR)/%_.o: src/%.cpp
 	$(MINGW_CXX) $(MINGW_FLAGS) -c src/$*.cpp -o $@
@@ -94,12 +98,15 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(MINGW_FWK_
 	$(MINGW_CXX) -o $@ $^  $(SPECIAL_LIBS_$*) $(MINGW_LIBS)
 	$(MINGW_STRIP) $@
 
-clean:
+game-clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
-			$(MINGW_PROGRAMS) $(DEPS)
+			$(MINGW_PROGRAMS) $(DEPS) $(PCH_FILE)
 	find $(BUILD_DIR) -type d -empty -delete
 
-.PHONY: clean $(LINUX_FWK_LIB) $(MINGW_FWK_LIB)
+clean: game-clean
+	$(MAKE) -C $(FWK_DIR) clean
+
+.PHONY: game-clean clean
 
 -include $(DEPS)
 
