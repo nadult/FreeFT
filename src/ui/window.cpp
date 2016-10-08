@@ -233,7 +233,7 @@ namespace ui
 			if(m_children[n]->isVisible())
 				m_children[n]->draw(out);
 		if(!m_parent)
-			out.disableScissorRect();
+			out.setScissorRect(none);
 	}
 
 	void Window::attach(PWindow child, bool as_popup) {

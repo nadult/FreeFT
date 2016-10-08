@@ -231,7 +231,7 @@ void PackedTexture::decode(Color *__restrict dst, const Color *__restrict pal, i
 }
 
 void PackedTexture::toTexture(Texture &out, const Color *pal, int pal_size) const {
-	out.resize(m_width, m_height);
+	out.resize({m_width, m_height});
 	decode(out.line(0), pal, pal_size);
 }
 

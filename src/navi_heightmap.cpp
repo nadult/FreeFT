@@ -80,7 +80,7 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 }
 	
 Texture NaviHeightmap::toTexture(int level) const {
-	Texture out(m_size.x, m_size.y);
+	Texture out(m_size);
 
 	for(int y = 0; y < m_size.y; y++)
 		for(int x = 0; x < m_size.x; x++) {
@@ -144,6 +144,7 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 	}
 
 	extents--;
+	//TODO: gcc claims that we're over array bounds:
 	for(int ty = 0; ty < extents; ty++)
 		for(int tx = 0; tx < extents; tx++)
 			if(	fwk::abs(heights[ty][tx] - heights[ty + 1][tx + 0]) > 1 ||

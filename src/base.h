@@ -61,6 +61,9 @@ inline int3 ceil(const float3 &v) {
 	return int3(v.x + (1.0f - constant::epsilon), v.y + (1.0f - constant::epsilon),
 				v.z + (1.0f - constant::epsilon));
 }
+
+const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);
+
 void encodeInt(Stream &sr, int value);
 int decodeInt(Stream &sr);
 
@@ -163,16 +166,6 @@ Interval max(const Interval&, const Interval&);
 float intersection(const Interval idir[3], const Interval origin[3], const Box<float3> &box);
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
-
-template <class Type2>
-inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &tl, const Type2 &br) {
-	return Rect<Type2>(rect.min + tl, rect.max - br);
-}
-	
-template <class Type2>
-inline const Rect<Type2> inset(Rect<Type2> rect, const Type2 &inset) {
-	return Rect<Type2>(rect.min + inset, rect.max - inset);
-}
 
 namespace fwk {
 namespace gfx {}

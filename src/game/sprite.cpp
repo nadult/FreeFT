@@ -107,7 +107,7 @@ namespace game
 	void Sprite::MultiImage::cacheUpload(Texture &tex) const {
 		DASSERT(prev_palette);
 
-		tex.resize(rect.width(), rect.height());
+		tex.resize(rect.size());
 		if(!tex.empty()) {
 			memset(tex.line(0), 0, rect.width() * rect.height() * sizeof(Color));
 			for(int l = 0; l < Sprite::layer_count; l++)

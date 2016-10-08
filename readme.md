@@ -9,24 +9,28 @@ inspired by Fallout Tactics, a game from 2001 created by an Australian company,
 Micro Forte.
  
 Compiled binaries can be downloaded from SourceForge
-[http://sourceforge.net/projects/freeft](https://sourceforge.net/projects/freeft/files)
+[https://sourceforge.net/projects/freeft](https://sourceforge.net/projects/freeft/files)
 
 
 ## Building
-For compilation, G++ in version 4.9 is required or Clang 3.4
-(many C++14 features are used), and following libraries:
+To compile Clang 3.7 or newer is recommended. G++ 4.9 or newer can also be used.
+Following libraries are required as well:
 
 * libfwk (included as submodule):
-	[http://github.com/nadult/libfwk](http://github.com/nadult/libfwk)
-    This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2)
+	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)
+    This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2, libpng)
 
 * zlib, OpenAL, mpg123, libzip:  
 	these should be available in your distro's package repositories
 
+To build for windows, you have to cross-compile with MinGW. The easiest way
+is with MXE ([http://mxe.cc](http://mxe.cc)).  
+Just make sure to use GCC6 plugin with posix threads (set MXE\_GCC\_THREADS to posix).  
+    
+
 ## Running
 To run this program, resources from original Fallout Tactics are required.
-If you didn't grab a free copy from gog.com, then you can buy it on Amazon,
-or on Steam (when it will be available).
+You can buy it on GOG or Steam.
 
 FT has to be installed and resources converted with a convert program.
 After instaling FT just run convert.exe. It might ask you to provide a
@@ -34,7 +38,7 @@ path to original Fallout Tactics. The conversion shouldn't take more than
 a few minutes.  
 
 To convert resources under linux, you can use this command:
-./convert -p "/home/user_name/.wine/drive_c/tactics/" all
+./convert -p "/home/user\_name/.wine/drive\_c/tactics/" all
 
 ## Basic controls in the game
 
@@ -92,15 +96,15 @@ Early version of game editor:
 
 ## Videos
 
-[Multi-player gamplay with bots](http://vimeo.com/101652935)
+[Multi-player gamplay with bots](https://vimeo.com/101652935)
 
-[Single-player gameplay demo](http://vimeo.com/91863672)
+[Single-player gameplay demo](https://vimeo.com/91863672)
 
-[First tech-demo](http://vimeo.com/58703722)
+[First tech-demo](https://vimeo.com/58703722)
 
-[Editor in action](http://vimeo.com/88563626)
+[Editor in action](https://vimeo.com/88563626)
 
-[Path-finding demo](http://vimeo.com/58703723)
+[Path-finding demo](https://vimeo.com/58703723)
 
 ## Disclaimer
 

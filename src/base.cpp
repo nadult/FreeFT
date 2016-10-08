@@ -169,10 +169,11 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 	float3 origin = project(box.center(), plane);
 	float3 other = project(box.min, plane);
 	if(distanceSq(other, origin) < constant::epsilon) {
-		float3 corners[8];
-		box.getCorners(corners);
-		for(int n = 0; n < arraySize(corners) && distanceSq(other, origin) < constant::epsilon; n++)
-			other = project(corners[n], plane);
+		for(auto corner : box.corners()) {
+			other = project(corner, plane);
+			if(distanceSq(other, origin) >= constant::epsilon)
+				break;
+		}
 	}
 
 	if(distanceSq(other, origin) < constant::epsilon)
@@ -280,11 +281,8 @@ float intersection(const Interval idir[3], const Interval origin[3], const Box<f
 }
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const FBox &box) {
-	float3 corners[8];
-	box.getCorners(corners);
-
-	for(int n = 0; n < arraySize(corners); n++) {
-		float3 cvector = corners[n] - eye_pos;
+	for(auto corner : box.corners()) {
+		float3 cvector = corner - eye_pos;
 		float len = length(cvector);
 
 		if(dot(cvector, eye_dir) >= min_dot * len)
@@ -292,6 +290,22 @@ bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot
 	}
 
 	return false;
+}
+
+const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle) {
+	auto corners = box.corners();
+	float2 xz_origin = origin.xz();
+
+	for(auto &corner : corners)
+		corner = asXZY(rotateVector(corner.xz() - xz_origin, angle) + xz_origin, corner.y);
+
+	Box<float3> out(corners[0], corners[0]);
+	for(auto corner : corners) {
+		out.min = min(out.min, corner);
+		out.max = max(out.max, corner);
+	}
+
+	return out;
 }
 
 #include "game/tile.h"
