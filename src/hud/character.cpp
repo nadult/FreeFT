@@ -74,7 +74,7 @@ namespace hud {
 		for(auto &icon : m_icons)
 			m_races.emplace_back(icon.first);
 		std::sort(m_races.begin(), m_races.end());
-		m_races.resize(unique(m_races.begin(), m_races.end()) - m_races.begin());
+		m_races.resize(std::unique(m_races.begin(), m_races.end()) - m_races.begin());
 
 		attach(m_icon_box);
 		attach(m_name_edit_box);

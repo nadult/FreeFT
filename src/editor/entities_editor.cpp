@@ -12,7 +12,6 @@
 #include "game/tile.h"
 #include "game/trigger.h"
 #include <algorithm>
-#include <cstdlib>
 #include <set>
 
 using namespace game;
@@ -295,7 +294,7 @@ namespace ui {
 				}
 			}
 
-			sort(visible_ids.begin(), visible_ids.end());
+			std::sort(visible_ids.begin(), visible_ids.end());
 			visible_ids.resize(std::unique(visible_ids.begin(), visible_ids.end()) - visible_ids.begin());
 		
 			for(int n = 0; n < (int)visible_ids.size(); n++) {

@@ -72,7 +72,7 @@ private:
 	vector<PathNode> findPath(const int2 &start, const int2 &end, int start_id, int end_id, bool do_refining,
 								int filter_collider) const;
 	
-	const int findSector(const int2 &xz) { return xz.x / sector_size + xz.y / sector_size * m_size.x; }
+	int findSector(const int2 &xz) const { return xz.x / sector_size + xz.y / sector_size * m_size.x; }
 
 	void extractQuads(const PodArray<u8>&, const int2 &bsize, int sx, int sy);
 	void addAdjacencyInfo(int target_id, int src_id);

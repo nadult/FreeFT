@@ -4,7 +4,6 @@
  */
 
 #include "base.h"
-#include <cstdlib>
 
 enum {
 	// TODO: tune-able parameters?

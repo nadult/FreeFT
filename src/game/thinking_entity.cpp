@@ -101,6 +101,7 @@ namespace game {
 				}
 				else {
 					m_order = std::move(m_following_orders.front());
+					DASSERT(!m_following_orders.empty());
 					m_following_orders.erase(m_following_orders.begin());
 				}
 			}

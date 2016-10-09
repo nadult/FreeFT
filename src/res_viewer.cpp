@@ -355,7 +355,7 @@ class ResViewerWindow : public Window {
 
 		m_entries = findFiles(m_current_dir, FindFiles::regular_file | FindFiles::directory |
 												 FindFiles::relative | FindFiles::include_parent);
-		sort(m_entries.begin(), m_entries.end());
+		std::sort(m_entries.begin(), m_entries.end());
 		vector<string> names;
 
 		for(auto entry : m_entries) {

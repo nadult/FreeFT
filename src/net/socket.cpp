@@ -19,7 +19,6 @@ typedef int socklen_t;
 #endif
 
 #include "net/socket.h"
-#include <cstdlib>
 #include <unistd.h>
 
 //#define RELIABILITY_TEST

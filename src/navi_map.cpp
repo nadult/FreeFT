@@ -680,7 +680,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 		filter_collider = -2;
 
 	if(start_id == -1 || end_id == -1) //TODO: info that path not found
-		return std::move(out);
+		return out;
 
 	int is_initialized[((int)m_quads.size() + 31) / 32];
 	memset(is_initialized, 0, ((int)m_quads.size() + 31) / 32);
@@ -760,7 +760,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 	}
 
 	if(!end_reached)
-		return std::move(out);
+		return out;
 
 	out.push_back(PathNode{end, end_id});
 	for(int quad_id = end_id; quad_id != -1; quad_id = data[quad_id].src_quad) {
@@ -802,7 +802,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 		}
 	}
 
-	return std::move(out);
+	return out;
 }
 
 bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, int filter_collider) const {

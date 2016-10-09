@@ -8,6 +8,8 @@
 
 #include "fwk.h"
 
+using namespace fwk;
+
 namespace fwk {
 
 template <class T>

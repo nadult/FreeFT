@@ -11,7 +11,6 @@
 #include "game/tile.h"
 #include "game/tile_map.h"
 #include <algorithm>
-#include <cstdlib>
 
 using namespace gfx;
 using namespace game;
@@ -116,7 +115,7 @@ namespace ui {
 	void TilesEditor::removeAll(const IBox &box) {
 		vector<int> colliders;
 		m_tile_map.findAll(colliders, (FBox)box);
-		sort(colliders.begin(), colliders.end());
+		std::sort(colliders.begin(), colliders.end());
 
 		vector<int> new_selection(m_selected_ids.size());
 		vector<int>::iterator end_it = std::set_difference(m_selected_ids.begin(), m_selected_ids.end(),
@@ -293,13 +292,13 @@ namespace ui {
 
 						vector<int>::iterator end_it;
 						if(m_mode == mode_selecting_union)
-							end_it = set_union(m_selected_ids.begin(), m_selected_ids.end(),
+							end_it = std::set_union(m_selected_ids.begin(), m_selected_ids.end(),
 									new_ids.begin(), new_ids.end(), out.begin());
 						else if(m_mode == mode_selecting_intersection)
-							end_it = set_intersection(m_selected_ids.begin(), m_selected_ids.end(),
+							end_it = std::set_intersection(m_selected_ids.begin(), m_selected_ids.end(),
 									new_ids.begin(), new_ids.end(), out.begin());
 						else if(m_mode == mode_selecting_difference)
-							end_it = set_difference(m_selected_ids.begin(), m_selected_ids.end(),
+							end_it = std::set_difference(m_selected_ids.begin(), m_selected_ids.end(),
 									new_ids.begin(), new_ids.end(), out.begin());
 						out.resize(end_it - out.begin());
 						m_selected_ids = out;
@@ -354,7 +353,7 @@ namespace ui {
 						cancel = true;
 				}
 
-				sort(temp.begin(), temp.end());
+				std::sort(temp.begin(), temp.end());
 				temp.resize(std::unique(temp.begin(), temp.end()) - temp.begin());
 				temp.resize(std::set_difference(temp.begin(), temp.end(), m_selected_ids.begin(), m_selected_ids.end(), temp.begin()) - temp.begin());
 
@@ -403,7 +402,7 @@ namespace ui {
 			visible_ids.reserve(1024 * 8);
 			m_tile_map.findAll(visible_ids, renderer.targetRect(), Flags::all | Flags::visible);
 
-			sort(visible_ids.begin(), visible_ids.end());
+			std::sort(visible_ids.begin(), visible_ids.end());
 			visible_ids.resize(
 				std::set_difference(visible_ids.begin(), visible_ids.end(), m_selected_ids.begin(), m_selected_ids.end(), visible_ids.begin())
 				- visible_ids.begin());
@@ -479,7 +478,7 @@ namespace ui {
 
 				vector<int> temp;
 				m_tile_map.findAll(temp, object.bbox, m_selected_ids[i]);
-				sort(temp.begin(), temp.end());
+				std::sort(temp.begin(), temp.end());
 				temp.resize(std::set_difference(temp.begin(), temp.end(), m_selected_ids.begin(), m_selected_ids.end(), temp.begin()) - temp.begin());
 
 				Color color = !temp.empty()? ColorId::red : ColorId::white;

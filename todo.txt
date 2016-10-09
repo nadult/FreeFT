@@ -1,6 +1,8 @@
 - DOWNSCALE, remove unnecessary features
 - use unique_ptr in UI & HUD
 - use FColor instead of Color (unless it's being sent or stored, where memory matters)
+- Problem when connecting client (getLobbyData)
+- for(auto i : index(vec))
 
 Must-have: ----------------------------------------------------------------------------------------
 
