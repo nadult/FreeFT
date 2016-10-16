@@ -225,6 +225,7 @@ namespace net {
 
 			if(id == LobbyChunkId::join_request && target.isValid()) {
 				OutPacket punch(0, -1, -1, PacketInfo::flag_lobby);
+				punch << LobbyChunkId::punch_through;
 				m_socket.send(punch, target);
 			}
 		}

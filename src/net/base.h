@@ -84,7 +84,8 @@ namespace net {
 		server_down,
 		server_list,
 		server_list_request, // TODO: filters
-		join_request
+		join_request,
+		punch_through
 	);
 
 	DEFINE_ENUM(RefuseReason,
