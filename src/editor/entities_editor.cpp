@@ -80,7 +80,7 @@ namespace ui {
 		start += m_view.pos();
 		  end += m_view.pos();
 
-		Ray ray = screenRay(start);
+		Ray3F ray = screenRay(start);
 
 		FlagsType flags = Flags::all;
 		if(floor_mode)

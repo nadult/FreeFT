@@ -84,7 +84,7 @@ namespace ui {
 
 		OccluderMap &occmap = m_tile_map.occluderMap();
 		int2 screen_pos = mouse_pos + m_view.pos();
-		Ray screen_ray = screenRay(screen_pos);
+		Ray3F screen_ray = screenRay(screen_pos);
 		
 		m_mouseover_tile_id = m_tile_map.pixelIntersect(screen_pos, Flags::all | Flags::visible);
 		if(m_mouseover_tile_id == -1)

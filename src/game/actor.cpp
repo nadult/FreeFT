@@ -461,11 +461,11 @@ namespace game {
 
 		auto seg = computeBestShootingRay(target_box, weapon);
 		DASSERT(!seg.empty());
-		Ray best_ray = *seg.asRay();
+		Ray3F best_ray = *seg.asRay();
 
 		if(randomness > 0.0f) {
 			float3 dir = normalize(perturbVector(best_ray.dir(), random(), random(), randomness));
-			best_ray = Ray(best_ray.origin(), dir);
+			best_ray = Ray3F(best_ray.origin(), dir);
 		}
 
 #ifdef DEBUG_SHOOTING

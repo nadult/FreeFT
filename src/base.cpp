@@ -168,38 +168,38 @@ MoveVector::MoveVector() : vec(0, 0), dx(0), dy(0), ddiag(0) {}
  *
  */
 
-const float2 worldToScreen(const float3 &pos) {
+float2 worldToScreen(const float3 &pos) {
 	return float2(6.0f * (pos.x - pos.z), 3.0f * (pos.x + pos.z) - 7.0f * pos.y);
 	//	7.0f * (pos.x + pos.z) + 6.0f * pos.y);
 }
 
-const int2 worldToScreen(const int3 &pos) {
+int2 worldToScreen(const int3 &pos) {
 	return int2(6 * (pos.x - pos.z), 3 * (pos.x + pos.z) - 7 * pos.y);
 	//	7 * (pos.x + pos.z) - 6 * pos.y);
 }
 
-const float2 screenToWorld(const float2 &pos) {
+float2 screenToWorld(const float2 &pos) {
 	float x = pos.x * (1.0f / 12.0f);
 	float y = pos.y * (1.0f / 6.0f);
 
 	return float2(y + x, y - x);
 }
 
-const int2 screenToWorld(const int2 &pos) {
+int2 screenToWorld(const int2 &pos) {
 	int x = pos.x / 12;
 	int y = pos.y / 6;
 
 	return int2(y + x, y - x);
 }
 
-const Ray screenRay(const int2 &screen_pos) {
+Ray3F screenRay(const int2 &screen_pos) {
 	float3 origin = asXZ(screenToWorld((float2)screen_pos));
 	float3 dir = float3(-1.0f / 6.0f, -1.0f / 7.0f, -1.0f / 6.0f);
-	return Ray(origin - dir * 1024.0f, dir / length(dir));
+	return Ray3F(origin - dir * 1024.0f, dir / length(dir));
 }
 
-const float3 project(const float3 &point, const Plane &plane) {
-	float dist = dot(point, plane.normal()) - plane.distance();
+float3 project(const float3 &point, const Plane3F &plane) {
+	float dist = dot(point, plane.normal()) - plane.distance0();
 	return point - plane.normal() * dist;
 }
 
@@ -211,7 +211,7 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 		return {box.center()};
 
 	float radius = distance(box.center(), box.min());
-	Plane plane(dir, box.center() + dir * radius);
+	Plane3F plane(dir, box.center() + dir * radius);
 
 	float3 origin = project(box.center(), plane);
 	float3 other = project(box.min(), plane);
@@ -238,7 +238,7 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 			float3 point =
 				origin + (px * (float(x) * mult - 0.5f) + pz * (float(z) * mult - 0.5f)) * radius;
 
-			float isect = isectDist(Ray(point + dir, -dir), box);
+			float isect = isectDist(Ray3F(point + dir, -dir), box);
 			if(isect < fconstant::inf)
 				out.push_back(outside ? point : point - dir * (isect - 1.0f));
 		}
@@ -276,51 +276,51 @@ float3 perturbVector(const float3 &v1, float rand1, float rand2, float strength)
 	return v1 * dir.x + v2 * dir.y + v3 * dir.z;
 }
 
-Interval Interval::operator*(const Interval &rhs) const {
+IntervalF IntervalF::operator*(const IntervalF &rhs) const {
 	float a = min * rhs.min, b = min * rhs.max;
 	float c = max * rhs.min, d = max * rhs.max;
 
-	return Interval(fwk::min(fwk::min(a, b), fwk::min(c, d)),
+	return IntervalF(fwk::min(fwk::min(a, b), fwk::min(c, d)),
 					fwk::max(fwk::max(a, b), fwk::max(c, d)));
 }
 
-Interval Interval::operator*(float val) const {
+IntervalF IntervalF::operator*(float val) const {
 	float tmin = min * val, tmax = max * val;
-	return val < 0 ? Interval(tmax, tmin) : Interval(tmin, tmax);
+	return val < 0 ? IntervalF(tmax, tmin) : IntervalF(tmin, tmax);
 }
 
-Interval abs(const Interval &value) {
+IntervalF abs(const IntervalF &value) {
 	if(value.min < 0.0f)
-		return value.max < 0.0f ? Interval(-value.max, -value.min)
-								: Interval(0.0f, max(-value.min, value.max));
+		return value.max < 0.0f ? IntervalF(-value.max, -value.min)
+								: IntervalF(0.0f, max(-value.min, value.max));
 	return value;
 }
 
-Interval floor(const Interval &value) { return Interval(floorf(value.min), floorf(value.max)); }
+IntervalF floor(const IntervalF &value) { return IntervalF(floorf(value.min), floorf(value.max)); }
 
-Interval min(const Interval &lhs, const Interval &rhs) {
-	return Interval(min(lhs.min, rhs.min), min(lhs.max, rhs.max));
+IntervalF min(const IntervalF &lhs, const IntervalF &rhs) {
+	return IntervalF(min(lhs.min, rhs.min), min(lhs.max, rhs.max));
 }
 
-Interval max(const Interval &lhs, const Interval &rhs) {
-	return Interval(max(lhs.min, rhs.min), max(lhs.max, rhs.max));
+IntervalF max(const IntervalF &lhs, const IntervalF &rhs) {
+	return IntervalF(max(lhs.min, rhs.min), max(lhs.max, rhs.max));
 }
 
-float intersection(const Interval idir[3], const Interval origin[3], const Box<float3> &box) {
-	Interval l1, l2, lmin, lmax;
+float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box<float3> &box) {
+	IntervalF l1, l2, lmin, lmax;
 
-	l1 = idir[0] * (Interval(box.x()) - origin[0]);
-	l2 = idir[0] * (Interval(box.ex()) - origin[0]);
+	l1 = idir[0] * (IntervalF(box.x()) - origin[0]);
+	l2 = idir[0] * (IntervalF(box.ex()) - origin[0]);
 	lmin = min(l1, l2);
 	lmax = max(l1, l2);
 
-	l1 = idir[1] * (Interval(box.y()) - origin[1]);
-	l2 = idir[1] * (Interval(box.ey()) - origin[1]);
+	l1 = idir[1] * (IntervalF(box.y()) - origin[1]);
+	l2 = idir[1] * (IntervalF(box.ey()) - origin[1]);
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
-	l1 = idir[2] * (Interval(box.z()) - origin[2]);
-	l2 = idir[2] * (Interval(box.ez()) - origin[2]);
+	l1 = idir[2] * (IntervalF(box.z()) - origin[2]);
+	l2 = idir[2] * (IntervalF(box.ez()) - origin[2]);
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 

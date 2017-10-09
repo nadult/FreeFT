@@ -60,7 +60,7 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 	clearDisables();
 }
 
-pair<int, float> Grid::trace(const Ray &ray, int ignored_id, int flags) const {
+pair<int, float> Grid::trace(const Ray3F &ray, int ignored_id, int flags) const {
 	float tmin = max(0.0f, isectDist(ray, m_bounding_box));
 	float tmax = -isectDist(negate(ray), m_bounding_box);
 	return trace(ray, tmin, tmax, ignored_id, flags);
@@ -72,7 +72,7 @@ pair<int, float> Grid::trace(const Segment3F &segment, int ignored_id, int flags
 	return trace(*segment.asRay(), tmin, tmax, ignored_id, flags);
 }
 	
-pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored_id, int flags) const {
+pair<int, float> Grid::trace(const Ray3F &ray, float tmin, float tmax, int ignored_id, int flags) const {
 	float3 p1 = ray.at(tmin), p2 = ray.at(tmax);
 	int2 pos = worldToGrid((int2)p1.xz()), end = worldToGrid((int2)p2.xz());
 	
@@ -167,7 +167,7 @@ void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, flo
 	}
 
 	float max_dist = -fconstant::inf;
-	Interval idir[3], origin[3]; {
+	IntervalF idir[3], origin[3]; {
 		auto first = *segments.front().asRay();
 		auto first_idir = first.invDir();
 
@@ -184,8 +184,8 @@ void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, flo
 
 			max_dist = max(max_dist, segment.length());
 			for(int i = 0; i < 3; i++) {
-				idir  [i] = Interval(min(idir  [i].min, tidir  [i]), max(idir  [i].max, tidir  [i]));
-				origin[i] = Interval(min(origin[i].min, torigin[i]), max(origin[i].max, torigin[i]));
+				idir  [i] = IntervalF(min(idir  [i].min, tidir  [i]), max(idir  [i].max, tidir  [i]));
+				origin[i] = IntervalF(min(origin[i].min, torigin[i]), max(origin[i].max, torigin[i]));
 			}
 		}
 	}

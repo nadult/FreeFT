@@ -287,7 +287,7 @@ namespace game {
 
 				auto sray = *segment.asRay();
 				auto dir = normalize(perturbVector(sray.dir(), float(x) * mul, float(y) *mul, inaccuracy));
-				Ray ray(sray.origin(), dir);
+				Ray3F ray(sray.origin(), dir);
 				float dist = isectDist(ray, target_bbox);
 				if(dist < fconstant::inf)
 					segments.push_back(Segment3F(ray.origin(), ray.at(dist)));

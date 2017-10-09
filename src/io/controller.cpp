@@ -215,7 +215,7 @@ namespace io {
 			audio::setListener(actor->pos(), actor->estimateMove(1.0f),
 							   normalize(float3(-1, 0, -1)));
 		else {
-			Ray mid_ray = screenRay(m_view_pos + resolution / 2);
+			Ray3F mid_ray = screenRay(m_view_pos + resolution / 2);
 			auto isect = m_world->trace(Segment3F(mid_ray.origin(), mid_ray.at(1024.0f)));
 			if(isect) {
 				float3 listener_pos = mid_ray.at(isect.distance());

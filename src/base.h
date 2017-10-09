@@ -13,16 +13,16 @@ using namespace fwk;
 
 using Segment3F = Segment<float, 3>;
 
-inline Ray negate(const Ray &rhs) {
+inline Ray3F negate(const Ray3F &rhs) {
 	return {rhs.origin(), -rhs.dir()};
 }
 
-inline float isectDist(const Ray &ray, const Box<float3> &box) {
-	return intersectionRange(ray, box).first;
+inline float isectDist(const Ray3F &ray, const Box<float3> &box) {
+	return ray.isectParam(box).closest();
 }
 
 inline float isectDist(const Segment3<float> &segment, const Box<float3> &box) {
-	return intersectionRange(segment, box).first * segment.length();
+	return segment.isectParam(box).closest() * segment.length();
 }
 
 float distance(const Box<float3> &a, const Box<float3> &b);
@@ -143,14 +143,14 @@ template <class T> class ClonablePtr : public unique_ptr<T> {
 	}
 };
 
-const float2 worldToScreen(const float3 &pos);
-const int2 worldToScreen(const int3 &pos);
+float2 worldToScreen(const float3 &pos);
+int2 worldToScreen(const int3 &pos);
 
-const float2 screenToWorld(const float2 &pos);
-const int2 screenToWorld(const int2 &pos);
+float2 screenToWorld(const float2 &pos);
+int2 screenToWorld(const int2 &pos);
 
-const Ray screenRay(const int2 &screen_pos);
-const float3 project(const float3 &point, const Plane &plane);
+Ray3F screenRay(const int2 &screen_pos);
+float3 project(const float3 &point, const Plane3F &plane);
 
 template <class Type3> const Box<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
 	typedef decltype(Type3().xy()) Type2;
@@ -164,35 +164,35 @@ template <class Type3> const Box<decltype(Type3().xy())> worldToScreen(const Box
 
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }
 
-// Plane touches the sphere which encloses the box
+// Plane3F touches the sphere which encloses the box
 vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density, bool outside);
 vector<float3> genPoints(const FBox &bbox, int density);
 
 void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3);
 float3 perturbVector(const float3 &vec, float rand1, float rand2, float strength);
 
-struct Interval {
-	Interval(float value) :min(value), max(value) { }
-	Interval(float min, float max) :min(min), max(max) { }
-	Interval() { }
+struct IntervalF {
+	IntervalF(float value) :min(value), max(value) { }
+	IntervalF(float min, float max) :min(min), max(max) { }
+	IntervalF() { }
 
-	Interval operator+(const Interval &rhs) const { return Interval(min + rhs.min, max + rhs.max); }
-	Interval operator-(const Interval &rhs) const { return Interval(min - rhs.max, max - rhs.min); }
-	Interval operator*(const Interval &rhs) const;
-	Interval operator*(float) const;
-	Interval operator/(float val) const { return operator*(1.0f / val); }
+	IntervalF operator+(const IntervalF &rhs) const { return IntervalF(min + rhs.min, max + rhs.max); }
+	IntervalF operator-(const IntervalF &rhs) const { return IntervalF(min - rhs.max, max - rhs.min); }
+	IntervalF operator*(const IntervalF &rhs) const;
+	IntervalF operator*(float) const;
+	IntervalF operator/(float val) const { return operator*(1.0f / val); }
 
 	bool isValid() const { return min <= max; }
 	
 	float min, max;
 };
 
-Interval abs(const Interval&);
-Interval floor(const Interval&);
-Interval min(const Interval&, const Interval&);
-Interval max(const Interval&, const Interval&);
+IntervalF abs(const IntervalF&);
+IntervalF floor(const IntervalF&);
+IntervalF min(const IntervalF&, const IntervalF&);
+IntervalF max(const IntervalF&, const IntervalF&);
 
-float intersection(const Interval idir[3], const Interval origin[3], const Box<float3> &box);
+float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box<float3> &box);
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
 

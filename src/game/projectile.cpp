@@ -65,7 +65,7 @@ namespace game {
 		float time_delta = timeDelta();
 		//TODO: position in the middle of bbox?
 		
-		Ray ray(pos(), m_dir);
+		Ray3F ray(pos(), m_dir);
 		float ray_pos = m_speed * time_delta;
 
 		if(m_speed == 0.0f) {

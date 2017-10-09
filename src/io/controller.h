@@ -73,7 +73,7 @@ namespace io {
 		bool m_debug_ai, m_debug_navi;
 		bool m_show_debug_info;
 
-		Ray m_screen_ray;
+		Ray3F m_screen_ray;
 		game::Intersection m_isect, m_full_isect;
 		float3 m_target_pos, m_last_look_at;
 		game::Path m_last_path;
