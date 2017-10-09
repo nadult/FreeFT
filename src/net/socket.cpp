@@ -84,7 +84,7 @@ namespace net {
 
 		decomposeIp(ip, elems);
 		sprintf(buf, "%d.%d.%d.%d:%d", (int)elems[0], (int)elems[1], (int)elems[2], (int)elems[3], (int)port);
-		return std::move(string(buf));
+		return string(buf);
 	}
 
 	Socket::Socket(const Address &address) {

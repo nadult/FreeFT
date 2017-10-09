@@ -278,7 +278,7 @@ namespace game {
 		}
 
 		for(auto w : all<WeaponClass>())
-			for(auto s = Stance::prone; s <= Stance::crouch; s = enumNext(s))
+			for(auto s = Stance::prone; s <= Stance::crouch; s = next(s))
 			if(m_normal_idx[Action::walk][s][w] == invalid_id)
 				m_normal_idx[Action::walk][s][w] = m_normal_idx[Action::walk][s][WeaponClass::unarmed];
 

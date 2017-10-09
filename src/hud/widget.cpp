@@ -114,7 +114,7 @@ namespace hud {
 			}
 		}
 
-		return std::move(out);
+		return out;
 	}
 		
 	void HudWidget::attach(PHudWidget child) {
