@@ -101,7 +101,7 @@ namespace ui
 		for(int n = 0; n < (int)m_entries.size(); n++) {
 			const Entry &entry = m_entries[n];
 
-			if(IRect(entry.pos, entry.pos + entry.size).isInside(pos))
+			if(IRect(entry.pos, entry.pos + entry.size).containsPixel(pos))
 				return &m_entries[n];
 		}
 

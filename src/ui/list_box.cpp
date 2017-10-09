@@ -23,7 +23,7 @@ namespace ui {
 			const Entry &entry = m_entries[n];
 			IRect rect = entryRect(n) - offset;
 
-			out.addLine(int2(rect.min.x, rect.max.y), rect.max, WindowStyle::gui_medium);
+			out.addLine(int2(rect.x(), rect.ey()), rect.max(), WindowStyle::gui_medium);
 
 			FColor col = ColorId::transparent;
 			
@@ -58,7 +58,7 @@ namespace ui {
 		pos += innerOffset();
 
 		for(int n = vis_entries.x; n < vis_entries.y; n++)
-			if(entryRect(n).isInside(pos))
+			if(entryRect(n).containsPixel(pos))
 				return n;
 		return -1;
 	}
@@ -73,7 +73,7 @@ namespace ui {
 	}
 
 	void ListBox::onInput(const InputState &state) {
-		m_over_id = entryId(state.mousePos() - clippedRect().min);
+		m_over_id = entryId(state.mousePos() - clippedRect().min());
 	}
 
 	bool ListBox::onMouseDrag(const InputState&, int2 start, int2 end, int key, int is_final) {
@@ -82,7 +82,7 @@ namespace ui {
 			m_dragging_id = entryId(start);
 
 			if(is_final == 1 && m_over_id == m_dragging_id) {
-				bool do_select = localRect().isInside(end) && (!isPopup() || (m_over_id >= 0 && m_over_id < size()));
+				bool do_select = localRect().containsPixel(end) && (!isPopup() || (m_over_id >= 0 && m_over_id < size()));
 
 				if(do_select)
 					selectEntry(m_over_id);

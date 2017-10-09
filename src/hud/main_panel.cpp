@@ -58,14 +58,14 @@ namespace hud {
 		char_rect += bottom_left - float2(0, char_rect.height());
 
 		FRect weapon_rect(s_hud_weapon_size);
-		weapon_rect += float2(char_rect.max.x + spacing, bottom_left.y - weapon_rect.height());
+		weapon_rect += float2(char_rect.ex() + spacing, bottom_left.y - weapon_rect.height());
 
 		m_hud_char_icon = make_shared<HudCharIcon>(char_rect);
 		m_hud_weapon = make_shared<HudWeapon>(weapon_rect);
 
 		{
 			FRect stance_rect(s_hud_stance_size);
-			stance_rect += float2(weapon_rect.max.x + spacing, bottom_left.y - s_hud_stance_size.y);
+			stance_rect += float2(weapon_rect.ex() + spacing, bottom_left.y - s_hud_stance_size.y);
 
 			for(int n = 0; n < arraySize(s_stance_buttons); n++) {
 				PHudButton stance(new HudRadioButton(stance_rect, (int)s_stance_buttons[n].stance_id, 1));
@@ -78,7 +78,7 @@ namespace hud {
 
 		{
 			FRect button_rect = align(FRect(s_hud_button_size), char_rect, align_top, spacing);
-			button_rect += float2(char_rect.min.x - button_rect.min.x, 0.0f);
+			button_rect += float2(char_rect.x() - button_rect.x(), 0.0f);
 
 			for(int n = 0; n < arraySize(s_buttons); n++) {
 				PHudButton button(new HudToggleButton(button_rect, s_buttons[n].layer_id));

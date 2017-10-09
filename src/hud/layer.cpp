@@ -34,9 +34,9 @@ namespace hud {
 		FRect out = m_rect;
 
 		if(m_slide_mode == slide_left)
-			out -= float2((1.0f - m_visible_time) * (m_rect.max.x + 5.0f), 0.0f);
+			out -= float2((1.0f - m_visible_time) * (m_rect.ex() + 5.0f), 0.0f);
 		else if(m_slide_mode == slide_top)
-			out -= float2(0.0f, (1.0f - m_visible_time) * (m_rect.max.y + 5.0f));
+			out -= float2(0.0f, (1.0f - m_visible_time) * (m_rect.ey() + 5.0f));
 
 		return out;
 	}
@@ -73,7 +73,7 @@ namespace hud {
 		drawBorder(out, rect, borderColor(), float2(0, 0), 100.0f);
 
 		if(!m_title.empty()) {
-			FRect font_rect = inset(rect, float2(spacing, layer_spacing));
+			FRect font_rect = rect.inset(float2(spacing, layer_spacing));
 			m_big_font->draw(out, font_rect, {titleColor(), titleShadowColor()}, m_title);
 		}
 	}

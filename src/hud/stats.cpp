@@ -17,12 +17,12 @@ namespace hud {
 		:HudLayer(target_rect) {
 		setTitle("Statistics:");
 
-		FRect subRect(rect().size());
-		subRect.min.y += topOffset();
-		subRect = inset(subRect, float2(layer_spacing, layer_spacing));
-		subRect.setHeight(300.0f);
+		FRect sub_rect(rect().size());
+		sub_rect = {{sub_rect.x(), sub_rect.y() + topOffset()}, sub_rect.max()};
+		sub_rect = sub_rect.inset(float2(layer_spacing, layer_spacing));
+		sub_rect = {sub_rect.min(), {sub_rect.ex(), sub_rect.y() + 300.0f}};
 
-		m_grid = make_shared<HudGrid>(subRect);
+		m_grid = make_shared<HudGrid>(sub_rect);
 		m_grid->addColumn("Nick name", 120.0f);
 		m_grid->addColumn("Kills", 40.0f);
 		m_grid->addColumn("Deaths", 40.0f);

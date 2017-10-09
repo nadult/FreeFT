@@ -125,10 +125,10 @@ namespace game
 	}
 
 	bool Sprite::MultiImage::testPixel(const int2 &screen_pos) const {
-		if(!rect.isInside(screen_pos))
+		if(!rect.containsPixel(screen_pos))
 			return false;
 		for(int l = 0; l < layer_count; l++)
-			if(images[l].testPixel(screen_pos - points[l] - rect.min))
+			if(images[l].testPixel(screen_pos - points[l] - rect.min()))
 				return true;
 		return false;
 	}
@@ -208,7 +208,7 @@ namespace game
 
 		IRect out = m_images[0].rect;
 		for(int n = 1; n < (int)m_images.size(); n++)
-			out = sum(out, m_images[n].rect);
+			out = enclose(out, m_images[n].rect);
 		m_max_rect = out - m_offset;
 	}
 		

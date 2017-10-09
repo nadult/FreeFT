@@ -10,7 +10,6 @@
 
 using namespace fwk;
 
-namespace fwk {
 
 using Segment3F = Segment<float, 3>;
 
@@ -26,9 +25,19 @@ inline float isectDist(const Segment3<float> &segment, const Box<float3> &box) {
 	return intersectionRange(segment, box).first * segment.length();
 }
 
+float distance(const Box<float3> &a, const Box<float3> &b);
+float distanceSq(const FRect &a, const FRect &b);
+bool areAdjacent(const IRect &a, const IRect &b);
+bool areOverlapping(const IBox &a, const IBox &b);
+bool areOverlapping(const FBox &a, const FBox &b);
+bool areOverlapping(const IRect &a, const IRect &b);
+bool areOverlapping(const FRect &a, const FRect &b);
+
 // These can be used to look for wrong uses of min & max on vectors
 //template <class T, class X = EnableIfVector<T, T>> T max(T a, T b) { static_assert(sizeof(T) == 0, ""); return a; }
 //template <class T, class X = EnableIfVector<T, T>> T min(T a, T b) { static_assert(sizeof(T) == 0, ""); return b; }
+
+namespace fwk {
 
 template <class T>
 void loadFromStream(Maybe<T> &obj, Stream &sr) {
@@ -53,7 +62,7 @@ void saveToStream(const Maybe<T> &obj, Stream &sr) {
 
 // TODO: validation of data from files / net / etc.
 // TODO: serialization of enum should automatically verify the enum
-template <class T> auto validEnum(T value) -> typename std::enable_if<IsEnum<T>::value, bool>::type {
+template <class T, EnableIfEnum<T>...> bool validEnum(T value) {
 	return (int)value >= 0 && (int)value < count<T>();
 }
 
@@ -101,15 +110,15 @@ struct MoveVector {
 template <class Type3> int drawingOrder(const Box<Type3> &a, const Box<Type3> &b) {
 	// DASSERT(!areOverlapping(box, box));
 
-	int y_ret = a.max.y <= b.min.y ? -1 : b.max.y <= a.min.y ? 1 : 0;
+	int y_ret = a.ey() <= b.y() ? -1 : b.ey() <= a.y() ? 1 : 0;
 	if(y_ret)
 		return y_ret;
 
-	int x_ret = a.max.x <= b.min.x ? -1 : b.max.x <= a.min.x ? 1 : 0;
+	int x_ret = a.ex() <= b.x() ? -1 : b.ex() <= a.x() ? 1 : 0;
 	if(x_ret)
 		return x_ret;
 
-	int z_ret = a.max.z <= b.min.z ? -1 : b.max.z <= a.min.z ? 1 : 0;
+	int z_ret = a.ez() <= b.z() ? -1 : b.ez() <= a.z() ? 1 : 0;
 	return z_ret;
 }
 
@@ -143,14 +152,14 @@ const int2 screenToWorld(const int2 &pos);
 const Ray screenRay(const int2 &screen_pos);
 const float3 project(const float3 &point, const Plane &plane);
 
-template <class Type3> const Rect<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
+template <class Type3> const Box<decltype(Type3().xy())> worldToScreen(const Box<Type3> &bbox) {
 	typedef decltype(Type3().xy()) Type2;
-	Type2 corners[4] = {worldToScreen(Type3(bbox.max.x, bbox.min.y, bbox.min.z)),
-						worldToScreen(Type3(bbox.min.x, bbox.min.y, bbox.max.z)),
-						worldToScreen(Type3(bbox.max.x, bbox.min.y, bbox.max.z)),
-						worldToScreen(Type3(bbox.min.x, bbox.max.y, bbox.min.z))};
+	Type2 corners[4] = {worldToScreen(Type3(bbox.ex(), bbox.y(), bbox.z())),
+						worldToScreen(Type3(bbox.x(), bbox.y(), bbox.ez())),
+						worldToScreen(Type3(bbox.ex(), bbox.y(), bbox.ez())),
+						worldToScreen(Type3(bbox.x(), bbox.ey(), bbox.z()))};
 
-	return Rect<Type2>(corners[1].x, corners[3].y, corners[0].x, corners[2].y);
+	return {corners[1].x, corners[3].y, corners[0].x, corners[2].y};
 }
 
 inline float2 worldToScreen(const float2 &pos) { return worldToScreen(float3(pos.x, 0.0f, pos.y)); }

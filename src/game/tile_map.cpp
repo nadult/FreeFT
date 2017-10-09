@@ -61,7 +61,7 @@ namespace game {
 	int TileMap::pixelIntersect(const int2 &pos, FlagsType flags) const {
 		return Grid::pixelIntersect(pos,
 			[](const Grid::ObjectDef &object, const int2 &pos)
-				{ return ((const Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min)); },
+				{ return ((const Tile*)object.ptr)->testPixel(pos - worldToScreen((int3)object.bbox.min())); },
 			   flags);
 	}
 
@@ -109,7 +109,7 @@ namespace game {
 
 			int cmp = strcmp(obj1.ptr->resourceName().c_str(), obj2.ptr->resourceName().c_str());
 			if(cmp == 0) {
-				const float3 p1 = obj1.bbox.min, p2 = obj2.bbox.min;
+				const float3 p1 = obj1.bbox.min(), p2 = obj2.bbox.min();
 				return p1.x == p2.x? p1.y == p2.y? p1.z < p2.z : p1.y < p2.y : p1.x < p2.x;
 			}
 
@@ -135,7 +135,7 @@ namespace game {
 			}
 
 			XMLNode instance = tile_node.addChild("i");
-			instance.addAttrib("pos", int3(object.bbox.min));
+			instance.addAttrib("pos", int3(object.bbox.min()));
 		}
 
 		m_occluder_map.saveToXML(tile_ids, doc);

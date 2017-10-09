@@ -23,24 +23,22 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 	PodArray<IBox> bboxes(walkable.size());
 	for(int n = 0; n < bboxes.size(); n++) {
 		IBox bbox = walkable[n];
-		bbox.min = vmax(bbox.min, int3(0, 0, 0));
-		bbox.max = vmin(bbox.max, int3(m_size.x, 255, m_size.y));
-		bboxes[n] = bbox;
+		bboxes[n] = { vmax(bbox.min(), int3(0, 0, 0)), vmin(bbox.max(), int3(m_size.x, 255, m_size.y))};
 	}
 
 	std::sort(bboxes.data(), bboxes.end(), [](const IBox &a, const IBox &b)
-		{ return a.min.y == b.min.y? a.min.x == b.min.x?
-			a.min.z < b.min.z : a.min.x < b.min.x : a.min.y < b.min.y; } );
+		{ return a.y() == b.y()? a.x() == b.x()?
+			a.z() < b.z() : a.x() < b.x() : a.y() < b.y(); } );
 		
 	for(int n = 0; n < bboxes.size(); n++) {
 		const IBox &bbox = bboxes[n];
-		int min_y = bbox.min.y, max_y = bbox.max.y;
+		int min_y = bbox.y(), max_y = bbox.ey();
 
 		for(int z = 0; z < bbox.depth(); z++)
 			for(int x = 0; x < bbox.width(); x++) {
 				int level = 0;
-				int px = x + bbox.min.x;
-				int pz = z + bbox.min.z;
+				int px = x + bbox.x();
+				int pz = z + bbox.z();
 
 				while(level < m_level_count) {
 					int value = m_data[index(px, pz, level)];
@@ -60,15 +58,15 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 
 	for(int n = 0; n < (int)blockers.size(); n++) {
 		IBox blocker(
-				vmax(blockers[n].min, int3(0, 0, 0)),
-				vmin(blockers[n].max, int3(m_size.x, 255, m_size.y)));
-		u8 min_y = max(0, blocker.min.y - 4), max_y = blocker.max.y;
+				vmax(blockers[n].min(), int3(0, 0, 0)),
+				vmin(blockers[n].max(), int3(m_size.x, 255, m_size.y)));
+		u8 min_y = max(0, blocker.y() - 4), max_y = blocker.ey();
 
 		for(int z = 0; z < blocker.depth(); z++)
 			for(int x = 0; x < blocker.width(); x++) {
 				int level = 0;
-				int px = x + blocker.min.x;
-				int pz = z + blocker.min.z;
+				int px = x + blocker.x();
+				int pz = z + blocker.z();
 
 				while(level < m_level_count) {
 					u8 &value = m_data[index(px, pz, level++)];

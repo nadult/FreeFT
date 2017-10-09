@@ -153,7 +153,7 @@ void TextureCache::nextFrame() {
 			Texture tex;
 			res.res_ptr->cacheUpload(tex);
 			DASSERT(tex.size() == res.size);
-			res.atlas_pos = pos + atlas_node.rect.min;
+			res.atlas_pos = pos + atlas_node.rect.min();
 			m_atlas->upload(tex, res.atlas_pos);
 
 			if(res.atlas_node_id == -1) {
@@ -269,8 +269,9 @@ STexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 		INSERT(m_main_list, main, res_id);
 	}
 
-	tex_rect = FRect(0, 0, float(res.size.x) / res.device_texture->width(),
-					 float(res.size.y) / res.device_texture->height());
+	auto dev_size = res.device_texture->size();
+	tex_rect = dev_size.x == 0 || dev_size.y == 0?
+				FRect() : FRect(float2(), float2(res.size) / float2(dev_size));
 	return res.device_texture;
 }
 

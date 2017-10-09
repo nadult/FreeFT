@@ -8,8 +8,8 @@
 int Grid::findAny(const FBox &box, int ignored_id, int flags) const {
 	IRect grid_box = nodeCoords(box);
 
-	for(int y = grid_box.min.y; y <= grid_box.max.y; y++)
-		for(int x = grid_box.min.x; x <= grid_box.max.x; x++) {
+	for(int y = grid_box.y(); y <= grid_box.ey(); y++)
+		for(int x = grid_box.x(); x <= grid_box.ex(); x++) {
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
@@ -33,8 +33,8 @@ int Grid::findAny(const FBox &box, int ignored_id, int flags) const {
 void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags) const {
 	IRect grid_box = nodeCoords(box);
 
-	for(int y = grid_box.min.y; y <= grid_box.max.y; y++)
-		for(int x = grid_box.min.x; x <= grid_box.max.x; x++) {
+	for(int y = grid_box.y(); y <= grid_box.ey(); y++)
+		for(int x = grid_box.x(); x <= grid_box.ex(); x++) {
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
@@ -220,12 +220,12 @@ void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, flo
 void Grid::findAll(vector<int> &out, const IRect &view_rect, int flags) const {
 	IRect grid_box(0, 0, m_size.x, m_size.y);
 
-	for(int y = grid_box.min.y; y < grid_box.max.y; y++) {
+	for(int y = grid_box.y(); y < grid_box.ey(); y++) {
 		const int2 &row_rect = m_row_rects[y];
-		if(row_rect.x >= view_rect.max.y || row_rect.y <= view_rect.min.y)
+		if(row_rect.x >= view_rect.ey() || row_rect.y <= view_rect.y())
 			continue;
 		
-		for(int x = grid_box.min.x; x < grid_box.max.x; x++) {
+		for(int x = grid_box.x(); x < grid_box.ex(); x++) {
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 	
@@ -259,16 +259,16 @@ int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectD
 	int best = -1;
 	FBox best_box;
 
-	for(int y = grid_box.min.y; y < grid_box.max.y; y++) {
+	for(int y = grid_box.y(); y < grid_box.ey(); y++) {
 		const int2 &row_rect = m_row_rects[y];
 		if(row_rect.x >= screen_pos.y || row_rect.y <= screen_pos.y)
 			continue;
 
-		for(int x = grid_box.min.x; x < grid_box.max.x; x++) {
+		for(int x = grid_box.x(); x < grid_box.ex(); x++) {
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
-			if(!flagTest(node.obj_flags, flags) || !node.rect.isInside(screen_pos))
+			if(!flagTest(node.obj_flags, flags) || !node.rect.containsPixel(screen_pos))
 				continue;
 			if(node.is_dirty)
 				updateNode(node_id);	
@@ -277,7 +277,7 @@ int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectD
 			int count = extractObjects(node_id, objects, -1, flags);
 
 			for(int n = 0; n < count; n++)
-				if(objects[n]->rect().isInside(screen_pos) && pixelTest(*objects[n], screen_pos)) {
+				if(objects[n]->rect().containsPixel(screen_pos) && pixelTest(*objects[n], screen_pos)) {
 					if(best == -1 || drawingOrder(objects[n]->bbox, best_box) == 1) {
 						best = objects[n] - &m_objects[0];
 						best_box = objects[n]->bbox;

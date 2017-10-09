@@ -2,6 +2,7 @@ Potential problems with libfwk updates:
 - intersection(segment, something) returns parameter within range (0, 1)
   previously FreeFT expected (0, segment length)
 - min/max -> vmin/vmax for vectors
+- Rect/Box related code
 - ...
 
 

@@ -34,7 +34,7 @@ public:
 			:rect(rect), is_disabled(0), static_ncount(0), collider_id(-1), min_height(min_height), max_height(max_height), group_id(0) { }
 		Quad() { }
 
-		const IBox box() const { return IBox(asXZY(rect.min, (int)min_height), asXZY(rect.max, (int)max_height)); }
+		const IBox box() const { return IBox(asXZY(rect.min(), (int)min_height), asXZY(rect.max(), (int)max_height)); }
 
 		vector<int> neighbours;
 		IRect rect;

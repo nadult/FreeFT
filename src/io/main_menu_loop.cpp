@@ -51,12 +51,12 @@ namespace io {
 			float2(rect.center()) - float2(m_back->size()) * 0.5f,
 			float2(rect.center()) + float2(m_back->size()) * 0.5f);
 
-		m_single_player	= makeButton(m_back_rect.min + int2(500, 70), "Single player");
-		m_multi_player	= makeButton(m_back_rect.min + int2(500, 115), "Multi player");
-		m_create_server	= makeButton(m_back_rect.min + int2(500, 160), "Create server");
-		m_options		= makeButton(m_back_rect.min + int2(500, 205), "Options");
-		m_credits		= makeButton(m_back_rect.min + int2(500, 250), "Credits");
-		m_exit			= makeButton(m_back_rect.min + int2(500, 295), "Exit");
+		m_single_player	= makeButton(m_back_rect.min() + int2(500, 70), "Single player");
+		m_multi_player	= makeButton(m_back_rect.min() + int2(500, 115), "Multi player");
+		m_create_server	= makeButton(m_back_rect.min() + int2(500, 160), "Create server");
+		m_options		= makeButton(m_back_rect.min() + int2(500, 205), "Options");
+		m_credits		= makeButton(m_back_rect.min() + int2(500, 250), "Credits");
+		m_exit			= makeButton(m_back_rect.min() + int2(500, 295), "Exit");
 
 		attach(m_single_player);
 		attach(m_multi_player);
@@ -163,7 +163,7 @@ namespace io {
 		FRect extents = font->draw(out, float2(0.0f, 0.0f), {color, ColorId::black, HAlign::right, VAlign::center}, text);
 
 		out.pushViewMatrix();
-		out.mulViewMatrix(translation(extents.max.x + 8.0f + center.x, 0.0f, 0.0f));
+		out.mulViewMatrix(translation(extents.ex() + 8.0f + center.x, 0.0f, 0.0f));
 		out.mulViewMatrix(scaling(scale));
 		out.mulViewMatrix(rotation(float3(0, 0, 1), m_anim_pos * 2.0f * fconstant::pi));
 		out.mulViewMatrix(translation(-center.x, -center.y, 0.0f));

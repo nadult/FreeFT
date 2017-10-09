@@ -61,7 +61,7 @@ namespace ui {
 	}
 
 	void TilesEditor::onInput(const InputState &state) {
-		auto mouse_pos = state.mousePos() - clippedRect().min;
+		auto mouse_pos = state.mousePos() - clippedRect().min();
 		m_selection = computeCursor(mouse_pos, mouse_pos);
 
 		if(state.isKeyDown(InputKey::kp_add))
@@ -132,8 +132,8 @@ namespace ui {
 		
 		if(isReplacing()) {
 			IBox col_box = fill_box;
-			col_box.max = col_box.min +
-				int3(col_box.width() / bbox.x, col_box.height() / bbox.y, col_box.depth() / bbox.z) * bbox;
+			col_box = {col_box.min(), col_box.min() +
+				int3(col_box.width() / bbox.x, col_box.height() / bbox.y, col_box.depth() / bbox.z) * bbox};
 			removeAll(col_box);
 		}
 		
@@ -154,8 +154,8 @@ namespace ui {
 			DASSERT(!entries.empty() && !dirty_entries.empty());
 		}
 
-		for(int x = fill_box.min.x; x < fill_box.max.x; x += bbox.x)
-			for(int z = fill_box.min.z; z < fill_box.max.z; z += bbox.z) {
+		for(int x = fill_box.x(); x < fill_box.ex(); x += bbox.x)
+			for(int z = fill_box.z(); z < fill_box.ez(); z += bbox.z) {
 				const Tile *tile = m_new_tile;
 
 				if(is_randomized) {
@@ -164,7 +164,7 @@ namespace ui {
 					tile = m_tile_group->entryTile(source[random_id]);
 				}
 
-				try { m_tile_map.add(tile, int3(x, fill_box.min.y, z)); }
+				try { m_tile_map.add(tile, int3(x, fill_box.y(), z)); }
 				catch(...) { }
 			}
 	}
@@ -186,9 +186,9 @@ namespace ui {
 		for(int n = 0; n < m_tile_group->entryCount(); n++)
 			m_tile_group->entryTile(n)->m_temp = n;
 
-		for(int x = fill_box.min.x; x < fill_box.max.x; x += bbox.x)
-			for(int z = fill_box.min.z; z < fill_box.max.z; z += bbox.z) {
-				int3 pos(x, fill_box.min.y, z);
+		for(int x = fill_box.x(); x < fill_box.ex(); x += bbox.x)
+			for(int z = fill_box.z(); z < fill_box.ez(); z += bbox.z) {
+				int3 pos(x, fill_box.y(), z);
 				int neighbours[8] = {
 					findAt(pos + int3(0, 0, bbox.z)),
 					findAt(pos + int3(bbox.x, 0, 0)),
@@ -266,7 +266,7 @@ namespace ui {
 				if(!entries.empty()) {
 					int random_id = rand() % entries.size();
 					const Tile *tile = m_tile_group->entryTile(entries[random_id]);
-					try { m_tile_map.add(tile, int3(x, fill_box.min.y, z)); }
+					try { m_tile_map.add(tile, int3(x, fill_box.y(), z)); }
 					catch(...) { }
 				}
 			}
@@ -281,7 +281,7 @@ namespace ui {
 			if(is_final && is_final != -1) {
 				if(isSelecting()) {
 					vector<int> new_ids;
-					m_tile_map.findAll(new_ids, FBox((float3)m_selection.min, float3(m_selection.max + int3(0, 1, 0))));
+					m_tile_map.findAll(new_ids, FBox((float3)m_selection.min(), float3(m_selection.max() + int3(0, 1, 0))));
 					std::sort(new_ids.begin(), new_ids.end());
 
 					if(m_mode == mode_selecting_normal)
@@ -349,7 +349,7 @@ namespace ui {
 					FBox bbox = m_tile_map[m_selected_ids[n]].bbox + float3(m_move_offset);
 					m_tile_map.findAll(temp, bbox, m_selected_ids[n]);
 
-					if(bbox.min.x < 0 || bbox.min.y < 0 || bbox.min.z < 0 || bbox.max.x > dims.x || bbox.max.y >= Grid::max_height || bbox.max.z > dims.y)
+					if(bbox.x() < 0 || bbox.y() < 0 || bbox.z() < 0 || bbox.ex() > dims.x || bbox.ey() >= Grid::max_height || bbox.ez() > dims.y)
 						cancel = true;
 				}
 
@@ -361,7 +361,7 @@ namespace ui {
 					for(int n = 0; n < (int)m_selected_ids.size(); n++) {
 						auto object = m_tile_map[m_selected_ids[n]];
 						const Tile *tile = object.ptr;
-						int3 new_pos = (int3)object.bbox.min + m_move_offset;
+						int3 new_pos = (int3)object.bbox.min() + m_move_offset;
 						m_tile_map.remove(m_selected_ids[n]);
 						m_tile_map.add(tile, new_pos);
 					}
@@ -374,7 +374,7 @@ namespace ui {
 	}
 
 	void TilesEditor::drawBoxHelpers(Renderer2D &out, const IBox &box) const {
-		int3 pos = box.min, bbox = box.max - box.min;
+		int3 pos = box.min(), bbox = box.max() - box.min();
 		int3 tsize = asXZY(m_tile_map.dimensions(), 32);
 
 		drawLine(out, int3(0, pos.y, pos.z), int3(tsize.x, pos.y, pos.z), Color(0, 255, 0, 127));
@@ -407,7 +407,7 @@ namespace ui {
 				std::set_difference(visible_ids.begin(), visible_ids.end(), m_selected_ids.begin(), m_selected_ids.end(), visible_ids.begin())
 				- visible_ids.begin());
 
-			IRect xz_selection(m_selection.min.xz(), m_selection.max.xz());
+			IRect xz_selection(m_selection.min().xz(), m_selection.max().xz());
 			vector<Color> tile_colors(visible_ids.size(), ColorId::white);
 
 			if(isChangingOccluders()) {
@@ -435,7 +435,7 @@ namespace ui {
 
 					for(int n = 0; n < (int)visible_ids.size(); n++) {
 						auto object = m_tile_map[visible_ids[n]];
-						int3 pos(object.bbox.min);
+						int3 pos(object.bbox.min());
 				
 						Color col = ColorId::white;
 						if(object.occluder_id != -1) {
@@ -453,12 +453,12 @@ namespace ui {
 			else {
 				for(int n = 0; n < (int)visible_ids.size(); n++) {
 					auto object = m_tile_map[visible_ids[n]];
-					int3 pos(object.bbox.min);
+					int3 pos(object.bbox.min());
 
 					IBox box = IBox({0,0,0}, object.ptr->bboxSize()) + pos;
-					Color col =	box.max.y < m_selection.min.y? ColorId::gray :
-								box.max.y == m_selection.min.y? Color(200, 200, 200, 255) : ColorId::white;
-					if(areOverlapping(IRect(box.min.xz(), box.max.xz()), xz_selection))
+					Color col =	box.ey() < m_selection.y()? ColorId::gray :
+								box.ey() == m_selection.y()? Color(200, 200, 200, 255) : ColorId::white;
+					if(areOverlapping(IRect(box.min().xz(), box.max().xz()), xz_selection))
 						col.r = col.g = 255;
 					tile_colors[n] = col;
 				}
@@ -466,7 +466,7 @@ namespace ui {
 
 			for(int i = 0; i < (int)visible_ids.size(); i++) {
 				auto object = m_tile_map[visible_ids[i]];
-				int3 pos(object.bbox.min);
+				int3 pos(object.bbox.min());
 				
 				object.ptr->addToRender(renderer, pos, tile_colors[i]);
 			}
@@ -482,7 +482,7 @@ namespace ui {
 				temp.resize(std::set_difference(temp.begin(), temp.end(), m_selected_ids.begin(), m_selected_ids.end(), temp.begin()) - temp.begin());
 
 				Color color = !temp.empty()? ColorId::red : ColorId::white;
-				object.ptr->addToRender(renderer, (int3)object.bbox.min, color);
+				object.ptr->addToRender(renderer, (int3)object.bbox.min(), color);
 				renderer.addBox(m_tile_map[m_selected_ids[i]].bbox);
 			}
 
@@ -490,15 +490,15 @@ namespace ui {
 		renderer.render();
 
 		out.setScissorRect(clippedRect());
-		out.setViewPos(-clippedRect().min + m_view.pos());
+		out.setViewPos(-clippedRect().min() + m_view.pos());
 		m_view.drawGrid(out);
 		
 		if(m_new_tile && (isPlacing() || isPlacingRandom() || isFilling()) && m_new_tile) {
 			int3 bbox = m_new_tile->bboxSize();
 		
-			for(int x = m_selection.min.x; x < m_selection.max.x; x += bbox.x)
-				for(int z = m_selection.min.z; z < m_selection.max.z; z += bbox.z) {
-					int3 pos(x, m_selection.min.y, z);
+			for(int x = m_selection.x(); x < m_selection.ex(); x += bbox.x)
+				for(int z = m_selection.z(); z < m_selection.ez(); z += bbox.z) {
+					int3 pos(x, m_selection.y(), z);
 
 					bool collides = m_tile_map.findAny(FBox((float3)pos, float3(pos + bbox))) != -1;
 					Color color = collides? Color(255, 0, 0) : Color(255, 255, 255);
@@ -513,14 +513,14 @@ namespace ui {
 
 		if(!isChangingOccluders()) {
 			IBox under = m_selection;
-			under.max.y = under.min.y;
-			under.min.y = m_view.gridHeight();
+			int y = m_view.gridHeight();
+			under = {under.x(), y, under.z(), under.ex(), max(y, under.y()), under.ez()};
 
 			drawBBox(out, under, Color(127, 127, 127, 255));
 			drawBBox(out, m_selection);
 		}
 		
-		out.setViewPos(-clippedRect().min);
+		out.setViewPos(-clippedRect().min());
 		auto font = res::getFont(WindowStyle::fonts[1]);
 
 		font->draw(out, float2(0, 0), {ColorId::white, ColorId::black}, format("Tile count: %d\n", m_tile_map.size()));
@@ -535,7 +535,7 @@ namespace ui {
 					format("Tile: %s\n", m_new_tile->resourceName().c_str()));
 		font->draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
 				format("Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
-				m_selection.min.x, m_selection.min.y, m_selection.min.z, m_view.gridHeight(), s_mode_strings[m_mode]));
+				m_selection.x(), m_selection.y(), m_selection.z(), m_view.gridHeight(), s_mode_strings[m_mode]));
 	}
 		
 	const IBox TilesEditor::computeCursor(const int2 &start, const int2 &end) const {
@@ -546,7 +546,7 @@ namespace ui {
 		IBox out = m_view.computeCursor(start, end, bbox, m_view.gridHeight(), m_cursor_offset);
 
 		if(isSelecting())
-			out.max.y = out.min.y;
+			out = {out.min(), {out.ex(), out.y(), out.ez()}};
 
 		return out;
 	}

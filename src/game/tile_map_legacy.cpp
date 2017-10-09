@@ -161,8 +161,7 @@ namespace game {
 				//		printf("%d %d %d | %d %d %d | %d %d %d\n", size.x, size.y, size.z, tile_size.x, tile_size.y, tile_size.z, tile_psize.x, tile_psize.y, tile_psize.z);
 				//	ASSERT(tile_size == size && size == tile_psize);
 
-					box.min = vmin(box.min, pos);
-					box.max = vmax(box.max, pos + size);
+					box = { vmin(box.min(), pos), vmax(box.max(), pos + size)};
 
 					instances.push_back(Instance{pos, size, tile_id});
 				}
@@ -171,14 +170,14 @@ namespace game {
 			}
 			printf("Regions: %d\noffset: %d / %d\n", region_count, (int)dsr.pos(), (int)dsr.size());
 
-			printf("Map dimensions: (%d %d %d - %d %d %d)\n", box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z);
+			printf("Map dimensions: (%d %d %d - %d %d %d)\n", box.x(), box.y(), box.z(), box.ex(), box.ey(), box.ez());
 			resize(box.size().xz());
 
 			printf("Constructing... from: %d elements\n", (int)instances.size());
 			for(int n = 0; n < (int)instances.size(); n++) {
 				Instance &inst = instances[n];
 				try {
-					float3 pos = float3(inst.pos - box.min);
+					float3 pos = float3(inst.pos - box.min());
 					TileParams &params = tile_params[inst.tile_id];
 					FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
 					ASSERT(findAny(bbox) == -1);

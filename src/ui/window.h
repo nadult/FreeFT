@@ -126,7 +126,7 @@ namespace ui
 		void setInnerRect(const IRect &rect);
 		IRect innerRect() const { return m_inner_rect; }
 
-		int2 innerOffset() const { return -m_inner_rect.min; }
+		int2 innerOffset() const { return -m_inner_rect.min(); }
 
 	private:
 		void updateRects();

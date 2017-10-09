@@ -211,7 +211,7 @@ namespace game
 	void Tile::updateMaxRect() {
 		m_max_rect = m_first_frame.rect();
 		for(int n = 0; n < (int)m_frames.size(); n++)
-			m_max_rect = sum(m_max_rect, m_frames[n].rect());
+			m_max_rect = enclose(m_max_rect, m_frames[n].rect());
 		m_max_rect -= m_offset;
 	}
 

@@ -57,7 +57,7 @@ namespace game {
 
 		FBox bbox = spectator->boundingBox();
 		m_cur_pos = bbox.center();
-		m_eye_pos = asXZY(m_cur_pos.xz(), bbox.min.y + bbox.height() * 0.75f);
+		m_eye_pos = asXZY(m_cur_pos.xz(), bbox.y() + bbox.height() * 0.75f);
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			Entity *entity = m_world->refEntity(n);
@@ -193,7 +193,7 @@ namespace game {
 		tile_map.findAll(inds, renderer.targetRect(), Flags::all | Flags::visible);
 
 		for(int n = 0; n < (int)inds.size(); n++)
-			tile_map[inds[n]].ptr->addToRender(renderer, (int3)tile_map[inds[n]].bbox.min);
+			tile_map[inds[n]].ptr->addToRender(renderer, (int3)tile_map[inds[n]].bbox.min());
 
 		for(int n = 0; n < (int)m_entities.size(); n++) {
 			const VisEntity &vis_entity = m_entities[n];
@@ -229,7 +229,7 @@ namespace game {
 				FBox bbox = desc.bbox;
 				
 				if(out.empty() || drawingOrder(bbox, out_bbox) == 1)
-					if(desc.ptr->testPixel(screen_pos - worldToScreen((int3)bbox.min))) {
+					if(desc.ptr->testPixel(screen_pos - worldToScreen((int3)bbox.min()))) {
 						out = ObjectRef(inds[i], false);
 						out_bbox = bbox;
 					}

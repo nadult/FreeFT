@@ -135,13 +135,12 @@ namespace game {
 
 		FBox spawn_box = spawn_zone->boundingBox();
 		float3 bbox_size = entity->bboxSize();
-		spawn_box.max.x -= bbox_size.x;
-		spawn_box.max.z -= bbox_size.z;
+		spawn_box = { spawn_box.min(), spawn_box.max() - float3(bbox_size.x, 0, bbox_size.z)};
 
 		float3 spawn_pos;
 		int it = 0, it_max = 100;
 		for(; it < it_max; it++) {
-			spawn_pos = spawn_box.min + float3(frand() * spawn_box.width(), 1.0f, frand() * spawn_box.depth());
+			spawn_pos = spawn_box.min() + float3(frand() * spawn_box.width(), 1.0f, frand() * spawn_box.depth());
 			FBox bbox(spawn_pos, spawn_pos + bbox_size);
 			ObjectRef isect = m_world.findAny(bbox, {Flags::all | Flags::colliding});
 

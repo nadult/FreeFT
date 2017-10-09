@@ -37,10 +37,10 @@ namespace ui {
 		IRect box(vmax(tmin, int2(0, 0)), vmin(tmax, tile_map_size));
 
 		Color color(255, 255, 255, 64);
-		for(int x = box.min.x - box.min.x % m_cell_size; x <= box.max.x; x += m_cell_size)
-			drawLine(out, int3(x, m_height, box.min.y), int3(x, m_height, box.max.y), color);
-		for(int y = box.min.y - box.min.y % m_cell_size; y <= box.max.y; y += m_cell_size)
-			drawLine(out, int3(box.min.x, m_height, y), int3(box.max.x, m_height, y), color);
+		for(int x = box.x() - box.x() % m_cell_size; x <= box.ex(); x += m_cell_size)
+			drawLine(out, int3(x, m_height, box.y()), int3(x, m_height, box.ey()), color);
+		for(int y = box.y() - box.y() % m_cell_size; y <= box.ey(); y += m_cell_size)
+			drawLine(out, int3(box.x(), m_height, y), int3(box.ex(), m_height, y), color);
 	}
 
 	void View::update(const InputState &state) {
@@ -89,7 +89,7 @@ namespace ui {
 			m_view_pos -= state.mouseMove();
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));
-		m_view_pos = vclamp(m_view_pos, rect.min, rect.max - m_view_size);
+		m_view_pos = vclamp(m_view_pos, rect.min(), rect.max() - m_view_size);
 	}
 
 	void View::updateVisibility(int cursor_height) {
@@ -99,7 +99,7 @@ namespace ui {
 		m_occluder_config.update();
 
 		for(int n = 0; n < (int)occmap.size(); n++)
-			m_occluder_config.setVisible(n, occmap[n].bbox.min.y <= max_pos);
+			m_occluder_config.setVisible(n, occmap[n].bbox.y() <= max_pos);
 
 		m_tile_map.updateVisibility(m_occluder_config);
 		m_entity_map.updateVisibility(m_occluder_config);

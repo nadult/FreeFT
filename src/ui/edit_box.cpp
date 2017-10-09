@@ -28,7 +28,7 @@ namespace ui {
 
 		if(m_is_editing) {
 			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
-			out.addLine(pos + int2(ext.max.x, 0), pos + int2(ext.max.x, line_height), FColor(ColorId::white, 0.7f));
+			out.addLine(pos + int2(ext.ex(), 0), pos + int2(ext.ex(), line_height), FColor(ColorId::white, 0.7f));
 			out.addRect(IRect(2, 1, width() - 1, height() - 2), FColor(ColorId::white, 0.3f));	
 		}
 	}
@@ -40,7 +40,7 @@ namespace ui {
 		for(int n = 0; n < (int)m_text.size(); n++) {
 			auto text = m_label + m_text.substr(0, n);
 			IRect ext = m_font->evalExtents(text.c_str());
-			if(ext.max.x + 8 > rect_pos.x) {
+			if(ext.ex() + 8 > rect_pos.x) {
 				m_cursor_pos = max(0, n);
 				break;
 			}
@@ -54,7 +54,7 @@ namespace ui {
 	}
 
 	void EditBox::onInput(const InputState &state) {
-		auto mouse_pos = state.mousePos() - clippedRect().min;
+		auto mouse_pos = state.mousePos() - clippedRect().min();
 
 		if(!m_is_editing) {
 			if(state.isMouseButtonDown(InputButton::left)) {
@@ -85,7 +85,7 @@ namespace ui {
 
 			bool end = state.isKeyDown(InputKey::enter);	
 			if(state.isMouseButtonDown(InputButton::left) || end) {
-				if(!end && rect().isInside(mouse_pos)) {
+				if(!end && rect().containsPixel(mouse_pos)) {
 					setCursorPos(mouse_pos);
 				}
 				else {

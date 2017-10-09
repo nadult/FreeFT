@@ -74,7 +74,7 @@ namespace hud {
 					m_text.erase(--m_cursor_pos, 1);
 			}
 			if(event.mouseButtonPressed(InputButton::left) && isMouseOver(event)) {
-				setCursorPos(float2(event.mousePos() - (int2)rect().min));
+				setCursorPos(float2(event.mousePos() - (int2)rect().min()));
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace hud {
 		//TODO: speed up
 		for(int n = 0; n < (int)m_text.size(); n++) {
 			FRect ext = evalExtents(m_text.substr(0, n));
-			if(ext.max.x + 5.0f > rect_pos.x - layer_spacing) {
+			if(ext.ex() + 5.0f > rect_pos.x - layer_spacing) {
 				m_cursor_pos = max(0, n);
 				break;
 			}
@@ -118,7 +118,7 @@ namespace hud {
 		int tick = ((int)(m_show_time / 0.4)) % 3;
 		if(isEnabled() && tick <= 1) {
 			FRect ext = evalExtents(m_text.substr(0, m_cursor_pos));
-			int2 pos = (int2)target_rect.min + int2(ext.max.x + 2.0f, 0);
+			int2 pos = (int2)target_rect.min() + int2(ext.ex() + 2.0f, 0);
 			out.addLine(pos, pos + int2(0, line_height), Color(255, 255, 255, 180));
 		}
 

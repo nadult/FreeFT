@@ -60,10 +60,10 @@ void Grid::add(int object_id, const ObjectDef &def) {
 
 	REMOVE(m_free_objects, object_id);
 
-	m_bounding_box = m_bounding_box.empty()? def.bbox : sum(m_bounding_box, def.bbox);
+	m_bounding_box = m_bounding_box.empty()? def.bbox : enclose(m_bounding_box, def.bbox);
 	IRect grid_box = nodeCoords(def.bbox);
 
-	for(int y = grid_box.min.y; y <= grid_box.max.y; y++) {
+	for(int y = grid_box.y(); y <= grid_box.ey(); y++) {
 		int2 &min_max = m_row_rects[y];
 		min_max = min_max.y == min_max.x?
 				int2(def.rect_pos.y, def.rect_pos.y + def.rect_size.y) :
@@ -74,8 +74,8 @@ void Grid::add(int object_id, const ObjectDef &def) {
 	DASSERT(object.ptr == nullptr);
 	((ObjectDef&)object) = def;
 
-	if(grid_box.min == grid_box.max) {
-		int node_id = nodeAt(grid_box.min);
+	if(grid_box.min() == grid_box.max()) {
+		int node_id = nodeAt(grid_box.min());
 		Node &node = m_nodes[node_id];
 
 		INSERT(node.object_list, object_id);
@@ -85,8 +85,8 @@ void Grid::add(int object_id, const ObjectDef &def) {
 		node.size++;
 	}
 	else {
-		for(int y = grid_box.min.y; y <= grid_box.max.y; y++)
-			for(int x = grid_box.min.x; x <= grid_box.max.x; x++) {
+		for(int y = grid_box.y(); y <= grid_box.ey(); y++)
+			for(int x = grid_box.x(); x <= grid_box.ex(); x++) {
 				int node_id = nodeAt(int2(x, y));
 				Node &node = m_nodes[node_id];
 				updateNode(node_id, def);
@@ -109,8 +109,8 @@ void Grid::remove(int idx) {
 
 	if(object.node_id == -1) {
 		IRect grid_box = nodeCoords(object.bbox);
-		for(int y = grid_box.min.y; y <= grid_box.max.y; y++)
-			for(int x = grid_box.min.x; x <= grid_box.max.x; x++) {
+		for(int y = grid_box.y(); y <= grid_box.ey(); y++)
+			for(int x = grid_box.x(); x <= grid_box.ex(); x++) {
 				Node &node = m_nodes[nodeAt(int2(x, y))];
 				node.size--;
 				node.is_dirty = true;
@@ -173,8 +173,8 @@ void Grid::updateNode(int node_id, const ObjectDef &def) const {
 		return;
 	}
 
-	node.bbox = sum(def.bbox, node.bbox);
-	node.rect = sum(def.rect(), node.rect);
+	node.bbox = enclose(def.bbox, node.bbox);
+	node.rect = enclose(def.rect(), node.rect);
 	node.obj_flags |= def.flags;
 }
 
@@ -205,9 +205,11 @@ void Grid::updateNode(int id) const {
 }
 
 const IRect Grid::nodeCoords(const FBox &box) const {
-	return IRect(	worldToGrid( vmax(int2(0, 0), int2(box.min.x, box.min.z)) ),
-					vmin(m_size - int2(1, 1),
-						worldToGrid( int2(box.max.x - fconstant::epsilon, box.max.z - fconstant::epsilon) )) );
+	auto pmin = worldToGrid( vmax(int2(0, 0), int2(box.x(), box.z())) );
+	auto pmax = vmin(m_size - int2(1, 1),
+						worldToGrid( int2(box.ex() - fconstant::epsilon, box.ez() - fconstant::epsilon) ));
+	pmax = vmax(pmin, pmax);
+	return IRect(pmin, pmax);
 }
 
 bool Grid::isInside(const float3 &pos) const {
@@ -215,7 +217,7 @@ bool Grid::isInside(const float3 &pos) const {
 }
 
 bool Grid::isInside(const FBox &box) const {
-	return box.min.x >= 0 && box.min.z >= 0 && box.max.x <= m_size.x * node_size && box.max.z <= m_size.y * node_size;
+	return box.x() >= 0 && box.z() >= 0 && box.ex() <= m_size.x * node_size && box.ez() <= m_size.y * node_size;
 }
 
 int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int flags) const {

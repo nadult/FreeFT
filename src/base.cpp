@@ -99,6 +99,54 @@ uint toFlags(const char *input, CRange<const char *> strings, uint first_flag) {
 	return out_value;
 }
 
+float distance(const Box<float3> &a, const Box<float3> &b) {
+	float3 p1 = vclamp(b.center(), a.min(), a.max());
+	float3 p2 = vclamp(p1, b.min(), b.max());
+	return distance(p1, p2);
+}
+
+float distanceSq(const FRect &a, const FRect &b) {
+	float2 p1 = vclamp(b.center(), a.min(), a.max());
+	float2 p2 = vclamp(p1, b.min(), b.max());
+	return distanceSq(p1, p2);
+}
+
+bool areAdjacent(const IRect &a, const IRect &b) {
+	if(b.x() < a.ex() && a.x() < b.ex())
+		return a.ey() == b.y() || a.y() == b.ey();
+	if(b.y() < a.ey() && a.y() < b.ey())
+		return a.ex() == b.x() || a.x() == b.ex();
+	return false;
+}
+
+bool areOverlapping(const IBox &a, const IBox &b) {
+	for(int n = 0; n < 3; n++)
+		if(b.min(n) >= a.max(n) || a.min(n) >= b.max(n))
+			return false;
+	return true;
+}
+
+bool areOverlapping(const FBox &a, const FBox &b) {
+	// TODO: these epsilons shouldnt be here...
+	for(int n = 0; n < 3; n++)
+		if(b.min(n) >= a.max(n) - fconstant::epsilon || a.min(n) >= b.max(n) - fconstant::epsilon)
+			return false;
+	return true;
+}
+
+bool areOverlapping(const IRect &a, const IRect &b) {
+	for(int n = 0; n < 2; n++)
+		if(b.min(n) >= a.max(n) || a.min(n) >= b.max(n))
+			return false;
+	return true;
+}
+bool areOverlapping(const FRect &a, const FRect &b) {
+	for(int n = 0; n < 2; n++)
+		if(b.min(n) >= a.max(n) - fconstant::epsilon || a.min(n) >= b.max(n) - fconstant::epsilon)
+			return false;
+	return true;
+}
+
 MoveVector::MoveVector(const int2 &start, const int2 &end) {
 	int2 diff = end - start;
 	vec.x = diff.x < 0 ? -1 : diff.x > 0 ? 1 : 0;
@@ -162,11 +210,11 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 	   box.depth() < fconstant::epsilon)
 		return {box.center()};
 
-	float radius = distance(box.center(), box.min);
+	float radius = distance(box.center(), box.min());
 	Plane plane(dir, box.center() + dir * radius);
 
 	float3 origin = project(box.center(), plane);
-	float3 other = project(box.min, plane);
+	float3 other = project(box.min(), plane);
 	if(distanceSq(other, origin) < fconstant::epsilon) {
 		for(auto corner : box.corners()) {
 			other = project(corner, plane);
@@ -199,7 +247,7 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 }
 
 vector<float3> genPoints(const FBox &bbox, int density) {
-	float3 offset = bbox.min;
+	float3 offset = bbox.min();
 	float3 mul = bbox.size() * (1.0f / (density - 1));
 	vector<float3> out;
 
@@ -261,18 +309,18 @@ Interval max(const Interval &lhs, const Interval &rhs) {
 float intersection(const Interval idir[3], const Interval origin[3], const Box<float3> &box) {
 	Interval l1, l2, lmin, lmax;
 
-	l1 = idir[0] * (Interval(box.min.x) - origin[0]);
-	l2 = idir[0] * (Interval(box.max.x) - origin[0]);
+	l1 = idir[0] * (Interval(box.x()) - origin[0]);
+	l2 = idir[0] * (Interval(box.ex()) - origin[0]);
 	lmin = min(l1, l2);
 	lmax = max(l1, l2);
 
-	l1 = idir[1] * (Interval(box.min.y) - origin[1]);
-	l2 = idir[1] * (Interval(box.max.y) - origin[1]);
+	l1 = idir[1] * (Interval(box.y()) - origin[1]);
+	l2 = idir[1] * (Interval(box.ey()) - origin[1]);
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
-	l1 = idir[2] * (Interval(box.min.z) - origin[2]);
-	l2 = idir[2] * (Interval(box.max.z) - origin[2]);
+	l1 = idir[2] * (Interval(box.z()) - origin[2]);
+	l2 = idir[2] * (Interval(box.ez()) - origin[2]);
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
@@ -297,7 +345,7 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 	for(auto &corner : corners)
 		corner = asXZY(rotateVector(corner.xz() - xz_origin, angle) + xz_origin, corner.y);
-	return Box<float3>(corners);
+	return enclose(corners);
 }
 
 #include "game/tile.h"

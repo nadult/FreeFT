@@ -34,7 +34,7 @@ namespace ui {
 			if(m_drop_size > 0 && size()) {
 				int popup_size = min(m_drop_size, m_dummy->size() * m_dummy->lineHeight());
 				IRect clip_rect = clippedRect();
-				IRect rect(clip_rect.min, int2(clip_rect.max.x, clip_rect.min.y + popup_size));
+				IRect rect(clip_rect.min(), int2(clip_rect.ex(), clip_rect.y() + popup_size));
 
 				m_popup = make_shared<ListBox>(rect, WindowStyle::gui_popup);
 				for(int n = 0; n < size(); n++) {

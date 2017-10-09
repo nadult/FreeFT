@@ -51,7 +51,7 @@ namespace ui {
 
 		if(!m_text.empty()) {
 			IRect extents = m_font->evalExtents(m_text.c_str());
-			int2 pos = (size() - extents.size()) / 2 - extents.min;
+			int2 pos = (size() - extents.size()) / 2 - extents.min();
 			m_font->draw((float2)pos, {ColorId::white, ColorId::black}, m_text);
 		}*/
 	}
@@ -65,7 +65,7 @@ namespace ui {
 
 		if(start == current) {
 			IRect bar_rect = evalBarPos();
-			if(!bar_rect.isInside(start)) {
+			if(!bar_rect.containsPixel(start)) {
 				float tpos = float(m_is_horizontal? start.x : start.y) * divisor;
 				tpos -= (0.5f - tpos) * bar_size;
 				float old_pos = m_pos;

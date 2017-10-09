@@ -63,12 +63,12 @@ namespace hud {
 		button_up->setAccelerator(InputKey::pageup);
 
 		button_rect -= float2(s_button_size.x + spacing * 2, 0.0f);
-		button_rect.min.x -= 50.0f;
+		button_rect = button_rect.enlarge({50, 0}, {});
 		PHudButton button_refresh = make_shared<HudClickButton>(button_rect);
 		button_refresh->setLabel("refresh");
 		
 		button_rect -= float2(button_rect.width() + spacing * 2, 0.0f);
-		button_rect.min.x -= 20.0f;
+		button_rect = button_rect.enlarge({20, 0}, {});
 		PHudButton button_connect = make_shared<HudClickButton>(button_rect);
 		button_connect->setLabel("connect");
 		button_connect->setAccelerator(InputKey::enter);
@@ -79,14 +79,14 @@ namespace hud {
 		m_password->setLabel("Pass: ");
 		
 		button_rect -= float2(button_rect.width() + spacing * 2, 0.0f);
-		button_rect.min.x = button_rect.max.x - 230;
+		button_rect = {{button_rect.ex() - 230, button_rect.y()}, button_rect.max()};
 		m_nick_name = make_shared<HudEditBox>(button_rect, net::limits::max_nick_name_size, HudEditBox::mode_nick);
 		m_nick_name->setLabel("Nick: ");
 		m_nick_name->setText("random_dude");
 
 		FRect sub_rect(rect.size());
-		sub_rect.min += float2(spacing, spacing * 2 + topOffset() + s_button_size.y);
-		sub_rect.max -= float2(spacing, spacing * 2 + s_button_size.y);
+		sub_rect = sub_rect.inset(float2(spacing, spacing * 2 + topOffset() + s_button_size.y),
+						 		  float2(spacing, spacing * 2 + s_button_size.y));
 		m_grid = make_shared<HudGrid>(sub_rect);
 		
 		m_grid->addColumn("Server name",	150.0f);

@@ -54,7 +54,7 @@ namespace hud {
 		FRect rect = this->rect();
 
 		if(!m_item.isDummy()) {
-			float ypos = topOffset() + rect.min.y;
+			float ypos = topOffset() + rect.y();
 
 			FRect uv_rect;
 			auto texture = m_item.guiImage(false, uv_rect);
@@ -64,7 +64,7 @@ namespace hud {
 			out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, mulAlpha(ColorId::white, alpha())});
 
 			ypos += size.y + 10.0f;
-			FRect desc_rect(rect.min.x + 5.0f, ypos, rect.max.x - 5.0f, rect.max.y - 5.0f);
+			FRect desc_rect(rect.x() + 5.0f, ypos, rect.ex() - 5.0f, rect.ey() - 5.0f);
 			// TODO: fix drawing of text that does not fit
 		
 			string params_desc;
@@ -75,7 +75,7 @@ namespace hud {
 			else if(m_item.type() == ItemType::armour)
 				params_desc = Armour(m_item).paramDesc();
 
-			m_font->draw(out, float2(rect.min.x + 5.0f, ypos), {titleColor(), titleShadowColor()}, params_desc);
+			m_font->draw(out, float2(rect.x() + 5.0f, ypos), {titleColor(), titleShadowColor()}, params_desc);
 		}
 	}
 
@@ -289,7 +289,7 @@ namespace hud {
 		max_count = min(max_count, (int)m_entries.size() - item_offset);
 		for(int n = 0; n < max_count; n++) {
 			m_buttons[n]->setEntry(m_entries[n + item_offset]);
-			bottom = max(bottom, m_buttons[n]->rect().max.y + spacing);
+			bottom = max(bottom, m_buttons[n]->rect().ey() + spacing);
 		}
 
 		for(int n = 0; n < (int)m_buttons.size(); n++) {
@@ -310,13 +310,13 @@ namespace hud {
 
 	void HudInventory::onUpdate(double time_diff) {
 		HudLayer::onUpdate(time_diff);
-		float2 mouse_pos = float2(m_last_mouse_pos) - rect().min;
+		float2 mouse_pos = float2(m_last_mouse_pos) - rect().min();
 			
 		updateData();
 
 		FRect cur_rect = rect();
 		FRect desc_rect(float2(m_item_desc->targetRect().width(), cur_rect.height()));
-		desc_rect += float2(cur_rect.max.x + layer_spacing, cur_rect.min.y);
+		desc_rect += float2(cur_rect.ex() + layer_spacing, cur_rect.y());
 		m_item_desc->setRect(desc_rect);
 
 		m_out_of_item_time += time_diff;

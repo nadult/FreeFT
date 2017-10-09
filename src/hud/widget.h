@@ -43,7 +43,7 @@ namespace hud
 
 		//TODO: needsLayout?
 		void setRect(const FRect &rect) { m_rect = rect; }
-		void setPos(const float2 &pos) { m_rect += pos - m_rect.min; }
+		void setPos(const float2 &pos) { m_rect += pos - m_rect.min(); }
 		const FRect &targetRect() const { return m_rect; }
 		virtual const FRect rect() const { return m_rect; }
 		void fitRectToChildren(const float2 &min_size, bool only_visible);

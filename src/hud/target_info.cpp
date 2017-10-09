@@ -64,7 +64,7 @@ namespace hud {
 		Color health_color = (Color)mulAlpha(s_health_colors[health], alpha());
 		
 		FRect font_rect = rect() + float2(layer_spacing, 0.0f);
-		font_rect.max.y = font_rect.min.y + font_rect.height() / 4.0f;
+		font_rect = {font_rect.min(), {font_rect.ex(), font_rect.y() + font_rect.height() / 4.0f}};
 		float2 offset = float2(0.0f, font_rect.height());
 		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, m_name);
 

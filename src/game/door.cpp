@@ -163,8 +163,7 @@ namespace game {
 			return;
 
 		FBox bbox = computeBBox(result);
-		bbox.min += float3(1.1f, 0.1f, 1.1f);
-		bbox.max -= float3(1.1f, 0.1f, 1.1f);
+		bbox = bbox.inset(float3(1.1f, 0.1f, 1.1f));
 
 		bool is_colliding = (bool)findAny(bbox + pos(), {Flags::entity | Flags::colliding, ref()});
 
@@ -204,8 +203,7 @@ namespace game {
 
 		//TODO: this is still wrong
 		FBox out = rotateY(box, size * 0.5f, dirAngle());
-		out.min = (float3)(int3)out.min;
-		out.max = (float3)(int3)out.max;
+		out = { (float3)(int3)out.min(), (float3)(int3)out.max()};
 		DASSERT(classId() == DoorClassId::sliding || !out.empty());
 		return out;
 	}

@@ -39,7 +39,7 @@ namespace game {
 				int3 target_pos;
 				FBox target_box = target->boundingBox();
 
-				if(!world()->findClosestPos(target_pos, cur_pos, enclosingIBox(target_box), ref()))
+				if(!world()->findClosestPos(target_pos, cur_pos, encloseIntegral(target_box), ref()))
 					return failOrder();
 
 				order.m_path_pos = PathPos();

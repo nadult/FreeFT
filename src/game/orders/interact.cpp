@@ -38,11 +38,11 @@ namespace game {
 			}
 
 			IBox my_box(boundingBox());
-			IBox other_box = enclosingIBox(target->boundingBox());
+			IBox other_box = encloseIntegral(target->boundingBox());
 
 			if(areAdjacent(*this, *target)) {
 				Action::Type action = order.m_mode == InteractionMode::pickup? Action::pickup :
-					other_box.max.y < my_box.max.y * 2 / 3? Action::magic_low : Action::magic;
+					other_box.ey() < my_box.ey() * 2 / 3? Action::magic_low : Action::magic;
 				animate(action);
 				lookAt((float3)other_box.center());
 			}

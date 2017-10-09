@@ -85,7 +85,7 @@ namespace hud {
 				m_highlighted_row = -1;
 
 			for(const auto &row :m_rows)
-				if(row.second.rect.isInside((float2)event.mousePos())) {
+				if(row.second.rect.contains((float2)event.mousePos())) {
 					if(mouse_key_down) {
 						m_selected_row = row.first;
 						handleEvent(this, HudEvent::row_clicked, m_selected_row);
@@ -119,7 +119,7 @@ namespace hud {
 				const Row &row = row_it.second;
 				const string &cell_value = col > (int)row.cells.size()? string() : row.cells[col];
 				auto fcolor = lerp((FColor)Color(200, 200, 200), FColor(ColorId::white), row.highlighted_time);
-				m_font->draw(out, FRect(rect.min.x, row.rect.min.y, rect.max.x, row.rect.max.y),
+				m_font->draw(out, FRect(rect.x(), row.rect.y(), rect.ex(), row.rect.ey()),
 							 {Color(fcolor), ColorId::black, HAlign::center}, cell_value);
 			}
 		}
@@ -149,9 +149,8 @@ namespace hud {
 			float col_size = m_columns[col].min_size + size_left * (m_columns[col].min_size / min_sum) + frac;
 			int isize = (int)col_size;
 			frac = col_size - isize;
-			m_columns[col].rect = FRect(rect.min.x + pos, rect.min.y, rect.min.x + pos + isize, rect.max.y);
-			if(col == (int)m_columns.size() - 1)
-				m_columns[col].rect.max.x = rect.max.x;
+			auto ex = col == (int)m_columns.size() - 1? rect.ex() : rect.x() + pos + isize;
+			m_columns[col].rect = FRect(rect.x() + pos, rect.y(), ex, rect.ey());
 			pos += isize + spacing;
 		}
 
@@ -162,7 +161,7 @@ namespace hud {
 			m_scroll_pos -= m_max_visible_rows;
 		m_scroll_pos = max(0, m_scroll_pos);
 
-		pos = rect.min.y + row_size + spacing;
+		pos = rect.y() + row_size + spacing;
 		int counter = 0;
 		for(auto &row : m_rows) {
 			int view_index = counter++ - m_scroll_pos;
@@ -171,7 +170,7 @@ namespace hud {
 				continue;
 			}
 
-			row.second.rect = FRect(rect.min.x, pos, rect.max.x, pos + row_size);
+			row.second.rect = FRect(rect.x(), pos, rect.ex(), pos + row_size);
 			pos += row_size + spacing;
 		}
 	}

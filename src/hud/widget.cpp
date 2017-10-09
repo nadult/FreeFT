@@ -50,7 +50,7 @@ namespace hud {
 				return false;
 
 		InputEvent cevent = event;
-		cevent.offset(int2(-rect().min));
+		cevent.offset(int2(-rect().min()));
 		bool focus_handled = false;
 
 		HudWidget *handled = nullptr;
@@ -82,12 +82,12 @@ namespace hud {
 			if(only_visible && !child->isVisible())
 				continue;
 
-			float2 child_max = child->rect().max;
+			float2 child_max = child->rect().max();
 			max_pos.x = max(max_pos.x, child_max.x + spacing);
 			max_pos.y = max(max_pos.y, child_max.y + spacing);
 		}
 
-		m_rect.max = m_rect.min + max_pos;
+		m_rect = {m_rect.min(), m_rect.min() + max_pos};
 	}
 	
 	void HudWidget::setStyle(const HudStyle &style) {
@@ -155,7 +155,7 @@ namespace hud {
 		if(isVisible()) {
 			onDraw(out);
 	
-			float2 offset = rect().min;
+			float2 offset = rect().min();
 
 			out.pushViewMatrix();
 			out.mulViewMatrix(translation(offset.x, offset.y, 0.0f));
@@ -192,9 +192,9 @@ namespace hud {
 	bool HudWidget::isMouseOver(const float2 &mouse_pos) const {
 		FRect rect = this->rect();
 
-		if(rect.isInside(mouse_pos))
+		if(rect.contains(mouse_pos))
 			return true;
-		float2 cmouse_pos = mouse_pos - rect.min;
+		float2 cmouse_pos = mouse_pos - rect.min();
 		for(auto &child: m_children)
 			if(child->isMouseOver(cmouse_pos))
 				return true;

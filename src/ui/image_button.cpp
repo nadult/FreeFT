@@ -22,10 +22,10 @@ namespace ui
 
 		rect = IRect({0, 0}, back? back->size() : vmax(up->size(), down->size()));
 		text_rect = text_area.empty()? IRect() :
-			IRect(	lerp(float(rect.min.x), float(rect.max.x), text_area.min.x),
-					lerp(float(rect.min.y), float(rect.max.y), text_area.min.y),
-					lerp(float(rect.min.x), float(rect.max.x), text_area.max.x),
-					lerp(float(rect.min.y), float(rect.max.y), text_area.max.y));
+			IRect(	lerp(float(rect.x()), float(rect.ex()), text_area.x()),
+					lerp(float(rect.y()), float(rect.ey()), text_area.y()),
+					lerp(float(rect.x()), float(rect.ex()), text_area.ex()),
+					lerp(float(rect.y()), float(rect.ey()), text_area.ey()));
 	}
 
 	ImageButton::ImageButton(const int2 &pos, ImageButtonProto proto, const char *text, Mode mode, int id)
@@ -43,9 +43,8 @@ namespace ui
 			DASSERT(text);
 
 			m_text = text;
-			m_text_extents = m_proto.font->evalExtents(text);
-			m_text_extents.min.y = 0;
-			m_text_extents.max.y = m_proto.font->lineHeight();
+			auto ex = m_proto.font->evalExtents(text);
+			m_text_extents = {ex.x(), 0, ex.ex(), m_proto.font->lineHeight()};
 		}
 	}
 
@@ -60,7 +59,7 @@ namespace ui
 
 		if(m_proto.font) {
 			int2 rect_center = size() / 2;
-			int2 pos(m_proto.text_rect.min.x - 1, m_proto.text_rect.center().y - m_text_extents.height() / 2 - 1);
+			int2 pos(m_proto.text_rect.x() - 1, m_proto.text_rect.center().y - m_text_extents.height() / 2 - 1);
 
 			if(m_mouse_press)
 				pos += int2(2, 2);
@@ -74,7 +73,7 @@ namespace ui
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;
 
 		if(key == 0 && m_is_enabled) {
-			if(is_final == 1 && localRect().isInside(current)) {
+			if(is_final == 1 && localRect().containsPixel(current)) {
 				if(m_mode == mode_toggle)
 					m_is_pressed ^= 1;
 				else if(m_mode == mode_toggle_on)

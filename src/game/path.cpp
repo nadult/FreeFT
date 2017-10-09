@@ -115,17 +115,19 @@ namespace game {
 			int3 begin = m_nodes[n - 1], end = m_nodes[n];
 			bool first = true;
 
-			IBox start_box = box + begin, end_box = box + end;
-			renderer.addBox(end_box, ColorId::red);
+			int3 sbox_min = box.min() + begin, sbox_max = box.max() + begin;
+			int3 ebox_min = box.min() + end, ebox_max = box.max() + end;
+
+			renderer.addBox({ebox_min, ebox_max}, ColorId::red);
 			MoveVector vec(begin.xz(), end.xz());
 
 			if(vec.vec == int2(1, 1) || vec.vec == int2(-1, -1)) {
-				swap(start_box.min.x, start_box.max.x);
-				swap(  end_box.min.x,   end_box.max.x);
+				swap(sbox_min.x, sbox_max.x);
+				swap(  ebox_min.x,   ebox_max.x);
 			}
 
-			renderer.addLine(start_box.min, end_box.min);
-			renderer.addLine(start_box.max, end_box.max);
+			renderer.addLine(sbox_min, ebox_min);
+			renderer.addLine(sbox_max, ebox_max);
 		}
 	}
 

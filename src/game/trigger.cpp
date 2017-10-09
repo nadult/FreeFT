@@ -47,7 +47,7 @@ namespace game {
 	}
 
 	void Trigger::setBox(const FBox &box) {
-		setPos(box.min);
+		setPos(box.min());
 		m_box_size = box.size();
 	}
 		

@@ -58,7 +58,7 @@ namespace hud {
 			auto halign = 
 				m_label_style == HudLabelStyle::left? HAlign::left :
 				m_label_style == HudLabelStyle::center? HAlign::center : HAlign::right;
-			FRect font_rect = inset(rect, float2(layer_spacing, 0.0f));
+			FRect font_rect = rect.inset(float2(layer_spacing, 0.0f));
 			m_font->draw(out, font_rect, {textColor(), textShadowColor(), halign, VAlign::center}, m_label);
 		}
 

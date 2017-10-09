@@ -142,14 +142,15 @@ namespace game {
 
 	SurfaceId Actor::surfaceUnder() const {
 		//TODO: make it more robust
-		FBox box_under = boundingBox();
-		box_under.max.y = box_under.min.y;
-		box_under.min.y -= 1.0f;
+		FBox bbox = boundingBox();
+		auto bmin = bbox.min(), bmax = bbox.max();
+		bmax.y = bmin.y;
+		bmin.y -= 1.0f;
 		const Tile *tile = nullptr;
 		for(int i = 0; i < 2 && !tile; i++) {
-			tile = refTile(findAny(box_under, Flags::tile | Flags::colliding));
-			box_under.min.y -= 1.0f;
-			box_under.max.y -= 1.0f;
+			tile = refTile(findAny({bmin, bmax}, Flags::tile | Flags::colliding));
+			bmin.y -= 1.0f;
+			bmax.y -= 1.0f;
 		}
 
 		return tile? tile->surfaceId() : SurfaceId::unknown;
@@ -277,7 +278,7 @@ namespace game {
 		const FBox &box = boundingBox();
 		const FBox &target_box = target->boundingBox();
 		float dist = distance(box, target_box);
-		float3 eye_pos = asXZY(box.center().xz(), box.min.y + box.height() * 0.75f);
+		float3 eye_pos = asXZY(box.center().xz(), box.y() + box.height() * 0.75f);
 
 		if(dist > max_distance)
 			return false;
@@ -411,25 +412,23 @@ namespace game {
 				has_finished = true;
 
 			float3 new_pos = path.pos(path_pos);
-			FBox bbox = (FBox)enclosingIBox(boundingBox() + new_pos - pos());
+			FBox bbox = (FBox)encloseIntegral(boundingBox() + new_pos - pos());
 
 			ObjectRef tile_ref = findAny(bbox, Flags::tile | Flags::colliding);
 			if(tile_ref) {
 				const FBox tile_bbox = refBBox(tile_ref);
-				float diff = bbox.min.y - tile_bbox.max.y;
+				float diff = bbox.y() - tile_bbox.ey();
 				if(diff > 1.0f) {
 					fixPosition();
 					return FollowPathResult::collided;
 				}
 				if(diff > 0.0f) {
 					new_pos.y += diff;
-					bbox.min.y += diff;
-					bbox.max.y += diff;
+					bbox = bbox + float3(0, diff, 0);
 				}
 			}
 			
-			bbox.min += float3(0.05, 0.05, 0.05);
-			bbox.max -= float3(0.05, 0.05, 0.05);
+			bbox.inset(0.05f);
 
 			if(findAny(bbox, {Flags::dynamic_entity | Flags::colliding, ref()})) {
 				fixPosition();

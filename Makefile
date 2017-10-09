@@ -76,7 +76,7 @@ MINGW_PKG_CONFIG=$(MINGW_PREFIX)pkg-config
 
 INCLUDES=-Isrc/ $(FWK_INCLUDES)
 
-NICE_FLAGS=-std=c++14 -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
+NICE_FLAGS=-std=c++14 -fno-omit-frame-pointer -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
 		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
 LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`

@@ -369,7 +369,7 @@ namespace io {
 					string status = ai->status();
 					FRect screen_rect = worldToScreen(entity->boundingBox());
 					FRect text_rect = FRect(float2(200, 50)) +
-									  float2(screen_rect.center().x, screen_rect.min.y) -
+									  float2(screen_rect.center().x, screen_rect.y()) -
 									  float2(m_view_pos);
 					text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
 					font->draw(out, text_rect, {ColorId::white, ColorId::black, HAlign::center},
@@ -416,7 +416,7 @@ namespace io {
 
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
-		int2 pos = out.viewport().max - extents - int2(4, 4);
+		int2 pos = out.viewport().max() - extents - int2(4, 4);
 		out.addFilledRect(FRect((float2)pos, (float2)out.viewport().size()), FColor(0.0f, 0.0f, 0.0f, 0.3f));
 		font->draw(out, (float2)(pos + int2(2, 2)), {ColorId::white, ColorId::black}, fmt);
 	}

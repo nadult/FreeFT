@@ -39,8 +39,7 @@ namespace game
 		DASSERT(object.ptr);
 
 		FBox bbox = object.ptr->boundingBox();
-		bbox.max.y = bbox.min.y;
-		bbox.min.y = 0.0f;
+		bbox = {bbox.x(), 0.0f, bbox.z(), bbox.ex(), bbox.y(), bbox.ez()};
 
 		vector<int> temp;
 		temp.reserve(128);
@@ -53,8 +52,8 @@ namespace game
 			const auto &object = m_tile_map[temp[n]];
 			int occluder_id = object.occluder_id;
 			if(occluder_id != -1) {
-				if(best_occluder_id == -1 || object.bbox.max.y > best_pos) {
-					best_pos = object.bbox.max.y;
+				if(best_occluder_id == -1 || object.bbox.ey() > best_pos) {
+					best_pos = object.bbox.ey();
 					best_occluder_id = occluder_id;
 				}
 			}
@@ -130,7 +129,7 @@ namespace game
 		main_node.addAttrib("entity_count", (int)indices.size());
 
 		std::sort(indices.begin(), indices.end(), [this](int a, int b) {
-			const float3 p1 = (*this)[a].bbox.min, p2 = (*this)[b].bbox.min;
+			const float3 p1 = (*this)[a].bbox.min(), p2 = (*this)[b].bbox.min();
 			return p1.x == p2.x? p1.y == p2.y? p1.z < p2.z : p1.y < p2.y : p1.x < p2.x;
 		} );
 

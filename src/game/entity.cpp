@@ -133,7 +133,7 @@ namespace game {
 	const IRect Entity::currentScreenRect() const {
 		IRect rect = m_sprite.getRect(m_seq_idx, m_frame_idx, m_dir_idx);
 		if(m_oseq_idx != -1 && m_oframe_idx != -1)
-			rect = sum(rect, m_sprite.getRect(m_oseq_idx, m_oframe_idx, m_dir_idx));
+			rect = enclose(rect, m_sprite.getRect(m_oseq_idx, m_oframe_idx, m_dir_idx));
 
 		//TODO: float based results
 		return  rect + (int2)worldToScreen(pos());
@@ -147,7 +147,7 @@ namespace game {
 
 		FBox bbox = boundingBox() - pos();
 		if(shrinkRenderedBBox() && bbox.height() >= 2.0f)
-			bbox.min.y = min(bbox.min.y + 1.0f, bbox.max.y - 0.5f);
+			bbox = {float3(bbox.x(), min(bbox.y() + 1.0f, bbox.ey() - 0.5f), bbox.z()), bbox.max()};
 
 		bool as_overlay = renderAsOverlay();
 
@@ -286,11 +286,10 @@ namespace game {
 	bool areAdjacent(const Entity &a, const Entity &b) {
 		FBox box_a = a.boundingBox(), box_b = b.boundingBox();
 
-		if(box_a.max.y < box_b.min.y || box_b.max.y < box_b.min.y)
+		if(box_a.ey() < box_b.y() || box_b.ey() < box_b.y())
 			return false;
 
-		return distanceSq(	FRect(box_a.min.xz(), box_a.max.xz()),
-							FRect(box_b.min.xz(), box_b.max.xz())) <= 1.0f;
+		return distanceSq(box_a.xz(), box_b.xz()) <= 1.0f;
 	}
 
 }

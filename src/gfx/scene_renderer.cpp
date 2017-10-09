@@ -94,17 +94,17 @@ const float3 worldToScreenFull(const float3 &pos) {
 
 // TODO: Not really sure if its fast...
 int fastDrawingOrder(const FBox &a, const FBox &b) {
-	int y_ret = a.max.y <= b.min.y ? -1 : b.max.y <= a.min.y ? 1 : 0;
+	int y_ret = a.ey() <= b.y() ? -1 : b.ey() <= a.y() ? 1 : 0;
 
 	if(y_ret) {
-		if(y_ret == -1 && (b.max.x <= a.min.x || b.max.z <= a.min.z))
+		if(y_ret == -1 && (b.ex() <= a.x() || b.ez() <= a.z()))
 			return y_ret;
-		if(y_ret == 1 && (a.max.x <= b.min.x || a.max.z <= b.min.z))
+		if(y_ret == 1 && (a.ex() <= b.x() || a.ez() <= b.z()))
 			return y_ret;
 		return y_ret * 2;
 	}
-	int x_ret = a.max.x <= b.min.x ? -1 : b.max.x <= a.min.x ? 1 : 0;
-	int z_ret = a.max.z <= b.min.z ? -1 : b.max.z <= a.min.z ? 1 : 0;
+	int x_ret = a.ex() <= b.x() ? -1 : b.ex() <= a.x() ? 1 : 0;
+	int z_ret = a.ez() <= b.z() ? -1 : b.ez() <= a.z() ? 1 : 0;
 
 	if(x_ret) {
 		return x_ret * 2;
@@ -121,7 +121,7 @@ void SceneRenderer::render() {
 
 	enum { node_size = 128 };
 
-	out.setViewPos(m_view_pos - m_viewport.min);
+	out.setViewPos(m_view_pos - m_viewport.min());
 	IRect view(m_view_pos, m_view_pos + m_viewport.size());
 
 	int xNodes = (m_viewport.width() + node_size - 1) / node_size;
@@ -141,8 +141,8 @@ void SceneRenderer::render() {
 		const Element &elem = m_elements[n];
 		IRect rect = elem.rect - m_view_pos;
 
-		for(int y = rect.min.y - rect.min.y % node_size; y < rect.max.y; y += node_size)
-			for(int x = rect.min.x - rect.min.x % node_size; x < rect.max.x; x += node_size) {
+		for(int y = rect.y() - rect.y() % node_size; y < rect.ey(); y += node_size)
+			for(int x = rect.x() - rect.x() % node_size; x < rect.ex(); x += node_size) {
 				int grid_x = x / node_size, grid_y = y / node_size;
 				if(grid_x >= 0 && grid_y >= 0 && grid_x < xNodes && grid_y < yNodes) {
 					int node_id = grid_x + grid_y * xNodes;
@@ -232,9 +232,9 @@ void SceneRenderer::render() {
 			gdata[i].second = grid[g + i].second;
 		std::sort(&gdata[0], &gdata[0] + count);
 
-		int2 grid_tl = m_viewport.min + int2(grid_x * node_size, grid_y * node_size);
+		int2 grid_tl = m_viewport.min() + int2(grid_x * node_size, grid_y * node_size);
 		IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
-		grid_rect.max = vmin(grid_rect.max, m_viewport.max);
+		grid_rect = {grid_rect.min(), vmin(grid_rect.max(), m_viewport.max())};
 		out.setScissorRect(grid_rect);
 
 		FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);

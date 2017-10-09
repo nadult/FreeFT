@@ -90,12 +90,12 @@ namespace hud {
 
 	void Hud::onLayout() {
 		//TODO: canShow for layers
-		float2 main_panel_pos = m_main_panel->rect().min;
+		float2 main_panel_pos = m_main_panel->rect().min();
 
 		for(auto &layer: m_layers) {
 			layer->fitRectToChildren(float2(s_hud_main_panel_size), true);
 			FRect layer_rect = layer->targetRect();
-			layer->setPos(float2(layer_rect.min.x, main_panel_pos.y - layer_rect.height() - layer_spacing));
+			layer->setPos(float2(layer_rect.x(), main_panel_pos.y - layer_rect.height() - layer_spacing));
 		}
 	}
 

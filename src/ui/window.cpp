@@ -38,18 +38,18 @@ namespace ui
 			int2 vsize(aoutline, rect.height());
 
 			FColor col1 = outline < 0? darker : lighter;
-			out.addFilledRect(IRect(rect.min, rect.min + hsize), col1);
-			out.addFilledRect(IRect(rect.min, rect.min + vsize), col1);
+			out.addFilledRect(IRect(rect.min(), rect.min() + hsize), col1);
+			out.addFilledRect(IRect(rect.min(), rect.min() + vsize), col1);
 
-			int2 p1(rect.min.x, rect.max.y - aoutline);
-			int2 p2(rect.max.x - aoutline, rect.min.y);
+			int2 p1(rect.x(), rect.ey() - aoutline);
+			int2 p2(rect.ex() - aoutline, rect.y());
 			FColor col2 = outline < 0? lighter : darker;
 			out.addFilledRect(IRect(p1, p1 + hsize), col2);
 			out.addFilledRect(IRect(p2, p2 + vsize), col2);
 		}
 
 		int2 off(aoutline, aoutline);
-		out.addFilledRect(inset(rect, off, off), color);
+		out.addFilledRect(rect.inset(off, off), color);
 	}
 
 	Window::Window(const IRect &rect, FColor background_color)
@@ -116,7 +116,7 @@ namespace ui
 		}
 
 		int2 mouse_pos = state.mousePos();
-		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min;
+		int2 local_mouse_pos = mouse_pos - m_clipped_rect.min();
 		int finished_dragging = 0;
 		bool escape = state.isKeyDown(InputKey::esc);
 
@@ -143,8 +143,8 @@ namespace ui
 		for(int n = (int)m_children.size() - 1; n >= 0; n--) {
 			Window *child = m_children[n].get();
 			if(child->isVisible() && m_has_hard_focus == child->m_has_hard_focus) {
-				if(m_has_hard_focus || child->rect().isInside(focus_point)) {
-					child->m_is_mouse_over = child->clippedRect().isInside(mouse_pos);
+				if(m_has_hard_focus || child->rect().containsPixel(focus_point)) {
+					child->m_is_mouse_over = child->clippedRect().containsPixel(mouse_pos);
 					child->process(state);
 					is_handled = true;
 					break;
@@ -190,7 +190,7 @@ namespace ui
 	}
 
 	void Window::draw(Renderer2D &out) const {
-		out.setViewPos(-m_clipped_rect.min);
+		out.setViewPos(-m_clipped_rect.min());
 		out.setScissorRect(m_clipped_rect);
 
 		if(m_background_color.a > 0.0f && !(m_background && m_background->size() == m_rect.size()))
@@ -200,7 +200,7 @@ namespace ui
 		
 		drawContents(out);
 
-		out.setViewPos(-m_clipped_rect.min);
+		out.setViewPos(-m_clipped_rect.min());
 		if(m_has_inner_rect) {
 			int2 rsize = m_rect.size();
 			int2 isize = m_inner_rect.size();
@@ -213,16 +213,16 @@ namespace ui
 			// TODO: minimum size of progress bar, coz sometimes its almost invisible
 			if(isize.x > rsize.x) {
 				float divisor = 1.0f / float(isize.x);
-				float spos = float(0       - m_inner_rect.min.x) * divisor;
-				float epos = float(rsize.x - m_inner_rect.min.x) * divisor;
+				float spos = float(0       - m_inner_rect.x()) * divisor;
+				float epos = float(rsize.x - m_inner_rect.x()) * divisor;
 
 				out.addFilledRect(IRect(0, rsize.y - 5, rsize.x, rsize.y), col1);
 				out.addFilledRect(IRect(spos * rsize.x, rsize.y - 5, (spos + epos) * rsize.x, rsize.y), col2);
 			}
 			if(isize.y > rsize.y) {
 				float divisor = 1.0f / float(isize.y);
-				float spos = float(0       - m_inner_rect.min.y) * divisor;
-				float epos = float(rsize.y - m_inner_rect.min.y) * divisor;
+				float spos = float(0       - m_inner_rect.y()) * divisor;
+				float epos = float(rsize.y - m_inner_rect.y()) * divisor;
 
 				out.addFilledRect(IRect(rsize.x - 5, 0, rsize.x, rsize.y), col1);
 				out.addFilledRect(IRect(rsize.x - 5, spos * rsize.y, rsize.x, epos * rsize.y), col2);
@@ -263,8 +263,7 @@ namespace ui
 
 	void Window::setInnerRect(const IRect &rect) {
 		int2 isize = rect.size();
-		m_inner_rect.min = vmax(vmin(rect.min, {0, 0}), vmin(-isize + m_rect.size(), {0, 0}));
-		m_inner_rect.max = m_inner_rect.min + isize;
+		m_inner_rect = {vmax(vmin(rect.min(), {0, 0}), vmin(-isize + m_rect.size(), {0, 0})), m_inner_rect.min() + isize};
 		m_has_inner_rect = isize.x > m_rect.width() || isize.y > m_rect.height();
 	}
 
@@ -297,13 +296,13 @@ namespace ui
 	}
 
 	void Window::updateRects() {
-		DASSERT(m_rect.min.x >= 0 && m_rect.min.y >= 0);
+		DASSERT(m_rect.x() >= 0 && m_rect.y() >= 0);
 		m_clipped_rect = m_rect;
 
 		if(m_parent) {
 			IRect parent_rect = m_parent->m_clipped_rect;
-			m_clipped_rect += parent_rect.min;
-			m_clipped_rect.max = vmin(m_clipped_rect.max, parent_rect.max);
+			m_clipped_rect += parent_rect.min();
+			m_clipped_rect = {m_clipped_rect.min(), vmin(m_clipped_rect.max(), parent_rect.max())};
 		}
 
 		for(int n = 0; n < (int)m_children.size(); n++)

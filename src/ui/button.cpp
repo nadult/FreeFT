@@ -21,8 +21,7 @@ namespace ui
 		DASSERT(text);
 		m_text = text;
 		m_text_extents = m_font->evalExtents(text);
-		m_text_extents.min.y = 0;
-		m_text_extents.max.y = m_font->lineHeight();
+		m_text_extents = { m_text_extents.x(), 0, m_text_extents.ex(), m_font->lineHeight()};
 	}
 
 	void Button::drawContents(Renderer2D &out) const {
@@ -30,7 +29,7 @@ namespace ui
 					m_mouse_press? -2 : 2);
 
 		int2 rect_center = size() / 2;
-		int2 pos = rect_center - m_text_extents.size() / 2 - m_text_extents.min - int2(1, 1);
+		int2 pos = rect_center - m_text_extents.size() / 2 - m_text_extents.min() - int2(1, 1);
 		if(m_mouse_press)
 			pos += int2(2, 2);
 		m_font->draw(out, (float2)pos, {m_is_enabled? ColorId::white : ColorId::gray, ColorId::black}, m_text);
@@ -39,7 +38,7 @@ namespace ui
 	bool Button::onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) {
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;
 		if(key == 0 && m_is_enabled) {
-			if(is_final == 1 && localRect().isInside(current))
+			if(is_final == 1 && localRect().containsPixel(current))
 				sendEvent(this, Event::button_clicked, m_id);
 			return true;
 		}

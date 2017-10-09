@@ -186,7 +186,7 @@ namespace {
 				entry.group_id == m_selected_group_id;
 
 			IRect tile_rect = entry.tile->rect();
-			int2 pos = entry.pos - tile_rect.min - offset;
+			int2 pos = entry.pos - tile_rect.min() - offset;
 
 			if(areOverlapping(clip_rect, tile_rect + pos))
 				entry.tile->draw(out, pos);
@@ -204,7 +204,7 @@ namespace {
 		}
 
 		if(m_mode == mModify && m_selected_group_id != -1) {	
-			IRect edit_rect(clippedRect().max - int2(280, 250), clippedRect().max - int2(5, 0));
+			IRect edit_rect(clippedRect().max() - int2(280, 250), clippedRect().max() - int2(5, 0));
 			int2 center = edit_rect.center();
 
 			out.setViewPos(-center);
@@ -235,11 +235,11 @@ namespace {
 				"green goo",
 			};
 
-			out.setViewPos(-int2(bottom_rect.max.x - 200, bottom_rect.min.y));
+			out.setViewPos(-int2(bottom_rect.ex() - 200, bottom_rect.y()));
 			for(int n = 0; n < arraySize(names); n++)
 				font->draw(int2(0, 10), ColorId::white,
 						m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
-			out.setViewPos(-clippedRect().min);
+			out.setViewPos(-clippedRect().min());
 		}
 
 		if(m_current_entry)

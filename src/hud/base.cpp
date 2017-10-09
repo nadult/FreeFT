@@ -44,7 +44,7 @@ namespace hud
 	}
 
 	void drawBorder(Renderer2D &out, const FRect &rect, Color color, const float2 &offset, float width) {
-		float2 min = rect.min - offset, max = rect.max + offset;
+		float2 min = rect.min() - offset, max = rect.max() + offset;
 		width = fwk::min(width, (max.x - min.x) * 0.5f - 2.0f);
 		Color transparent = Color(color, 0);
 
@@ -76,20 +76,20 @@ namespace hud
 		}
 
 		if(mode == align_top) {
-			float top = relative_to.min.y - spacing;
-			return FRect(rect.min.x, top - rect.height(), rect.max.x, top);
+			float top = relative_to.y() - spacing;
+			return FRect(rect.x(), top - rect.height(), rect.ex(), top);
 		}
 		else if(mode == align_down) {
-			float bottom = relative_to.max.y + spacing;
-			return FRect(rect.min.x, bottom, rect.max.x, bottom + rect.height());
+			float bottom = relative_to.ey() + spacing;
+			return FRect(rect.x(), bottom, rect.ex(), bottom + rect.height());
 		}
 		else if(mode == align_left) {
-			float left = relative_to.min.x - spacing;
-			return FRect(left - rect.width(), rect.min.y, left, rect.max.y);
+			float left = relative_to.x() - spacing;
+			return FRect(left - rect.width(), rect.y(), left, rect.ey());
 		}
 		else /*if(mode == align_right)*/ {
-			float right = relative_to.max.x + spacing;
-			return FRect(right, rect.min.y, right + rect.width(), rect.max.y);
+			float right = relative_to.ex() + spacing;
+			return FRect(right, rect.y(), right + rect.width(), rect.ey());
 		}
 	}
 	

@@ -71,7 +71,7 @@ namespace game {
 
 			for(int n = 0; n < m_entity_map.size(); n++)
 				if(m_entity_map[n].ptr && Flags::test(m_entity_map[n].flags, Flags::static_entity | Flags::colliding))
-					blockers.push_back(enclosingIBox(m_entity_map[n].ptr->boundingBox()));
+					blockers.push_back(encloseIntegral(m_entity_map[n].ptr->boundingBox()));
 
 			NaviHeightmap heightmap(m_tile_map.dimensions());
 			heightmap.update(bboxes, blockers);
@@ -94,7 +94,7 @@ namespace game {
 					continue;
 
 				if(Flags::test(object.flags, Flags::dynamic_entity | Flags::colliding)) {
-					const IBox &box = enclosingIBox(object.ptr->boundingBox());
+					const IBox &box = encloseIntegral(object.ptr->boundingBox());
 					navi_map.addCollider(box, n);
 				}
 			}

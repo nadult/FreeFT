@@ -22,13 +22,14 @@ using namespace game;
 namespace ui {
 
 	EntityPad::EntityPad(const IRect &max_rect, EntityId type_id)
-		:Window(IRect(max_rect.min, int2(max_rect.max.x, max_rect.min.y + 1))), m_max_rect(max_rect), m_type_id(type_id) { }
+		:Window(IRect(max_rect.min(), int2(max_rect.ex(), max_rect.y() + 1))), m_max_rect(max_rect), m_type_id(type_id) { }
 
 	void EntityPad::addControl(PWindow window) {
 		DASSERT(window);
 		IRect pad_rect = rect();
 		IRect crect = window->rect();
-		pad_rect.max.y = std::min(std::max(pad_rect.max.y, pad_rect.min.y + crect.max.y), m_max_rect.max.y);
+		pad_rect = {pad_rect.min(), {pad_rect.ex(),
+			std::min(std::max(pad_rect.ey(), pad_rect.y() + crect.ey()), m_max_rect.ey())}};
 		if(pad_rect != rect())
 			setRect(pad_rect);
 		attach(window);

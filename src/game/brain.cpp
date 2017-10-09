@@ -91,9 +91,7 @@ namespace game {
 		if(!entity)
 			return;
 
-		FBox close_prox = entity->boundingBox();
-		close_prox.min -= range;
-		close_prox.max += range;
+		FBox close_prox = entity->boundingBox().enlarge(range);
 
 		vector<ObjectRef> close_ents;
 		m_world->findAll(close_ents, close_prox, {Flags::actor, m_entity_ref});

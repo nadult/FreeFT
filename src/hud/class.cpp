@@ -60,15 +60,14 @@ namespace hud {
 				auto texture = item.first.guiImage(true, uv_rect);
 				float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
 
-				FRect irect(pos.x, rect.min.y, pos.x + max(s_min_item_width, size.x), rect.max.y);
-				if(irect.max.x > rect.width())
+				FRect irect(pos.x, rect.y(), pos.x + max(s_min_item_width, size.x), rect.ey());
+				if(irect.ex() > rect.width())
 					break;
 
 				out.addFilledRect(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f), uv_rect, texture);
 
 				if(item.second > 1) {
-					FRect trect = irect;
-					trect.max.y -= 5.0;
+					FRect trect = {irect.min(), {irect.ex(), irect.ey() - 5.0f}};
 					m_font->draw(out, trect, {textColor(), textShadowColor(), HAlign::right, VAlign::bottom}, format("%d", item.second));
 				}
 				
@@ -164,7 +163,7 @@ namespace hud {
 			m_buttons[n]->setId(id == -1? -1 : m_class_ids[id]);
 			
 			if(id != -1)
-				bottom = max(bottom, m_buttons[n]->rect().max.y + spacing);
+				bottom = max(bottom, m_buttons[n]->rect().ey() + spacing);
 		}
 
 		m_button_up  ->setPos(float2(rect().width() - spacing * 2 - s_button_size.x * 2, bottom + 5.0f));

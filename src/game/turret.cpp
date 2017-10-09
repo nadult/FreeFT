@@ -157,7 +157,7 @@ namespace game {
 		const FBox &box = boundingBox();
 		const FBox &target_box = target->boundingBox();
 		float dist = distance(box, target_box);
-		float3 eye_pos = asXZY(box.center().xz(), box.min.y + box.height() * 0.75f);
+		float3 eye_pos = asXZY(box.center().xz(), box.y() + box.height() * 0.75f);
 
 		if(dist > max_distance)
 			return false;

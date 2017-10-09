@@ -10,7 +10,7 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 	float2 vx = worldToScreen(float3(box.width(), 0, 0));
 	float2 vy = worldToScreen(float3(0, box.height(), 0));
 	float2 vz = worldToScreen(float3(0, 0, box.depth()));
-	float2 pos = worldToScreen(box.min);
+	float2 pos = worldToScreen(box.min());
 
 	float2 pt[8] = {
 		pos + vx + vy, pos + vx + vy + vz, pos + vz + vy, pos + vy, pos + vx, pos + vx + vz,

@@ -43,7 +43,7 @@ namespace ui {
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const Tile *tile = m_tile_list[n].tile;
 			IRect tile_rect = tile->rect();
-			int2 pos = m_tile_list[n].pos - tile_rect.min - offset;
+			int2 pos = m_tile_list[n].pos - tile_rect.min() - offset;
 
 			if(areOverlapping(clip_rect, tile_rect + pos))
 				tile->draw(out, pos);
@@ -52,7 +52,7 @@ namespace ui {
 		if(m_selection) {
 			int2 pos = m_selection->pos - offset;
 
-			out.setViewPos(-clippedRect().min - pos + m_selection->tile->rect().min);
+			out.setViewPos(-clippedRect().min() - pos + m_selection->tile->rect().min());
 			IBox box(int3(0, 0, 0), m_selection->tile->bboxSize());
 			drawBBox(out, box);
 		//	out.addFilledRect(IRect(pos, pos + m_selection->size));

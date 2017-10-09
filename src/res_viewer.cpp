@@ -184,7 +184,7 @@ class Resource {
 		Color outline_col = is_selected ? ColorId::red : Color(255, 255, 255, 100);
 
 		if(m_type == ResType::tile) {
-			out.setViewPos(-pos + m_tile->rect().min);
+			out.setViewPos(-pos + m_tile->rect().min());
 			IBox box(int3(0, 0, 0), m_tile->bboxSize());
 			m_tile->draw(out, int2(0, 0));
 			drawBBox(out, box, outline_col);
@@ -201,12 +201,12 @@ class Resource {
 			auto dtex = m_sprite->getFrame(m_seq_id, m_frame_id, m_dir_id, tex_rect);
 
 			IBox box({0, 0, 0}, m_sprite->bboxSize());
-			IRect brect = worldToScreen(IBox(box.min - int3(4, 4, 4), box.max + int3(4, 4, 4)));
+			IRect brect = worldToScreen(IBox(box.min() - int3(4, 4, 4), box.max() + int3(4, 4, 4)));
 			if(is_gui_image) {
-				rect -= rect.min;
-				brect -= brect.min;
+				rect -= rect.min();
+				brect -= brect.min();
 			}
-			out.setViewPos(brect.min - pos);
+			out.setViewPos(brect.min() - pos);
 			out.addFilledRect(FRect(rect), tex_rect, dtex);
 
 			if(is_gui_image)
@@ -290,7 +290,7 @@ class ResourceView : public Window {
 
 	void onInput(const InputState &state) override {
 		m_last_mouse_pos = state.mousePos();
-		int2 offset = innerOffset() - clippedRect().min;
+		int2 offset = innerOffset() - clippedRect().min();
 
 		for(auto &resource : m_resources)
 			resource->onInput(state);
@@ -302,7 +302,7 @@ class ResourceView : public Window {
 		for(int n = 0; n < (int)m_resources.size(); n++) {
 			const auto &res = m_resources[n];
 			int2 pos = m_positions[n] - offset;
-			if(clicked && IRect(pos, pos + res->rectSize()).isInside(m_last_mouse_pos))
+			if(clicked && IRect(pos, pos + res->rectSize()).containsPixel(m_last_mouse_pos))
 				m_selected_id = n;
 		}
 		if(clicked)
@@ -310,22 +310,22 @@ class ResourceView : public Window {
 	}
 
 	void drawContents(Renderer2D &out) const override {
-		int2 offset = innerOffset() - clippedRect().min;
+		int2 offset = innerOffset() - clippedRect().min();
 
 		for(int n = 0; n < (int)m_resources.size(); n++) {
 			const auto &res = m_resources[n];
 
 			auto pos = m_positions[n] - offset;
-			if(pos.y + res->rectSize().y < clippedRect().min.y)
+			if(pos.y + res->rectSize().y < clippedRect().y())
 				continue;
-			if(pos.y > clippedRect().max.y)
+			if(pos.y > clippedRect().ey())
 				break;
 
 			res->draw(out, m_positions[n] - offset, n == m_selected_id);
 		}
 
 		if(m_selected_id != -1) {
-			out.setViewPos(-clippedRect().min);
+			out.setViewPos(-clippedRect().min());
 			m_resources[m_selected_id]->printStats(out, int2(0, 0));
 		}
 	}
