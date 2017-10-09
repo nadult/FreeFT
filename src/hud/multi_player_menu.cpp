@@ -142,7 +142,7 @@ namespace hud {
 			if(event.source == m_buttons[button_connect] && m_client) {
 				if(m_grid->selectedRow() != -1 && getTime() - m_last_connect_time > 1.0) {
 					if(m_nick_name->text().size() < net::limits::min_nick_name_size) {
-						setMessage(format("Nick name should have at least %d characters", (int)net::limits::min_nick_name_size), s_error_color);
+						setMessage(format("Nick name should have at least % characters", (int)net::limits::min_nick_name_size), s_error_color);
 					}
 					else {
 						Address address = m_servers[m_grid->selectedRow()].address;
@@ -174,7 +174,7 @@ namespace hud {
 				m_waiting_to_connect = false;
 			}
 			else if(m_client->mode() == Client::Mode::refused) {
-				setMessage(format("Connection refused: %s", describe(m_client->refuseReason())), s_error_color);
+				setMessage(format("Connection refused: %", describe(m_client->refuseReason())), s_error_color);
 				m_waiting_to_connect = false;
 			}
 			else if(getTime() - m_last_connect_time > 5.0) {
@@ -204,7 +204,7 @@ namespace hud {
 			info.num_players = rand() % info.max_players + 1;
 			info.ping = rand() % 2? rand() % 200 : rand() % 500;
 			info.map_name = mnames[rand() % mnames.size()];
-			info.server_name = format("%s #%d", snames[rand() % snames.size()], rand() % 4 + 1);
+			info.server_name = format("% #%", snames[rand() % snames.size()], rand() % 4 + 1);
 			m_servers.push_back(info);
 		}
 
@@ -292,11 +292,11 @@ namespace hud {
 		else if(col_id == 1)
 			return row.map_name;
 		else if(col_id == 2)
-			return format("%d / %d", row.num_players, row.max_players);
+			return format("% / %", row.num_players, row.max_players);
 		else if(col_id == 3)
 			return toString(row.game_mode);
 		else if(col_id == 4)
-			return format("%d", row.ping);
+			return format("%", row.ping);
 
 		return string();
 	}

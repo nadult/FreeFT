@@ -15,9 +15,9 @@ namespace game
 		float resistance = proto().damage_resistance;
 		float melee_mod = proto().melee_mod;
 
-		out("Resistance: %c%.0f%%\n", resistance >= 0.0f? '+' : '-', fabs(resistance * 100.0f));
+		out.stdFormat("Resistance: %c%.0f%%\n", resistance >= 0.0f? '+' : '-', fabs(resistance * 100.0f));
 		if(melee_mod != 1.0f)
-			out("Strength mod: %.0f%%\n", melee_mod * 100.0f);
+			out.stdFormat("Strength mod: %.0f%%\n", melee_mod * 100.0f);
 		return string(out.text());
 	}
 

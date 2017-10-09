@@ -137,7 +137,7 @@ namespace io {
 			else if(m_mode == mode_starting_server && ev.value) {
 				net::ServerConfig config;
 				config.m_map_name = map_name;
-				config.m_server_name = format("Test server #%d", rand() % 256);
+				config.m_server_name = format("Test server #%", rand() % 256);
 				m_server.reset(new net::Server(config));
 
 				m_future_world = std::async(std::launch::async,

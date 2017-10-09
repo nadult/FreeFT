@@ -227,6 +227,28 @@ public:
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
+	bool mainLoop(GfxDevice &device) {
+		static double s_start_time = getTime();
+
+		Tile::setFrameCounter((int)((getTime() - s_start_time) * 15.0));
+		TextureCache::main_cache.nextFrame();
+
+		GfxDevice::clearColor(Color(0, 0, 0));
+		Renderer2D out(IRect(device.windowSize()));
+
+		process(device.inputState());
+		draw(out);
+
+		out.render();
+		Profiler::instance()->nextFrame();
+
+		return true;
+	}
+
+	static bool mainLoop(GfxDevice &device, void *pthis) {
+		return ((EditorWindow*)pthis)->mainLoop(device);
+	}
+
 	EditorMode	m_mode;
 
 	Level		m_level;
@@ -252,36 +274,6 @@ public:
 	int m_left_width;
 };
 
-void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
-	// TODO: date is refreshed only when game.o is being rebuilt
-	auto title = "FreeFT::editor; built " __DATE__ " " __TIME__;
-	uint flags = (fullscreen ? GfxDevice::flag_fullscreen : 0) | GfxDevice::flag_resizable |
-				 GfxDevice::flag_vsync;
-	device.createWindow(title, res, flags);
-	device.grabMouse(false);
-}
-
-unique_ptr<EditorWindow> s_main_window;
-static double s_start_time = getTime();
-
-static bool main_loop(GfxDevice &device) {
-	DASSERT(s_main_window);
-
-	Tile::setFrameCounter((int)((getTime() - s_start_time) * 15.0));
-	TextureCache::main_cache.nextFrame();
-
-	GfxDevice::clearColor(Color(0, 0, 0));
-	Renderer2D out(IRect(device.windowSize()));
-
-	s_main_window->process(device.inputState());
-	s_main_window->draw(out);
-
-	out.render();
-	Profiler::instance()->nextFrame();
-
-	return true;
-}
-
 void preloadTiles() {
 	printf("Enumerating tiles\n");
 	auto file_names = findFiles("data/tiles/", FindFiles::regular_file | FindFiles::recursive);
@@ -289,7 +281,7 @@ void preloadTiles() {
 	printf("Preloading tiles");
 	auto &tile_mgr = res::tiles();
 	FilePath tiles_path = FilePath(tile_mgr.constructor().filePrefix()).absolute();
-	for(uint n = 0; n < file_names.size(); n++) {
+	for(int n = 0; n < file_names.size(); n++) {
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
 			fflush(stdout);
@@ -316,9 +308,8 @@ int safe_main(int argc, char **argv) {
 	GfxDevice gfx_device;
 	createWindow(gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
-	s_main_window = make_unique<EditorWindow>(gfx_device.windowSize());
-	gfx_device.runMainLoop(main_loop);
-	s_main_window.reset();
+	EditorWindow window(gfx_device.windowSize());
+	gfx_device.runMainLoop(EditorWindow::mainLoop, &window);
 
 	return 0;
 }

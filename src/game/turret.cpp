@@ -47,7 +47,6 @@ namespace game {
 	};
 
 	TurretProto::TurretProto(const TupleParser &parser) :ProtoImpl(parser) {
-		using namespace xml_conversions;
 		ASSERT(!is_dummy);
 		ASSERT(sprite);
 

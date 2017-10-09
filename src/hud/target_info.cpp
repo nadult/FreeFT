@@ -72,10 +72,10 @@ namespace hud {
 		m_font->draw(out, font_rect, {health_color, shadow_color, HAlign::left, VAlign::center}, health_desc);
 		
 		font_rect += offset;
-		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("k/d: %d/%d", m_kills, m_deaths));
+		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("k/d: %/%", m_kills, m_deaths));
 
 		font_rect += offset;
-		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, format("Hit chance: %.0f%%", m_hit_chance * 100.0f));
+		m_font->draw(out, font_rect, {text_color, shadow_color, HAlign::left, VAlign::center}, stdFormat("Hit chance: %.0f%%", m_hit_chance * 100.0f));
 	}
 
 }

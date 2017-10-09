@@ -18,7 +18,7 @@ namespace game {
 			Entry new_entry;
 			new_entry.item = Item(ProtoIndex(child));
 			if( const char *count_attrib = child.hasAttrib("count") )
-				new_entry.count = xml_conversions::fromString<int>(count_attrib);
+				new_entry.count = fromString<int>(count_attrib);
 			else
 				new_entry.count = 1;
 			m_entries.push_back(new_entry);

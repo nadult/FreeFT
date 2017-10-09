@@ -291,8 +291,6 @@ namespace io {
 			if(command.empty())
 				break;
 
-			using namespace xml_conversions;
-
 			auto strings = fromString<vector<string>>(command);
 			if(strings.size() != 2) {
 				printf("Invalid command: %s\n", command.c_str());
@@ -378,7 +376,6 @@ namespace io {
 			}
 		}
 
-		TextFormatter fmt(4096);
 
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		Actor *target_actor = m_world->refEntity<Actor>(m_isect);
@@ -393,31 +390,31 @@ namespace io {
 				navi_status = navi_map->isReachable(src, dst) ? "reachable" : "unreachable";
 			}
 		}
-		fmt("View:(%d %d)\nRay:(%.2f %.2f %.2f) %s\n", m_view_pos.x, m_view_pos.y, isect_pos.x,
-			isect_pos.y, isect_pos.z, navi_status);
+
+		TextFormatter fmt;
+		fmt("View:(%)\nRay:(%) %\n", m_view_pos, isect_pos, navi_status);
 
 		if(actor) {
 			float3 actor_pos = actor->pos();
-			fmt("Actor pos:(%.0f %.0f %.0f)\nHP: %d ", actor_pos.x, actor_pos.y, actor_pos.z,
-				actor->hitPoints());
+			fmt("Actor pos:(%)\nHP: % ", int3(actor_pos), actor->hitPoints());
 			if(target_actor)
-				fmt("Target HP: %d", target_actor->hitPoints());
+				fmt("Target HP: %", target_actor->hitPoints());
 
 			const Weapon &weapon = actor->inventory().weapon();
 			if(!m_isect.empty() && weapon.hasRangedAttack()) {
 				FBox bbox = m_viewer.refBBox(m_isect);
 				float hit_chance = actor->estimateHitChance(actor->inventory().weapon(), bbox);
-				fmt("\nHit chance: %.0f%%", hit_chance * 100.0f);
+				fmt.stdFormat("\nHit chance: %.0f%%", hit_chance * 100.0f);
 			}
 			fmt("\n\n");
 		}
 
-		fmt("%s", s_profiler_stats.c_str());
+		fmt("%", s_profiler_stats);
 
 		int2 extents = font->evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
 		int2 pos = out.viewport().max() - extents - int2(4, 4);
 		out.addFilledRect(FRect((float2)pos, (float2)out.viewport().size()), FColor(0.0f, 0.0f, 0.0f, 0.3f));
-		font->draw(out, (float2)(pos + int2(2, 2)), {ColorId::white, ColorId::black}, fmt);
+		font->draw(out, (float2)(pos + int2(2, 2)), {ColorId::white, ColorId::black}, fmt.text());
 	}
 }

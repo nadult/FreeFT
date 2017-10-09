@@ -30,10 +30,9 @@ namespace hud {
 
 			//TODO: print current attack mode
 			if(m_weapon.proto().max_ammo) {
-				TextFormatter fmt;
-				fmt("%d/%d", m_ammo_count, m_weapon.proto().max_ammo);
 				//TODO: alpha for shadow color
-				m_font->draw(out, rect, {m_style.enabled_color, ColorId::black, HAlign::right, VAlign::top}, fmt);
+				FontStyle style{m_style.enabled_color, ColorId::black, HAlign::right, VAlign::top};
+				m_font->draw(out, rect, style, format("%/%", m_ammo_count, m_weapon.proto().max_ammo));
 			}
 		}
 	}

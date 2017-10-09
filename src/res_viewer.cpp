@@ -83,14 +83,13 @@ class Resource {
 					max(max_frame_size, m_sprite->getRect(m_seq_id, n, m_dir_id).size());
 			}
 
-			fmt("Sequence: %d / %d\n%s\nFrames: %d\nBounding box: "
-				"(%d, %d, %d)\nMax frame size: (%d, %d)",
+			fmt("Sequence: % / %\n%\nFrames: %\nBounding box: "
+				"(%)\nMax frame size: (%)",
 				m_seq_id, (int)m_sprite->size(), seq.name.c_str(), seq.frame_count,
-				m_sprite->bboxSize().x, m_sprite->bboxSize().y, m_sprite->bboxSize().z,
-				max_frame_size.x, max_frame_size.y);
+				m_sprite->bboxSize(), max_frame_size);
 
-			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt);
-			pos.y += m_font->evalExtents(fmt).height();
+			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt.text());
+			pos.y += m_font->evalExtents(fmt.text()).height();
 
 			double time = getTime();
 			for(int n = 0; n < (int)m_events.size(); n++) {
@@ -100,8 +99,8 @@ class Resource {
 			}
 
 		} else if(m_type == ResType::texture) {
-			fmt("Size: (%d, %d)", m_texture->width(), m_texture->height());
-			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt);
+			fmt("Size: (%)", m_texture->size());
+			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt.text());
 		}
 	}
 
@@ -432,19 +431,10 @@ class ResViewerWindow : public Window {
 	PWindow popup;
 };
 
-void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
-	// TODO: date is refreshed only when game.o is being rebuilt
-	auto title = "FreeFT::res_viewer; built " __DATE__ " " __TIME__;
-	uint flags = (fullscreen ? GfxDevice::flag_fullscreen : 0) | GfxDevice::flag_resizable |
-				 GfxDevice::flag_vsync;
-	device.createWindow(title, res, flags);
-	device.grabMouse(false);
-}
-
 static unique_ptr<ResViewerWindow> main_window;
 static double start_time = getTime();
 
-static bool main_loop(GfxDevice &device) {
+static bool main_loop(GfxDevice &device, void*) {
 	DASSERT(main_window);
 
 	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
@@ -467,6 +457,7 @@ static bool main_loop(GfxDevice &device) {
 
 	return true;
 }
+
 int safe_main(int argc, char **argv) {
 	Config config("res_viewer");
 

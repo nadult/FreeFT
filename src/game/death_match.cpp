@@ -160,7 +160,7 @@ namespace game {
 			if(m_current_info.is_respawning) {
 				int time = (int)(m_current_info.next_respawn_time + 0.9999f);
 				if(time > 0)
-					return UserMessage{format("Respawning in %d...", time)};
+					return UserMessage{format("Respawning in %...", time)};
 			}
 		}
 		else if(type == UserMessageType::log) {

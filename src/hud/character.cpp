@@ -177,8 +177,8 @@ namespace hud {
 			const PlayableCharacter &pc = m_pc_controller->pc();
 			const ActorProto &proto = dynamic_cast<const ActorProto&>(pc.character().proto());
 			m_icon_box->setCharacter(make_shared<Character>(pc.character()));
-			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
-			m_class_button->setLabel(format("Class: %s", pc.characterClass().name().c_str()));
+			m_race_button->setLabel(format("Race: %", proto.description));
+			m_class_button->setLabel(format("Class: %", pc.characterClass().name()));
 			m_name_edit_box->setText(pc.character().name());
 		}
 		else {
@@ -189,8 +189,8 @@ namespace hud {
 			updateClassId();
 	
 			m_icon_box->setCharacter(make_shared<Character>("", m_icon_id == -1? "" : m_icons[m_icon_id].second, proto.id));
-			m_race_button->setLabel(format("Race: %s", proto.description.c_str()));
-			m_class_button->setLabel(format("Class: %s", CharacterClass::get(m_class_id).name().c_str()));
+			m_race_button->setLabel(format("Race: %", proto.description));
+			m_class_button->setLabel(format("Class: %", CharacterClass::get(m_class_id).name()));
 		}
 
 	}

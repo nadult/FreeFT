@@ -36,7 +36,7 @@ namespace hud {
 		out.addFilledRect(FRect(pos, pos + icon_size), {icon, mulAlpha(color, alpha())});
 
 		if(m_max_hp) {
-			auto text = hp_value <= 0.0f? "DEAD" : format("%d/%d", m_current_hp, m_max_hp);
+			auto text = hp_value <= 0.0f? "DEAD" : format("%/%", m_current_hp, m_max_hp);
 			m_font->draw(out, rect, {m_style.enabled_color, ColorId::black, HAlign::right, VAlign::top}, text);
 		}
 	}

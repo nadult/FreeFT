@@ -113,7 +113,7 @@ namespace hud {
 		int line_height = m_font->lineHeight();
 
 		FRect target_rect = m_font->draw(out, rect() + float2(layer_spacing, 0.0f), {textColor(), textShadowColor(), HAlign::left, VAlign::center},
-				format("%s%s", m_label.c_str(), m_text.c_str()));
+				format("%%", m_label, m_text));
 
 		int tick = ((int)(m_show_time / 0.4)) % 3;
 		if(isEnabled() && tick <= 1) {

@@ -104,9 +104,9 @@ namespace hud {
 			out.addFilledRect(FRect(pos, pos + size), texture);
 
 			if(m_entry.count > 1)
-				m_font->draw(out, rect, {textColor(), textShadowColor(), HAlign::right}, format("%d", m_entry.count));
+				m_font->draw(out, rect, {textColor(), textShadowColor(), HAlign::right}, format("%", m_entry.count));
 			if(isDropping())
-				m_font->draw(out, rect, {textColor(true), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%d", dropCount()));
+				m_font->draw(out, rect, {textColor(true), textShadowColor(), HAlign::left, VAlign::bottom}, format("-%", dropCount()));
 		}
 	}
 		

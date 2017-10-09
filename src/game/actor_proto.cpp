@@ -141,7 +141,6 @@ namespace game {
 	}
 
 	ActorProto::ActorProto(const TupleParser &parser) :ProtoImpl(parser, true) {
-		using namespace xml_conversions;
 		punch_weapon = parser("punch_weapon");
 		kick_weapon = parser("kick_weapon");
 		sound_prefix = parser("sound_prefix");

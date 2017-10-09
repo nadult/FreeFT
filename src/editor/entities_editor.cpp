@@ -357,7 +357,7 @@ namespace ui {
 		auto font = res::getFont(WindowStyle::fonts[1]);
 
 		font->draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
-				format("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
+				stdFormat("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
 				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_desc[m_mode]));
 	}
 

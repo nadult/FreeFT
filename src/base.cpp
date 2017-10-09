@@ -369,3 +369,13 @@ PFont getFont(const string &name) {
 	return make_unique<Font>(std::move(core), std::move(texture));
 }
 }
+
+void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
+	// TODO: date is refreshed only when game.o is being rebuilt
+	auto title = "FreeFT::editor; built " __DATE__ " " __TIME__;
+	auto flags = GfxDeviceOpt::resizable | GfxDeviceOpt::vsync;
+	if(fullscreen)
+		flags |= GfxDeviceOpt::fullscreen;
+	device.createWindow(title, res, flags);
+	device.grabMouse(false);
+}

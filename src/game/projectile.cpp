@@ -9,7 +9,6 @@
 namespace game {
 
 	ProjectileProto::ProjectileProto(const TupleParser &parser) :ProtoImpl(parser) {
-		using namespace xml_conversions;
 		impact = parser("impact_id");
 		blend_angles = parser.get<bool>("blend_angles");
 		speed = parser.get<float>("speed");

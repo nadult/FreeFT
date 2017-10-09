@@ -25,8 +25,6 @@ namespace net {
 	}
 
 	ServerConfig::ServerConfig(const XMLNode &node) :ServerConfig() {
-		using namespace xml_conversions;
-
 		if(const char *attrib = node.hasAttrib("max_players")) {
 			m_max_players = fromString<int>(attrib);
 			ASSERT(m_max_players >= 1 && m_max_players <= Server::max_remote_hosts);

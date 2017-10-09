@@ -137,10 +137,9 @@ namespace ui {
 			updateItemIds();
 		}
 		else if(ev.type == Event::text_modified && m_count.get() == ev.source) {
-			using namespace xml_conversions;
 			auto text = fromWideString(m_count->text());
 			int tcount = max(1, fromString<int>(text));
-			string new_text = toString(tcount).text();
+			string new_text = toString(tcount);
 			if(text != new_text)
 				m_count->setText(toWideString(new_text));
 			m_count_val = tcount;
@@ -163,10 +162,9 @@ namespace ui {
 	
 	bool TriggerPad::onEvent(const Event &ev) {
 		if(ev.type == Event::text_modified && m_faction_id == ev.source) {
-			using namespace xml_conversions;
 			auto text = fromWideString(m_faction_id->text());
 			int tcount = max(0, fromString<int>(text));
-			string new_text = toString(tcount).text();
+			string new_text = toString(tcount);
 			if(text != new_text)
 				m_faction_id->setText(toWideString(new_text));
 			m_faction_id_val = tcount;

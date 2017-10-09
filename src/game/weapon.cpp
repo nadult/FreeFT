@@ -113,14 +113,14 @@ namespace game {
 	
 	const string Weapon::paramDesc() const {
 		TextFormatter out;
-		out("Damage: %.0f", estimateDamage(false));
+		out.stdFormat("Damage: %.0f", estimateDamage(false));
 		if(proto().burst_ammo > 1)
-			out(" (x%d)", proto().burst_ammo);
+			out(" (x%)", proto().burst_ammo);
 		out("\n");
 		if(needAmmo())
-			out("Max ammo: %d\n", maxAmmo());
+			out("Max ammo: %\n", maxAmmo());
 		if(hasRangedAttack())
-			out("Accuracy: %.0f", proto().accuracy);
+			out.stdFormat("Accuracy: %.0f", proto().accuracy);
 		return string(out.text());
 	}
 		

@@ -21,7 +21,7 @@ struct TupleParser {
 		auto *string = get(name);
 		if(!string[0])
 			return T();
-		return xml_conversions::fromString<T>(string);
+		return fromString<T>(string);
 	}
 
 private:

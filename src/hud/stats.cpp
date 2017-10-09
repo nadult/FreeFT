@@ -53,8 +53,8 @@ namespace hud {
 				for(auto &stat : stats) {
 					m_grid->addRow(counter);
 					m_grid->setCell(counter, 0, stat.nick_name);
-					m_grid->setCell(counter, 1, format("%d", stat.kills));
-					m_grid->setCell(counter, 2, format("%d", stat.deaths));
+					m_grid->setCell(counter, 1, format("%", stat.kills));
+					m_grid->setCell(counter, 2, format("%", stat.deaths));
 					counter++;
 				}
 			}

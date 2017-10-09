@@ -78,8 +78,6 @@ template <class T, EnableIfEnum<T>...> bool validEnum(T value) {
 	return (int)value >= 0 && (int)value < count<T>();
 }
 
-inline int abs(int value) { return value < 0? -value : value; }
-
 }
 
 using namespace fwk;
@@ -294,6 +292,8 @@ ResourceManager<DTexture> &textures();
 ResourceManager<game::Tile> &tiles();
 PFont getFont(const string &name);
 }
+
+void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen);
 
 
 #endif

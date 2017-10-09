@@ -287,9 +287,9 @@ namespace game {
 		string target_text = target? string("| Target:") + target->proto().actor->id : "";
 
 		string out;
-//		out += format("(%.2f %.2f %.2f)\n", entity->pos().x, entity->pos().y, entity->pos().z);
-//		out += format("HP: %d | (move_time: %.2f)\n",	entity->hitPoints(), m_move_delay);
-		out += format("Order:%s %s\n", order.c_str(), target_text.c_str());
+//		out += stdFormat("(%.2f %.2f %.2f)\n", entity->pos().x, entity->pos().y, entity->pos().z);
+//		out += stdFormat("HP: %d | (move_time: %.2f)\n",	entity->hitPoints(), m_move_delay);
+		out += format("Order:% %\n", order, target_text);
 //		out += m_last_message;
 
 		return out;

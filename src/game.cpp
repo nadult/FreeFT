@@ -17,27 +17,15 @@ using namespace game;
 
 static bool s_is_closing = false;
 
-
 void ctrlCHandler() {
 	printf("Closing...\n");
 	s_is_closing = true;
 }
 
-void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
-	//TODO: date is refreshed only when game.o is being rebuilt
-	auto title = "FreeFT alpha (built " __DATE__ " " __TIME__ ")";
-	uint flags = (fullscreen ? GfxDevice::flag_fullscreen : 0) | GfxDevice::flag_resizable |
-				 GfxDevice::flag_vsync;
-	device.createWindow(title, res, flags);
-	device.grabMouse(false);
-//	if(pos != int2(-1, -1))
-//		setWindowPos(pos);
-}
-
 static io::PLoop s_main_loop;
 static double s_last_time = getTime() - 1.0f / 60.0f;
 
-static bool main_loop(GfxDevice &device) {
+static bool main_loop(GfxDevice &device, void*) {
 	double time = getTime();
 	double time_diff = (time - s_last_time);
 	s_last_time = time;
