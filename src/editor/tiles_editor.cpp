@@ -34,7 +34,7 @@ namespace ui {
 		"Creating/removing [o]ccluders",
 	};
 
-	CRange<const char*> TilesEditor::modeStrings() { return s_mode_strings; }
+	CSpan<const char*> TilesEditor::modeStrings() { return s_mode_strings; }
 
 	TilesEditor::TilesEditor(TileMap &tile_map, View &view, IRect rect)
 		:ui::Window(rect, ColorId::transparent), m_view(view), m_tile_map(tile_map), m_new_tile(nullptr) {

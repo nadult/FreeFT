@@ -61,7 +61,7 @@ namespace ui {
 		void setMode(Mode);
 		Mode mode() const { return m_mode; }
 
-		static CRange<const char*> modeStrings();
+		static CSpan<const char*> modeStrings();
 		
 		float m_dirty_percent;
 

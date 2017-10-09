@@ -65,7 +65,7 @@ int decodeInt(Stream &sr) {
 	}
 }
 
-uint toFlags(const char *input, CRange<const char *> strings, uint first_flag) {
+uint toFlags(const char *input, CSpan<const char *> strings, uint first_flag) {
 	const char *iptr = input;
 
 	uint out_value = 0;

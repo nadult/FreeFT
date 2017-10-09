@@ -25,6 +25,18 @@ inline float isectDist(const Segment3<float> &segment, const Box<float3> &box) {
 	return segment.isectParam(box).closest() * segment.length();
 }
 
+template <class T1, class T2> bool operator==(const shared_ptr<T1> &lhs, const T2 *rhs) {
+	    return lhs.get() == rhs;
+}
+template <class T1, class T2> bool operator==(const T1 *lhs, const shared_ptr<T2> &rhs) {
+	    return lhs == rhs.get();
+}
+
+template <class T, class TRange, class T1 = RangeBase<TRange>, EnableIf<!isSame<T, T1>()>...>
+inline bool isOneOf(const T &value, const TRange &range) {
+	return anyOf(range, [&](const auto &v) { return value == v; });
+}
+
 float distance(const Box<float3> &a, const Box<float3> &b);
 float distanceSq(const FRect &a, const FRect &b);
 bool areAdjacent(const IRect &a, const IRect &b);
@@ -96,7 +108,7 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 void encodeInt(Stream &sr, int value);
 int decodeInt(Stream &sr);
 
-uint toFlags(const char *input, CRange<const char*> strings, uint first_flag);
+uint toFlags(const char *input, CSpan<const char*> strings, uint first_flag);
 
 struct MoveVector {
 	MoveVector(const int2 &start, const int2 &end);

@@ -17,7 +17,7 @@ namespace ui {
 	class ComboBox: public Window {
 	public:
 		ComboBox(const IRect &rect, int drop_size, const char *prefix = "",
-					CRange<const char *> values = {});
+					CSpan<const char *> values = {});
 	
 		bool onEvent(const Event &ev) override;
 

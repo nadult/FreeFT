@@ -7,7 +7,7 @@
 
 namespace ui {
 
-	ComboBox::ComboBox(const IRect &rect, int drop_size, const char *prefix, CRange<const char*> values)
+	ComboBox::ComboBox(const IRect &rect, int drop_size, const char *prefix, CSpan<const char*> values)
 		:Window(rect), m_drop_size(drop_size), m_prefix(prefix) {
 		m_button = make_shared<Button>(IRect(int2(0, 0), rect.size()), "");
 		m_dummy = make_shared<ListBox>(IRect(0, 0, 10, 10));
