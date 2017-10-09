@@ -94,7 +94,7 @@ namespace io {
 			return;
 
 		if((event.mouseButtonPressed(InputButton::left) &&
-			event.hasModifier(InputEvent::mod_lctrl)) ||
+			event.pressed(InputModifier::lctrl)) ||
 		   event.mouseButtonPressed(InputButton::middle))
 			m_view_pos -= event.mouseMove();
 		if(event.isMouseEvent())
@@ -164,8 +164,7 @@ namespace io {
 					}
 				}
 			}
-		} else if(event.mouseButtonDown(InputButton::left) &&
-				  !event.hasModifier(InputEvent::mod_lctrl)) {
+		} else if(event.mouseButtonDown(InputButton::left) && !event.pressed(InputModifier::lctrl)) {
 			Entity *entity = m_world->refEntity(m_isect);
 
 			if(entity) {
@@ -176,13 +175,12 @@ namespace io {
 
 				bool run =
 					actor &&
-					!event.hasModifier(
-						InputEvent::mod_lshift); // && distance(float3(wpos), actor->pos()) > 10.0f;
+					!event.pressed(InputModifier::lshift); // && distance(float3(wpos), actor->pos()) > 10.0f;
 				m_world->sendOrder(new MoveOrder(wpos, run), m_actor_ref);
 			}
 		} else if(event.mouseButtonDown(InputButton::right) && actor) {
 			Maybe<AttackMode> mode;
-			if(event.hasModifier(InputEvent::mod_lshift)) {
+			if(event.pressed(InputModifier::lshift)) {
 				const Weapon &weapon = actor->inventory().weapon();
 				if(weapon.proto().attack_modes & AttackModeFlags::burst)
 					mode = AttackMode::burst;

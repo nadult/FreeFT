@@ -22,7 +22,7 @@ namespace game
 
 	DEFINE_ENUM(DoorSoundType,
 		open,
-		close,
+		close
 	)
 
 	DEFINE_ENUM(DoorState,
