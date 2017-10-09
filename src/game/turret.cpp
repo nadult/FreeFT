@@ -237,7 +237,7 @@ namespace game {
 		if(isClient())
 			return;
 
-		Ray best_ray = computeBestShootingRay(target_box, weapon);
+		Ray best_ray = *computeBestShootingRay(target_box, weapon).asRay();
 
 		if(randomness > 0.0f) {
 			float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);

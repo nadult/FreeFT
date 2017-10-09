@@ -190,7 +190,7 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 			float3 point =
 				origin + (px * (float(x) * mult - 0.5f) + pz * (float(z) * mult - 0.5f)) * radius;
 
-			float isect = intersection(Ray(point + dir, -dir), box);
+			float isect = isectDist(Ray(point + dir, -dir), box);
 			if(isect < fconstant::inf)
 				out.push_back(outside ? point : point - dir * (isect - 1.0f));
 		}

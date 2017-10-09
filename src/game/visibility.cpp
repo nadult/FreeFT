@@ -257,10 +257,10 @@ namespace game {
 
 		if(out.empty())
 			return Intersection();
-		return Intersection(out, intersection(screenRay(screen_pos), out_bbox));
+		return Intersection(out, isectDist(screenRay(screen_pos), out_bbox));
 	}
 
-	Intersection WorldViewer::trace(const Segment &segment, const FindFilter &filter) const {
+	Intersection WorldViewer::trace(const Segment3F &segment, const FindFilter &filter) const {
 		Intersection out;
 
 		if(filter.flags() & Flags::tile)
@@ -274,7 +274,7 @@ namespace game {
 				if(!entity || !m_occluder_config.isVisible(m_entities[n].occluder_id) || !Flags::test(entity->flags(), filter.flags()) || n == ignore_index)
 					continue;
 
-				float distance = intersection(segment, entity->boundingBox());
+				float distance = isectDist(segment, entity->boundingBox());
 				if(distance < out.distance())
 					out = Intersection(ObjectRef(n, true), distance);
 			}

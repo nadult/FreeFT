@@ -262,7 +262,7 @@ namespace game {
 		return filter.m_ignore_object_ref.m_is_entity? filter.m_ignore_object_ref.m_index : -1;
 	}
 
-	Intersection World::trace(const Segment &segment, const FindFilter &filter) const {
+	Intersection World::trace(const Segment3F &segment, const FindFilter &filter) const {
 		Intersection out;
 
 		if(filter.m_flags & Flags::tile) {
@@ -282,7 +282,7 @@ namespace game {
 		return out;
 	}
 		
-	void World::traceCoherent(const vector<Segment> &segments, vector<Intersection> &out, const FindFilter &filter) const {
+	void World::traceCoherent(const vector<Segment3F> &segments, vector<Intersection> &out, const FindFilter &filter) const {
 		out.resize(segments.size());
 		vector<pair<int, float>> results;
 
@@ -348,16 +348,16 @@ namespace game {
 		const FBox &box = target->boundingBox();
 
 		vector<float3> points = genPointsOnPlane(box, normalize(eye_pos - box.center()), density, false);
-		vector<Segment> segments(points.size());
+		vector<Segment3F> segments(points.size());
 		for(int n = 0; n < (int)points.size(); n++)
-			segments[n] = Segment(eye_pos, points[n]);
+			segments[n] = Segment3F(eye_pos, points[n]);
 
 		vector<Intersection> isects;
 		traceCoherent(segments, isects, {Flags::all | Flags::occluding, ignore});
 
 		for(int n = 0; n < (int)points.size(); n++) {
 			const Intersection &isect = isects[n];
-			if(isect.empty() || isect.distance() >= intersection(segments[n], box) - fconstant::epsilon)
+			if(isect.empty() || isect.distance() >= isectDist(segments[n], box) - fconstant::epsilon)
 				return true;
 		}
 

@@ -69,7 +69,7 @@ namespace game {
 		virtual float accuracy(const Weapon &weapon) const;
 		float inaccuracy(const Weapon &weapon) const;
 
-		const Segment computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
+		Segment3F computeBestShootingRay(const FBox &bbox, const Weapon &weapon);
 		float estimateHitChance(const Weapon &weapon, const FBox &bbox);
 		
 		Maybe<OrderTypeId> currentOrder() const;

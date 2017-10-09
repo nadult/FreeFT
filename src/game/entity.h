@@ -113,7 +113,7 @@ namespace game {
 		
 		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
 		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;
-		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
+		Intersection trace(const Segment3F &, const FindFilter &filter = FindFilter()) const;
 
 		void playSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
 		void replicateSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);

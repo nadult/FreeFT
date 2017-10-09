@@ -12,6 +12,20 @@ using namespace fwk;
 
 namespace fwk {
 
+using Segment3F = Segment<float, 3>;
+
+inline Ray negate(const Ray &rhs) {
+	return {rhs.origin(), -rhs.dir()};
+}
+
+inline float isectDist(const Ray &ray, const Box<float3> &box) {
+	return intersectionRange(ray, box).first;
+}
+
+inline float isectDist(const Segment3<float> &segment, const Box<float3> &box) {
+	return intersectionRange(segment, box).first * segment.length();
+}
+
 // These can be used to look for wrong uses of min & max on vectors
 //template <class T, class X = EnableIfVector<T, T>> T max(T a, T b) { static_assert(sizeof(T) == 0, ""); return a; }
 //template <class T, class X = EnableIfVector<T, T>> T min(T a, T b) { static_assert(sizeof(T) == 0, ""); return b; }

@@ -108,7 +108,7 @@ namespace game {
 			m_world->findAll(out, box, filter);
 	}
 
-	Intersection EntityWorldProxy::trace(const Segment &segment, const FindFilter &filter) const {
+	Intersection EntityWorldProxy::trace(const Segment3F &segment, const FindFilter &filter) const {
 		return m_world? m_world->trace(segment, filter) : Intersection();
 	}
 

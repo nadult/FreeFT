@@ -61,15 +61,15 @@ void Grid::findAll(vector<int> &out, const FBox &box, int ignored_id, int flags)
 }
 
 pair<int, float> Grid::trace(const Ray &ray, int ignored_id, int flags) const {
-	float tmin = max(0.0f, intersection(ray, m_bounding_box));
-	float tmax = -intersection(-ray, m_bounding_box);
+	float tmin = max(0.0f, isectDist(ray, m_bounding_box));
+	float tmax = -isectDist(negate(ray), m_bounding_box);
 	return trace(ray, tmin, tmax, ignored_id, flags);
 }
 
-pair<int, float> Grid::trace(const Segment &segment, int ignored_id, int flags) const {
-	float tmin = max(0.0f, intersection(segment, m_bounding_box));
-	float tmax = min(segment.length(), -intersection(-segment, m_bounding_box));
-	return trace(segment, tmin, tmax, ignored_id, flags);
+pair<int, float> Grid::trace(const Segment3F &segment, int ignored_id, int flags) const {
+	float tmin = max(0.0f, isectDist(segment, m_bounding_box));
+	float tmax = min(segment.length(), -isectDist(negate(*segment.asRay()), m_bounding_box));
+	return trace(*segment.asRay(), tmin, tmax, ignored_id, flags);
 }
 	
 pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored_id, int flags) const {
@@ -104,12 +104,12 @@ pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored
 		int node_id = nodeAt(pos);
 		const Node &node = m_nodes[node_id];
 
-		if(flagTest(node.obj_flags, flags) && intersection(ray, node.bbox) < out_dist) {
+		if(flagTest(node.obj_flags, flags) && isectDist(ray, node.bbox) < out_dist) {
 			const Object *objects[node.size];
 			int count = extractObjects(node_id, objects, ignored_id, flags);
 
 			for(int n = 0; n < count; n++) {
-				float dist = intersection(ray, objects[n]->bbox);
+				float dist = isectDist(ray, objects[n]->bbox);
 				if(dist < out_dist) {
 					out_dist = dist;
 					out = objects[n] - &m_objects[0];
@@ -140,7 +140,7 @@ pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored
 	return make_pair(out, out_dist);
 }
 
-void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float>> &out, int ignored_id, int flags) const {
+void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, float>> &out, int ignored_id, int flags) const {
 	out.resize(segments.size(), make_pair(-1, fconstant::inf));
 
 	if(segments.empty())
@@ -151,9 +151,9 @@ void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float
 		float3 pmax(-fconstant::inf, -fconstant::inf, -fconstant::inf);
 
 		for(int s = 0; s < (int)segments.size(); s++) {
-			const Segment &segment = segments[s];
-			float tmin = max(0.0f, intersection(segment, m_bounding_box));
-			float tmax = min(segment.length(), -intersection(-segment, m_bounding_box));
+			const Segment3F &segment = segments[s];
+			float tmin = max(0.0f, isectDist(segment, m_bounding_box));
+			float tmax = min(segment.length(), -isectDist(negate(*segment.asRay()), m_bounding_box));
 
 			float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
 			pmin = vmin(pmin, vmin(p1, p2));
@@ -168,14 +168,19 @@ void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float
 
 	float max_dist = -fconstant::inf;
 	Interval idir[3], origin[3]; {
-		const Segment &first = segments.front();
-		idir  [0] = first.invDir().x; idir  [1] = first.invDir().y; idir  [2] = first.invDir().z;
+		auto first = *segments.front().asRay();
+		auto first_idir = first.invDir();
+
+		idir  [0] = first_idir.x; idir  [1] = first_idir.y; idir  [2] = first_idir.z;
 		origin[0] = first.origin().x; origin[1] = first.origin().y; origin[2] = first.origin().z;
 
 		for(int s = 1; s < (int)segments.size(); s++) {
-			const Segment &segment = segments[s];
-			float tidir[3] = { segment.invDir().x, segment.invDir().y, segment.invDir().z };
-			float torigin[3] = { segment.origin().x, segment.origin().y, segment.origin().z };
+			const Segment3F &segment = segments[s];
+			const auto ray = *segment.asRay();
+			const auto ray_idir = ray.invDir();
+
+			float tidir[3] = { ray_idir.x, ray_idir.y, ray_idir.z };
+			float torigin[3] = { segment.from.x, segment.from.y, segment.from.z };
 
 			max_dist = max(max_dist, segment.length());
 			for(int i = 0; i < 3; i++) {
@@ -196,8 +201,8 @@ void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float
 			for(int n = 0; n < count; n++) {
 				if(intersection(idir, origin, objects[n]->bbox) < max_dist) {
 					for(int s = 0; s < (int)segments.size(); s++) {
-						const Segment &segment = segments[s];
-						float dist = intersection(segment, objects[n]->bbox);
+						const Segment3F &segment = segments[s];
+						float dist = isectDist(segment, objects[n]->bbox);
 						if(dist < out[s].second) {
 							out[s].second = dist;
 							out[s].first = objects[n] - &m_objects[0];

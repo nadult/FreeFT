@@ -460,10 +460,12 @@ namespace game {
 		if(isClient())
 			return;
 
-		Ray best_ray = computeBestShootingRay(target_box, weapon);
+		auto seg = computeBestShootingRay(target_box, weapon);
+		DASSERT(!seg.empty());
+		Ray best_ray = *seg.asRay();
 
 		if(randomness > 0.0f) {
-			float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);
+			float3 dir = normalize(perturbVector(best_ray.dir(), random(), random(), randomness));
 			best_ray = Ray(best_ray.origin(), dir);
 		}
 

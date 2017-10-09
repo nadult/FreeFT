@@ -55,7 +55,7 @@ namespace game {
 		//TODO: make it impossible to reference shadows? (only getting their type & bbox)
 
 		Intersection pixelIntersect(const int2 &screen_pos, const FindFilter &filter = FindFilter()) const;
-		Intersection trace(const Segment &segment, const FindFilter &filter = FindFilter()) const;
+		Intersection trace(const Segment3F &segment, const FindFilter &filter = FindFilter()) const;
 
 		void setSeeAll(bool see_all) { m_see_all = see_all; }
 

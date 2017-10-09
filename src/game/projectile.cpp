@@ -73,7 +73,7 @@ namespace game {
 			return;
 		}
 
-		Intersection isect = trace(Segment(ray.origin(), ray.at(ray_pos)), {Flags::all | Flags::colliding, m_spawner});
+		Intersection isect = trace(Segment3F(ray.origin(), ray.at(ray_pos)), {Flags::all | Flags::colliding, m_spawner});
 		float3 new_pos = ray.at(min(isect.distance(), ray_pos));
 		m_distance += length(new_pos - pos());
 		setPos(new_pos);

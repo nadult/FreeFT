@@ -71,11 +71,11 @@ public:
 	int findAny(const FBox &box, int ignored_id = -1, int flags = object_flags) const;
 	void findAll(vector<int> &out, const FBox &box, int ignored_id = -1, int flags = object_flags) const;
 
-	pair<int, float> trace(const Segment &segment, int ignored_id = -1, int flags = object_flags) const;
+	pair<int, float> trace(const Segment3F &segment, int ignored_id = -1, int flags = object_flags) const;
 	pair<int, float> trace(const Ray &ray, int ignored_id = -1, int flags = object_flags) const;
 	pair<int, float> trace(const Ray &ray, float tmin, float tmax, int ignored_id, int flags) const;
 
-	void traceCoherent(const vector<Segment> &segments, vector<pair<int, float> > &out, int ignored_id = -1, int flags = object_flags) const;
+	void traceCoherent(const vector<Segment3F> &segments, vector<pair<int, float> > &out, int ignored_id = -1, int flags = object_flags) const;
 	
 	void findAll(vector<int> &out, const IRect &view_rect, int flags = object_flags) const;
 	int pixelIntersect(const int2 &pos, bool (*pixelTest)(const ObjectDef&, const int2 &pos), int flags = object_flags) const;

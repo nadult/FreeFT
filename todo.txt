@@ -1,3 +1,10 @@
+Potential problems with libfwk updates:
+- intersection(segment, something) returns parameter within range (0, 1)
+  previously FreeFT expected (0, segment length)
+- min/max -> vmin/vmax for vectors
+- ...
+
+
 - DOWNSCALE, remove unnecessary features
 - use unique_ptr in UI & HUD
 - use FColor instead of Color (unless it's being sent or stored, where memory matters)

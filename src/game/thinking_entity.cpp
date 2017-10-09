@@ -173,7 +173,7 @@ namespace game {
 		return 1.0f / max(10.0f, accuracy(weapon));
 	}
 	
-	const Segment ThinkingEntity::computeBestShootingRay(const FBox &target_box, const Weapon &weapon) {
+	Segment3F ThinkingEntity::computeBestShootingRay(const FBox &target_box, const Weapon &weapon) {
 		//PROFILE_RARE("ThinkingEntity::shootingRay");
 
 		FBox shooting_box = shootingBox(weapon);
@@ -189,10 +189,10 @@ namespace game {
 			int best_source = -1, best_hits = 0;
 			float best_dist = 0.0f;
 
-			vector<Segment> segments;
+			vector<Segment3F> segments;
 			for(int s = 0; s < (int)sources.size(); s++)
 				for(int t = 0; t < (int)targets.size(); t++)
-					segments.push_back(Segment(sources[s], targets[t]));
+					segments.push_back(Segment3F(sources[s], targets[t]));
 
 			vector<Intersection> results;
 			world()->traceCoherent(segments, results, {Flags::all | Flags::colliding, ref()});
@@ -202,10 +202,10 @@ namespace game {
 				int num_hits = 0;
 		
 				for(int t = 0; t < (int)targets.size(); t++) {
-					const Segment &segment = segments[s * targets.size() + t];
-					const Intersection &isect = results[s * targets.size() + t];
+					const auto &segment = segments[s * targets.size() + t];
+					const auto &isect = results[s * targets.size() + t];
 
-					if(isect.empty() || isect.distance() + fconstant::epsilon >= intersection(segment, target_box))
+					if(isect.empty() || isect.distance() + fconstant::epsilon >= isectDist(segment, target_box))
 						num_hits++;
 				}
 
@@ -231,9 +231,9 @@ namespace game {
 			vector<float3> targets = genPointsOnPlane(target_box, normalize(source - target_box.center()), 8, false);
 			vector<char> target_hits(targets.size(), 0);
 
-			vector<Segment> segments;
+			vector<Segment3F> segments;
 			for(int t = 0; t < (int)targets.size(); t++)
-				segments.push_back(Segment(source, targets[t]));
+				segments.push_back(Segment3F(source, targets[t]));
 
 			vector<Intersection> isects;
 			world()->traceCoherent(segments, isects, {Flags::all | Flags::colliding, ref()});
@@ -241,8 +241,8 @@ namespace game {
 			int num_hits = 0;
 			for(int t = 0; t < (int)targets.size(); t++) {
 				const Intersection &isect = isects[t];
-				const Segment &segment = segments[t];
-				if(isect.empty() || isect.distance() + fconstant::epsilon >= intersection(segment, target_box)) {
+				const Segment3F &segment = segments[t];
+				if(isect.empty() || isect.distance() + fconstant::epsilon >= isectDist(segment, target_box)) {
 					target_hits[t] = 1;
 					num_hits++;
 				}
@@ -267,25 +267,30 @@ namespace game {
 			}
 		}
 
-		return Segment(source, best_target);
+		return Segment3F(source, best_target);
 	}
 	
 	float ThinkingEntity::estimateHitChance(const Weapon &weapon, const FBox &target_bbox) {
 	//	PROFILE_RARE("ThinkingEntity::estimateHitChance");
 
-		Segment segment = computeBestShootingRay(target_bbox, weapon);
+		Segment3F segment = computeBestShootingRay(target_bbox, weapon);
 
 		float inaccuracy = this->inaccuracy(weapon);
-		vector<Segment> segments;
+		vector<Segment3F> segments;
 		int density = 32;
 
 		for(int x = 0; x < density; x++)
 			for(int y = 0; y < density; y++) {
 				float mul = 1.0f / (density - 1);
-				Ray ray(segment.origin(), perturbVector(segment.dir(), float(x) * mul, float(y) *mul, inaccuracy));
-				float dist = intersection(ray, target_bbox);
+				if(segment.empty())
+					continue;
+
+				auto sray = *segment.asRay();
+				auto dir = normalize(perturbVector(sray.dir(), float(x) * mul, float(y) *mul, inaccuracy));
+				Ray ray(sray.origin(), dir);
+				float dist = isectDist(ray, target_bbox);
 				if(dist < fconstant::inf)
-					segments.push_back(Segment(ray.origin(), ray.at(dist)));
+					segments.push_back(Segment3F(ray.origin(), ray.at(dist)));
 			}
 
 		vector<Intersection> isects;
@@ -293,7 +298,7 @@ namespace game {
 
 		int num_hits = 0;
 		for(int n = 0; n < (int)isects.size(); n++)
-			if(isects[n].empty() || isects[n].distance() + fconstant::epsilon >= intersection(segments[n], target_bbox))
+			if(isects[n].empty() || isects[n].distance() + fconstant::epsilon >= isectDist(segments[n], target_bbox))
 			   num_hits++;	
 
 		return float(num_hits) / (density * density);
