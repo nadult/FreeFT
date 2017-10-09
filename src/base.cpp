@@ -370,6 +370,18 @@ PFont getFont(const string &name) {
 }
 }
 
+string32 toUTF32Checked(StringRef ref) {
+	if(auto result = toUTF32(ref))
+		return move(*result);
+	FATAL("Error while converting string to UTF32");
+}
+
+string toUTF8Checked(const string32 &str) {
+	if(auto result = toUTF8(str))
+		return *result;
+	FATAL("Error while converting string to UTF8");
+}
+
 void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
 	// TODO: date is refreshed only when game.o is being rebuilt
 	auto title = "FreeFT::editor; built " __DATE__ " " __TIME__;

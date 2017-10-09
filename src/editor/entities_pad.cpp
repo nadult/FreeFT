@@ -103,7 +103,7 @@ namespace ui {
 		m_proto_id = addControl<ComboBox>(200, "Item id: ");
 
 		m_count = addControl<EditBox>(20, "Count: ");
-		m_count->setText(L"1");
+		m_count->setText(toUTF32Checked("1"));
 		m_count_val = 1;
 
 		updateItemIds();
@@ -137,11 +137,11 @@ namespace ui {
 			updateItemIds();
 		}
 		else if(ev.type == Event::text_modified && m_count.get() == ev.source) {
-			auto text = fromWideString(m_count->text());
+			auto text = toUTF8Checked(m_count->text());
 			int tcount = max(1, fromString<int>(text));
 			string new_text = toString(tcount);
 			if(text != new_text)
-				m_count->setText(toWideString(new_text));
+				m_count->setText(toUTF32Checked(new_text));
 			m_count_val = tcount;
 		}
 
@@ -157,16 +157,16 @@ namespace ui {
 		m_class_id->selectEntry(0);
 		m_faction_id = addControl<EditBox>(200, "Faction id: ");
 		m_faction_id_val = 0;
-		m_faction_id->setText(L"0");
+		m_faction_id->setText(toUTF32Checked("0"));
 	}
 	
 	bool TriggerPad::onEvent(const Event &ev) {
 		if(ev.type == Event::text_modified && m_faction_id == ev.source) {
-			auto text = fromWideString(m_faction_id->text());
+			auto text = toUTF8Checked(m_faction_id->text());
 			int tcount = max(0, fromString<int>(text));
 			string new_text = toString(tcount);
 			if(text != new_text)
-				m_faction_id->setText(toWideString(new_text));
+				m_faction_id->setText(toUTF32Checked(new_text));
 			m_faction_id_val = tcount;
 		}
 

@@ -17,8 +17,8 @@ namespace ui {
 		EditBox(const IRect &rect, int max_size, StringRef label = StringRef(), FColor col = ColorId::transparent);
 		const char *typeName() const override { return "EditBox"; }
 
-		void setText(wstring);
-		const wstring &text() const { return m_text; }
+		void setText(string32);
+		const string32 &text() const { return m_text; }
 		void reset(bool is_editing);
 
 		void drawContents(Renderer2D&) const override;
@@ -30,8 +30,8 @@ namespace ui {
 		void setCursorPos(int2);
 
 		PFont m_font;
-		wstring m_text, m_old_text;
-		wstring m_label;
+		string32 m_text, m_old_text;
+		string32 m_label;
 		int m_cursor_pos;
 		int m_max_size;
 		bool m_is_editing;

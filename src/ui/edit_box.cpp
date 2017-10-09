@@ -10,11 +10,11 @@ using namespace gfx;
 namespace ui {
 
 	EditBox::EditBox(const IRect &rect, int max_size, StringRef label, FColor col)
-		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size), m_label(toWideString(label)) {
+		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size), m_label(toUTF32Checked(label)) {
 		m_font = res::getFont(WindowStyle::fonts[0]);
 	}
 
-	void EditBox::setText(wstring new_text) {
+	void EditBox::setText(string32 new_text) {
 		m_text = std::move(new_text);
 		if((int)m_text.size() > m_max_size)
 			m_text.resize(m_max_size);
@@ -50,7 +50,7 @@ namespace ui {
 	void EditBox::reset(bool is_editing) {
 		m_cursor_pos = 0;
 		setFocus( (m_is_editing = is_editing) );
-		m_old_text = m_text = wstring();
+		m_old_text = m_text = string32();
 	}
 
 	void EditBox::onInput(const InputState &state) {

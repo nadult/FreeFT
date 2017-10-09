@@ -45,6 +45,9 @@ bool areOverlapping(const FBox &a, const FBox &b);
 bool areOverlapping(const IRect &a, const IRect &b);
 bool areOverlapping(const FRect &a, const FRect &b);
 
+string32 toUTF32Checked(StringRef);
+string toUTF8Checked(const string32 &);
+
 // These can be used to look for wrong uses of min & max on vectors
 //template <class T, class X = EnableIfVector<T, T>> T max(T a, T b) { static_assert(sizeof(T) == 0, ""); return a; }
 //template <class T, class X = EnableIfVector<T, T>> T min(T a, T b) { static_assert(sizeof(T) == 0, ""); return b; }
