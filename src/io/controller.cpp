@@ -154,8 +154,8 @@ namespace io {
 				// TODO: send it only, when no other order is in progress (or has been sent and
 				// wasn't
 				// finished)
-				if(m_full_isect.distance() < constant::inf &&
-				   m_full_isect.distance() > -constant::inf) {
+				if(m_full_isect.distance() < fconstant::inf &&
+				   m_full_isect.distance() > -fconstant::inf) {
 					float3 look_at = m_screen_ray.at(m_full_isect.distance());
 					if(look_at != m_last_look_at &&
 					   distance(look_at.xz(), actor->boundingBox().center().xz()) > 5.0f) {

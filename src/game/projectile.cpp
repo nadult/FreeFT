@@ -50,7 +50,7 @@ namespace game {
 	
 	void Projectile::nextFrame() {
 		Entity::nextFrame();
-		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi * 0.01f));
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, fconstant::pi * 0.01f));
 		m_frame_count++;
 	}
 		

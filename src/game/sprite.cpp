@@ -226,14 +226,14 @@ namespace game
 		
 	int Sprite::findDir(int seq_id, float radians) const {
 		DASSERT(seq_id >= 0 && seq_id < size());
-//		DASSERT(radians >= 0.0f && radians < constant::pi * 2.0f);
+//		DASSERT(radians >= 0.0f && radians < fconstant::pi * 2.0f);
 
 		//TODO: wtf???
 		float2 vec = angleToVector(radians);
 		radians = vectorToAngle(-vec);
 		
 		int dir_count = dirCount(seq_id);
-		float dir = radians * float(dir_count) * (0.5f / constant::pi) + 0.5f;
+		float dir = radians * float(dir_count) * (0.5f / fconstant::pi) + 0.5f;
 		return (int(dir) + dir_count) % dir_count;
 	}
 

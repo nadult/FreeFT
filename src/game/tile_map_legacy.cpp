@@ -161,8 +161,8 @@ namespace game {
 				//		printf("%d %d %d | %d %d %d | %d %d %d\n", size.x, size.y, size.z, tile_size.x, tile_size.y, tile_size.z, tile_psize.x, tile_psize.y, tile_psize.z);
 				//	ASSERT(tile_size == size && size == tile_psize);
 
-					box.min = min(box.min, pos);
-					box.max = max(box.max, pos + size);
+					box.min = vmin(box.min, pos);
+					box.max = vmax(box.max, pos + size);
 
 					instances.push_back(Instance{pos, size, tile_id});
 				}

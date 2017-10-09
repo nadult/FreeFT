@@ -34,7 +34,7 @@ namespace game {
 		if(event == EntityEvent::init_order) {
 			if(order.mode == Mode::fall) {
 				float angle_diff = angleDistance(dirAngle(), order.force_angle);	
-				animate(angle_diff < constant::pi * 0.5? Action::fall_forward : Action::fall_back);
+				animate(angle_diff < fconstant::pi * 0.5? Action::fall_forward : Action::fall_back);
 				order.mode = Mode::fall;
 				if(order.force >= 10.0f)
 					m_target_angle = vectorToAngle(-angleToVector(order.force_angle));

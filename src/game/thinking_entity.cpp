@@ -205,7 +205,7 @@ namespace game {
 					const Segment &segment = segments[s * targets.size() + t];
 					const Intersection &isect = results[s * targets.size() + t];
 
-					if(isect.empty() || isect.distance() + constant::epsilon >= intersection(segment, target_box))
+					if(isect.empty() || isect.distance() + fconstant::epsilon >= intersection(segment, target_box))
 						num_hits++;
 				}
 
@@ -226,7 +226,7 @@ namespace game {
 		}
 
 		float3 best_target = target_box.center(); {
-			float best_score = -constant::inf;
+			float best_score = -fconstant::inf;
 		
 			vector<float3> targets = genPointsOnPlane(target_box, normalize(source - target_box.center()), 8, false);
 			vector<char> target_hits(targets.size(), 0);
@@ -242,7 +242,7 @@ namespace game {
 			for(int t = 0; t < (int)targets.size(); t++) {
 				const Intersection &isect = isects[t];
 				const Segment &segment = segments[t];
-				if(isect.empty() || isect.distance() + constant::epsilon >= intersection(segment, target_box)) {
+				if(isect.empty() || isect.distance() + fconstant::epsilon >= intersection(segment, target_box)) {
 					target_hits[t] = 1;
 					num_hits++;
 				}
@@ -284,7 +284,7 @@ namespace game {
 				float mul = 1.0f / (density - 1);
 				Ray ray(segment.origin(), perturbVector(segment.dir(), float(x) * mul, float(y) *mul, inaccuracy));
 				float dist = intersection(ray, target_bbox);
-				if(dist < constant::inf)
+				if(dist < fconstant::inf)
 					segments.push_back(Segment(ray.origin(), ray.at(dist)));
 			}
 
@@ -293,7 +293,7 @@ namespace game {
 
 		int num_hits = 0;
 		for(int n = 0; n < (int)isects.size(); n++)
-			if(isects[n].empty() || isects[n].distance() + constant::epsilon >= intersection(segments[n], target_bbox))
+			if(isects[n].empty() || isects[n].distance() + fconstant::epsilon >= intersection(segments[n], target_bbox))
 			   num_hits++;	
 
 		return float(num_hits) / (density * density);

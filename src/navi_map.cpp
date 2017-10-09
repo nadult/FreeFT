@@ -120,7 +120,7 @@ void NaviMap::extractQuads(const PodArray<u8> &bitmap, const int2 &bsize, int sx
 
 static const IRect computeEdge(const IRect &quad1, const IRect &quad2) {
 	bool is_horizontal = quad1.max.x > quad2.min.x && quad1.min.x < quad2.max.x;
-	IRect edge(max(quad1.min, quad2.min), min(quad1.max, quad2.max));
+	IRect edge(vmax(quad1.min, quad2.min), vmin(quad1.max, quad2.max));
 
 	if(is_horizontal) {
 		edge.max.x--;
@@ -238,8 +238,8 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 				hmin = min(hmin, height);
 				hmax = max(hmax, height);
 
-				subrect.min = min(subrect.min, pos);
-				subrect.max = max(subrect.max, pos);
+				subrect.min = vmin(subrect.min, pos);
+				subrect.max = vmax(subrect.max, pos);
 				bitmap[offset] = 0;
 				subbitmap[offset] = height;
 				pixel_count--;
@@ -297,7 +297,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 	Quad *parent = &m_quads[parent_id];
 	IRect prect = parent->rect;
-	IRect crect(max(rect.min, prect.min), min(rect.max, prect.max));
+	IRect crect(vmax(rect.min, prect.min), vmin(rect.max, prect.max));
 	if(crect.empty())
 		return;
 
@@ -465,7 +465,7 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 	findQuads(enlarged_box, quads);
 	
 	int3 closest_pos = pos;
-	float min_distance = constant::inf, min_distance2 = 0.0f;
+	float min_distance = fconstant::inf, min_distance2 = 0.0f;
 	FRect ftarget_rect((float2)target_box.min.xz(), (float2)target_box.max.xz());
 
 	int3 clip_pos = pos;
@@ -485,13 +485,13 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 		if(quad.min_height > enlarged_box.max.y || quad.max_height < enlarged_box.min.y || quad.is_disabled)
 			continue;
 		
-		int3 new_pos = clamp(clip_pos,	asXZY(quad.rect.min, quad.min_height),
+		int3 new_pos = vclamp(clip_pos,	asXZY(quad.rect.min, quad.min_height),
 								 		asXZY(quad.rect.max - int2(1, 1), quad.max_height));
 
 		float dist  = distanceSq(ftarget_rect, FRect((float2)new_pos.xz(), float2(new_pos.xz()) + float2(m_agent_size, m_agent_size)));
 		float dist2 = distanceSq((float3)new_pos, (float3)pos);
 
-		if(dist < min_distance || (fabs(dist - min_distance) <= constant::epsilon && dist2 < min_distance2)) {
+		if(dist < min_distance || (fabs(dist - min_distance) <= fconstant::epsilon && dist2 < min_distance2)) {
 			if(isReachable(src_quad, quads[n])) {
 				closest_pos = new_pos;
 				min_distance = dist;
@@ -501,12 +501,12 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 	}
 
 	out = closest_pos;
-	return min_distance < constant::inf;
+	return min_distance < fconstant::inf;
 }
 
 void NaviMap::findQuads(const IBox &box, vector<int> &out, bool cheap_filter) const {
-	int2 min_sector = max(box.min.xz() / sector_size, int2(0, 0));
-	int2 max_sector = min(box.max.xz() / sector_size, m_size);
+	int2 min_sector = vmax(box.min.xz() / sector_size, int2(0, 0));
+	int2 max_sector = vmin(box.max.xz() / sector_size, m_size);
 
 	for(int x = min_sector.x; x <= max_sector.x; x++)
 		for(int y = min_sector.y; y <= max_sector.y; y++) {
@@ -657,7 +657,7 @@ namespace {
 
 			if(!(m_init_map[map_idx] & bit)) {
 				m_init_map[map_idx] |= bit;
-				out.dist = constant::inf;
+				out.dist = fconstant::inf;
 				out.heap_pos = -1;
 				out.is_finished = false;
 			}
@@ -717,12 +717,12 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 			
 			IRect edge = computeEdge(quad1.rect, quad2.rect);
 
-			int2 edge_end_pos = clamp(end, edge.min, edge.max);
+			int2 edge_end_pos = vclamp(end, edge.min, edge.max);
 			MoveVector vec(data1.entry_pos, edge_end_pos);
 
-			int2 closest_pos = clamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min, quad2.rect.max - int2(1, 1));
+			int2 closest_pos = vclamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min, quad2.rect.max - int2(1, 1));
 
-			closest_pos = clamp(closest_pos, quad1.rect.min - int2(1, 1), quad1.rect.max);
+			closest_pos = vclamp(closest_pos, quad1.rect.min - int2(1, 1), quad1.rect.max);
 
 #ifndef WALK_DIAGONAL_THROUGH_CORNERS
 			// fixing problem with diagonal moves through obstacle corners
@@ -842,7 +842,7 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 			if(src.x < pdst.x) pdst.x--; else if(src.x > pdst.x) pdst.x++;
 			if(src.y < pdst.y) pdst.y--; else if(src.y > pdst.y) pdst.y++;
 		}
-		pdst = clamp(pdst, src_quad.min, src_quad.max - int2(1,1));
+		pdst = vclamp(pdst, src_quad.min, src_quad.max - int2(1,1));
 
 #ifndef WALK_DIAGONAL_THROUGH_CORNERS
 		if(is_horizontal)

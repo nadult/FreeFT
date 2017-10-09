@@ -205,9 +205,9 @@ void Grid::updateNode(int id) const {
 }
 
 const IRect Grid::nodeCoords(const FBox &box) const {
-	return IRect(	worldToGrid( max(int2(0, 0), int2(box.min.x, box.min.z)) ),
-					min(m_size - int2(1, 1),
-						worldToGrid( int2(box.max.x - constant::epsilon, box.max.z - constant::epsilon) )) );
+	return IRect(	worldToGrid( vmax(int2(0, 0), int2(box.min.x, box.min.z)) ),
+					vmin(m_size - int2(1, 1),
+						worldToGrid( int2(box.max.x - fconstant::epsilon, box.max.z - fconstant::epsilon) )) );
 }
 
 bool Grid::isInside(const float3 &pos) const {

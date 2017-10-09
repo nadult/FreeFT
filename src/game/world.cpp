@@ -357,7 +357,7 @@ namespace game {
 
 		for(int n = 0; n < (int)points.size(); n++) {
 			const Intersection &isect = isects[n];
-			if(isect.empty() || isect.distance() >= intersection(segments[n], box) - constant::epsilon)
+			if(isect.empty() || isect.distance() >= intersection(segments[n], box) - fconstant::epsilon)
 				return true;
 		}
 

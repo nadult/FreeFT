@@ -67,7 +67,7 @@ namespace game {
 				float strength = dist < 0.0f? 0.0f : (1 - dist) * (1.0f - dist);
 
 				if(strength > 0.0f) {
-					if(distance(center, entity->boundingBox().center()) < constant::epsilon) {
+					if(distance(center, entity->boundingBox().center()) < fconstant::epsilon) {
 						entity->onImpact(m_proto.damage_type, strength * m_proto.damage * m_damage_mod, float3(), m_source);
 					}
 					else {

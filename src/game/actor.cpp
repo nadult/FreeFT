@@ -339,7 +339,7 @@ namespace game {
 		float3 center = boundingBox().center();
 		float2 dir(pos.x - center.x, pos.z - center.z);
 		float len = length(dir);
-		if(len < constant::epsilon)
+		if(len < fconstant::epsilon)
 			return;
 
 		dir = dir / len;
@@ -349,7 +349,7 @@ namespace game {
 	}
 
 	void Actor::nextFrame() {
-		setDirAngle(blendAngles(dirAngle(), m_target_angle, constant::pi / 4.0f));
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, fconstant::pi / 4.0f));
 		ThinkingEntity::nextFrame();
 	}
 		

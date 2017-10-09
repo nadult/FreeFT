@@ -158,14 +158,14 @@ namespace io {
 		int2 dims(m_loading->size());
 		float2 center = float2(dims.x * 0.49f, dims.y * 0.49f);
 
-		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * constant::pi * 2.0), 8.0) * 0.1;
+		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * fconstant::pi * 2.0), 8.0) * 0.1;
 
 		FRect extents = font->draw(out, float2(0.0f, 0.0f), {color, ColorId::black, HAlign::right, VAlign::center}, text);
 
 		out.pushViewMatrix();
 		out.mulViewMatrix(translation(extents.max.x + 8.0f + center.x, 0.0f, 0.0f));
 		out.mulViewMatrix(scaling(scale));
-		out.mulViewMatrix(rotation(float3(0, 0, 1), m_anim_pos * 2.0f * constant::pi));
+		out.mulViewMatrix(rotation(float3(0, 0, 1), m_anim_pos * 2.0f * fconstant::pi));
 		out.mulViewMatrix(translation(-center.x, -center.y, 0.0f));
 
 		out.addFilledRect(IRect(dims), {m_loading, color});

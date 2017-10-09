@@ -62,7 +62,7 @@ namespace ui {
 
 			if(inc && dir_count)
 				m_proto_angle = (m_proto_angle + inc + dir_count) % dir_count;
-			m_proto->setDirAngle(constant::pi * 2.0f * (float)m_proto_angle / float(dir_count));
+			m_proto->setDirAngle(fconstant::pi * 2.0f * (float)m_proto_angle / float(dir_count));
 		}
 
 		if(state.isKeyPressed(InputKey::del)) {
@@ -90,7 +90,7 @@ namespace ui {
 		float3 pos = isect.first == -1? (float3)asXZ(screenToWorld(start)) : ray.at(isect.second);
 
 		m_cursor_pos = (float3)::round(pos);
-		m_selection = IRect(min(start, end), max(start, end));
+		m_selection = IRect(vmin(start, end), vmax(start, end));
 	}
 		
 	void EntitiesEditor::findVisible(vector<int> &out, const IRect &rect) const {
@@ -106,7 +106,7 @@ namespace ui {
 			for(int gx = m_selection.min.x; gx <= m_selection.max.x; gx += block_size) {
 				temp.clear();
 
-				IRect block_rect(int2(gx, gy), min(int2(gx + block_size, gy + block_size), m_selection.max));
+				IRect block_rect(int2(gx, gy), vmin(int2(gx + block_size, gy + block_size), m_selection.max));
 				m_entity_map.findAll(temp, block_rect, Flags::all | Flags::visible);
 				for(int n = 0; n < (int)temp.size(); n++)
 					if(indices.find(temp[n]) != indices.end()) {

@@ -23,8 +23,8 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 	PodArray<IBox> bboxes(walkable.size());
 	for(int n = 0; n < bboxes.size(); n++) {
 		IBox bbox = walkable[n];
-		bbox.min = max(bbox.min, int3(0, 0, 0));
-		bbox.max = min(bbox.max, int3(m_size.x, 255, m_size.y));
+		bbox.min = vmax(bbox.min, int3(0, 0, 0));
+		bbox.max = vmin(bbox.max, int3(m_size.x, 255, m_size.y));
 		bboxes[n] = bbox;
 	}
 
@@ -60,8 +60,8 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 
 	for(int n = 0; n < (int)blockers.size(); n++) {
 		IBox blocker(
-				max(blockers[n].min, int3(0, 0, 0)),
-				min(blockers[n].max, int3(m_size.x, 255, m_size.y)));
+				vmax(blockers[n].min, int3(0, 0, 0)),
+				vmin(blockers[n].max, int3(m_size.x, 255, m_size.y)));
 		u8 min_y = max(0, blocker.min.y - 4), max_y = blocker.max.y;
 
 		for(int z = 0; z < blocker.depth(); z++)

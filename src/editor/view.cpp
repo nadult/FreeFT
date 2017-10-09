@@ -32,9 +32,9 @@ namespace ui {
 		for(int n = 0; n < 4; n++)
 			p[n] -= offset;
 
-		int2 tmin = min(min(p[0], p[1]), min(p[2], p[3]));
-		int2 tmax = max(max(p[0], p[1]), max(p[2], p[3]));
-		IRect box(max(tmin, int2(0, 0)), min(tmax, tile_map_size));
+		int2 tmin = vmin(vmin(p[0], p[1]), vmin(p[2], p[3]));
+		int2 tmax = vmax(vmax(p[0], p[1]), vmax(p[2], p[3]));
+		IRect box(vmax(tmin, int2(0, 0)), vmin(tmax, tile_map_size));
 
 		Color color(255, 255, 255, 64);
 		for(int x = box.min.x - box.min.x % m_cell_size; x <= box.max.x; x += m_cell_size)
@@ -89,7 +89,7 @@ namespace ui {
 			m_view_pos -= state.mouseMove();
 
 		IRect rect = worldToScreen(IBox(int3(0, 0, 0), asXZY(m_tile_map.dimensions(), 256)));
-		m_view_pos = clamp(m_view_pos, rect.min, rect.max - m_view_size);
+		m_view_pos = vclamp(m_view_pos, rect.min, rect.max - m_view_size);
 	}
 
 	void View::updateVisibility(int cursor_height) {
@@ -132,7 +132,7 @@ namespace ui {
 		size += bbox - int3(1, 1, 1);
 		size.x -= size.x % bbox.x;
 		size.z -= size.z % bbox.z;
-		size = max(bbox, size);
+		size = vmax(bbox, size);
 
 		if(dir.x < 0)
 			start_pos.x += bbox.x;
@@ -144,8 +144,8 @@ namespace ui {
 		if(start_pos.z > end_pos.z) swap(start_pos.z, end_pos.z);
 		
 		int2 dims = m_tile_map.dimensions();
-		start_pos = asXZY(clamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
-		  end_pos = asXZY(clamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
+		start_pos = asXZY(vclamp(start_pos.xz(), int2(0, 0), dims), start_pos.y);
+		  end_pos = asXZY(vclamp(  end_pos.xz(), int2(0, 0), dims),   end_pos.y);
 
 		return IBox(start_pos, end_pos);
 

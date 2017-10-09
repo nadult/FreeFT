@@ -12,6 +12,10 @@ using namespace fwk;
 
 namespace fwk {
 
+// These can be used to look for wrong uses of min & max on vectors
+//template <class T, class X = EnableIfVector<T, T>> T max(T a, T b) { static_assert(sizeof(T) == 0, ""); return a; }
+//template <class T, class X = EnableIfVector<T, T>> T min(T a, T b) { static_assert(sizeof(T) == 0, ""); return b; }
+
 template <class T>
 void loadFromStream(Maybe<T> &obj, Stream &sr) {
 	char exists;
@@ -57,11 +61,11 @@ inline int2 round(const float2 &v) { return int2(v.x + 0.5f, v.y + 0.5f); }
 inline int3 round(const float3 &v) { return int3(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f); }
 
 inline int2 ceil(const float2 &v) {
-	return int2(v.x + (1.0f - constant::epsilon), v.y + (1.0f - constant::epsilon));
+	return int2(v.x + (1.0f - fconstant::epsilon), v.y + (1.0f - fconstant::epsilon));
 }
 inline int3 ceil(const float3 &v) {
-	return int3(v.x + (1.0f - constant::epsilon), v.y + (1.0f - constant::epsilon),
-				v.z + (1.0f - constant::epsilon));
+	return int3(v.x + (1.0f - fconstant::epsilon), v.y + (1.0f - fconstant::epsilon),
+				v.z + (1.0f - fconstant::epsilon));
 }
 
 const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);

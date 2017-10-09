@@ -234,7 +234,7 @@ void SceneRenderer::render() {
 
 		int2 grid_tl = m_viewport.min + int2(grid_x * node_size, grid_y * node_size);
 		IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
-		grid_rect.max = min(grid_rect.max, m_viewport.max);
+		grid_rect.max = vmin(grid_rect.max, m_viewport.max);
 		out.setScissorRect(grid_rect);
 
 		FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);

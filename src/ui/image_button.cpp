@@ -20,7 +20,7 @@ namespace ui
 		if(font_name)
 			font = res::getFont(font_name);
 
-		rect = IRect({0, 0}, back? back->size() : max(up->size(), down->size()));
+		rect = IRect({0, 0}, back? back->size() : vmax(up->size(), down->size()));
 		text_rect = text_area.empty()? IRect() :
 			IRect(	lerp(float(rect.min.x), float(rect.max.x), text_area.min.x),
 					lerp(float(rect.min.y), float(rect.max.y), text_area.min.y),

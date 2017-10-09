@@ -76,7 +76,7 @@ void TextureCache::nextFrame() {
 		int max_size = 2048;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
 
-		m_atlas_size = min(m_atlas_size, int2(max_size, max_size));
+		m_atlas_size = vmin(m_atlas_size, int2(max_size, max_size));
 		ASSERT(m_atlas_size.x >= node_size && m_atlas_size.y >= node_size);
 
 		m_atlas = make_shared<DTexture>(TextureFormatId::rgba, m_atlas_size);

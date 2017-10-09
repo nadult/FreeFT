@@ -513,7 +513,7 @@ ERROR:;
 		int retries = 0;
 		while(!m_socket.isValid()) {
 			try {
-				m_socket = std::move(Socket(address));
+				m_socket = Socket(address);
 			}
 			catch(...) {
 				address = Address(address.ip, randomPort());
@@ -613,7 +613,7 @@ ERROR:;
 		}
 
 		m_remote_hosts[idx] =
-			std::move(unique_ptr<RemoteHost>(new RemoteHost(address, PacketInfo::max_size * 4, idx, remote_id)));
+			unique_ptr<RemoteHost>(new RemoteHost(address, PacketInfo::max_size * 4, idx, remote_id));
 		
 		return idx;
 	}

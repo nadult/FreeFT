@@ -17,7 +17,7 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 		pos + vz, pos,
 	};
 
-	bool is_flat = box.height() < constant::epsilon;
+	bool is_flat = box.height() < fconstant::epsilon;
 
 	if(is_filled) {
 		static const int front[] = {0, 1, 2, 0, 2, 3, 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2};

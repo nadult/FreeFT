@@ -78,7 +78,7 @@ pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored
 	
 	//TODO: verify for rays going out of grid space
 	if(!isInsideGrid(pos) || !isInsideGrid(end))
-		return make_pair(-1, constant::inf);
+		return make_pair(-1, fconstant::inf);
 
 	// Algorithm idea from: RTCD by Christer Ericson
 	int dx = end.x > pos.x? 1 : end.x < pos.x? -1 : 0;
@@ -98,7 +98,7 @@ pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored
 	float deltaz = cell_size / lenz;
 
 	int out = -1;
-	float out_dist = tmax + constant::epsilon;
+	float out_dist = tmax + fconstant::epsilon;
 
 	while(true) {
 		int node_id = nodeAt(pos);
@@ -141,14 +141,14 @@ pair<int, float> Grid::trace(const Ray &ray, float tmin, float tmax, int ignored
 }
 
 void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float>> &out, int ignored_id, int flags) const {
-	out.resize(segments.size(), make_pair(-1, constant::inf));
+	out.resize(segments.size(), make_pair(-1, fconstant::inf));
 
 	if(segments.empty())
 		return;
 
 	int2 start, end; {
-		float3 pmin(constant::inf, constant::inf, constant::inf);
-		float3 pmax(-constant::inf, -constant::inf, -constant::inf);
+		float3 pmin(fconstant::inf, fconstant::inf, fconstant::inf);
+		float3 pmax(-fconstant::inf, -fconstant::inf, -fconstant::inf);
 
 		for(int s = 0; s < (int)segments.size(); s++) {
 			const Segment &segment = segments[s];
@@ -156,17 +156,17 @@ void Grid::traceCoherent(const vector<Segment> &segments, vector<pair<int, float
 			float tmax = min(segment.length(), -intersection(-segment, m_bounding_box));
 
 			float3 p1 = segment.at(tmin), p2 = segment.at(tmax);
-			pmin = min(pmin, min(p1, p2));
-			pmax = max(pmax, max(p1, p2));
+			pmin = vmin(pmin, vmin(p1, p2));
+			pmax = vmax(pmax, vmax(p1, p2));
 		}
 
 		start = worldToGrid((int2)pmin.xz());
 		end = worldToGrid((int2)pmax.xz());
-		start = max(start, int2(0, 0));
-		end = min(end, int2(m_size.x - 1, m_size.y - 1));
+		start = vmax(start, int2(0, 0));
+		end = vmin(end, int2(m_size.x - 1, m_size.y - 1));
 	}
 
-	float max_dist = -constant::inf;	
+	float max_dist = -fconstant::inf;
 	Interval idir[3], origin[3]; {
 		const Segment &first = segments.front();
 		idir  [0] = first.invDir().x; idir  [1] = first.invDir().y; idir  [2] = first.invDir().z;

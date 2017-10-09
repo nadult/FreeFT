@@ -276,7 +276,7 @@ namespace game {
 
 	float Entity::actualDirAngle() const {
 		int dir_count = m_sprite.dirCount(m_seq_idx);
-		return float(m_dir_idx) * (constant::pi * 2.0f) / float(dir_count) + constant::pi;
+		return float(m_dir_idx) * (fconstant::pi * 2.0f) / float(dir_count) + fconstant::pi;
 	}
 
 	const float2 Entity::actualDir() const {

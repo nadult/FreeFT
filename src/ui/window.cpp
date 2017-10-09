@@ -263,7 +263,7 @@ namespace ui
 
 	void Window::setInnerRect(const IRect &rect) {
 		int2 isize = rect.size();
-		m_inner_rect.min = max(min(rect.min, {0, 0}), min(-isize + m_rect.size(), {0, 0}));
+		m_inner_rect.min = vmax(vmin(rect.min, {0, 0}), vmin(-isize + m_rect.size(), {0, 0}));
 		m_inner_rect.max = m_inner_rect.min + isize;
 		m_has_inner_rect = isize.x > m_rect.width() || isize.y > m_rect.height();
 	}
@@ -303,7 +303,7 @@ namespace ui
 		if(m_parent) {
 			IRect parent_rect = m_parent->m_clipped_rect;
 			m_clipped_rect += parent_rect.min;
-			m_clipped_rect.max = min(m_clipped_rect.max, parent_rect.max);
+			m_clipped_rect.max = vmin(m_clipped_rect.max, parent_rect.max);
 		}
 
 		for(int n = 0; n < (int)m_children.size(); n++)

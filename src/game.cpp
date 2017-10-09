@@ -113,7 +113,7 @@ int safe_main(int argc, char **argv)
 		}
 
 	}
-	res = max(res, int2(640, 480));
+	res = vmax(res, int2(640, 480));
 
 	if(init_audio)
 		audio::initDevice();

@@ -158,8 +158,8 @@ const float3 project(const float3 &point, const Plane &plane) {
 vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density, bool outside) {
 	DASSERT(density > 1);
 
-	if(box.width() < constant::epsilon && box.height() < constant::epsilon &&
-	   box.depth() < constant::epsilon)
+	if(box.width() < fconstant::epsilon && box.height() < fconstant::epsilon &&
+	   box.depth() < fconstant::epsilon)
 		return {box.center()};
 
 	float radius = distance(box.center(), box.min);
@@ -167,15 +167,15 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 
 	float3 origin = project(box.center(), plane);
 	float3 other = project(box.min, plane);
-	if(distanceSq(other, origin) < constant::epsilon) {
+	if(distanceSq(other, origin) < fconstant::epsilon) {
 		for(auto corner : box.corners()) {
 			other = project(corner, plane);
-			if(distanceSq(other, origin) >= constant::epsilon)
+			if(distanceSq(other, origin) >= fconstant::epsilon)
 				break;
 		}
 	}
 
-	if(distanceSq(other, origin) < constant::epsilon)
+	if(distanceSq(other, origin) < fconstant::epsilon)
 		return {box.center()};
 
 	float3 px = normalize(other - origin);
@@ -191,11 +191,11 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 				origin + (px * (float(x) * mult - 0.5f) + pz * (float(z) * mult - 0.5f)) * radius;
 
 			float isect = intersection(Ray(point + dir, -dir), box);
-			if(isect < constant::inf)
+			if(isect < fconstant::inf)
 				out.push_back(outside ? point : point - dir * (isect - 1.0f));
 		}
 
-	return std::move(out);
+	return out;
 }
 
 vector<float3> genPoints(const FBox &bbox, int density) {
@@ -209,11 +209,11 @@ vector<float3> genPoints(const FBox &bbox, int density) {
 			for(int z = 0; z < density; z++)
 				out.push_back(offset + float3(x * mul.x, y * mul.y, z * mul.z));
 
-	return std::move(out);
+	return out;
 }
 
 void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3) {
-	DASSERT(lengthSq(v1) > constant::epsilon);
+	DASSERT(lengthSq(v1) > fconstant::epsilon);
 
 	v2 = float3(-v1.y, v1.z, v1.x);
 	v3 = cross(v1, v2);
@@ -276,7 +276,7 @@ float intersection(const Interval idir[3], const Interval origin[3], const Box<f
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
-	return lmin.min <= lmax.max ? lmin.min : constant::inf;
+	return lmin.min <= lmax.max ? lmin.min : fconstant::inf;
 }
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const FBox &box) {
@@ -297,14 +297,7 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 	for(auto &corner : corners)
 		corner = asXZY(rotateVector(corner.xz() - xz_origin, angle) + xz_origin, corner.y);
-
-	Box<float3> out(corners[0], corners[0]);
-	for(auto corner : corners) {
-		out.min = min(out.min, corner);
-		out.max = max(out.max, corner);
-	}
-
-	return out;
+	return Box<float3>(corners);
 }
 
 #include "game/tile.h"
