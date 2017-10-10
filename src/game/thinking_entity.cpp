@@ -277,7 +277,7 @@ namespace game {
 
 		float inaccuracy = this->inaccuracy(weapon);
 		vector<Segment3F> segments;
-		int density = 32;
+		int density = 16;
 
 		for(int x = 0; x < density; x++)
 			for(int y = 0; y < density; y++) {

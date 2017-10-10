@@ -250,9 +250,7 @@ bool PackedTexture::testPixel(const int2 &pixel) const {
 
 		if(offset > target_offset) {
 			offset = target_offset - (offset - n_pixels);
-			return command == 0 ? false : command == 1
-											  ? true
-											  : data[command == 2 ? offset * 2 + 1 : offset] != 0;
+			return command < 2 ? command : data[command == 2 ? offset * 2 + 1 : offset] != 0;
 		}
 
 		if(command >= 1)

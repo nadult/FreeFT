@@ -195,7 +195,7 @@ int2 screenToWorld(const int2 &pos) {
 Ray3F screenRay(const int2 &screen_pos) {
 	float3 origin = asXZ(screenToWorld((float2)screen_pos));
 	float3 dir = float3(-1.0f / 6.0f, -1.0f / 7.0f, -1.0f / 6.0f);
-	return Ray3F(origin - dir * 1024.0f, dir / length(dir));
+	return Ray3F(origin - dir * 2048.0f, dir / length(dir));
 }
 
 float3 project(const float3 &point, const Plane3F &plane) {

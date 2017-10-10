@@ -227,7 +227,7 @@ namespace game {
 				const auto &desc = tile_map[inds[i]];
 				
 				FBox bbox = desc.bbox;
-				
+
 				if(out.empty() || drawingOrder(bbox, out_bbox) == 1)
 					if(desc.ptr->testPixel(screen_pos - worldToScreen((int3)bbox.min()))) {
 						out = ObjectRef(inds[i], false);

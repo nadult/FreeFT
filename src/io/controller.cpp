@@ -139,7 +139,7 @@ namespace io {
 				(Flags::entity & ~(Flags::projectile | Flags::impact | Flags::trigger));
 			m_isect =
 				m_viewer.pixelIntersect((int2)event.mousePos() + m_view_pos, {flags, m_actor_ref});
-			Segment3F screen_ray(m_screen_ray.origin(), m_screen_ray.at(1024.0f));
+			Segment3F screen_ray(m_screen_ray.origin(), m_screen_ray.at(2048.0f));
 			if(m_isect.empty() || m_isect.isTile())
 				m_isect = m_viewer.trace(screen_ray, {flags, m_actor_ref});
 
@@ -214,7 +214,7 @@ namespace io {
 							   normalize(float3(-1, 0, -1)));
 		else {
 			Ray3F mid_ray = screenRay(m_view_pos + resolution / 2);
-			auto isect = m_world->trace(Segment3F(mid_ray.origin(), mid_ray.at(1024.0f)));
+			auto isect = m_world->trace(Segment3F(mid_ray.origin(), mid_ray.at(2048.0f)));
 			if(isect) {
 				float3 listener_pos = mid_ray.at(isect.distance());
 				audio::setListener(listener_pos, float3(0, 0, 0), normalize(float3(-1, 0, -1)));
