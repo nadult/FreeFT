@@ -13,6 +13,24 @@ src/io/main_menu_loop.cpp:185 io::MainMenuLoop::onTick (this=0x1a8d0c0, time_dif
              src/game.cpp:142 safe_main (argc=<optimized out>, argv=<optimized out>)
              src/game.cpp:157 main (argc=17, argv=0x8abce60)
 
+Backtrace:
+                src/base.cpp:211 (anonymous namespace)::assertFailed (file=<optimized out>, line=<optimized out>, text=<optimized out>)
+...libfwk/include/fwk_math.h:988 fwk::Box<fwk::float3>::Box (this=<optimized out>, min=..., max=...)
+...libfwk/include/fwk_math.h:986 fwk::Box<fwk::float3>::Box<fwk::float3> (min_y=0, max_x=0, max_y=<optimized out>, max_z=<optimized ...
+     src/game/entity_map.cpp:42  game::EntityMap::updateOccluderId (this=0x7f04e00009a8, object_id=<optimized out>)
+     src/game/entity_map.cpp:91  game::EntityMap::update (this=<optimized out>, index=41)
+          src/game/world.cpp:153 game::World::simulate (this=<optimized out>, time_diff=0.017741714999829128)
+        src/io/game_loop.cpp:76  io::GameLoop::onTick (this=0x1618670, time_diff=0.017741714999829128)
+   src/io/main_menu_loop.cpp:185 io::MainMenuLoop::onTick (this=0x13f37a0, time_diff=0.017741714999829128)
+                src/game.cpp:35  main_loop (device=...)
+      src/gfx/gfx_device.cpp:186 (anonymous namespace)::GfxDevice::runMainLoop (this=0x7fff6065b940, main_loop_func=0x51f2a0 <main_l...
+                src/game.cpp:142 safe_main (argc=<optimized out>, argv=<optimized out>)
+                src/game.cpp:157 main (argc=15, argv=0x59a6340)
+Trace/breakpoint trap
+
+- Server doesn't inform client that it's closing
+
+
 Potential problems with libfwk updates:
 - intersection(segment, something) returns parameter within range (0, 1)
   previously FreeFT expected (0, segment length)

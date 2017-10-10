@@ -382,9 +382,9 @@ string toUTF8Checked(const string32 &str) {
 	FATAL("Error while converting string to UTF8");
 }
 
-void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
+void createWindow(const char *name, GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
 	// TODO: date is refreshed only when game.o is being rebuilt
-	auto title = "FreeFT::editor; built " __DATE__ " " __TIME__;
+	auto title = format("FreeFT::%; built " __DATE__ " " __TIME__, name);
 	auto flags = GfxDeviceOpt::resizable | GfxDeviceOpt::vsync;
 	if(fullscreen)
 		flags |= GfxDeviceOpt::fullscreen;

@@ -306,7 +306,7 @@ int safe_main(int argc, char **argv) {
 
 	Profiler profiler;
 	GfxDevice gfx_device;
-	createWindow(gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
+	createWindow("editor", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
 	EditorWindow window(gfx_device.windowSize());
 	gfx_device.runMainLoop(EditorWindow::mainLoop, &window);

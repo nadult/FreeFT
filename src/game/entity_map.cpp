@@ -39,7 +39,7 @@ namespace game
 		DASSERT(object.ptr);
 
 		FBox bbox = object.ptr->boundingBox();
-		bbox = {bbox.x(), 0.0f, bbox.z(), bbox.ex(), bbox.y(), bbox.ez()};
+		bbox = {bbox.x(), 0.0f, bbox.z(), bbox.ex(), max(0.0f, bbox.y()), bbox.ez()};
 
 		vector<int> temp;
 		temp.reserve(128);

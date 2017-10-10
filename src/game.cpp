@@ -108,7 +108,7 @@ int safe_main(int argc, char **argv)
 
 	bool console_mode = server_config.isValid() && server_config.m_console_mode;
 	if(!console_mode)
-		createWindow(gfx_device, res, window_pos, fullscreen);
+		createWindow("game", gfx_device, res, window_pos, fullscreen);
 
 	try {
 		if(server_config.isValid()) {
@@ -135,7 +135,7 @@ int safe_main(int argc, char **argv)
 
 	if(!s_main_loop) {
 		if(console_mode)
-			createWindow(gfx_device, res, window_pos, config.fullscreen_on);
+			createWindow("game", gfx_device, res, window_pos, config.fullscreen_on);
 		s_main_loop.reset(new io::MainMenuLoop);
 	}
 

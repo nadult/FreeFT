@@ -296,7 +296,7 @@ ResourceManager<game::Tile> &tiles();
 PFont getFont(const string &name);
 }
 
-void createWindow(GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen);
+void createWindow(const char *name, GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen);
 
 
 #endif
