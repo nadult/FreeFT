@@ -1,3 +1,18 @@
+- Segfault in server (on the client as well):
+libfwk/include/fwk_vector.h:145: Assertion failed: inRange(idx)
+Backtrace:
+             src/base.cpp:210 (anonymous namespace)::assertFailed (file=<optimized out>, line=<optimized out>, text=<optimized out>)
+             src/grid.cpp:103 Grid::add (this=<optimized out>, object_id=<optimized out>, def=...)
+             src/grid.cpp:154 Grid::update (this=0x7fa9140009a8, idx=46, object=...)
+  src/game/entity_map.cpp:90  game::EntityMap::update (this=<optimized out>, index=46)
+       src/game/world.cpp:153 game::World::simulate (this=<optimized out>, time_diff=0.016737945000386389)
+     src/io/game_loop.cpp:76  io::GameLoop::onTick (this=0x2ee9100, time_diff=0.016737945000386389)
+src/io/main_menu_loop.cpp:185 io::MainMenuLoop::onTick (this=0x1a8d0c0, time_diff=0.016737945000386389)
+             src/game.cpp:35  main_loop (device=...)
+   src/gfx/gfx_device.cpp:186 (anonymous namespace)::GfxDevice::runMainLoop (this=0x7ffd9917d9c0, main_loop_func=0x51f2a0 <main_l...
+             src/game.cpp:142 safe_main (argc=<optimized out>, argv=<optimized out>)
+             src/game.cpp:157 main (argc=17, argv=0x8abce60)
+
 Potential problems with libfwk updates:
 - intersection(segment, something) returns parameter within range (0, 1)
   previously FreeFT expected (0, segment length)

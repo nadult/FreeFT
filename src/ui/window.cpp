@@ -102,8 +102,9 @@ namespace ui
 
 			if(m_children[n]->m_is_closing) {
 				PWindow window = m_children[n];
+				auto closing_value = m_children[n]->m_closing_value;
 				m_children.erase(m_children.begin() + n);
-				sendEvent(window.get(), Event::window_closed, m_children[n]->m_closing_value); 
+				sendEvent(window.get(), Event::window_closed, closing_value); 
 				n--;
 			}
 			else if(m_children[n]->m_is_popup)

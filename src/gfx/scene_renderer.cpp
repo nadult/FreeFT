@@ -159,12 +159,12 @@ void SceneRenderer::render() {
 	PodArray<char> graph(1024);
 	PodArray<GNode> gdata(32);
 
-	for(int g = 0; g < (int)grid.size();) {
+	for(int g = 0; g < grid.size();) {
 		int node_id = grid[g].first;
 		int grid_x = node_id % xNodes, grid_y = node_id / xNodes;
 
 		int count = 0;
-		while(grid[g + count].first == node_id && g + count < (int)grid.size())
+		while(g + count < grid.size() && grid[g + count].first == node_id)
 			count++;
 
 		if((int)graph.size() < count * count)

@@ -232,7 +232,8 @@ namespace hud {
 				m_servers.clear();
 			}
 
-			Address sel_address = m_grid->selectedRow() != -1? m_servers[m_grid->selectedRow()].address : Address();
+			int index = m_grid->selectedRow();
+			Address sel_address = m_servers.inRange(index)? m_servers[index].address : Address();
 
 			m_servers.clear();
 			for(int n = 0; n < (int)new_data.size(); n++) {
