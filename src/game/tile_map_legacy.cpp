@@ -176,15 +176,12 @@ namespace game {
 			printf("Constructing... from: %d elements\n", (int)instances.size());
 			for(int n = 0; n < (int)instances.size(); n++) {
 				Instance &inst = instances[n];
-				try {
-					float3 pos = float3(inst.pos - box.min());
-					TileParams &params = tile_params[inst.tile_id];
-					FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
-					ASSERT(findAny(bbox) == -1);
+
+				float3 pos = float3(inst.pos - box.min());
+				TileParams &params = tile_params[inst.tile_id];
+				FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
+				if(findAny(bbox) == -1)
 					Grid::add(findFreeObject(), Grid::ObjectDef(&tiles[inst.tile_id], bbox, IRect(0, 0, 32, 32), 0xffffffff));
-				} catch(const Exception &ex) {
-					printf("%s\n", ex.what());
-				}
 			}
 		}
 

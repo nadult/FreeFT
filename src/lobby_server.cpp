@@ -49,8 +49,8 @@ public:
 				break;
 			if(ret < 0 || !(packet.flags() & PacketInfo::flag_lobby))
 				continue;
-			
-			try {
+
+			{ // TODO: proper error handling
 				LobbyChunkId chunk_id;
 				packet >> chunk_id;
 
@@ -102,9 +102,6 @@ public:
 					m_socket.send(out, source);
 				}
 			}
-			catch(...) {
-				continue;
-			}
 		}
 
 		auto it = m_servers.begin();
@@ -129,8 +126,7 @@ void onCtrlC() {
 	s_is_closing = true;
 }
 
-int safe_main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	int port = lobbyServerAddress().port;
 
 	if(argc >= 3 && strcmp(argv[1], "-p") == 0) {
@@ -152,14 +148,3 @@ int safe_main(int argc, char **argv)
 	printf("Closing...\n");
 	return 0;
 }
-
-int main(int argc, char **argv) {
-	try {
-		return safe_main(argc, argv);
-	}
-	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
-		return 1;
-	}
-}
-

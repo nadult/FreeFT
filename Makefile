@@ -1,8 +1,12 @@
 BUILD_DIR=build
 MINGW_PREFIX=i686-w64-mingw32.static-
+LINUX_CXX=clang++
 
 -include Makefile.local
 
+ifneq (,$(findstring clang,$(LINUX_CXX)))
+CLANG=yes
+endif
 
 BUILD_DIR=build
 
@@ -44,8 +48,6 @@ PROGRAM_SRC=editor game res_viewer convert lobby_server
 
 ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC)
 
-DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d)
-
 LINUX_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%.o)
 MINGW_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%_.o)
 
@@ -66,7 +68,6 @@ MINGW_LIBS=$(LIBS) $(MINGW_FWK_LIBS) -lz -lmpg123
 
 SPECIAL_LIBS_convert=-lzip 
 
-LINUX_CXX=clang++
 LINUX_STRIP=strip
 LINUX_PKG_CONFIG=pkg-config
 
@@ -76,17 +77,32 @@ MINGW_PKG_CONFIG=$(MINGW_PREFIX)pkg-config
 
 INCLUDES=-Isrc/ $(FWK_INCLUDES)
 
-NICE_FLAGS=-std=c++1z -fno-omit-frame-pointer -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
+NICE_FLAGS=-std=c++1z -fno-exceptions -fno-omit-frame-pointer -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
 		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
 LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
 
-PCH_FILE=$(BUILD_DIR)/pch.h.pch
-$(PCH_FILE): src/pch.h
-	clang -x c++-header -MMD $(LINUX_FLAGS) src/pch.h -emit-pch -o $@
+PCH_FILE_SRC=src/pch.h
 
-$(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_FILE)
-	$(LINUX_CXX) -MMD $(LINUX_FLAGS) -include-pch $(PCH_FILE) -c src/$*.cpp -o $@
+PCH_FILE_H=$(BUILD_DIR)/pch.h
+PCH_FILE_GCH=$(BUILD_DIR)/pch.h.gch
+PCH_FILE_PCH=$(BUILD_DIR)/pch.h.pch
+
+ifdef CLANG
+	PCH_INCLUDE=-include-pch $(PCH_FILE_PCH)
+	PCH_FILE_MAIN=$(PCH_FILE_PCH)
+else
+	PCH_INCLUDE=-I$(BUILD_DIR) -include $(PCH_FILE_H)
+	PCH_FILE_MAIN=$(PCH_FILE_GCH)
+endif
+
+$(PCH_FILE_H): $(PCH_FILE_SRC)
+	cp $^ $@
+$(PCH_FILE_MAIN): $(PCH_FILE_H)
+	$(LINUX_CXX) -x c++-header -MMD $(LINUX_FLAGS) $(PCH_FILE_H) -o $@
+
+$(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_FILE_MAIN)
+	$(LINUX_CXX) -MMD $(LINUX_FLAGS) $(PCH_INCLUDE) -c src/$*.cpp -o $@
 
 $(MINGW_OBJECTS): $(BUILD_DIR)/%_.o: src/%.cpp
 	$(MINGW_CXX) $(MINGW_FLAGS) -c src/$*.cpp -o $@
@@ -98,9 +114,11 @@ $(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(MINGW_FWK_
 	$(MINGW_CXX) -o $@ $^  $(SPECIAL_LIBS_$*) $(MINGW_LIBS)
 	$(MINGW_STRIP) $@
 
+DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_FILE_H).d
+
 game-clean:
 	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
-			$(MINGW_PROGRAMS) $(DEPS) $(PCH_FILE)
+			$(MINGW_PROGRAMS) $(DEPS) $(PCH_FILE_GCH) $(PCH_FILE_PCH) $(PCH_FILE_H)
 	find $(BUILD_DIR) -type d -empty -delete
 
 clean: game-clean

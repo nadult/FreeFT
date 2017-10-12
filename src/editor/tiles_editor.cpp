@@ -164,8 +164,7 @@ namespace ui {
 					tile = m_tile_group->entryTile(source[random_id]);
 				}
 
-				try { m_tile_map.add(tile, int3(x, fill_box.y(), z)); }
-				catch(...) { }
+				m_tile_map.maybeAdd(*tile, int3(x, fill_box.y(), z));
 			}
 	}
 
@@ -266,8 +265,7 @@ namespace ui {
 				if(!entries.empty()) {
 					int random_id = rand() % entries.size();
 					const Tile *tile = m_tile_group->entryTile(entries[random_id]);
-					try { m_tile_map.add(tile, int3(x, fill_box.y(), z)); }
-					catch(...) { }
+					m_tile_map.maybeAdd(*tile, int3(x, fill_box.y(), z));
 				}
 			}
 	
@@ -363,7 +361,7 @@ namespace ui {
 						const Tile *tile = object.ptr;
 						int3 new_pos = (int3)object.bbox.min() + m_move_offset;
 						m_tile_map.remove(m_selected_ids[n]);
-						m_tile_map.add(tile, new_pos);
+						m_tile_map.maybeAdd(*tile, new_pos);
 					}
 			}
 

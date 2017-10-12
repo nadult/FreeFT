@@ -28,7 +28,7 @@ namespace audio
 	void testError(const char *message) {
 		int last_error = alGetError();
 		if(last_error != AL_NO_ERROR)
-			THROW("%s. %s", message, errorToString(last_error));
+			FATAL("%s. %s", message, errorToString(last_error));
 	}
 
 	void uploadToBuffer(const Sound &sound, unsigned buffer_id) {
@@ -84,13 +84,8 @@ namespace audio
 					testError("Error while creating audio buffer.");
 				}
 
-				try {
-					uploadToBuffer(sound, m_id);
-				}
-				catch(...) {
-					alDeleteBuffers(1, &m_id);
-					throw;
-				}
+				uploadToBuffer(sound, m_id);
+				//TODO: alDeleteBuffers(1, &m_id);
 			}
 
 			bool isLoaded() const {
@@ -188,14 +183,14 @@ namespace audio
 	void initDevice() {
 		ASSERT(!s_is_initialized);
 
-		try {
+		{
 			s_device = alcOpenDevice(0);
 			if(!s_device)
-				THROW("Error in alcOpenDevice");
+				FATAL("Error in alcOpenDevice");
 
 			s_context = alcCreateContext(s_device, 0);
 			if(!s_context)
-				THROW("Error in alcCreateContext");
+				FATAL("Error in alcCreateContext");
 			alcMakeContextCurrent(s_context);
 
 			alGetError();
@@ -210,17 +205,9 @@ namespace audio
 
 			s_is_initialized = true;
 		}
-		catch(...) {
-			if(s_context) {
-				alcDestroyContext(s_context);
-				s_context = nullptr;
-			}
-			if(s_device) {
-				alcCloseDevice(s_device);
-				s_device = nullptr;
-			}
-			throw;
-		}
+		// TODO: finally:
+		// alcDestroyContext(s_context);
+		// alcCloseDevice(s_device);
 
 		s_last_time = getTime() - 1.0 /  60.0;		
 		tick();

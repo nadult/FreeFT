@@ -88,7 +88,7 @@ uint toFlags(const char *input, CSpan<const char *> strings, uint first_flag) {
 			if(strings.size())
 				ptr[-1] = 0;
 
-			THROW("Error while converting string \"%s\" to flags (%s)", input, flags);
+			CHECK_FAILED("Error while converting string \"%s\" to flags (%s)", input, flags);
 		}
 
 		if(!next_space)

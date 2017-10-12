@@ -41,7 +41,7 @@ namespace audio
 		memset(m_buffer_ids, 0, sizeof(m_buffer_ids));
 		m_source_id = 0;
 
-		try {
+		{
 			alGetError();
 
 			alGenBuffers(max_buffers, (ALuint*)m_buffer_ids);
@@ -62,10 +62,6 @@ namespace audio
 			
 			alSourcePlay(m_source_id);
 			m_mode = mode_playing;
-		}
-		catch(...) {
-			free();
-			throw;
 		}
 	}
 

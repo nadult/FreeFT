@@ -25,12 +25,25 @@ namespace game {
 		Grid::swap(new_map);
 	}
 
+	int TileMap::maybeAdd(const Tile &tile, const int3&pos) {
+		FBox bbox((float3)pos, float3(pos + tile.bboxSize()));
+		IRect rect = tile.rect() + worldToScreen(pos);
+		if(findAny(bbox) != -1)
+			return -1;
+
+		int index = findFreeObject();
+		Grid::add(index, Grid::ObjectDef((void*)&tile, bbox, rect, tile.flags() | Flags::visible));
+		return index;
+
+	}
+
 	int TileMap::add(const Tile *tile, const int3 &pos) {
 		DASSERT(tile);
 
 		FBox bbox((float3)pos, float3(pos + tile->bboxSize()));
 		IRect rect = tile->rect() + worldToScreen(pos);
-		ASSERT(findAny(bbox) == -1);
+		DASSERT(findAny(bbox) == -1);
+
 		int index = findFreeObject();
 		Grid::add(index, Grid::ObjectDef((void*)tile, bbox, rect, tile->flags() | Flags::visible));
 		return index;
@@ -55,7 +68,7 @@ namespace game {
 	}
 
 	void TileMap::update(int idx) {
-		THROW("WRITE ME");
+		FATAL("WRITE ME");
 	}
 		
 	int TileMap::pixelIntersect(const int2 &pos, FlagsType flags) const {
@@ -83,7 +96,7 @@ namespace game {
 			XMLNode inode = tnode.child("i");
 			while(inode) {
 				int3 pos = inode.attrib<int3>("pos");
-				add(tile, pos);
+				maybeAdd(*tile, pos);
 				inode = inode.sibling("i");
 			}
 			tnode = tnode.sibling("tile");

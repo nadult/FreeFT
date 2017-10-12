@@ -49,7 +49,7 @@ namespace game {
 			unsigned int checksum = crc32(0, (const unsigned char*)orig.data(), orig.size());
 
 			if(checksum != target_checksum)
-				THROW("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is correct.",
+				CHECK_FAILED("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is correct.",
 						target_checksum, checksum);
 		}
 		

@@ -6,14 +6,14 @@
 #include "sys/data_sheet.h"
 
 TupleParser::TupleParser(const char **columns, int num_columns, const TupleParser::ColumnMap &map)
-	: m_columns(columns), m_num_columns(num_columns), m_column_map(map) { }
+	: m_columns(columns), m_num_columns(num_columns), m_column_map(map) {}
 
 const char *TupleParser::get(const char *col_name) const {
 	DASSERT(col_name);
 
 	auto it = m_column_map.find(col_name);
 	if(it == m_column_map.end())
-		THROW("missing column: %s", col_name);
+		CHECK_FAILED("missing column: %s", col_name);
 	return m_columns[it->second];
 }
 
@@ -22,7 +22,7 @@ static const char *getText(XMLNode cell_node) {
 	if(val_type) {
 		XMLNode text_node = cell_node.child("text:p");
 		if(!text_node)
-			THROW("Unsupported node type: %s\n", val_type);
+			CHECK_FAILED("Unsupported node type: %s\n", val_type);
 		ASSERT(text_node);
 		return text_node.value();
 	}
@@ -55,21 +55,23 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 	for(int n = 0; n < (int)col_names.size(); n++)
 		if(!col_names[n].empty()) {
 			if(column_map.find(col_names[n]) != column_map.end())
-				THROW("Duplicate argument: %s", col_names[n].c_str());
+				CHECK_FAILED("Duplicate argument: %s", col_names[n].c_str());
 			column_map.emplace(col_names[n], n);
 		}
 
 	vector<const char *> columns;
 	columns.reserve(col_names.size());
-	bool errors = false;
 
 	int id_column = 0;
 	{
 		auto it = column_map.find("id");
 		if(it == column_map.end())
-			THROW("Id column must be defined");
+			CHECK_FAILED("Id column must be defined");
 		id_column = it->second;
 	}
+
+	ON_ASSERT(([](XMLNode node) { return format("Error while parsing sheet: %", node.attrib("table:name")); }),
+			  table_node);
 
 	for(int r = 1; r < (int)rows.size(); r++) {
 		XMLNode row = rows[r];
@@ -101,21 +103,17 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 			continue;
 
 		TupleParser parser(columns.data(), num_columns, column_map);
-		try {
-			string id = columns[id_column];
-			if(id.empty())
-				THROW("ID undefined");
-			if(map.find(id) != map.end())
-				THROW("Duplicated ID: %s", id.c_str());
+		string id = columns[id_column];
+		ON_ASSERT(([](int row, const string &column) {
+					return format("Error while parsing row: % (id: %)", row, column);
+				  }), r, id);
 
-			int index = add_func(parser);
-			map.emplace(std::move(id), index);
-		} catch(const Exception &ex) {
-			errors = true;
-			printf("Error while parsing row: %d (id: %s):\n%s\n", r, columns[id_column], ex.what());
-		}
+		if(id.empty())
+			CHECK_FAILED("ID undefined");
+		if(map.find(id) != map.end())
+			CHECK_FAILED("Duplicated ID: %s", id.c_str());
+
+		int index = add_func(parser);
+		map.emplace(std::move(id), index);
 	}
-
-	if(errors)
-		THROW("Errors while parsing sheet: %s\n", table_node.attrib("table:name"));
 }

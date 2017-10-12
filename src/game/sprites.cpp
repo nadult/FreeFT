@@ -70,7 +70,7 @@ namespace game {
 	const Sprite &Sprite::get(const string &name) {
 		int idx = find(name);
 		if(idx == -1)
-			THROW("Sprite not found: %s", name.c_str());
+			CHECK_FAILED("Sprite not found: %s", name.c_str());
 		return get(idx);
 	}
 
@@ -81,7 +81,7 @@ namespace game {
 	const Sprite &Sprite::getPartial(const string &name) {
 		int idx = find(name);
 		if(idx == -1)
-			THROW("Sprite not found: %s", name.c_str());
+			CHECK_FAILED("Sprite not found: %s", name.c_str());
 		Sprite &sprite = s_sprites[idx];
 		if(sprite.index() == -1)
 			loadSprite(idx, false);

@@ -22,7 +22,6 @@ namespace game {
 		explicit TileMap(const int2 &dimensions = int2(0, 0));
 		void resize(const int2 &new_dims);
 
-		int add(const Tile*, const int3 &pos);
 		void remove(int idx);
 		void update(int idx);
 		
@@ -38,7 +37,10 @@ namespace game {
 		const OccluderMap &occluderMap() const { return m_occluder_map; }
 		void updateVisibility(const OccluderConfig&);
 
-	protected:
+		int add(const Tile*, const int3 &pos);
+		int maybeAdd(const Tile&, const int3&);
+
+	private:
 		OccluderMap m_occluder_map;
 	};
 

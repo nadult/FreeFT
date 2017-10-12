@@ -45,9 +45,11 @@ static bool main_loop(GfxDevice &device, void*) {
 	return true;
 }
 
-int safe_main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	Config config("game");
+
+	Backtrace::t_default_mode = BacktraceMode::full;
 
 	srand((int)getTime());
 	audio::initSoundMap();
@@ -110,27 +112,23 @@ int safe_main(int argc, char **argv)
 	if(!console_mode)
 		createWindow("game", gfx_device, res, window_pos, fullscreen);
 
-	try {
-		if(server_config.isValid()) {
-			map_name = server_config.m_map_name;
-			printf("Creating server: %s (map: %s)\n", server_config.m_server_name.c_str(), map_name.c_str());
-			net::PServer server(new net::Server(server_config));
-			PWorld world(new World(map_name, World::Mode::server));
-			server->setWorld(world);
-			s_main_loop.reset(new io::GameLoop(std::move(server), false));
-			if(server_config.m_console_mode)
-				handleCtrlC(ctrlCHandler);
-			if(console_mode)
-				printf("Press Ctrl+C to exit...\n");
-		}
-		else if(!map_name.empty()) {
-			printf("Loading: %s\n", map_name.c_str());
-			game::PWorld world(new World(map_name, World::Mode::single_player));
-			s_main_loop.reset(new io::GameLoop(world, false));
-		}
+	// TODO: if errors happen here, run menu normally
+	if(server_config.isValid()) {
+		map_name = server_config.m_map_name;
+		printf("Creating server: %s (map: %s)\n", server_config.m_server_name.c_str(), map_name.c_str());
+		net::PServer server(new net::Server(server_config));
+		PWorld world(new World(map_name, World::Mode::server));
+		server->setWorld(world);
+		s_main_loop.reset(new io::GameLoop(std::move(server), false));
+		if(server_config.m_console_mode)
+			handleCtrlC(ctrlCHandler);
+		if(console_mode)
+			printf("Press Ctrl+C to exit...\n");
 	}
-	catch(const Exception &ex) {
-		printf("Failed: %s\n", ex.what());
+	else if(!map_name.empty()) {
+		printf("Loading: %s\n", map_name.c_str());
+		game::PWorld world(new World(map_name, World::Mode::single_player));
+		s_main_loop.reset(new io::GameLoop(world, false));
 	}
 
 	if(!s_main_loop) {
@@ -149,16 +147,3 @@ int safe_main(int argc, char **argv)
 
 	return 0;
 }
-
-int main(int argc, char **argv) {
-	try {
-		std::setlocale(LC_ALL, "en_US.UTF8");
-		std::setlocale(LC_NUMERIC, "C");
-		return safe_main(argc, argv);
-	}
-	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
-		return 1;
-	}
-}
-

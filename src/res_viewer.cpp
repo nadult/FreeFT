@@ -16,6 +16,7 @@
 #include "ui/button.h"
 #include "ui/message_box.h"
 #include "sys/config.h"
+#include <fwk/sys/rollback.h>
 
 using namespace game;
 using namespace ui;
@@ -45,7 +46,6 @@ class Resource {
 	Resource(const FilePath &current_dir, const string &file_name)
 		: m_file_name(file_name), m_type(classifyFileName(file_name)) {
 		DASSERT(m_type != ResType::unknown);
-		m_font = res::getFont(ui::WindowStyle::fonts[0]);
 
 		Loader loader(current_dir / file_name);
 		if(m_type == ResType::tile) {
@@ -68,7 +68,7 @@ class Resource {
 		}
 	}
 
-	void printStats(Renderer2D &out, int2 pos) const {
+	void printStats(Renderer2D &out, int2 pos, Font &font) const {
 		TextFormatter fmt;
 
 		if(m_type == ResType::sprite) {
@@ -88,19 +88,19 @@ class Resource {
 				m_seq_id, (int)m_sprite->size(), seq.name.c_str(), seq.frame_count,
 				m_sprite->bboxSize(), max_frame_size);
 
-			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt.text());
-			pos.y += m_font->evalExtents(fmt.text()).height();
+			font.draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt.text());
+			pos.y += font.evalExtents(fmt.text()).height();
 
 			double time = getTime();
 			for(int n = 0; n < (int)m_events.size(); n++) {
 				FColor col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
-				m_font->draw(out, (float2)pos, {col, ColorId::black}, m_events[n].first);
-				pos.y += m_font->lineHeight();
+				font.draw(out, (float2)pos, {col, ColorId::black}, m_events[n].first);
+				pos.y += font.lineHeight();
 			}
 
 		} else if(m_type == ResType::texture) {
 			fmt("Size: (%)", m_texture->size());
-			m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt.text());
+			font.draw(out, (float2)pos, {ColorId::white, ColorId::black}, fmt.text());
 		}
 	}
 
@@ -144,7 +144,7 @@ class Resource {
 		if(m_type == ResType::texture) {
 			if(state.isKeyDown('E')) {
 				string name = FilePath(m_file_name).relative();
-				THROW("fixme");
+				FATAL("fixme");
 				removeSuffix(name, ".zar");
 				name += ".tga";
 				printf("Exporting: %s\n", name.c_str());
@@ -222,7 +222,6 @@ class Resource {
   private:
 	string m_file_name;
 	ResType m_type;
-	unique_ptr<Font> m_font;
 
 	int2 m_rect_size;
 	PTile m_tile;
@@ -239,15 +238,21 @@ class ResourceView : public Window {
 	virtual const char *className() const { return "ResourceView"; }
 	ResourceView(IRect rect, FilePath current_dir, vector<string> file_names)
 		: Window(rect), m_selected_id(-1) {
+		m_font = res::getFont(ui::WindowStyle::fonts[0]);
+
 		for(auto file_name : file_names) {
 			auto res_type = classifyFileName(file_name);
 			if(res_type != ResType::unknown) {
-				try {
-					auto new_res = make_unique<Resource>(current_dir, file_name);
-					m_resources.emplace_back(std::move(new_res));
-				} catch(const Exception &ex) {
-					printf("When loading %s:\n%s\n", file_name.c_str(), ex.what());
-				}
+				ON_ASSERT(
+					([](const string &name) { return format("Error while loading file: %", name); })
+					,file_name);
+
+				auto result = RollbackContext::begin([&]() { return make_unique<Resource>(current_dir, file_name); });
+
+				if(result)
+					m_resources.emplace_back(std::move(*result));
+				 else
+					 result.error().print();
 			}
 		}
 
@@ -325,7 +330,7 @@ class ResourceView : public Window {
 
 		if(m_selected_id != -1) {
 			out.setViewPos(-clippedRect().min());
-			m_resources[m_selected_id]->printStats(out, int2(0, 0));
+			m_resources[m_selected_id]->printStats(out, int2(0, 0), *m_font);
 		}
 	}
 
@@ -339,6 +344,7 @@ class ResourceView : public Window {
 	int2 m_last_mouse_pos;
 	vector<unique_ptr<Resource>> m_resources;
 	vector<int2> m_positions;
+	unique_ptr<Font> m_font;
 };
 
 enum class Command { empty, change_dir, exit };
@@ -458,7 +464,7 @@ static bool main_loop(GfxDevice &device, void*) {
 	return true;
 }
 
-int safe_main(int argc, char **argv) {
+int main(int argc, char **argv) {
 	Config config("res_viewer");
 
 	Profiler profiler;
@@ -471,15 +477,4 @@ int safe_main(int argc, char **argv) {
 	main_window.reset();
 
 	return 0;
-}
-
-int main(int argc, char **argv) {
-	try {
-		std::setlocale(LC_ALL, "en_US.UTF8");
-		std::setlocale(LC_NUMERIC, "C");
-		return safe_main(argc, argv);
-	} catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
-		return 1;
-	}
 }

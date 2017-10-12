@@ -5,6 +5,7 @@
 
 #include <memory.h>
 #include <cstdio>
+#include <fwk/sys/rollback.h>
 
 #include "net/client.h"
 #include "game/actor.h"
@@ -28,7 +29,8 @@ namespace net {
 		bool any_packets = false;
 
 		while(getLobbyPacket(packet)) {
-			try {
+			// TODO: verify that this is ok
+			RollbackContext::begin([&]() {
 				LobbyChunkId chunk_id;
 				packet >> chunk_id;
 
@@ -42,10 +44,7 @@ namespace net {
 					}
 				}
 				any_packets = true;
-			}
-			catch(...) {
-				continue;
-			}
+			});
 		}
 
 		return any_packets;

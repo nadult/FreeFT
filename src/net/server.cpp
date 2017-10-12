@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <list>
 #include <algorithm>
+#include <fwk/sys/rollback.h>
 
 #include "game/world.h"
 #include "game/game_mode.h"
@@ -57,19 +58,18 @@ namespace net {
 		node.addAttrib("password", node.own(m_password));
 	}
 
-	Server::Server(const ServerConfig &config) :LocalHost(Address(m_config.m_port)), m_config(config), m_game_mode(nullptr) {
+	Server::Server(const ServerConfig &config) :LocalHost(Address(config.m_port)), m_config(config), m_game_mode(nullptr) {
 		m_lobby_timeout = m_current_time = getTime();
 	}
 
 	Server::~Server() {
 		//TODO: inform clients that server is closing
 
-		try {
+		RollbackContext::begin([&]() {
 			OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
 			out << LobbyChunkId::server_down;
 			sendLobbyPacket(out);
-		}
-		catch(...) { }
+			});
 	}
 		
 	int Server::numActiveClients() const {

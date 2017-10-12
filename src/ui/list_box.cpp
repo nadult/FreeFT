@@ -122,7 +122,9 @@ namespace ui {
 	}
 
 	void ListBox::update() {
-		setInnerRect(IRect(0, 0, rect().width(), m_font->lineHeight() * (int)m_entries.size()));
+		int2 size(rect().width(), m_font->lineHeight() * (int)m_entries.size());
+		DASSERT(size.x >= 0 && size.y >= 0);
+		setInnerRect(IRect(0, 0, size.x, size.y));
 	}
 
 	int ListBox::selectedId() const {

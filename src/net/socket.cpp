@@ -55,7 +55,7 @@ namespace net {
 
 		struct hostent *hp = gethostbyname(name);
 		if(!hp)
-			THROW("Error while getting host name");
+			CHECK_FAILED("Error while getting host name");
 		sockaddr_in addr;
 		memset(&addr, 0, sizeof(addr));
 		memcpy(&addr.sin_addr, hp->h_addr_list[0], hp->h_length);
@@ -98,13 +98,13 @@ namespace net {
 #endif
 		m_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if(m_fd < 0)
-			THROW("Error while creating socket");
+			CHECK_FAILED("Error while creating socket");
 
 		sockaddr_in addr;
 		toSockAddr(address, &addr);
 		if(bind(m_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 			::close(m_fd);
-			THROW("Error while binding address to socket");
+			CHECK_FAILED("Error while binding address to socket");
 		}
 
 #ifdef _WIN32
@@ -210,7 +210,6 @@ namespace net {
 	void InPacket::ready(int new_size) {
 		m_size = new_size;
 		m_pos = 0;
-		m_exception_thrown = false;
 		*this >> m_info;
 	}
 		

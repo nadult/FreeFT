@@ -6,6 +6,7 @@
 #include "net/host.h"
 #include "net/base.h"
 #include <algorithm>
+#include "fwk/sys/rollback.h"
 
 //#define LOGGING
 
@@ -512,13 +513,14 @@ ERROR:;
 
 		int retries = 0;
 		while(!m_socket.isValid()) {
-			try {
-				m_socket = Socket(address);
+			auto result = RollbackContext::begin([&]() { return Socket(address); });
+			if(result) {
+				m_socket = move(*result);
 			}
-			catch(...) {
+			else {
 				address = Address(address.ip, randomPort());
 				if(++retries == 100)
-					throw;
+					FATAL("Error while constructing socket.\nTODO: handle it properly");
 			}
 		}
 	}

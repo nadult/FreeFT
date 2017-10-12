@@ -94,7 +94,7 @@ namespace game {
 			m_type = fromString<ProtoId>(proto_type);
 			m_idx = findProto(node.attrib("proto_id"), m_type).m_idx;
 			if(m_idx == -1)
-				THROW("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id"), proto_type);
+				CHECK_FAILED("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id"), proto_type);
 			validate();
 		}
 	}
@@ -120,7 +120,7 @@ namespace game {
 		if(m_idx != -1 || m_type) {
 			if(!m_type || !validEnum(*m_type)) {
 				*this = ProtoIndex();
-				THROW("Invalid proto type: %d\n", m_type? (int)*m_type : -1);
+				CHECK_FAILED("Invalid proto type: %d\n", m_type? (int)*m_type : -1);
 				return;
 			}
 
@@ -128,7 +128,7 @@ namespace game {
 			if(m_idx < 0 || m_idx >= count) {
 				ProtoId type = *m_type;
 				*this = ProtoIndex();
-				THROW("Invalid proto index: %d (type: %s, count: %d)\n",
+				CHECK_FAILED("Invalid proto index: %d (type: %s, count: %d)\n",
 						m_idx, toString(type), count);
 			}
 		}
@@ -168,13 +168,13 @@ namespace game {
 	const Proto &getProto(const string &name, Maybe<ProtoId> id) {
 		ProtoIndex index = findProto(name, id);
 		if(!index.isValid())
-			THROW("Proto (type: %s) not found: %s", id? toString(*id) : "invalid", name.c_str());
+			CHECK_FAILED("Proto (type: %s) not found: %s", id? toString(*id) : "invalid", name.c_str());
 		return getProto(index);
 	}
 
 	static void loadProtos(const char *file_name) {
 		if(s_is_loaded)
-			THROW("Proto-tables have already been loaded");
+			FATAL("Proto-tables have already been loaded");
 		s_is_loaded = true;
 
 		XMLDocument doc;
@@ -199,7 +199,7 @@ namespace game {
 				table_node = table_node.sibling("table:table");
 
 			if(!table_node)
-				THROW("Missing table: %s", def.table_name);
+				FATAL("Missing table: %s", def.table_name);
 
 			loadDataSheet(table_node, def.map, def.add_func);
 			def.count = (int)def.map.size();
@@ -209,12 +209,10 @@ namespace game {
 			ProtoDef &def = s_protos[p];
 			for(int n = 0; n < def.count; n++) {
 				Proto &proto = s_protos[p].get_func(n);
-				try {
-					proto.link();
-				}
-				catch(const Exception &ex) {
-					THROW("Error when linking proto: %s (table: %s):\n%s", proto.id.c_str(), def.table_name, ex.what());
-				}
+				ON_ASSERT(([](const Proto &proto, const ProtoDef &def) {
+						  return format("Error when linking proto: % (table: %)", proto.id.c_str(), def.table_name);
+					}),  proto, def);
+				proto.link();
 			}
 		}
 	}

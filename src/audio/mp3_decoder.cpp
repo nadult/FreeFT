@@ -22,7 +22,7 @@ namespace audio {
 		int ret = 0;
 		m_handle = mpg123_new(0, &ret);
 		if(!m_handle)
-			THROW("Error while creating mpg123 decoder");
+			FATAL("Error while creating mpg123 decoder");
 
 		mpg123_open_feed(m_handle);
 		//TODO: disable output
@@ -46,7 +46,7 @@ namespace audio {
 		} while(ret != MPG123_ERR && ret != MPG123_NEW_FORMAT);
 
 		if(ret == MPG123_ERR)
-			THROW("Error while opening mp3 file: %s\n", file_name.c_str());
+			FATAL("Error while opening mp3 file: %s\n", file_name.c_str());
 
 		long rate;
 		int enc;
@@ -54,7 +54,7 @@ namespace audio {
 		m_sample_rate = rate;
 
 		if(enc != MPG123_ENC_SIGNED_16 || m_num_channels > 2)
-			THROW("Unsupported MP3 format (only 16-bit, with no more then 2 channels)");
+			FATAL("Unsupported MP3 format (only 16-bit, with no more then 2 channels)");
 	}
 
 	MP3Decoder::~MP3Decoder() {

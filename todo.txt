@@ -28,7 +28,7 @@ Backtrace:
                 src/game.cpp:157 main (argc=15, argv=0x59a6340)
 Trace/breakpoint trap
 
-- Server doesn't inform client that it's closing
+- Server doesn't inform client that it's closing?
 
 
 Potential problems with libfwk updates:

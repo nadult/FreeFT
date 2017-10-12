@@ -8,7 +8,7 @@
 size_t FrameAllocator::allocatedBlocks = 0;
 FrameAllocator *FrameAllocator::instance = 0;
 
-#define EXCEPT(func, ...) THROW("FrameAllocator::" func "(): " __VA_ARGS__)
+#define EXCEPT(func, ...) CHECK_FAILED("FrameAllocator::" func "(): " __VA_ARGS__)
 
 FrameAllocator::FrameAllocator(size_t tMaxReserve, size_t tReserve)
 	: allocated(0), allocatedAway(0), maxAllocated(0), reserve(tReserve), maxReserve(tMaxReserve) {

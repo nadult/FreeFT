@@ -36,10 +36,9 @@ namespace game {
 		
 	PTexture Character::icon() const {
 		if(!m_icon_name.empty()) {
-			try {
+			{
 				return res::guiTextures()[string(s_icon_folder) + m_icon_name];
-			}
-			catch(...) { } //TODO: log error
+			} //TODO: handle missing icon
 		}
 
 		return emptyIcon();

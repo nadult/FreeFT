@@ -33,7 +33,7 @@ namespace game {
 			out = new Trigger(node);
 			
 		if(!out)
-			THROW("Unknown entity id: %d\n", (int)entity_type);
+			CHECK_FAILED("Unknown entity id: %d\n", (int)entity_type);
 
 		return out;
 	}
@@ -64,7 +64,7 @@ namespace game {
 			out = new Trigger(sr);
 
 		if(!out)
-			THROW("Unknown entity id: %d\n", (int)entity_type);
+			CHECK_FAILED("Unknown entity id: %d\n", (int)entity_type);
 
 		return out;
 	}

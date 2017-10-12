@@ -9,7 +9,7 @@ namespace net {
 
 	void TempPacket::v_save(const void *ptr, int count) {
 		if(m_pos + count > (int)sizeof(m_data))
-			THROW("not enough space in buffer (%d space left, %d needed)", spaceLeft(), (int)count);
+			CHECK_FAILED("not enough space in buffer (%d space left, %d needed)", spaceLeft(), (int)count);
 
 		memcpy(m_data + m_pos, ptr, count);
 		m_pos += count;

@@ -282,24 +282,22 @@ void preloadTiles() {
 	auto &tile_mgr = res::tiles();
 	FilePath tiles_path = FilePath(tile_mgr.constructor().filePrefix()).absolute();
 	for(int n = 0; n < file_names.size(); n++) {
+		ON_ASSERT(([](const FileEntry &file) { return format("\nError while loading file: %", file.path); }), file_names[n]);
+
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
 			fflush(stdout);
 		}
 
-		try {
-			FilePath tile_path = file_names[n].path.relative(tiles_path);
-			string tile_name = tile_path;
-			if(removeSuffix(tile_name, tile_mgr.constructor().fileSuffix()))
-				tile_mgr.accessResource(tile_name);
-		} catch(const Exception &ex) {
-			printf("Error: %s\n", ex.what());
-		}
+		FilePath tile_path = file_names[n].path.relative(tiles_path);
+		string tile_name = tile_path;
+		if(removeSuffix(tile_name, tile_mgr.constructor().fileSuffix()))
+			tile_mgr.accessResource(tile_name);
 	}
 	printf("\n");
 }
 
-int safe_main(int argc, char **argv) {
+int main(int argc, char **argv) {
 	Config config("editor");
 	preloadTiles();
 	game::loadData(true);
@@ -313,15 +311,3 @@ int safe_main(int argc, char **argv) {
 
 	return 0;
 }
-
-int main(int argc, char **argv) {
-	try {
-		return safe_main(argc, argv);
-	}
-	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
-		return 1;
-	}
-	catch(...) { return 1; }
-}
-

@@ -25,7 +25,7 @@ void zlibInflate(Stream &sr, vector<char> &dest, int inSize) {
 	strm.avail_in = 0;
 	strm.next_in = Z_NULL;
 	if(inflateInit(&strm) != Z_OK)
-		THROW("Error while decompressing image data");
+		CHECK_FAILED("Error while decompressing image data");
 
 	/* decompress until deflate stream ends or end of file */
 	do {
@@ -47,7 +47,7 @@ void zlibInflate(Stream &sr, vector<char> &dest, int inSize) {
 			case Z_DATA_ERROR:
 			case Z_MEM_ERROR:
 				inflateEnd(&strm);
-				THROW("Z_MEM_ERROR while decompressing image data");
+				CHECK_FAILED("Z_MEM_ERROR while decompressing image data");
 			}
 			have = CHUNK - strm.avail_out;
 			dest.resize(dest.size() + have);
@@ -59,7 +59,7 @@ void zlibInflate(Stream &sr, vector<char> &dest, int inSize) {
 	inflateEnd(&strm);
 
 	if(ret != Z_STREAM_END)
-		THROW("Error while decompressing image data");
+		CHECK_FAILED("Error while decompressing image data");
 }
 
 namespace game
@@ -193,7 +193,7 @@ namespace game
 			i16 type; sr >> type;
 
 			if(type != '1' && type != '2')
-				THROW("Unknown spranim_img type: %d", (int)type);
+				CHECK_FAILED("Unknown spranim_img type: %d", (int)type);
 			collection.type = type;
 
 			bool plainType = type == '1';

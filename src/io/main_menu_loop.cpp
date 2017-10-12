@@ -194,7 +194,9 @@ namespace io {
 		if(m_mode == mode_loading) {
 			PLoop new_loop;
 
-			try {
+			// TODO: properly handle errors here;
+			// Logic has to be simplified for rollbacking to work
+			{
 				if(m_future_world.valid() && m_future_world.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
 					if(m_client) {
 						PWorld world = m_future_world.get();
@@ -211,7 +213,7 @@ namespace io {
 					}
 				}
 			}
-			catch(const Exception &ex) {
+			/*catch(const Exception &ex) {
 				PFont font = res::getFont(WindowStyle::fonts[1]);
 				IRect extents = font->evalExtents(ex.what());
 				int2 pos = rect().center(), size(min(rect().width(), extents.width() + 50), 100);
@@ -220,7 +222,7 @@ namespace io {
 				attach(message_box);
 				new_loop.reset(nullptr);
 				m_mode = mode_normal;
-			}
+			}*/
 			
 			if(new_loop) {
 				m_sub_loop = std::move(new_loop);

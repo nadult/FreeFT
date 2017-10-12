@@ -47,7 +47,7 @@ namespace audio
 		ASSERT(block_align == channels * (bits / 8));
 
 		if(format != 1)
-			THROW("Unknown format (only PCM is supported)");
+			CHECK_FAILED("Unknown format (only PCM is supported)");
 
 		sr.seek(sr.pos() + chunk_size[1] - 16);
 
@@ -57,7 +57,7 @@ namespace audio
 
 		ASSERT(size >= 0);
 		if(channels > 2 || (bits != 8 && bits != 16))
-			THROW("Unknown format (bits: %d channels: %d)", bits, channels);
+			CHECK_FAILED("Unknown format (bits: %d channels: %d)", bits, channels);
 
 		m_data.resize(size);
 		sr.loadData(m_data.data(), size);

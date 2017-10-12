@@ -84,7 +84,7 @@ void PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 	sr.unpack(zar_type, dummy1, m_width, m_height, has_palette);
 
 	if(zar_type != 0x33 && zar_type != 0x34)
-		THROW("Wrong zar type: %d", (int)zar_type);
+		CHECK_FAILED("Wrong zar type: %d", (int)zar_type);
 
 	if(has_palette)
 		palette.legacyLoad(sr);
