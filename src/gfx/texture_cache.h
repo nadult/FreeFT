@@ -7,6 +7,7 @@
 #define GFX_TEXTURE_CACHE_H
 
 #include "base.h"
+#include <fwk/list_node.h>
 
 class TextureCache;
 
@@ -87,7 +88,7 @@ class TextureCache {
 		List list;
 	};
 
-	PodArray<AtlasNode> m_atlas_nodes;
+	PodVector<AtlasNode> m_atlas_nodes;
 	STexture m_atlas;
 	int2 m_atlas_size;
 	int m_atlas_counter;

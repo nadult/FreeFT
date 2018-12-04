@@ -11,6 +11,7 @@
 #include "ui/button.h"
 #include "ui/list_box.h"
 #include "ui/edit_box.h"
+#include <fwk/filesystem.h>
 
 namespace ui {
 

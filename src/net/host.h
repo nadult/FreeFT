@@ -9,6 +9,7 @@
 #include "net/socket.h"
 #include "net/chunk.h"
 #include "sys/aligned_allocator.h"
+#include <fwk/list_node.h>
 #include <list>
 
 namespace net {

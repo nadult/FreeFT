@@ -34,7 +34,7 @@ namespace audio {
 		do {
 			size_t size = 0;
 			if(m_need_data) {
-				PodArray<u8> input(min(4096, (int)(m_stream->size() - m_stream->pos())));
+				PodVector<u8> input(min(4096, (int)(m_stream->size() - m_stream->pos())));
 				m_stream->loadData(input.data(), input.size());
 				ret = mpg123_decode(m_handle, input.data(), input.size(), 0, 0, &size);
 			}
@@ -72,7 +72,7 @@ namespace audio {
 		if(m_is_finished)
 			return true;
 
-		PodArray<u8> temp(max_size);
+		PodVector<u8> temp(max_size);
 		int out_pos = 0;
 
 		int ret = 0;
@@ -85,7 +85,7 @@ namespace audio {
 					ret = MPG123_DONE;
 					break;
 				}
-				PodArray<u8> input(min(4096, bytes_left));
+				PodVector<u8> input(min(4096, bytes_left));
 
 				m_stream->loadData(input.data(), input.size());
 				ret = mpg123_decode(m_handle, input.data(), input.size(), temp.data() + out_pos, max_size - out_pos, &size);

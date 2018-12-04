@@ -26,7 +26,7 @@ class Palette {
 	const Color *data() const { return m_data.data(); }
 
   protected:
-	PodArray<Color> m_data;
+	PodVector<Color> m_data;
 };
 
 // Pallettized, RLE - encoded (as in ZAR) texture
@@ -49,7 +49,7 @@ class PackedTexture {
 	bool testPixel(const int2 &pixel) const;
 
   protected:
-	PodArray<u8> m_data;
+	PodVector<u8> m_data;
 	int m_width, m_height;
 	u8 m_default_idx, m_max_idx;
 };

@@ -20,7 +20,7 @@ public:
 	void clear();
 
 	void loadFromXML(const XMLDocument&);
-	void saveToXML(const PodArray<int> &tile_ids, XMLDocument&) const;
+	void saveToXML(const PodVector<int> &tile_ids, XMLDocument&) const;
 
 	struct Occluder {
 		FBox bbox;

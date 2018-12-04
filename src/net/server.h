@@ -10,6 +10,7 @@
 #include "net/base.h"
 #include "game/entity.h"
 #include "game/world.h"
+#include <fwk/bit_vector.h>
 
 namespace net {
 

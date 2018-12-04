@@ -132,7 +132,7 @@ namespace game {
 		const Tile *prev = nullptr;
 		XMLNode tile_node;
 
-		PodArray<int> tile_ids(size());
+		PodVector<int> tile_ids(size());
 		for(int n = 0; n < size(); n++)
 			tile_ids[n] = -1;
 		int object_id = 0;
@@ -149,6 +149,7 @@ namespace game {
 
 			XMLNode instance = tile_node.addChild("i");
 			instance.addAttrib("pos", int3(object.bbox.min()));
+			instance.addAttrib("bbox", int3(object.bbox.size()));
 		}
 
 		m_occluder_map.saveToXML(tile_ids, doc);

@@ -427,7 +427,7 @@ namespace ui {
 				int selected_occluder = new_occluder == -1? m_current_occluder : new_occluder;
 
 				if(selected_occluder != -1) {
-					PodArray<int> is_occluder_selected(occmap.size());
+					PodVector<int> is_occluder_selected(occmap.size());
 					for(int n = 0; n < occmap.size(); n++)
 						is_occluder_selected[n] = n == selected_occluder? 1 : occmap.isUnder(selected_occluder, n);
 

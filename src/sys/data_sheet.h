@@ -7,10 +7,11 @@
 #define SYS_DATA_SHEET_H
 
 #include "base.h"
+#include <fwk/cstring.h>
 #include <map>
 
 struct TupleParser {
-	using ColumnMap = std::map<StringRef, int>;
+	using ColumnMap = std::map<CString, int>;
 	TupleParser( const char **columns, int num_columns, const ColumnMap&);
 
 	const char *get(const char *name) const;

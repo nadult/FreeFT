@@ -93,8 +93,8 @@ vector<FBox> OccluderMap::computeBBoxes(int occluder_id, bool minimize) const {
 	DASSERT(occluder_id >= 0 && occluder_id < size());
 
 	const Occluder &occluder = m_occluders[occluder_id];
-	PodArray<FBox> bboxes(occluder.objects.size());
-	PodArray<FBox> temp(occluder.objects.size());
+	PodVector<FBox> bboxes(occluder.objects.size());
+	PodVector<FBox> temp(occluder.objects.size());
 	int count = (int)occluder.objects.size(), tcount = 0;
 
 	for(int n = 0; n < count; n++)
@@ -254,7 +254,7 @@ void OccluderMap::loadFromXML(const XMLDocument &doc) {
 	}
 }
 
-void OccluderMap::saveToXML(const PodArray<int> &tile_ids, XMLDocument &doc) const {
+void OccluderMap::saveToXML(const PodVector<int> &tile_ids, XMLDocument &doc) const {
 	XMLNode main_node = doc.addChild("occluders");
 	for(int n = 0; n < (int)m_occluders.size(); n++) {
 		const Occluder &occluder = m_occluders[n];
@@ -329,7 +329,7 @@ bool OccluderConfig::update(const FBox &bbox) {
 	vector<int> temp2;
 	temp2.reserve(256);
 
-	PodArray<int> overlaps(m_map.size());
+	PodVector<int> overlaps(m_map.size());
 	memset(overlaps.data(), 0, m_map.size() * sizeof(int));
 
 	for(int i = 0; i < (int)temp.size(); i++) {

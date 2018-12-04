@@ -7,6 +7,7 @@
 #include "audio/device.h"
 #include "audio/internals.h"
 #include "audio/sound.h"
+#include <fwk/filesystem.h>
 
 namespace audio
 {

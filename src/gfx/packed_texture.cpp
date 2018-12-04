@@ -8,7 +8,7 @@
 
 namespace {
 
-void loadZAR(Stream &sr, PodArray<Color> &out_data, int2 &out_size) {
+void loadZAR(Stream &sr, PodVector<Color> &out_data, int2 &out_size) {
 	PackedTexture packed;
 	Palette palette;
 	packed.legacyLoad(sr, palette);

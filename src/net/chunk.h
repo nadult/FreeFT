@@ -7,6 +7,7 @@
 #define NET_CHUNK_H
 
 #include "net/socket.h"
+#include <fwk/list_node.h>
 
 namespace net {
 

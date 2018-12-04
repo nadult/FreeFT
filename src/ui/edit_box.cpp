@@ -9,7 +9,7 @@ using namespace gfx;
 
 namespace ui {
 
-	EditBox::EditBox(const IRect &rect, int max_size, StringRef label, FColor col)
+	EditBox::EditBox(const IRect &rect, int max_size, CString label, FColor col)
 		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size), m_label(toUTF32Checked(label)) {
 		m_font = res::getFont(WindowStyle::fonts[0]);
 	}

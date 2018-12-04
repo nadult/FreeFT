@@ -370,7 +370,7 @@ PFont getFont(const string &name) {
 }
 }
 
-string32 toUTF32Checked(StringRef ref) {
+string32 toUTF32Checked(CString ref) {
 	if(auto result = toUTF32(ref))
 		return move(*result);
 	FATAL("Error while converting string to UTF32");

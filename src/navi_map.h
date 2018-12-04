@@ -8,6 +8,7 @@
 
 #include "base.h"
 #include "sys/aligned_allocator.h"
+#include <fwk/list_node.h>
 
 class NaviHeightmap;
 
@@ -74,7 +75,7 @@ private:
 	
 	int findSector(const int2 &xz) const { return xz.x / sector_size + xz.y / sector_size * m_size.x; }
 
-	void extractQuads(const PodArray<u8>&, const int2 &bsize, int sx, int sy);
+	void extractQuads(const PodVector<u8>&, const int2 &bsize, int sx, int sy);
 	void addAdjacencyInfo(int target_id, int src_id);
 	void addCollider(int quad_id, const IRect &rect, int collider_id);
 

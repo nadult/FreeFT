@@ -45,7 +45,7 @@ bool areOverlapping(const FBox &a, const FBox &b);
 bool areOverlapping(const IRect &a, const IRect &b);
 bool areOverlapping(const FRect &a, const FRect &b);
 
-string32 toUTF32Checked(StringRef);
+string32 toUTF32Checked(CString);
 string toUTF8Checked(const string32 &);
 
 // These can be used to look for wrong uses of min & max on vectors

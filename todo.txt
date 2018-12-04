@@ -28,6 +28,20 @@ Backtrace:
                 src/game.cpp:157 main (argc=15, argv=0x59a6340)
 Trace/breakpoint trap
 
+Generating GDB backtrace
+libfwk/include/fwk/list_node.h:36: libfwk/include/fwk/list_node.h:36: Assertion failed: node.empty()
+            src/sys/assert.cpp:76  fwk::assertFailed (file=0x54c7c7 "libfwk/include/fwk/list_node.h", line=36, text=<optimized out>)
+libfwk/include/fwk/list_node.h:36  fwk::listInsert<Grid::Object, &Grid::Object::node, fwk::Vector<Grid::Object> > (container=..., list=..., idx=<optimized out>)
+                  src/grid.cpp:153 Grid::update (this=0x7f7e00235a38, idx=0, object=...)
+       src/game/entity_map.cpp:90  game::EntityMap::update (this=<optimized out>, index=0)
+            src/game/world.cpp:153 game::World::simulate (this=0x7f7e00235950, time_diff=0.017303550001088297)
+          src/io/game_loop.cpp:76  io::GameLoop::onTick (this=0x5f14300, time_diff=0.017303550001088297)
+     src/io/main_menu_loop.cpp:185 io::MainMenuLoop::onTick (this=0x1f13e00, time_diff=0.017303550001088297)
+                  src/game.cpp:35  main_loop (device=...)
+        src/gfx/gfx_device.cpp:186 fwk::GfxDevice::runMainLoop (this=0x7ffe5fc0d028, main_loop_func=0x50c0b0 <main_loop(fwk::GfxDevice&, void*)>, arg=0x0)
+                  src/game.cpp:140 main (argc=1, argv=0x7ffe5fc0d328)
+
+
 - Server doesn't inform client that it's closing?
 
 

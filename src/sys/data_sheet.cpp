@@ -32,7 +32,7 @@ static const char *getText(XMLNode cell_node) {
 
 void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser &)) {
 	vector<XMLNode> rows;
-	vector<StringRef> col_names;
+	vector<CString> col_names;
 
 	XMLNode row_node = table_node.child("table:table-row");
 	while(row_node) {
@@ -51,7 +51,7 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 		}
 	}
 
-	std::map<StringRef, int> column_map;
+	std::map<CString, int> column_map;
 	for(int n = 0; n < (int)col_names.size(); n++)
 		if(!col_names[n].empty()) {
 			if(column_map.find(col_names[n]) != column_map.end())

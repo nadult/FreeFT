@@ -65,7 +65,7 @@ struct GNode {
 	int first, second, flag;
 };
 
-static int DFS(const PodArray<char> &graph, PodArray<GNode> &gdata, int count, int i, int time,
+static int DFS(const PodVector<char> &graph, PodVector<GNode> &gdata, int count, int i, int time,
 			   bool detect_cycles) {
 	gdata[i].flag = 1;
 
@@ -156,8 +156,8 @@ void SceneRenderer::render() {
 	// Now we need to do topological sort for a graph in which each edge means
 	// than one tile should be drawn before the other; cycles in this graph result
 	// in glitches in the end (unavoidable)
-	PodArray<char> graph(1024);
-	PodArray<GNode> gdata(32);
+	PodVector<char> graph(1024);
+	PodVector<GNode> gdata(32);
 
 	for(int g = 0; g < grid.size();) {
 		int node_id = grid[g].first;

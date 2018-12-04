@@ -6,6 +6,7 @@
 #include "game/sprite.h"
 #include <cstring>
 #include <cstdio>
+#include <fwk/filesystem.h>
 
 namespace game {
 

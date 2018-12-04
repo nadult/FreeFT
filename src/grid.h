@@ -7,6 +7,7 @@
 #define GRID_H
 
 #include "base.h"
+#include <fwk/list_node.h>
 
 class OccluderStatus;
 

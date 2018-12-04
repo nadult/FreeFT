@@ -20,7 +20,7 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 	m_level_count = 0;
 	m_data.clear();
 
-	PodArray<IBox> bboxes(walkable.size());
+	PodVector<IBox> bboxes(walkable.size());
 	for(int n = 0; n < bboxes.size(); n++) {
 		IBox bbox = walkable[n];
 		bboxes[n] = { vmax(bbox.min(), int3(0, 0, 0)), vmin(bbox.max(), int3(m_size.x, 255, m_size.y))};

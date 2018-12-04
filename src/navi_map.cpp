@@ -8,6 +8,7 @@
 #include "gfx/scene_renderer.h"
 #include <cstring>
 #include <algorithm>
+#include <fwk/pod_vector.h>
 
 NaviMap::NaviMap(int extend) :m_size(0, 0), m_agent_size(extend) { }
 
@@ -50,11 +51,11 @@ static IRect findBestRect(const short *counts, const short *skip_list, int2 size
 	return best;
 }
 
-void NaviMap::extractQuads(const PodArray<u8> &bitmap, const int2 &bsize, int sx, int sy) {
+void NaviMap::extractQuads(const PodVector<u8> &bitmap, const int2 &bsize, int sx, int sy) {
 	int2 size(min((int)sector_size, bsize.x - sx), min((int)sector_size, bsize.y - sy));
 
 	int pixels = 0;
-	PodArray<short> counts(sector_size * size.y * 2);
+	PodVector<short> counts(sector_size * size.y * 2);
 	short *skips = counts.data() + sector_size * size.y;
 
 	for(int y = 0; y < size.y; y++) {
@@ -167,13 +168,13 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 
 	enum { max_levels = 256 };
 
-	vector<PodArray<u8>> bitmaps(level_count);
+	vector<PodVector<u8>> bitmaps(level_count);
 	vector<int> level_pixels(max_levels, 0);
 
 	for(int l = 0; l < level_count; l++) {
 		bitmaps[l].resize(bsize.x * bsize.y);
-		PodArray<u8> &bitmap = bitmaps[l];
-		memset(bitmap.data(), 0, bitmap.dataSize());
+		PodVector<u8> &bitmap = bitmaps[l];
+		memset(bitmap.data(), 0, bitmap.byteSize());
 
 		for(int y = 0; y < bsize.y; y++)
 			for(int x = 0; x < bsize.x; x++)
@@ -189,18 +190,18 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 		if(!pixel_count)
 			continue;
 
-		PodArray<u8> bitmap(bsize.x * bsize.y);
-		memset(bitmap.data(), 0, bitmap.dataSize());
+		PodVector<u8> bitmap(bsize.x * bsize.y);
+		memset(bitmap.data(), 0, bitmap.byteSize());
 
 		for(int l = 0; l < level_count; l++) {
-			const PodArray<u8> &lbitmap = bitmaps[l];
+			const PodVector<u8> &lbitmap = bitmaps[l];
 			for(int i = 0; i < bitmap.size(); i++)
 				if(lbitmap[i] == h)
 					bitmap[i] = h;
 		}
 
-		PodArray<u8> subbitmap = bitmap;
-		memset(subbitmap.data(), 0, subbitmap.dataSize());
+		PodVector<u8> subbitmap = bitmap;
+		memset(subbitmap.data(), 0, subbitmap.byteSize());
 
 		vector<int2> positions;
 		int max_diff = 0;
@@ -644,7 +645,7 @@ namespace {
 
 	struct SearchInfo {
 		SearchInfo(int count) :m_data(count), m_init_map((count + 31) / 32) {
-			memset(m_init_map.data(), 0, m_init_map.dataSize());
+			memset(m_init_map.data(), 0, m_init_map.byteSize());
 		}
 
 		SearchData &operator[](int idx) {
@@ -663,8 +664,8 @@ namespace {
 			return out;
 		}
 
-		PodArray<SearchData> m_data;
-		PodArray<int> m_init_map;
+		PodVector<SearchData> m_data;
+		PodVector<int> m_init_map;
 	};
 
 #undef UPDATE

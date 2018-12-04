@@ -29,7 +29,7 @@ namespace audio {
 		double lengthInSeconds() const;
 
 	protected:
-		PodArray<char> m_data;
+		PodVector<char> m_data;
 
 		int m_frequency;
 		int m_bits;
