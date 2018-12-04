@@ -56,9 +56,13 @@ flags = [
 # For a C project, you would set this to 'c' instead of 'c++'.
 '-x', 'c++',
 '-I', 'src',
-'-I', 'libfwk/include',
-'-isystem', '/usr/include',
+'-isystem', '/usr/include/c++/8',
+'-isystem', '/usr/include/c++/8/x86_64-pc-linux-gnu',
+'-isystem', '/usr/include/c++/8/backward',
 '-isystem', '/usr/local/include',
+'-isystem', '/usr/include',
+'-Isrc/',
+'-Ilibfwk/include',
 ]
 
 
