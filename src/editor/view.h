@@ -10,6 +10,7 @@
 #include "base.h"
 #include "occluder_map.h"
 #include "game/entity_map.h"
+#include <fwk_input.h>
 
 namespace ui {
 

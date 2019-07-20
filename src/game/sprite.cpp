@@ -4,8 +4,10 @@
  */
 
 #include "game/sprite.h"
-#include <cstring>
+
 #include <cstdio>
+#include <cstring>
+#include <fwk/gfx/texture.h>
 
 using namespace gfx;
 

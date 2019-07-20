@@ -3,8 +3,10 @@
    This file is part of FreeFT.
  */
 
-#include "fwk_opengl.h"
 #include "hud/widget.h"
+
+#include <fwk_opengl.h>
+#include <fwk/gfx/font.h>
 
 using namespace gfx;
 

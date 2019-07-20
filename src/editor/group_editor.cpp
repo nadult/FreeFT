@@ -6,6 +6,7 @@
 #include "gfx/drawing.h"
 #include "editor/group_editor.h"
 #include "editor/tile_group.h"
+#include <fwk/gfx/dtexture.h>
 #include <algorithm>
 #include <cstring>
 #include <tuple>

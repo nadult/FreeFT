@@ -8,6 +8,9 @@
 #include "ui/file_dialog.h"
 #include "ui/message_box.h"
 #include "ui/image_button.h"
+#include <fwk/gfx/gfx_device.h>
+#include <fwk/resource_manager.h>
+#include <fwk/gfx/dtexture.h>
 
 #include "io/main_menu_loop.h"
 #include "io/game_loop.h"

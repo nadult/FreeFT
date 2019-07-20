@@ -4,9 +4,10 @@
  */
 
 #include "navi_heightmap.h"
+
 #include "grid.h"
 #include <algorithm>
-
+#include <fwk/gfx/texture.h>
 
 enum { max_levels = 16 };
 
@@ -151,4 +152,3 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 
 	return true;
 }
-

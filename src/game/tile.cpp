@@ -3,10 +3,13 @@
    This file is part of FreeFT.
  */
 
-#include "gfx/drawing.h"
 #include "game/tile.h"
+
+#include "gfx/drawing.h"
 #include "gfx/scene_renderer.h"
 #include <algorithm>
+#include <fwk/gfx/texture.h>
+#include <fwk/gfx/renderer2d.h>
 
 using namespace gfx;
 

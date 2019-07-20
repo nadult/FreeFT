@@ -8,6 +8,7 @@
 #include "audio/internals.h"
 #include "audio/sound.h"
 #include <fwk/filesystem.h>
+#include <fwk/enum_map.h>
 
 namespace audio
 {

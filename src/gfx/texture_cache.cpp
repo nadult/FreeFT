@@ -3,8 +3,11 @@
    This file is part of FreeFT.
  */
 
-#include "fwk_opengl.h"
 #include "gfx/texture_cache.h"
+
+#include "fwk_opengl.h"
+#include "fwk/gfx/texture.h"
+#include "fwk/gfx/dtexture.h"
 #include <limits.h>
 #include <algorithm>
 
@@ -70,8 +73,6 @@ TextureCache::~TextureCache() {
 	listRemove<Resource, &Resource::list_name##_node>(m_resources, list, id)
 
 void TextureCache::nextFrame() {
-	FWK_PROFILE("TextureCache::nextFrame");
-
 	if(!m_atlas) {
 		int max_size = 2048;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);

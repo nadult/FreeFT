@@ -4,11 +4,13 @@
  */
 
 #include "hud/layer.h"
-#include "game/world.h"
-#include "game/game_mode.h"
+
 #include "game/actor.h"
+#include "game/game_mode.h"
 #include "game/pc_controller.h"
+#include "game/world.h"
 #include "gfx/drawing.h"
+#include <fwk/gfx/font.h>
 
 using namespace gfx;
 

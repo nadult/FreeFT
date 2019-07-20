@@ -6,7 +6,19 @@
 #ifndef BASE_H
 #define BASE_H
 
-#include "fwk.h"
+#include <fwk/math_base.h>
+#include <fwk/math/box.h>
+#include <fwk/math/ray.h>
+#include <fwk/math/segment.h>
+#include <fwk/gfx/color.h>
+#include <fwk/gfx_base.h>
+#include <fwk/sys_base.h>
+#include <fwk/sys/stream.h>
+#include <fwk_xml.h>
+#include <fwk/pod_vector.h>
+#include <fwk/sys/immutable_ptr.h>
+#include <fwk/format.h>
+#include <fwk/enum.h>
 
 using namespace fwk;
 

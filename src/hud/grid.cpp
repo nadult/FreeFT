@@ -4,7 +4,9 @@
  */
 
 #include "hud/grid.h"
+
 #include "gfx/drawing.h"
+#include <fwk/gfx/font.h>
 
 namespace hud {
 

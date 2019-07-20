@@ -3,8 +3,10 @@
    This file is part of FreeFT.
  */
 
-#include "gfx/drawing.h"
 #include "gfx/scene_renderer.h"
+
+#include "gfx/drawing.h"
+#include <fwk/gfx/renderer2d.h>
 #include <algorithm>
 
 SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
@@ -116,7 +118,7 @@ int fastDrawingOrder(const FBox &a, const FBox &b) {
 }
 
 void SceneRenderer::render() {
-	FWK_PROFILE("SceneRenderer::render");
+	//FWK_PROFILE("SceneRenderer::render");
 	Renderer2D out(m_viewport);
 
 	enum { node_size = 128 };
@@ -136,7 +138,7 @@ void SceneRenderer::render() {
 	vector<std::pair<int, int>> grid;
 	grid.reserve(m_elements.size() * 4);
 
-	FWK_PROFILE_COUNTER("SceneRenderer::total_count", m_elements.size());
+	//FWK_PROFILE_COUNTER("SceneRenderer::total_count", m_elements.size());
 	for(int n = 0; n < (int)m_elements.size(); n++) {
 		const Element &elem = m_elements[n];
 		IRect rect = elem.rect - m_view_pos;
@@ -237,7 +239,7 @@ void SceneRenderer::render() {
 		grid_rect = {grid_rect.min(), vmin(grid_rect.max(), m_viewport.max())};
 		out.setScissorRect(grid_rect);
 
-		FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);
+		//FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);
 		for(int i = count - 1; i >= 0; i--) {
 			const Element &elem = m_elements[gdata[i].second];
 

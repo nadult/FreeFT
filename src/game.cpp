@@ -11,7 +11,7 @@
 #include "io/game_loop.h"
 #include "io/controller.h"
 #include "net/server.h"
-#include <clocale>
+#include <fwk/gfx/gfx_device.h>
 
 using namespace game;
 
@@ -38,9 +38,6 @@ static bool main_loop(GfxDevice &device, void*) {
 
 	TextureCache::main_cache.nextFrame();
 	audio::tick();
-	auto *profiler = Profiler::instance();
-	io::Controller::setProfilerStats(profiler->getStats(""));
-	profiler->nextFrame();
 
 	return true;
 }
@@ -55,7 +52,6 @@ int main(int argc, char **argv)
 	audio::initSoundMap();
 	game::loadData(true);
 
-	Profiler profiler;
 	GfxDevice gfx_device;
 	//adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;

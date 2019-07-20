@@ -5,6 +5,8 @@
 
 #include "net/base.h"
 
+#include <fwk/enum_map.h>
+
 namespace net {
 
 	void TempPacket::v_save(const void *ptr, int count) {

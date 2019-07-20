@@ -6,7 +6,7 @@
 #ifndef SYS_ALIGNED_ALLOCATOR_H
 #define SYS_ALIGNED_ALLOCATOR_H
 
-#include "fwk_base.h"
+#include <fwk/sys_base.h>
 #include <limits>
 
 template <class T, int alignment = 64> class AlignedAllocator {

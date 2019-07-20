@@ -4,10 +4,11 @@
  */
 
 #include "editor/view.h"
-#include "game/tile_map.h"
+
 #include "editor/tile_group.h"
-#include "occluder_map.h"
+#include "game/tile_map.h"
 #include "gfx/drawing.h"
+#include "occluder_map.h"
 
 namespace ui {
 

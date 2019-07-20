@@ -8,6 +8,8 @@
 
 #include "hud/base.h"
 
+#include <fwk_input.h>
+
 namespace hud
 {
 

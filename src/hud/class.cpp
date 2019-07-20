@@ -4,6 +4,7 @@
  */
 
 #include "hud/class.h"
+
 #include "game/character.h"
 #include "game/inventory.h"
 #include "game/pc_controller.h"
@@ -11,7 +12,7 @@
 #include "game/world.h"
 #include "gfx/drawing.h"
 #include <algorithm>
-
+#include <fwk/gfx/font.h>
 
 namespace hud {
 	

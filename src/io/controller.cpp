@@ -20,6 +20,9 @@
 #include "hud/hud.h"
 #include "hud/target_info.h"
 
+#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/font.h>
+
 using namespace game;
 
 namespace io {

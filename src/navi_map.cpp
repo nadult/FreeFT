@@ -3,11 +3,12 @@
    This file is part of FreeFT.
  */
 
-#include "navi_map.h"
 #include "navi_heightmap.h"
+
 #include "gfx/scene_renderer.h"
-#include <cstring>
+#include "navi_map.h"
 #include <algorithm>
+#include <cstring>
 #include <fwk/pod_vector.h>
 
 NaviMap::NaviMap(int extend) :m_size(0, 0), m_agent_size(extend) { }
@@ -805,7 +806,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 }
 
 bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, int filter_collider) const {
-	FWK_PROFILE_RARE("NaviMap::findPath");
+	//FWK_PROFILE_RARE("NaviMap::findPath");
 
 	int start_id = findQuad(start, filter_collider);
 	int end_id = findQuad(end, filter_collider);

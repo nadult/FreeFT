@@ -4,8 +4,8 @@
  */
 
 #include "editor/tile_group.h"
-#include <cstring>
-#include <cstdio>
+
+#include <fwk/resource_manager.h>
 
 using namespace game;
 

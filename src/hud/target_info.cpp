@@ -4,9 +4,11 @@
  */
 
 #include "hud/target_info.h"
-#include "hud/char_icon.h"
+
 #include "game/actor.h"
 #include "game/world.h"
+#include "hud/char_icon.h"
+#include <fwk/gfx/font.h>
 
 using namespace gfx;
 

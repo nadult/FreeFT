@@ -35,7 +35,6 @@ namespace game {
 	}
 
 	void WorldViewer::update(double time_diff) {
-		FWK_PROFILE("WorldViewer::update");
 		Actor *spectator = m_world->refEntity<Actor>(m_spectator);
 
 		if((int)m_entities.size() != m_world->entityCount())

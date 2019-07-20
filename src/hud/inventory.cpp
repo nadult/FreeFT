@@ -4,12 +4,14 @@
  */
 
 #include "hud/inventory.h"
+
 #include "game/actor.h"
-#include "game/world.h"
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
+#include "game/world.h"
 #include "gfx/drawing.h"
 #include <algorithm>
+#include <fwk/gfx/font.h>
 
 namespace hud {
 	

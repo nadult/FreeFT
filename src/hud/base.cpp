@@ -4,8 +4,10 @@
  */
 
 #include "hud/base.h"
+
 #include "audio/device.h"
 #include "gfx/drawing.h"
+#include <fwk/enum_map.h>
 
 using namespace gfx;
 
@@ -123,4 +125,3 @@ namespace hud
 								"liberation_16",		"liberation_24"   };
 	}
 }
-

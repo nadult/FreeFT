@@ -4,11 +4,13 @@
  */
 
 #include "hud/multi_player_menu.h"
+
+#include "gfx/drawing.h"
 #include "hud/edit_box.h"
 #include "hud/grid.h"
 #include "net/client.h"
 #include "sys/config.h"
-#include "gfx/drawing.h"
+#include <fwk/gfx/font.h>
 
 using namespace net;
 
@@ -317,4 +319,3 @@ namespace hud {
 	}
 
 }
-

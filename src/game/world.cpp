@@ -51,8 +51,6 @@ namespace game {
 	}
 		
 	void World::updateNaviMap(bool full_recompute) {
-		FWK_PROFILE("updateNaviMap");
-			
 		//TODO: what about static entities that are added during the game?
 
 		if(full_recompute) {

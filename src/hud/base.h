@@ -7,6 +7,8 @@
 #define HUD_BASE_H
 
 #include "game/base.h"
+#include <fwk/gfx/renderer2d.h>
+#include <fwk/gfx/dtexture.h>
 
 namespace hud {
 

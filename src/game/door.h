@@ -9,6 +9,7 @@
 #include "game/entity.h"
 #include "game/item.h"
 #include "sys/data_sheet.h"
+#include <fwk/enum_map.h>
 
 namespace game
 {

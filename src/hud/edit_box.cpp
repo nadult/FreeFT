@@ -4,9 +4,11 @@
  */
 
 #include "hud/edit_box.h"
+
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/drawing.h"
+#include <fwk/gfx/font.h>
 
 namespace hud {
 

@@ -5,6 +5,7 @@
 
 #include "gfx/drawing.h"
 
+#include "fwk/gfx/renderer2d.h"
 
 void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 	float2 vx = worldToScreen(float3(box.width(), 0, 0));
@@ -13,8 +14,8 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 	float2 pos = worldToScreen(box.min());
 
 	float2 pt[8] = {
-		pos + vx + vy, pos + vx + vy + vz, pos + vz + vy, pos + vy, pos + vx, pos + vx + vz,
-		pos + vz, pos,
+		pos + vx + vy, pos + vx + vy + vz, pos + vz + vy, pos + vy,
+		pos + vx,	  pos + vx + vz,	  pos + vz,	  pos,
 	};
 
 	bool is_flat = box.height() < fconstant::epsilon;
