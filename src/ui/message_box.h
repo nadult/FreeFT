@@ -1,7 +1,5 @@
-/* Copyright (C) 2013-2014 Krzysztof Jakubowski <nadult@fastmail.fm>
-
-   This file is part of FreeFT.
- */
+// Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
+// This file is part of FreeFT. See license.txt for details.
 
 #ifndef UI_MESSAGE_BOX_H
 #define UI_MESSAGE_BOX_H

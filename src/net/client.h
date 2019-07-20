@@ -1,7 +1,5 @@
-/* Copyright (C) 2013-2014 Krzysztof Jakubowski <nadult@fastmail.fm>
-
-   This file is part of FreeFT.
- */
+// Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
+// This file is part of FreeFT. See license.txt for details.
 
 #ifndef NET_CLIENT_H
 #define NET_CLIENT_H

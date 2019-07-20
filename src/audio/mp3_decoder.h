@@ -1,7 +1,5 @@
-/* Copyright (C) 2013-2014 Krzysztof Jakubowski <nadult@fastmail.fm>
-
-   This file is part of FreeFT.
- */
+// Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
+// This file is part of FreeFT. See license.txt for details.
 
 #ifndef AUDIO_MP3_DECODER_H
 #define AUDIO_MP3_DECODER_H
