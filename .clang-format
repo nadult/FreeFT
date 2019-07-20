@@ -1,0 +1,12 @@
+BasedOnStyle: llvm
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Always
+ColumnLimit: 100
+
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+
+NamespaceIndentation: All
+SpaceBeforeParens: Never
