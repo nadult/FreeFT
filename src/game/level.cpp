@@ -109,7 +109,7 @@ namespace game {
 	}
 
 	void Level::load(const char *file_name) {
-		XMLDocument doc;
+		XmlDocument doc;
 
 		int len = strlen(file_name);
 		if(len > 4 && strcmp(file_name + len - 4, ".mod") == 0) {
@@ -136,7 +136,7 @@ namespace game {
 	}
 
 	void Level::save(const char *file_name) const {
-		XMLDocument doc;
+		XmlDocument doc;
 		tile_map.saveToXML(doc);
 		entity_map.saveToXML(doc);
 		doc.save(file_name);

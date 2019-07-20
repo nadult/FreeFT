@@ -8,7 +8,6 @@
 #include <fwk/enum_map.h>
 #include <fwk/sys/resource_manager.h>
 
-using namespace gfx;
 using namespace game;
 
 namespace ui
@@ -101,7 +100,7 @@ namespace ui
 		for(int n = 0; n < (int)m_entries.size(); n++) {
 			const Entry &entry = m_entries[n];
 
-			if(IRect(entry.pos, entry.pos + entry.size).containsPixel(pos))
+			if(IRect(entry.pos, entry.pos + entry.size).containsCell(pos))
 				return &m_entries[n];
 		}
 

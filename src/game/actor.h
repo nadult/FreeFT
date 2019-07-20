@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "game/thinking_entity.h"
 #include "game/inventory.h"
 #include "game/path.h"
+#include "game/thinking_entity.h"
 #include <fwk/enum_map.h>
 
 namespace game {
@@ -15,7 +15,7 @@ namespace game {
 	// simple which have same animations for different weapon types
 	// special handled separately by different functions
 	namespace Action {
-		enum Type: char {
+		enum Type : char {
 			_normal, // Normal anims: (stance x weapon)
 			idle = _normal,
 			walk,
@@ -57,8 +57,9 @@ namespace game {
 
 	struct ActorProto;
 
-	struct ActorArmourProto: public ProtoImpl<ActorArmourProto, EntityProto, ProtoId::actor_armour> {
-		ActorArmourProto(const TupleParser&, bool is_actor = false);
+	struct ActorArmourProto
+		: public ProtoImpl<ActorArmourProto, EntityProto, ProtoId::actor_armour> {
+		ActorArmourProto(const TupleParser &, bool is_actor = false);
 
 		void link();
 
@@ -123,7 +124,7 @@ namespace game {
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor, ThinkingEntity> {
 	public:
 		Actor(Stream&);
-		Actor(const XMLNode&);
+		Actor(CXmlNode);
 		Actor(const Proto &proto, Stance stance = Stance::stand);
 		Actor(const Actor &rhs, const Proto &new_proto);
 		Actor(const Proto &proto, ActorInventory &inventory);
@@ -131,11 +132,12 @@ namespace game {
 		FlagsType flags() const override;
 		const FBox boundingBox() const override;
 
-		bool setOrder(POrder&&, bool force = false) override;
+		using ThinkingEntity::setOrder;
+		bool setOrder(POrder &&, bool force = false) override;
 		void onImpact(DamageType, float damage, const float3 &force, EntityRef source) override;
 
-		XMLNode save(XMLNode&) const override;
-		void save(Stream&) const override;
+		XmlNode save(XmlNode) const override;
+		void save(Stream &) const override;
 
 		SurfaceId surfaceUnder() const;
 		WeaponClass equippedWeaponClass() const;
@@ -144,7 +146,7 @@ namespace game {
 		Action::Type action() const { return m_action; }
 
 		const ActorInventory &inventory() const { return m_inventory; }
-		
+
 		bool canSee(EntityRef ref, bool simple_test = false) override;
 		bool canEquipItem(const Item &item) const;
 		bool canChangeStance() const;
@@ -169,18 +171,18 @@ namespace game {
 		DeathId deathType(DamageType, float damage, const float3 &force) const;
 
 		Maybe<AttackMode> validateAttackMode(Maybe<AttackMode>) const;
-	
+
 		const FBox shootingBox(const Weapon &weapon) const override;
 		float accuracy(const Weapon &weapon) const override;
 
-	private:
+	  private:
 		void think() override;
 		void nextFrame() override;
 
 		void updateArmour();
 
 		void lookAt(const float3 &pos, bool at_once = false);
-		
+
 		void addToRender(SceneRenderer &out, Color color) const override;
 
 		void fireProjectile(const FBox &target_box, const Weapon &weapon, float randomness = 0.0f);

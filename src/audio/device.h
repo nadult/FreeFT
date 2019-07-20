@@ -93,7 +93,7 @@ namespace audio {
 		void feedMoreData(uint buffer_id);
 
 		string m_file_name;
-		unique_ptr<MP3Decoder> m_decoder;
+		Dynamic<MP3Decoder> m_decoder;
 		uint m_buffer_ids[max_buffers];
 		uint m_source_id;
 		float m_blend_time, m_blend_pos;

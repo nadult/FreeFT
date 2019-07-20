@@ -3,8 +3,6 @@
 
 #include "ui/list_box.h"
 
-using namespace gfx;
-
 namespace ui {
 
 
@@ -56,7 +54,7 @@ namespace ui {
 		pos += innerOffset();
 
 		for(int n = vis_entries.x; n < vis_entries.y; n++)
-			if(entryRect(n).containsPixel(pos))
+			if(entryRect(n).containsCell(pos))
 				return n;
 		return -1;
 	}
@@ -80,7 +78,7 @@ namespace ui {
 			m_dragging_id = entryId(start);
 
 			if(is_final == 1 && m_over_id == m_dragging_id) {
-				bool do_select = localRect().containsPixel(end) && (!isPopup() || (m_over_id >= 0 && m_over_id < size()));
+				bool do_select = localRect().containsCell(end) && (!isPopup() || (m_over_id >= 0 && m_over_id < size()));
 
 				if(do_select)
 					selectEntry(m_over_id);

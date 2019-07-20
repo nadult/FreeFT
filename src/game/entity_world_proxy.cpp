@@ -67,15 +67,15 @@ namespace game {
 
 	void EntityWorldProxy::remove() {
 		DASSERT(isHooked());
-		m_world->m_replace_list.emplace_back(unique_ptr<Entity>(nullptr), m_index);
+		m_world->m_replace_list.emplace_back(Dynamic<Entity>(nullptr), m_index);
 	}
 
-	void EntityWorldProxy::replaceMyself(unique_ptr<Entity> &&new_entity) {
+	void EntityWorldProxy::replaceMyself(Dynamic<Entity> &&new_entity) {
 		DASSERT(isHooked());
 		m_world->m_replace_list.emplace_back(std::move(new_entity), m_index);
 	}
 
-	void EntityWorldProxy::addEntity(unique_ptr<Entity> &&new_entity) {
+	void EntityWorldProxy::addEntity(Dynamic<Entity> &&new_entity) {
 		DASSERT(isHooked());
 		if(!m_world->isClient())
 			m_world->m_replace_list.emplace_back(std::move(new_entity), -1);

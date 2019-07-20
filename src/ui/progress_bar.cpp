@@ -63,7 +63,7 @@ namespace ui {
 
 		if(start == current) {
 			IRect bar_rect = evalBarPos();
-			if(!bar_rect.containsPixel(start)) {
+			if(!bar_rect.containsCell(start)) {
 				float tpos = float(m_is_horizontal? start.x : start.y) * divisor;
 				tpos -= (0.5f - tpos) * bar_size;
 				float old_pos = m_pos;

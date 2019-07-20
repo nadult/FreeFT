@@ -44,6 +44,6 @@ namespace io {
 		bool m_is_exiting;
 	};
 
-	using PLoop = unique_ptr<Loop>;
+	using PLoop = Dynamic<Loop>;
 
 }

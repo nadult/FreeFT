@@ -8,8 +8,6 @@
 #include "game/game_mode.h"
 #include <algorithm>
 
-using namespace gfx;
-
 namespace hud {
 	
 	namespace {

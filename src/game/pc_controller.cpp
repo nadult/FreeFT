@@ -23,6 +23,10 @@ namespace game {
 		const Actor *out = m_world.refEntity<Actor>(m_pc.entityRef());
 		return out;
 	}
+		
+	void PCController::sendOrder(Order *owned_ptr) {
+		sendOrder(POrder(owned_ptr));
+	}
 	
 	void PCController::sendOrder(game::POrder &&order) {
 		m_world.sendOrder(std::move(order), m_pc.entityRef());

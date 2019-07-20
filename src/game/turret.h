@@ -44,7 +44,7 @@ namespace game {
 	class Turret: public EntityImpl<Turret, TurretProto, EntityId::turret, ThinkingEntity> {
 	public:
 		Turret(Stream&);
-		Turret(const XMLNode&);
+		Turret(CXmlNode);
 		Turret(const Proto &proto);
 
 		FlagsType flags() const override;
@@ -53,7 +53,7 @@ namespace game {
 		bool setOrder(POrder&&, bool force = false) override;
 		void onImpact(DamageType, float damage, const float3 &force, EntityRef source) override;
 
-		XMLNode save(XMLNode&) const override;
+		XmlNode save(XmlNode) const override;
 		void save(Stream&) const override;
 
 		TurretAction action() const { return m_action; }

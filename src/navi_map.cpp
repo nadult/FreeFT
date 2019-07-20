@@ -530,7 +530,7 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 
 	while(node != -1) {
 		const Quad &quad = m_quads[node];
-		if(quad.rect.containsPixel(pos.xz()) && (!quad.is_disabled || quad.collider_id == filter_collider || find_disabled)
+		if(quad.rect.containsCell(pos.xz()) && (!quad.is_disabled || quad.collider_id == filter_collider || find_disabled)
 				&& pos.y >= quad.min_height) {
 
 			if(pos.y <= quad.max_height)

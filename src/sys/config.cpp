@@ -5,20 +5,20 @@
 
 Config::Config() : resolution(800, 600), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
 
-Config::Config(const XMLNode &node) : Config() { load(node); }
+Config::Config(CXmlNode node) : Config() { load(node); }
 
 Config::Config(const char *config_name) : Config() {
-	XMLDocument doc;
+	XmlDocument doc;
 	doc.load("data/config.xml");
 
-	XMLNode node = doc.child(config_name);
+	auto node = doc.child(config_name);
 	if(!node)
 		node = doc.child("default");
 	if(node)
 		load(node);
 }
 
-void Config::load(const XMLNode &node) {
+void Config::load(CXmlNode node) {
 	DASSERT(node);
 	resolution = node.attrib<int2>("res", int2());
 	window_pos = node.attrib<int2>("window_pos", int2());

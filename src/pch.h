@@ -6,3 +6,5 @@
 #include <fwk/math/box.h>
 #include <fwk/gfx_base.h>
 #include <fwk/sys_base.h>
+#include <fwk/sys/xml.h>
+#include <fwk/format.h>

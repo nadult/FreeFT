@@ -6,10 +6,7 @@
 #include <fwk_opengl.h>
 #include <fwk/gfx/font.h>
 
-using namespace gfx;
-
 namespace hud {
-
 
 	HudWidget::HudWidget(const FRect &rect)
 		:m_parent(nullptr), m_input_focus(nullptr), m_rect(rect), m_visible_time(1.0), m_anim_speed(10.0f),

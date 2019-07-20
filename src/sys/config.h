@@ -7,10 +7,10 @@
 
 struct Config {
 	Config();
-	Config(const XMLNode&);
+	Config(CXmlNode);
 	Config(const char *config_name);
 
-	void load(const XMLNode&);
+	void load(CXmlNode);
 
 	int2 resolution;
 	int2 window_pos;

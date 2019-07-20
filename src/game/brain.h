@@ -31,7 +31,7 @@ namespace game {
 		EntityRef m_entity_ref;
 	};
 
-	using PBrain = ::ClonablePtr<Brain>;
+	using PBrain = Dynamic<Brain>;
 
 	template <class TAI, class ...Args>
 	void ThinkingEntity::attachAI(World *world, const Args&... args) {

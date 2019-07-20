@@ -74,7 +74,7 @@ namespace game {
 		initializeOpenDir();
 	}
 
-	Door::Door(const XMLNode &node) :EntityImpl(node) {
+	Door::Door(CXmlNode node) :EntityImpl(node) {
 		initialize();
 	}
 		
@@ -82,8 +82,8 @@ namespace game {
 		initialize();
 	}
 	
-	XMLNode Door::save(XMLNode &parent) const {
-		XMLNode node = EntityImpl::save(parent);
+	XmlNode Door::save(XmlNode parent) const {
+		auto node = EntityImpl::save(parent);
 		return node;
 	}
 

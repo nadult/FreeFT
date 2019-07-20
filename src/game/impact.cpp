@@ -30,7 +30,7 @@ namespace game {
 		sr.pack(m_damage_mod, m_applied_damage);
 	}
 	
-	XMLNode Impact::save(XMLNode& parent) const {
+	XmlNode Impact::save(XmlNode parent) const {
 		return Entity::save(parent);
 	}
 		

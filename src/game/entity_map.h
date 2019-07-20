@@ -29,14 +29,14 @@ namespace game
 
 		void resize(const int2 &new_dims);
 	
-		int add(unique_ptr<Entity> &&ptr, int index = -1);
+		int add(Dynamic<Entity> &&ptr, int index = -1);
 		void update(int index);
 		void remove(int index);
 		
 		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 		
-		void loadFromXML(const XMLDocument&);
-		void saveToXML(XMLDocument&) const;
+		void loadFromXML(const XmlDocument&);
+		void saveToXML(XmlDocument&) const;
 		void updateVisibility(const OccluderConfig&);
 
 	protected:

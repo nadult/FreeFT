@@ -3,6 +3,9 @@
 
 #include "sys/data_sheet.h"
 
+#include <fwk/sys/xml.h>
+#include <fwk/sys/on_fail.h>
+
 TupleParser::TupleParser(const char **columns, int num_columns, const TupleParser::ColumnMap &map)
 	: m_columns(columns), m_num_columns(num_columns), m_column_map(map) {}
 
@@ -15,10 +18,10 @@ const char *TupleParser::get(const char *col_name) const {
 	return m_columns[it->second];
 }
 
-static const char *getText(XMLNode cell_node) {
+static const char *getText(CXmlNode cell_node) {
 	const char *val_type = cell_node.hasAttrib("office:value-type");
 	if(val_type) {
-		XMLNode text_node = cell_node.child("text:p");
+		auto text_node = cell_node.child("text:p");
 		if(!text_node)
 			CHECK_FAILED("Unsupported node type: %s\n", val_type);
 		ASSERT(text_node);
@@ -28,11 +31,11 @@ static const char *getText(XMLNode cell_node) {
 	return "";
 }
 
-void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser &)) {
-	vector<XMLNode> rows;
-	vector<CString> col_names;
+void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_func)(TupleParser &)) {
+	vector<CXmlNode> rows;
+	vector<ZStr> col_names;
 
-	XMLNode row_node = table_node.child("table:table-row");
+	auto row_node = table_node.child("table:table-row");
 	while(row_node) {
 		rows.emplace_back(row_node);
 		row_node = row_node.sibling("table:table-row");
@@ -40,8 +43,8 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 
 	{
 		ASSERT(!rows.empty());
-		XMLNode first_row = rows.front();
-		XMLNode cell_node = first_row.child("table:table-cell");
+		auto first_row = rows.front();
+		auto cell_node = first_row.child("table:table-cell");
 
 		while(cell_node) {
 			col_names.push_back(getText(cell_node));
@@ -49,7 +52,7 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 		}
 	}
 
-	std::map<CString, int> column_map;
+	HashMap<Str, int> column_map;
 	for(int n = 0; n < (int)col_names.size(); n++)
 		if(!col_names[n].empty()) {
 			if(column_map.find(col_names[n]) != column_map.end())
@@ -71,10 +74,10 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 	ON_FAIL("Error while parsing sheet: %", table_node.attrib("table:name"));
 
 	for(int r = 1; r < (int)rows.size(); r++) {
-		XMLNode row = rows[r];
+		auto row = rows[r];
 
 		int cell_idx = 0;
-		XMLNode cell = row.child("table:table-cell");
+		auto cell = row.child("table:table-cell");
 
 		columns.clear();
 		while(cell && cell_idx < (int)col_names.size()) {

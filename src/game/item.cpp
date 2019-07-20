@@ -77,7 +77,7 @@ namespace game {
 		playSequence(m_proto.seq_ids[0], false);
 	}
 
-	ItemEntity::ItemEntity(const XMLNode &node) :EntityImpl(node), m_item(m_proto) {
+	ItemEntity::ItemEntity(CXmlNode node) :EntityImpl(node), m_item(m_proto) {
 		m_count = node.attrib<int>("item_count");
 		playSequence(m_proto.seq_ids[0], false);
 	}
@@ -93,8 +93,8 @@ namespace game {
 		encodeInt(sr, m_count);
 	}
 	
-	XMLNode ItemEntity::save(XMLNode &parent) const {
-		XMLNode node = EntityImpl::save(parent);
+	XmlNode ItemEntity::save(XmlNode parent) const {
+		auto node = EntityImpl::save(parent);
 		node.addAttrib("item_count", m_count);
 		return node;
 	}

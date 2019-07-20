@@ -33,11 +33,11 @@ namespace game {
 		ProtoIndex(int idx, ProtoId type) :m_idx(idx), m_type(type) { validate(); }
 		ProtoIndex() = default;
 		ProtoIndex(Stream&);
-		ProtoIndex(const XMLNode&);
+		ProtoIndex(CXmlNode);
 		explicit operator bool() const { return isValid(); }
 
 		void save(Stream&) const;
-		void save(XMLNode) const;
+		void save(XmlNode) const;
 
 		void validate();
 		bool isValid() const { return (bool)m_type; }

@@ -7,8 +7,6 @@
 #include "gfx/drawing.h"
 #include <fwk/enum_map.h>
 
-using namespace gfx;
-
 namespace hud
 {
 

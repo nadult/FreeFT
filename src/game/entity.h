@@ -12,7 +12,7 @@ namespace game {
 	class EntityRef;
 	class Entity;
 
-	using PEntity = unique_ptr<Entity>;
+	using PEntity = Dynamic<Entity>;
 	
 	struct EntityProto: public Proto {
 		EntityProto(const TupleParser&);
@@ -145,14 +145,14 @@ namespace game {
 	class Entity: public EntityWorldProxy {
 	public:
 		Entity(const Sprite &sprite);
-		Entity(const Sprite &sprite, const XMLNode&);
+		Entity(const Sprite &sprite, CXmlNode);
 		Entity(const Sprite &sprite, Stream&);
 		virtual ~Entity();
 		
 		virtual void save(Stream&) const;
-		virtual XMLNode save(XMLNode& parent) const;
+		virtual XmlNode save(XmlNode parent) const;
 		
-		static Entity *construct(const XMLNode &node);
+		static Entity *construct(CXmlNode node);
 		static Entity *construct(Stream&);
 
 		virtual Entity *clone() const = 0;
@@ -244,7 +244,7 @@ namespace game {
 				sprite = &Sprite::get(proto->sprite->index());
 			}
 
-			Initializer(const XMLNode &node) :Initializer(ProtoIndex(node)) { }
+			Initializer(CXmlNode node) :Initializer(ProtoIndex(node)) { }
 			Initializer(Stream &sr) :Initializer(ProtoIndex(sr)) { }
 
 			const Sprite *sprite;
@@ -253,7 +253,7 @@ namespace game {
 
 		EntityImpl(const Initializer &init)
 			:Base(*init.sprite), m_proto(*init.proto) { }
-		EntityImpl(const Initializer &init, const XMLNode &node)
+		EntityImpl(const Initializer &init, CXmlNode node)
 			:Base(*init.sprite, node), m_proto(*init.proto) { }
 		EntityImpl(const Initializer &init, Stream &sr)
 			:Base(*init.sprite, sr), m_proto(*init.proto) { }
@@ -261,7 +261,7 @@ namespace game {
 	public:
 		enum { type_id = (int)entity_id };
 		EntityImpl(const Proto &proto) :EntityImpl(Initializer(proto)) { }
-		EntityImpl(const XMLNode &node) :EntityImpl(Initializer(node), node) { }
+		EntityImpl(CXmlNode node) :EntityImpl(Initializer(node), node) { }
 		EntityImpl(Stream &sr) :EntityImpl(Initializer(sr), sr) { }
 
 		virtual Entity *clone() const {
@@ -275,8 +275,8 @@ namespace game {
 			Base::save(sr);
 		}
 
-		virtual XMLNode save(XMLNode &parent) const {
-			XMLNode node = Base::save(parent);
+		virtual XmlNode save(XmlNode parent) const {
+			auto node = Base::save(parent);
 			m_proto.index().save(node);
 			return node;
 		}

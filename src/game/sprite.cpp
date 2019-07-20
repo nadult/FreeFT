@@ -7,8 +7,6 @@
 #include <cstring>
 #include <fwk/gfx/texture.h>
 
-using namespace gfx;
-
 namespace game
 {
 	static const char *s_event_names[6] = {
@@ -125,7 +123,7 @@ namespace game
 	}
 
 	bool Sprite::MultiImage::testPixel(const int2 &screen_pos) const {
-		if(!rect.containsPixel(screen_pos))
+		if(!rect.containsCell(screen_pos))
 			return false;
 		for(int l = 0; l < layer_count; l++)
 			if(images[l].testPixel(screen_pos - points[l] - rect.min()))

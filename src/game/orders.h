@@ -7,14 +7,6 @@
 
 namespace game {
 
-/*	class POrder: public ClonablePtr<Order> {
-	public:
-		using ClonablePtr<Order>::ClonablePtr;
-
-		void save(Stream&) const;
-		void load(Stream&);
-	};*/
-
 	// Order can be cancelled forcefully without any notification
 	class Order {
 	public:

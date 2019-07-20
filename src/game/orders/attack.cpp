@@ -94,8 +94,8 @@ namespace game {
 					return failOrder();
 
 				order.m_is_followup = true;
-				POrder track_order = new TrackOrder(order.m_target, max_range * 0.9f, true);
-				track_order->setFollowup(order.clone());
+				POrder track_order(new TrackOrder(order.m_target, max_range * 0.9f, true));
+				track_order->setFollowup(POrder(order.clone()));
 				setOrder(std::move(track_order));
 				return false;
 			}

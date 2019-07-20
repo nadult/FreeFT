@@ -14,12 +14,12 @@ namespace game {
 	class Inventory {
 	public:
 		Inventory() = default;
-		Inventory(const XMLNode&);
+		Inventory(CXmlNode);
 
 		//TODO: remove this limit
 		enum { max_entries = 1024 };
 		
-		void save(XMLNode) const;
+		void save(XmlNode) const;
 
 		struct Entry {
 			float weight() const { return item.weight() * float(count); }
@@ -49,9 +49,9 @@ namespace game {
 	class ActorInventory: public Inventory {
 	public:
 		ActorInventory();
-		ActorInventory(const XMLNode&);
+		ActorInventory(CXmlNode);
 
-		void save(XMLNode) const;
+		void save(XmlNode) const;
 
 		bool equip(int id, int count = 1);
 		bool isEquipped(ItemType);

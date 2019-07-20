@@ -91,10 +91,10 @@ void TileGroup::clear() {
 	m_entries.clear();
 }
 
-void TileGroup::saveToXML(XMLDocument &doc) const {
+void TileGroup::saveToXML(XmlDocument &doc) const {
 	for(int n = 0; n < entryCount(); n++) {
 		const Entry &entry = m_entries[n];
-		XMLNode entry_node = doc.addChild("entry");
+		auto entry_node = doc.addChild("entry");
 		entry_node.addAttrib("tile", doc.own(entry.tile->resourceName()));
 		entry_node.addAttrib("group_id", entry.group_id);
 		entry_node.addAttrib("is_dirty", (int)entry.is_dirty);
@@ -109,17 +109,17 @@ void TileGroup::saveToXML(XMLDocument &doc) const {
 
 	for(int n = 0; n < groupCount(); n++) {
 		const Group &group = m_groups[n];
-		XMLNode group_node = doc.addChild("group");
+		auto group_node = doc.addChild("group");
 
 		for(int s = 0; s < Group::side_count; s++)
 			group_node.addAttrib(side_names[s], group.m_side_surf[s]);
 	}
 }
 
-void TileGroup::loadFromXML(const XMLDocument &doc) {
+void TileGroup::loadFromXML(const XmlDocument &doc) {
 	clear();
 
-	XMLNode node = doc.child("entry");
+	auto node = doc.child("entry");
 
 	while(node) {
 		Entry entry;

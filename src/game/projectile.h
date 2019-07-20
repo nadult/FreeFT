@@ -26,7 +26,7 @@ namespace game {
 		void addToRender(SceneRenderer &out, Color color) const override;
 
 		void save(Stream&) const override;
-		XMLNode save(XMLNode& parent) const override;
+		XmlNode save(XmlNode parent) const override;
 
 		Flags::Type flags() const override { return Flags::projectile | Flags::dynamic_entity; }
 

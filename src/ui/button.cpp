@@ -3,8 +3,6 @@
 
 #include "ui/button.h"
 
-using namespace gfx;
-
 namespace ui
 {
 
@@ -36,7 +34,7 @@ namespace ui
 	bool Button::onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) {
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;
 		if(key == 0 && m_is_enabled) {
-			if(is_final == 1 && localRect().containsPixel(current))
+			if(is_final == 1 && localRect().containsCell(current))
 				sendEvent(this, Event::button_clicked, m_id);
 			return true;
 		}

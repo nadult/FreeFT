@@ -8,8 +8,6 @@
 #include "hud/char_icon.h"
 #include <fwk/gfx/font.h>
 
-using namespace gfx;
-
 namespace hud {
 
 	namespace {

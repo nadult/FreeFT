@@ -14,8 +14,8 @@ namespace net {
 	class ServerConfig {
 	public:
 		ServerConfig();
-		ServerConfig(const XMLNode&);
-		void save(XMLNode&);
+		ServerConfig(const CXmlNode&);
+		void save(XmlNode&);
 
 		bool isValid() const;
 

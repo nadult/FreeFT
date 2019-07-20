@@ -9,8 +9,6 @@
 #include <fwk/gfx/texture.h>
 #include <fwk/gfx/renderer2d.h>
 
-using namespace gfx;
-
 namespace game
 {
 

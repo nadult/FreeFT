@@ -10,6 +10,7 @@
 #include "io/controller.h"
 #include "net/server.h"
 #include <fwk/gfx/gfx_device.h>
+#include <fwk/sys/backtrace.h>
 
 using namespace game;
 
@@ -81,9 +82,9 @@ int main(int argc, char **argv)
 			fullscreen = true;
 		else if(strcmp(argv[a], "-server") == 0) {
 			ASSERT(a + 1 < argc);
-			XMLDocument xml_config;
+			XmlDocument xml_config;
 			xml_config.load(argv[a + 1]);
-			XMLNode server_node = xml_config.child("server");
+			auto server_node = xml_config.child("server");
 			ASSERT(server_node);
 
 			server_config = net::ServerConfig(server_node);

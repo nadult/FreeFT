@@ -6,11 +6,11 @@
 
 namespace game {
 
-	Inventory::Inventory(const XMLNode &node) {
+	Inventory::Inventory(CXmlNode node) {
 		if(!node)
 			return;
 
-		XMLNode child = node.child("item");
+		auto child = node.child("item");
 
 		while(child) {
 			Entry new_entry;
@@ -24,9 +24,9 @@ namespace game {
 		}
 	}
 
-	void Inventory::save(XMLNode node) const {
+	void Inventory::save(XmlNode node) const {
 		for(int n = 0; n < (int)m_entries.size(); n++) {
-			XMLNode item_node = node.addChild("item");
+			auto item_node = node.addChild("item");
 			m_entries[n].item.index().save(item_node);
 			if(m_entries[n].count != 1)
 				item_node.addAttrib("count", m_entries[n].count);
@@ -106,14 +106,14 @@ namespace game {
 	ActorInventory::ActorInventory()
 		:m_weapon(Item::dummyWeapon()), m_dummy_weapon(Item::dummyWeapon()), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} { }
 	
-	ActorInventory::ActorInventory(const XMLNode &node)
+	ActorInventory::ActorInventory(CXmlNode node)
 		:Inventory(node), m_weapon(Item::dummyWeapon()), m_dummy_weapon(Item::dummyWeapon()), m_armour(Item::dummyArmour()), m_ammo{Item::dummyAmmo(), 0} {
 		if(!node)
 			return;
 
-		XMLNode weapon_node = node.child("weapon");
-		XMLNode armour_node = node.child("armour");
-		XMLNode ammo_node = node.child("ammo");
+		auto weapon_node = node.child("weapon");
+		auto armour_node = node.child("armour");
+		auto ammo_node = node.child("ammo");
 
 		if(weapon_node)
 			m_weapon = Item(findProto(weapon_node.attrib("proto_id"), ProtoId::weapon));
@@ -127,14 +127,14 @@ namespace game {
 		}
 	}
 		
-	void ActorInventory::save(XMLNode node) const {
+	void ActorInventory::save(XmlNode node) const {
 		Inventory::save(node);
 		if(!m_weapon.isDummy())
 			m_weapon.index().save(node.addChild("weapon"));
 		if(!m_armour.isDummy())
 			m_armour.index().save(node.addChild("armour"));
 		if(!m_ammo.item.isDummy()) {
-			XMLNode item_node = node.addChild("ammo");
+			auto item_node = node.addChild("ammo");
 			m_ammo.item.index().save(item_node);
 			item_node.addAttrib("count", m_ammo.count);
 		}

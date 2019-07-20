@@ -60,7 +60,7 @@ namespace game
 		object.occluder_id = best_occluder_id;
 	}
 
-	int EntityMap::add(unique_ptr<Entity> &&ptr, int index) {
+	int EntityMap::add(Dynamic<Entity> &&ptr, int index) {
 		DASSERT(ptr && index >= -1);
 		if(index == -1)
 			index = findFreeObject();
@@ -89,9 +89,9 @@ namespace game
 			updateOccluderId(index);
 	}
 
-	void EntityMap::loadFromXML(const XMLDocument &doc) {
+	void EntityMap::loadFromXML(const XmlDocument &doc) {
 		//TODO: exception safety when loading...
-		XMLNode main_node = doc.child("entity_map");
+		auto main_node = doc.child("entity_map");
 	
 		clear();
 		
@@ -107,16 +107,16 @@ namespace game
 		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 		resize(size);
 
-		XMLNode node = main_node.child();
+		auto node = main_node.child();
 		while(node) {
-			unique_ptr<Entity> new_entity(Entity::construct(node));
+			Dynamic<Entity> new_entity(Entity::construct(node));
 			add(std::move(new_entity));
 			node = node.sibling();
 		}
 	}
 
-	void EntityMap::saveToXML(XMLDocument &doc) const {
-		XMLNode main_node = doc.addChild("entity_map");
+	void EntityMap::saveToXML(XmlDocument &doc) const {
+		auto main_node = doc.addChild("entity_map");
 		main_node.addAttrib("size", dimensions());
 
 		std::vector<int> indices;

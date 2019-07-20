@@ -46,7 +46,7 @@ namespace game
 	class CharacterClass: public immutable_base<CharacterClass> {
 	public:
 		CharacterClass(const CharacterClass&) = default;
-		CharacterClass(XMLNode node, int id);
+		CharacterClass(XmlNode node, int id);
 
 		int id() const { return m_id; }
 		int tier() const { return m_tier; }

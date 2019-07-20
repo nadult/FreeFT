@@ -613,7 +613,7 @@ ERROR:;
 		}
 
 		m_remote_hosts[idx] =
-			unique_ptr<RemoteHost>(new RemoteHost(address, PacketInfo::max_size * 4, idx, remote_id));
+			Dynamic<RemoteHost>(new RemoteHost(address, PacketInfo::max_size * 4, idx, remote_id));
 		
 		return idx;
 	}

@@ -123,6 +123,7 @@ namespace game {
 		void playSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
 		void replicateSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
 
+		bool sendOrder(Order*, EntityRef actor_ref);
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
 		void sendMessage(net::TempPacket&, int target_id = -1);
 		
@@ -147,7 +148,7 @@ namespace game {
 
 		vector<NaviMap> m_navi_maps;
 		
-		vector<pair<unique_ptr<Entity>, int>> m_replace_list;
+		vector<pair<Dynamic<Entity>, int>> m_replace_list;
 
 		PGameMode m_game_mode;
 

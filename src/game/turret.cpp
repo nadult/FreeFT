@@ -75,7 +75,7 @@ namespace game {
 		sr.unpack(m_target_angle, m_action);
 	}
 
-	Turret::Turret(const XMLNode &node)
+	Turret::Turret(CXmlNode node)
 	  :EntityImpl(node), m_target_angle(dirAngle()) {
 		m_hit_points = m_proto.hit_points;
 		animate(TurretAction::idle);
@@ -87,9 +87,8 @@ namespace game {
 		animate(TurretAction::idle);
 	}
 
-	XMLNode Turret::save(XMLNode &parent) const {
-		XMLNode node = EntityImpl::save(parent);
-		return node;
+	XmlNode Turret::save(XmlNode parent) const {
+		return EntityImpl::save(parent);
 	}
 
 	void Turret::save(Stream &sr) const {
@@ -133,7 +132,7 @@ namespace game {
 		m_hit_points -= int(damage);
 		if(m_hit_points <= 0.0f) {
 			DeathId death_id = deathType(damage_type, damage, force);
-			setOrder(new DieOrder(death_id), true);
+			setOrder((POrder)new DieOrder(death_id), true);
 			onKill(ref(), source);
 		}
 		else {

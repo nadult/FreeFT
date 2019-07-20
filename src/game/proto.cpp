@@ -16,6 +16,8 @@
 #include "game/turret.h"
 #include "game/character.h"
 
+#include <fwk/sys/on_fail.h>
+
 namespace game {
 
 	Proto::Proto(const TupleParser &parser) {
@@ -25,7 +27,7 @@ namespace game {
 	}
 
 	struct ProtoDef {
-		std::map<string, int> map;
+		HashMap<string, int> map;
 		int count;
 		const char *table_name;
 		int (*add_func)(TupleParser&);
@@ -47,10 +49,10 @@ namespace game {
 		vector<TurretProto> s_turrets;
 
 		EnumMap<ProtoId, ProtoDef> s_protos = {
-			{ std::map<string, int>(), 0, 0, 0, 0 },
+			{ HashMap<string, int>(), 0, 0, 0, 0 },
 
 #define PROTO_DEF(table_name, container) \
-			{ std::map<string, int>(), 0, table_name, \
+			{ HashMap<string, int>(), 0, table_name, \
 				[](TupleParser &parser) { container.emplace_back(parser); \
 					return (container.back().idx = (int)container.size() - 1); }, \
 				[](int idx) -> Proto& { return container[idx]; } }
@@ -84,7 +86,7 @@ namespace game {
 			m_idx = -1;
 	}
 	
-	ProtoIndex::ProtoIndex(const XMLNode &node) {
+	ProtoIndex::ProtoIndex(CXmlNode node) {
 		const char *proto_type = node.attrib("proto_type");
 		if(strcmp(proto_type, "invalid") == 0)
 			*this = ProtoIndex();
@@ -103,7 +105,7 @@ namespace game {
 			encodeInt(sr, m_idx);
 	}
 
-	void ProtoIndex::save(XMLNode node) const {
+	void ProtoIndex::save(XmlNode node) const {
 		if(isValid()) {
 			const Proto &proto = getProto(*this);
 			node.addAttrib("proto_type", m_type? toString(*m_type) : "invalid");
@@ -175,16 +177,16 @@ namespace game {
 			FATAL("Proto-tables have already been loaded");
 		s_is_loaded = true;
 
-		XMLDocument doc;
+		XmlDocument doc;
 		Loader(file_name) >> doc;
 		
-		XMLNode doc_node = doc.child("office:document");
+		auto doc_node = doc.child("office:document");
 		ASSERT(doc_node);
 
-		XMLNode body_node = doc_node.child("office:body");
+		auto body_node = doc_node.child("office:body");
 		ASSERT(body_node);
 
-		XMLNode spreadsheet_node = body_node.child("office:spreadsheet");
+		auto spreadsheet_node = body_node.child("office:spreadsheet");
 		ASSERT(spreadsheet_node);
 
 		for(auto p : all<ProtoId>()) {
@@ -192,8 +194,8 @@ namespace game {
 			if(!def.table_name)
 				continue;
 
-			XMLNode table_node = spreadsheet_node.child("table:table");
-			while(table_node && !caseEqual(table_node.attrib("table:name"), def.table_name))
+			auto table_node = spreadsheet_node.child("table:table");
+			while(table_node && !equalIgnoreCase(table_node.attrib("table:name"), def.table_name))
 				table_node = table_node.sibling("table:table");
 
 			if(!table_node)

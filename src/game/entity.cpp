@@ -6,11 +6,7 @@
 #include "game/world.h"
 #include "gfx/scene_renderer.h"
 
-using namespace gfx;
-
-
 namespace game {
-
 
 	EntityProto::EntityProto(const TupleParser &parser) :Proto(parser) {
 		sprite_name = parser("sprite_name");
@@ -30,14 +26,14 @@ namespace game {
 	Entity::~Entity() = default;
 
 	//TODO: redundant initialization?
-	Entity::Entity(const Sprite &sprite, const XMLNode &node) :m_sprite(sprite) {
+	Entity::Entity(const Sprite &sprite, CXmlNode node) :m_sprite(sprite) {
 		m_pos = node.attrib<float3>("pos");
 		resetAnimState();
 		setDirAngle(node.attrib<float>("angle", 0.0f));
 	}
 
-	XMLNode Entity::save(XMLNode &parent) const {
-		XMLNode node = parent.addChild(toString(typeId()));
+	XmlNode Entity::save(XmlNode parent) const {
+		auto node = parent.addChild(toString(typeId()));
 		node.addAttrib("pos", m_pos);
 		if(m_dir_angle != 0.0f)
 			node.addAttrib("angle", m_dir_angle);

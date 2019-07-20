@@ -4,11 +4,10 @@
 #pragma once
 
 #include "base.h"
-#include <fwk/cstring.h>
-#include <map>
+#include <fwk/hash_map.h>
 
 struct TupleParser {
-	using ColumnMap = std::map<CString, int>;
+	using ColumnMap = HashMap<Str, int>;
 	TupleParser( const char **columns, int num_columns, const ColumnMap&);
 
 	const char *get(const char *name) const;
@@ -30,4 +29,4 @@ private:
 	int m_num_columns;
 };
 
-void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_func)(TupleParser&));
+void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_func)(TupleParser&));

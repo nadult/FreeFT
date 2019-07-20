@@ -7,8 +7,6 @@
 #include "game/world.h"
 #include "game/game_mode.h"
 
-using namespace gfx;
-
 namespace hud {
 
 	HudStats::HudStats(const FRect &target_rect)

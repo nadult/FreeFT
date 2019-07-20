@@ -68,7 +68,7 @@ namespace game {
 	class ItemEntity: public EntityImpl<ItemEntity, ItemProto, EntityId::item> {
 	public:
 		ItemEntity(Stream&);
-		ItemEntity(const XMLNode&);
+		ItemEntity(CXmlNode);
 		ItemEntity(const Item &item, int count);
 
 		FlagsType flags() const { return Flags::item | Flags::static_entity; }
@@ -80,7 +80,7 @@ namespace game {
 		int count() const { return m_count; }
 		void setCount(int count);
 
-		virtual XMLNode save(XMLNode&) const;
+		virtual XmlNode save(XmlNode) const;
 		virtual void save(Stream&) const;
 
 		virtual const FBox boundingBox() const;

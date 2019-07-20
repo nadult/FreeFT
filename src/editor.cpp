@@ -26,6 +26,7 @@
 #include "sys/config.h"
 #include <fwk/gfx/gfx_device.h>
 #include <fwk/sys/resource_manager.h>
+#include <fwk/sys/on_fail.h>
 
 using namespace ui;
 using game::Tile;
@@ -116,7 +117,7 @@ public:
 		freeEditors();
 
 		IRect rect(m_left_width, 0, width(), height());
-		m_view = make_unique<View>(m_tile_map, m_entity_map, rect.size());
+		m_view = uniquePtr<View>(m_tile_map, m_entity_map, rect.size());
 		m_tiles_editor = make_shared<TilesEditor>(m_tile_map, *m_view.get(), rect);
 		m_entities_editor = make_shared<EntitiesEditor>(m_tile_map, m_entity_map, *m_view.get(), rect);
 		m_tiles_editor->setTileGroup(&m_group);
@@ -202,7 +203,7 @@ public:
 	void loadTileGroup(const char *file_name) {
 		printf("Loading TileGroup: %s\n", file_name);
 		if(access(file_name)) {
-			XMLDocument doc;
+			XmlDocument doc;
 			doc.load(file_name);
 			m_group.loadFromXML(doc);
 		}
@@ -219,7 +220,7 @@ public:
 
 	void saveTileGroup(const char *file_name) const {
 		printf("Saving TileGroup: %s\n", file_name);
-		XMLDocument doc;
+		XmlDocument doc;
 		m_group.saveToXML(doc);
 		doc.save(file_name);
 		//TODO: nie ma warninga ze nie udalo sie zapisac

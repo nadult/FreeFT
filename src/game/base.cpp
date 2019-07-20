@@ -33,7 +33,12 @@ namespace game {
 
 	namespace AttackModeFlags {
 		uint fromString(const char *string) {
-			return ::toFlags(string, enumStrings(AttackMode()), 1);
+			if(Str(string) == "")
+				return 0;
+			TextParser parser(string);
+			EnumFlags<AttackMode> flags;
+			parser >> flags;
+			return flags.bits;
 		}
 
 		Maybe<AttackMode> getFirst(uint flags) {

@@ -23,7 +23,7 @@ namespace net {
 		:m_console_mode(false), m_port(0), m_max_players(16) {
 	}
 
-	ServerConfig::ServerConfig(const XMLNode &node) :ServerConfig() {
+	ServerConfig::ServerConfig(const CXmlNode &node) :ServerConfig() {
 		if(const char *attrib = node.hasAttrib("max_players")) {
 			m_max_players = fromString<int>(attrib);
 			ASSERT(m_max_players >= 1 && m_max_players <= Server::max_remote_hosts);
@@ -47,7 +47,7 @@ namespace net {
 		return !m_server_name.empty() && !m_map_name.empty();
 	}
 
-	void ServerConfig::save(XMLNode &node) {
+	void ServerConfig::save(XmlNode &node) {
 		node.addAttrib("name", node.own(m_server_name));
 		node.addAttrib("map_name", node.own(m_map_name));
 		node.addAttrib("port", m_port);

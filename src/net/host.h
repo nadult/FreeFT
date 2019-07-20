@@ -225,7 +225,7 @@ namespace net {
 
 	protected:
 		net::Socket m_socket;
-		vector<unique_ptr<RemoteHost>> m_remote_hosts;
+		vector<Dynamic<RemoteHost>> m_remote_hosts;
 		std::list<InPacket> m_lobby_packets;
 		int m_unverified_count, m_remote_count;
 

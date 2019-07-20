@@ -370,11 +370,11 @@ ResourceManager<game::Tile> &tiles() { return s_tiles; }
 PFont getFont(const string &name) {
 	auto core = s_font_cores[name];
 	auto texture = s_font_textures[core->textureName()];
-	return make_unique<Font>(std::move(core), std::move(texture));
+	return uniquePtr<Font>(std::move(core), std::move(texture));
 }
 }
 
-string32 toUTF32Checked(CString ref) {
+string32 toUTF32Checked(Str ref) {
 	if(auto result = toUTF32(ref))
 		return move(*result);
 	FATAL("Error while converting string to UTF32");

@@ -17,11 +17,11 @@ namespace game {
 		enum { type_id = (int)EntityId::trigger };
 
 		Trigger(TriggerClassId class_id, const FBox &box);
-		Trigger(const XMLNode&);
+		Trigger(CXmlNode);
 		Trigger(Stream&);
 		
 		void save(Stream&) const override;
-		XMLNode save(XMLNode &parent) const override;
+		XmlNode save(XmlNode parent) const override;
 		
 		Entity *clone() const override;
 

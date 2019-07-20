@@ -50,12 +50,12 @@ namespace game {
 	}
 		
 	const vector<pair<ProtoIndex, string>> Character::findIcons() {
-		XMLDocument doc;
+		XmlDocument doc;
 		Loader("data/char_icons.xml") >> doc;
 
 		vector<pair<ProtoIndex, string>> out;
 
-		XMLNode node = doc.child("char_icon");
+		auto node = doc.child("char_icon");
 		while(node) {
 			const char *proto_name = node.attrib("proto");
 			const char *icon_name = node.attrib("icon");
@@ -82,7 +82,7 @@ namespace game {
 	}
 		
 
-	CharacterClass::CharacterClass(XMLNode node, int id) :m_inventory(node.child("inventory")) {
+	CharacterClass::CharacterClass(XmlNode node, int id) :m_inventory(node.child("inventory")) {
 		m_name = node.attrib("name");
 		m_tier = node.attrib<int>("tier");
 		m_id = id;
@@ -108,10 +108,10 @@ namespace game {
 		if(!s_classes.empty())
 			return;
 		
-		XMLDocument doc;
+		XmlDocument doc;
 		Loader("data/char_classes.xml") >> doc;
 		
-		XMLNode class_node = doc.child("char_class");
+		auto class_node = doc.child("char_class");
 		int counter = 0;
 
 		while(class_node) {

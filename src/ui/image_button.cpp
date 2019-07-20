@@ -74,7 +74,7 @@ namespace ui
 		m_mouse_press = key == 0 && !is_final && m_is_enabled;
 
 		if(key == 0 && m_is_enabled) {
-			if(is_final == 1 && localRect().containsPixel(current)) {
+			if(is_final == 1 && localRect().containsCell(current)) {
 				if(m_mode == mode_toggle)
 					m_is_pressed ^= 1;
 				else if(m_mode == mode_toggle_on)

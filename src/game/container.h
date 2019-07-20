@@ -37,7 +37,7 @@ namespace game
 	{
 	public:
 		Container(Stream&);
-		Container(const XMLNode&);
+		Container(CXmlNode);
 		Container(const ContainerProto&);
 
 		FlagsType flags() const override { return Flags::container | Flags::static_entity | Flags::occluding | Flags::colliding; }
@@ -55,7 +55,7 @@ namespace game
 		const Inventory &inventory() const { return m_inventory; }
 		Inventory &inventory() { return m_inventory; }
 		
-		XMLNode save(XMLNode&) const override;
+		XmlNode save(XmlNode) const override;
 		void save(Stream&) const override;
 		
 	private:

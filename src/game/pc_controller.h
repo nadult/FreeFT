@@ -33,6 +33,7 @@ namespace game
 
 		void reload();
 
+		void sendOrder(Order *owned_ptr);
 		void sendOrder(game::POrder&&);
 		const World &world() const { return m_world; }
 	

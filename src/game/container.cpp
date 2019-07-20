@@ -42,7 +42,7 @@ namespace game {
 		sr >> m_inventory;
 	}
 
-	Container::Container(const XMLNode &node) :EntityImpl(node) {
+	Container::Container(CXmlNode node) :EntityImpl(node) {
 		initialize();
 	}
 	Container::Container(const ContainerProto &proto) :EntityImpl(proto) {
@@ -55,8 +55,8 @@ namespace game {
 		sr << m_inventory;
 	}
 
-	XMLNode Container::save(XMLNode &parent) const {
-		XMLNode node = EntityImpl::save(parent);
+	XmlNode Container::save(XmlNode parent) const {
+		auto node = EntityImpl::save(parent);
 		return node;
 	}
 

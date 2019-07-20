@@ -10,7 +10,6 @@
 #include "game/tile_map.h"
 #include <algorithm>
 
-using namespace gfx;
 using namespace game;
 
 namespace ui {

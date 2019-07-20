@@ -6,16 +6,12 @@
 #include "game/orders/idle.h"
 #include "game/weapon.h"
 
-using namespace gfx;
-
-
 namespace game {
-
 
 	ThinkingEntity::ThinkingEntity(const Sprite &sprite) :Entity(sprite) { }
 	ThinkingEntity::ThinkingEntity(const ThinkingEntity&) = default;
 	ThinkingEntity::~ThinkingEntity() = default;
-	ThinkingEntity::ThinkingEntity(const Sprite &sprite, const XMLNode &node) :Entity(sprite, node) { }
+	ThinkingEntity::ThinkingEntity(const Sprite &sprite, CXmlNode node) :Entity(sprite, node) { }
 	
 	enum {
 		flag_has_order = 1,
@@ -38,7 +34,7 @@ namespace game {
 
 	}
 		
-	XMLNode ThinkingEntity::save(XMLNode& parent) const {
+	XmlNode ThinkingEntity::save(XmlNode parent) const {
 		return Entity::save(parent);
 	}
 
@@ -157,6 +153,10 @@ namespace game {
 
 	Brain *ThinkingEntity::AI() const {
 		return m_ai.get();
+	}
+	
+	bool ThinkingEntity::setOrder(Order *order, bool force) {
+		return setOrder(POrder(order), force);
 	}
 
 	const FBox ThinkingEntity::shootingBox(const Weapon &weapon) const {

@@ -472,6 +472,10 @@ namespace game {
 	void World::playSound(SoundId sound_id, const float3 &pos, SoundType sound_type) {
 		audio::playSound(sound_id, sound_type, pos);
 	}
+		
+	bool World::sendOrder(Order *order, EntityRef actor_ref) {
+		return sendOrder(POrder(order), actor_ref);
+	}
 
 	bool World::sendOrder(POrder &&order_ptr, EntityRef entity_ref) {
 		DASSERT(order_ptr);

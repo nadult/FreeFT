@@ -31,7 +31,7 @@ namespace game {
 		Impact(Stream&);
 
 		void save(Stream&) const override;
-		XMLNode save(XMLNode& parent) const override;
+		XmlNode save(XmlNode parent) const override;
 		void addToRender(SceneRenderer &out, Color color) const override;
 
 		FlagsType flags() const override { return Flags::impact | Flags::dynamic_entity; }

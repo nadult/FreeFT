@@ -94,7 +94,7 @@ static const string locateFTPath() {
 
 struct TileMapProxy: public TileMap {
 	void save(Stream &sr) const {
-		XMLDocument doc;
+		XmlDocument doc;
 		saveToXML(doc);
 		sr << doc;
 	}

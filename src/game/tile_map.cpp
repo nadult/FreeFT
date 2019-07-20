@@ -78,8 +78,8 @@ namespace game {
 			   flags);
 	}
 
-	void TileMap::loadFromXML(const XMLDocument &doc) {
-		XMLNode main_node = doc.child("tile_map");
+	void TileMap::loadFromXML(const XmlDocument &doc) {
+		auto main_node = doc.child("tile_map");
 		ASSERT(main_node);
 
 		clear();
@@ -90,10 +90,10 @@ namespace game {
 		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 		resize(size);
 
-		XMLNode tnode = main_node.child("tile");
+		auto tnode = main_node.child("tile");
 		while(tnode) {
 			const Tile *tile = res::tiles()[tnode.attrib("name")].get();
-			XMLNode inode = tnode.child("i");
+			auto inode = tnode.child("i");
 			while(inode) {
 				int3 pos = inode.attrib<int3>("pos");
 				maybeAdd(*tile, pos);
@@ -105,8 +105,8 @@ namespace game {
 		m_occluder_map.loadFromXML(doc);
 	}
 
-	void TileMap::saveToXML(XMLDocument &doc) const {
-		XMLNode main_node = doc.addChild("tile_map");
+	void TileMap::saveToXML(XmlDocument &doc) const {
+		auto main_node = doc.addChild("tile_map");
 		main_node.addAttrib("size", dimensions());
 
 		std::vector<int> indices;
@@ -130,7 +130,7 @@ namespace game {
 		} );
 		
 		const Tile *prev = nullptr;
-		XMLNode tile_node;
+		XmlNode tile_node;
 
 		PodVector<int> tile_ids(size());
 		for(int n = 0; n < size(); n++)
@@ -147,7 +147,7 @@ namespace game {
 				prev = object.ptr;
 			}
 
-			XMLNode instance = tile_node.addChild("i");
+			auto instance = tile_node.addChild("i");
 			instance.addAttrib("pos", int3(object.bbox.min()));
 			instance.addAttrib("bbox", int3(object.bbox.size()));
 		}

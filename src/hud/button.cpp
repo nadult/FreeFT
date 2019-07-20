@@ -8,12 +8,9 @@
 #include <fwk/sys/resource_manager.h>
 #include <fwk/gfx/font.h>
 
-using namespace gfx;
-
 namespace hud {
 
 	namespace {
-
 		struct IconInfo {
 			FRect uv_rect;
 		};
@@ -30,7 +27,6 @@ namespace hud {
 
 			{ FRect(0.00f, 0.50f, 0.25f, 0.75f) }
 		};
-
 	}
 
 	HudButton::HudButton(const FRect &rect, int id)

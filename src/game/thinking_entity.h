@@ -22,7 +22,7 @@ namespace game {
 	class DieOrder;
 	
 	class Brain;
-	using PBrain = ::ClonablePtr<Brain>;
+	using PBrain = Dynamic<Brain>;
 
 	DEFINE_ENUM(EntityEvent,
 		init_order,
@@ -46,12 +46,12 @@ namespace game {
 	class ThinkingEntity: public Entity {
 	public:
 		ThinkingEntity(const Sprite &sprite);
-		ThinkingEntity(const Sprite &sprite, const XMLNode&);
+		ThinkingEntity(const Sprite &sprite, CXmlNode);
 		ThinkingEntity(const Sprite &sprite, Stream&);
 		ThinkingEntity(const ThinkingEntity&);
 		~ThinkingEntity();
 		
-		XMLNode save(XMLNode& parent) const override;
+		XmlNode save(XmlNode parent) const override;
 		void save(Stream&) const override;
 		
 		template <class TAI, class ...Args>
@@ -59,6 +59,7 @@ namespace game {
 		void detachAI();
 		Brain *AI() const;
 		
+		bool setOrder(Order *order, bool force = false);
 		virtual bool setOrder(POrder&&, bool force = false);
 
 		//TODO: move shooting functions to separate class?

@@ -10,10 +10,13 @@
 #include "ui/button.h"
 #include "ui/list_box.h"
 #include "ui/message_box.h"
+
 #include <fwk/filesystem.h>
 #include <fwk/gfx/dtexture.h>
-#include <fwk/gfx/texture.h>
 #include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/texture.h>
+#include <fwk/str.h>
+#include <fwk/sys/on_fail.h>
 #include <fwk/sys/rollback.h>
 
 using namespace game;
@@ -243,7 +246,7 @@ class ResourceView : public Window {
 			if(res_type != ResType::unknown) {
 				ON_FAIL("Error while loading file: %", file_name);
 
-				auto result = RollbackContext::begin([&]() { return make_unique<Resource>(current_dir, file_name); });
+				auto result = RollbackContext::begin([&]() { return uniquePtr<Resource>(current_dir, file_name); });
 
 				if(result)
 					m_resources.emplace_back(std::move(*result));
@@ -302,7 +305,7 @@ class ResourceView : public Window {
 		for(int n = 0; n < (int)m_resources.size(); n++) {
 			const auto &res = m_resources[n];
 			int2 pos = m_positions[n] - offset;
-			if(clicked && IRect(pos, pos + res->rectSize()).containsPixel(m_last_mouse_pos))
+			if(clicked && IRect(pos, pos + res->rectSize()).containsCell(m_last_mouse_pos))
 				m_selected_id = n;
 		}
 		if(clicked)
@@ -338,9 +341,9 @@ class ResourceView : public Window {
   private:
 	int m_selected_id;
 	int2 m_last_mouse_pos;
-	vector<unique_ptr<Resource>> m_resources;
+	vector<Dynamic<Resource>> m_resources;
 	vector<int2> m_positions;
-	unique_ptr<Font> m_font;
+	Dynamic<Font> m_font;
 };
 
 enum class Command { empty, change_dir, exit };
@@ -433,7 +436,7 @@ class ResViewerWindow : public Window {
 	PWindow popup;
 };
 
-static unique_ptr<ResViewerWindow> main_window;
+static Dynamic<ResViewerWindow> main_window;
 static double start_time = getTime();
 
 static bool main_loop(GfxDevice &device, void*) {
@@ -450,7 +453,7 @@ static bool main_loop(GfxDevice &device, void*) {
 	if(command.first == Command::exit)
 		return false;
 	if(command.first == Command::change_dir)
-		main_window = make_unique<ResViewerWindow>(device.windowSize(), command.second);
+		main_window = uniquePtr<ResViewerWindow>(device.windowSize(), command.second);
 	if(main_window->size() != device.windowSize())
 		main_window->resize(device.windowSize());
 
@@ -466,7 +469,7 @@ int main(int argc, char **argv) {
 	GfxDevice gfx_device;
 	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
-	main_window = make_unique<ResViewerWindow>(gfx_device.windowSize(), "data/");
+	main_window = uniquePtr<ResViewerWindow>(gfx_device.windowSize(), "data/");
 	gfx_device.runMainLoop(main_loop);
 
 	main_window.reset();

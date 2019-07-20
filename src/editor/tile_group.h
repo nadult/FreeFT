@@ -50,8 +50,8 @@ public:
 	int groupCount() const { return (int)m_groups.size(); }
 	int groupEntryCount(int group_id) const { return m_groups[group_id].m_entry_count; }
 
-	void saveToXML(XMLDocument&) const;
-	void loadFromXML(const XMLDocument&);
+	void saveToXML(XmlDocument&) const;
+	void loadFromXML(const XmlDocument&);
 
 protected:
 	void decGroupEntryCount(int group_id);

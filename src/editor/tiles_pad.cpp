@@ -10,8 +10,8 @@ namespace ui {
 		:Window(rect, ColorId::transparent), m_editor(editor), m_group(group) {
 		int width = rect.width();
 
-		m_filter_box = make_shared<ComboBox>(IRect(0, 0, width/2, 22), 200,
-				"Filter: ", enumStrings(TileFilter()));
+		auto strings = transform(all<TileFilter>(), [](TileFilter f) { return toString(f); });
+		m_filter_box = make_shared<ComboBox>(IRect(0, 0, width/2, 22), 200, "Filter: ", strings);
 		m_filter_box->selectEntry(0);
 		m_dirty_bar = make_shared<ProgressBar>(IRect(width/2, 0, width, 22), true);
 		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 22, width, 44), 200, "Editing mode: ",

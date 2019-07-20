@@ -5,8 +5,6 @@
 #include "gfx/drawing.h"
 #include <fwk/gfx/dtexture.h>
 
-using namespace gfx;
-
 namespace ui
 {
 
@@ -143,8 +141,8 @@ namespace ui
 		for(int n = (int)m_children.size() - 1; n >= 0; n--) {
 			Window *child = m_children[n].get();
 			if(child->isVisible() && m_has_hard_focus == child->m_has_hard_focus) {
-				if(m_has_hard_focus || child->rect().containsPixel(focus_point)) {
-					child->m_is_mouse_over = child->clippedRect().containsPixel(mouse_pos);
+				if(m_has_hard_focus || child->rect().containsCell(focus_point)) {
+					child->m_is_mouse_over = child->clippedRect().containsCell(mouse_pos);
 					child->process(state);
 					is_handled = true;
 					break;

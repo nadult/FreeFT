@@ -49,7 +49,7 @@ namespace game
 	{
 	public:
 		Door(Stream&);
-		Door(const XMLNode&);
+		Door(CXmlNode);
 		Door(const DoorProto &proto);
 
 		FlagsType flags() const override { return Flags::door | Flags::dynamic_entity | Flags::occluding | Flags::colliding; }
@@ -62,7 +62,7 @@ namespace game
 		void setKey(const Item&);
 		void setDirAngle(float angle) override;
 
-		XMLNode save(XMLNode&) const override;
+		XmlNode save(XmlNode) const override;
 		void save(Stream&) const override;
 		const FBox boundingBox() const override;
 

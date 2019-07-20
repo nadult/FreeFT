@@ -196,17 +196,17 @@ bool OccluderMap::verifyBBoxes(int occluder_id, const vector<FBox> &bboxes) cons
 	return bobjects == objects;
 }
 
-void OccluderMap::loadFromXML(const XMLDocument &doc) {
+void OccluderMap::loadFromXML(const XmlDocument &doc) {
 	clear();
 
 	for(int n = 0; n < m_grid.size(); n++)
 		if(m_grid[n].ptr)
 			ASSERT(m_grid[n].occluder_id == -1);
 
-	XMLNode main_node = doc.child("occluders");
+	auto main_node = doc.child("occluders");
 
 	if(main_node) {
-		XMLNode occluder_node = main_node.child("occluder");
+		auto occluder_node = main_node.child("occluder");
 		vector<int> temp;
 		temp.reserve(m_grid.size());
 
@@ -219,7 +219,7 @@ void OccluderMap::loadFromXML(const XMLDocument &doc) {
 			ASSERT(object_count < m_grid.size() && object_count > 0);
 			occluder.objects.resize(object_count, -1);
 
-			XMLNode box_node = occluder_node.child("box");
+			auto box_node = occluder_node.child("box");
 			bool first = true;
 			while(box_node) {
 				FBox bbox(box_node.attrib<float3>("min"), box_node.attrib<float3>("max"));
@@ -252,18 +252,18 @@ void OccluderMap::loadFromXML(const XMLDocument &doc) {
 	}
 }
 
-void OccluderMap::saveToXML(const PodVector<int> &tile_ids, XMLDocument &doc) const {
-	XMLNode main_node = doc.addChild("occluders");
+void OccluderMap::saveToXML(const PodVector<int> &tile_ids, XmlDocument &doc) const {
+	auto main_node = doc.addChild("occluders");
 	for(int n = 0; n < (int)m_occluders.size(); n++) {
 		const Occluder &occluder = m_occluders[n];
 		const auto &bboxes = computeBBoxes(n, true);
 		DASSERT(verifyBBoxes(n, bboxes));
 
-		XMLNode occluder_node = main_node.addChild("occluder");
+		auto occluder_node = main_node.addChild("occluder");
 		occluder_node.addAttrib("object_count", (int)occluder.objects.size());
 
 		for(int b = 0; b < (int)bboxes.size(); b++) {
-			XMLNode box_node = occluder_node.addChild("box");
+			auto box_node = occluder_node.addChild("box");
 			box_node.addAttrib("min", bboxes[b].min());
 			box_node.addAttrib("max", bboxes[b].max());
 		}

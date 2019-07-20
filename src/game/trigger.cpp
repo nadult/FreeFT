@@ -10,7 +10,7 @@ namespace game {
 		setBox(box);
 	}
 		
-	Trigger::Trigger(const XMLNode &node) :Entity(Sprite::getDummy(), node) {
+	Trigger::Trigger(CXmlNode node) :Entity(Sprite::getDummy(), node) {
 		m_class_id = fromString<TriggerClassId>(node.attrib("class"));
 		m_box_size = node.attrib<float3>("box_size");
 		m_faction_id = node.attrib<int>("faction_id", 0);
@@ -27,8 +27,8 @@ namespace game {
 		sr << m_box_size << m_class_id << m_faction_id << m_spawn_delay << m_spawn_limit;
 	}
 
-	XMLNode Trigger::save(XMLNode &parent) const {
-		XMLNode out = Entity::save(parent);
+	XmlNode Trigger::save(XmlNode parent) const {
+		auto out = Entity::save(parent);
 		out.addAttrib("box_size", m_box_size);
 		out.addAttrib("class", toString(m_class_id));
 		if(m_faction_id != 0)

@@ -53,8 +53,8 @@ namespace game {
 					int3 target_pos;
 				   	if(world()->findClosestPos(target_pos, (int3)pos(), other_box, ref())) {
 						order.m_is_followup = true;
-						POrder move_order = new MoveOrder(target_pos, true);
-						move_order->setFollowup(order.clone());
+						POrder move_order(new MoveOrder(target_pos, true));
+						move_order->setFollowup(POrder(order.clone()));
 						setOrder(std::move(move_order));
 					}
 					return false;

@@ -38,6 +38,6 @@ namespace ui {
 		const int2 m_view_size;
 	};
 
-	using PView = unique_ptr<View>;
+	using PView = Dynamic<View>;
 
 }

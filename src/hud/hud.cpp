@@ -14,8 +14,6 @@
 #include "game/game_mode.h"
 #include "game/pc_controller.h"
 
-using namespace gfx;
-
 namespace hud {
 
 	namespace 

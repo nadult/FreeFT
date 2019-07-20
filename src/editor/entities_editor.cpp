@@ -127,7 +127,7 @@ namespace ui {
 
 							if(!is_trigger && !object.ptr->testPixel(point))
 								continue;
-							if(is_trigger && !object.ptr->currentScreenRect().containsPixel(point))
+							if(is_trigger && !object.ptr->currentScreenRect().containsCell(point))
 								continue;
 
 							if(!tile_isected) {

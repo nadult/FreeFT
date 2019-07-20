@@ -27,7 +27,7 @@ namespace audio {
 		//TODO: preloading data? (to avoid reading from disk while playing)
 		//alternative: move audio device to separate thread
 	private:
-		std::unique_ptr<Stream> m_stream;
+		Dynamic<Stream> m_stream;
 		mpg123_handle *m_handle;
 		int m_sample_rate, m_num_channels;
 		bool m_is_finished, m_need_data;

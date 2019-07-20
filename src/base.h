@@ -15,9 +15,12 @@
 #include <fwk/pod_vector.h>
 #include <fwk/sys/immutable_ptr.h>
 #include <fwk/format.h>
+#include <fwk/sys/unique_ptr.h>
 #include <fwk/enum.h>
 
 using namespace fwk;
+
+template <class T> using Dynamic = UniquePtr<T>;
 
 
 using Segment3F = Segment<float, 3>;
@@ -54,7 +57,7 @@ bool areOverlapping(const FBox &a, const FBox &b);
 bool areOverlapping(const IRect &a, const IRect &b);
 bool areOverlapping(const FRect &a, const FRect &b);
 
-string32 toUTF32Checked(CString);
+string32 toUTF32Checked(Str);
 string toUTF8Checked(const string32 &);
 
 // These can be used to look for wrong uses of min & max on vectors
@@ -144,27 +147,6 @@ template <class Type3> int drawingOrder(const Box<Type3> &a, const Box<Type3> &b
 	return z_ret;
 }
 
-template <class T> class ClonablePtr : public unique_ptr<T> {
-  public:
-	ClonablePtr(const ClonablePtr &rhs) : unique_ptr<T>(rhs ? rhs->clone() : nullptr) {
-		static_assert(std::is_same<decltype(&T::clone), T *(T::*)() const>::value, "");
-	}
-	ClonablePtr(ClonablePtr &&rhs) : unique_ptr<T>(std::move(rhs)) {}
-	ClonablePtr(T *ptr) : unique_ptr<T>(ptr) {}
-	ClonablePtr() {}
-
-	explicit operator bool() const { return unique_ptr<T>::operator bool(); }
-	bool isValid() const { return unique_ptr<T>::operator bool(); }
-
-	void operator=(ClonablePtr &&rhs) { unique_ptr<T>::operator=(std::move(rhs)); }
-	void operator=(const ClonablePtr &rhs) {
-		if(&rhs == this)
-			return;
-		T *clone = rhs ? rhs->clone() : nullptr;
-		unique_ptr<T>::reset(clone);
-	}
-};
-
 float2 worldToScreen(const float3 &pos);
 int2 worldToScreen(const int3 &pos);
 
@@ -218,14 +200,7 @@ float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
 
-namespace fwk {
-namespace gfx {}
-class XMLNode;
-class XMLDocument;
-class Texture;
-}
-
-using PFont = unique_ptr<Font>;
+using PFont = Dynamic<Font>;
 
 namespace ui {
 class Window;
@@ -272,18 +247,17 @@ using PCharacter = shared_ptr<Character>;
 using PPlayableCharacter = shared_ptr<PlayableCharacter>;
 using PPCController = shared_ptr<PCController>;
 
-using PGameMode = unique_ptr<GameMode>;
-using PEntity = unique_ptr<Entity>;
-
-using POrder = ::ClonablePtr<Order>;
+using PGameMode = Dynamic<GameMode>;
+using PEntity = Dynamic<Entity>;
+using POrder = Dynamic<Order>;
 }
 
 namespace net {
 class Client;
 class Server;
 class TempPacket;
-using PClient = unique_ptr<Client>;
-using PServer = unique_ptr<Server>;
+using PClient = Dynamic<Client>;
+using PServer = Dynamic<Server>;
 }
 
 namespace audio {
@@ -293,7 +267,7 @@ using PPlayback = shared_ptr<Playback>;
 
 namespace io {
 class Controller;
-using PController = unique_ptr<Controller>;
+using PController = Dynamic<Controller>;
 }
 
 struct TupleParser;

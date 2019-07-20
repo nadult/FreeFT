@@ -24,7 +24,7 @@ namespace game {
 		struct VisEntity {
 			VisEntity() :mode(invisible), occluder_id(-1) { }
 
-			unique_ptr<Entity> shadow;
+			Dynamic<Entity> shadow;
 			EntityRef ref;
 
 			enum Mode {

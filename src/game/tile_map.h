@@ -24,8 +24,8 @@ namespace game {
 		
 		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 
-		void loadFromXML(const XMLDocument&);
-		void saveToXML(XMLDocument&) const;
+		void loadFromXML(const XmlDocument&);
+		void saveToXML(XmlDocument&) const;
 		void swap(const TileMap&);
 
 		void legacyConvert(Stream &in, Stream &out);

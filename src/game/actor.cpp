@@ -37,7 +37,7 @@ namespace game {
 		sr >> m_inventory;
 	}
 
-	Actor::Actor(const XMLNode &node)
+	Actor::Actor(CXmlNode node)
 	  :EntityImpl(node), m_actor(*m_proto.actor), m_stance(Stance::stand), m_inventory(node.child("inventory")),
 	      m_target_angle(dirAngle()), m_client_id(-1) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
@@ -98,8 +98,8 @@ namespace game {
 		m_hit_points = rhs.m_hit_points;
 	}
 	
-	XMLNode Actor::save(XMLNode &parent) const {
-		XMLNode node = EntityImpl::save(parent);
+	XmlNode Actor::save(XmlNode parent) const {
+		auto node = EntityImpl::save(parent);
 		node.addAttrib("faction_id", m_faction_id);
 		node.addAttrib("sound_variation", m_sound_variation);
 		if(!m_inventory.empty())

@@ -4,8 +4,6 @@
 #include "hud/options.h"
 #include "hud/button.h"
 
-using namespace gfx;
-
 namespace hud {
 
 	namespace {

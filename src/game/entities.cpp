@@ -13,7 +13,7 @@
 
 namespace game {
 
-	Entity* Entity::construct(const XMLNode &node) {
+	Entity* Entity::construct(CXmlNode node) {
 		auto entity_type = fromString<EntityId>(node.name());
 		Entity *out = nullptr;
 

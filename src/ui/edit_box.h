@@ -10,7 +10,7 @@ namespace ui {
 	class EditBox: public Window
 	{
 	public:
-		EditBox(const IRect &rect, int max_size, CString label = CString(), FColor col = ColorId::transparent);
+		EditBox(const IRect &rect, int max_size, Str label = {}, FColor col = ColorId::transparent);
 		const char *typeName() const override { return "EditBox"; }
 
 		void setText(string32);

@@ -11,8 +11,6 @@
 #define printf(...)	
 #endif
 
-using namespace gfx;
-
 void zlibInflate(Stream &sr, vector<char> &dest, int inSize);
 
 namespace game {
@@ -183,7 +181,7 @@ namespace game {
 			}
 		}
 
-		XMLDocument doc;
+		XmlDocument doc;
 		saveToXML(doc);
 		out << doc;
 		clear();

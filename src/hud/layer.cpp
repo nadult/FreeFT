@@ -10,8 +10,6 @@
 #include "gfx/drawing.h"
 #include <fwk/gfx/font.h>
 
-using namespace gfx;
-
 namespace hud {
 
 	HudLayer::HudLayer(const FRect &rect, SlideMode slide_mode)

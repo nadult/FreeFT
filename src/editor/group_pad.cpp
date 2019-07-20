@@ -4,11 +4,10 @@
 #include "editor/group_pad.h"
 
 namespace ui {
-
 	GroupPad::GroupPad(const IRect &rect, PGroupEditor editor, TileGroup *group)
-		:Window(rect), m_editor(editor), m_group(group) {
-		m_filter_box = make_shared<ComboBox>(IRect(0, 0, rect.width(), 22), 200,
-				"Filter: ", enumStrings(TileFilter()));
+		: Window(rect), m_editor(editor), m_group(group) {
+		auto strings = transform(all<TileFilter>(), [](TileFilter f) { return toString(f); });
+		m_filter_box = make_shared<ComboBox>(IRect(0, 0, rect.width(), 22), 200, "Filter: ", strings);
 		attach(m_filter_box);
 		m_filter_box->selectEntry((int)editor->tileFilter());
 	}
@@ -27,7 +26,4 @@ namespace ui {
 
 		return true;
 	}
-
-
-
 }

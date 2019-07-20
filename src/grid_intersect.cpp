@@ -266,7 +266,7 @@ int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectD
 			int node_id = nodeAt(int2(x, y));
 			const Node &node = m_nodes[node_id];
 
-			if(!flagTest(node.obj_flags, flags) || !node.rect.containsPixel(screen_pos))
+			if(!flagTest(node.obj_flags, flags) || !node.rect.containsCell(screen_pos))
 				continue;
 			if(node.is_dirty)
 				updateNode(node_id);	
@@ -275,7 +275,7 @@ int Grid::pixelIntersect(const int2 &screen_pos, bool (*pixelTest)(const ObjectD
 			int count = extractObjects(node_id, objects, -1, flags);
 
 			for(int n = 0; n < count; n++)
-				if(objects[n]->rect().containsPixel(screen_pos) && pixelTest(*objects[n], screen_pos)) {
+				if(objects[n]->rect().containsCell(screen_pos) && pixelTest(*objects[n], screen_pos)) {
 					if(best == -1 || drawingOrder(objects[n]->bbox, best_box) == 1) {
 						best = objects[n] - &m_objects[0];
 						best_box = objects[n]->bbox;

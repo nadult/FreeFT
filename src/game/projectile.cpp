@@ -41,7 +41,7 @@ namespace game {
 		sr << m_spawner;
 	}
 		
-	XMLNode Projectile::save(XMLNode& parent) const {
+	XmlNode Projectile::save(XmlNode parent) const {
 		return Entity::save(parent);
 	}
 	
