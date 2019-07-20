@@ -3,11 +3,10 @@
 
 #include "gfx/texture_cache.h"
 
-#include "fwk_opengl.h"
-#include "fwk/gfx/texture.h"
-#include "fwk/gfx/dtexture.h"
+#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/opengl.h>
+#include <fwk/gfx/texture.h>
 #include <limits.h>
-#include <algorithm>
 
 //#define LOGGING
 

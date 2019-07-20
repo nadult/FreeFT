@@ -1,7 +1,6 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include "fwk_opengl.h"
 #include "game/world.h"
 #include "ui/file_dialog.h"
 #include "ui/message_box.h"

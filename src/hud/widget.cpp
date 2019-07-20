@@ -3,7 +3,6 @@
 
 #include "hud/widget.h"
 
-#include <fwk_opengl.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {

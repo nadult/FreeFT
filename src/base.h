@@ -20,6 +20,8 @@
 
 using namespace fwk;
 
+#define FATAL FWK_FATAL
+
 template <class T> using Dynamic = UniquePtr<T>;
 
 
@@ -175,6 +177,7 @@ vector<float3> genPoints(const FBox &bbox, int density);
 void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3);
 float3 perturbVector(const float3 &vec, float rand1, float rand2, float strength);
 
+// TODO: use one from libfwk
 struct IntervalF {
 	IntervalF(float value) :min(value), max(value) { }
 	IntervalF(float min, float max) :min(min), max(max) { }

@@ -392,6 +392,6 @@ void createWindow(const char *name, GfxDevice &device, const int2 &res, const in
 	auto flags = GfxDeviceOpt::resizable | GfxDeviceOpt::vsync;
 	if(fullscreen)
 		flags |= GfxDeviceOpt::fullscreen;
-	device.createWindow(title, res, flags);
+	device.createWindow(title, res, flags, 2.1);
 	device.grabMouse(false);
 }
