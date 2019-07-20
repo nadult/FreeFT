@@ -68,8 +68,7 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 		id_column = it->second;
 	}
 
-	ON_ASSERT(([](XMLNode node) { return format("Error while parsing sheet: %", node.attrib("table:name")); }),
-			  table_node);
+	ON_FAIL("Error while parsing sheet: %", table_node.attrib("table:name"));
 
 	for(int r = 1; r < (int)rows.size(); r++) {
 		XMLNode row = rows[r];
@@ -102,9 +101,7 @@ void loadDataSheet(XMLNode table_node, std::map<string, int> &map, int (*add_fun
 
 		TupleParser parser(columns.data(), num_columns, column_map);
 		string id = columns[id_column];
-		ON_ASSERT(([](int row, const string &column) {
-					return format("Error while parsing row: % (id: %)", row, column);
-				  }), r, id);
+		ON_FAIL("Error while parsing row: % (id: %)", r, id);
 
 		if(id.empty())
 			CHECK_FAILED("ID undefined");

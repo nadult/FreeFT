@@ -3,7 +3,7 @@
 
 #include "editor/tile_group.h"
 
-#include <fwk/resource_manager.h>
+#include <fwk/sys/resource_manager.h>
 
 using namespace game;
 

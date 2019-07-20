@@ -207,9 +207,7 @@ namespace game {
 			ProtoDef &def = s_protos[p];
 			for(int n = 0; n < def.count; n++) {
 				Proto &proto = s_protos[p].get_func(n);
-				ON_ASSERT(([](const Proto &proto, const ProtoDef &def) {
-						  return format("Error when linking proto: % (table: %)", proto.id.c_str(), def.table_name);
-					}),  proto, def);
+				ON_FAIL("Error when linking proto: % (table: %)", proto.id.c_str(), def.table_name);
 				proto.link();
 			}
 		}

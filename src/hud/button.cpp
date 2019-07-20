@@ -5,7 +5,7 @@
 
 #include "gfx/drawing.h"
 #include <fwk/enum_map.h>
-#include <fwk/resource_manager.h>
+#include <fwk/sys/resource_manager.h>
 #include <fwk/gfx/font.h>
 
 using namespace gfx;

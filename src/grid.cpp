@@ -274,7 +274,7 @@ void Grid::clear() {
 void Grid::disableOverlap(const Object *object) const {
 	DASSERT(object && object->node_id == -1);
 	object->is_disabled = 1;
-	m_disabled_overlaps.emplace_back(object - m_objects.data());
+	m_disabled_overlaps.emplace_back((int)(object - m_objects.data()));
 }
 
 void Grid::clearDisables() const {

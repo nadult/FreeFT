@@ -5,7 +5,7 @@
 
 #include "base.h"
 #include <memory>
-#include <fwk_input.h>
+#include <fwk/sys/input.h>
 #include <fwk/gfx/renderer2d.h>
 #include <fwk/gfx/font.h>
 

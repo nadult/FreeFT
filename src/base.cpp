@@ -7,7 +7,7 @@
 #include <fwk/gfx/font.h>
 #include <fwk/gfx/gfx_device.h>
 #include <fwk/math/plane.h>
-#include <fwk/resource_manager.h>
+#include <fwk/sys/resource_manager.h>
 
 enum {
 	// TODO: tune-able parameters?

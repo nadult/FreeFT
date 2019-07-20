@@ -5,7 +5,7 @@
 
 #include "hud/base.h"
 
-#include <fwk_input.h>
+#include <fwk/sys/input.h>
 
 namespace hud
 {

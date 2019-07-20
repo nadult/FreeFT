@@ -11,7 +11,7 @@
 #include <fwk/gfx_base.h>
 #include <fwk/sys_base.h>
 #include <fwk/sys/stream.h>
-#include <fwk_xml.h>
+#include <fwk/sys/xml.h>
 #include <fwk/pod_vector.h>
 #include <fwk/sys/immutable_ptr.h>
 #include <fwk/format.h>

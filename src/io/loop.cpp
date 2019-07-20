@@ -4,7 +4,7 @@
 #include "io/loop.h"
 
 #include "gfx/drawing.h"
-#include <fwk_input.h>
+#include <fwk/sys/input.h>
 #include <fwk/gfx/renderer2d.h>
 #include <fwk/gfx/gfx_device.h>
 

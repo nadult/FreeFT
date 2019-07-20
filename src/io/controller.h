@@ -6,7 +6,7 @@
 #include "game/world.h"
 #include "game/visibility.h"
 #include "game/game_mode.h"
-#include <fwk_input.h>
+#include <fwk/sys/input.h>
 
 namespace hud {
 	class Hud;

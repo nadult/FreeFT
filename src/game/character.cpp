@@ -5,7 +5,7 @@
 
 #include "game/inventory.h"
 #include <fwk/gfx/dtexture.h>
-#include <fwk/resource_manager.h>
+#include <fwk/sys/resource_manager.h>
 
 namespace game {
 

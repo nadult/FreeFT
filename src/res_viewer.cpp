@@ -1,19 +1,19 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include <memory.h>
-#include <cstdio>
-#include <algorithm>
-
 #include "gfx/drawing.h"
 
 #include "game/sprite.h"
 #include "game/tile.h"
 
-#include "ui/list_box.h"
-#include "ui/button.h"
-#include "ui/message_box.h"
 #include "sys/config.h"
+#include "ui/button.h"
+#include "ui/list_box.h"
+#include "ui/message_box.h"
+#include <fwk/filesystem.h>
+#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/texture.h>
+#include <fwk/gfx/gfx_device.h>
 #include <fwk/sys/rollback.h>
 
 using namespace game;
@@ -241,9 +241,7 @@ class ResourceView : public Window {
 		for(auto file_name : file_names) {
 			auto res_type = classifyFileName(file_name);
 			if(res_type != ResType::unknown) {
-				ON_ASSERT(
-					([](const string &name) { return format("Error while loading file: %", name); })
-					,file_name);
+				ON_FAIL("Error while loading file: %", file_name);
 
 				auto result = RollbackContext::begin([&]() { return make_unique<Resource>(current_dir, file_name); });
 
@@ -465,7 +463,6 @@ static bool main_loop(GfxDevice &device, void*) {
 int main(int argc, char **argv) {
 	Config config("res_viewer");
 
-	Profiler profiler;
 	GfxDevice gfx_device;
 	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 

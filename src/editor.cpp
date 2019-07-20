@@ -1,32 +1,31 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include <memory.h>
-#include <cstdio>
-#include <algorithm>
-#include <unistd.h>
-
-#include "game/tile_map.h"
-#include "game/tile.h"
-#include "game/entity_map.h"
-#include "game/level.h"
-#include "game/item.h"
-#include "ui/window.h"
-#include "ui/button.h"
-#include "ui/progress_bar.h"
-#include "ui/text_box.h"
-#include "ui/combo_box.h"
+#include "editor/entities_editor.h"
+#include "editor/entities_pad.h"
+#include "editor/group_editor.h"
+#include "editor/group_pad.h"
 #include "editor/tile_selector.h"
 #include "editor/tiles_editor.h"
-#include "editor/group_editor.h"
-#include "editor/entities_editor.h"
 #include "editor/tiles_pad.h"
-#include "editor/entities_pad.h"
-#include "editor/group_pad.h"
-
 #include "editor/view.h"
+
+#include "game/entity_map.h"
+#include "game/item.h"
+#include "game/level.h"
+#include "game/tile.h"
+#include "game/tile_map.h"
+
+#include "ui/button.h"
+#include "ui/combo_box.h"
 #include "ui/file_dialog.h"
+#include "ui/progress_bar.h"
+#include "ui/text_box.h"
+#include "ui/window.h"
+
 #include "sys/config.h"
+#include <fwk/gfx/gfx_device.h>
+#include <fwk/sys/resource_manager.h>
 
 using namespace ui;
 using game::Tile;
@@ -54,6 +53,7 @@ static const char *s_save_dialog_names[] = {
 	"Saving map",
 	"Saving tile groups",
 };
+
 static const char *s_load_dialog_names[] = {
 	"Loading map",
 	"Loading map",
@@ -191,7 +191,7 @@ public:
 		fflush(stdout);
 		double time = getTime();
 
-		if(access(file_name, R_OK) == 0) {
+		if(access(file_name)) {
 			m_level.load(file_name);
 			recreateEditors();
 		}
@@ -201,7 +201,7 @@ public:
 
 	void loadTileGroup(const char *file_name) {
 		printf("Loading TileGroup: %s\n", file_name);
-		if(access(file_name, R_OK) == 0) {
+		if(access(file_name)) {
 			XMLDocument doc;
 			doc.load(file_name);
 			m_group.loadFromXML(doc);
@@ -238,7 +238,6 @@ public:
 		draw(out);
 
 		out.render();
-		Profiler::instance()->nextFrame();
 
 		return true;
 	}
@@ -280,7 +279,7 @@ void preloadTiles() {
 	auto &tile_mgr = res::tiles();
 	FilePath tiles_path = FilePath(tile_mgr.constructor().filePrefix()).absolute();
 	for(int n = 0; n < file_names.size(); n++) {
-		ON_ASSERT(([](const FileEntry &file) { return format("\nError while loading file: %", file.path); }), file_names[n]);
+		ON_FAIL("\nError while loading file: %", file_names[n].path);
 
 		if(n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
@@ -300,7 +299,6 @@ int main(int argc, char **argv) {
 	preloadTiles();
 	game::loadData(true);
 
-	Profiler profiler;
 	GfxDevice gfx_device;
 	createWindow("editor", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 

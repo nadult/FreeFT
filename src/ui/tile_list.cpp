@@ -6,7 +6,7 @@
 #include "game/tile.h"
 #include <algorithm>
 #include <fwk/enum_map.h>
-#include <fwk/resource_manager.h>
+#include <fwk/sys/resource_manager.h>
 
 using namespace gfx;
 using namespace game;

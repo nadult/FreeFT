@@ -6,7 +6,7 @@
 #include "audio/device.h"
 #include "gfx/drawing.h"
 #include <fwk/gfx/dtexture.h>
-#include <fwk/resource_manager.h>
+#include <fwk/sys/resource_manager.h>
 
 namespace ui
 {
