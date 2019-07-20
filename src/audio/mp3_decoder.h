@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef AUDIO_MP3_DECODER_H
-#define AUDIO_MP3_DECODER_H
+#pragma once
 
 #include "base.h"
 #include "audio/sound.h"
@@ -35,5 +34,3 @@ namespace audio {
 	};
 
 }
-
-#endif

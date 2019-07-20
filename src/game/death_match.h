@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_DEATH_MATCH_H
-#define GAME_DEATH_MATCH_H
+#pragma once
 
 #include "game/game_mode.h"
 
@@ -61,6 +60,3 @@ namespace game {
 	};
 
 }
-
-#endif
-

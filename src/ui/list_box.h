@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_LIST_BOX_H
-#define UI_LIST_BOX_H
+#pragma once
 
 #include "ui/window.h"
 
@@ -55,6 +54,3 @@ namespace ui {
 
 
 }
-
-
-#endif

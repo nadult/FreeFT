@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef NAVI_HEIGHTMAP_H
-#define NAVI_HEIGHTMAP_H
+#pragma once
 
 #include "base.h"
 
@@ -38,7 +37,3 @@ private:
 	int m_level_count;
 	int2 m_size;
 };
-
-
-
-#endif

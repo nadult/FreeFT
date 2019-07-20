@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ORDERS_H
-#define GAME_ORDERS_H
+#pragma once
 
 #include "game/base.h"
 
@@ -71,8 +70,4 @@ namespace game {
 		return handleOrder(*static_cast<TOrder*>(order), event, params);
 	}
 
-
 }
-
-#endif
-

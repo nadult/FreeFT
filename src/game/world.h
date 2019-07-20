@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_WORLD_H
-#define GAME_WORLD_H
+#pragma once
 
 #include "game/entity.h"
 #include "game/tile_map.h"
@@ -159,5 +158,3 @@ namespace game {
 	using PWorld = shared_ptr<World>;
 
 }
-
-#endif

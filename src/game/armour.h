@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ARMOUR_H
-#define GAME_ARMOUR_H
+#pragma once
 
 #include "game/item.h"
 
@@ -34,5 +33,3 @@ namespace game {
 	};
 
 }
-
-#endif

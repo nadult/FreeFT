@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_INVENTORY_H
-#define GAME_INVENTORY_H
+#pragma once
 
 #include "base.h"
 #include "game/item.h"
@@ -80,5 +79,3 @@ namespace game {
 	};
 
 }
-
-#endif

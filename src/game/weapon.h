@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_WEAPON_H
-#define GAME_WEAPON_H
+#pragma once
 
 #include "game/item.h"
 #include "game/projectile.h"
@@ -72,8 +71,4 @@ namespace game {
 		const WeaponProto &proto() const { return static_cast<const WeaponProto&>(*m_proto); }
 	};
 
-
-	
 }
-
-#endif

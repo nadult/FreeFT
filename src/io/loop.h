@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef IO_LOOP_H
-#define IO_LOOP_H
+#pragma once
 
 #include "base.h"
 
@@ -48,5 +47,3 @@ namespace io {
 	using PLoop = unique_ptr<Loop>;
 
 }
-
-#endif

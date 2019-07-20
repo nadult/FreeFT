@@ -1,11 +1,9 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_EDIT_BOX_H
-#define UI_EDIT_BOX_H
+#pragma once
 
 #include "ui/window.h"
-
 
 namespace ui {
 
@@ -38,6 +36,3 @@ namespace ui {
 	using PEditBox = shared_ptr<EditBox>;
 
 }
-
-#endif
-

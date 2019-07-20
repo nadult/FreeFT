@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ACTOR_AI_H
-#define GAME_ACTOR_AI_H
+#pragma once
 
 #include "game/world.h"
 #include "game/orders.h"
@@ -80,5 +79,3 @@ namespace game {
 	};
 
 }
-
-#endif

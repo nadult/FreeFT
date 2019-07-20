@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_BASE_H
-#define GAME_BASE_H
+#pragma once
 
 #include "../base.h"
 #include "sys/data_sheet.h"
@@ -186,5 +185,3 @@ namespace game {
 }
 
 #include "game/proto.h"
-
-#endif

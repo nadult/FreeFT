@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef SYS_ALIGNED_ALLOCATOR_H
-#define SYS_ALIGNED_ALLOCATOR_H
+#pragma once
 
 #include <fwk/sys_base.h>
 #include <limits>
@@ -17,5 +16,3 @@ template <class T, int alignment = 64> class AlignedAllocator {
 	T *allocate(size_t n) { return (T *)fwk::allocate(n * sizeof(T), alignment); }
 	void deallocate(T *ptr, size_t n) { fwk::deallocate(ptr); }
 };
-
-#endif

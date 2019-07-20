@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_LAYER_H
-#define HUD_LAYER_H
+#pragma once
 
 #include "hud/widget.h"
 
@@ -49,5 +48,3 @@ namespace hud
 	};
 
 }
-
-#endif

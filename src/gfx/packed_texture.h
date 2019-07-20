@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GFX_PACKED_TEXTURE_H
-#define GFX_PACKED_TEXTURE_H
+#pragma once
 
 #include "base.h"
 
@@ -51,5 +50,3 @@ class PackedTexture {
 	int m_width, m_height;
 	u8 m_default_idx, m_max_idx;
 };
-
-#endif

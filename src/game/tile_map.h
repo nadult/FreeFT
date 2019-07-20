@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef TILE_MAP_H
-#define TILE_MAP_H
+#pragma once
 
 #include "base.h"
 #include "grid.h"
@@ -43,6 +42,3 @@ namespace game {
 	};
 
 }
-
-
-#endif

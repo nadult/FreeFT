@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef ENTITY_MAP_H
-#define ENTITY_MAP_H
+#pragma once
 
 #include "grid.h"
 #include "occluder_map.h"
@@ -47,5 +46,3 @@ namespace game
 	};
 
 }
-
-#endif

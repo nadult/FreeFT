@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_TILES_EDITOR_H
-#define EDITOR_TILES_EDITOR_H
+#pragma once
 
 #include "ui/window.h"
 
@@ -94,7 +93,3 @@ namespace ui {
 	using PTilesEditor = shared_ptr<TilesEditor>;
 
 }
-
-
-#endif
-

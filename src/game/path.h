@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_PATH_H
-#define GAME_PATH_H
+#pragma once
 
 
 namespace game {
@@ -44,5 +43,3 @@ namespace game {
 	};
 
 }
-
-#endif

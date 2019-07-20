@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_TILE_SELECTOR_H
-#define UI_TILE_SELECTOR_H
+#pragma once
 
 #include "base.h"
 #include "game/tile.h"
@@ -34,5 +33,3 @@ namespace ui {
 	using PTileSelector = shared_ptr<TileSelector>;
 
 }
-
-#endif

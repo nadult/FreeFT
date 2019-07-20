@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_GROUP_PAD_H
-#define EDITOR_GROUP_PAD_H
+#pragma once
 
 #include "editor/group_editor.h"
 #include "ui/combo_box.h"
@@ -24,5 +23,3 @@ namespace ui {
 	using PGroupPad = shared_ptr<GroupPad>;
 
 }
-
-#endif

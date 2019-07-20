@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GFX_TEXTURE_CACHE_H
-#define GFX_TEXTURE_CACHE_H
+#pragma once
 
 #include "base.h"
 #include <fwk/list_node.h>
@@ -101,5 +100,3 @@ class TextureCache {
 	List m_free_list;
 	List m_atlas_queue;
 };
-
-#endif

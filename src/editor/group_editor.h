@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_GROUP_EDITOR_H
-#define EDITOR_GROUP_EDITOR_H
+#pragma once
 
 #include "base.h"
 #include "ui/window.h"
@@ -50,6 +49,3 @@ namespace ui {
 	using PGroupEditor = shared_ptr<GroupEditor>;
 
 }
-
-
-#endif

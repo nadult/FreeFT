@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef IO_GAME_LOOP_H
-#define IO_GAME_LOOP_H
+#pragma once
 
 #include "io/loop.h"
 #include "sys/config.h"
@@ -40,5 +39,3 @@ namespace io {
 	};
 
 }
-
-#endif

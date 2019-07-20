@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_PC_CONTROLLER_H
-#define GAME_PC_CONTROLLER_H
+#pragma once
 
 #include "game/base.h"
 #include "game/character.h"
@@ -45,5 +44,3 @@ namespace game
 	};
 
 }
-
-#endif

@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_BUTTON_H
-#define UI_BUTTON_H
+#pragma once
 
 #include "ui/window.h"
 
@@ -34,6 +33,3 @@ namespace ui
 	using PButton = shared_ptr<Button>;
 
 }
-
-
-#endif

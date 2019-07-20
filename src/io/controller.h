@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef IO_CONTROLLER_H
-#define IO_CONTROLLER_H
+#pragma once
 
 #include "game/world.h"
 #include "game/visibility.h"
@@ -83,5 +82,3 @@ namespace io {
 	};
 
 }
-
-#endif

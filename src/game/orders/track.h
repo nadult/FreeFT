@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ORDERS_TRACK_H
-#define GAME_ORDERS_TRACK_H
+#pragma once
 
 #include "game/orders.h"
 #include "game/path.h"
@@ -27,5 +26,3 @@ namespace game {
 	};
 
 }
-
-#endif

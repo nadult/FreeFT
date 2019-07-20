@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_TILE_LIST_H
-#define UI_TILE_LIST_H
+#pragma once
 
 #include "game/tile.h"
 
@@ -57,6 +56,3 @@ namespace ui
 	};
 
 }
-
-
-#endif

@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_COMBO_BOX_H
-#define UI_COMBO_BOX_H
+#pragma once
 
 #include "ui/window.h"
 #include "ui/button.h"
@@ -47,5 +46,3 @@ namespace ui {
 	using PComboBox = shared_ptr<ComboBox>;
 
 }
-
-#endif

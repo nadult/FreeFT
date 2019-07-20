@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef AUDIO_INTERNALS_H
-#define AUDIO_INTERNALS_H
+#pragma once
 
 #ifdef _WIN32
 #define AL_LIBTYPE_STATIC
@@ -24,5 +23,3 @@ namespace audio {
 	void initMusicDevice();
 
 }
-
-#endif

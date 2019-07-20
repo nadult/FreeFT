@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_TILE_H
-#define GAME_TILE_H
+#pragma once
 
 #include "gfx/packed_texture.h"
 #include "gfx/texture_cache.h"
@@ -95,6 +94,3 @@ namespace game
 	using PTile = immutable_ptr<Tile>;
 
 }
-
-
-#endif

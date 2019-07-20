@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_CHARACTER_H
-#define HUD_CHARACTER_H
+#pragma once
 
 #include "hud/layer.h"
 #include "hud/button.h"
@@ -44,5 +43,3 @@ namespace hud
 	};
 
 }
-
-#endif

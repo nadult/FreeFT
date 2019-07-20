@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_ENTITIES_PAD_H
-#define EDITOR_ENTITIES_PAD_H
+#pragma once
 
 #include "editor/entities_editor.h"
 #include "ui/combo_box.h"
@@ -130,5 +129,3 @@ namespace ui {
 	using PEntitiesPad = shared_ptr<EntitiesPad>;
 
 }
-
-#endif

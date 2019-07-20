@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_MULTI_PLAYER_LOOP_H
-#define HUD_MULTI_PLAYER_LOOP_H
+#pragma once
 
 #include "hud/layer.h"
 #include "net/base.h"
@@ -56,5 +55,3 @@ namespace hud {
 	};
 
 }
-
-#endif

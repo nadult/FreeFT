@@ -2,8 +2,7 @@
 // This file is part of FreeFT. See license.txt for details.
 
 
-#ifndef EDITOR_VIEW_H
-#define EDITOR_VIEW_H
+#pragma once
 
 #include "base.h"
 #include "occluder_map.h"
@@ -42,5 +41,3 @@ namespace ui {
 	using PView = unique_ptr<View>;
 
 }
-
-#endif

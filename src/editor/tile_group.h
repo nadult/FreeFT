@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_TILE_GROUP_H
-#define EDITOR_TILE_GROUP_H
+#pragma once
 
 #include "game/tile.h"
 
@@ -61,8 +60,3 @@ protected:
 	vector<Group> m_groups;
 	friend class TileGroupEditor;
 };
-
-
-
-
-#endif

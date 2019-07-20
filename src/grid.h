@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GRID_H
-#define GRID_H
+#pragma once
 
 #include "base.h"
 #include <fwk/list_node.h>
@@ -148,6 +147,3 @@ protected:
 
 	mutable vector<int> m_disabled_overlaps;
 };
-
-#endif
-

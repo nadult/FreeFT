@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_WINDOW_H
-#define UI_WINDOW_H
+#pragma once
 
 #include "base.h"
 #include <memory>
@@ -154,6 +153,3 @@ namespace ui
 	};
 
 }
-
-#endif
-

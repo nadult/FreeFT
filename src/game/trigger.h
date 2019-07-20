@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_TRIGGER_H
-#define GAME_TRIGGER_H
+#pragma once
 
 #include "game/entity.h"
 
@@ -54,5 +53,3 @@ namespace game {
 	};
 
 }
-
-#endif

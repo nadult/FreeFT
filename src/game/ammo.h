@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_AMMO_H
-#define GAME_AMMO_H
+#pragma once
 
 #include "game/item.h"
 
@@ -32,5 +31,3 @@ namespace game {
 	};
 
 }
-
-#endif

@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ITEM_H
-#define GAME_ITEM_H
+#pragma once
 
 #include "game/entity.h"
 
@@ -96,7 +95,3 @@ namespace game {
 	using PItem = shared_ptr<ItemEntity>;
 
 }
-
-
-
-#endif

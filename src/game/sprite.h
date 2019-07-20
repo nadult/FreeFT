@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_SPRITE_H
-#define GAME_SPRITE_H
+#pragma once
 
 #include "game/base.h"
 #include "gfx/packed_texture.h"
@@ -172,6 +171,3 @@ namespace game {
 };
 	
 SERIALIZE_AS_POD(game::Sprite::Frame);
-
-#endif
-

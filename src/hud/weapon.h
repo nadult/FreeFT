@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_WEAPON_H
-#define HUD_WEAPON_H
+#pragma once
 
 #include "game/base.h"
 #include "game/entity.h"
@@ -29,5 +28,3 @@ namespace hud
 	};
 
 }
-
-#endif

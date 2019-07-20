@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef NET_CHUNK_H
-#define NET_CHUNK_H
+#pragma once
 
 #include "net/socket.h"
 #include <fwk/list_node.h>
@@ -89,5 +88,3 @@ namespace net {
 	};
 
 }
-
-#endif

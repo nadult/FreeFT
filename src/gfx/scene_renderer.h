@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GFX_SCENE_RENDERER_H
-#define GFX_SCENE_RENDERER_H
+#pragma once
 
 #include "base.h"
 
@@ -52,5 +51,3 @@ class SceneRenderer {
 	IRect m_viewport, m_target_rect;
 	int2 m_view_pos;
 };
-
-#endif

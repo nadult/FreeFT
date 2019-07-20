@@ -1,9 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef UI_FILE_DIALOG_H
-#define UI_FILE_DIALOG_H
-
+#pragma once
 
 #include "ui/window.h"
 #include "ui/button.h"
@@ -42,7 +40,3 @@ namespace ui {
 	};
 
 }
-
-
-
-#endif

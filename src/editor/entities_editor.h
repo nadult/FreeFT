@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_ENTITIES_EDITOR_H
-#define EDITOR_ENTITIES_EDITOR_H
+#pragma once
 
 #include "ui/window.h"
 
@@ -66,6 +65,3 @@ namespace ui {
 	using PEntitiesEditor = shared_ptr<EntitiesEditor>;
 
 }
-
-#endif
-

@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef AUDIO_DEVICE_H
-#define AUDIO_DEVICE_H
+#pragma once
 
 #include "base.h"
 #include "game/base.h"
@@ -105,5 +104,3 @@ namespace audio {
 	const PPlayback playMusic(const string &file_name, float volume);
 
 }
-
-#endif

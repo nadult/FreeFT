@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_CONTAINER_H
-#define GAME_CONTAINER_H
+#pragma once
 
 #include "game/entity.h"
 #include "game/inventory.h"
@@ -72,5 +71,3 @@ namespace game
 		bool m_update_anim;
 	};
 };
-
-#endif

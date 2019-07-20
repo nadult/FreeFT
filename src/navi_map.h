@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef NAVI_MAP_H
-#define NAVI_MAP_H
+#pragma once
 
 #include "base.h"
 #include "sys/aligned_allocator.h"
@@ -83,6 +82,3 @@ private:
 	vector<List> m_sectors;
 	int2 m_size; // in sectors
 };
-
-
-#endif

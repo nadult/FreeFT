@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef EDITOR_TILES_PAD_H
-#define EDITOR_TILES_PAD_H
+#pragma once
 
 #include "editor/tiles_editor.h"
 #include "editor/tile_selector.h"
@@ -38,5 +37,3 @@ namespace ui {
 	using PTilesPad = shared_ptr<TilesPad>;
 
 }
-
-#endif

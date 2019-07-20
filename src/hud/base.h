@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_BASE_H
-#define HUD_BASE_H
+#pragma once
 
 #include "game/base.h"
 #include <fwk/gfx/renderer2d.h>
@@ -139,5 +138,3 @@ namespace hud {
 	using PServerMenu = shared_ptr<ServerMenu>;
 
 }
-
-#endif

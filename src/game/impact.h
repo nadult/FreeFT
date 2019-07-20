@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_IMPACT_H
-#define GAME_IMPACT_H
+#pragma once
 
 #include "game/entity.h"
 #include "sys/data_sheet.h"
@@ -49,5 +48,3 @@ namespace game {
 	};
 
 }
-
-#endif

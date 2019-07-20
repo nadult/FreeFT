@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef IO_MAIN_MENU_LOOP_H
-#define IO_MAIN_MENU_LOOP_H
+#pragma once
 
 #include "io/loop.h"
 #include "ui/window.h"
@@ -68,5 +67,3 @@ namespace io {
 	};
 
 }
-
-#endif

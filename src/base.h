@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef BASE_H
-#define BASE_H
+#pragma once
 
 #include <fwk/math_base.h>
 #include <fwk/math/box.h>
@@ -307,6 +306,3 @@ PFont getFont(const string &name);
 }
 
 void createWindow(const char *name, GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen);
-
-
-#endif

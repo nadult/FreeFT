@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_TARGET_INFO_H
-#define HUD_TARGET_INFO_H
+#pragma once
 
 #include "hud/layer.h"
 #include "game/game_mode.h"
@@ -36,5 +35,3 @@ namespace hud
 	};
 
 }
-
-#endif

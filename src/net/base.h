@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef NET_BASE_H
-#define NET_BASE_H
+#pragma once
 
 #include "game/base.h"
 
@@ -121,5 +120,3 @@ namespace net {
 }
 
 SERIALIZE_AS_POD(net::SeqNumber)
-
-#endif

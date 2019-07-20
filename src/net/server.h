@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef NET_SERVER_H
-#define NET_SERVER_H
+#pragma once
 
 #include "net/host.h"
 #include "net/base.h"
@@ -87,5 +86,3 @@ namespace net {
 	};
 
 }
-
-#endif

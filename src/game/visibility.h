@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_VISIBILITY_H
-#define GAME_VISIBILITY_H
+#pragma once
 
 #include "game/world.h"
 #include "game/actor.h"
@@ -71,5 +70,3 @@ namespace game {
 	};
 
 }
-
-#endif

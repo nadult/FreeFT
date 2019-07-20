@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef NET_HOST_H
-#define NET_HOST_H
+#pragma once
 
 #include "net/socket.h"
 #include "net/chunk.h"
@@ -235,5 +234,3 @@ namespace net {
 	};
 
 }
-
-#endif

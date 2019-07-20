@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef SYS_FRAME_ALLOCATOR_H
-#define SYS_FRAME_ALLOCATOR_H
+#pragma once
 
 #include "base.h"
 #include <limits>
@@ -77,5 +76,3 @@ template <class T> class TFrameAllocator {
 	inline void construct(pointer p, const_reference c) { new (reinterpret_cast<void *>(p)) T(c); }
 	inline void destroy(pointer p) { (p)->~T(); }
 };
-
-#endif

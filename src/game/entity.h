@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ENTITY_H
-#define GAME_ENTITY_H
+#pragma once
 
 #include "game/sprite.h"
 #include "game/base.h"
@@ -304,5 +303,3 @@ namespace game {
 		}
 	}
 }
-
-#endif

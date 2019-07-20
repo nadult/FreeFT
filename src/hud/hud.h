@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_HUD_H
-#define HUD_HUD_H
+#pragma once
 
 #include "game/base.h"
 #include "game/entity.h"
@@ -42,5 +41,3 @@ namespace hud
 	};
 
 }
-
-#endif

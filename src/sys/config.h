@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef SYS_CONFIG_H
-#define SYS_CONFIG_H
+#pragma once
 
 #include "base.h"
 
@@ -18,5 +17,3 @@ struct Config {
 	bool fullscreen_on;
 	bool profiler_on;
 };
-
-#endif

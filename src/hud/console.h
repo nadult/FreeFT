@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_CONSOLE_H
-#define HUD_CONSOLE_H
+#pragma once
 
 #include "base.h"
 #include "hud/layer.h"
@@ -28,5 +27,3 @@ namespace hud {
 	};
 
 }
-
-#endif

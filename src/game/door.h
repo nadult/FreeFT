@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_DOOR_H
-#define GAME_DOOR_H
+#pragma once
 
 #include "game/entity.h"
 #include "game/item.h"
@@ -87,5 +86,3 @@ namespace game
 	};
 
 };
-
-#endif

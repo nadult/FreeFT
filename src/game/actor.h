@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_ACTOR_H
-#define GAME_ACTOR_H
+#pragma once
 
 #include "game/thinking_entity.h"
 #include "game/inventory.h"
@@ -231,7 +230,4 @@ namespace game {
 		float3 m_move_vec;
 	};
 
-
 }
-
-#endif

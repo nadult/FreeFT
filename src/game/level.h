@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef GAME_LEVEL_H
-#define GAME_LEVEL_H
+#pragma once
 
 #include "game/tile_map.h"
 #include "game/entity_map.h"
@@ -25,5 +24,3 @@ namespace game
 	};
 
 }
-
-#endif

@@ -1,8 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#ifndef HUD_MAIN_PANEL_H
-#define HUD_MAIN_PANEL_H
+#pragma once
 
 #include "hud/layer.h"
 
@@ -29,5 +28,3 @@ namespace hud
 	};
 
 }
-
-#endif
