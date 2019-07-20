@@ -5,6 +5,7 @@
 
 #include "../base.h"
 #include "sys/data_sheet.h"
+#include <fwk/enum_flags.h>
 
 namespace game {
 
@@ -56,21 +57,8 @@ namespace game {
 	inline constexpr bool isMelee(AttackMode t) { return !isRanged(t); }
 	inline constexpr unsigned toFlags(AttackMode t) { return 1 << (uint)t; }
 
-	namespace AttackModeFlags {
-		enum Type {
-			single = toFlags(AttackMode::single),
-			burst = toFlags(AttackMode::burst),
-			thrust = toFlags(AttackMode::thrust),
-			slash = toFlags(AttackMode::slash),
-			swing = toFlags(AttackMode::swing),
-			throwing = toFlags(AttackMode::throwing),
-			punch = toFlags(AttackMode::punch),
-			kick = toFlags(AttackMode::kick)
-		};
-
-		unsigned fromString(const char *);
-		Maybe<AttackMode> getFirst(unsigned flags);
-	};
+	using AttackModeFlags = EnumFlags<AttackMode>;
+	Maybe<AttackMode> getFirst(AttackModeFlags);
 
 	namespace Flags { enum Type : unsigned; };
 	using FlagsType = Flags::Type;

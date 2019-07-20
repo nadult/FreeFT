@@ -542,10 +542,10 @@ namespace game {
 		Maybe<AttackMode> mode = in_mode;
 		Weapon weapon = m_inventory.weapon();
 
-		uint modes = weapon.attackModes();
+		auto modes = weapon.attackModes();
 		if(mode)
-			modes &= toFlags(*mode);
-		mode = AttackModeFlags::getFirst(modes);
+			modes &= *mode;
+		mode = getFirst(modes);
 	
 		if(!mode)
 			if(weapon.canKick() && in_mode == AttackMode::kick && m_actor.kick_weapon.isValid())

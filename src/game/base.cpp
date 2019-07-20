@@ -31,23 +31,12 @@ namespace game {
 				health > 0.0f ? HealthStatus::near_death : HealthStatus::dead;
 		}
 
-	namespace AttackModeFlags {
-		uint fromString(const char *string) {
-			if(Str(string) == "")
-				return 0;
-			TextParser parser(string);
-			EnumFlags<AttackMode> flags;
-			parser >> flags;
-			return flags.bits;
-		}
-
-		Maybe<AttackMode> getFirst(uint flags) {
-			for(int n = 0; n < count<AttackMode>(); n++)
-				if(flags & (1 << n))
-					return (AttackMode)n;
-			return none;
-		}
-	};
+	Maybe<AttackMode> getFirst(AttackModeFlags flags) {
+		for(auto flag : all<AttackMode>())
+			if(flags & flag)
+				return flag;
+		return none;
+	}
 	
 	SoundId::SoundId(const char *sound_name, int offset) {
 		audio::SoundIndex index = audio::findSound(sound_name);

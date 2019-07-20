@@ -188,7 +188,7 @@ namespace game {
 					m_move_delay = 5.0f;
 
 					if(weapon.hasRangedAttack() && can_see) {
-						auto mode = weapon.attackModes() & toFlags(AttackMode::burst)? AttackMode::burst : Maybe<AttackMode>();
+						auto mode = (weapon.attackModes() & AttackMode::burst)? AttackMode::burst : Maybe<AttackMode>();
 
 						if(actor->estimateHitChance(weapon, target->boundingBox()) > 0.3)
 							m_world->sendOrder(new AttackOrder(mode, m_target), m_entity_ref);

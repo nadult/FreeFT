@@ -183,7 +183,7 @@ namespace io {
 			Maybe<AttackMode> mode;
 			if(event.pressed(InputModifier::lshift)) {
 				const Weapon &weapon = actor->inventory().weapon();
-				if(weapon.proto().attack_modes & AttackModeFlags::burst)
+				if(weapon.proto().attack_modes & AttackMode::burst)
 					mode = AttackMode::burst;
 				else if(weapon.canKick())
 					mode = AttackMode::kick;

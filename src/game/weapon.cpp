@@ -2,6 +2,7 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "game/weapon.h"
+
 #include "game/ammo.h"
 
 namespace game {
@@ -14,13 +15,22 @@ namespace game {
 		"outofammo"
 	};
 
+	static AttackModeFlags parseFlags(const char *string) {
+		if(Str(string) == "")
+			return {};
+		TextParser parser(string);
+		EnumFlags<AttackMode> flags;
+		parser >> flags;
+		return flags;
+	}
+
 	WeaponProto::WeaponProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ammo_class_id = parser("ammo_class_id");
 		impact = parser("impact_id");
 		projectile = parser("projectile_id");
 		class_id = fromString<WeaponClass>(parser("class_id"));
 		damage_mod = parser.get<float>("damage_mod");
-		attack_modes = AttackModeFlags::fromString(parser("attack_modes"));
+		attack_modes = parseFlags(parser("attack_modes"));
 		max_ammo = parser.get<int>("max_ammo");
 		burst_ammo = parser.get<int>("burst_ammo");
 
@@ -36,12 +46,12 @@ namespace game {
 		if(!sound_ids[WeaponSoundType::normal].isValid())
 			sound_ids[WeaponSoundType::normal] = sound_ids[WeaponSoundType::fire_single];
 	}
-		
+
 	void WeaponProto::link() {
 		projectile.link();
 		impact.link();
 
-		int projectile_modes = AttackModeFlags::single | AttackModeFlags::burst | AttackModeFlags::throwing;
+		auto projectile_modes = AttackMode::single | AttackMode::burst | AttackMode::throwing;
 
 		if(attack_modes & projectile_modes) {
 			ASSERT(projectile.isValid());
@@ -53,7 +63,7 @@ namespace game {
 			melee_range = impact->range;
 		}
 	}
-	
+
 	float Weapon::range(AttackMode mode) const {
 		return isRanged(mode)? proto().ranged_range : proto().melee_range;
 	}
@@ -65,7 +75,7 @@ namespace game {
 	bool Weapon::hasMeleeAttack() const {
 		for(uint n = 0; n < count<AttackMode>(); n++) {
 			AttackMode mode = (AttackMode)n;
-			if(isMelee(mode) && proto().attack_modes & toFlags(mode))
+			if(isMelee(mode) && (proto().attack_modes & mode))
 				return true;
 		}
 		return false;
@@ -74,12 +84,12 @@ namespace game {
 	bool Weapon::hasRangedAttack() const {
 		for(uint n = 0; n < count<AttackMode>(); n++) {
 			AttackMode mode = (AttackMode)n;
-			if(isRanged(mode) && proto().attack_modes & toFlags(mode))
+			if(isRanged(mode) && (proto().attack_modes & mode))
 				return true;
 		}
 		return false;
 	}
-		
+
 	bool Weapon::canUseAmmo(const Item &item) const {
 		return needAmmo() && item.type() == ItemType::ammo && Ammo(item).classId() == proto().ammo_class_id;
 	}

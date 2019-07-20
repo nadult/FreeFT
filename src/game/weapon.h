@@ -35,7 +35,7 @@ namespace game {
 
 		WeaponClass class_id;
 		float damage_mod;
-		unsigned attack_modes;
+		AttackModeFlags attack_modes;
 		int max_ammo, burst_ammo;
 
 		EnumMap<WeaponSoundType, SoundId> sound_ids;
@@ -62,7 +62,7 @@ namespace game {
 
 		WeaponClass classId() const						{ return proto().class_id; }
 		const SoundId soundId(WeaponSoundType type) const	{ return proto().sound_ids[type]; }
-		unsigned attackModes() const							{ return proto().attack_modes; }
+		auto attackModes() const							{ return proto().attack_modes; }
 
 		int maxAmmo() const { return proto().max_ammo; }
 		bool needAmmo() const { return !proto().ammo_class_id.empty(); }
