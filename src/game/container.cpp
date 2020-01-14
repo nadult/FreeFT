@@ -8,12 +8,12 @@
 
 namespace game {
 
-	static const EnumMap<ContainerState, const char*> s_seq_names = {
+	static const EnumMap<ContainerState, const char*> s_seq_names = {{
 		"Closed",
 		"Opened",
 		"Opening",
 		"Closing",
-	};
+	}};
 
 
 	ContainerProto::ContainerProto(const TupleParser &parser) :ProtoImpl(parser) {

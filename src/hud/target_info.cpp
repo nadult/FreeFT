@@ -13,14 +13,14 @@ namespace hud {
 	namespace {
 		const float2 s_char_icon_size(52.0f, 70.0f);
 
-		static const EnumMap<HealthStatus, Color> s_health_colors = {
+		static const EnumMap<HealthStatus, Color> s_health_colors = {{
 			ColorId::white,
 			ColorId::green,
 			ColorId::yellow,
 			Color(255, 150, 0),
 			ColorId::red,
 			ColorId::black
-		};
+		}};
 	}
 
 	HudTargetInfo::HudTargetInfo(const FRect &target_rect)

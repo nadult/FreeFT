@@ -36,22 +36,22 @@ namespace game {
 
 	static const EnumMap<Stance, const char*> s_simple_names[Action::_special - Action::_simple] = {
 		// prone, 			crouch,				stand,
-		{ "fallback",		"fallback",			"fallback" },
-		{ "fallenback",		"fallenback",		"fallenback" },
-		{ "fallforward",	"fallforward",		"fallforward" },
-		{ "fallenforward",	"fallenforward",	"fallenforward" },
-		{ "getupback",		"getupback",		"getupback" },
-		{ "getupforward",	"getupforward", 	"getupforward" },
-		{ "recoil",			"recoil",			"recoil" },
-		{ "dodgeone",		"dodgeone",			"dodgeone" },
-		{ "dodgetwo",		"dodgetwo", 		"dodgetwo" },
-		{ "fidget",			"fidget",			"fidget" },
-		{ "magic",			"magic",			"magichigh" },
-		{ "magic", 			"magic", 			"magiclow" },
-		{ nullptr,			nullptr,			"run" },
-		{ "crouch",			"stand",		 	nullptr },
-		{ nullptr,			"prone", 			"crouch" },
-		{ "pickup", 		"pickup", 			"pickup" }
+		{{ "fallback",		"fallback",			"fallback" }},
+		{{ "fallenback",	"fallenback",		"fallenback" }},
+		{{ "fallforward",	"fallforward",		"fallforward" }},
+		{{ "fallenforward",	"fallenforward",	"fallenforward" }},
+		{{ "getupback",		"getupback",		"getupback" }},
+		{{ "getupforward",	"getupforward", 	"getupforward" }},
+		{{ "recoil",		"recoil",			"recoil" }},
+		{{ "dodgeone",		"dodgeone",			"dodgeone" }},
+		{{ "dodgetwo",		"dodgetwo", 		"dodgetwo" }},
+		{{ "fidget",		"fidget",			"fidget" }},
+		{{ "magic",			"magic",			"magichigh" }},
+		{{ "magic", 		"magic", 			"magiclow" }},
+		{{ nullptr,			nullptr,			"run" }},
+		{{ "crouch",		"stand",		 	nullptr }},
+		{{ nullptr,			"prone", 			"crouch" }},
+		{{ "pickup", 		"pickup", 			"pickup" }}
 	};
 
 	ActorArmourProto::ActorArmourProto(const TupleParser &parser, bool is_actor)
@@ -157,7 +157,7 @@ namespace game {
 	}
 
 
-	static const EnumMap<DeathId, const char *> s_death_names = {
+	static const EnumMap<DeathId, const char *> s_death_names = {{
 		"",
 		"bighole",
 		"cutinhalf",
@@ -166,7 +166,7 @@ namespace game {
 		"fire",
 		"melt",
 		"riddled"
-	};
+	}};
 
 	static const char *deathName(DeathId death) {
 		return death == DeathId::normal? "death" : s_death_names[death];

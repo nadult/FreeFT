@@ -152,7 +152,7 @@ namespace game {
 
 	class Intersection {
 	public:
-		Intersection(ObjectRef ref = ObjectRef(), float distance = fconstant::inf)
+		Intersection(ObjectRef ref = ObjectRef(), float distance = inf)
 			:m_ref(ref), m_distance(distance) { }
 		explicit operator bool() const { return !empty(); }
 		bool operator==(const Intersection &rhs) const

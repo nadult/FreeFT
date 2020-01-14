@@ -2,6 +2,7 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "game/turret.h"
+
 #include "game/sprite.h"
 #include "game/projectile.h"
 #include "game/tile.h"
@@ -14,12 +15,13 @@
 #include <cmath>
 #include <cstdio>
 #include "gfx/scene_renderer.h"
+#include <fwk/math/rotation.h>
 
 //#define DEBUG_SHOOTING
 
 namespace game {
 
-	static const EnumMap<TurretAction, const char*> s_seq_names = {
+	static const EnumMap<TurretAction, const char*> s_seq_names = {{
 		"StandArmed",
 		"StandAttackUnarmedTwo",
 		"StandAttackUnarmedThree",
@@ -29,20 +31,20 @@ namespace game {
 		"Death",
 		"DeathElectrify",
 		"DeathExplode"
-	};
+	}};
 
 	struct TurretSound {
 		const char *name;
 		int index;
 	};
-   	static const EnumMap<TurretSoundId, TurretSound> s_sounds = {
+   	static const EnumMap<TurretSoundId, TurretSound> s_sounds = {{
 		{ "death", 0 },
 		{ "death", 1 },
 		{ "attack", 1 },
 		{ "attack", 2 },
 		{ "arming", 0 },
 		{ "unarming", 0 }
-	};
+	}};
 
 	TurretProto::TurretProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ASSERT(!is_dummy);
@@ -181,7 +183,7 @@ namespace game {
 		float3 center = boundingBox().center();
 		float2 dir(pos.x - center.x, pos.z - center.z);
 		float len = length(dir);
-		if(len < fconstant::epsilon)
+		if(len < big_epsilon)
 			return;
 
 		dir = dir / len;
@@ -191,7 +193,7 @@ namespace game {
 	}
 
 	void Turret::nextFrame() {
-		setDirAngle(blendAngles(dirAngle(), m_target_angle, fconstant::pi / 4.0f));
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, pi / 4.0f));
 		ThinkingEntity::nextFrame();
 	}
 		

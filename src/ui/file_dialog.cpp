@@ -7,10 +7,10 @@
 
 namespace ui {
 
-	static const EnumMap<FileDialogMode, const char*> s_ok_label = {
+	static const EnumMap<FileDialogMode, const char*> s_ok_label = {{
 		"open",
 		"save",
-	};
+	}};
 
 	FileDialog::FileDialog(const IRect &rect, const char *title, Mode mode)
 		:Window(rect, ColorId::transparent), m_mode(mode) {

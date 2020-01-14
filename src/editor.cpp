@@ -234,7 +234,7 @@ public:
 		TextureCache::main_cache.nextFrame();
 
 		clearColor(Color(0, 0, 0));
-		Renderer2D out(IRect(device.windowSize()));
+		Renderer2D out(IRect(device.windowSize()), Orient2D::y_down);
 
 		process(device.inputState());
 		draw(out);

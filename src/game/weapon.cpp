@@ -7,13 +7,13 @@
 
 namespace game {
 
-	static const EnumMap<WeaponSoundType, const char*> s_suffixes = {
+	static const EnumMap<WeaponSoundType, const char*> s_suffixes = {{
 		"",
 		"single",
 		"burst",
 		"reload",
 		"outofammo"
-	};
+	}};
 
 	static AttackModeFlags parseFlags(const char *string) {
 		if(Str(string) == "")

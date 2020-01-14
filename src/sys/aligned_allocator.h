@@ -4,6 +4,7 @@
 #pragma once
 
 #include <fwk/sys_base.h>
+#include <fwk/sys/memory.h>
 #include <limits>
 
 template <class T, int alignment = 64> class AlignedAllocator {

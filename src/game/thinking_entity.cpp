@@ -203,7 +203,7 @@ namespace game {
 					const auto &segment = segments[s * targets.size() + t];
 					const auto &isect = results[s * targets.size() + t];
 
-					if(isect.empty() || isect.distance() + fconstant::epsilon >= isectDist(segment, target_box))
+					if(isect.empty() || isect.distance() + big_epsilon >= isectDist(segment, target_box))
 						num_hits++;
 				}
 
@@ -224,7 +224,7 @@ namespace game {
 		}
 
 		float3 best_target = target_box.center(); {
-			float best_score = -fconstant::inf;
+			float best_score = -inf;
 		
 			vector<float3> targets = genPointsOnPlane(target_box, normalize(source - target_box.center()), 8, false);
 			vector<char> target_hits(targets.size(), 0);
@@ -240,7 +240,7 @@ namespace game {
 			for(int t = 0; t < (int)targets.size(); t++) {
 				const Intersection &isect = isects[t];
 				const Segment3F &segment = segments[t];
-				if(isect.empty() || isect.distance() + fconstant::epsilon >= isectDist(segment, target_box)) {
+				if(isect.empty() || isect.distance() + big_epsilon >= isectDist(segment, target_box)) {
 					target_hits[t] = 1;
 					num_hits++;
 				}
@@ -287,7 +287,7 @@ namespace game {
 				auto dir = normalize(perturbVector(sray.dir(), float(x) * mul, float(y) *mul, inaccuracy));
 				Ray3F ray(sray.origin(), dir);
 				float dist = isectDist(ray, target_bbox);
-				if(dist < fconstant::inf)
+				if(dist < inf)
 					segments.push_back(Segment3F(ray.origin(), ray.at(dist)));
 			}
 
@@ -296,7 +296,7 @@ namespace game {
 
 		int num_hits = 0;
 		for(int n = 0; n < (int)isects.size(); n++)
-			if(isects[n].empty() || isects[n].distance() + fconstant::epsilon >= isectDist(segments[n], target_bbox))
+			if(isects[n].empty() || isects[n].distance() + big_epsilon >= isectDist(segments[n], target_bbox))
 			   num_hits++;	
 
 		return float(num_hits) / (density * density);

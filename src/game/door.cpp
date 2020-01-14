@@ -8,7 +8,7 @@
 
 namespace game {
 
-	static const EnumMap<DoorState, const char*> s_seq_names = {
+	static const EnumMap<DoorState, const char*> s_seq_names = {{
 		"Closed",
 		"OpenedIn",
 		"OpeningIn",
@@ -16,7 +16,7 @@ namespace game {
 		"OpenedOut",
 		"OpeningOut",
 		"ClosingOut",
-	};
+	}};
 	
 	DoorProto::DoorProto(const TupleParser &parser) :ProtoImpl(parser) {
 		ASSERT(!is_dummy);

@@ -76,7 +76,7 @@ pair<int, float> Grid::trace(const Ray3F &ray, float tmin, float tmax, int ignor
 	
 	//TODO: verify for rays going out of grid space
 	if(!isInsideGrid(pos) || !isInsideGrid(end))
-		return make_pair(-1, fconstant::inf);
+		return make_pair(-1, inf);
 
 	// Algorithm idea from: RTCD by Christer Ericson
 	int dx = end.x > pos.x? 1 : end.x < pos.x? -1 : 0;
@@ -96,7 +96,7 @@ pair<int, float> Grid::trace(const Ray3F &ray, float tmin, float tmax, int ignor
 	float deltaz = cell_size / lenz;
 
 	int out = -1;
-	float out_dist = tmax + fconstant::epsilon;
+	float out_dist = tmax + big_epsilon;
 
 	while(true) {
 		int node_id = nodeAt(pos);
@@ -139,14 +139,14 @@ pair<int, float> Grid::trace(const Ray3F &ray, float tmin, float tmax, int ignor
 }
 
 void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, float>> &out, int ignored_id, int flags) const {
-	out.resize(segments.size(), make_pair(-1, fconstant::inf));
+	out.resize(segments.size(), make_pair(-1, inf));
 
 	if(segments.empty())
 		return;
 
 	int2 start, end; {
-		float3 pmin(fconstant::inf, fconstant::inf, fconstant::inf);
-		float3 pmax(-fconstant::inf, -fconstant::inf, -fconstant::inf);
+		float3 pmin(inf, inf, inf);
+		float3 pmax(-inf, -inf, -inf);
 
 		for(int s = 0; s < (int)segments.size(); s++) {
 			const Segment3F &segment = segments[s];
@@ -164,7 +164,7 @@ void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, flo
 		end = vmin(end, int2(m_size.x - 1, m_size.y - 1));
 	}
 
-	float max_dist = -fconstant::inf;
+	float max_dist = -inf;
 	IntervalF idir[3], origin[3]; {
 		auto first = *segments.front().asRay();
 		auto first_idir = first.invDir();

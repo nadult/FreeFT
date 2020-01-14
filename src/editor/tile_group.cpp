@@ -98,7 +98,7 @@ void TileGroup::saveToXML(XmlDocument &doc) const {
 		entry_node.addAttrib("is_dirty", (int)entry.is_dirty);
 	}
 
-	const char *side_names[Group::side_count];
+	Str side_names[Group::side_count];
 	for(int s = 0; s < Group::side_count; s++) {
 		char name[32];
 		snprintf(name, sizeof(name), "side_surf_%d", s);

@@ -57,8 +57,8 @@ namespace game {
 
 		auto node = doc.child("char_icon");
 		while(node) {
-			const char *proto_name = node.attrib("proto");
-			const char *icon_name = node.attrib("icon");
+			auto proto_name = node.attrib("proto");
+			auto icon_name = node.attrib("icon");
 			out.push_back(make_pair(findProto(proto_name, ProtoId::actor), string(icon_name)));
 			node = node.sibling("char_icon");
 		}

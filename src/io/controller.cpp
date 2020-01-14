@@ -156,8 +156,7 @@ namespace io {
 				// TODO: send it only, when no other order is in progress (or has been sent and
 				// wasn't
 				// finished)
-				if(m_full_isect.distance() < fconstant::inf &&
-				   m_full_isect.distance() > -fconstant::inf) {
+				if(m_full_isect.distance() < (float)inf && m_full_isect.distance() > (float)-inf) {
 					float3 look_at = m_screen_ray.at(m_full_isect.distance());
 					if(look_at != m_last_look_at &&
 					   distance(look_at.xz(), actor->boundingBox().center().xz()) > 5.0f) {
@@ -334,7 +333,7 @@ namespace io {
 		m_last_path.visualize(3, scene_renderer);
 		scene_renderer.render();
 
-		Renderer2D ui_renderer(viewport);
+		Renderer2D ui_renderer(viewport, Orient2D::y_down);
 
 		if(m_show_debug_info)
 			drawDebugInfo(ui_renderer);

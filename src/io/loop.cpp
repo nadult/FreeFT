@@ -40,7 +40,7 @@ namespace io {
 	}
 			
 	void Loop::Transition::draw(const IRect &rect) {
-		Renderer2D renderer(rect);
+		Renderer2D renderer(rect, Orient2D::y_down);
 
 		if(mode == trans_normal) {
 			renderer.addFilledRect(rect, lerp(from, to, pos / length));

@@ -15,7 +15,7 @@ namespace hud {
 			FRect uv_rect;
 		};
 
-		static const EnumMap<HudIcon, IconInfo> s_icons = {
+		static const EnumMap<HudIcon, IconInfo> s_icons = {{
 			{ FRect(0.00f, 0.00f, 0.25f, 0.25f) },
 			{ FRect(0.25f, 0.00f, 0.50f, 0.25f) },
 			{ FRect(0.50f, 0.00f, 0.75f, 0.25f) },
@@ -26,7 +26,7 @@ namespace hud {
 			{ FRect(0.75f, 0.25f, 1.00f, 0.50f) },
 
 			{ FRect(0.00f, 0.50f, 0.25f, 0.75f) }
-		};
+		}};
 	}
 
 	HudButton::HudButton(const FRect &rect, int id)

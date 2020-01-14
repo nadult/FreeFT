@@ -15,7 +15,7 @@ namespace game {
 		while(child) {
 			Entry new_entry;
 			new_entry.item = Item(ProtoIndex(child));
-			if( const char *count_attrib = child.hasAttrib("count") )
+			if(auto count_attrib = child.hasAttrib("count") )
 				new_entry.count = fromString<int>(count_attrib);
 			else
 				new_entry.count = 1;

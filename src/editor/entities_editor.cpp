@@ -16,10 +16,10 @@ using namespace game;
 
 namespace ui {
 
-	static const EnumMap<EntitiesEditorMode, const char*> s_mode_desc = {
+	static const EnumMap<EntitiesEditorMode, const char*> s_mode_desc = {{
 		"[S]electing entities",
 		"[P]lacing entities"
-	};
+	}};
 	
 	const char *describe(EntitiesEditorMode mode) { return s_mode_desc[mode]; }
 
@@ -60,7 +60,7 @@ namespace ui {
 
 			if(inc && dir_count)
 				m_proto_angle = (m_proto_angle + inc + dir_count) % dir_count;
-			m_proto->setDirAngle(fconstant::pi * 2.0f * (float)m_proto_angle / float(dir_count));
+			m_proto->setDirAngle(pi * 2.0f * (float)m_proto_angle / float(dir_count));
 		}
 
 		if(state.isKeyPressed(InputKey::del)) {

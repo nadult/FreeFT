@@ -112,8 +112,7 @@ namespace game
 		m_type_id = ttype >= count<TileId>()? TileId::unknown : (TileId)ttype;
 		m_surface_id = material >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)material;
 		m_see_through = flags & 8;
-		m_walk_through = flags & 1;
-		m_is_invisible = strstr(sr.name(), "Invisible Tile") != nullptr;
+		m_is_invisible = sr.name().find("Invisible Tile") != -1;
 		if(m_is_invisible) {
 			m_see_through = true;
 			m_walk_through = true;

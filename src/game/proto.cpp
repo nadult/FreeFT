@@ -48,7 +48,7 @@ namespace game {
 		vector<ActorArmourProto> s_actor_armours;
 		vector<TurretProto> s_turrets;
 
-		EnumMap<ProtoId, ProtoDef> s_protos = {
+		EnumMap<ProtoId, ProtoDef> s_protos = {{
 			{ HashMap<string, int>(), 0, 0, 0, 0 },
 
 #define PROTO_DEF(table_name, container) \
@@ -71,7 +71,7 @@ namespace game {
 			PROTO_DEF("turrets", s_turrets),
 
 #undef PROTO_DEF
-		};
+		}};
 
 		bool s_is_loaded = false;
 	}
@@ -87,14 +87,14 @@ namespace game {
 	}
 	
 	ProtoIndex::ProtoIndex(CXmlNode node) {
-		const char *proto_type = node.attrib("proto_type");
-		if(strcmp(proto_type, "invalid") == 0)
+		auto proto_type = node.attrib("proto_type");
+		if(proto_type == "invalid")
 			*this = ProtoIndex();
 		else {
 			m_type = fromString<ProtoId>(proto_type);
 			m_idx = findProto(node.attrib("proto_id"), m_type).m_idx;
 			if(m_idx == -1)
-				CHECK_FAILED("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id"), proto_type);
+				CHECK_FAILED("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id").c_str(), proto_type.c_str());
 			validate();
 		}
 	}

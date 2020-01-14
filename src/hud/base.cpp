@@ -97,12 +97,12 @@ namespace hud
 		value = clamp(value, 0.0f, 1.0f);
 	}
 
-	static EnumMap<HudSound, const char*> s_sounds = {
+	static EnumMap<HudSound, const char*> s_sounds = {{
 		"",
 		"butn_text",
 		"butn_itemswitch",
 		"butn_optionknob"
-	};
+	}};
 
 	void playSound(HudSound id) {
 		if(id != HudSound::none)

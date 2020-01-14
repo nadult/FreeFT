@@ -9,14 +9,14 @@
 
 namespace game {
 
-	static const EnumMap<HealthStatus, const char*> s_health_desc = {
+	static const EnumMap<HealthStatus, const char*> s_health_desc = {{
 		"unhurt",
 		"barely wounded",
 		"wounded",
 		"seriously wounded",
 		"near death",
 		"dead"
-	};
+	}};
 
 	const char *describe(HealthStatus status) {
 		return s_health_desc[status];

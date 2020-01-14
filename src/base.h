@@ -7,6 +7,7 @@
 #include <fwk/math/box.h>
 #include <fwk/math/ray.h>
 #include <fwk/math/segment.h>
+#include <fwk/math/constants.h>
 #include <fwk/gfx/color.h>
 #include <fwk/gfx_base.h>
 #include <fwk/sys_base.h>
@@ -24,6 +25,7 @@ using namespace fwk;
 
 template <class T> using Dynamic = UniquePtr<T>;
 
+inline constexpr float big_epsilon = 0.0001f;
 
 using Segment3F = Segment<float, 3>;
 
@@ -46,7 +48,7 @@ template <class T1, class T2> bool operator==(const T1 *lhs, const shared_ptr<T2
 	    return lhs == rhs.get();
 }
 
-template <class T, class TRange, class T1 = RangeBase<TRange>, EnableIf<!isSame<T, T1>()>...>
+template <class T, class TRange, class T1 = RangeBase<TRange>, EnableIf<!is_same<T, T1>>...>
 inline bool isOneOf(const T &value, const TRange &range) {
 	return anyOf(range, [&](const auto &v) { return value == v; });
 }
@@ -110,12 +112,12 @@ inline Color swapBR(Color col) {
 inline int2 round(const float2 &v) { return int2(v.x + 0.5f, v.y + 0.5f); }
 inline int3 round(const float3 &v) { return int3(v.x + 0.5f, v.y + 0.5f, v.z + 0.5f); }
 
+// TODO: why epsilons? why not simply use ceil?
 inline int2 ceil(const float2 &v) {
-	return int2(v.x + (1.0f - fconstant::epsilon), v.y + (1.0f - fconstant::epsilon));
+	return int2(v.x + (1.0f - big_epsilon), v.y + (1.0f - big_epsilon));
 }
 inline int3 ceil(const float3 &v) {
-	return int3(v.x + (1.0f - fconstant::epsilon), v.y + (1.0f - fconstant::epsilon),
-				v.z + (1.0f - fconstant::epsilon));
+	return int3(v.x + (1.0f - big_epsilon), v.y + (1.0f - big_epsilon), v.z + (1.0f - big_epsilon));
 }
 
 const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);

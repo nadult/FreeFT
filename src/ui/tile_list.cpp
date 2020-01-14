@@ -13,14 +13,14 @@ using namespace game;
 namespace ui
 {
 
-	static const EnumMap<TileFilter, Maybe<TileId>> s_filters = {
+	static const EnumMap<TileFilter, Maybe<TileId>> s_filters = {{
 		none,
 		TileId::floor,
 		TileId::wall,
 		TileId::roof,
 		TileId::object,
 		TileId::unknown,
-	};
+	}};
 
 	static bool tileFilterFunc(const Tile *tile, int ifilter) {
 		DASSERT(tile);
@@ -30,7 +30,6 @@ namespace ui
 	}
 
 	namespace {
-
 		struct VectorBasedModel: public TileListModel {
 			VectorBasedModel(const vector<const Tile*> &tiles) :m_tiles(tiles) { }
 

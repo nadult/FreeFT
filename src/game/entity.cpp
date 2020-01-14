@@ -2,9 +2,11 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "game/entity.h"
+
 #include "game/sprite.h"
 #include "game/world.h"
 #include "gfx/scene_renderer.h"
+#include <fwk/math/rotation.h>
 
 namespace game {
 
@@ -270,7 +272,7 @@ namespace game {
 
 	float Entity::actualDirAngle() const {
 		int dir_count = m_sprite.dirCount(m_seq_idx);
-		return float(m_dir_idx) * (fconstant::pi * 2.0f) / float(dir_count) + fconstant::pi;
+		return float(m_dir_idx) * (pi * 2.0f) / float(dir_count) + pi;
 	}
 
 	const float2 Entity::actualDir() const {

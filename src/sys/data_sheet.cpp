@@ -19,13 +19,13 @@ const char *TupleParser::get(const char *col_name) const {
 }
 
 static const char *getText(CXmlNode cell_node) {
-	const char *val_type = cell_node.hasAttrib("office:value-type");
+	auto val_type = cell_node.hasAttrib("office:value-type");
 	if(val_type) {
 		auto text_node = cell_node.child("text:p");
 		if(!text_node)
-			CHECK_FAILED("Unsupported node type: %s\n", val_type);
+			CHECK_FAILED("Unsupported node type: %s\n", val_type.c_str());
 		ASSERT(text_node);
-		return text_node.value();
+		return text_node.value().c_str();
 	}
 
 	return "";

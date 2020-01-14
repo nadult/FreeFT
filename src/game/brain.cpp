@@ -142,7 +142,7 @@ namespace game {
 				findActors(-1, float3(100, 30, 100), enemies);
 			
 				EntityRef best;
-				float best_dist = fconstant::inf;
+				float best_dist = inf;
 
 				for(int n = 0; n < (int)enemies.size(); n++) {
 					float dist = distance(entity->boundingBox(), m_world->refBBox(enemies[n]));

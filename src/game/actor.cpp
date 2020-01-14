@@ -11,9 +11,8 @@
 #include "game/all_orders.h"
 #include "sys/data_sheet.h"
 #include "net/socket.h"
-#include <cmath>
-#include <cstdio>
 #include "gfx/scene_renderer.h"
+#include <fwk/math/rotation.h>
 
 //#define DEBUG_SHOOTING
 
@@ -338,7 +337,7 @@ namespace game {
 		float3 center = boundingBox().center();
 		float2 dir(pos.x - center.x, pos.z - center.z);
 		float len = length(dir);
-		if(len < fconstant::epsilon)
+		if(len < big_epsilon)
 			return;
 
 		dir = dir / len;
@@ -348,7 +347,7 @@ namespace game {
 	}
 
 	void Actor::nextFrame() {
-		setDirAngle(blendAngles(dirAngle(), m_target_angle, fconstant::pi / 4.0f));
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, pi / 4.0f));
 		ThinkingEntity::nextFrame();
 	}
 		

@@ -173,7 +173,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 	for(int l = 0; l < level_count; l++) {
 		bitmaps[l].resize(bsize.x * bsize.y);
 		PodVector<u8> &bitmap = bitmaps[l];
-		memset(bitmap.data(), 0, bitmap.byteSize());
+		fill(bitmap, 0);
 
 		for(int y = 0; y < bsize.y; y++)
 			for(int x = 0; x < bsize.x; x++)
@@ -190,7 +190,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 			continue;
 
 		PodVector<u8> bitmap(bsize.x * bsize.y);
-		memset(bitmap.data(), 0, bitmap.byteSize());
+		fill(bitmap, 0);
 
 		for(int l = 0; l < level_count; l++) {
 			const PodVector<u8> &lbitmap = bitmaps[l];
@@ -200,7 +200,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 		}
 
 		PodVector<u8> subbitmap = bitmap;
-		memset(subbitmap.data(), 0, subbitmap.byteSize());
+		fill(subbitmap, 0);
 
 		vector<int2> positions;
 		int max_diff = 0;
@@ -463,7 +463,7 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 	findQuads(enlarged_box, quads);
 	
 	int3 closest_pos = pos;
-	float min_distance = fconstant::inf, min_distance2 = 0.0f;
+	float min_distance = inf, min_distance2 = 0.0f;
 	FRect ftarget_rect((float2)target_box.min().xz(), (float2)target_box.max().xz());
 
 	int3 clip_pos = pos;
@@ -489,7 +489,7 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 		float dist  = distanceSq(ftarget_rect, FRect((float2)new_pos.xz(), float2(new_pos.xz()) + float2(m_agent_size, m_agent_size)));
 		float dist2 = distanceSq((float3)new_pos, (float3)pos);
 
-		if(dist < min_distance || (fabs(dist - min_distance) <= fconstant::epsilon && dist2 < min_distance2)) {
+		if(dist < min_distance || (fabs(dist - min_distance) <= big_epsilon && dist2 < min_distance2)) {
 			if(isReachable(src_quad, quads[n])) {
 				closest_pos = new_pos;
 				min_distance = dist;
@@ -499,7 +499,7 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 	}
 
 	out = closest_pos;
-	return min_distance < fconstant::inf;
+	return min_distance < inf;
 }
 
 void NaviMap::findQuads(const IBox &box, vector<int> &out, bool cheap_filter) const {
@@ -644,7 +644,7 @@ namespace {
 
 	struct SearchInfo {
 		SearchInfo(int count) :m_data(count), m_init_map((count + 31) / 32) {
-			memset(m_init_map.data(), 0, m_init_map.byteSize());
+			fill(m_init_map, 0);
 		}
 
 		SearchData &operator[](int idx) {
@@ -655,7 +655,7 @@ namespace {
 
 			if(!(m_init_map[map_idx] & bit)) {
 				m_init_map[map_idx] |= bit;
-				out.dist = fconstant::inf;
+				out.dist = inf;
 				out.heap_pos = -1;
 				out.is_finished = false;
 			}

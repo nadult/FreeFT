@@ -8,6 +8,7 @@
 #include <fwk/gfx/gl_device.h>
 #include <fwk/math/plane.h>
 #include <fwk/sys/resource_manager.h>
+#include <fwk/math/rotation.h>
 
 enum {
 	// TODO: tune-able parameters?
@@ -133,7 +134,7 @@ bool areOverlapping(const IBox &a, const IBox &b) {
 bool areOverlapping(const FBox &a, const FBox &b) {
 	// TODO: these epsilons shouldnt be here...
 	for(int n = 0; n < 3; n++)
-		if(b.min(n) >= a.max(n) - fconstant::epsilon || a.min(n) >= b.max(n) - fconstant::epsilon)
+		if(b.min(n) >= a.max(n) - big_epsilon || a.min(n) >= b.max(n) - big_epsilon)
 			return false;
 	return true;
 }
@@ -146,7 +147,7 @@ bool areOverlapping(const IRect &a, const IRect &b) {
 }
 bool areOverlapping(const FRect &a, const FRect &b) {
 	for(int n = 0; n < 2; n++)
-		if(b.min(n) >= a.max(n) - fconstant::epsilon || a.min(n) >= b.max(n) - fconstant::epsilon)
+		if(b.min(n) >= a.max(n) - big_epsilon || a.min(n) >= b.max(n) - big_epsilon)
 			return false;
 	return true;
 }
@@ -210,8 +211,7 @@ float3 project(const float3 &point, const Plane3F &plane) {
 vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density, bool outside) {
 	DASSERT(density > 1);
 
-	if(box.width() < fconstant::epsilon && box.height() < fconstant::epsilon &&
-	   box.depth() < fconstant::epsilon)
+	if(box.width() < big_epsilon && box.height() < big_epsilon && box.depth() < big_epsilon)
 		return {box.center()};
 
 	float radius = distance(box.center(), box.min());
@@ -219,15 +219,15 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 
 	float3 origin = project(box.center(), plane);
 	float3 other = project(box.min(), plane);
-	if(distanceSq(other, origin) < fconstant::epsilon) {
+	if(distanceSq(other, origin) < big_epsilon) {
 		for(auto corner : box.corners()) {
 			other = project(corner, plane);
-			if(distanceSq(other, origin) >= fconstant::epsilon)
+			if(distanceSq(other, origin) >= big_epsilon)
 				break;
 		}
 	}
 
-	if(distanceSq(other, origin) < fconstant::epsilon)
+	if(distanceSq(other, origin) < big_epsilon)
 		return {box.center()};
 
 	float3 px = normalize(other - origin);
@@ -243,7 +243,7 @@ vector<float3> genPointsOnPlane(const FBox &box, const float3 &dir, int density,
 				origin + (px * (float(x) * mult - 0.5f) + pz * (float(z) * mult - 0.5f)) * radius;
 
 			float isect = isectDist(Ray3F(point + dir, -dir), box);
-			if(isect < fconstant::inf)
+			if(isect < inf)
 				out.push_back(outside ? point : point - dir * (isect - 1.0f));
 		}
 
@@ -265,7 +265,7 @@ vector<float3> genPoints(const FBox &bbox, int density) {
 }
 
 void findPerpendicular(const float3 &v1, float3 &v2, float3 &v3) {
-	DASSERT(lengthSq(v1) > fconstant::epsilon);
+	DASSERT(lengthSq(v1) > big_epsilon);
 
 	v2 = float3(-v1.y, v1.z, v1.x);
 	v3 = cross(v1, v2);
@@ -328,7 +328,7 @@ float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box
 	lmin = max(min(l1, l2), lmin);
 	lmax = min(max(l1, l2), lmax);
 
-	return lmin.min <= lmax.max ? lmin.min : fconstant::inf;
+	return lmin.min <= lmax.max ? lmin.min : (float)inf;
 }
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const FBox &box) {

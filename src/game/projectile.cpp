@@ -2,7 +2,9 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "game/projectile.h"
+
 #include "game/world.h"
+#include <fwk/math/rotation.h>
 
 namespace game {
 
@@ -47,7 +49,7 @@ namespace game {
 	
 	void Projectile::nextFrame() {
 		Entity::nextFrame();
-		setDirAngle(blendAngles(dirAngle(), m_target_angle, fconstant::pi * 0.01f));
+		setDirAngle(blendAngles(dirAngle(), m_target_angle, pi * 0.01f));
 		m_frame_count++;
 	}
 		

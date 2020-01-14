@@ -117,7 +117,7 @@ int fastDrawingOrder(const FBox &a, const FBox &b) {
 
 void SceneRenderer::render() {
 	//FWK_PROFILE("SceneRenderer::render");
-	Renderer2D out(m_viewport);
+	Renderer2D out(m_viewport, Orient2D::y_down);
 
 	enum { node_size = 128 };
 
