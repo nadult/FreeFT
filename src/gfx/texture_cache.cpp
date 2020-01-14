@@ -97,7 +97,7 @@ void TextureCache::nextFrame() {
 
 		for(int id = atlas_node.list.head; id != -1 && count < arraySize(indices) / 2;) {
 			const Resource &res = m_resources[id];
-			indices[count++] = make_pair(-res.last_update, id);
+			indices[count++] = {-res.last_update, id};
 			id = res.atlas_node.next;
 		}
 
@@ -105,7 +105,7 @@ void TextureCache::nextFrame() {
 		for(int id = m_atlas_queue.head;
 			id != -1 && count < arraySize(indices) && pixel_count < max_pixels;) {
 			const Resource &res = m_resources[id];
-			indices[count++] = make_pair(-res.last_update, id);
+			indices[count++] = {-res.last_update, id};
 			pixel_count += res.size.x * res.size.y;
 			id = res.atlas_node.next;
 		}

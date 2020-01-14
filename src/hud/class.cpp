@@ -36,11 +36,11 @@ namespace hud {
 
 			vector<pair<Item, int>> items;
 			if(inv.isEquipped(ItemType::weapon))
-				items.emplace_back(make_pair(inv.weapon(), 1));
+				items.emplace_back(inv.weapon(), 1);
 			if(inv.isEquipped(ItemType::ammo))
-				items.emplace_back(make_pair(inv.ammo().item, inv.ammo().count));
+				items.emplace_back(inv.ammo().item, inv.ammo().count);
 			if(inv.isEquipped(ItemType::armour))
-				items.emplace_back(make_pair(inv.armour(), 1));
+				items.emplace_back(inv.armour(), 1);
 			for(int n = 0; n < inv.size(); n++) {
 				const auto &entry = inv[n];
 				bool added = false;
@@ -51,7 +51,7 @@ namespace hud {
 						items[i].second += entry.count;
 					}
 				if(!added)
-					items.emplace_back(make_pair(entry.item, entry.count));
+					items.emplace_back(entry.item, entry.count);
 			}
 
 			for(auto &item : items) {

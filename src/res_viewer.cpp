@@ -116,7 +116,7 @@ class Resource {
 			if(id == Sprite::ev_overlay)
 				event_name = "overlay";
 			if(event_name)
-				m_events.push_back(make_pair(event_name, getTime()));
+				m_events.emplace_back(event_name, getTime());
 
 			m_frame_id++;
 			if(m_frame_id == m_sprite->frameCount(m_seq_id))
@@ -399,7 +399,7 @@ class ResViewerWindow : public Window {
 				const FileEntry &entry = m_entries[ev.value];
 
 				if(entry.is_dir) {
-					m_command = make_pair(Command::change_dir, m_current_dir / entry.path);
+					m_command = {Command::change_dir, m_current_dir / entry.path};
 				} else {
 					m_res_view->select((*m_dir_view)[ev.value].text);
 				}

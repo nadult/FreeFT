@@ -100,7 +100,7 @@ void PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 	m_max_idx = m_default_idx;
 
 	int offset = 0, total_pixels = m_width * m_height;
-	vector<char> tdata;
+	vector<u8> tdata;
 
 	while(offset < total_pixels) {
 		u8 buf[128];

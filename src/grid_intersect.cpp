@@ -76,7 +76,7 @@ pair<int, float> Grid::trace(const Ray3F &ray, float tmin, float tmax, int ignor
 	
 	//TODO: verify for rays going out of grid space
 	if(!isInsideGrid(pos) || !isInsideGrid(end))
-		return make_pair(-1, inf);
+		return {-1, inf};
 
 	// Algorithm idea from: RTCD by Christer Ericson
 	int dx = end.x > pos.x? 1 : end.x < pos.x? -1 : 0;
@@ -135,11 +135,11 @@ pair<int, float> Grid::trace(const Ray3F &ray, float tmin, float tmax, int ignor
 			break;
 	}
 
-	return make_pair(out, out_dist);
+	return {out, out_dist};
 }
 
 void Grid::traceCoherent(const vector<Segment3F> &segments, vector<pair<int, float>> &out, int ignored_id, int flags) const {
-	out.resize(segments.size(), make_pair(-1, inf));
+	out.resize(segments.size(), {-1, inf});
 
 	if(segments.empty())
 		return;

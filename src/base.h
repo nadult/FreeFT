@@ -27,8 +27,6 @@ template <class T> using Dynamic = UniquePtr<T>;
 
 inline constexpr float big_epsilon = 0.0001f;
 
-using Segment3F = Segment<float, 3>;
-
 inline Ray3F negate(const Ray3F &rhs) {
 	return {rhs.origin(), -rhs.dir()};
 }
