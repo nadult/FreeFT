@@ -4,7 +4,7 @@
 #include "game/character.h"
 
 #include "game/inventory.h"
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/sys/resource_manager.h>
 
 namespace game {
@@ -38,7 +38,7 @@ namespace game {
 	PTexture Character::icon() const {
 		if(!m_icon_name.empty()) {
 			{
-				return res::guiTextures()[string(s_icon_folder) + m_icon_name];
+				return res::getGuiTexture(string(s_icon_folder) + m_icon_name);
 			} //TODO: handle missing icon
 		}
 
@@ -46,7 +46,7 @@ namespace game {
 	}
 		
 	PTexture Character::emptyIcon() {
-		return res::guiTextures()[string(s_icon_folder) + s_empty_name];
+		return res::getGuiTexture(string(s_icon_folder) + s_empty_name);
 	}
 		
 	const vector<pair<ProtoIndex, string>> Character::findIcons() {

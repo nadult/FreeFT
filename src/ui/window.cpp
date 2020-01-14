@@ -3,7 +3,7 @@
 
 #include "ui/window.h"
 #include "gfx/drawing.h"
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_texture.h>
 
 namespace ui
 {

@@ -9,7 +9,7 @@
 #include "io/game_loop.h"
 #include "io/controller.h"
 #include "net/server.h"
-#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/gl_device.h>
 #include <fwk/sys/backtrace.h>
 
 using namespace game;
@@ -24,7 +24,7 @@ void ctrlCHandler() {
 static io::PLoop s_main_loop;
 static double s_last_time = getTime() - 1.0f / 60.0f;
 
-static bool main_loop(GfxDevice &device, void*) {
+static bool main_loop(GlDevice &device, void*) {
 	double time = getTime();
 	double time_diff = (time - s_last_time);
 	s_last_time = time;
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	audio::initSoundMap();
 	game::loadData(true);
 
-	GfxDevice gfx_device;
+	GlDevice gfx_device;
 	//adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
 

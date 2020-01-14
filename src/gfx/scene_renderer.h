@@ -5,12 +5,14 @@
 
 #include "base.h"
 
+#include <fwk/gfx/gl_ref.h>
+
 class SceneRenderer {
   public:
 	SceneRenderer(IRect viewport, int2 view_pos);
-	bool add(STexture tex, IRect rect, float3 pos, FBox bbox, Color col = ColorId::white,
+	bool add(PTexture tex, IRect rect, float3 pos, FBox bbox, Color col = ColorId::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false);
-	bool add(STexture tex, IRect rect, float3 pos, int3 bbox, Color col = ColorId::white,
+	bool add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = ColorId::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false) {
 		return add(tex, rect, pos, FBox(float3(0, 0, 0), float3(bbox)), col, tex_rect, is_overlay);
 	}
@@ -26,7 +28,7 @@ class SceneRenderer {
 
   protected:
 	struct Element {
-		STexture texture;
+		PTexture texture;
 		IRect rect;
 		FBox bbox;
 		FRect tex_rect;

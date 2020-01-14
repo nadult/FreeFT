@@ -24,7 +24,8 @@
 #include "ui/window.h"
 
 #include "sys/config.h"
-#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/gl_device.h>
+#include <fwk/gfx/opengl.h>
 #include <fwk/sys/resource_manager.h>
 #include <fwk/sys/on_fail.h>
 
@@ -226,13 +227,13 @@ public:
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
-	bool mainLoop(GfxDevice &device) {
+	bool mainLoop(GlDevice &device) {
 		static double s_start_time = getTime();
 
 		Tile::setFrameCounter((int)((getTime() - s_start_time) * 15.0));
 		TextureCache::main_cache.nextFrame();
 
-		GfxDevice::clearColor(Color(0, 0, 0));
+		clearColor(Color(0, 0, 0));
 		Renderer2D out(IRect(device.windowSize()));
 
 		process(device.inputState());
@@ -243,7 +244,7 @@ public:
 		return true;
 	}
 
-	static bool mainLoop(GfxDevice &device, void *pthis) {
+	static bool mainLoop(GlDevice &device, void *pthis) {
 		return ((EditorWindow*)pthis)->mainLoop(device);
 	}
 
@@ -277,8 +278,8 @@ void preloadTiles() {
 	auto file_names = findFiles("data/tiles/", FindFiles::regular_file | FindFiles::recursive);
 
 	printf("Preloading tiles");
-	auto &tile_mgr = res::tiles();
-	FilePath tiles_path = FilePath(tile_mgr.constructor().filePrefix()).absolute();
+	auto [prefix, suffix] = res::tilePrefixSuffix();
+	FilePath tiles_path = FilePath(prefix).absolute();
 	for(int n = 0; n < file_names.size(); n++) {
 		ON_FAIL("\nError while loading file: %", file_names[n].path);
 
@@ -289,8 +290,8 @@ void preloadTiles() {
 
 		FilePath tile_path = file_names[n].path.relative(tiles_path);
 		string tile_name = tile_path;
-		if(removeSuffix(tile_name, tile_mgr.constructor().fileSuffix()))
-			tile_mgr.accessResource(tile_name);
+		if(removeSuffix(tile_name, suffix))
+			res::getTile(tile_name);
 	}
 	printf("\n");
 }
@@ -300,7 +301,7 @@ int main(int argc, char **argv) {
 	preloadTiles();
 	game::loadData(true);
 
-	GfxDevice gfx_device;
+	GlDevice gfx_device;
 	createWindow("editor", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
 	EditorWindow window(gfx_device.windowSize());

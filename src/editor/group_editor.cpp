@@ -4,7 +4,7 @@
 #include "gfx/drawing.h"
 #include "editor/group_editor.h"
 #include "editor/tile_group.h"
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_texture.h>
 #include <algorithm>
 #include <cstring>
 #include <tuple>
@@ -191,7 +191,7 @@ namespace {
 				entry.tile->draw(out, pos);
 		}
 		
-		DTexture::unbind();
+		GlTexture::unbind();
 		for(int n = 0; n < (int)m_tile_list.size(); n++) {
 			const ui::TileList::Entry &entry = m_tile_list[n];
 			if(!entry.is_selected)

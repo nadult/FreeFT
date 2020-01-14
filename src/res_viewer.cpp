@@ -12,8 +12,9 @@
 #include "ui/message_box.h"
 
 #include <fwk/filesystem.h>
-#include <fwk/gfx/dtexture.h>
-#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/gl_texture.h>
+#include <fwk/gfx/gl_device.h>
+#include <fwk/gfx/opengl.h>
 #include <fwk/gfx/texture.h>
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
@@ -53,7 +54,7 @@ class Resource {
 			m_tile = make_immutable<Tile>("", loader);
 			m_rect_size = m_tile->rect().size() + int2(8, 8);
 		} else if(m_type == ResType::texture) {
-			m_texture = make_immutable<DTexture>("", loader);
+			m_texture = GlTexture::make("", loader);
 			m_rect_size = m_texture->size();
 		} else if(m_type == ResType::sprite) {
 			//	printf("Loading sprite: %s\n", file_name);
@@ -439,13 +440,13 @@ class ResViewerWindow : public Window {
 static Dynamic<ResViewerWindow> main_window;
 static double start_time = getTime();
 
-static bool main_loop(GfxDevice &device, void*) {
+static bool main_loop(GlDevice &device, void*) {
 	DASSERT(main_window);
 
 	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
 	TextureCache::main_cache.nextFrame();
 
-	GfxDevice::clearColor(Color(0, 0, 0));
+	clearColor(Color(0, 0, 0));
 	Renderer2D out(IRect(device.windowSize()));
 
 	main_window->process(device.inputState());
@@ -466,7 +467,7 @@ static bool main_loop(GfxDevice &device, void*) {
 int main(int argc, char **argv) {
 	Config config("res_viewer");
 
-	GfxDevice gfx_device;
+	GlDevice gfx_device;
 	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
 	main_window = uniquePtr<ResViewerWindow>(gfx_device.windowSize(), "data/");

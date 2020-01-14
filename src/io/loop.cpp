@@ -6,7 +6,7 @@
 #include "gfx/drawing.h"
 #include <fwk/sys/input.h>
 #include <fwk/gfx/renderer2d.h>
-#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/gl_device.h>
 
 namespace io {
 
@@ -70,7 +70,7 @@ namespace io {
 		onDraw();
 
 		if(m_is_transitioning)
-			m_transition.draw(IRect(GfxDevice::instance().windowSize()));
+			m_transition.draw(IRect(GlDevice::instance().windowSize()));
 	}
 
 }

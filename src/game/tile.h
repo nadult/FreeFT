@@ -23,7 +23,7 @@ namespace game
 
 		int2 dimensions() const { return m_texture.size(); }	
 		Texture texture() const;
-		STexture deviceTexture(FRect &tex_rect) const;
+		PTexture deviceTexture(FRect &tex_rect) const;
 	
 		const IRect rect() const;
 
@@ -91,6 +91,5 @@ namespace game
 		bool m_is_invisible;
 	};
 
-	using PTile = immutable_ptr<Tile>;
 
 }

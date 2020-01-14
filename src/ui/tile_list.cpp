@@ -64,8 +64,8 @@ namespace ui
 
 	PTileListModel allTilesModel() {
 		vector<const Tile*> tiles;
-		for(auto elem : res::tiles())
-			tiles.emplace_back(elem.second.get());
+		for(auto &[name, tile] : res::allTiles())
+			tiles.emplace_back(tile.get());
 		return make_shared<VectorBasedModel>(tiles);
 	}
 

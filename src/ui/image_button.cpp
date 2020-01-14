@@ -5,7 +5,7 @@
 
 #include "audio/device.h"
 #include "gfx/drawing.h"
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/sys/resource_manager.h>
 
 namespace ui
@@ -14,10 +14,10 @@ namespace ui
 		DASSERT(up_tex && down_tex);
 
 		if(back_tex)
-			back = res::guiTextures()[back_tex];
+			back = res::getGuiTexture(back_tex);
 
-		up = res::guiTextures()[up_tex];
-		down = res::guiTextures()[down_tex];
+		up = res::getGuiTexture(up_tex);
+		down = res::getGuiTexture(down_tex);
 		if(font_name)
 			font = res::getFont(font_name);
 

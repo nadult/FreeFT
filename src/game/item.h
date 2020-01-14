@@ -57,7 +57,7 @@ namespace game {
 		const ItemProto &proto() const		{ return *m_proto; }
 		ProtoIndex index() const			{ return m_proto->index(); }
 		
-		STexture guiImage(bool small, FRect &tex_rect) const;
+		PTexture guiImage(bool small, FRect &tex_rect) const;
 
 		void save(Stream&) const;
 
@@ -73,7 +73,7 @@ namespace game {
 
 		FlagsType flags() const { return Flags::item | Flags::static_entity; }
 
-		STexture guiImage(bool small, FRect &tex_rect) const;
+		PTexture guiImage(bool small, FRect &tex_rect) const;
 		const Item &item() const { return m_item; }
 		Item &item() { return m_item; }
 		

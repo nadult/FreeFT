@@ -62,7 +62,7 @@ namespace game
 		return out;
 	}		
 
-	STexture TileFrame::deviceTexture(FRect &tex_rect) const {
+	PTexture TileFrame::deviceTexture(FRect &tex_rect) const {
 		if(!getCache())
 			bindToCache(TextureCache::main_cache);
 		return accessTexture(tex_rect);

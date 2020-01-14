@@ -5,6 +5,7 @@
 
 #include "base.h"
 #include <fwk/list_node.h>
+#include <fwk/gfx/gl_ref.h>
 
 class TextureCache;
 
@@ -15,7 +16,7 @@ class CachedTexture {
 	void operator=(const CachedTexture &);
 	virtual ~CachedTexture();
 
-	STexture accessTexture(FRect &, bool put_in_atlas = true) const;
+	PTexture accessTexture(FRect &, bool put_in_atlas = true) const;
 	TextureCache *getCache() const { return m_cache; }
 	int cacheId() const { return m_id; }
 	void bindToCache(TextureCache &) const;
@@ -50,8 +51,8 @@ class TextureCache {
 	int size() const { return (int)m_resources.size(); }
 
 	void unload(int res_id);
-	STexture access(int res_id, bool put_in_atlas, FRect &);
-	STexture atlas() { return m_atlas; }
+	PTexture access(int res_id, bool put_in_atlas, FRect &);
+	PTexture atlas() { return m_atlas; }
 
 	void setMemoryLimit(int bytes) { m_memory_limit = bytes; }
 	int memoryLimit() const { return m_memory_limit; }
@@ -68,7 +69,7 @@ class TextureCache {
   protected:
 	struct Resource {
 		CachedTexture *res_ptr;
-		STexture device_texture;
+		PTexture device_texture;
 
 		int2 size, atlas_pos;
 		int atlas_node_id;
@@ -86,7 +87,7 @@ class TextureCache {
 	};
 
 	PodVector<AtlasNode> m_atlas_nodes;
-	STexture m_atlas;
+	PTexture m_atlas;
 	int2 m_atlas_size;
 	int m_atlas_counter;
 

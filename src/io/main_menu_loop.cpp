@@ -5,9 +5,9 @@
 #include "ui/file_dialog.h"
 #include "ui/message_box.h"
 #include "ui/image_button.h"
-#include <fwk/gfx/gfx_device.h>
-#include <fwk/sys/resource_manager.h>
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_device.h>
+#include <fwk/gfx/gl_texture.h>
+#include <fwk/gfx/opengl.h>
 
 #include "io/main_menu_loop.h"
 #include "io/game_loop.h"
@@ -39,9 +39,9 @@ namespace io {
 	}
 
 	MainMenuLoop::MainMenuLoop()
-		:Window(IRect(GfxDevice::instance().windowSize()), ColorId::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
-		m_back = res::guiTextures()["back/flaminghelmet"];
-		m_loading = res::guiTextures()["misc/worldm/OLD_moving"];
+		:Window(IRect(GlDevice::instance().windowSize()), ColorId::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
+		m_back = res::getGuiTexture("back/flaminghelmet");
+		m_loading = res::getGuiTexture("misc/worldm/OLD_moving");
 
 		m_anim_pos = 0.0;
 		m_blend_time = 1.0;
@@ -111,7 +111,7 @@ namespace io {
 			}
 			else if(ev.source == m_multi_player.get()) {
 				FRect rect = FRect(float2(790, 550));
-				auto window_size = GfxDevice::instance().windowSize();
+				auto window_size = GlDevice::instance().windowSize();
 				rect += float2(window_size) * 0.5f - rect.size() * 0.5f;
 				m_multi_menu = make_shared<hud::MultiPlayerMenu>(rect, window_size);
 				m_sub_menu = m_multi_menu;
@@ -245,10 +245,10 @@ namespace io {
 		}
 
 		if(m_mode != mode_quitting && m_mode != mode_transitioning && !m_sub_menu)
-			process(GfxDevice::instance().inputState());
+			process(GlDevice::instance().inputState());
 		if(m_sub_menu) {
 			if(m_mode != mode_transitioning) {
-				auto &device = GfxDevice::instance();
+				auto &device = GlDevice::instance();
 				for(auto &event: device.inputEvents())
 					m_sub_menu->handleInput(event);
 			}
@@ -291,8 +291,8 @@ namespace io {
 			return;
 		}
 
-		GfxDevice::clearColor(Color(0, 0, 0));
-		IRect viewport(GfxDevice::instance().windowSize());
+		clearColor(Color(0, 0, 0));
+		IRect viewport(GlDevice::instance().windowSize());
 		Renderer2D renderer(viewport);
 
 		renderer.addFilledRect(m_back_rect, m_back);

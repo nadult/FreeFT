@@ -62,7 +62,7 @@ namespace game {
 		return Item(findProto("_dummy_weapon", ProtoId::weapon));
 	}
 		
-	STexture Item::guiImage(bool small, FRect &tex_rect) const {
+	PTexture Item::guiImage(bool small, FRect &tex_rect) const {
 		const Sprite &sprite = Sprite::get(m_proto->sprite->index());
 		return sprite.getFrame(m_proto->seq_ids[small?2 : 1], 0, 0, tex_rect, false);
 	}
@@ -110,7 +110,7 @@ namespace game {
 		m_count = count;
 	}
 	
-	STexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
+	PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
 		return m_item.guiImage(small, tex_rect);
 	}
 

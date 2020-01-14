@@ -18,7 +18,8 @@
 #include "hud/hud.h"
 #include "hud/target_info.h"
 
-#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/gl_device.h>
+#include <fwk/gfx/opengl.h>
 #include <fwk/gfx/font.h>
 
 using namespace game;
@@ -38,7 +39,7 @@ namespace io {
 		: m_world(world), m_viewer(world),  m_view_pos(0, 0),
 		  m_show_debug_info(debug_info), m_debug_navi(false), m_debug_ai(false), m_is_exiting(0),
 		  m_time_multiplier(1.0), m_screen_ray(float3(), float3(0, 0, 1)) {
-		auto resolution = GfxDevice::instance().windowSize();
+		auto resolution = GlDevice::instance().windowSize();
 
 		DASSERT(world);
 		m_console = make_shared<hud::HudConsole>(resolution);
@@ -207,7 +208,7 @@ namespace io {
 	void Controller::update(double time_diff) {
 		updatePC();
 
-		auto &device = GfxDevice::instance();
+		auto &device = GlDevice::instance();
 		auto resolution = device.windowSize();
 		Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 		if(actor)
@@ -315,9 +316,9 @@ namespace io {
 	void Controller::updateView(double time_diff) { m_viewer.update(time_diff); }
 
 	void Controller::draw() const {
-		GfxDevice::clearColor(Color(0, 0, 0));
+		clearColor(Color(0, 0, 0));
 
-		auto resolution = GfxDevice::instance().windowSize();
+		auto resolution = GlDevice::instance().windowSize();
 		IRect viewport(resolution);
 		SceneRenderer scene_renderer(viewport, m_view_pos);
 		m_viewer.addToRender(scene_renderer);

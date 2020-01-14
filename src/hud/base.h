@@ -5,7 +5,7 @@
 
 #include "game/base.h"
 #include <fwk/gfx/renderer2d.h>
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_texture.h>
 
 namespace hud {
 

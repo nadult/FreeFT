@@ -13,7 +13,7 @@ SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
 	m_elements.reserve(1024);
 }
 
-bool SceneRenderer::add(STexture texture, IRect rect, float3 pos, FBox bbox, Color color,
+bool SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color,
 						FRect tex_rect, bool is_overlay) {
 	DASSERT(texture);
 

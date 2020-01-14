@@ -113,7 +113,7 @@ namespace game
 		}
 	}
 
-	STexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect, bool put_in_atlas) const {
+	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect, bool put_in_atlas) const {
 		if(cacheId() == -1) {
 			bindToCache(TextureCache::main_cache);
 			prev_palette = &palette;
@@ -187,7 +187,7 @@ namespace game
 		return out;
 	}
 
-	STexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas) const {
+	PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas) const {
 		DASSERT(!isPartial());
 
 		const MultiPalette &palette = m_palettes[m_sequences[seq_id].palette_id];

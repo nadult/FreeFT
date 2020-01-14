@@ -46,7 +46,7 @@ namespace hud
 		width = fwk::min(width, (max.x - min.x) * 0.5f - 2.0f);
 		Color transparent = Color(color, 0);
 
-		DTexture::unbind();
+		GlTexture::unbind();
 	
 		// left
 		drawLine(out, float2(min.x, min.y), float2(min.x, max.y), color, color);

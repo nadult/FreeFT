@@ -3,8 +3,6 @@
 
 #include "editor/tile_group.h"
 
-#include <fwk/sys/resource_manager.h>
-
 using namespace game;
 
 int3 TileGroup::Group::s_side_offsets[TileGroup::Group::side_count] = {
@@ -123,7 +121,7 @@ void TileGroup::loadFromXML(const XmlDocument &doc) {
 
 	while(node) {
 		Entry entry;
-		PTile tile = res::tiles()[node.attrib("tile")];
+		PTile tile = res::getTile(node.attrib("tile"));
 
 		entry.tile = &*tile;
 		entry.group_id = node.attrib<int>("group_id");

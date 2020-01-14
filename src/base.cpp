@@ -3,9 +3,9 @@
 
 #include "base.h"
 
-#include <fwk/gfx/dtexture.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/font.h>
-#include <fwk/gfx/gfx_device.h>
+#include <fwk/gfx/gl_device.h>
 #include <fwk/math/plane.h>
 #include <fwk/sys/resource_manager.h>
 
@@ -354,24 +354,63 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 #include "game/tile.h"
 
-namespace {
-ResourceManager<DTexture> s_gui_textures("data/gui/", ".zar");
-ResourceManager<DTexture> s_textures("data/", "");
-ResourceManager<game::Tile> s_tiles("data/tiles/", ".tile");
-ResourceManager<FontCore> s_font_cores("data/fonts/", ".fnt");
-ResourceManager<DTexture> s_font_textures("data/fonts/", "");
-}
-
 namespace res {
-ResourceManager<DTexture> &guiTextures() { return s_gui_textures; }
-ResourceManager<DTexture> &textures() { return s_textures; }
-ResourceManager<game::Tile> &tiles() { return s_tiles; }
+static HashMap<string, PTexture> s_gui_textures, s_textures;
+static HashMap<string, game::PTile> s_tiles;
+static HashMap<string, PFontCore> s_fonts;
+static HashMap<string, PTexture> s_font_textures;
 
-PFont getFont(const string &name) {
-	auto core = s_font_cores[name];
-	auto texture = s_font_textures[core->textureName()];
-	return uniquePtr<Font>(std::move(core), std::move(texture));
+static PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, Str suffix) {
+	auto it = map.find(str);
+	if(it == map.end()) {
+		auto file_name = format("%%%", prefix, str, suffix);
+		Loader ldr(file_name);
+		auto tex = GlTexture::make(file_name, ldr);
+		DASSERT(tex);
+		map.emplace(str, tex);
+		return tex;
+	}
+	return it->second;
 }
+	
+PTexture getTexture(Str name) {
+	return getTexture(name, s_textures, "data/", "");
+}
+
+PTexture getGuiTexture(Str name) {
+	return  getTexture(name, s_gui_textures, "data/gui/", ".zar");
+}
+
+PFont getFont(Str name) {
+	auto it = s_fonts.find(name);
+	if(it == s_fonts.end()) {
+		auto file_name = format("%%%", "data/fonts/", name, ".fnt");
+		Loader ldr(file_name);
+		auto core = fwk::make_immutable<FontCore>(file_name, ldr);
+		it = s_fonts.emplace(name, move(core)).first;
+	}
+	auto core = it->second;
+	auto tex = getTexture(core->textureName(), s_font_textures, "data/fonts/", "");
+	return uniquePtr<Font>(move(core), move(tex));
+}
+
+game::PTile getTile(Str name) {
+	auto it = s_tiles.find(name);
+	if(it == s_tiles.end()) {
+		auto file_name = format("%%%", "data/tiles/", name, ".tile");
+		Loader ldr(file_name);
+		auto tile = make_immutable<game::Tile>(name, ldr);
+		s_tiles.emplace(name, tile);
+		return tile;
+	}
+	return it->second;
+}
+
+pair<Str, Str> tilePrefixSuffix() {
+	return {"data/tiles/", ".tile"};
+}
+
+const HashMap<string, game::PTile> &allTiles() { return s_tiles; }
 }
 
 string32 toUTF32Checked(Str ref) {
@@ -386,12 +425,12 @@ string toUTF8Checked(const string32 &str) {
 	FATAL("Error while converting string to UTF8");
 }
 
-void createWindow(const char *name, GfxDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
+void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
 	// TODO: date is refreshed only when game.o is being rebuilt
 	auto title = format("FreeFT::%; built " __DATE__ " " __TIME__, name);
-	auto flags = GfxDeviceOpt::resizable | GfxDeviceOpt::vsync;
+	auto flags = GlDeviceOpt::resizable | GlDeviceOpt::vsync;
 	if(fullscreen)
-		flags |= GfxDeviceOpt::fullscreen;
-	device.createWindow(title, res, flags, 2.1);
+		flags |= GlDeviceOpt::fullscreen;
+	device.createWindow(title, res, flags, GlProfile::compatibility, 2.1);
 	device.grabMouse(false);
 }

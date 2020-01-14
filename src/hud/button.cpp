@@ -31,7 +31,7 @@ namespace hud {
 
 	HudButton::HudButton(const FRect &rect, int id)
 		:HudWidget(rect), m_button_style(HudButtonStyle::normal), m_label_style(HudLabelStyle::center), m_id(id) {
-		m_icons_tex = res::textures()["icons.png"];
+		m_icons_tex = res::getTexture("icons.png");
 	}
 
 	HudButton::~HudButton() { }
