@@ -3,19 +3,24 @@
 
 #include "sys/config.h"
 
-Config::Config() : resolution(800, 600), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
+#include <fwk/filesystem.h>
+
+Config::Config() : resolution(1280, 720), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
 
 Config::Config(CXmlNode node) : Config() { load(node); }
 
 Config::Config(const char *config_name) : Config() {
-	XmlDocument doc;
-	doc.load("data/config.xml");
+	auto file_name = "data/config.xml";
+	if(access(file_name)) {
+		XmlDocument doc;
+		doc.load(file_name);
 
-	auto node = doc.child(config_name);
-	if(!node)
-		node = doc.child("default");
-	if(node)
-		load(node);
+		auto node = doc.child(config_name);
+		if(!node)
+			node = doc.child("default");
+		if(node)
+			load(node);
+	}
 }
 
 void Config::load(CXmlNode node) {

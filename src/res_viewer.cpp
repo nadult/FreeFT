@@ -358,6 +358,7 @@ class ResViewerWindow : public Window {
 		int left_width = 300;
 		m_dir_view = make_shared<ListBox>(IRect(0, 0, left_width, res.y));
 
+		// TODO: doesn't support links?
 		m_entries = findFiles(m_current_dir, FindFiles::regular_file | FindFiles::directory |
 												 FindFiles::relative | FindFiles::include_parent);
 		std::sort(m_entries.begin(), m_entries.end());

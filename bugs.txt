@@ -36,7 +36,7 @@ Nice to fix: -------------------------------------------------------------------
 - When changing armour, it should happen on event pickup, not when animation has finished
 - Sometimes main menu music is still being played in the game
 
-- Crash in res_viewer (once) when pressed esc and answered yes
+- Crash in res_viewer, game (once) when pressed esc and answered yes
 
 
 
