@@ -10,12 +10,12 @@ namespace game {
 		:m_target_stance(target_stance), m_stance_up(false) {
 	}
 
-	ChangeStanceOrder::ChangeStanceOrder(Stream &sr)
+	ChangeStanceOrder::ChangeStanceOrder(MemoryStream &sr)
 		:OrderImpl(sr) {
 		sr >> m_target_stance >> m_stance_up;
 	}
 
-	void ChangeStanceOrder::save(Stream &sr) const {
+	void ChangeStanceOrder::save(MemoryStream &sr) const {
 		Order::save(sr);
 		sr << m_target_stance << m_stance_up;
 	}

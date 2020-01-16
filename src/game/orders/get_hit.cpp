@@ -19,11 +19,11 @@ namespace game {
 		force_angle	= vectorToAngle(normalize(vec.xz()));
 	}
 
-	GetHitOrder::GetHitOrder(Stream &sr) :OrderImpl(sr) {
+	GetHitOrder::GetHitOrder(MemoryStream &sr) :OrderImpl(sr) {
 		sr.unpack(mode, force, force_angle, fall_time);
 	}
 
-	void GetHitOrder::save(Stream &sr) const {
+	void GetHitOrder::save(MemoryStream &sr) const {
 		Order::save(sr);
 		sr.pack(mode, force, force_angle, fall_time);
 	}

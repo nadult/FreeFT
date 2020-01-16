@@ -48,8 +48,8 @@ namespace game {
 			return m_index == rhs.m_index && m_unique_id == rhs.m_unique_id;
 		}
 
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 		int index() const { return m_index; }
 		bool operator<(const EntityRef &rhs) const { return m_index < rhs.m_index; }
 		
@@ -90,11 +90,11 @@ namespace game {
 
 	protected:
 		EntityWorldProxy();
-		EntityWorldProxy(Stream&);
+		EntityWorldProxy(MemoryStream&);
 		EntityWorldProxy(const EntityWorldProxy&);
 		virtual ~EntityWorldProxy();
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 		// References will now point to the new object
 		// current Entity will be destroyed
@@ -146,14 +146,14 @@ namespace game {
 	public:
 		Entity(const Sprite &sprite);
 		Entity(const Sprite &sprite, CXmlNode);
-		Entity(const Sprite &sprite, Stream&);
+		Entity(const Sprite &sprite, MemoryStream&);
 		virtual ~Entity();
 		
-		virtual void save(Stream&) const;
+		virtual void save(MemoryStream&) const;
 		virtual XmlNode save(XmlNode parent) const;
 		
 		static Entity *construct(CXmlNode node);
-		static Entity *construct(Stream&);
+		static Entity *construct(MemoryStream&);
 
 		virtual Entity *clone() const = 0;
 
@@ -245,7 +245,7 @@ namespace game {
 			}
 
 			Initializer(CXmlNode node) :Initializer(ProtoIndex(node)) { }
-			Initializer(Stream &sr) :Initializer(ProtoIndex(sr)) { }
+			Initializer(MemoryStream &sr) :Initializer(ProtoIndex(sr)) { }
 
 			const Sprite *sprite;
 			const ProtoType *proto;
@@ -255,14 +255,14 @@ namespace game {
 			:Base(*init.sprite), m_proto(*init.proto) { }
 		EntityImpl(const Initializer &init, CXmlNode node)
 			:Base(*init.sprite, node), m_proto(*init.proto) { }
-		EntityImpl(const Initializer &init, Stream &sr)
+		EntityImpl(const Initializer &init, MemoryStream &sr)
 			:Base(*init.sprite, sr), m_proto(*init.proto) { }
 
 	public:
 		enum { type_id = (int)entity_id };
 		EntityImpl(const Proto &proto) :EntityImpl(Initializer(proto)) { }
 		EntityImpl(CXmlNode node) :EntityImpl(Initializer(node), node) { }
-		EntityImpl(Stream &sr) :EntityImpl(Initializer(sr), sr) { }
+		EntityImpl(MemoryStream &sr) :EntityImpl(Initializer(sr), sr) { }
 
 		virtual Entity *clone() const {
 			return new Type(*static_cast<const Type*>(this));
@@ -270,7 +270,7 @@ namespace game {
 		virtual EntityId typeId() const {
 			return entity_id;
 		}
-		virtual void save(Stream &sr) const {
+		virtual void save(MemoryStream &sr) const {
 			sr << m_proto.index();
 			Base::save(sr);
 		}

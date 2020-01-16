@@ -13,14 +13,14 @@
 
 namespace game {
 		
-	void GameClient::save(Stream &sr) const {
+	void GameClient::save(MemoryStream &sr) const {
 		sr << nick_name;
 		encodeInt(sr, (int)pcs.size());
 		for(const auto &pc : pcs)
 			sr << pc;
 	}
 
-	void GameClient::load(Stream &sr) {
+	void GameClient::load(MemoryStream &sr) {
 		sr >> nick_name;
 		int count = decodeInt(sr);
 		pcs.clear();
@@ -210,7 +210,7 @@ namespace game {
 		GameMode::tick(time_diff);
 	}
 
-	void GameModeServer::onMessage(Stream &sr, MessageId msg_type, int source_id) {
+	void GameModeServer::onMessage(MemoryStream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::actor_order) {
 			EntityRef actor_ref;
 			POrder order;
@@ -234,11 +234,11 @@ namespace game {
 	}
 
 	void GameModeServer::replicateClient(int client_id, int target_id) {
-		net::TempPacket chunk;
-		chunk << MessageId::update_client;
-		chunk.encodeInt(client_id);
-		chunk << m_clients[client_id];
-		m_world.sendMessage(chunk, target_id);
+		auto temp = memorySaver();
+		temp << MessageId::update_client;
+		encodeInt(temp, client_id);
+		temp << m_clients[client_id];
+		m_world.sendMessage(temp.data(), target_id);
 	}
 	
 	void GameModeServer::onClientConnected(int client_id, const string &nick_name) {
@@ -257,10 +257,10 @@ namespace game {
 				m_world.removeEntity(pc.entityRef());
 			m_clients.erase(del_it);
 				
-			net::TempPacket chunk;
-			chunk << MessageId::remove_client;
-			chunk.encodeInt(client_id);
-			m_world.sendMessage(chunk, -1);
+			auto temp = memorySaver();
+			temp << MessageId::remove_client;
+			encodeInt(temp, client_id);
+			m_world.sendMessage(temp.data(), -1);
 		}
 	}
 
@@ -275,7 +275,7 @@ namespace game {
 		GameMode::tick(time_diff);
 	}
 
-	void GameModeClient::onMessage(Stream &sr, MessageId msg_type, int source_id) {
+	void GameModeClient::onMessage(MemoryStream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::update_client) {
 			GameClient new_client;
 			int new_id = decodeInt(sr);
@@ -298,10 +298,10 @@ namespace game {
 		if(!order || !entity_ref)
 			return false;
 
-		net::TempPacket chunk;
-		chunk << MessageId::actor_order;
-		chunk << entity_ref << order->typeId() << *order;
-		m_world.sendMessage(chunk);
+		auto temp = memorySaver();
+		temp << MessageId::actor_order;
+		temp << entity_ref << order->typeId() << *order;
+		m_world.sendMessage(temp.data());
 		return true;
 	}
 		
@@ -314,10 +314,10 @@ namespace game {
 				return false;
 
 		m_current.pcs.push_back(new_char);	
-		net::TempPacket chunk;
-		chunk << MessageId::update_client;
-		chunk << m_current;
-		m_world.sendMessage(chunk);
+		auto temp = memorySaver();
+		temp << MessageId::update_client;
+		temp << m_current;
+		m_world.sendMessage(temp.data());
 		return true;
 	}
 		
@@ -325,10 +325,10 @@ namespace game {
 		for(auto &pc : m_current.pcs)
 			if(pc.character() == character) {
 				pc.setClassId(class_id);
-				net::TempPacket chunk;
-				chunk << MessageId::update_client;
-				chunk << m_current;
-				m_world.sendMessage(chunk);
+				auto temp = memorySaver();
+				temp << MessageId::update_client;
+				temp << m_current;
+				m_world.sendMessage(temp.data());
 				return true;
 			}
 

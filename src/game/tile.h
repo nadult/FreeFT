@@ -42,9 +42,9 @@ namespace game
 		Tile();
 		Tile(const string &resource_name, Stream&);
 
-		void legacyLoad(Stream &sr, const char *alternate_name = nullptr);
-		void load(Stream &sr);
-		void save(Stream &sr) const;
+		void legacyLoad(Stream &);
+		void load(Stream &);
+		void save(Stream &) const;
 		
 		FlagsType flags() const;
 

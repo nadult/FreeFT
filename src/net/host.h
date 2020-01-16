@@ -99,17 +99,15 @@ namespace net {
 		};
 
 		void beginSending(Socket *socket);
-		void  enqueChunk(const TempPacket &data, ChunkType type, int channel_id);
-		void  enqueChunk(const char *data, int data_size, ChunkType type, int channel_id);
+		void  enqueChunk(CSpan<char>, ChunkType type, int channel_id);
 
 		// Have to be in sending mode, to enque UChunk
 		// TODO: better name, we're not really enquing anything
-		bool enqueUChunk(const TempPacket &data, ChunkType type, int identifier, int channel_id);
-		bool enqueUChunk(const char *data, int data_size, ChunkType type, int identifier, int channel_id);
+		bool enqueUChunk(CSpan<char>, ChunkType type, int identifier, int channel_id);
 		void finishSending();
 
 		void beginReceiving();
-		void receive(InPacket &packet, int timestamp, double time);
+		void receive(InPacket, int timestamp, double time);
 		void handlePacket(InPacket& packet);
 		void finishReceiving();
 		const Chunk *getIChunk();
@@ -130,7 +128,7 @@ namespace net {
 		void sendChunks(int max_channel);
 
 		bool sendChunk(int chunk_idx);
-		bool sendUChunk(int chunk_idx, const char *data, int data_size, ChunkType type);
+		bool sendUChunk(int chunk_idx, CSpan<char> data, ChunkType type);
 
 		int estimateSize(int data_size) const;
 		bool canFit(int data_size) const;
@@ -175,7 +173,9 @@ namespace net {
 
 		// Sending context
 		Socket *m_socket;
-		OutPacket m_out_packet;
+
+		// TODO: what if we cross packet_size boundary?
+		MemoryStream m_out_packet;
 		int m_packet_idx;
 		int m_bytes_left;
 
@@ -198,7 +198,7 @@ namespace net {
 		void receive();
 
 		bool getLobbyPacket(InPacket &out);
-		void sendLobbyPacket(const OutPacket &out);
+		void sendLobbyPacket(CSpan<char>);
 
 		// Returns -1 if cannot add more hosts
 		int addRemoteHost(const Address &address, int remote_id);
@@ -215,8 +215,8 @@ namespace net {
 		// If you are sending both reliable and unreliable packets in the same frame,
 		// then you should add reliable packets first, so that they will be sent first
 		// if they have higher priority
-		void  enqueChunk(const char *data, int data_size, ChunkType type, int channel_id);
-		bool enqueUChunk(const char *data, int data_size, ChunkType type, int identifier, int channel_id);
+		void  enqueChunk(CSpan<char> data, ChunkType type, int channel_id);
+		bool enqueUChunk(CSpan<char> data, ChunkType type, int identifier, int channel_id);
 		
 		void finishSending();
 		int timestamp() const { return m_timestamp; }

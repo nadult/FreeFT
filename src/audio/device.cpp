@@ -7,6 +7,8 @@
 #include "audio/sound.h"
 #include <fwk/filesystem.h>
 #include <fwk/enum_map.h>
+#include <fwk/sys/stream.h>
+#include <map>
 
 namespace audio
 {
@@ -385,7 +387,7 @@ namespace audio
 		playSound(findSound(locase_name), volume);
 	}
 		
-	void SoundIndex::save(Stream &sr) const {
+	void SoundIndex::save(MemoryStream &sr) const {
 		const DSound *sound = first_idx >= 0 && first_idx < (int)s_sounds.size()? &s_sounds[first_idx] : nullptr;
 		int offset = 0;
 
@@ -397,7 +399,7 @@ namespace audio
 		encodeInt(sr, offset);
 	}
 
-	void SoundIndex::load(Stream &sr) {
+	void SoundIndex::load(MemoryStream &sr) {
 		string name;
 		sr >> name;
 		int offset = decodeInt(sr);

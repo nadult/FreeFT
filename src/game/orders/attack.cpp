@@ -16,7 +16,7 @@ namespace game {
 		:m_mode(mode), m_target_pos(target_pos), m_burst_mode(0), m_is_kick_weapon(false), m_is_followup(false) {
 	}
 
-	AttackOrder::AttackOrder(Stream &sr) :OrderImpl(sr) {
+	AttackOrder::AttackOrder(MemoryStream &sr) :OrderImpl(sr) {
 		u8 flags;
 		sr >> flags >> m_mode;
 		m_burst_mode = decodeInt(sr);
@@ -28,7 +28,7 @@ namespace game {
 			sr >> m_target_pos;
 	}
 
-	void AttackOrder::save(Stream &sr) const {
+	void AttackOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		u8 flags =	(m_is_kick_weapon? 1 : 0) |
 					(m_is_followup? 2 : 0) |

@@ -37,10 +37,11 @@ namespace net {
 		Chunk(Chunk&&);
 		~Chunk();
 
-		void setData(const char *data, int data_size);
+		void setData(CSpan<char>);
 		void setParams(ChunkType type, int chunk_id, int channel_id);
-		void saveData(Stream&) const;
+		void saveData(MemoryStream&) const;
 		void clearData();
+		vector<char> data() const;
 
 		int size() const { return (int)m_data_size; }
 
@@ -70,20 +71,15 @@ namespace net {
 
 	static_assert(sizeof(Chunk) == 128, "Chunk is not properly aligned");
 
-	class InChunk :public Stream {
+	class InChunk :public MemoryStream {
 	public:
 		InChunk(const Chunk &immutable_chunk);
 
-		bool end() const { return m_pos == m_size; }
-
-		int size() const { return m_size; }
 		int chunkId() const { return m_chunk.m_chunk_id; }
 		int channelId() const { return m_chunk.m_channel_id; }
 		ChunkType type() const { return m_chunk.m_type; }
 
 	protected:
-		virtual void v_load(void *ptr, int count) final;
-
 		const Chunk &m_chunk;
 	};
 

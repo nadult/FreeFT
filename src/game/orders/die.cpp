@@ -10,11 +10,11 @@ namespace game {
 	DieOrder::DieOrder(DeathId death_id) :m_death_id(death_id), m_is_dead(false) {
 	}
 
-	DieOrder::DieOrder(Stream &sr) :OrderImpl(sr) {
+	DieOrder::DieOrder(MemoryStream &sr) :OrderImpl(sr) {
 		sr >> m_death_id >> m_is_dead;
 	}
 
-	void DieOrder::save(Stream &sr) const {
+	void DieOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr << m_death_id << m_is_dead;
 	}

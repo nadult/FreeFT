@@ -17,9 +17,9 @@ namespace game {
 	class InteractOrder: public OrderImpl<InteractOrder, OrderTypeId::interact> {
 	public:
 		InteractOrder(EntityRef target, Maybe<InteractionMode> mode = none);
-		InteractOrder(Stream&);
+		InteractOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 		
 		EntityRef m_target;
 		Maybe<InteractionMode> m_mode;

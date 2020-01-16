@@ -13,11 +13,11 @@ namespace game {
 		:m_item(item), m_count(count) {
 	}
 
-	DropItemOrder::DropItemOrder(Stream &sr) :OrderImpl(sr), m_item(sr) {
+	DropItemOrder::DropItemOrder(MemoryStream &sr) :OrderImpl(sr), m_item(sr) {
 		sr >> m_count;
 	}
 
-	void DropItemOrder::save(Stream &sr) const {
+	void DropItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr << m_item << m_count;
 	}
@@ -46,10 +46,10 @@ namespace game {
 	EquipItemOrder::EquipItemOrder(Item item) :m_item(item) {
 	}
 
-	EquipItemOrder::EquipItemOrder(Stream &sr) :OrderImpl(sr), m_item(sr) {
+	EquipItemOrder::EquipItemOrder(MemoryStream &sr) :OrderImpl(sr), m_item(sr) {
 	}
 
-	void EquipItemOrder::save(Stream &sr) const {
+	void EquipItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr << m_item;
 	}
@@ -100,11 +100,11 @@ namespace game {
 
 	}
 
-	UnequipItemOrder::UnequipItemOrder(Stream &sr) :OrderImpl(sr) {
+	UnequipItemOrder::UnequipItemOrder(MemoryStream &sr) :OrderImpl(sr) {
 		sr >> m_item_type;
 	}
 
-	void UnequipItemOrder::save(Stream &sr) const {
+	void UnequipItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr << m_item_type;
 	}
@@ -136,11 +136,11 @@ namespace game {
 		:m_target(target), m_mode(mode), m_item(item), m_count(count) {
 	}
 
-	TransferItemOrder::TransferItemOrder(Stream &sr) :OrderImpl(sr), m_item(sr) {
+	TransferItemOrder::TransferItemOrder(MemoryStream &sr) :OrderImpl(sr), m_item(sr) {
 		sr >> m_target >> m_mode >> m_count;
 	}
 
-	void TransferItemOrder::save(Stream &sr) const {
+	void TransferItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr << m_item << m_target << m_mode << m_count;
 	}

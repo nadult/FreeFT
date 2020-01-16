@@ -11,9 +11,9 @@ namespace game {
 	class TrackOrder: public OrderImpl<TrackOrder, OrderTypeId::track> {
 	public:
 		TrackOrder(EntityRef target, float min_distance, bool run);
-		TrackOrder(Stream&);
+		TrackOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 		int m_next_update;
 		EntityRef m_target;

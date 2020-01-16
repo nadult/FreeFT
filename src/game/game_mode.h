@@ -8,6 +8,7 @@
 #include "game/character.h"
 #include "game/orders.h"
 #include "game/character.h"
+#include <map>
 
 namespace game {
 
@@ -24,8 +25,8 @@ namespace game {
 	};
 
 	struct GameClient {
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 		string nick_name;
 		vector<PlayableCharacter> pcs;
@@ -62,7 +63,7 @@ namespace game {
 		PlayableCharacter *pc(const PCIndex&);
 
 		virtual void tick(double time_diff);
-		virtual void onMessage(Stream&, MessageId, int source_id) { }
+		virtual void onMessage(MemoryStream&, MessageId, int source_id) { }
 		virtual bool sendOrder(POrder &&order, EntityRef entity_ref);
 
 		virtual const UserMessage userMessage(UserMessageType) { return UserMessage(); }
@@ -93,7 +94,7 @@ namespace game {
 		GameModeServer(World &world);
 
 		void tick(double time_diff) override;
-		void onMessage(Stream&, MessageId, int source_id) override;
+		void onMessage(MemoryStream&, MessageId, int source_id) override;
 
 	protected:
 		virtual void onClientConnected(int client_id, const string &nick_name);
@@ -115,7 +116,7 @@ namespace game {
 		GameModeClient(World &world, int client_id, const string &nick_name);
 
 		void tick(double time_diff) override;
-		void onMessage(Stream&, MessageId, int source_id) override;
+		void onMessage(MemoryStream&, MessageId, int source_id) override;
 		virtual const vector<GameClientStats> stats() const { return {}; }
 
 		const string &currentNickName() const { return m_current.nick_name; }

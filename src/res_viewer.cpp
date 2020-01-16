@@ -19,6 +19,7 @@
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
 #include <fwk/sys/rollback.h>
+#include <fwk/sys/stream.h>
 
 using namespace game;
 using namespace ui;

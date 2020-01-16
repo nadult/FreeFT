@@ -37,7 +37,7 @@ namespace game {
 		Item(ProtoIndex);
 		Item(const ItemProto &proto) :m_proto(&proto) { }
 		Item(const Item &rhs) :m_proto(rhs.m_proto) { }
-		Item(Stream &sr) :Item(ProtoIndex(sr)) { }
+		Item(MemoryStream &sr) :Item(ProtoIndex(sr)) { }
 		Item() { *this = dummy(); }
 
 		static const Item dummy();
@@ -59,7 +59,7 @@ namespace game {
 		
 		PTexture guiImage(bool small, FRect &tex_rect) const;
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 	protected:
 		const ItemProto *m_proto;
@@ -67,7 +67,7 @@ namespace game {
 
 	class ItemEntity: public EntityImpl<ItemEntity, ItemProto, EntityId::item> {
 	public:
-		ItemEntity(Stream&);
+		ItemEntity(MemoryStream&);
 		ItemEntity(CXmlNode);
 		ItemEntity(const Item &item, int count);
 
@@ -81,7 +81,7 @@ namespace game {
 		void setCount(int count);
 
 		virtual XmlNode save(XmlNode) const;
-		virtual void save(Stream&) const;
+		virtual void save(MemoryStream&) const;
 
 		virtual const FBox boundingBox() const;
 		

@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cstdio>
 #include <fwk/filesystem.h>
+#include <fwk/sys/stream.h>
+#include <map>
 
 namespace game {
 

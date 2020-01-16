@@ -6,8 +6,7 @@
 #include "game/tile.h"
 #include "gfx/scene_renderer.h"
 #include <algorithm>
-#include <fwk/sys/resource_manager.h>
-
+#include <fwk/sys/stream.h>
 
 namespace game {
 

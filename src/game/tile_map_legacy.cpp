@@ -4,6 +4,7 @@
 #include "tile_map.h"
 #include "game/tile.h"
 #include <climits>
+#include <fwk/sys/stream.h>
 
 //#define LOGGING
 

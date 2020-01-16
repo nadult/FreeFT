@@ -36,7 +36,7 @@ namespace game
 	class Container: public EntityImpl<Container, ContainerProto, EntityId::container>
 	{
 	public:
-		Container(Stream&);
+		Container(MemoryStream&);
 		Container(CXmlNode);
 		Container(const ContainerProto&);
 
@@ -56,7 +56,7 @@ namespace game
 		Inventory &inventory() { return m_inventory; }
 		
 		XmlNode save(XmlNode) const override;
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		
 	private:
 		void think() override;

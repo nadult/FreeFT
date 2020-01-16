@@ -31,9 +31,7 @@ namespace net {
 		Server(const ServerConfig &config);
 		~Server();
 
-		enum {
-			client_timeout = 10,
-		};
+		static constexpr int client_timeout = 10;
 
 		enum class ClientMode {
 			invalid,
@@ -73,7 +71,7 @@ namespace net {
 		void handleHostSending(RemoteHost &host, int client_id);
 		
 		void replicateEntity(int entity_id) override;
-		void sendMessage(net::TempPacket&, int target_id) override;
+		void sendMessage(CSpan<char>, int target_id) override;
 
 		ServerConfig m_config;
 		vector<int> m_replication_list;

@@ -3,13 +3,14 @@
 
 #pragma once
 
+#include "game/base.h"
 
 namespace game {
 
 	struct PathPos {
 		PathPos() :node_id(0), delta(0.0f) { }
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 		int node_id;
 		float delta;
@@ -23,8 +24,8 @@ namespace game {
 		Path(const vector<int3> &nodes);
 		Path() = default;
 
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 		// Returns true if finished
 		// TODO: take current position (actual position, not computed from PathPos) into consideration

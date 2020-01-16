@@ -3,6 +3,7 @@
 
 #include "game/sprite.h"
 #include <zlib.h>
+#include <fwk/sys/stream.h>
 
 // source: http://www.zlib.net/zlib_how.html
 void zlibInflate(Stream &sr, vector<char> &dest, int inSize) {

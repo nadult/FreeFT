@@ -1,19 +1,18 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include "game/base.h"
 #include "gfx/scene_renderer.h"
 #include "game/path.h"
 #include "net/socket.h"
 
 namespace game {
 
-	void PathPos::save(Stream &sr) const {
+	void PathPos::save(MemoryStream &sr) const {
 		encodeInt(sr, node_id);
 		sr << delta;
 	}
 
-	void PathPos::load(Stream &sr) {
+	void PathPos::load(MemoryStream &sr) {
 		node_id = decodeInt(sr);
 		sr >> delta;
 	}
@@ -77,7 +76,7 @@ namespace game {
 		return p1 + (p2 - p1) * path_pos.delta;
 	}
 
-	void Path::save(Stream &sr) const {
+	void Path::save(MemoryStream &sr) const {
 		encodeInt(sr, (int)m_nodes.size());
 		if(m_nodes.empty())
 			return;
@@ -87,7 +86,7 @@ namespace game {
 			net::encodeInt3(sr, m_nodes[n] - m_nodes[n - 1]);
 	}
 
-	void Path::load(Stream &sr) {
+	void Path::load(MemoryStream &sr) {
 		int count = decodeInt(sr);
 		ASSERT(count >= 0);
 		m_nodes.resize(count);

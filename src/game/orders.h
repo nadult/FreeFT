@@ -11,11 +11,11 @@ namespace game {
 	class Order {
 	public:
 		Order();
-		Order(Stream&);
+		Order(MemoryStream&);
 		virtual ~Order() { }
 
-		static Order *construct(Stream&);
-		virtual void save(Stream&) const;
+		static Order *construct(MemoryStream&);
+		virtual void save(MemoryStream&) const;
 		
 		void setFollowup(POrder &&followup) { m_followup = std::move(followup); }
 		POrder &&getFollowup() { return std::move(m_followup); }
@@ -44,7 +44,7 @@ namespace game {
 		};
 
 		OrderImpl() { }
-		OrderImpl(Stream &sr) :Order(sr) { }
+		OrderImpl(MemoryStream &sr) :Order(sr) { }
 
 		Order *clone() const { return new TOrder(*static_cast<const TOrder*>(this)); }
 		OrderTypeId typeId() const { return type_id_; }

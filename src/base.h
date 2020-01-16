@@ -3,21 +3,21 @@
 
 #pragma once
 
-#include <fwk/math_base.h>
-#include <fwk/math/box.h>
-#include <fwk/math/ray.h>
-#include <fwk/math/segment.h>
-#include <fwk/math/constants.h>
+#include "memory_stream.h"
+#include <fwk/enum.h>
+#include <fwk/format.h>
 #include <fwk/gfx/color.h>
 #include <fwk/gfx_base.h>
-#include <fwk/sys_base.h>
-#include <fwk/sys/stream.h>
-#include <fwk/sys/xml.h>
+#include <fwk/math/box.h>
+#include <fwk/math/constants.h>
+#include <fwk/math/ray.h>
+#include <fwk/math/segment.h>
+#include <fwk/math_base.h>
 #include <fwk/pod_vector.h>
 #include <fwk/sys/immutable_ptr.h>
-#include <fwk/format.h>
 #include <fwk/sys/unique_ptr.h>
-#include <fwk/enum.h>
+#include <fwk/sys/xml.h>
+#include <fwk/sys_base.h>
 
 using namespace fwk;
 
@@ -27,9 +27,7 @@ template <class T> using Dynamic = UniquePtr<T>;
 
 inline constexpr float big_epsilon = 0.0001f;
 
-inline Ray3F negate(const Ray3F &rhs) {
-	return {rhs.origin(), -rhs.dir()};
-}
+inline Ray3F negate(const Ray3F &rhs) { return {rhs.origin(), -rhs.dir()}; }
 
 inline float isectDist(const Ray3F &ray, const Box<float3> &box) {
 	return ray.isectParam(box).closest();
@@ -40,10 +38,10 @@ inline float isectDist(const Segment3<float> &segment, const Box<float3> &box) {
 }
 
 template <class T1, class T2> bool operator==(const shared_ptr<T1> &lhs, const T2 *rhs) {
-	    return lhs.get() == rhs;
+	return lhs.get() == rhs;
 }
 template <class T1, class T2> bool operator==(const T1 *lhs, const shared_ptr<T2> &rhs) {
-	    return lhs == rhs.get();
+	return lhs == rhs.get();
 }
 
 template <class T, class TRange, class T1 = RangeBase<TRange>, EnableIf<!is_same<T, T1>>...>
@@ -66,38 +64,11 @@ string toUTF8Checked(const string32 &);
 //template <class T, class X = EnableIfVector<T, T>> T max(T a, T b) { static_assert(sizeof(T) == 0, ""); return a; }
 //template <class T, class X = EnableIfVector<T, T>> T min(T a, T b) { static_assert(sizeof(T) == 0, ""); return b; }
 
-namespace fwk {
-
-template <class T>
-void loadFromStream(Maybe<T> &obj, Stream &sr) {
-	char exists;
-	sr >> exists;
-	if(exists) {
-		T tmp;
-		sr >> tmp;
-		obj = tmp;
-	}
-	else {
-		obj = {};
-	}
-}
-
-template <class T>
-void saveToStream(const Maybe<T> &obj, Stream &sr) {
-	sr << char(obj? 1 : 0);
-	if(obj)
-		sr << *obj;
-}
-
 // TODO: validation of data from files / net / etc.
 // TODO: serialization of enum should automatically verify the enum
 template <class T, EnableIfEnum<T>...> bool validEnum(T value) {
 	return (int)value >= 0 && (int)value < count<T>();
 }
-
-}
-
-using namespace fwk;
 
 // TODO: remove this mapping
 using Color = IColor;
@@ -120,10 +91,10 @@ inline int3 ceil(const float3 &v) {
 
 const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float angle);
 
-void encodeInt(Stream &sr, int value);
-int decodeInt(Stream &sr);
+void encodeInt(MemoryStream &sr, int value);
+int decodeInt(MemoryStream &sr);
 
-uint toFlags(const char *input, CSpan<const char*> strings, uint first_flag);
+uint toFlags(const char *input, CSpan<const char *> strings, uint first_flag);
 
 struct MoveVector {
 	MoveVector(const int2 &start, const int2 &end);
@@ -190,7 +161,7 @@ struct IntervalF {
 	IntervalF operator/(float val) const { return operator*(1.0f / val); }
 
 	bool isValid() const { return min <= max; }
-	
+
 	float min, max;
 };
 

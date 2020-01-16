@@ -10,9 +10,9 @@ namespace game {
 	class IdleOrder: public OrderImpl<IdleOrder, OrderTypeId::idle> {
 	public:
 		IdleOrder();
-		IdleOrder(Stream&);
+		IdleOrder(MemoryStream&);
 
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		void cancel() override;
 
 		float m_fancy_anim_time;

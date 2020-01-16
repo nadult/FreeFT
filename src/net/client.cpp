@@ -1,11 +1,8 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include <memory.h>
-#include <cstdio>
-#include <fwk/sys/rollback.h>
-
 #include "net/client.h"
+
 #include "game/actor.h"
 #include "game/world.h"
 #include "net/host.h"
@@ -28,30 +25,28 @@ namespace net {
 
 		while(getLobbyPacket(packet)) {
 			// TODO: verify that this is ok
-			RollbackContext::begin([&]() {
-				LobbyChunkId chunk_id;
-				packet >> chunk_id;
+			// TODO: validation in net module needs rethinking
+			LobbyChunkId chunk_id;
+			packet >> chunk_id;
 
-				if(chunk_id == LobbyChunkId::server_list) {
-					while(packet.pos() < packet.size()) {
-						ServerStatusChunk chunk;
-						packet >> chunk;
-
-						if(chunk.address.isValid())
-							out.push_back(chunk);
-					}
+			if(chunk_id == LobbyChunkId::server_list) {
+				while(!packet.atEnd()) {
+					ServerStatusChunk chunk;
+					packet >> chunk;
+					if(chunk.address.isValid())
+						out.push_back(chunk);
 				}
-				any_packets = true;
-			});
+			}
+			any_packets = true;
 		}
 
 		return any_packets;
 	}
 
 	void Client::requestLobbyData() {
-		OutPacket request(0, -1, -1, PacketInfo::flag_lobby);
+		OutPacket request({0, -1, -1, PacketInfo::flag_lobby});
 		request << LobbyChunkId::server_list_request;
-		sendLobbyPacket(request);
+		sendLobbyPacket(request.data());
 	}
 		
 	void Client::connect(Address address, const string &nick_name, const string &password) {
@@ -59,9 +54,9 @@ namespace net {
 			disconnect();
 
 		{
-			OutPacket punch_through(0, -1, -1, PacketInfo::flag_lobby);
+			OutPacket punch_through({0, -1, -1, PacketInfo::flag_lobby});
 			punch_through << LobbyChunkId::join_request << address.ip << address.port;
-			sendLobbyPacket(punch_through);
+			sendLobbyPacket(punch_through.data());
 		}
 
 		m_nick_name = nick_name;
@@ -69,9 +64,9 @@ namespace net {
 		m_server_id = addRemoteHost(m_server_address, -1);
 		if(m_server_id != -1) {
 			RemoteHost *host = getRemoteHost(m_server_id);
-			TempPacket chunk;
+			auto chunk = memorySaver();
 			chunk << m_nick_name << password;
-			host->enqueChunk(chunk, ChunkType::join, 0);
+			host->enqueChunk(chunk.data(), ChunkType::join, 0);
 			m_mode = Mode::connecting;
 		}
 	}
@@ -81,7 +76,7 @@ namespace net {
 			RemoteHost *host = getRemoteHost(m_server_id);
 			if(host) {
 				beginSending(m_server_id);
-				host->enqueUChunk("", 0, ChunkType::leave, 0, 0);
+				host->enqueUChunk({}, ChunkType::leave, 0, 0);
 				finishSending();
 				removeRemoteHost(m_server_id);
 				m_server_id = -1;
@@ -136,7 +131,7 @@ namespace net {
 		}
 
 		if(m_mode == Mode::world_updated) {
-			host->enqueChunk("", 0, ChunkType::level_loaded, 0);
+			host->enqueChunk(cspan("", 0), ChunkType::level_loaded, 0);
 			m_mode = Mode::playing;
 		}
 
@@ -201,12 +196,12 @@ namespace net {
 			m_world->addEntity(PEntity(new_entity), chunk.chunkId());
 		}
 	}
-		
-	void Client::sendMessage(net::TempPacket &packet, int target_id) {
+
+	void Client::sendMessage(CSpan<char> data, int target_id) {
 		DASSERT(target_id == -1);
 		RemoteHost *server = getRemoteHost(m_server_id);
 		if(server)
-			server->enqueChunk(packet.data(), packet.pos(), ChunkType::message, 1);
+			server->enqueChunk(data, ChunkType::message, 1);
 	}
 
 }

@@ -6,6 +6,7 @@
 #include "grid.h"
 #include <algorithm>
 #include <fwk/gfx/texture.h>
+#include <fwk/sys/stream.h>
 
 enum { max_levels = 16 };
 

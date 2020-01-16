@@ -10,11 +10,11 @@ namespace game {
 
 	LookAtOrder::LookAtOrder(float3 target) :m_target(target) { }
 
-	LookAtOrder::LookAtOrder(Stream &sr) {
+	LookAtOrder::LookAtOrder(MemoryStream &sr) {
 		sr >> m_target;
 	}
 
-	void LookAtOrder::save(Stream &sr) const {
+	void LookAtOrder::save(MemoryStream &sr) const {
 		sr << m_target;
 	}
 

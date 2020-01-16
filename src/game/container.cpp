@@ -36,7 +36,7 @@ namespace game {
 		}
 	}
 
-	Container::Container(Stream &sr) :EntityImpl(sr) {
+	Container::Container(MemoryStream &sr) :EntityImpl(sr) {
 		sr.unpack(m_state, m_target_state);
 		m_update_anim = false;
 		sr >> m_inventory;
@@ -49,7 +49,7 @@ namespace game {
 		initialize();
 	}
 
-	void Container::save(Stream &sr) const {
+	void Container::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		sr.pack(m_state, m_target_state);
 		sr << m_inventory;

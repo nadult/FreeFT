@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <set>
 #include <zip.h>
+#include <fwk/sys/stream.h>
+#include <fwk/filesystem.h>
+#include <fwk/sys/expected.h>
+#include <fwk/enum_map.h>
 
 using game::Sprite;
 using game::Tile;
@@ -108,7 +112,7 @@ struct SoundProxy: public audio::Sound {
 
 DEFINE_ENUM(ResTypeId, sprite, tile, map, sound, image, music, archive);
 
-static const EnumMap<ResTypeId, const char*> s_old_suffix = {
+static const EnumMap<ResTypeId, const char*> s_old_suffix = {{
 	".spr",
 	".til",
 	".mis",
@@ -116,9 +120,9 @@ static const EnumMap<ResTypeId, const char*> s_old_suffix = {
 	".zar",
 	".mp3",
 	".bos"
-};
+}};
 
-static const EnumMap<ResTypeId, const char*> s_new_suffix = {
+static const EnumMap<ResTypeId, const char*> s_new_suffix = {{
 	".sprite",
 	".tile",
 	".xml",
@@ -126,9 +130,9 @@ static const EnumMap<ResTypeId, const char*> s_new_suffix = {
 	".zar",
 	".mp3",
 	nullptr
-};
+}};
 
-static const EnumMap<ResTypeId, const char*> s_new_path = {
+static const EnumMap<ResTypeId, const char*> s_new_path = {{
 	"data/sprites/",
 	"data/tiles/",
 	"data/maps/",
@@ -136,12 +140,13 @@ static const EnumMap<ResTypeId, const char*> s_new_path = {
 	"data/gui/",
 	"data/music/",
 	nullptr
-};
+}};
 
 void convert(ResTypeId type, Stream &ldr, Stream &svr) {
 	ASSERT(type != ResTypeId::archive);
 
-	try {
+	// TODO: handle errors
+	//try {
 		if(type == ResTypeId::sprite) {
 			Sprite res;
 			res.legacyLoad(ldr);
@@ -149,7 +154,7 @@ void convert(ResTypeId type, Stream &ldr, Stream &svr) {
 		}
 		else if(type == ResTypeId::tile) {
 			Tile res;
-			res.legacyLoad(ldr, svr.name());
+			res.legacyLoad(ldr);
 			res.save(svr);
 		}
 		else if(type == ResTypeId::map) {
@@ -173,10 +178,9 @@ void convert(ResTypeId type, Stream &ldr, Stream &svr) {
 				svr.saveData(buffer, to_copy);
 			}*/
 		}
-	}
-	catch(const Exception &ex) {
-		printf("Error while converting %s:\n%s\n\n", ldr.name(), ex.what());
-	}
+	//} catch(const Exception &ex) {
+	//	printf("Error while converting %s:\n%s\n\n", ldr.name(), ex.what());
+	//}
 }
 
 template <class TResource>
@@ -194,7 +198,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 		FilePath path = file_names[n].path.relative(main_path);
 		FilePath dir = FilePath(dst_dir) / path.parent();
 		if(access(dir.c_str(), R_OK) != 0)
-			mkdirRecursive(dir.c_str());
+			mkdirRecursive(dir.c_str()).checked();
 	}
 	
 	if(!detailed) {
@@ -203,7 +207,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 	}
 
 #pragma omp parallel for
-	for(uint n = 0; n < file_names.size(); n++) {
+	for(int n = 0; n < file_names.size(); n++) {
 		if(!detailed && n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
 			fflush(stdout);
@@ -224,7 +228,8 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 				FilePath new_path = FilePath(dst_dir) / path.parent() / (name + new_ext);
 				FilePath parent = new_path.parent();
 
-				try {
+				// TODO: handle errors
+				//try {
 					TResource resource;
 					Loader source(full_path);
 					double time = getTime();
@@ -241,9 +246,9 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 						total_before += source.size();
 #pragma omp atomic
 						total_after += target.size();
-				} catch(const Exception &ex) {
-					printf("Error while converting: %s:\n%s\n%s\n\n", full_path.c_str(), ex.what(), ex.backtrace().c_str());
-				}
+				//} catch(const Exception &ex) {
+				//	printf("Error while converting: %s:\n%s\n%s\n\n", full_path.c_str(), ex.what(), ex.backtrace().c_str());
+				//}
 			}
 		}
 	}
@@ -367,7 +372,7 @@ void convertAll(const char *fot_path, const string &filter) {
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			FilePath dir = target_dir / FilePath(it->first).parent();
 			if(access(dir.c_str(), R_OK) != 0)
-				mkdirRecursive(dir.c_str());
+				mkdirRecursive(dir.c_str()).checked();
 		}
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
@@ -436,7 +441,7 @@ void convertAll(const char *fot_path, const string &filter) {
 
 				FilePath dir = FilePath(dst_path).parent();
 				if(access(dir.c_str(), R_OK) != 0)
-					mkdirRecursive(dir.c_str());
+					mkdirRecursive(dir.c_str()).checked();
 
 				MemoryLoader ldr(data);
 				Saver svr(dst_path);
@@ -462,7 +467,7 @@ void convertAll(const char *fot_path, const string &filter) {
 	printf("\nDone.\n");
 }
 
-int safe_main(int argc, char **argv) {
+int main(int argc, char **argv) {
 	string command, path, filter;
 	int jobs = 0;
 
@@ -567,16 +572,3 @@ int safe_main(int argc, char **argv) {
 
 	return 0;
 }
-
-
-int main(int argc, char **argv) {
-	try {
-		return safe_main(argc, argv);
-	}
-	catch(const Exception &ex) {
-		printf("%s\n\nBacktrace:\n%s\n", ex.what(), ex.backtrace().c_str());
-		return 1;
-	}
-	catch(...) { return 1; }
-}
-

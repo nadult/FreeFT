@@ -7,6 +7,7 @@
 #include <cstring>
 #include <fwk/gfx/texture.h>
 #include <fwk/math/rotation.h>
+#include <fwk/sys/stream.h>
 
 namespace game
 {

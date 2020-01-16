@@ -48,7 +48,7 @@ namespace game
 	class Door: public EntityImpl<Door, DoorProto, EntityId::door>
 	{
 	public:
-		Door(Stream&);
+		Door(MemoryStream&);
 		Door(CXmlNode);
 		Door(const DoorProto &proto);
 
@@ -63,7 +63,7 @@ namespace game
 		void setDirAngle(float angle) override;
 
 		XmlNode save(XmlNode) const override;
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		const FBox boundingBox() const override;
 
 		void onImpact(DamageType damage_type, float damage, const float3 &force, EntityRef source) override;

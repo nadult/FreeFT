@@ -11,11 +11,11 @@ namespace game {
 	IdleOrder::IdleOrder() :m_fancy_anim_time(2.0f) {
 	}
 
-	IdleOrder::IdleOrder(Stream &sr) :OrderImpl(sr) {
+	IdleOrder::IdleOrder(MemoryStream &sr) :OrderImpl(sr) {
 		sr.unpack(m_fancy_anim_time);
 	}
 
-	void IdleOrder::save(Stream &sr) const {
+	void IdleOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr.pack(m_fancy_anim_time);
 	}

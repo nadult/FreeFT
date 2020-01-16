@@ -17,6 +17,7 @@
 #include "game/character.h"
 
 #include <fwk/sys/on_fail.h>
+#include <fwk/sys/stream.h>
 
 namespace game {
 
@@ -76,7 +77,7 @@ namespace game {
 		bool s_is_loaded = false;
 	}
 		
-	ProtoIndex::ProtoIndex(Stream &sr) {
+	ProtoIndex::ProtoIndex(MemoryStream &sr) {
 		sr >> m_type;
 		if(m_type) {
 			m_idx = decodeInt(sr);
@@ -99,7 +100,7 @@ namespace game {
 		}
 	}
 		
-	void ProtoIndex::save(Stream &sr) const {
+	void ProtoIndex::save(MemoryStream &sr) const {
 		sr << m_type;
 		if(isValid())
 			encodeInt(sr, m_idx);

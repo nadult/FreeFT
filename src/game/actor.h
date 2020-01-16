@@ -123,7 +123,7 @@ namespace game {
 
 	class Actor: public EntityImpl<Actor, ActorArmourProto, EntityId::actor, ThinkingEntity> {
 	public:
-		Actor(Stream&);
+		Actor(MemoryStream&);
 		Actor(CXmlNode);
 		Actor(const Proto &proto, Stance stance = Stance::stand);
 		Actor(const Actor &rhs, const Proto &new_proto);
@@ -137,7 +137,7 @@ namespace game {
 		void onImpact(DamageType, float damage, const float3 &force, EntityRef source) override;
 
 		XmlNode save(XmlNode) const override;
-		void save(Stream &) const override;
+		void save(MemoryStream &) const override;
 
 		SurfaceId surfaceUnder() const;
 		WeaponClass equippedWeaponClass() const;

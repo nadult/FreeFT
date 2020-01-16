@@ -11,11 +11,11 @@ namespace game {
 	DeathMatchServer::ClientInfo::ClientInfo()
 		:next_respawn_time(respawn_delay), kills(0), self_kills(0), deaths(0), is_respawning(false) { }
 
-	void DeathMatchServer::ClientInfo::save(Stream &sr) const {
+	void DeathMatchServer::ClientInfo::save(MemoryStream &sr) const {
 		sr.pack(next_respawn_time, kills, self_kills, deaths, is_respawning);
 	}
 
-	void DeathMatchServer::ClientInfo::load(Stream &sr) {
+	void DeathMatchServer::ClientInfo::load(MemoryStream &sr) {
 		sr.unpack(next_respawn_time, kills, self_kills, deaths, is_respawning);
 	}
 
@@ -84,7 +84,7 @@ namespace game {
 		}
 	}
 
-	void DeathMatchServer::onMessage(Stream &sr, MessageId msg_type, int source_id) {
+	void DeathMatchServer::onMessage(MemoryStream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::update_client_info) {
 		}
 		else
@@ -92,11 +92,11 @@ namespace game {
 	}
 		
 	void DeathMatchServer::replicateClientInfo(int client_id, int target_id) {
-		net::TempPacket chunk;
-		chunk << MessageId::update_client_info;
-		chunk.encodeInt(client_id);
-		chunk << m_client_infos[client_id];
-		m_world.sendMessage(chunk, target_id);
+		auto temp = memorySaver();
+		temp << MessageId::update_client_info;
+		encodeInt(temp, client_id);
+		temp << m_client_infos[client_id];
+		m_world.sendMessage(temp.data(), target_id);
 	}
 		
 	void DeathMatchServer::onClientConnected(int client_id, const string &nick_name) {
@@ -124,7 +124,7 @@ namespace game {
 			m_current_info.next_respawn_time -= time_diff;
 	}
 	
-	void DeathMatchClient::onMessage(Stream &sr, MessageId msg_type, int source_id) {
+	void DeathMatchClient::onMessage(MemoryStream &sr, MessageId msg_type, int source_id) {
 		if(msg_type == MessageId::update_client_info) {
 			ClientInfo new_info;
 			int client_id = decodeInt(sr);

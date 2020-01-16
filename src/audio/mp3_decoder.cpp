@@ -5,6 +5,8 @@
 #include "audio/sound.h"
 #include <mpg123.h>
 
+#include <fwk/sys/stream.h>
+
 namespace audio {
 
 	static int s_num_decoders = 0;

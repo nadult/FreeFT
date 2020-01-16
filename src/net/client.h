@@ -52,7 +52,7 @@ namespace net {
 
 	protected:
 		void entityUpdate(InChunk &chunk);
-		void sendMessage(net::TempPacket&, int target_id) override;
+		void sendMessage(CSpan<char>, int target_id) override;
 
 	private:
 		LevelInfoChunk m_level_info;

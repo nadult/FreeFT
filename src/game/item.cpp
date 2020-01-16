@@ -67,7 +67,7 @@ namespace game {
 		return sprite.getFrame(m_proto->seq_ids[small?2 : 1], 0, 0, tex_rect, false);
 	}
 
-	void Item::save(Stream &sr) const {
+	void Item::save(MemoryStream &sr) const {
 		sr << index();
 	}
 
@@ -82,13 +82,13 @@ namespace game {
 		playSequence(m_proto.seq_ids[0], false);
 	}
 
-	ItemEntity::ItemEntity(Stream &sr) :EntityImpl(sr), m_item(m_proto) {
+	ItemEntity::ItemEntity(MemoryStream &sr) :EntityImpl(sr), m_item(m_proto) {
 		m_count = decodeInt(sr);
 		ASSERT(m_count > 0);
 		playSequence(m_proto.seq_ids[0], false);
 	}
 
-	void ItemEntity::save(Stream &sr) const {
+	void ItemEntity::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		encodeInt(sr, m_count);
 	}

@@ -4,6 +4,7 @@
 #include "game/level.h"
 #include <algorithm>
 #include <zlib.h>
+#include <fwk/sys/stream.h>
 
 namespace game {
 

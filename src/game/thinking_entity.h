@@ -47,12 +47,12 @@ namespace game {
 	public:
 		ThinkingEntity(const Sprite &sprite);
 		ThinkingEntity(const Sprite &sprite, CXmlNode);
-		ThinkingEntity(const Sprite &sprite, Stream&);
+		ThinkingEntity(const Sprite &sprite, MemoryStream&);
 		ThinkingEntity(const ThinkingEntity&);
 		~ThinkingEntity();
 		
 		XmlNode save(XmlNode parent) const override;
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		
 		template <class TAI, class ...Args>
 		void attachAI(World *world, const Args&... args);

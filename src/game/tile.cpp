@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <fwk/gfx/texture.h>
 #include <fwk/gfx/renderer2d.h>
+#include <fwk/sys/stream.h>
 
 namespace game
 {
@@ -83,7 +84,7 @@ namespace game
 				(m_walk_through? (FlagsType)0 : Flags::colliding);
 	}
 			
-	void Tile::legacyLoad(Stream &sr, const char *name) {
+	void Tile::legacyLoad(Stream &sr) {
 		ASSERT(sr.isLoading());
 
 		sr.signature("<tile>", 7);

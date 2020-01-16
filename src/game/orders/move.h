@@ -11,9 +11,9 @@ namespace game {
 	class MoveOrder: public OrderImpl<MoveOrder, OrderTypeId::move> {
 	public:
 		MoveOrder(const int3 &target_pos, bool run);
-		MoveOrder(Stream&);
+		MoveOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 		int3 m_target_pos;
 		Path m_path;

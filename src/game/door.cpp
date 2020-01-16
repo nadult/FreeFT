@@ -68,7 +68,7 @@ namespace game {
 		{ DoorState::opened_out,	DoorState::closed,		DoorState::closing_out },
 	};
 
-	Door::Door(Stream &sr) :EntityImpl(sr) {
+	Door::Door(MemoryStream &sr) :EntityImpl(sr) {
 		sr.unpack(m_close_time, m_update_anim, m_state);
 		m_bbox = computeBBox(m_state);
 		initializeOpenDir();
@@ -87,7 +87,7 @@ namespace game {
 		return node;
 	}
 
-	void Door::save(Stream &sr) const {
+	void Door::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		sr.pack(m_close_time, m_update_anim, m_state);
 	}

@@ -80,7 +80,7 @@ namespace game {
 		return float(sum);
 	}
 
-	void Inventory::save(Stream &sr) const {
+	void Inventory::save(MemoryStream &sr) const {
 		encodeInt(sr, size());
 		for(int n = 0; n < size(); n++) {
 			encodeInt(sr, m_entries[n].count);
@@ -88,7 +88,7 @@ namespace game {
 		}
 	}
 
-	void Inventory::load(Stream &sr) {
+	void Inventory::load(MemoryStream &sr) {
 		int count = decodeInt(sr);
 		ASSERT(count >= 0 && count <= max_entries);
 
@@ -244,7 +244,7 @@ namespace game {
 		return Inventory::empty() && m_weapon.isDummy() && m_armour.isDummy() && (m_ammo.item.isDummy() || m_ammo.count == 0);
 	}
 
-	void ActorInventory::save(Stream &sr) const {
+	void ActorInventory::save(MemoryStream &sr) const {
 		Inventory::save(sr);
 		sr << u8(	(!m_weapon.isDummy()? 1 : 0) |
 					(!m_armour.isDummy()? 2 : 0) |
@@ -260,7 +260,7 @@ namespace game {
 		}
 	}
 
-	void ActorInventory::load(Stream &sr) {
+	void ActorInventory::load(MemoryStream &sr) {
 		Inventory::load(sr);
 		u8 flags;
 		sr >> flags;

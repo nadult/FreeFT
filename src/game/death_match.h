@@ -4,6 +4,7 @@
 #pragma once
 
 #include "game/game_mode.h"
+#include <map>
 
 namespace game {
 
@@ -18,12 +19,12 @@ namespace game {
 
 		GameModeId typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
-		void onMessage(Stream&, MessageId, int source_id) override;
+		void onMessage(MemoryStream&, MessageId, int source_id) override;
 
 		struct ClientInfo {
 			ClientInfo();
-			void save(Stream&) const;
-			void load(Stream&);
+			void save(MemoryStream&) const;
+			void load(MemoryStream&);
 
 			double next_respawn_time;
 			int kills, self_kills, deaths;
@@ -47,7 +48,7 @@ namespace game {
 
 		GameModeId typeId() const override { return GameModeId::death_match; }
 		void tick(double time_diff) override;
-		void onMessage(Stream&, MessageId, int source_id) override;
+		void onMessage(MemoryStream&, MessageId, int source_id) override;
 		
 		const vector<GameClientStats> stats() const override;
 		const UserMessage userMessage(UserMessageType) override;

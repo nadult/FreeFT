@@ -4,36 +4,14 @@
 #pragma once
 
 #include "game/base.h"
+#include <fwk/sys/stream.h>
 
 namespace net {
-
 	namespace limits {
-
-		enum {
-			packet_size = 1400,
-
-			max_clients = 64,
-			min_nick_name_size = 4,
-			max_nick_name_size = 14,
-			max_password_size = 10,
-		};
-
+		inline constexpr int packet_size = 1400, recv_packet_size = 2048, max_clients = 64,
+							 min_nick_name_size = 4, max_nick_name_size = 14,
+							 max_password_size = 10;
 	}
-
-	class TempPacket: public Stream {
-	public:
-		TempPacket() :Stream(false) { m_size = 0; }
-
-		const char *data() const { return m_data; }
-		int spaceLeft() const { return sizeof(m_data) - m_pos; }
-
-		void encodeInt(int value) { ::encodeInt(*this, value); }
-
-	protected:
-		virtual void v_save(const void *ptr, int size) final;
-
-		char m_data[limits::packet_size];
-	};
 
 	struct SeqNumber {
 	public:
@@ -73,31 +51,22 @@ namespace net {
 		u16 port;
 	};
 
-	void encodeInt3(Stream&, const int3 &value);
-	const int3 decodeInt3(Stream&);
+	void encodeInt3(MemoryStream &, const int3 &value);
+	const int3 decodeInt3(MemoryStream &);
 
-	DEFINE_ENUM(LobbyChunkId,
-		server_status,
-		server_down,
-		server_list,
-		server_list_request, // TODO: filters
-		join_request,
-		punch_through
-	);
+	DEFINE_ENUM(LobbyChunkId, server_status, server_down, server_list,
+				server_list_request, // TODO: filters
+				join_request, punch_through);
 
-	DEFINE_ENUM(RefuseReason,
-		wrong_password,
-		nick_already_used,
-		server_full
-	);
+	DEFINE_ENUM(RefuseReason, wrong_password, nick_already_used, server_full);
 
 	const char *describe(RefuseReason);
 
 	struct ServerStatusChunk {
 		ServerStatusChunk() :num_players(0), max_players(0), is_passworded(false) { }
 
-		void save(Stream &sr) const;
-		void load(Stream &sr);
+		void save(MemoryStream &sr) const;
+		void load(MemoryStream &sr);
 
 		Address address;
 		string server_name;
@@ -108,8 +77,8 @@ namespace net {
 	};
 
 	struct LevelInfoChunk {
-		void save(Stream &sr) const;
-		void load(Stream &sr);
+		void save(MemoryStream &sr) const;
+		void load(MemoryStream &sr);
 
 		bool isValid() const { return !map_name.empty(); }
 
@@ -118,5 +87,7 @@ namespace net {
 	};
 
 }
+
+template <> static constexpr bool is_flat_data<net::SeqNumber> = true;
 
 SERIALIZE_AS_POD(net::SeqNumber)

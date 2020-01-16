@@ -13,9 +13,9 @@ namespace game {
 		//TODO: better attack targets (more user friendly, it's hard to click on moving characters)
 		AttackOrder(Maybe<AttackMode>, EntityRef target);
 		AttackOrder(Maybe<AttackMode>, const float3 &target_pos);
-		AttackOrder(Stream&);
+		AttackOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 		EntityRef m_target;
 		Maybe<AttackMode> m_mode;

@@ -18,11 +18,11 @@ namespace game {
 		m_spawn_limit = node.attrib<int>("spawn_limit", 0);
 	}
 
-	Trigger::Trigger(Stream &sr) :Entity(Sprite::getDummy(), sr) {
+	Trigger::Trigger(MemoryStream &sr) :Entity(Sprite::getDummy(), sr) {
 		sr >> m_box_size >> m_class_id >> m_faction_id >> m_spawn_delay >> m_spawn_limit;
 	}
 		
-	void Trigger::save(Stream &sr) const {
+	void Trigger::save(MemoryStream &sr) const {
 		Entity::save(sr);
 		sr << m_box_size << m_class_id << m_faction_id << m_spawn_delay << m_spawn_limit;
 	}

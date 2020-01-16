@@ -33,24 +33,24 @@ namespace net {
 		m_channel_id = channel_id;
 	}
 
-	void Chunk::setData(const char *data, int data_size) {
+	void Chunk::setData(CSpan<char> data) {
 		clearData();
 
-		DASSERT(data_size >= 0 && data_size <= PacketInfo::max_size);
-		if(data_size > (int)sizeof(m_data)) {
-			int left_over_size = data_size - sizeof(m_data);
+		DASSERT(data.size() >= 0 && data.size() <= PacketInfo::max_size);
+		if(data.size() > (int)sizeof(m_data)) {
+			int left_over_size = data.size() - sizeof(m_data);
 			m_left_over = (char*)malloc(left_over_size);
-			memcpy(m_left_over, data + sizeof(m_data), left_over_size);
+			memcpy(m_left_over, data.data() + sizeof(m_data), left_over_size);
 		}
-		memcpy(m_data, data, min((int)sizeof(m_data), data_size));
-		m_data_size = data_size;
+		memcpy(m_data, data.data(), min((int)sizeof(m_data), data.size()));
+		m_data_size = data.size();
 	}
 
-	void Chunk::saveData(Stream &out) const {
-		out.saveData(m_data, min((int)sizeof(m_data), (int)m_data_size));
+	void Chunk::saveData(MemoryStream &out) const {
+		out.saveData(cspan(m_data, min((int)sizeof(m_data), (int)m_data_size)));
 		if(m_data_size > (int)sizeof(m_data)) {
 			DASSERT(m_left_over);
-			out.saveData(m_left_over, m_data_size - (int)sizeof(m_data));
+			out.saveData(cspan(m_left_over, m_data_size - (int)sizeof(m_data)));
 		}
 	}
 
@@ -62,27 +62,22 @@ namespace net {
 		m_data_size = 0;
 	}
 
-	InChunk::InChunk(const Chunk &chunk) :Stream(true), m_chunk(chunk) {
+	vector<char> Chunk::data() const {
+		PodVector<char> out(m_data_size);
+		// TODO: operations on spans are not so convenient...
+		copy(out, cspan(m_data, min((int)sizeof(m_data), (int)m_data_size)));
+		if(m_data_size > (int)sizeof(m_data)) {
+			DASSERT(m_left_over);
+			memcpy(out.data(), m_left_over, m_data_size - (int)sizeof(m_data));
+		}
+		vector<char> vout;
+		out.unsafeSwap(vout);
+		return vout;
+	}
+
+
+	// TODO: lot's of redundant layers
+	InChunk::InChunk(const Chunk &chunk) :MemoryStream(chunk.data()), m_chunk(chunk) {
 		DASSERT(m_chunk.m_type != ChunkType::invalid);
-		m_size = chunk.m_data_size;
-		m_pos = 0;
 	}
-
-	void InChunk::v_load(void *ptr, int count) {
-		DASSERT(ptr && count <= m_size - m_pos);
-
-		if((int)m_pos < (int)sizeof(Chunk::m_data)) {
-			int tcount = min(count, (int)sizeof(Chunk::m_data) - (int)m_pos);
-			memcpy(ptr, m_chunk.m_data + m_pos, tcount);
-			count -= tcount;
-			m_pos += tcount;
-			ptr = (char*)ptr + tcount;
-		}
-		if(count) {
-			DASSERT(m_chunk.m_left_over);
-			memcpy(ptr, m_chunk.m_left_over + m_pos - (int)sizeof(Chunk::m_data), count);
-			m_pos += count;
-		}
-	}
-
 }

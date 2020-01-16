@@ -18,7 +18,7 @@ namespace game {
 		flag_has_following_orders = 2,
 	};
 
-	ThinkingEntity::ThinkingEntity(const Sprite &sprite, Stream &sr) :Entity(sprite, sr) {
+	ThinkingEntity::ThinkingEntity(const Sprite &sprite, MemoryStream &sr) :Entity(sprite, sr) {
 		u8 flags;
 		sr >> flags;
 
@@ -38,7 +38,7 @@ namespace game {
 		return Entity::save(parent);
 	}
 
-	void ThinkingEntity::save(Stream &sr) const {
+	void ThinkingEntity::save(MemoryStream &sr) const {
 		Entity::save(sr);
 
 		u8 flags =	(m_order? flag_has_order : 0) |

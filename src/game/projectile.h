@@ -21,11 +21,11 @@ namespace game {
 	class Projectile: public EntityImpl<Projectile, ProjectileProto, EntityId::projectile> {
 	public:
 		Projectile(const ProjectileProto &Proto, float initial_ang, const float3 &dir, EntityRef spawner, float damage_mod);
-		Projectile(Stream&);
+		Projectile(MemoryStream&);
 		
 		void addToRender(SceneRenderer &out, Color color) const override;
 
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		XmlNode save(XmlNode parent) const override;
 
 		Flags::Type flags() const override { return Flags::projectile | Flags::dynamic_entity; }

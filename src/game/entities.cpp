@@ -38,7 +38,7 @@ namespace game {
 
 	//TODO: properly saving enums (so that they take less space)
 	//TODO: endianess
-	Entity* Entity::construct(Stream &sr) {
+	Entity* Entity::construct(MemoryStream &sr) {
 		EntityId entity_type;
 		sr >> entity_type;
 

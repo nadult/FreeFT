@@ -18,9 +18,9 @@ namespace game {
 
 		Trigger(TriggerClassId class_id, const FBox &box);
 		Trigger(CXmlNode);
-		Trigger(Stream&);
+		Trigger(MemoryStream&);
 		
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		XmlNode save(XmlNode parent) const override;
 		
 		Entity *clone() const override;

@@ -71,7 +71,7 @@ namespace game {
 				anim_idx[TurretAction::hidden] != invalid_anim_id;
 	}
 
-	Turret::Turret(Stream &sr)
+	Turret::Turret(MemoryStream &sr)
 	  :EntityImpl(sr) {
 		m_hit_points = decodeInt(sr);
 		sr.unpack(m_target_angle, m_action);
@@ -93,7 +93,7 @@ namespace game {
 		return EntityImpl::save(parent);
 	}
 
-	void Turret::save(Stream &sr) const {
+	void Turret::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		encodeInt(sr, m_hit_points);
 		sr.pack(m_target_angle, m_action);

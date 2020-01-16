@@ -429,12 +429,12 @@ namespace game {
 			m_replicator->replicateEntity(index);
 	}
 		
-	void World::sendMessage(net::TempPacket &packet, int target_id) {
+	void World::sendMessage(CSpan<char> data, int target_id) {
 		if(m_replicator)
-			m_replicator->sendMessage(packet, target_id);
+			m_replicator->sendMessage(data, target_id);
 	}
 
-	void World::onMessage(Stream &sr, int source_id) {
+	void World::onMessage(MemoryStream &sr, int source_id) {
 		MessageId message_id;
 		sr >> message_id;
 
@@ -460,10 +460,10 @@ namespace game {
 		}
 
 		if(m_mode == Mode::server) {
-			net::TempPacket chunk;
-			chunk << MessageId::sound << sound_type << audio::SoundIndex((int)sound_id, 1);
-			net::encodeInt3(chunk, int3(pos));
-			sendMessage(chunk);
+			auto temp = memorySaver();
+			temp << MessageId::sound << sound_type << audio::SoundIndex((int)sound_id, 1);
+			net::encodeInt3(temp, int3(pos));
+			sendMessage(temp.data());
 			// TODO: send unreliable packet with short life span
 			//       (if RemoteHost couldn't send it in 50ms, then drop it)
 		}

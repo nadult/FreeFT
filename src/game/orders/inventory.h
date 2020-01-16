@@ -11,9 +11,9 @@ namespace game {
 	class DropItemOrder: public OrderImpl<DropItemOrder, OrderTypeId::drop_item> {
 	public:
 		DropItemOrder(Item item, int count);
-		DropItemOrder(Stream&);
+		DropItemOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 		Item m_item;
 		int m_count;
@@ -22,9 +22,9 @@ namespace game {
 	class EquipItemOrder: public OrderImpl<EquipItemOrder, OrderTypeId::equip_item> {
 	public:
 		EquipItemOrder(Item item);
-		EquipItemOrder(Stream&);
+		EquipItemOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 		Item m_item;
 	};
@@ -32,9 +32,9 @@ namespace game {
 	class UnequipItemOrder: public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item> {
 	public:
 		UnequipItemOrder(ItemType);
-		UnequipItemOrder(Stream&);
+		UnequipItemOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 		
 		ItemType m_item_type;
 	};
@@ -47,9 +47,9 @@ namespace game {
 	class TransferItemOrder: public OrderImpl<TransferItemOrder, OrderTypeId::transfer_item> {
 	public:
 		TransferItemOrder(EntityRef target, TransferMode mode, Item item, int count);
-		TransferItemOrder(Stream&);
+		TransferItemOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 		
 		EntityRef m_target;
 		TransferMode m_mode;

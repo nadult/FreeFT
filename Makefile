@@ -43,7 +43,7 @@ SHARED_SRC=\
 	audio/device audio/sound audio/device_music audio/mp3_decoder \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
-	fwk_bit_vector
+	fwk_bit_vector memory_stream
 
 PROGRAM_SRC=editor game res_viewer convert lobby_server
 
@@ -78,7 +78,7 @@ MINGW_PKG_CONFIG=$(MINGW_PREFIX)pkg-config
 
 INCLUDES=-Isrc/ $(FWK_INCLUDES)
 
-NICE_FLAGS=-std=c++1z -fno-exceptions -fno-omit-frame-pointer -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
+NICE_FLAGS=-std=c++2a -fno-exceptions -fno-omit-frame-pointer -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
 		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
 LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`

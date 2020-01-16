@@ -2,24 +2,23 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "game/actor.h"
-#include "game/sprite.h"
-#include "game/projectile.h"
-#include "game/tile.h"
-#include "game/world.h"
-#include "game/weapon.h"
-#include "game/game_mode.h"
 #include "game/all_orders.h"
-#include "sys/data_sheet.h"
-#include "net/socket.h"
+#include "game/game_mode.h"
+#include "game/projectile.h"
+#include "game/sprite.h"
+#include "game/tile.h"
+#include "game/weapon.h"
+#include "game/world.h"
 #include "gfx/scene_renderer.h"
+#include "net/socket.h"
+#include "sys/data_sheet.h"
 #include <fwk/math/rotation.h>
 
 //#define DEBUG_SHOOTING
 
 namespace game {
 
-	Actor::Actor(Stream &sr)
-	  :EntityImpl(sr), m_actor(*m_proto.actor) {
+	Actor::Actor(MemoryStream &sr) : EntityImpl(sr), m_actor(*m_proto.actor) {
 		m_inventory.setDummyWeapon(Weapon(*m_actor.punch_weapon));
 
 		u8 flags;
@@ -96,7 +95,7 @@ namespace game {
 		m_sound_variation = rhs.m_sound_variation;
 		m_hit_points = rhs.m_hit_points;
 	}
-	
+
 	XmlNode Actor::save(XmlNode parent) const {
 		auto node = EntityImpl::save(parent);
 		node.addAttrib("faction_id", m_faction_id);
@@ -106,7 +105,7 @@ namespace game {
 		return node;
 	}
 
-	void Actor::save(Stream &sr) const {
+	void Actor::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		u8 flags =	(m_target_angle != dirAngle()? 1 : 0);
 
@@ -120,16 +119,17 @@ namespace game {
 			sr << m_target_angle;
 		sr << m_inventory;
 	}
-		
+
 	FlagsType Actor::flags() const {
-		return Flags::actor | Flags::dynamic_entity | (isDead()? (FlagsType)0 : Flags::colliding);
+		return Flags::actor | Flags::dynamic_entity | (isDead() ? (FlagsType)0 : Flags::colliding);
 	}
-		
+
 	const FBox Actor::boundingBox() const {
 		int3 bbox_size = sprite().bboxSize();
 		if(m_stance == Stance::crouch)
 			bbox_size.y = 6;
-		if(m_stance == Stance::prone || isOneOf(m_action, Action::fallen_back, Action::fallen_forward))
+		if(m_stance == Stance::prone ||
+		   isOneOf(m_action, Action::fallen_back, Action::fallen_forward))
 			bbox_size.y = 2;
 		if(isDead())
 			bbox_size.y = 0;
@@ -150,17 +150,21 @@ namespace game {
 			bmax.y -= 1.0f;
 		}
 
-		return tile? tile->surfaceId() : SurfaceId::unknown;
+		return tile ? tile->surfaceId() : SurfaceId::unknown;
 	}
-		
+
 	float Actor::dodgeChance(DamageType type, float damage) const {
-		return	type == DamageType::bludgeoning ||
-				type == DamageType::slashing ||
-				type == DamageType::piercing? 0.2f : 0.0f;
+		return type == DamageType::bludgeoning || type == DamageType::slashing ||
+					   type == DamageType::piercing
+				   ? 0.2f
+				   : 0.0f;
 	}
 
 	float Actor::fallChance(DamageType type, float damage, const float3 &force_vec) const {
-		float force = length(force_vec) * (m_action == Action::walk? 1.25f : m_action == Action::run? 1.5f : 1.0f) * 0.2f - 0.5f;
+		float force =
+			length(force_vec) *
+				(m_action == Action::walk ? 1.25f : m_action == Action::run ? 1.5f : 1.0f) * 0.2f -
+			0.5f;
 		if(type == DamageType::bludgeoning || type == DamageType::explosive)
 			force *= 1.25f;
 

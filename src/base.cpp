@@ -23,7 +23,7 @@ enum {
 	max3 = 1024 * 1024 * 512,
 };
 
-void encodeInt(Stream &sr, int value) {
+void encodeInt(MemoryStream &sr, int value) {
 	if(value >= -min0 && value < max0 - min0) {
 		value += min0;
 		sr.pack(u8(0x00 + value));
@@ -43,26 +43,26 @@ void encodeInt(Stream &sr, int value) {
 	}
 }
 
-int decodeInt(Stream &sr) {
+int decodeInt(MemoryStream &sr) {
 	u8 first_byte, bytes[4];
-	sr.loadData(&first_byte, 1);
+	sr >> first_byte;
 
 	u8 header = first_byte & 0xc0;
 	if(header == 0x00) {
 		return (first_byte & 0x3f) - min0;
 	} else if(header == 0x40) {
-		sr.loadData(bytes, 1);
+		sr.loadData(span(bytes, 1));
 		return (i32(first_byte & 0x3f) | (i32(bytes[0]) << 6)) - min1;
 	} else if(header == 0x80) {
-		sr.loadData(bytes, 2);
+		sr.loadData(span(bytes, 2));
 		return (i32(first_byte & 0x3f) | (i32(bytes[0]) << 6) | (i32(bytes[1]) << 14)) - min2;
 	} else {
 		if(first_byte == 0xff) {
-			sr.loadData(bytes, 4);
+			sr.loadData(span(bytes, 4));
 			return (i32(bytes[0]) | (i32(bytes[1]) << 8) | (i32(bytes[2]) << 16) |
 					(i32(bytes[3]) << 24));
 		} else {
-			sr.loadData(bytes, 3);
+			sr.loadData(span(bytes, 3));
 			return (i32(first_byte & 0x1f) | i32(bytes[0] << 5) | (i32(bytes[1]) << 13) |
 					(i32(bytes[2]) << 21)) -
 				   min3;

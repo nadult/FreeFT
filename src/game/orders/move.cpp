@@ -11,12 +11,12 @@ namespace game {
 	MoveOrder::MoveOrder(const int3 &target_pos, bool run)
 		:m_target_pos(target_pos), m_please_run(run) { }
 
-	MoveOrder::MoveOrder(Stream &sr) :OrderImpl(sr) {
+	MoveOrder::MoveOrder(MemoryStream &sr) :OrderImpl(sr) {
 		m_target_pos = net::decodeInt3(sr);
 		sr >> m_please_run >> m_path >> m_path_pos;
 	}
 
-	void MoveOrder::save(Stream &sr) const {
+	void MoveOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		net::encodeInt3(sr, m_target_pos);
 		sr << m_please_run << m_path << m_path_pos;

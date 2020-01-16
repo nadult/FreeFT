@@ -13,11 +13,11 @@ namespace game {
 		:m_target(target), m_mode(mode), m_is_followup(false) {
 	}
 
-	InteractOrder::InteractOrder(Stream &sr) :OrderImpl(sr) {
+	InteractOrder::InteractOrder(MemoryStream &sr) :OrderImpl(sr) {
 		sr >> m_target >> m_mode >> m_is_followup;
 	}
 
-	void InteractOrder::save(Stream &sr) const {
+	void InteractOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		sr << m_target << m_mode << m_is_followup;
 	}

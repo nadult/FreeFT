@@ -14,9 +14,9 @@ namespace game {
 	public:
 		GetHitOrder(bool has_dodged);
 		GetHitOrder(const float3 &force, float fall_time);
-		GetHitOrder(Stream&);
+		GetHitOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 
 			
 		enum class Mode: char {

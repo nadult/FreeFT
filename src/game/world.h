@@ -19,7 +19,7 @@ namespace game {
 		virtual ~Replicator() = default;
 		virtual void replicateEntity(int entity_id) { }
 		virtual void replicateOrder(POrder&&, EntityRef) { }
-		virtual void sendMessage(net::TempPacket&, int target_id) = 0;
+		virtual void sendMessage(CSpan<char> data, int target_id) = 0;
 		//TODO: inform replicator about entity priorities
 		// most basic: which entity belongs to which client
 	};
@@ -116,7 +116,7 @@ namespace game {
 		void setReplicator(Replicator*);
 		void replicate(int entity_id);
 		void replicate(const Entity*);
-		void onMessage(Stream&, int source_id);
+		void onMessage(MemoryStream&, int source_id);
 
 		//TODO: single function with replication as a parameter
 		// in some objects we can check if sound is played in the first frame or not
@@ -125,7 +125,7 @@ namespace game {
 
 		bool sendOrder(Order*, EntityRef actor_ref);
 		bool sendOrder(POrder &&order, EntityRef actor_ref);
-		void sendMessage(net::TempPacket&, int target_id = -1);
+		void sendMessage(CSpan<char> data, int target_id = -1);
 		
 		int filterIgnoreIndex(const FindFilter &filter) const;
 

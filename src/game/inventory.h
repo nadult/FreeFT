@@ -39,8 +39,8 @@ namespace game {
 		int size() const { return (int)m_entries.size(); }
 		const Entry &operator[](int idx) const { return m_entries[idx]; }
 
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 	protected:
 		vector<Entry> m_entries;
@@ -69,8 +69,8 @@ namespace game {
 		const Entry  &ammo  () const { return m_ammo; }
 		bool useAmmo(int count);
 
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 	protected:
 		Weapon m_weapon, m_dummy_weapon;

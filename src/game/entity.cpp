@@ -49,7 +49,7 @@ namespace game {
 		flag_has_overlay = 8,
 	};
 
-	Entity::Entity(const Sprite &sprite, Stream &sr) :EntityWorldProxy(sr), m_sprite(sprite) {
+	Entity::Entity(const Sprite &sprite, MemoryStream &sr) :EntityWorldProxy(sr), m_sprite(sprite) {
 		resetAnimState();
 
 		u8 flags;
@@ -87,7 +87,7 @@ namespace game {
 		playSequence(0, false);
 	}
 
-	void Entity::save(Stream &sr) const {
+	void Entity::save(MemoryStream &sr) const {
 		EntityWorldProxy::save(sr);
 
 		bool can_compress =

@@ -7,12 +7,11 @@ typedef int socklen_t;
 
 #else
 
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #endif
 
@@ -85,6 +84,34 @@ namespace net {
 		return string(buf);
 	}
 
+	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, int flags_)
+		: protocol_id(valid_protocol_id), packet_id(packet_id) {
+		DASSERT(current_id_ >= -1 && current_id <= max_host_id);
+		DASSERT(remote_id_ >= -1 && remote_id <= max_host_id);
+		DASSERT((flags_ & ~0xff) == 0);
+
+		current_id = current_id_;
+		remote_id = remote_id_;
+		flags = flags_;
+	}
+
+	void PacketInfo::save(MemoryStream &sr) const {
+		sr.pack(protocol_id, packet_id, current_id, remote_id, flags);
+	}
+	void PacketInfo::load(MemoryStream &sr) {
+		sr.unpack(protocol_id, packet_id, current_id, remote_id, flags);
+	}
+
+	InPacket::InPacket() : MemoryStream(cspan("", 0)) {}
+	InPacket::InPacket(PodVector<char> data) : MemoryStream(move(data), true) { *this >> info; }
+	InPacket::InPacket(InPacket &&) = default;
+	InPacket &InPacket::operator=(InPacket &&rhs) = default;
+
+	OutPacket::OutPacket(PacketInfo info)
+		: MemoryStream(memorySaver(limits::packet_size)), info(info) {
+		*this << info;
+	}
+
 	Socket::Socket(const Address &address) {
 #ifdef _WIN32
 		static bool wsock_initialized = false;
@@ -134,13 +161,14 @@ namespace net {
 		swap(m_fd, rhs.m_fd);
 		rhs.close();
 	}
-	
-	int Socket::receive(char *buffer, int buffer_size, Address &source) {
+
+	int Socket::receive(Span<char> buffer, Address &source) {
 		DASSERT(m_fd);
 
 		sockaddr_in addr;
 		socklen_t addr_len = sizeof(addr);
-		int len = recvfrom(m_fd, buffer, buffer_size, 0, (struct sockaddr*)&addr, &addr_len);
+		int len =
+			recvfrom(m_fd, buffer.data(), buffer.size(), 0, (struct sockaddr *)&addr, &addr_len);
 		fromSockAddr(&addr, source);
 
 #ifdef RELIABILITY_TEST
@@ -151,68 +179,30 @@ namespace net {
 		//TODO: handle errors
 		return len < 0? 0 : len;
 	}
-		
-	int Socket::receive(InPacket &packet, Address &source) {
-		int new_size = receive(packet.m_data, sizeof(packet.m_data), source);
+
+	RecvResult Socket::receive(InPacket &packet, Address &source) {
+		auto data = packet.extractBuffer();
+		data.resize(limits::recv_packet_size);
+
+		auto new_size = receive(data, source);
 		if(new_size == 0)
-			return 0;
-
+			return RecvResult::empty;
 		if(new_size < PacketInfo::header_size)
-			return -1;
+			return RecvResult::invalid;
 
-		packet.ready(new_size);
-		if(packet.info().protocol_id != PacketInfo::valid_protocol_id)
-			return -1;
-
-		return new_size;
+		data.resize(new_size);
+		packet = move(data);
+		return packet.info.valid()? RecvResult::valid : RecvResult::invalid;
 	}
 
-	void Socket::send(const char *data, int size, const Address &target) {
+	void Socket::send(CSpan<char> data, const Address &target) {
 		DASSERT(m_fd);
 
 		sockaddr_in addr;
 		toSockAddr(target, &addr);
-		int ret = sendto(m_fd, data, size, 0, (struct sockaddr*)&addr, sizeof(addr));
+		int ret = sendto(m_fd, data.data(), data.size(), 0, (struct sockaddr *)&addr, sizeof(addr));
 		if(ret < 0) {
 			//TODO: handle errors
 		}
 	}
-
-	void Socket::send(const OutPacket &packet, const Address &target) {
-		send(packet.data(), packet.size(), target);
-	}
-		
-	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, int flags_)
-		:protocol_id(valid_protocol_id), packet_id(packet_id) {
-		DASSERT(current_id_ >= -1 && current_id <= max_host_id);
-		DASSERT(remote_id_ >= -1 && remote_id <= max_host_id);
-		DASSERT((flags_ & ~0xff) == 0);
-
-		current_id = current_id_;
-		remote_id = remote_id_;
-		flags = flags_;
-	}
-	
-	void PacketInfo::save(Stream &sr) const {
-		sr.pack(protocol_id, packet_id, current_id, remote_id, flags);
-	}
-	void PacketInfo::load(Stream &sr) {
-		sr.unpack(protocol_id, packet_id, current_id, remote_id, flags);
-	}
-
-	void InPacket::v_load(void *ptr, int count) {
-		memcpy(ptr, m_data + m_pos, count);
-		m_pos += count;
-	}
-
-	void InPacket::ready(int new_size) {
-		m_size = new_size;
-		m_pos = 0;
-		*this >> m_info;
-	}
-		
-	OutPacket::OutPacket(SeqNumber packet_id, int current_id, int remote_id, int flags) :OutPacket() {
-		*this << PacketInfo(packet_id, current_id, remote_id, flags);
-	}
-
 }

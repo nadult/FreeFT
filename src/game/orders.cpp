@@ -11,7 +11,7 @@
 
 namespace game {
 
-	Order *Order::construct(Stream &sr) {
+	Order *Order::construct(MemoryStream &sr) {
 		OrderTypeId order_id;
 		sr >> order_id;
 
@@ -38,7 +38,7 @@ namespace game {
 
 	Order::Order() :m_is_finished(false), m_please_cancel(false) { }
 	
-	Order::Order(Stream &sr) {
+	Order::Order(MemoryStream &sr) {
 		u8 flags;
 		sr >> flags;
 
@@ -48,7 +48,7 @@ namespace game {
 		m_please_cancel = flags & 4;
 	}
 
-	void Order::save(Stream &sr) const {
+	void Order::save(MemoryStream &sr) const {
 		u8 flags =	(m_followup? 1 : 0) |
 					(m_is_finished? 2 : 0) |
 					(m_please_cancel? 4 : 0);

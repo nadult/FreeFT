@@ -28,9 +28,9 @@ namespace game {
 	class Impact: public EntityImpl<Impact, ImpactProto, EntityId::impact> {
 	public:
 		Impact(const ImpactProto&, EntityRef source, EntityRef target, float damage_mod);
-		Impact(Stream&);
+		Impact(MemoryStream&);
 
-		void save(Stream&) const override;
+		void save(MemoryStream&) const override;
 		XmlNode save(XmlNode parent) const override;
 		void addToRender(SceneRenderer &out, Color color) const override;
 

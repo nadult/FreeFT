@@ -3,6 +3,8 @@
 
 #include "audio/sound.h"
 
+#include <fwk/sys/stream.h>
+
 namespace audio
 {
 

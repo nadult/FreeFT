@@ -32,12 +32,12 @@ namespace game {
 	//				this->pos().x, this->pos().y, this->pos().z, m_dir.x, m_dir.z);
 	}
 
-	Projectile::Projectile(Stream &sr) :EntityImpl(sr) {
+	Projectile::Projectile(MemoryStream &sr) :EntityImpl(sr) {
 		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_distance, m_impact_created);
 		sr >> m_spawner;
 	}
 
-	void Projectile::save(Stream &sr) const {
+	void Projectile::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_distance, m_impact_created);
 		sr << m_spawner;

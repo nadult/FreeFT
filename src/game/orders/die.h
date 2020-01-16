@@ -10,9 +10,9 @@ namespace game {
 	class DieOrder: public OrderImpl<DieOrder, OrderTypeId::die> {
 	public:
 		DieOrder(DeathId death_id);
-		DieOrder(Stream&);
+		DieOrder(MemoryStream&);
 
-		void save(Stream&) const;
+		void save(MemoryStream&) const;
 		
 		DeathId m_death_id;
 		bool m_is_dead;

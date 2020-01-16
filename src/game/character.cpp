@@ -17,7 +17,7 @@ namespace game {
 		validate();
 	}
 		
-	Character::Character(Stream &sr) { load(sr); }
+	Character::Character(MemoryStream &sr) { load(sr); }
 		
 	void Character::validate() {
 		ASSERT(m_name.size() <= max_name_size);
@@ -25,11 +25,11 @@ namespace game {
 		ASSERT(m_proto_idx.isValid());
 	}
 
-	void Character::save(Stream &sr) const {
+	void Character::save(MemoryStream &sr) const {
 		sr << m_name << m_icon_name << m_proto_idx;
 	}
 
-	void Character::load(Stream &sr) {
+	void Character::load(MemoryStream &sr) {
 		sr >> m_name >> m_icon_name;
 		m_proto_idx = ProtoIndex(sr);
 		validate();
@@ -136,18 +136,18 @@ namespace game {
 
 	PlayableCharacter::~PlayableCharacter() { }
 		
-	PlayableCharacter::PlayableCharacter(Stream &sr) :m_character(sr), m_class_id(CharacterClass::defaultId()) {
+	PlayableCharacter::PlayableCharacter(MemoryStream &sr) :m_character(sr), m_class_id(CharacterClass::defaultId()) {
 		sr >> m_entity_ref;
 		m_class_id = decodeInt(sr);
 		ASSERT(CharacterClass::isValidId(m_class_id));
 	}
 
-	void PlayableCharacter::save(Stream &sr) const {
+	void PlayableCharacter::save(MemoryStream &sr) const {
 		sr << m_character << m_entity_ref;
 		encodeInt(sr, m_class_id);
 	}
 
-	void PlayableCharacter::load(Stream &sr) {
+	void PlayableCharacter::load(MemoryStream &sr) {
 		*this = PlayableCharacter(sr);
 	}
 		

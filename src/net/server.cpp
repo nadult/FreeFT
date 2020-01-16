@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <list>
 #include <algorithm>
-#include <fwk/sys/rollback.h>
 
 #include "game/world.h"
 #include "game/game_mode.h"
@@ -62,12 +61,11 @@ namespace net {
 
 	Server::~Server() {
 		//TODO: inform clients that server is closing
+		//TODO: proper error handling
 
-		RollbackContext::begin([&]() {
-			OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
-			out << LobbyChunkId::server_down;
-			sendLobbyPacket(out);
-			});
+		OutPacket out({0, -1, -1, PacketInfo::flag_lobby});
+		out << LobbyChunkId::server_down;
+		sendLobbyPacket(out.data());
 	}
 		
 	int Server::numActiveClients() const {
@@ -88,7 +86,8 @@ namespace net {
 	void Server::handleHostReceiving(RemoteHost &host, int client_id) {
 		ClientInfo &client = m_clients[client_id];
 
-		while( const Chunk *chunk_ptr = host.getIChunk() ) {
+		char buffer[limits::packet_size];
+		while(const Chunk *chunk_ptr = host.getIChunk()) {
 			InChunk chunk(*chunk_ptr);
 
 			if(chunk.type() == ChunkType::join && client.mode == ClientMode::connecting) {
@@ -115,9 +114,9 @@ namespace net {
 					}
 				
 				if(disconnect) {	
-					TempPacket temp;
+					auto temp = memorySaver();
 					temp << refuse_reason;
-					host.enqueChunk(temp, ChunkType::join_refuse, 0);
+					host.enqueChunk(temp.data(), ChunkType::join_refuse, 0);
 					disconnectClient(client_id);
 					break;
 				}
@@ -128,10 +127,10 @@ namespace net {
 					if(m_world->refEntity(n))
 						client.update_map[n] = true;
 
-				TempPacket temp;
-				temp.encodeInt(client_id);
+				auto temp = memorySaver(buffer);
+				encodeInt(temp, client_id);
 				temp << LevelInfoChunk{ m_world->mapName(), m_world->gameModeId() };
-				host.enqueChunk(temp, ChunkType::join_accept, 0);
+				host.enqueChunk(temp.data(), ChunkType::join_accept, 0);
 
 				printf("Client connected (%d / %d): %s (%s)\n", numActiveClients(), maxPlayers(),
 						client.nick_name.c_str(), host.address().toString().c_str());
@@ -173,6 +172,8 @@ namespace net {
 				
 			int idx = 0;
 			BitVector &map = client.update_map;
+			char buffer[limits::packet_size];
+
 			while(idx < m_world->entityCount()) {
 				if(!map.any(idx >> BitVector::base_shift)) {
 					idx = ((idx >> BitVector::base_shift) + 1) << BitVector::base_shift;
@@ -182,13 +183,10 @@ namespace net {
 				if(map[idx]) {
 					const Entity *entity = m_world->refEntity(idx);
 
-					TempPacket temp;
-
-					if(entity) {
+					auto temp = memorySaver(buffer);
+					if(entity)
 						temp << entity->typeId() << *entity;
-					}
-
-					if(host.enqueUChunk(temp, entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))
+					if(host.enqueUChunk(temp.data(), entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))
 						map[idx] = false;
 					else
 						break;
@@ -220,9 +218,9 @@ namespace net {
 			packet >> target.ip >> target.port;
 
 			if(id == LobbyChunkId::join_request && target.isValid()) {
-				OutPacket punch(0, -1, -1, PacketInfo::flag_lobby);
+				OutPacket punch({0, -1, -1, PacketInfo::flag_lobby});
 				punch << LobbyChunkId::punch_through;
-				m_socket.send(punch, target);
+				m_socket.send(punch.data(), target);
 			}
 		}
 
@@ -286,7 +284,7 @@ namespace net {
 		m_replication_list.clear();
 
 		if(m_current_time >= m_lobby_timeout) {
-			OutPacket out(0, -1, -1, PacketInfo::flag_lobby);
+			OutPacket out({0, -1, -1, PacketInfo::flag_lobby});
 			ServerStatusChunk chunk;
 			chunk.address = Address();
 			//TODO: send map title, which should be shorter
@@ -297,7 +295,7 @@ namespace net {
 			chunk.is_passworded = !m_config.m_password.empty();
 			chunk.game_mode = m_game_mode->typeId();
 			out << LobbyChunkId::server_status << chunk;
-			sendLobbyPacket(out);
+			sendLobbyPacket(out.data());
 			m_lobby_timeout = m_current_time + 10.0;
 		}
 	}
@@ -320,13 +318,13 @@ namespace net {
 		m_replication_list.emplace_back(entity_id);
 	}
 		
-	void Server::sendMessage(net::TempPacket &packet, int target_id) {
+	void Server::sendMessage(CSpan<char> data, int target_id) {
 		for(int c = 0; c < (int)m_clients.size(); c++) {
 			const ClientInfo &client = m_clients[c];
 			if(client.isValid() && (target_id == -1 || c == target_id)) {
 				RemoteHost *host = getRemoteHost(client.host_id);
 				if(host)
-					host->enqueChunk(packet.data(), packet.pos(), ChunkType::message, 1);
+					host->enqueChunk(data, ChunkType::message, 1);
 			}
 		}
 	}

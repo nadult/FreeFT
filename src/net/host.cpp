@@ -1,10 +1,10 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include "net/host.h"
-#include "net/base.h"
-#include <algorithm>
 #include "fwk/sys/rollback.h"
+#include "net/base.h"
+#include "net/host.h"
+#include <algorithm>
 
 //#define LOGGING
 
@@ -70,7 +70,7 @@ namespace net {
 	RemoteHost::RemoteHost(const Address &address, int max_bytes_per_frame, int current_id, int remote_id)
 		:m_address(address), m_max_bpf(max_bytes_per_frame), m_out_packet_id(-1), m_in_packet_id(-1),
 		 m_socket(nullptr), m_current_id(current_id), m_remote_id(remote_id), m_is_verified(false),
-		 m_last_timestamp(0) {
+		 m_last_timestamp(0), m_out_packet(memorySaver(limits::packet_size)) {
 		DASSERT(address.isValid());
 		m_channels.resize(max_channels);
 		m_last_time_received = getTime();
@@ -82,7 +82,7 @@ namespace net {
 
 	void RemoteHost::sendPacket() {
 		logEnd(m_out_packet.size());
-		m_socket->send(m_out_packet, m_address);
+		m_socket->send(m_out_packet.data(), m_address);
 	}
 
 	void RemoteHost::newPacket(bool is_first) {
@@ -90,34 +90,28 @@ namespace net {
 		Packet &packet = m_packets[packet_idx];
 
 		m_out_packet_id++;
-		m_out_packet = OutPacket(m_out_packet_id, m_current_id, m_remote_id, is_first?PacketInfo::flag_first : 0);
+		m_out_packet.clear();
+		m_out_packet << PacketInfo(m_out_packet_id, m_current_id, m_remote_id, is_first? PacketInfo::flag_first : 0);
+
 		packet.packet_id = m_out_packet_id;
 		m_packet_idx = packet_idx;
 		
 		logBegin(true, m_address, m_out_packet_id);
 	}
 
-	void RemoteHost::enqueChunk(const TempPacket &data, ChunkType type, int channel_id) {
-		enqueChunk(data.data(), data.size(), type, channel_id);
-	}
-
-	void RemoteHost::enqueChunk(const char *data, int data_size, ChunkType type, int channel_id) {
+	void RemoteHost::enqueChunk(CSpan<char> data, ChunkType type, int channel_id) {
 	//	DASSERT(isSending());
 		DASSERT(channel_id >= 0 && channel_id < (int)m_channels.size());
 		Channel &channel = m_channels[channel_id];
 
 		int chunk_idx = allocChunk();
-		m_chunks[chunk_idx].setData(data, data_size);
+		m_chunks[chunk_idx].setData(data);
 		m_chunks[chunk_idx].setParams(type, channel.last_chunk_id++, channel_id);
 		INSERT(channel.chunks, chunk_idx);
 	}
 
-	bool RemoteHost::enqueUChunk(const TempPacket &data, ChunkType type, int identifier, int channel_id) {
-		return enqueUChunk(data.data(), data.size(), type, identifier, channel_id);
-	}
-
-	bool RemoteHost::enqueUChunk(const char *data, int data_size, ChunkType type, int identifier, int channel_id) {
-		if(!canFit(data_size))
+	bool RemoteHost::enqueUChunk(CSpan<char> data, ChunkType type, int identifier, int channel_id) {
+		if(!canFit(data.size()))
 			return false;
 
 		sendChunks(channel_id - 1);
@@ -130,7 +124,7 @@ namespace net {
 		UChunk &chunk = m_uchunks[chunk_idx];
 		chunk.chunk_id = identifier;
 		chunk.channel_id = channel_id;
-		return sendUChunk(chunk_idx, data, data_size, type);
+		return sendUChunk(chunk_idx, data, type);
 	}
 		
 	void RemoteHost::sendChunks(int max_channel) {
@@ -164,7 +158,7 @@ namespace net {
 		if(!canFit(chunk.size()))
 			return false;
 
-		if(m_out_packet.spaceLeft() < estimateSize(chunk.size())) {
+		if(m_out_packet.capacityLeft() < estimateSize(chunk.size())) {
 			sendPacket();
 			newPacket(false);
 		}
@@ -173,9 +167,9 @@ namespace net {
 
 		int prev_pos = m_out_packet.pos();
 		m_out_packet << chunk.m_type;
-		m_out_packet.encodeInt(chunk.m_chunk_id);
-		m_out_packet.encodeInt(2 * chunk.m_channel_id + 1);
-		m_out_packet.encodeInt(chunk.size());
+		encodeInt(m_out_packet, chunk.m_chunk_id);
+		encodeInt(m_out_packet, 2 * chunk.m_channel_id + 1);
+		encodeInt(m_out_packet, chunk.size());
 		chunk.saveData(m_out_packet);
 		m_bytes_left -= m_out_packet.pos() - prev_pos;
 
@@ -185,28 +179,27 @@ namespace net {
 		return true;
 	}
 
-	bool RemoteHost::sendUChunk(int chunk_idx, const char *data, int data_size, ChunkType type) {
+	bool RemoteHost::sendUChunk(int chunk_idx, CSpan<char> data, ChunkType type) {
 		DASSERT(chunk_idx >= 0 && chunk_idx < (int)m_uchunks.size());
 		DASSERT(type != ChunkType::ack && type != ChunkType::invalid && type != ChunkType::multiple_chunks);
 
-
-		if(!canFit(data_size))
+		if(!canFit(data.size()))
 			return false;
 
-		if(m_out_packet.spaceLeft() < estimateSize(data_size)) {
+		if(m_out_packet.capacityLeft() < estimateSize(data.size())) {
 			sendPacket();
 			newPacket(false);
 		}
 
 		UChunk &chunk = m_uchunks[chunk_idx];
-		logChunk(type, chunk.chunk_id, data_size);
+		logChunk(type, chunk.chunk_id, data.size());
 
 		int prev_pos = m_out_packet.pos();
 		m_out_packet << type;
-		m_out_packet.encodeInt(chunk.chunk_id);
-		m_out_packet.encodeInt(2 * chunk.channel_id);
-		m_out_packet.encodeInt(data_size);
-		m_out_packet.saveData(data, data_size);
+		encodeInt(m_out_packet, chunk.chunk_id);
+		encodeInt(m_out_packet, 2 * chunk.channel_id);
+		encodeInt(m_out_packet, data.size());
+		m_out_packet.saveData(data);
 		m_bytes_left -= m_out_packet.pos() - prev_pos;
 		listInsert<UChunk, &UChunk::node>(m_uchunks, m_packets[m_packet_idx].uchunks, chunk_idx);
 
@@ -223,7 +216,7 @@ namespace net {
 		for(int n = 0; n < num_acks; n++)
 			logAck(m_out_acks[n]);
 
-		m_out_packet.encodeInt(num_acks);
+		encodeInt(m_out_packet, num_acks);
 		if(num_acks) {
 			m_out_packet << m_out_acks[0];
 			for(int i = 1; i < num_acks;) {
@@ -232,9 +225,9 @@ namespace net {
 				while(i + count < num_acks && int(m_out_acks[i + count]) == int(m_out_acks[i + count - 1]) + 1)
 					count++;
 
-				m_out_packet.encodeInt(diff * 2 + (count > 1? 1 : 0));
+				encodeInt(m_out_packet, diff * 2 + (count > 1? 1 : 0));
 				if(count > 1)
-					m_out_packet.encodeInt(count);
+					encodeInt(m_out_packet, count);
 				i += count;
 			}
 
@@ -275,7 +268,7 @@ namespace net {
 		const Chunk *chunks;
 	};
 
-	void RemoteHost::receive(InPacket &packet, int timestamp, double time) {
+	void RemoteHost::receive(InPacket packet, int timestamp, double time) {
 		m_last_timestamp = timestamp;
 		m_last_time_received = time;
 
@@ -284,7 +277,7 @@ namespace net {
 
 		m_out_acks.push_back(packet.packetId());
 		int idx = m_in_packets.alloc();
-		m_in_packets[idx] = packet;
+		m_in_packets[idx] = move(packet);
 	}
 
 	void RemoteHost::handlePacket(InPacket &packet) {
@@ -325,7 +318,7 @@ namespace net {
 		}
 
 
-		while(!packet.end()) {
+		while(!packet.atEnd()) {
 			ChunkType type;
 			packet >> type;
 
@@ -342,12 +335,12 @@ namespace net {
 				goto ERROR;
 
 			char data[PacketInfo::max_size];
-			packet.loadData(data, data_size);
+			packet.loadData({data, data_size});
 			//TODO: load directly into chunk
 
 			int chunk_idx = allocChunk();
 			Chunk &new_chunk = m_chunks[chunk_idx];
-			new_chunk.setData(data, data_size);
+			new_chunk.setData(cspan(data, data_size));
 		   	new_chunk.setParams(type, chunk_id, channel_id);
 			DASSERT(type != ChunkType::invalid);
 
@@ -526,13 +519,13 @@ ERROR:;
 	bool LocalHost::getLobbyPacket(InPacket &out) {
 		if(m_lobby_packets.empty())
 			return false;
-		out = m_lobby_packets.front();
+		out = move(m_lobby_packets.front());
 		m_lobby_packets.pop_front();
 		return true;
 	}
 		
-	void LocalHost::sendLobbyPacket(const OutPacket &out) {
-		m_socket.send(out, lobbyServerAddress());
+	void LocalHost::sendLobbyPacket(CSpan<char> data) {
+		m_socket.send(data, lobbyServerAddress());
 	}
 
 	void LocalHost::receive() {
@@ -549,23 +542,23 @@ ERROR:;
 			remote->beginReceiving();
 		}
 
+		InPacket packet;
 		while(true) {
-			InPacket packet;
 			Address source;
 
-			int ret = m_socket.receive(packet, source);
-			if(ret == 0)
+			auto result = m_socket.receive(packet, source);
+			if(result == RecvResult::empty)
 				break;
-			if(ret < 0)
+			if(result == RecvResult::invalid)
 				continue;
 			
-			if(packet.flags() & PacketInfo::flag_lobby) {
-				m_lobby_packets.emplace_back(packet);
+			if(packet.info.flags & PacketInfo::flag_lobby) {
+				m_lobby_packets.emplace_back(move(packet));
 				continue;
 			}
 
-			int remote_id = packet.currentId();
-			int current_id = packet.remoteId();
+			int remote_id = packet.info.current_id;
+			int current_id = packet.info.remote_id;
 
 			if(current_id == -1 && m_unverified_count < max_unverified_hosts) {
 				for(int r = 0; r < (int)m_remote_hosts.size(); r++) {
@@ -583,7 +576,7 @@ ERROR:;
 			if(current_id >= 0 && current_id < numRemoteHosts()) {
 				RemoteHost *remote = m_remote_hosts[current_id].get();
 				if(remote && remote->address() == source)
-					m_remote_hosts[current_id]->receive(packet, m_timestamp, current_time);
+					m_remote_hosts[current_id]->receive(move(packet), m_timestamp, current_time);
 			}
 		}
 
@@ -657,14 +650,14 @@ ERROR:;
 	}
 		
 		
-	void LocalHost::enqueChunk(const char *data, int data_size, ChunkType type, int channel_id) {
+	void LocalHost::enqueChunk(CSpan<char> data, ChunkType type, int channel_id) {
 		DASSERT(m_current_id != -1);
-		m_remote_hosts[m_current_id]->enqueChunk(data, data_size, type, channel_id);
+		m_remote_hosts[m_current_id]->enqueChunk(data, type, channel_id);
 	}
 
-	bool LocalHost::enqueUChunk(const char *data, int data_size, ChunkType type, int identifier, int channel_id) {
+	bool LocalHost::enqueUChunk(CSpan<char> data, ChunkType type, int identifier, int channel_id) {
 		DASSERT(m_current_id != -1);
-		return m_remote_hosts[m_current_id]->enqueUChunk(data, data_size, type, identifier, channel_id);
+		return m_remote_hosts[m_current_id]->enqueUChunk(data, type, identifier, channel_id);
 	}
 
 	void LocalHost::finishSending() {

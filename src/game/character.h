@@ -19,10 +19,10 @@ namespace game
 
 		// TODO: different icons match different protos
 		Character(const string &name, const string &icon_name, const string &proto_name);
-		explicit Character(Stream&);
+		explicit Character(MemoryStream&);
 
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 		const string &name() const { return m_name; }
 		const Proto &proto() const { return getProto(m_proto_idx); }
@@ -73,11 +73,11 @@ namespace game
 	class PlayableCharacter: public immutable_base<PlayableCharacter> {
 	public:
 		PlayableCharacter(const Character &character, int class_id);
-		explicit PlayableCharacter(Stream&);
+		explicit PlayableCharacter(MemoryStream&);
 		~PlayableCharacter();
 		
-		void save(Stream&) const;
-		void load(Stream&);
+		void save(MemoryStream&) const;
+		void load(MemoryStream&);
 
 		void setClassId(int id) { m_class_id = id; }
 		int classId() const { return m_class_id; }
