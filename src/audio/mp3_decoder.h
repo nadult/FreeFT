@@ -5,7 +5,6 @@
 
 #include "base.h"
 #include "audio/sound.h"
-#include <mpg123.h> // TODO: not needed
 
 namespace audio {
 
@@ -28,7 +27,7 @@ namespace audio {
 		//alternative: move audio device to separate thread
 	private:
 		Dynamic<Stream> m_stream;
-		mpg123_handle *m_handle;
+		void *m_handle = nullptr;
 		int m_sample_rate, m_num_channels;
 		bool m_is_finished, m_need_data;
 	};

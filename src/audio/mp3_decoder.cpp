@@ -13,20 +13,21 @@ namespace audio {
 
 	//TODO: silence errors
 
-	MP3Decoder::MP3Decoder(const string &file_name) :m_handle(nullptr) {
+	MP3Decoder::MP3Decoder(const string &file_name) {
 		m_stream.reset(new Loader(file_name));
 
 		if(s_num_decoders++ == 0)
 			mpg123_init();
 
 		int ret = 0;
-		m_handle = mpg123_new(0, &ret);
-		if(!m_handle)
+		auto handle = mpg123_new(0, &ret);
+		if(!handle)
 			FATAL("Error while creating mpg123 decoder");
+		m_handle = handle;
 
-		mpg123_open_feed(m_handle);
+		mpg123_open_feed(handle);
 		//TODO: disable output
-		mpg123_param(m_handle, MPG123_VERBOSE, 0.0, 0);
+		mpg123_param(handle, MPG123_VERBOSE, 0.0, 0);
 
 		m_is_finished = false;
 		m_need_data = true;
@@ -36,10 +37,10 @@ namespace audio {
 			if(m_need_data) {
 				PodVector<u8> input(min(4096, (int)(m_stream->size() - m_stream->pos())));
 				m_stream->loadData(input.data(), input.size());
-				ret = mpg123_decode(m_handle, input.data(), input.size(), 0, 0, &size);
+				ret = mpg123_decode(handle, input.data(), input.size(), 0, 0, &size);
 			}
 			else {
-				ret = mpg123_decode(m_handle, 0, 0, 0, 0, &size);
+				ret = mpg123_decode(handle, 0, 0, 0, 0, &size);
 			}
 
 			m_need_data = ret == MPG123_NEED_MORE;
@@ -50,7 +51,7 @@ namespace audio {
 
 		long rate;
 		int enc;
-		mpg123_getformat(m_handle, &rate, &m_num_channels, &enc);
+		mpg123_getformat(handle, &rate, &m_num_channels, &enc);
 		m_sample_rate = rate;
 
 		if(enc != MPG123_ENC_SIGNED_16 || m_num_channels > 2)
@@ -59,7 +60,7 @@ namespace audio {
 
 	MP3Decoder::~MP3Decoder() {
 		if(m_handle)
-			mpg123_delete(m_handle);
+			mpg123_delete((mpg123_handle*)m_handle);
 		if(--s_num_decoders == 0)
 			mpg123_exit();
 	}
@@ -74,6 +75,7 @@ namespace audio {
 
 		PodVector<u8> temp(max_size);
 		int out_pos = 0;
+		auto handle = (mpg123_handle*)m_handle;
 
 		int ret = 0;
 		do {
@@ -88,10 +90,10 @@ namespace audio {
 				PodVector<u8> input(min(4096, bytes_left));
 
 				m_stream->loadData(input.data(), input.size());
-				ret = mpg123_decode(m_handle, input.data(), input.size(), temp.data() + out_pos, max_size - out_pos, &size);
+				ret = mpg123_decode(handle, input.data(), input.size(), temp.data() + out_pos, max_size - out_pos, &size);
 			}
 			else {
-				ret = mpg123_decode(m_handle, 0, 0, temp.data() + out_pos, max_size - out_pos, &size);
+				ret = mpg123_decode(handle, 0, 0, temp.data() + out_pos, max_size - out_pos, &size);
 			}
 
 			m_need_data = ret == MPG123_NEED_MORE;
