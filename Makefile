@@ -1,28 +1,29 @@
-BUILD_DIR=build
-MINGW_PREFIX=i686-w64-mingw32.static-
-LINUX_CXX=clang++
+all: programs
 
--include Makefile.local
+FWK_DIR        = libfwk/
+MODE          ?= debug
+FWK_MODE      ?= release-paranoid
+CFLAGS         = -Isrc/ -fopenmp
+LDFLAGS_gcc    = -lgomp
+LDFLAGS_clang  = -fopenmp
+PCH_SOURCE    := src/freeft_pch.h
+LDFLAGS_linux := -lz -lmpg123 -lzip
+LDFLAGS_mingw := $(LDFLAGS_linux)
+BUILD_DIR      = build/$(if $(findstring linux,$(PLATFORM)),,$(PLATFORM)_)$(MODE)
 
-ifneq (,$(findstring clang,$(LINUX_CXX)))
-CLANG=yes
-endif
+include $(FWK_DIR)Makefile-shared
 
-BUILD_DIR=build
+# --- Creating necessary sub-directories ----------------------------------------------------------
 
-_dummy := $(shell [ -d $(BUILD_DIR) ] || mkdir -p $(BUILD_DIR))
-_dummy := $(shell [ -d $(BUILD_DIR)/gfx ] || mkdir -p $(BUILD_DIR)/gfx)
-_dummy := $(shell [ -d $(BUILD_DIR)/ui ] || mkdir -p $(BUILD_DIR)/ui)
-_dummy := $(shell [ -d $(BUILD_DIR)/sys ] || mkdir -p $(BUILD_DIR)/sys)
-_dummy := $(shell [ -d $(BUILD_DIR)/net ] || mkdir -p $(BUILD_DIR)/net)
-_dummy := $(shell [ -d $(BUILD_DIR)/audio ] || mkdir -p $(BUILD_DIR)/audio)
-_dummy := $(shell [ -d $(BUILD_DIR)/io ] || mkdir -p $(BUILD_DIR)/io)
-_dummy := $(shell [ -d $(BUILD_DIR)/game ] || mkdir -p $(BUILD_DIR)/game)
-_dummy := $(shell [ -d $(BUILD_DIR)/game/orders ] || mkdir -p $(BUILD_DIR)/game/orders)
-_dummy := $(shell [ -d $(BUILD_DIR)/hud ] || mkdir -p $(BUILD_DIR)/hud)
-_dummy := $(shell [ -d $(BUILD_DIR)/editor ] || mkdir -p $(BUILD_DIR)/editor)
+SUBDIRS        = build
+BUILD_SUBDIRS  = gfx ui sys net audio io game game/orders hud editor
 
-SHARED_SRC=\
+_dummy := $(shell mkdir -p $(SUBDIRS))
+_dummy := $(shell mkdir -p $(addprefix $(BUILD_DIR)/,$(BUILD_SUBDIRS)))
+
+# --- Lists of source files -----------------------------------------------------------------------
+
+SHARED_SRC := \
 	gfx/texture_cache gfx/drawing gfx/scene_renderer gfx/packed_texture \
 	sys/frame_allocator sys/config sys/data_sheet \
 	net/socket net/base net/chunk net/host net/server net/client \
@@ -45,87 +46,61 @@ SHARED_SRC=\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
 	fwk_bit_vector memory_stream
 
-PROGRAM_SRC=editor game res_viewer convert lobby_server
+PROGRAM_SRC    := editor game res_viewer convert lobby_server
 
-ALL_SRC=$(PROGRAM_SRC) $(SHARED_SRC)
+ALL_SRC        := $(PROGRAM_SRC) $(SHARED_SRC)
 
-LINUX_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%.o)
-MINGW_OBJECTS:=$(ALL_SRC:%=$(BUILD_DIR)/%_.o)
+OBJECTS        := $(ALL_SRC:%=$(BUILD_DIR)/%.o)
+SHARED_OBJECTS := $(SHARED_SRC:%=$(BUILD_DIR)/%.o)  $(LIBS_SRC:%=$(BUILD_DIR)/%.o)
 
-LINUX_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD_DIR)/%.o)  $(LIBS_SRC:%=$(BUILD_DIR)/%.o)
-MINGW_SHARED_OBJECTS:=$(SHARED_SRC:%=$(BUILD_DIR)/%_.o) $(LIBS_SRC:%=$(BUILD_DIR)/%_.o)
+PROGRAMS       := $(PROGRAM_SRC:%=%$(PROGRAM_SUFFIX))
+programs: $(PROGRAMS)
 
-LINUX_PROGRAMS:=$(PROGRAM_SRC:%=%)
-MINGW_PROGRAMS:=$(PROGRAM_SRC:%=%.exe)
 
-all: $(LINUX_PROGRAMS) $(MINGW_PROGRAMS)
+# --- Build targets -------------------------------------------------------------------------------
 
-FWK_DIR=libfwk
-include $(FWK_DIR)/Makefile.include
+$(OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_TARGET)
+	$(COMPILER) -MMD $(CFLAGS) $(PCH_CFLAGS) -c src/$*.cpp -o $@
 
-LIBS=-pthread
-LINUX_LIBS=$(LIBS) $(LINUX_FWK_LIBS) -lz -lmpg123
-MINGW_LIBS=$(LIBS) $(MINGW_FWK_LIBS) -lz -lmpg123
+$(PROGRAMS): %$(PROGRAM_SUFFIX): $(SHARED_OBJECTS) $(BUILD_DIR)/%.o $(FWK_LIB_FILE)
+	$(LINKER) -o $@ $^ -Wl,--export-dynamic $(LDFLAGS)
+	@echo MODE=$(MODE) COMPILER=$(COMPILER) > build/last_build.txt
 
-SPECIAL_LIBS_convert=-lzip 
+DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_TEMP).d
 
-LINUX_STRIP=strip
-LINUX_PKG_CONFIG=pkg-config
+# --- Clean targets -------------------------------------------------------------------------------
 
-MINGW_CXX=$(MINGW_PREFIX)g++
-MINGW_STRIP=$(MINGW_PREFIX)strip
-MINGW_PKG_CONFIG=$(MINGW_PREFIX)pkg-config
+JUNK          := $(OBJECTS) $(PROGRAMS) $(DEPS) $(PCH_JUNK)
+EXISTING_JUNK := $(call filter-existing,$(SUBDIRS),$(JUNK))
+print-junk:
+	@echo $(EXISTING_JUNK)
+ALL_JUNK = $(sort $(shell \
+	for platform in $(VALID_PLATFORMS) ; do for mode in $(VALID_MODES) ; do \
+		$(MAKE) PLATFORM=$$platform MODE=$$mode print-junk -s ; \
+	done ; done))
 
-INCLUDES=-Isrc/ $(FWK_INCLUDES)
-
-NICE_FLAGS=-std=c++2a -fno-exceptions -fno-omit-frame-pointer -ggdb -Wall -Woverloaded-virtual -Wnon-virtual-dtor -Werror=return-type \
-		   -Wno-reorder -Wno-uninitialized -Wno-unused-function -Wno-unused-variable -Wparentheses -Wno-overloaded-virtual
-LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
-MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
-
-PCH_FILE_SRC=src/freeft_pch.h
-
-PCH_FILE_H=$(BUILD_DIR)/freeft_pch_.h
-PCH_FILE_GCH=$(BUILD_DIR)/freeft_pch_.h.gch
-PCH_FILE_PCH=$(BUILD_DIR)/freeft_pch_.h.pch
-
-ifdef CLANG
-	PCH_INCLUDE=-include-pch $(PCH_FILE_PCH)
-	PCH_FILE_MAIN=$(PCH_FILE_PCH)
-else
-	PCH_INCLUDE=-I$(BUILD_DIR) -include $(PCH_FILE_H)
-	PCH_FILE_MAIN=$(PCH_FILE_GCH)
+clean:
+ifneq ($(EXISTING_JUNK),)
+	-rm -f $(EXISTING_JUNK)
 endif
+	find $(SUBDIRS) -type d -empty -delete
 
-$(PCH_FILE_H): $(PCH_FILE_SRC)
-	cp $^ $@
-$(PCH_FILE_MAIN): $(PCH_FILE_H)
-	$(LINUX_CXX) -x c++-header -MMD $(LINUX_FLAGS) $(PCH_FILE_H) -o $@
+clean-all:
+	-rm -f $(ALL_JUNK)
+	find $(SUBDIRS) -type d -empty -delete
+	$(MAKE) $(FWK_MAKE_ARGS) clean-all
 
-$(LINUX_OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_FILE_MAIN)
-	$(LINUX_CXX) -MMD $(LINUX_FLAGS) $(PCH_INCLUDE) -c src/$*.cpp -o $@
+clean-libfwk:
+	$(MAKE) $(FWK_MAKE_ARGS) clean
 
-$(MINGW_OBJECTS): $(BUILD_DIR)/%_.o: src/%.cpp
-	$(MINGW_CXX) $(MINGW_FLAGS) -c src/$*.cpp -o $@
+# --- Other stuff ---------------------------------------------------------------------------------
 
-$(LINUX_PROGRAMS): %:     $(LINUX_SHARED_OBJECTS) $(BUILD_DIR)/%.o  $(LINUX_FWK_LIB)
-	$(LINUX_CXX) -o $@ $^ -Wl,--export-dynamic $(SPECIAL_LIBS_$@) $(LINUX_LIBS)
+# Recreates dependency files, in case they got outdated
+depends: $(PCH_FILE_MAIN)
+	@echo $(ALL_SRC) | tr '\n' ' ' | xargs -P16 -t -d' ' -I '{}' $(COMPILER) $(CFLAGS) $(PCH_CFLAGS) \
+		src/'{}'.cpp -MM -MF $(BUILD_DIR)/'{}'.d -MT $(BUILD_DIR)/'{}'.o -E > /dev/null
 
-$(MINGW_PROGRAMS): %.exe: $(MINGW_SHARED_OBJECTS) $(BUILD_DIR)/%_.o $(MINGW_FWK_LIB)
-	$(MINGW_CXX) -o $@ $^  $(SPECIAL_LIBS_$*) $(MINGW_LIBS)
-	$(MINGW_STRIP) $@
-
-DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_FILE_H).d
-
-game-clean:
-	-rm -f $(LINUX_OBJECTS) $(LINUX_LIB_OBJECTS) $(MINGW_LIB_OBJECTS) $(MINGW_OBJECTS) $(LINUX_PROGRAMS) \
-			$(MINGW_PROGRAMS) $(DEPS) $(PCH_FILE_GCH) $(PCH_FILE_PCH) $(PCH_FILE_H)
-	find $(BUILD_DIR) -type d -empty -delete
-
-clean: game-clean
-	$(MAKE) -C $(FWK_DIR) clean
-
-.PHONY: game-clean clean
+.PHONY: clean clean-libfwk clean-all
 
 -include $(DEPS)
 

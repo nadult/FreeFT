@@ -13,8 +13,8 @@ Compiled binaries can be downloaded from SourceForge
 
 
 ## Building
-To compile Clang 3.7 or newer is recommended. G++ 4.9 or newer can also be used.
-Following libraries are required as well:
+To compile a linux environment with Clang 8.0 is recommended (G++ 9.0 or newer can also be used).
+Following libraries are required:
 
 * libfwk (included as submodule):
 	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)
@@ -23,10 +23,11 @@ Following libraries are required as well:
 * zlib, OpenAL, mpg123, libzip:  
 	these should be available in your distro's package repositories
 
-To build for windows, you have to cross-compile with MinGW. The easiest way
-is with MXE ([http://mxe.cc](http://mxe.cc)).  
-Just make sure to use GCC6 plugin with posix threads (set MXE\_GCC\_THREADS to posix).  
-    
+To build for windows, you have to cross-compile with MinGW.
+The easiest way is with MXE ([http://mxe.cc](http://mxe.cc)) with followinf flags:  
+
+	export MXE\_TARGETS=x86_64-w64-mingw32.static
+	export MXE\_PLUGIN\_DIRS=plugins/gcc9
 
 ## Running
 To run this program, resources from original Fallout Tactics are required.
