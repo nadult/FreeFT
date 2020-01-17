@@ -61,8 +61,11 @@ namespace net {
 
 	}
 
-#define INSERT(list, id) listInsert<Chunk, &Chunk::m_node>(m_chunks, list, id)
-#define REMOVE(list, id) listRemove<Chunk, &Chunk::m_node>(m_chunks, list, id)
+#define INSERT(list, idx) listInsert([this](int i) -> ListNode& { return m_chunks[i].m_node; }, list, idx)
+#define REMOVE(list, idx) listRemove([this](int i) -> ListNode& { return m_chunks[i].m_node; }, list, idx)
+
+#define U_INSERT(list, idx) listInsert([this](int i) -> ListNode& { return m_uchunks[i].node; }, list, idx)
+#define U_REMOVE(list, idx) listRemove([this](int i) -> ListNode& { return m_uchunks[i].node; }, list, idx)
 
 	RemoteHost::RemoteHost(const Address &address, int max_bytes_per_frame, int current_id, int remote_id)
 		:m_address(address), m_max_bpf(max_bytes_per_frame), m_out_packet_id(-1), m_in_packet_id(-1),
@@ -198,10 +201,20 @@ namespace net {
 		encodeInt(m_out_packet, data.size());
 		m_out_packet.saveData(data);
 		m_bytes_left -= m_out_packet.pos() - prev_pos;
-		listInsert<UChunk, &UChunk::node>(m_uchunks, m_packets[m_packet_idx].uchunks, chunk_idx);
+		U_INSERT(m_packets[m_packet_idx].uchunks, chunk_idx);
 
 		return true;
 	}
+	
+	int RemoteHost::allocChunk() {
+		return freeListAlloc([&](int idx) -> ListNode & { return m_chunks[idx].m_node; }, m_chunks, m_free_chunks);
+	}
+	int RemoteHost::allocUChunk() {
+		return freeListAlloc([&](int idx) -> ListNode & { return m_uchunks[idx].node; }, m_uchunks, m_free_uchunks);
+	}
+
+	void RemoteHost::freeChunk(int idx) { INSERT(m_free_chunks, idx); }
+	void RemoteHost::freeUChunk(int idx) { U_INSERT(m_free_uchunks, idx); }
 
 	void RemoteHost::beginSending(Socket *socket) {
 		DASSERT(socket && !isSending());
@@ -440,7 +453,7 @@ ERROR:;
 			UChunk &chunk = m_uchunks[chunk_idx];
 			int next_idx = chunk.node.next;
 			chunk.node = ListNode();
-			listInsert<UChunk, &UChunk::node>(m_uchunks, m_free_uchunks, chunk_idx);
+			U_INSERT(m_free_uchunks, chunk_idx);
 			chunk_idx = next_idx;
 		}
 
@@ -464,7 +477,7 @@ ERROR:;
 			UChunk &chunk = m_uchunks[chunk_idx];
 			int next_idx = chunk.node.next;
 			chunk.node = ListNode();
-			listInsert<UChunk, &UChunk::node>(m_uchunks, m_free_uchunks, chunk_idx);
+			U_INSERT(m_free_uchunks, chunk_idx);
 			m_lost_uchunk_indices.push_back(chunk.chunk_id);
 			chunk_idx = next_idx;
 		}

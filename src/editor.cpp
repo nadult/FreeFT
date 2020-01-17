@@ -26,7 +26,6 @@
 #include "sys/config.h"
 #include <fwk/gfx/gl_device.h>
 #include <fwk/gfx/opengl.h>
-#include <fwk/sys/resource_manager.h>
 #include <fwk/sys/on_fail.h>
 
 using namespace ui;

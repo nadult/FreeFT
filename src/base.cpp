@@ -380,8 +380,8 @@ const Font &getFont(Str name) {
 		auto file_name = format("%%%", "data/fonts/", name, ".fnt");
 		auto vcore = FontCore::load(file_name);
 		// TODO: check ?
-		auto core = fwk::make_immutable<FontCore>(move(*vcore));
-		auto tex = getTexture(core->textureName(), s_font_textures, "data/fonts/", "");
+		FontCore core(move(*vcore));
+		auto tex = getTexture(core.textureName(), s_font_textures, "data/fonts/", "");
 		it = s_fonts.emplace(name, Font(move(core), move(tex))).first;
 	}
 	return it->second;

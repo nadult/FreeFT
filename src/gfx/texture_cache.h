@@ -75,15 +75,15 @@ class TextureCache {
 		int atlas_node_id;
 		int last_update;
 
-		ListNode main_node;  // shared by two lists: m_main_list, m_free_list
-		ListNode atlas_node; // shared by two lists: AtlasNode::list, m_atlas_queue
+		ListNode main_node {};  // shared by two lists: m_main_list, m_free_list
+		ListNode atlas_node {}; // shared by two lists: AtlasNode::list, m_atlas_queue
 	};
 
 	enum { node_size = 256 };
 
 	struct AtlasNode {
 		IRect rect;
-		List list;
+		List list {};
 	};
 
 	PodVector<AtlasNode> m_atlas_nodes;

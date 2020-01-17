@@ -160,8 +160,6 @@ float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box
 
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
 
-using PFont = Dynamic<Font>;
-
 namespace ui {
 class Window;
 class Button;

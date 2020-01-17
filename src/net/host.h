@@ -17,22 +17,16 @@ namespace net {
 		ListNode node;
 	};
 
-	template <class Object, ListNode Object::*member, class Container>
-	int freeListAlloc(Container &container, List &free_list) __attribute__((noinline));
-
-	// Assumes that node is disconnected
-	template <class Object, ListNode Object::*member, class Container>
-	int freeListAlloc(Container &container, List &free_list) {
+	template <class Accessor, class Container>
+	int freeListAlloc(Accessor acc, Container &container, List &free_list) {
 		int idx;
-
 		if(free_list.empty()) {
 			container.emplace_back();
 			idx = (int)container.size() - 1;
 		} else {
 			idx = free_list.head;
-			listRemove<Object, member>(container, free_list, idx);
+			listRemove(acc, free_list, idx);
 		}
-
 		return idx;
 	}
 
@@ -46,17 +40,22 @@ namespace net {
 		int size() const { return m_objects.size(); }
 		int listSize() const { return m_list_size; }
 
+
 		int alloc() {
-			int idx = freeListAlloc<Elem, &Elem::first>(m_objects, m_free);
-			listInsert<Elem, &Elem::first>(m_objects, m_active, idx);
+			auto acc = [&](int idx) -> ListNode & { return m_objects[idx].first; };
+
+			int idx = freeListAlloc(acc, m_objects, m_free);
+			listInsert(acc, m_active, idx);
 			m_list_size++;
 			return idx;
 		}
 
 		void free(int idx) {
-			DASSERT(idx >= 0 && idx < (int)m_objects.size());
-			listRemove<Elem, &Elem::first>(m_objects, m_active, idx);
-			listInsert<Elem, &Elem::first>(m_objects, m_free, idx);
+			auto acc = [&](int idx) -> ListNode & { return m_objects[idx].first; };
+
+			DASSERT(idx >= 0 && idx < m_objects.size());
+			listRemove(acc, m_active, idx);
+			listInsert(acc, m_free, idx);
 			m_list_size--;
 		}
 
@@ -134,11 +133,11 @@ namespace net {
 		bool canFit(int data_size) const;
 		bool isSending() const { return m_socket != nullptr; }
 
-		int allocChunk() { return freeListAlloc<Chunk, &Chunk::m_node>(m_chunks, m_free_chunks); }
-		int allocUChunk() { return freeListAlloc<UChunk, &UChunk::node>(m_uchunks, m_free_uchunks); }
+		int allocChunk();
+		int allocUChunk();
 
-		void freeChunk(int idx) { listInsert<Chunk, &Chunk::m_node>(m_chunks, m_free_chunks, idx); }
-		void freeUChunk(int idx) { listInsert<UChunk, &UChunk::node>(m_uchunks, m_free_uchunks, idx); }
+		void freeChunk(int idx);
+		void freeUChunk(int idx);
 
 		void newPacket(bool is_first);
 		void sendPacket();

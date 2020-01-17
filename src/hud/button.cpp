@@ -5,7 +5,6 @@
 
 #include "gfx/drawing.h"
 #include <fwk/enum_map.h>
-#include <fwk/sys/resource_manager.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {

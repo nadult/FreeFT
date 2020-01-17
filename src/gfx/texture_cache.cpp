@@ -3,8 +3,8 @@
 
 #include "gfx/texture_cache.h"
 
-#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/gl_format.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/opengl.h>
 #include <fwk/gfx/texture.h>
 #include <limits.h>
@@ -64,10 +64,11 @@ TextureCache::~TextureCache() {
 			m_resources[n].res_ptr->onCacheDestroy();
 }
 
-#define INSERT(list, list_name, id)                                                                \
-	listInsert<Resource, &Resource::list_name##_node>(m_resources, list, id)
-#define REMOVE(list, list_name, id)                                                                \
-	listRemove<Resource, &Resource::list_name##_node>(m_resources, list, id)
+#define ATLAS_INSERT(list, idx) listInsert([&](int i) -> ListNode& { return m_resources[i].atlas_node; }, list, idx)
+#define ATLAS_REMOVE(list, idx) listRemove([&](int i) -> ListNode& { return m_resources[i].atlas_node; }, list, idx)
+
+#define MAIN_INSERT(list, idx) listInsert([&](int i) -> ListNode& { return m_resources[i].main_node; }, list, idx)
+#define MAIN_REMOVE(list, idx) listRemove([&](int i) -> ListNode& { return m_resources[i].main_node; }, list, idx)
 
 void TextureCache::nextFrame() {
 	if(!m_atlas) {
@@ -141,7 +142,7 @@ void TextureCache::nextFrame() {
 					printf("Removing from atlas node %d: %dKB\n", m_last_node,
 						   (res.size.x * res.size.y * 4) / 1024);
 #endif
-					REMOVE(atlas_node.list, atlas, index);
+					ATLAS_REMOVE(atlas_node.list, index);
 					res.atlas_node_id = -1;
 					m_atlas_counter--;
 				}
@@ -159,8 +160,8 @@ void TextureCache::nextFrame() {
 				printf("Inserting to atlas node %d: %dKB\n", m_last_node,
 					   (res.size.x * res.size.y * 4) / 1024);
 #endif
-				REMOVE(m_atlas_queue, atlas, index);
-				INSERT(atlas_node.list, atlas, index);
+				ATLAS_REMOVE(m_atlas_queue, index);
+				ATLAS_INSERT(atlas_node.list, index);
 				res.atlas_node_id = m_last_node;
 				m_atlas_counter++;
 			}
@@ -171,7 +172,7 @@ void TextureCache::nextFrame() {
 
 		m_last_node = (m_last_node + 1) % (int)m_atlas_nodes.size();
 		while(m_atlas_queue.head != -1)
-			REMOVE(m_atlas_queue, atlas, m_atlas_queue.head);
+			ATLAS_REMOVE(m_atlas_queue, m_atlas_queue.head);
 	}
 
 	if(m_last_update == INT_MAX) {
@@ -191,7 +192,7 @@ int TextureCache::add(CachedTexture *res_ptr, const int2 &size) {
 	}
 
 	int id = m_free_list.tail;
-	REMOVE(m_free_list, main, m_free_list.tail);
+	MAIN_REMOVE(m_free_list, m_free_list.tail);
 	m_resources[id] = new_res;
 	return id;
 }
@@ -199,7 +200,7 @@ int TextureCache::add(CachedTexture *res_ptr, const int2 &size) {
 void TextureCache::unload(int res_id) {
 	Resource &res = m_resources[res_id];
 	if(res.device_texture) {
-		REMOVE(m_main_list, main, res_id);
+		MAIN_REMOVE(m_main_list, res_id);
 		int size = textureMemorySize(res.device_texture);
 #ifdef LOGGING
 		printf("Freeing %dKB (current: %dKB / %dKB)\n", size / 1024, m_memory_size / 1024,
@@ -213,15 +214,14 @@ void TextureCache::unload(int res_id) {
 void TextureCache::remove(int res_id) {
 	DASSERT(isValidId(res_id));
 	Resource &res = m_resources[res_id];
-	REMOVE(res.atlas_node_id == -1 ? m_atlas_queue : m_atlas_nodes[res.atlas_node_id].list, atlas,
-		   res_id);
+	ATLAS_REMOVE(res.atlas_node_id == -1 ? m_atlas_queue : m_atlas_nodes[res.atlas_node_id].list, res_id);
 	if(res.atlas_node_id != -1) {
 		m_atlas_counter--;
 		res.atlas_node_id = -1;
 	}
 
 	unload(res_id);
-	INSERT(m_free_list, main, res_id);
+	MAIN_INSERT(m_free_list, res_id);
 	m_resources[res_id].res_ptr = nullptr;
 }
 
@@ -241,7 +241,7 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 			  m_atlas_queue.head != res_id) {
 		DASSERT(res.atlas_node_id == -1);
 		if(res.size.x <= node_size / 2 && res.size.y <= node_size / 2)
-			INSERT(m_atlas_queue, atlas, res_id);
+			ATLAS_INSERT(m_atlas_queue, res_id);
 	}
 
 	if(!res.device_texture) {
@@ -260,11 +260,11 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 		while(m_memory_size > m_memory_limit && m_main_list.tail != -1)
 			unload(m_main_list.tail);
 
-		INSERT(m_main_list, main, res_id);
+		MAIN_INSERT(m_main_list, res_id);
 	} else {
 		// Moving to front
-		REMOVE(m_main_list, main, res_id);
-		INSERT(m_main_list, main, res_id);
+		MAIN_REMOVE(m_main_list, res_id);
+		MAIN_INSERT(m_main_list, res_id);
 	}
 
 	auto dev_size = res.device_texture->size();

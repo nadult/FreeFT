@@ -11,6 +11,7 @@
 
 NaviMap::NaviMap(int extend) :m_size(0, 0), m_agent_size(extend) { }
 
+#define ACC_QUAD [&](int idx) -> ListNode& { return m_quads[idx].node; }
 	
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) __attribute__((noinline));
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) {
@@ -112,7 +113,7 @@ void NaviMap::extractQuads(const PodVector<u8> &bitmap, const int2 &bsize, int s
 			}
 
 		m_quads.push_back(Quad(rect, min_height, max_height));
-		listInsert<Quad, &Quad::node>(m_quads, m_sectors[findSector(rect.min())], (int)m_quads.size() - 1);
+		listInsert(ACC_QUAD, m_sectors[findSector(rect.min())], (int)m_quads.size() - 1);
 
 		pixels -= best.width() * best.height();
 	}
@@ -317,7 +318,7 @@ void NaviMap::addCollider(int parent_id, const IRect &rect, int collider_id) {
 	for(int n = 0; n < arraySize(rects); n++)
 		if(!rects[n].empty()) {
 			m_quads.push_back(Quad(rects[n], min_height, max_height));
-			listInsert<Quad, &Quad::node>(m_quads, m_sectors[findSector(rects[n].min())], (int)m_quads.size() - 1);
+			listInsert(ACC_QUAD, m_sectors[findSector(rects[n].min())], (int)m_quads.size() - 1);
 		}
 	parent = &m_quads[parent_id];
 
@@ -349,7 +350,7 @@ void NaviMap::addCollider(const IBox &box, int collider_id) {
 void NaviMap::removeColliders() {
 	for(int n = m_static_count; n < (int)m_quads.size(); n++) {
 		Quad &quad = m_quads[n];
-		listRemove<Quad, &Quad::node>(m_quads, m_sectors[findSector(quad.rect.min())], n);
+		listRemove(ACC_QUAD, m_sectors[findSector(quad.rect.min())], n);
 	}
 	m_quads.resize(m_static_count);
 

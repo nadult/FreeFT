@@ -2,11 +2,10 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "ui/tile_list.h"
+
 #include "editor/tile_group.h"
 #include "game/tile.h"
-#include <algorithm>
 #include <fwk/enum_map.h>
-#include <fwk/sys/resource_manager.h>
 
 using namespace game;
 

@@ -3,17 +3,15 @@
 
 #include "grid.h"
 
-#define INSERT(list, id) listInsert<Object, &Object::node>(m_objects, list, id)
-#define REMOVE(list, id) listRemove<Object, &Object::node>(m_objects, list, id)
+#define INSERT(list, id) listInsert([&](int idx) -> ListNode& { return m_objects[idx].node; }, list, id)
+#define REMOVE(list, id) listRemove([&](int idx) -> ListNode& { return m_objects[idx].node; }, list, id)
 
-#define OV_INSERT(list, id) listInsert<Overlap, &Overlap::node>(m_overlaps, list, id)
-#define OV_REMOVE(list, id) listRemove<Overlap, &Overlap::node>(m_overlaps, list, id)
-
+#define OV_INSERT(list, id) listInsert([&](int idx) -> ListNode& { return m_overlaps[idx].node; }, list, id)
+#define OV_REMOVE(list, id) listRemove([&](int idx) -> ListNode& { return m_overlaps[idx].node; }, list, id)
 
 //TODO: better names, refactoring, remove copy&pasted code in intersection functions 
 Grid::Node::Node()
 	:size(0), is_dirty(false), bbox(FBox()), rect(IRect()), obj_flags(0) { }
-	
 
 Grid::Grid(const int2 &size) {
 	m_bounding_box = FBox();
