@@ -4,10 +4,10 @@
 #include <string.h>
 #include "audio/device.h"
 #include "audio/internals.h"
-#include "audio/sound.h"
 #include <fwk/filesystem.h>
 #include <fwk/enum_map.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
+#include <fwk_audio.h>
 #include <map>
 
 namespace audio
@@ -34,13 +34,15 @@ namespace audio
 	}
 
 	void uploadToBuffer(const Sound &sound, unsigned buffer_id) {
-		DASSERT(sound.bits() == 8 || sound.bits() == 16);
-		u32 format = sound.bits() == 8?
-			sound.isStereo()? AL_FORMAT_STEREO8  : AL_FORMAT_MONO8 :
-			sound.isStereo()? AL_FORMAT_STEREO16 :AL_FORMAT_MONO16;
+		auto &info = sound.info();
+		DASSERT(info.bits == 8 || info.bits == 16);
+		u32 format = info.bits == 8?
+			info.is_stereo? AL_FORMAT_STEREO8  : AL_FORMAT_MONO8 :
+			info.is_stereo? AL_FORMAT_STEREO16 :AL_FORMAT_MONO16;
 
 		alGetError();
-		alBufferData(buffer_id, format, sound.data(), sound.size(), sound.frequency());
+		auto &data = sound.data();
+		alBufferData(buffer_id, format, data.data(), data.size(), info.sampling_freq);
 		testError("Error while loading data to audio buffer.");
 	}
 	
@@ -75,9 +77,8 @@ namespace audio
 					return;
 
 				Sound sound; {
-					char path[1024];
-					snprintf(path, sizeof(path), "%s%s%s", s_prefix, m_name.c_str(), s_suffix);
-					Loader(path) >> sound;
+					auto ldr = move(fileLoader(format("%%%", s_prefix, m_name, s_suffix)).get()); // TODO
+					sound = move(Sound::load(ldr).get()); // TODO
 				}
 
 				if(m_id == 0) {

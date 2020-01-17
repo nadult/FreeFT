@@ -219,6 +219,16 @@ int MemoryStream::loadString(Span<char> str) {
 	return size;
 }
 
+MemoryStream &MemoryStream::operator<<(const string &rhs) {
+	saveString(rhs);
+	return *this;
+}
+
+MemoryStream &MemoryStream::operator>>(string &rhs) {
+	rhs = loadString();
+	return *this;
+}
+
 PodVector<char> MemoryStream::loadVector(int max_size, int element_size) {
 	PASSERT(max_size >= 0 && element_size >= 1);
 	auto size = loadSize();

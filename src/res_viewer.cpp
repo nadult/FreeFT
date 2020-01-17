@@ -18,8 +18,8 @@
 #include <fwk/gfx/texture.h>
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
-#include <fwk/sys/rollback.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
+#include <fwk/sys/backtrace.h>
 
 using namespace game;
 using namespace ui;
@@ -46,22 +46,27 @@ ResType classifyFileName(const string &file_name) {
 
 class Resource {
   public:
-	Resource(const FilePath &current_dir, const string &file_name)
-		: m_file_name(file_name), m_type(classifyFileName(file_name)) {
-		DASSERT(m_type != ResType::unknown);
+	Resource() = default;
+	Ex<void> load(const FilePath &current_dir, const string &file_name) {
+		m_file_name = file_name;
+		m_type = classifyFileName(file_name);
+		EXPECT(m_type != ResType::unknown);
 
-		Loader loader(current_dir / file_name);
+		auto path = current_dir / file_name;
 		if(m_type == ResType::tile) {
-			m_tile.emplace("", loader);
+			auto loader = EXPECT_PASS(fileLoader(path));
+			m_tile.emplace();
+			m_tile->load(loader).check(); // TODO: pass
 			m_rect_size = m_tile->rect().size() + int2(8, 8);
 		} else if(m_type == ResType::texture) {
-			m_texture = GlTexture::make("", loader);
+			m_texture = EXPECT_PASS(GlTexture::load(path));
 			m_rect_size = m_texture->size();
 		} else if(m_type == ResType::sprite) {
+			auto loader = EXPECT_PASS(fileLoader(path));
 			//	printf("Loading sprite: %s\n", file_name);
 			m_sprite.emplace();
+			m_sprite->load(loader).check(); // TODO
 			m_sprite->setResourceName(file_name);
-			loader >> *m_sprite;
 			m_sprite->printInfo();
 			m_rect_size =
 				worldToScreen(IBox({-4, -4, -4}, m_sprite->bboxSize() + int3{4, 4, 4})).size();
@@ -69,6 +74,8 @@ class Resource {
 			m_frame_id = m_dir_id = m_seq_id = 0;
 			updateFrameId();
 		}
+
+		return {};
 	}
 
 	void printStats(Renderer2D &out, int2 pos, const Font &font) const {
@@ -146,15 +153,14 @@ class Resource {
 	void onInput(const InputState &state) {
 		if(m_type == ResType::texture) {
 			if(state.isKeyDown('E')) {
-				string name = FilePath(m_file_name).relative();
+				string name = FilePath(m_file_name).relativeToCurrent().get();
 				FATAL("fixme");
 				removeSuffix(name, ".zar");
 				name += ".tga";
 				printf("Exporting: %s\n", name.c_str());
 				Texture tex;
 				m_texture->download(tex);
-				Saver svr(name);
-				tex.save(svr);
+				tex.saveTGA(name).check();
 			}
 		}
 		if(m_type == ResType::sprite) {
@@ -168,7 +174,7 @@ class Resource {
 				m_dir_id++;
 			if(state.isKeyDown('P')) {
 				FilePath path(m_file_name);
-				printf("Sequences for: %s\n", path.relative().c_str());
+				print("Sequences for: %\n", path.relativeToCurrent().get());
 				for(int s = 0; s < m_sprite->size(); s++)
 					printf("Seq %3d: %s\n", s, (*m_sprite)[s].name.c_str());
 				printf("\n");
@@ -224,7 +230,7 @@ class Resource {
 
   private:
 	string m_file_name;
-	ResType m_type;
+	ResType m_type = ResType::unknown;
 
 	int2 m_rect_size;
 	Dynamic<Tile> m_tile;
@@ -246,10 +252,9 @@ class ResourceView : public Window {
 			if(res_type != ResType::unknown) {
 				ON_FAIL("Error while loading file: %", file_name);
 
-				auto result = RollbackContext::begin([&]() { return uniquePtr<Resource>(current_dir, file_name); });
-
-				if(result)
-					m_resources.emplace_back(std::move(*result));
+				Resource new_resource;
+				if(auto result = new_resource.load(current_dir, file_name))
+					m_resources.emplace_back(move(new_resource));
 				 else
 					 result.error().print();
 			}
@@ -351,7 +356,7 @@ enum class Command { empty, change_dir, exit };
 class ResViewerWindow : public Window {
   public:
 	ResViewerWindow(int2 res, const string &path)
-		: Window(IRect(res), WindowStyle::gui_light), m_current_dir(FilePath(path).absolute()) {
+		: Window(IRect(res), WindowStyle::gui_light), m_current_dir(FilePath(path).absolute().get()) {
 		m_command = make_pair(Command::empty, string());
 
 		int left_width = 300;
@@ -465,6 +470,7 @@ static bool main_loop(GlDevice &device, void*) {
 }
 
 int main(int argc, char **argv) {
+	Backtrace::t_default_mode = BacktraceMode::full;
 	Config config("res_viewer");
 
 	GlDevice gfx_device;

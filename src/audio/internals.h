@@ -8,15 +8,14 @@
 #endif
 #include <AL/alc.h>
 #include <AL/al.h>
+#include <fwk_audio.h>
 
 namespace audio {
-
-	class Sound;
 
 	const char *errorToString(int id);
 	void testError(const char *message);
 
-	void uploadToBuffer(const Sound &sound, unsigned buffer_id);
+	void uploadToBuffer(const fwk::Sound &, unsigned buffer_id);
 
 	void tickMusic(double time_delta);
 	void freeMusicDevice();

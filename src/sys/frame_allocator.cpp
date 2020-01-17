@@ -6,12 +6,12 @@
 size_t FrameAllocator::allocatedBlocks = 0;
 FrameAllocator *FrameAllocator::instance = 0;
 
-#define EXCEPT(func, ...) CHECK_FAILED("FrameAllocator::" func "(): " __VA_ARGS__)
+#define FAIL(func, ...) FATAL("FrameAllocator::" func "(): " __VA_ARGS__)
 
 FrameAllocator::FrameAllocator(size_t tMaxReserve, size_t tReserve)
 	: allocated(0), allocatedAway(0), maxAllocated(0), reserve(tReserve), maxReserve(tMaxReserve) {
 	if(instance)
-		EXCEPT("FrameAllocator", "Only one FrameAllocator class can be instantiated.");
+		FAIL("FrameAllocator", "Only one FrameAllocator class can be instantiated.");
 	instance = this;
 
 	pool = (char *)malloc(reserve);
@@ -20,10 +20,10 @@ FrameAllocator::FrameAllocator(size_t tMaxReserve, size_t tReserve)
 }
 
 FrameAllocator::FrameAllocator(const FrameAllocator &) {
-	EXCEPT("FrameAllocator", "Only one FrameAllocator class can be instantiated.");
+	FAIL("FrameAllocator", "Only one FrameAllocator class can be instantiated.");
 }
 void FrameAllocator::operator=(const FrameAllocator &) {
-	EXCEPT("operator=", "You really shouldnt do that...");
+	FAIL("operator=", "You really shouldnt do that...");
 }
 
 FrameAllocator::~FrameAllocator() {
@@ -38,7 +38,7 @@ void FrameAllocator::beginFrame() {
 	//	MutexLocker locker(mutex);
 
 	if(allocatedBlocks)
-		EXCEPT("BeginFrame", "There is still some data allocated from last frame (%d blocks)",
+		FAIL("BeginFrame", "There is still some data allocated from last frame (%d blocks)",
 			   int(allocatedBlocks));
 	allocatedBlocks = 0;
 
@@ -77,7 +77,7 @@ void FrameAllocator::doFree(void *ptr) {
 
 	if(inPool(ptr)) {
 		if(allocatedBlocks == 0)
-			EXCEPT("FreeFromPool", "Trying to free data from empty pool.");
+			FAIL("FreeFromPool", "Trying to free data from empty pool.");
 
 		allocatedBlocks--;
 		if(allocatedBlocks == 0) {
@@ -119,11 +119,8 @@ void FrameAllocator::free(void *ptr) {
 		return;
 	}
 	if(allocatedBlocks)
-		EXCEPT(
-			"Free",
+		FAIL("Free",
 			"We have a problem! You are probably trying to free data allocated in frame allocator, "
 			"but the\n frame allocator was destroyed!");
 	free(ptr);
 }
-
-#undef EXCEPT

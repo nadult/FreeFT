@@ -35,7 +35,7 @@ namespace game {
 			seq_ids[ds] = sprite->findSequence(s_seq_names[ds]);
 		
 		if(seq_ids[DoorState::closed] == -1)
-			CHECK_FAILED("Missing sequence: %s", s_seq_names[DoorState::closed]);
+			FATAL("Missing sequence: %s", s_seq_names[DoorState::closed]);
 
 		bool can_open_in =
 			seq_ids[DoorState::opened_in] != -1 &&
@@ -57,7 +57,7 @@ namespace game {
 			error = true;
 		
 		if(error)		
-			CHECK_FAILED("Invalid sequence combination");
+			FATAL("Invalid sequence combination");
 	}
 
 	struct Transition { DoorState current, target, result; };

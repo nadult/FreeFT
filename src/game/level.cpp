@@ -4,7 +4,7 @@
 #include "game/level.h"
 #include <algorithm>
 #include <zlib.h>
-#include <fwk/sys/stream.h>
+#include <fwk/filesystem.h>
 
 namespace game {
 
@@ -48,7 +48,7 @@ namespace game {
 			unsigned int checksum = crc32(0, (const unsigned char*)orig.data(), orig.size());
 
 			if(checksum != target_checksum)
-				CHECK_FAILED("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is correct.",
+				FATAL("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is correct.",
 						target_checksum, checksum);
 		}
 		
@@ -109,6 +109,8 @@ namespace game {
 	Level::Level() :entity_map(tile_map) {
 	}
 
+	// TODO: return Ex<>
+
 	void Level::load(const char *file_name) {
 		XmlDocument doc;
 
@@ -117,20 +119,15 @@ namespace game {
 			string orig_file_name(file_name, file_name + len - 4);
 			orig_file_name += ".xml";
 
-			vector<char> orig, mod; {
-				Loader orig_sr(orig_file_name.c_str());
-				Loader mod_sr(file_name);
-				orig.resize(orig_sr.size());
-				mod.resize(mod_sr.size());
-				orig_sr.loadData(orig.data(), orig.size());
-				mod_sr.loadData(mod.data(), mod.size());
-			}
-
+			// TODO: Ex<>
+			auto orig = loadFile(orig_file_name).get();
+			auto mod = loadFile(file_name).get();
 			vector<char> patched = applyPatch(orig, mod);
-			MemoryLoader(patched) >> doc;
+			doc = move(XmlDocument::make(patched).get());
 		}
-		else
-			doc.load(file_name);
+		else {
+			doc = move(XmlDocument::load(file_name).get());
+		}
 
 		tile_map.loadFromXML(doc);
 		entity_map.loadFromXML(doc);
@@ -140,7 +137,7 @@ namespace game {
 		XmlDocument doc;
 		tile_map.saveToXML(doc);
 		entity_map.saveToXML(doc);
-		doc.save(file_name);
+		doc.save(file_name).check();
 	}
 
 }

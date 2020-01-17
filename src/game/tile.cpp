@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <fwk/gfx/texture.h>
 #include <fwk/gfx/renderer2d.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 
 namespace game
 {
@@ -42,11 +42,14 @@ namespace game
 		m_offset = rhs.m_offset;
 	}
 
-	void TileFrame::load(Stream &sr) {
-		sr >> m_offset >> m_texture;
+	Ex<void> TileFrame::load(FileStream &sr) {
+		sr >> m_offset;
+		m_texture = EXPECT_PASS(PackedTexture::load(sr));
+		return {};
 	}
-	void TileFrame::save(Stream &sr) const {
-		sr << m_offset << m_texture;
+	void TileFrame::save(FileStream &sr) const {
+		sr << m_offset;
+	   	m_texture.save(sr);
 	}
 
 	int2 TileFrame::textureSize() const {
@@ -74,21 +77,17 @@ namespace game
 		:m_type_id(TileId::unknown), m_surface_id(SurfaceId::unknown), m_first_frame(&m_palette),
 		m_see_through(false), m_walk_through(false), m_is_invisible(false) { }
 		
-	Tile::Tile(const string &resource_name, Stream &stream) :Tile() {
-		m_resource_name = resource_name;
-		load(stream);
-	}
-		
 	FlagsType Tile::flags() const {
 		return	tileIdToFlag(m_type_id) |
 				(m_see_through? (FlagsType)0 : Flags::occluding) |
 				(m_walk_through? (FlagsType)0 : Flags::colliding);
 	}
 			
-	void Tile::legacyLoad(Stream &sr) {
+	template <class InputStream>
+	Ex<void> Tile::legacyLoad(InputStream &sr, Str name) {
 		ASSERT(sr.isLoading());
 
-		sr.signature("<tile>", 7);
+		sr.signature(Str("<tile>\0", 7));
 		i16 type; sr >> type;
 
 		if(type == 0x3031) {
@@ -114,7 +113,7 @@ namespace game
 		m_type_id = ttype >= count<TileId>()? TileId::unknown : (TileId)ttype;
 		m_surface_id = material >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)material;
 		m_see_through = flags & 8;
-		m_is_invisible = sr.name().find("Invisible Tile") != -1;
+		m_is_invisible = name.find("Invisible Tile") != -1;
 		if(m_is_invisible) {
 			m_see_through = true;
 			m_walk_through = true;
@@ -122,9 +121,9 @@ namespace game
 
 		char unknown[3];
 		int unk_size = type == '9'? 0 : type == '7'? 2 : type == '6'? 3 : 1;
-		sr.loadData(unknown, unk_size);
+		sr.loadData(span(unknown, unk_size));
 
-		sr.signature("<tiledata>\0001", 12);
+		sr.signature(Str("<tiledata>\0001\0", 12));
 		u8 dummy2;
 		i32 zar_count;
 		sr.unpack(dummy2, zar_count);
@@ -132,49 +131,66 @@ namespace game
 		Palette first_pal;
 
 		for(int n = 0; n < zar_count; n++) {
-			TileFrame TileFrame(&m_palette);
+			TileFrame frame(&m_palette);
 			Palette palette;
-			TileFrame.m_texture.legacyLoad(sr, palette);
+			EXPECT_PASS(frame.m_texture.legacyLoad(sr, palette));
 			i32 off_x, off_y;
 			sr.unpack(off_x, off_y);
-			TileFrame.m_offset = int2(off_x, off_y);
+			frame.m_offset = int2(off_x, off_y);
 
 			if(n == 0) {
 				first_pal = palette;
-				m_first_frame = TileFrame;
+				m_first_frame = frame;
 			}
 			else {
 				ASSERT(palette == first_pal);
-				m_frames.push_back(TileFrame);
+				m_frames.push_back(frame);
 			}
 		}
 
-		m_palette.legacyLoad(sr);
+		m_palette = EXPECT_PASS(Palette::legacyLoad(sr));
 		ASSERT(first_pal == m_palette);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
 		updateMaxRect();
 		
 		ASSERT(sr.pos() == sr.size());
+		return {};
 	}
 
-	void Tile::load(Stream &sr) {
-		sr.signature("TILE", 4);
+	Ex<void> Tile::load(FileStream &sr) {
+		sr.signature("TILE");
 		unsigned char type_id, surface_id;
 		sr.unpack(type_id, surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
 		m_type_id = type_id >= count<TileId>()? TileId::unknown : (TileId)type_id;
 		m_surface_id = surface_id >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)surface_id;
-		sr >> m_first_frame >> m_frames >> m_palette;
+		m_first_frame.load(sr).check(); // TODO: pass
+
+		u32 size = 0;
+		sr >> size;
+		EXPECT(size <= 4096); // TODO: checks for size everywhere where needed?
+		m_frames.resize(size);
+		for(auto &frame : m_frames)
+			frame.load(sr).check(); // TODO: pass
+		m_palette = EXPECT_PASS(Palette::load(sr));
 
 		for(int n = 0; n < (int)m_frames.size(); n++)
 			m_frames[n].m_palette_ref = &m_palette;
 		updateMaxRect();
+		return {};
 	}
+	
+	template Ex<void> Tile::legacyLoad(MemoryStream&, Str);
+	template Ex<void> Tile::legacyLoad(FileStream&, Str);
 
-	void Tile::save(Stream &sr) const {
-		sr.signature("TILE", 4);
+	void Tile::save(FileStream &sr) const {
+		sr.signature("TILE");
 		sr.pack(m_type_id, m_surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
-		sr << m_first_frame << m_frames << m_palette;
+		m_first_frame.save(sr);
+		sr.saveSize(m_frames.size());
+		for(auto &frame : m_frames)
+			frame.save(sr);
+		m_palette.save(sr);
 	}
 
 	void Tile::draw(Renderer2D &out, const int2 &pos, Color col) const {

@@ -6,7 +6,6 @@
 #include "grid.h"
 #include <algorithm>
 #include <fwk/gfx/texture.h>
-#include <fwk/sys/stream.h>
 
 enum { max_levels = 16 };
 
@@ -93,9 +92,7 @@ Texture NaviHeightmap::toTexture(int level) const {
 void NaviHeightmap::saveLevels() const {
 	for(int n = 0; n < m_level_count; n++) {
 		Texture tex = toTexture(n);
-		char name[100];
-		sprintf(name, "level%d.tga", n);
-		Saver(name) << tex;
+		tex.saveTGA(format("level%.tga", n)).check();
 	}
 }
 

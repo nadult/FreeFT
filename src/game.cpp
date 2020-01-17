@@ -82,8 +82,7 @@ int main(int argc, char **argv)
 			fullscreen = true;
 		else if(strcmp(argv[a], "-server") == 0) {
 			ASSERT(a + 1 < argc);
-			XmlDocument xml_config;
-			xml_config.load(argv[a + 1]);
+			auto xml_config = move(XmlDocument::load(argv[a + 1]).get()); // TODO
 			auto server_node = xml_config.child("server");
 			ASSERT(server_node);
 

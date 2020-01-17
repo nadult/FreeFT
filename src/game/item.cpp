@@ -37,6 +37,7 @@ namespace game {
 			if(is_dummy)
 				seq_ids[n] = -1;
 			else {
+				DASSERT(sprite);
 				seq_ids[n] = sprite->findSequence(s_seq_names[n]);
 				ASSERT(seq_ids[n] != -1);
 			}

@@ -13,10 +13,10 @@ namespace game {
 	class Sprite {
 	public:
 		Sprite();
-		void legacyLoad(Stream &sr);
-		void load(Stream &sr) { load(sr, true); }
-		void load(Stream &sr, bool full_load);
-		void save(Stream &sr) const;
+		template <class InputStream>
+		Ex<void> legacyLoad(InputStream&, Str);
+		Ex<void> load(FileStream &sr, bool full_load = true);
+		void save(FileStream &sr) const;
 
 		enum EventId {
 			ev_stop_anim		= -2,
@@ -49,8 +49,8 @@ namespace game {
 		static_assert(sizeof(Frame) == 12, "Wrong size of Sprite::Frame");
 
 		struct Sequence {
-			void load(Stream&);
-			void save(Stream&) const;
+			static Ex<Sequence> load(FileStream&);
+			void save(FileStream&) const;
 
 			string name;
 			int frame_count, dir_count;
@@ -60,8 +60,8 @@ namespace game {
 		};
 
 		struct MultiPalette {
-			void load(Stream&);
-			void save(Stream&) const;
+			static Ex<MultiPalette> load(FileStream&);
+			void save(FileStream&) const;
 
 			int size(int layer) const;
 			const Color *access(int layer) const;
@@ -79,8 +79,8 @@ namespace game {
 			virtual void cacheUpload(Texture&) const;
 			virtual int2 textureSize() const { return rect.size(); }
 
-			void load(Stream&);
-			void save(Stream&) const;
+			Ex<void> load(FileStream&);
+			void save(FileStream&) const;
 
 			PTexture toTexture(const MultiPalette&, FRect&, bool put_in_atlas = true) const;
 			bool testPixel(const int2&) const;
@@ -167,4 +167,4 @@ namespace game {
 	};
 };
 	
-SERIALIZE_AS_POD(game::Sprite::Frame);
+template<> constexpr bool fwk::is_flat_data<game::Sprite::Frame> = true;

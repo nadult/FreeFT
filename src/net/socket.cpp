@@ -19,13 +19,10 @@ typedef int socklen_t;
 #include <unistd.h>
 
 //#define RELIABILITY_TEST
-
 #ifdef RELIABILITY_TEST
-
 static bool isDropped() {
 	return rand() % 1024 < 500;
 }
-
 #endif
 
 
@@ -47,12 +44,12 @@ namespace net {
 		out.port = ntohs(in->sin_port);
 	}
 
-	u32 resolveName(const char *name) {
+	Ex<u32> resolveName(ZStr name) {
 		DASSERT(name);
 
-		struct hostent *hp = gethostbyname(name);
+		struct hostent *hp = gethostbyname(name.c_str());
 		if(!hp)
-			CHECK_FAILED("Error while getting host name");
+			return ERROR("Error while getting host name");
 		sockaddr_in addr;
 		memset(&addr, 0, sizeof(addr));
 		memcpy(&addr.sin_addr, hp->h_addr_list[0], hp->h_length);
@@ -68,9 +65,9 @@ namespace net {
 		return 50000 + rand() % 16530;
 	}
 
-	const Address lobbyServerAddress() {
-		return Address(resolveName("localhost"), 50000);
-		return Address(resolveName("89.74.58.32"), 50000);
+	Ex<Address> lobbyServerAddress() {
+		return Address(EXPECT_PASS(resolveName("localhost")), 50000);
+		return Address(EXPECT_PASS(resolveName("89.74.58.32")), 50000);
 	}
 
 	Address::Address(u16 port) :port(port), ip(htonl(INADDR_ANY)) { }
@@ -112,7 +109,7 @@ namespace net {
 		*this << info;
 	}
 
-	Socket::Socket(const Address &address) {
+	Ex<Socket> Socket::make(const Address &address) {
 #ifdef _WIN32
 		static bool wsock_initialized = false;
 		if(!wsock_initialized) {
@@ -121,23 +118,26 @@ namespace net {
 			wsock_initialized = true;
 		}
 #endif
-		m_fd = socket(AF_INET, SOCK_DGRAM, 0);
-		if(m_fd < 0)
-			CHECK_FAILED("Error while creating socket");
+		auto fd = socket(AF_INET, SOCK_DGRAM, 0);
+		if(fd < 0)
+			return ERROR("Error while creating socket");
 
 		sockaddr_in addr;
 		toSockAddr(address, &addr);
-		if(bind(m_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-			::close(m_fd);
-			CHECK_FAILED("Error while binding address to socket");
+		if(bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+			::close(fd);
+			return ERROR("Error while binding address to socket");
 		}
 
 #ifdef _WIN32
 		unsigned long int non_blocking = 1;
 		ioctlsocket(m_fd, FIONBIO, &non_blocking);
 #else
-		fcntl(m_fd, F_SETFL, O_NONBLOCK);
+		fcntl(fd, F_SETFL, O_NONBLOCK);
 #endif
+		Socket out;
+		out.m_fd = fd;
+		return out;
 	}
 
 	Socket::~Socket() {

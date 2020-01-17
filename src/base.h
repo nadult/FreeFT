@@ -79,7 +79,8 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 void encodeInt(MemoryStream &sr, int value);
 int decodeInt(MemoryStream &sr);
 
-uint toFlags(const char *input, CSpan<const char *> strings, uint first_flag);
+void saveString(FileStream&, Str);
+Ex<string> loadString(FileStream&);
 
 struct MoveVector {
 	MoveVector(const int2 &start, const int2 &end);

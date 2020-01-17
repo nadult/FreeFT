@@ -12,8 +12,10 @@ namespace game {
 
 	EntityProto::EntityProto(const TupleParser &parser) :Proto(parser) {
 		sprite_name = parser("sprite_name");
-		if(!is_dummy)
+		if(!is_dummy) {
 			sprite = &Sprite::getPartial(sprite_name);
+			DASSERT(sprite);
+		}
 		else 
 			sprite = nullptr;
 		

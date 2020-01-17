@@ -55,7 +55,6 @@ namespace game {
 		return isOneOf(t, AttackMode::single, AttackMode::burst, AttackMode::throwing);
 	}
 	inline constexpr bool isMelee(AttackMode t) { return !isRanged(t); }
-	inline constexpr unsigned toFlags(AttackMode t) { return 1 << (uint)t; }
 
 	using AttackModeFlags = EnumFlags<AttackMode>;
 	Maybe<AttackMode> getFirst(AttackModeFlags);

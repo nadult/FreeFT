@@ -17,7 +17,7 @@
 #include "game/character.h"
 
 #include <fwk/sys/on_fail.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 
 namespace game {
 
@@ -95,7 +95,7 @@ namespace game {
 			m_type = fromString<ProtoId>(proto_type);
 			m_idx = findProto(node.attrib("proto_id"), m_type).m_idx;
 			if(m_idx == -1)
-				CHECK_FAILED("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id").c_str(), proto_type.c_str());
+				FATAL("Couldn't find proto: %s (type: %s)\n", node.attrib("proto_id").c_str(), proto_type.c_str());
 			validate();
 		}
 	}
@@ -121,7 +121,7 @@ namespace game {
 		if(m_idx != -1 || m_type) {
 			if(!m_type || !validEnum(*m_type)) {
 				*this = ProtoIndex();
-				CHECK_FAILED("Invalid proto type: %d\n", m_type? (int)*m_type : -1);
+				FATAL("Invalid proto type: %d\n", m_type? (int)*m_type : -1);
 				return;
 			}
 
@@ -129,7 +129,7 @@ namespace game {
 			if(m_idx < 0 || m_idx >= count) {
 				ProtoId type = *m_type;
 				*this = ProtoIndex();
-				CHECK_FAILED("Invalid proto index: %d (type: %s, count: %d)\n",
+				FATAL("Invalid proto index: %d (type: %s, count: %d)\n",
 						m_idx, toString(type), count);
 			}
 		}
@@ -169,7 +169,7 @@ namespace game {
 	const Proto &getProto(const string &name, Maybe<ProtoId> id) {
 		ProtoIndex index = findProto(name, id);
 		if(!index.isValid())
-			CHECK_FAILED("Proto (type: %s) not found: %s", id? toString(*id) : "invalid", name.c_str());
+			FATAL("Proto (type: %s) not found: %s", id? toString(*id) : "invalid", name.c_str());
 		return getProto(index);
 	}
 
@@ -178,8 +178,8 @@ namespace game {
 			FATAL("Proto-tables have already been loaded");
 		s_is_loaded = true;
 
-		XmlDocument doc;
-		Loader(file_name) >> doc;
+		// TODO: check
+		auto doc = move(XmlDocument::load(file_name).get());
 		
 		auto doc_node = doc.child("office:document");
 		ASSERT(doc_node);

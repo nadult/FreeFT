@@ -2,9 +2,11 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "tile_map.h"
+
 #include "game/tile.h"
 #include <climits>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
+#include "memory_stream.h"
 
 //#define LOGGING
 
@@ -12,14 +14,16 @@
 #define printf(...)	
 #endif
 
-void zlibInflate(Stream &sr, vector<char> &dest, int inSize);
+template <class InputStream>
+Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize);
 
 namespace game {
 
-	void TileMap::legacyConvert(Stream &sr, Stream &out) {
+	template <class InputStream>
+	void TileMap::legacyConvert(InputStream &sr, FileStream &out) {
 		ASSERT(sr.isLoading());
 
-		sr.signature("<world>", 8);
+		sr.signature(Str("<world>\0", 8));
 		u16 type;
 		char dummy;
 
@@ -43,7 +47,7 @@ namespace game {
 		{
 			ASSERT(map_manager != -1);
 			int offset = map_manager + 13;
-			MemoryLoader dsr(bytes.data() + offset, bytes.size() - offset);
+			MemoryStream dsr(cspan(bytes.data() + offset, bytes.size() - offset));
 
 			clear();
 
@@ -53,7 +57,7 @@ namespace game {
 				int something[3];
 			} __attribute__((packed));
 			Header header;
-			dsr.loadData(&header, sizeof(header));
+			dsr >> asPod(header);
 
 			int proto_count = 0, zero;
 			dsr >> proto_count >> zero;
@@ -65,7 +69,7 @@ namespace game {
 				char name[1024];
 				dsr >> len;
 				ASSERT(len < (int)sizeof(name));
-				dsr.loadData(name, len);
+				dsr.loadData(span(name, len));
 				ASSERT(strncmp(name, "tiles/", 6) == 0 && strncmp(name + len - 4, ".til", 4) == 0);
 				names.push_back(string(name + 6, name + len - 4));
 			//	printf("name: %s\n", names.back().c_str());
@@ -78,9 +82,9 @@ namespace game {
 
 			vector<TileParams> tile_params;
 			for(int n = 0; n < proto_count; n++) {
-				dsr.signature("<tile>\00010", 10);
+				dsr.signature(Str("<tile>\00010\0", 10));
 				TileParams tile;
-				dsr >> tile;
+				dsr >> asPod(tile);
 				tile_params.push_back(tile);
 			//	printf("TileParams [%d/%d]: %d %d %d\n", (int)tile_params.size(), proto_count, (int)tile.bbox_x, (int)tile.bbox_y, (int)tile.bbox_z);
 			}
@@ -91,7 +95,7 @@ namespace game {
 				tiles[n].setResourceName(names[n].c_str());
 			
 			char temp2[28];
-			dsr.loadData(temp2, sizeof(temp2));
+			dsr.loadData(temp2);
 
 			int region_count = 0;
 			dsr >> region_count;
@@ -105,7 +109,7 @@ namespace game {
 			IBox box(INT_MAX, INT_MAX, INT_MAX, INT_MIN, INT_MIN, INT_MIN);
 
 			for(int n = 0; n < region_count; n++) {
-				dsr.signature("<region>\0008", 11);
+				dsr.signature(Str("<region>\0008\0", 11));
 				int elem_count;
 
 				dsr >> elem_count;
@@ -136,7 +140,7 @@ namespace game {
 					static_assert(sizeof(TInstance) == 56, "Wrong instance size");
 
 					TInstance instance;
-					dsr.loadData(&instance, sizeof(instance));
+					dsr >> asPod(instance);
 					int tile_id = (int)instance.tile_id - 1;
 					if(tile_id < 0)
 						continue;
@@ -184,7 +188,7 @@ namespace game {
 
 		XmlDocument doc;
 		saveToXML(doc);
-		out << doc;
+		doc.save(out).check(); // TODO: return Ex<> ?
 		clear();
 
 	//	Saver("mission.dec") & bytes;
@@ -212,5 +216,8 @@ namespace game {
 	//	for(int n = 0; n < bytes.size(); n++)
 	//		printf("%c", bytes[n] < 32? '.' : bytes[n]);
 	}
+	
+	template void TileMap::legacyConvert(MemoryStream &, FileStream &);
+	template void TileMap::legacyConvert(FileStream &, FileStream &);
 
 }

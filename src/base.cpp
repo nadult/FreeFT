@@ -8,7 +8,7 @@
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/math/plane.h>
 #include <fwk/math/rotation.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 
 enum {
 	// TODO: tune-able parameters?
@@ -70,38 +70,28 @@ int decodeInt(MemoryStream &sr) {
 	}
 }
 
-uint toFlags(const char *input, CSpan<const char *> strings, uint first_flag) {
-	const char *iptr = input;
+void saveString(FileStream &sr, Str str) {
+	if(str.size() < 255)
+		sr << u8(str.size());
+	else
+		sr.pack((u8)255, str.size());
+	sr.saveData(str);
+}
 
-	uint out_value = 0;
-	while(*iptr) {
-		const char *next_space = strchr(iptr, ' ');
-		int len = next_space ? next_space - iptr : strlen(iptr);
+Ex<string> loadString(FileStream &sr) {
+	u32 len;
+	u8 tmp;
 
-		bool found = false;
-		for(int e = 0; e < strings.size(); e++)
-			if(strncmp(iptr, strings[e], len) == 0 && strings[e][len] == 0) {
-				out_value |= first_flag << e;
-				found = true;
-				break;
-			}
+	sr >> tmp;
+	if(tmp < 255)
+		len = tmp;
+	else
+		sr >> len;
 
-		if(!found) {
-			char flags[1024], *ptr = flags;
-			for(int i = 0; i < strings.size(); i++)
-				ptr += snprintf(ptr, sizeof(flags) - (ptr - flags), "%s ", strings[i]);
-			if(strings.size())
-				ptr[-1] = 0;
-
-			CHECK_FAILED("Error while converting string \"%s\" to flags (%s)", input, flags);
-		}
-
-		if(!next_space)
-			break;
-		iptr = next_space + 1;
-	}
-
-	return out_value;
+	EXPECT(len <= sr.size() - sr.pos());
+	string out(len, ' ');
+	sr.loadData(span(&out[0], out.size()));
+	return out;
 }
 
 float distance(const Box<float3> &a, const Box<float3> &b) {
@@ -354,6 +344,11 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 #include "game/tile.h"
 
+// TODO: dynamic not needed in s_tiles; But: TileFrame depending on CachedTexture
+// causes problems in copy constructors & operator=
+// TODO: there is a need for data structure which doesn't move resources in memory
+// after thet are created
+
 namespace res {
 static HashMap<string, PTexture> s_gui_textures, s_textures;
 static HashMap<string, PTexture> s_font_textures;
@@ -364,11 +359,11 @@ static PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, 
 	auto it = map.find(str);
 	if(it == map.end()) {
 		auto file_name = format("%%%", prefix, str, suffix);
-		Loader ldr(file_name);
-		auto tex = GlTexture::make(file_name, ldr);
+		auto tex = GlTexture::load(file_name);
+		// TODO: check errors
 		DASSERT(tex);
-		map.emplace(str, tex);
-		return tex;
+		map.emplace(str, *tex);
+		return *tex;
 	}
 	return it->second;
 }
@@ -383,8 +378,9 @@ const Font &getFont(Str name) {
 	auto it = s_fonts.find(name);
 	if(it == s_fonts.end()) {
 		auto file_name = format("%%%", "data/fonts/", name, ".fnt");
-		Loader ldr(file_name);
-		auto core = fwk::make_immutable<FontCore>(file_name, ldr);
+		auto vcore = FontCore::load(file_name);
+		// TODO: check ?
+		auto core = fwk::make_immutable<FontCore>(move(*vcore));
 		auto tex = getTexture(core->textureName(), s_font_textures, "data/fonts/", "");
 		it = s_fonts.emplace(name, Font(move(core), move(tex))).first;
 	}
@@ -395,9 +391,16 @@ const game::Tile &getTile(Str name) {
 	auto it = s_tiles.find(name);
 	if(it == s_tiles.end()) {
 		auto file_name = format("%%%", "data/tiles/", name, ".tile");
-		Loader ldr(file_name);
+		auto ldr = fileLoader(file_name);
+		if(!ldr) {
+			ldr.error().print();
+			FATAL("cannot open file\n");
+		}
+		// TODO: ldr.check()
 		Dynamic<game::Tile> tile;
-		tile.emplace(name, ldr);
+		tile.emplace();
+		auto result = tile->load(*ldr);
+		result.check();
 		it = s_tiles.emplace(name, move(tile)).first;
 	}
 	return *it->second;

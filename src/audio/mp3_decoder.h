@@ -4,11 +4,9 @@
 #pragma once
 
 #include "base.h"
-#include "audio/sound.h"
+#include <fwk_audio.h>
 
 namespace audio {
-
-	class Sound;
 
 	class MP3Decoder {
 	public:
@@ -18,7 +16,7 @@ namespace audio {
 		MP3Decoder(const MP3Decoder&) = delete;
 		void operator=(const MP3Decoder&) = delete;
 
-		bool decode(Sound &out, int max_size);
+		bool decode(fwk::Sound &out, int max_size);
 		bool isFinished() const { return m_is_finished; }
 
 		int bytesPerSecond() const;
@@ -26,7 +24,7 @@ namespace audio {
 		//TODO: preloading data? (to avoid reading from disk while playing)
 		//alternative: move audio device to separate thread
 	private:
-		Dynamic<Stream> m_stream;
+		Dynamic<FileStream> m_stream;
 		void *m_handle = nullptr;
 		int m_sample_rate, m_num_channels;
 		bool m_is_finished, m_need_data;

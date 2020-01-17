@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cstdio>
 #include <fwk/filesystem.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 #include <map>
 
 namespace game {
@@ -25,8 +25,9 @@ namespace game {
 
 		char file_name[1024];
 		snprintf(file_name, sizeof(file_name), "%s%s%s", s_prefix, sprite.resourceName().c_str(), s_suffix);
-		Loader ldr(file_name);
-		sprite.load(ldr, full);
+		auto ldr = fileLoader(file_name);
+		ASSERT(ldr); // TODO: proper error handling
+		sprite.load(*ldr, full).check();
 	}
 
 	void Sprite::initMap() {
@@ -68,10 +69,11 @@ namespace game {
 		return sprite;
 	}
 
+	// TODO: Ex<> instead of fatal?
 	const Sprite &Sprite::get(const string &name) {
 		int idx = find(name);
 		if(idx == -1)
-			CHECK_FAILED("Sprite not found: %s", name.c_str());
+			FATAL("Sprite not found: %s", name.c_str());
 		return get(idx);
 	}
 
@@ -82,7 +84,7 @@ namespace game {
 	const Sprite &Sprite::getPartial(const string &name) {
 		int idx = find(name);
 		if(idx == -1)
-			CHECK_FAILED("Sprite not found: %s", name.c_str());
+			FATAL("Sprite not found: %s", name.c_str());
 		Sprite &sprite = s_sprites[idx];
 		if(sprite.index() == -1)
 			loadSprite(idx, false);

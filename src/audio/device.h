@@ -5,6 +5,7 @@
 
 #include "base.h"
 #include "game/base.h"
+#include "fwk_audio.h"
 
 namespace audio {
 
@@ -23,6 +24,8 @@ namespace audio {
 	enum {
 		max_sources = 16,
 	};
+
+	using Sound = fwk::Sound;
 
 	bool isInitialized();
 

@@ -3,11 +3,9 @@
 
 #include "game/sprite.h"
 
-#include <cstdio>
-#include <cstring>
 #include <fwk/gfx/texture.h>
 #include <fwk/math/rotation.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 
 namespace game
 {
@@ -49,37 +47,46 @@ namespace game
 
 	Sprite::Sprite() :m_bbox(0, 0, 0), m_offset(0, 0), m_is_partial(false), m_index(-1) { }
 
-	void Sprite::Sequence::load(Stream &sr) {
-		sr >> name;
-		sr.unpack(frame_count, dir_count, first_frame, palette_id, overlay_id);
+	Ex<Sprite::Sequence> Sprite::Sequence::load(FileStream &sr) {
+		Sequence out;
+		out.name = EXPECT_PASS(loadString(sr));
+		sr.unpack(out.frame_count, out.dir_count, out.first_frame, out.palette_id, out.overlay_id);
+		return out;
 	}
 
-	void Sprite::Sequence::save(Stream &sr) const {
-		sr << name;
+	void Sprite::Sequence::save(FileStream &sr) const {
+		saveString(sr, name);
 		sr.pack(frame_count, dir_count, first_frame, palette_id, overlay_id);
 	}
 
-	void Sprite::MultiPalette::load(Stream &sr) {
-		sr >> colors;
-		sr.loadData(offset, sizeof(offset));
+	Ex<Sprite::MultiPalette> Sprite::MultiPalette::load(FileStream &sr) {
+		MultiPalette out;
+		u32 size = 0;
+		sr >> size;
+		out.colors.resize(size);
+		sr.loadData(out.colors);
+		sr.loadData(out.offset);
+		return out;
 	}
 
-	void Sprite::MultiPalette::save(Stream &sr) const {
-		sr << colors;
-		sr.saveData(offset, sizeof(offset));
+	void Sprite::MultiPalette::save(FileStream &sr) const {
+		sr << u32(colors.size());
+		sr.saveData(colors);
+		sr.saveData(offset);
 	}
 
-	void Sprite::MultiImage::load(Stream &sr) {
-		for(int l = 0; l < 4; l++)
-			sr >> images[l];
-		sr.loadData(points, sizeof(points));
+	Ex<void> Sprite::MultiImage::load(FileStream &sr) {
+		for(auto &image : images)
+			image = EXPECT_PASS(PackedTexture::load(sr));
+		sr.loadData(points);
 		sr >> rect;
+		return {};
 	}
 
-	void Sprite::MultiImage::save(Stream &sr) const {
-		for(int l = 0; l < 4; l++)
-			sr << images[l];
-		sr.saveData(points, sizeof(points));
+	void Sprite::MultiImage::save(FileStream &sr) const {
+		for(auto &image : images)
+			image.save(sr);
+		sr.saveData(points);
 		sr << rect;
 	}
 
@@ -134,26 +141,54 @@ namespace game
 	}
 
 
-	void Sprite::load(Stream &sr, bool full_load) {
-		sr.signature("SPRITE", 6);
+	Ex<void> Sprite::load(FileStream &sr, bool full_load) {
+		sr.signature("SPRITE");
+
 		sr.unpack(m_offset, m_bbox);
-		sr >> m_sequences >> m_frames >> m_max_rect;
+		u32 size;
+		sr >> size;
+		m_sequences.reserve(size);
+		for(int n : intRange(size))
+			m_sequences.emplace_back(EXPECT_PASS(Sequence::load(sr)));
+		sr >> size;
+		m_frames.resize(size);
+		sr.loadData(m_frames);
+		sr >> m_max_rect;
 
 		m_is_partial = !full_load;
 		if(full_load) {
-	 		sr >> m_palettes >> m_images;
+			sr >> size;
+			m_palettes.reserve(size);
+			for(int n : intRange(size))
+				m_palettes.emplace_back(EXPECT_PASS(MultiPalette::load(sr)));
+			
+			sr >> size;
+			m_images.resize(size);
+			for(auto &image : m_images)
+				image.load(sr).check(); // TODO: pass
 		}
 		else {
 			m_palettes.clear();
 			m_images.clear();
 		}
+		return {};
 	}
 
-	void Sprite::save(Stream &sr) const {
-		sr.signature("SPRITE", 6);
+	void Sprite::save(FileStream &sr) const {
+		sr.signature("SPRITE");
 		sr.pack(m_offset, m_bbox);
-		sr << m_sequences << m_frames << m_max_rect;
-		sr << m_palettes << m_images;
+		sr.saveSize(m_sequences.size());
+		for(auto &seq : m_sequences)
+			seq.save(sr);
+		sr << m_frames.size();
+		sr.saveData(m_frames);
+		sr << m_max_rect;
+		sr.saveSize(m_palettes.size());
+		for(auto &pal : m_palettes)
+			pal.save(sr);
+		sr.saveSize(m_images.size());
+		for(auto &image : m_images)
+			image.save(sr);
 	}
 	
 	void Sprite::clear() {

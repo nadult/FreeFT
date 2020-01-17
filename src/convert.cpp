@@ -4,15 +4,15 @@
 #include "game/tile.h"
 #include "game/sprite.h"
 #include "game/tile_map.h"
-#include "audio/sound.h"
 #include <unistd.h>
 #include <algorithm>
 #include <set>
 #include <zip.h>
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 #include <fwk/filesystem.h>
 #include <fwk/sys/expected.h>
 #include <fwk/enum_map.h>
+#include <fwk_audio.h>
 
 using game::Sprite;
 using game::Tile;
@@ -97,16 +97,25 @@ static const string locateFTPath() {
 
 
 struct TileMapProxy: public TileMap {
-	void save(Stream &sr) const {
+	void save(FileStream &sr) const {
 		XmlDocument doc;
 		saveToXML(doc);
-		sr << doc;
+		doc.save(sr).check();
 	}
+	// TODO: whats that for?
 	void setResourceName(const char*) { }
 };
 
-struct SoundProxy: public audio::Sound {
-	void legacyLoad(Stream &sr) { load(sr); }
+struct SoundProxy {
+	vector<char> data;
+
+	template <class InputStream>
+	Ex<void> legacyLoad(InputStream &sr, Str) {
+		data.resize(sr.size());
+		sr.loadData(data);
+		return {};
+	}
+	void save(FileStream &sr) { sr.saveData(data); }
 	void setResourceName(const char*) { }
 };
 
@@ -142,19 +151,20 @@ static const EnumMap<ResTypeId, const char*> s_new_path = {{
 	nullptr
 }};
 
-void convert(ResTypeId type, Stream &ldr, Stream &svr) {
+template <class InputStream>
+void convert(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
 	ASSERT(type != ResTypeId::archive);
 
 	// TODO: handle errors
 	//try {
 		if(type == ResTypeId::sprite) {
 			Sprite res;
-			res.legacyLoad(ldr);
+			res.legacyLoad(ldr, name).check();
 			res.save(svr);
 		}
 		else if(type == ResTypeId::tile) {
 			Tile res;
-			res.legacyLoad(ldr);
+			res.legacyLoad(ldr, name).check();
 			res.save(svr);
 		}
 		else if(type == ResTypeId::map) {
@@ -164,13 +174,13 @@ void convert(ResTypeId type, Stream &ldr, Stream &svr) {
 		else if(type == ResTypeId::image || type == ResTypeId::music) {
 			vector<char> buffer;
 			buffer.resize(ldr.size());
-			ldr.loadData(buffer.data(), buffer.size());
-			svr.saveData(buffer.data(), buffer.size());
+			ldr.loadData(buffer);
+			svr.saveData(buffer);
 		}
 		else if(type == ResTypeId::sound) {
-			SoundProxy res;
-			ldr >> res;
-			svr << res;
+			SoundProxy proxy;
+			proxy.legacyLoad(ldr, name).check();
+			proxy.save(svr);
 			/*char buffer[1024 * 16];
 			while(svr.pos() < ldr.size()) {
 				int to_copy = min((int)sizeof(buffer), (int)(ldr.size() - ldr.pos()));
@@ -186,7 +196,7 @@ void convert(ResTypeId type, Stream &ldr, Stream &svr) {
 template <class TResource>
 void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
 			bool detailed, const string &filter) {
-	FilePath main_path = FilePath(src_dir).absolute();
+	FilePath main_path = FilePath(src_dir).absolute().get();
 	
 	printf("Scanning...\n");
 	auto file_names = findFiles(main_path, FindFiles::regular_file | FindFiles::recursive);
@@ -198,7 +208,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 		FilePath path = file_names[n].path.relative(main_path);
 		FilePath dir = FilePath(dst_dir) / path.parent();
 		if(access(dir.c_str(), R_OK) != 0)
-			mkdirRecursive(dir.c_str()).checked();
+			mkdirRecursive(dir.c_str()).check();
 	}
 	
 	if(!detailed) {
@@ -231,10 +241,10 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 				// TODO: handle errors
 				//try {
 					TResource resource;
-					Loader source(full_path);
+					auto source = move(fileLoader(full_path).get());
 					double time = getTime();
-					resource.legacyLoad(source);
-					Saver target(new_path);
+					resource.legacyLoad(source, name).check();
+					auto target = move(fileSaver(new_path).get());
 					resource.save(target);
 					resource.setResourceName((FilePath(name).fileName()).c_str()); // TODO: this isprobably not needed
 
@@ -325,7 +335,7 @@ private:
 };
 
 void convertAll(const char *fot_path, const string &filter) {
-	FilePath core_path = (FilePath(fot_path) / "core").absolute();
+	FilePath core_path = (FilePath(fot_path) / "core").absolute().get();
 
 	printf("FOT core: %s\n", core_path.c_str());
 
@@ -372,7 +382,7 @@ void convertAll(const char *fot_path, const string &filter) {
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			FilePath dir = target_dir / FilePath(it->first).parent();
 			if(access(dir.c_str(), R_OK) != 0)
-				mkdirRecursive(dir.c_str()).checked();
+				mkdirRecursive(dir.c_str()).check();
 		}
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
@@ -381,8 +391,8 @@ void convertAll(const char *fot_path, const string &filter) {
 			snprintf(dst_path, sizeof(dst_path), "%s/%s%s",
 					s_new_path[type], it->first.c_str(), s_new_suffix[type]);
 
-			Loader ldr(src_path);
-			Saver svr(dst_path);
+			auto ldr = move(fileLoader(src_path).get());
+			auto svr = move(fileSaver(dst_path).get());
 
 			if(type != ResTypeId::tile || bytes > 1024 * 1024) {
 				if(type == ResTypeId::tile) { printf("."); fflush(stdout); }
@@ -391,7 +401,7 @@ void convertAll(const char *fot_path, const string &filter) {
 			}
 			else 
 				bytes += ldr.size();
-			convert(type, ldr, svr);
+			convert(type, ldr, svr, src_path);
 		}
 	}
 	
@@ -441,10 +451,10 @@ void convertAll(const char *fot_path, const string &filter) {
 
 				FilePath dir = FilePath(dst_path).parent();
 				if(access(dir.c_str(), R_OK) != 0)
-					mkdirRecursive(dir.c_str()).checked();
+					mkdirRecursive(dir.c_str()).check();
 
-				MemoryLoader ldr(data);
-				Saver svr(dst_path);
+				auto ldr = memoryLoader(data);
+				auto svr = move(fileSaver(dst_path).get());
 
 				if((type != ResTypeId::tile && type != ResTypeId::sound) || bytes > 1024 * 1024) {
 					if(type == ResTypeId::tile || type == ResTypeId::sound) {
@@ -457,7 +467,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				}
 				else 
 					bytes += ldr.size();
-				convert(type, ldr, svr);
+				convert(type, ldr, svr, name);
 			}
 				
 			printf("\n");

@@ -6,6 +6,7 @@
 #include <fwk/sys/xml.h>
 #include <fwk/sys/on_fail.h>
 
+// TODO: report errors with Ex<> ?
 TupleParser::TupleParser(const char **columns, int num_columns, const TupleParser::ColumnMap &map)
 	: m_columns(columns), m_num_columns(num_columns), m_column_map(map) {}
 
@@ -14,7 +15,7 @@ const char *TupleParser::get(const char *col_name) const {
 
 	auto it = m_column_map.find(col_name);
 	if(it == m_column_map.end())
-		CHECK_FAILED("missing column: %s", col_name);
+		FATAL("missing column: %s", col_name);
 	return m_columns[it->second];
 }
 
@@ -23,7 +24,7 @@ static const char *getText(CXmlNode cell_node) {
 	if(val_type) {
 		auto text_node = cell_node.child("text:p");
 		if(!text_node)
-			CHECK_FAILED("Unsupported node type: %s\n", val_type.c_str());
+			FATAL("Unsupported node type: %s\n", val_type.c_str());
 		ASSERT(text_node);
 		return text_node.value().c_str();
 	}
@@ -56,7 +57,7 @@ void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_fun
 	for(int n = 0; n < (int)col_names.size(); n++)
 		if(!col_names[n].empty()) {
 			if(column_map.find(col_names[n]) != column_map.end())
-				CHECK_FAILED("Duplicate argument: %s", col_names[n].c_str());
+				FATAL("Duplicate argument: %s", col_names[n].c_str());
 			column_map.emplace(col_names[n], n);
 		}
 
@@ -67,7 +68,7 @@ void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_fun
 	{
 		auto it = column_map.find("id");
 		if(it == column_map.end())
-			CHECK_FAILED("Id column must be defined");
+			FATAL("Id column must be defined");
 		id_column = it->second;
 	}
 
@@ -107,9 +108,9 @@ void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_fun
 		ON_FAIL("Error while parsing row: % (id: %)", r, id);
 
 		if(id.empty())
-			CHECK_FAILED("ID undefined");
+			FATAL("ID undefined");
 		if(map.find(id) != map.end())
-			CHECK_FAILED("Duplicated ID: %s", id.c_str());
+			FATAL("Duplicated ID: %s", id.c_str());
 
 		int index = add_func(parser);
 		map.emplace(std::move(id), index);

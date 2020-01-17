@@ -128,7 +128,9 @@ namespace io {
 		}
 		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			string path = m_file_dialog->path();
-			string map_name = FilePath(path).absolute().relative(FilePath("data/maps/").absolute());
+			auto current = FilePath::current().get(); // TODO
+			auto abs_path = FilePath(path).absolute(current);
+			string map_name = abs_path.relative(FilePath("data/maps/").absolute(current));
 
 			if(m_mode == mode_starting_single && ev.value) {
 				m_future_world = std::async(std::launch::async,

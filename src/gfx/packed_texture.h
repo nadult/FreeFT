@@ -8,9 +8,10 @@
 // Alpha component is always 255
 class Palette {
   public:
-	void load(Stream &);
-	void save(Stream &) const;
-	void legacyLoad(Stream &);
+	static Ex<Palette> load(FileStream &);
+	template <class Stream>
+	static Ex<Palette> legacyLoad(Stream &);
+	void save(FileStream &) const;
 
 	void resize(int size);
 	void clear();
@@ -31,9 +32,10 @@ class PackedTexture {
   public:
 	PackedTexture();
 
-	void legacyLoad(Stream &, Palette &);
-	void load(Stream &);
-	void save(Stream &) const;
+	template <class Stream>
+	static Ex<PackedTexture> legacyLoad(Stream &, Palette &);
+	static Ex<PackedTexture> load(FileStream &);
+	void save(FileStream &) const;
 
 	int width() const { return m_width; }
 	int height() const { return m_height; }

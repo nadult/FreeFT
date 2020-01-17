@@ -15,8 +15,8 @@ namespace game
 		TileFrame(const Palette *palette = nullptr) :m_palette_ref(palette) { }
 		TileFrame(const TileFrame&);
 		void operator=(const TileFrame&);
-		void load(Stream&);
-		void save(Stream&) const;
+		Ex<void> load(FileStream&);
+		void save(FileStream&) const;
 
 		virtual void cacheUpload(Texture&) const;
 		virtual int2 textureSize() const;
@@ -40,11 +40,10 @@ namespace game
 	class Tile {
 	public:
 		Tile();
-		Tile(const string &resource_name, Stream&);
-
-		void legacyLoad(Stream &);
-		void load(Stream &);
-		void save(Stream &) const;
+		template <class InputStream>
+		Ex<void> legacyLoad(InputStream &, Str name);
+		Ex<void> load(FileStream &);
+		void save(FileStream &) const;
 		
 		FlagsType flags() const;
 
@@ -90,6 +89,4 @@ namespace game
 		bool m_walk_through;
 		bool m_is_invisible;
 	};
-
-
 }

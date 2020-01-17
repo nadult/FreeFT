@@ -26,7 +26,7 @@ namespace game {
 
 		EntityRef spawn_zone = findSpawnZone(0);
 		if(!spawn_zone)
-			CHECK_FAILED("Spawn zone not found!\n");
+			FATAL("Spawn zone not found!\n"); // TODO: Ex<>
 
 		ActorInventory inventory; {
 			inventory.add(findProto("plasma_rifle", ProtoId::weapon), 1);

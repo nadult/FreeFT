@@ -204,8 +204,7 @@ public:
 	void loadTileGroup(const char *file_name) {
 		printf("Loading TileGroup: %s\n", file_name);
 		if(access(file_name)) {
-			XmlDocument doc;
-			doc.load(file_name);
+			auto doc = move(XmlDocument::load(file_name).get()); //TODO
 			m_group.loadFromXML(doc);
 		}
 	}
@@ -223,7 +222,7 @@ public:
 		printf("Saving TileGroup: %s\n", file_name);
 		XmlDocument doc;
 		m_group.saveToXML(doc);
-		doc.save(file_name);
+		doc.save(file_name).check();
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
@@ -279,7 +278,9 @@ void preloadTiles() {
 
 	printf("Preloading tiles");
 	auto [prefix, suffix] = res::tilePrefixSuffix();
-	FilePath tiles_path = FilePath(prefix).absolute();
+	auto current_path = FilePath::current().get(); // TODO
+	FilePath tiles_path = FilePath(prefix).absolute(current_path);
+
 	for(int n = 0; n < file_names.size(); n++) {
 		ON_FAIL("\nError while loading file: %", file_names[n].path);
 
@@ -288,7 +289,7 @@ void preloadTiles() {
 			fflush(stdout);
 		}
 
-		FilePath tile_path = file_names[n].path.relative(tiles_path);
+		FilePath tile_path = file_names[n].path.absolute(current_path).relative(tiles_path);
 		string tile_name = tile_path;
 		if(removeSuffix(tile_name, suffix))
 			res::getTile(tile_name);

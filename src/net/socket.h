@@ -6,10 +6,10 @@
 #include "net/base.h"
 
 namespace net {
-	u32 resolveName(const char *name);
+	Ex<u32> resolveName(ZStr);
 	void decomposeIp(u32 ip, u8 elems[4]);
 	int randomPort();
-	const Address lobbyServerAddress();
+	Ex<Address> lobbyServerAddress();
 
 	struct PacketInfo {
 		PacketInfo() {}
@@ -62,7 +62,7 @@ namespace net {
 
 	class Socket {
 	  public:
-		Socket(const Address &address);
+		static Ex<Socket> make(const Address &address);
 		Socket() : m_fd(0) {}
 		~Socket();
 

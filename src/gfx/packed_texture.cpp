@@ -3,19 +3,17 @@
 
 #include "gfx/packed_texture.h"
 
-#include "fwk/gfx/texture.h"
-#include "fwk/sys/stream.h"
-#include <cstring>
+#include <fwk/gfx/texture.h>
+#include <fwk/sys/file_stream.h>
 
 namespace {
-
-void loadZAR(Stream &sr, PodVector<Color> &out_data, int2 &out_size) {
-	PackedTexture packed;
+// TODO: fix error handling in all places with Ex<>
+Ex<Texture> loadZAR(FileStream &sr) {
 	Palette palette;
-	packed.legacyLoad(sr, palette);
-	out_data.resize(packed.width() * packed.height());
-	packed.decode(out_data.data(), palette.data(), palette.size());
-	out_size = packed.size();
+	auto packed = EXPECT_PASS(PackedTexture::legacyLoad(sr, palette));
+	Texture out(packed.size());
+	packed.decode(out.data(), palette.data(), palette.size());
+	return out;
 }
 
 Texture::RegisterLoader zar_loader("zar", loadZAR);
@@ -34,34 +32,43 @@ void Palette::resize(int size) {
 
 void Palette::clear() { m_data.clear(); }
 
-void Palette::legacyLoad(Stream &sr) {
+template <class Stream>
+Ex<Palette> Palette::legacyLoad(Stream &sr) {
 	i32 pal_size;
 	sr >> pal_size;
 	ASSERT(pal_size <= 256);
-	resize(pal_size);
 
 	Color buf[256];
-	sr.loadData(buf, pal_size * sizeof(Color));
+	sr.loadData(span(buf, pal_size));
 
+	Palette out;
+	out.resize(pal_size);
 	for(int n = 0; n < pal_size; n++)
-		set(n, swapBR(buf[n]));
+		out.set(n, swapBR(buf[n]));
+	return out;
 }
 
-void Palette::load(Stream &sr) {
+template Ex<Palette> Palette::legacyLoad(MemoryStream&);
+template Ex<Palette> Palette::legacyLoad(FileStream&);
+
+Ex<Palette> Palette::load(FileStream &sr) {
 	u8 rgb[256 * 3], *ptr = rgb;
-	u16 size;
+	u16 size = 0;
 	sr >> size;
 
-	m_data.resize(size);
-	sr.loadData(rgb, size * 3);
+	sr.loadData(span(rgb, size * 3));
+	EXPECT_CATCH();
 
+	Palette out;
+	out.m_data.resize(size);
 	for(int n = 0; n < size; n++) {
-		m_data[n] = Color(ptr[0], ptr[1], ptr[2]);
+		out.m_data[n] = Color(ptr[0], ptr[1], ptr[2]);
 		ptr += 3;
 	}
+	return out;
 }
 
-void Palette::save(Stream &sr) const {
+void Palette::save(FileStream &sr) const {
 	u8 rgb[256 * 3], *ptr = rgb;
 	sr << u16(m_data.size());
 
@@ -71,36 +78,36 @@ void Palette::save(Stream &sr) const {
 		ptr[2] = m_data[n].b;
 		ptr += 3;
 	}
-
-	sr.saveData(rgb, m_data.size() * 3);
+	sr.saveData(span(rgb, m_data.size() * 3));
 }
 
 PackedTexture::PackedTexture() : m_width(0), m_height(0), m_default_idx(0), m_max_idx(0) {}
 
-void PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
-	sr.signature("<zar>", 6);
+template <class Stream>
+Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
+	sr.signature(Str("<zar>\0", 6));
 
 	char zar_type, dummy1, has_palette;
-
-	sr.unpack(zar_type, dummy1, m_width, m_height, has_palette);
+	int width, height;
+	sr.unpack(zar_type, dummy1, width, height, has_palette);
 
 	if(zar_type != 0x33 && zar_type != 0x34)
-		CHECK_FAILED("Wrong zar type: %d", (int)zar_type);
+		return ERROR("Wrong zar type: %d", (int)zar_type);
 
 	if(has_palette)
-		palette.legacyLoad(sr);
+		palette = EXPECT_PASS(Palette::legacyLoad(sr));
 	else
 		palette.clear();
 
 	u32 value;
 	sr >> value;
 
-	m_default_idx = 0;
+	u8 default_idx = 0, max_idx;
 	if((zar_type == 0x34 || zar_type == 0x33) && has_palette)
-		m_default_idx = value & 255;
-	m_max_idx = m_default_idx;
+		default_idx = value & 255;
+	max_idx = default_idx;
 
-	int offset = 0, total_pixels = m_width * m_height;
+	int offset = 0, total_pixels = width * height;
 	vector<u8> tdata;
 
 	while(offset < total_pixels) {
@@ -112,34 +119,46 @@ void PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 		tdata.push_back(cmd);
 
 		if(command == 1) {
-			sr.loadData(buf, n_pixels);
+			sr.loadData(span(buf, n_pixels));
 			tdata.insert(tdata.end(), buf, buf + n_pixels);
 			for(int n = 0; n < n_pixels; n++)
-				m_max_idx = max(m_max_idx, buf[n]);
+				max_idx = max(max_idx, buf[n]);
 		} else if(command == 2) {
-			sr.loadData(buf, n_pixels * 2);
+			sr.loadData(span(buf, n_pixels * 2));
 			tdata.insert(tdata.end(), buf, buf + n_pixels * 2);
 			for(int n = 0; n < n_pixels; n++)
-				m_max_idx = max(m_max_idx, buf[n * 2 + 0]);
+				max_idx = max(max_idx, buf[n * 2 + 0]);
 		} else if(command == 3) {
-			sr.loadData(buf, n_pixels);
+			sr.loadData(span(buf, n_pixels));
 			tdata.insert(tdata.end(), buf, buf + n_pixels);
 		}
 		offset += n_pixels;
 	}
 
-	m_data.resize(tdata.size());
-	memcpy(m_data.data(), tdata.data(), m_data.size());
+	PackedTexture out;
+	out.m_data.unsafeSwap(tdata);
+	out.m_width = width, out.m_height = height;
+	out.m_default_idx = default_idx, out.m_max_idx = max_idx;
+	return out;
 }
 
-void PackedTexture::load(Stream &sr) {
-	sr.unpack(m_width, m_height, m_default_idx, m_max_idx);
-	sr >> m_data;
+template Ex<PackedTexture> PackedTexture::legacyLoad(MemoryStream&, Palette&);
+template Ex<PackedTexture> PackedTexture::legacyLoad(FileStream&, Palette&);
+
+Ex<PackedTexture> PackedTexture::load(FileStream &sr) {
+	PackedTexture out;
+	sr.unpack(out.m_width, out.m_height, out.m_default_idx, out.m_max_idx);
+	u32 size = 0;
+	sr >> size;
+	out.m_data.resize(size);
+	sr.loadData(out.m_data);
+	return out;
 }
 
-void PackedTexture::save(Stream &sr) const {
+void PackedTexture::save(FileStream &sr) const {
 	sr.pack(m_width, m_height, m_default_idx, m_max_idx);
-	sr << m_data;
+	sr << m_data.size();
+	sr.saveData(m_data);
 }
 
 int PackedTexture::memorySize() const { return sizeof(PackedTexture) + m_data.size(); }
@@ -232,6 +251,7 @@ void PackedTexture::decode(Color *__restrict dst, const Color *__restrict pal, i
 }
 
 void PackedTexture::toTexture(Texture &out, const Color *pal, int pal_size) const {
+	DASSERT(m_width > 0 && m_height > 0);
 	out.resize({m_width, m_height});
 	decode(out.line(0), pal, pal_size);
 }

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "game/base.h"
-#include <fwk/sys/stream.h>
 
 namespace net {
 	namespace limits {
@@ -88,6 +87,4 @@ namespace net {
 
 }
 
-template <> static constexpr bool is_flat_data<net::SeqNumber> = true;
-
-SERIALIZE_AS_POD(net::SeqNumber)
+template <> static constexpr bool fwk::is_flat_data<net::SeqNumber> = true;

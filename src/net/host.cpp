@@ -1,10 +1,7 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include "fwk/sys/rollback.h"
-#include "net/base.h"
 #include "net/host.h"
-#include <algorithm>
 
 //#define LOGGING
 
@@ -504,14 +501,14 @@ ERROR:;
 
 		int retries = 0;
 		while(!m_socket.isValid()) {
-			auto result = RollbackContext::begin([&]() { return Socket(address); });
-			if(result) {
+			if(auto result = Socket::make(address))
 				m_socket = move(*result);
-			}
 			else {
 				address = Address(address.ip, randomPort());
-				if(++retries == 100)
-					FATAL("Error while constructing socket.\nTODO: handle it properly");
+				if(++retries == 100) {
+					result.error().print();
+					FATAL("Error while constructing socket.\nTODO: handle it properly"); // TODO: return Ex<> ?
+				}
 			}
 		}
 	}
@@ -525,7 +522,9 @@ ERROR:;
 	}
 		
 	void LocalHost::sendLobbyPacket(CSpan<char> data) {
-		m_socket.send(data, lobbyServerAddress());
+		// TODO: return error? cache address?
+		if(auto addr = lobbyServerAddress())
+			m_socket.send(data, *addr);
 	}
 
 	void LocalHost::receive() {

@@ -2,10 +2,9 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "audio/mp3_decoder.h"
-#include "audio/sound.h"
 #include <mpg123.h>
 
-#include <fwk/sys/stream.h>
+#include <fwk/sys/file_stream.h>
 
 namespace audio {
 
@@ -14,7 +13,7 @@ namespace audio {
 	//TODO: silence errors
 
 	MP3Decoder::MP3Decoder(const string &file_name) {
-		m_stream.reset(new Loader(file_name));
+		m_stream.emplace(move(fileLoader(file_name).get())); // TODO: pass it properly
 
 		if(s_num_decoders++ == 0)
 			mpg123_init();
@@ -36,7 +35,7 @@ namespace audio {
 			size_t size = 0;
 			if(m_need_data) {
 				PodVector<u8> input(min(4096, (int)(m_stream->size() - m_stream->pos())));
-				m_stream->loadData(input.data(), input.size());
+				m_stream->loadData(input);
 				ret = mpg123_decode(handle, input.data(), input.size(), 0, 0, &size);
 			}
 			else {
@@ -73,7 +72,7 @@ namespace audio {
 		if(m_is_finished)
 			return true;
 
-		PodVector<u8> temp(max_size);
+		PodVector<char> temp(max_size);
 		int out_pos = 0;
 		auto handle = (mpg123_handle*)m_handle;
 
@@ -87,13 +86,14 @@ namespace audio {
 					ret = MPG123_DONE;
 					break;
 				}
-				PodVector<u8> input(min(4096, bytes_left));
+				PodVector<char> input(min(4096, bytes_left));
 
-				m_stream->loadData(input.data(), input.size());
-				ret = mpg123_decode(handle, input.data(), input.size(), temp.data() + out_pos, max_size - out_pos, &size);
+				m_stream->loadData(input);
+				ret = mpg123_decode(handle, (u8*)input.data(), input.size(), (u8*)temp.data() + out_pos,
+						max_size - out_pos, &size);
 			}
 			else {
-				ret = mpg123_decode(handle, 0, 0, temp.data() + out_pos, max_size - out_pos, &size);
+				ret = mpg123_decode(handle, 0, 0, (u8*)temp.data() + out_pos, max_size - out_pos, &size);
 			}
 
 			m_need_data = ret == MPG123_NEED_MORE;
@@ -101,7 +101,13 @@ namespace audio {
 		} while(ret != MPG123_ERR && ret != MPG123_DONE && out_pos < max_size);
 
 		m_is_finished = ret == MPG123_DONE || ret == MPG123_ERR;
-		out.setData((const char*)temp.data(), out_pos, m_sample_rate, 16, m_num_channels == 2);
+
+		// TODO: this is bad
+		temp.resize(out_pos);
+		vector<char> out_data;
+		temp.unsafeSwap(out_data);
+
+		out = {move(out_data), {m_sample_rate, 16, m_num_channels == 2}};
 
 		return m_is_finished;
 	}

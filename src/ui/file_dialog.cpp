@@ -65,7 +65,7 @@ namespace ui {
 		else if(event.type == Event::element_selected) {
 			if(event.value >= 0 && event.value < m_list_box->size()) {
 				FilePath file_path = m_dir_path / FilePath((*m_list_box)[event.value].text.c_str());
-				file_path = file_path.absolute();
+				file_path = file_path.absolute().get(); // TODO
 
 				if(file_path.isDirectory()) {
 					m_dir_path = file_path;

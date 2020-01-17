@@ -10,15 +10,8 @@
 
 using namespace fwk;
 
-// This kind of data can be safely serialized to/from binary format, byte by byte
-template <class T>
-inline constexpr bool is_flat_data = std::is_arithmetic<T>::value || std::is_enum<T>::value;
-template <class T> inline constexpr bool is_flat_data<vec2<T>> = is_flat_data<T>;
-template <class T> inline constexpr bool is_flat_data<vec3<T>> = is_flat_data<T>;
-template <class T> inline constexpr bool is_flat_data<vec4<T>> = is_flat_data<T>;
-
 template <int size> struct PodData { char data[size]; };
-template <int size> inline constexpr bool is_flat_data<PodData<size>> = true;
+template <int size> inline constexpr bool fwk::is_flat_data<PodData<size>> = true;
 
 template <class T> const PodData<sizeof(T)> &asPod(const T &value) {
 	return reinterpret_cast<PodData<sizeof(T)> &>(value);
@@ -147,15 +140,8 @@ class MemoryStream {
 	// Terminating zero will be added as well
 	int loadString(Span<char>);
 
-	MemoryStream &operator<<(const string &out) {
-		saveString(out);
-		return *this;
-	}
-
-	MemoryStream &operator>>(string &out) {
-		out = loadString();
-		return *this;
-	}
+	MemoryStream &operator<<(const string &);
+	MemoryStream &operator>>(string &);
 
 	template <class T, EnableIf<is_flat_data<T>>...> void saveVector(CSpan<T> vec) {
 		saveVector(vec.template reinterpret<char>(), sizeof(T));
