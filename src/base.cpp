@@ -3,12 +3,12 @@
 
 #include "base.h"
 
-#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/font.h>
 #include <fwk/gfx/gl_device.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/math/plane.h>
-#include <fwk/sys/resource_manager.h>
 #include <fwk/math/rotation.h>
+#include <fwk/sys/stream.h>
 
 enum {
 	// TODO: tune-able parameters?

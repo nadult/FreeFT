@@ -83,11 +83,11 @@ NICE_FLAGS=-std=c++2a -fno-exceptions -fno-omit-frame-pointer -ggdb -Wall -Wover
 LINUX_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) -pthread
 MINGW_FLAGS=$(NICE_FLAGS) $(INCLUDES) $(FLAGS) `$(MINGW_PKG_CONFIG) libzip --cflags`
 
-PCH_FILE_SRC=src/pch.h
+PCH_FILE_SRC=src/freeft_pch.h
 
-PCH_FILE_H=$(BUILD_DIR)/pch.h
-PCH_FILE_GCH=$(BUILD_DIR)/pch.h.gch
-PCH_FILE_PCH=$(BUILD_DIR)/pch.h.pch
+PCH_FILE_H=$(BUILD_DIR)/freeft_pch_.h
+PCH_FILE_GCH=$(BUILD_DIR)/freeft_pch_.h.gch
+PCH_FILE_PCH=$(BUILD_DIR)/freeft_pch_.h.pch
 
 ifdef CLANG
 	PCH_INCLUDE=-include-pch $(PCH_FILE_PCH)

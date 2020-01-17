@@ -3,27 +3,12 @@
 
 #pragma once
 
+#include "freeft_pch.h"
 #include "memory_stream.h"
-#include <fwk/enum.h>
-#include <fwk/format.h>
-#include <fwk/gfx/color.h>
-#include <fwk/gfx_base.h>
-#include <fwk/math/box.h>
-#include <fwk/math/constants.h>
-#include <fwk/math/ray.h>
-#include <fwk/math/segment.h>
-#include <fwk/math_base.h>
-#include <fwk/pod_vector.h>
-#include <fwk/sys/immutable_ptr.h>
-#include <fwk/sys/unique_ptr.h>
-#include <fwk/sys/xml.h>
-#include <fwk/sys_base.h>
 
 using namespace fwk;
 
 #define FATAL FWK_FATAL
-
-template <class T> using Dynamic = UniquePtr<T>;
 
 inline constexpr float big_epsilon = 0.0001f;
 
