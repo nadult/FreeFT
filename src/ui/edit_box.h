@@ -25,7 +25,7 @@ namespace ui {
 	private:
 		void setCursorPos(int2);
 
-		PFont m_font;
+		const Font &m_font;
 		string32 m_text, m_old_text;
 		string32 m_label;
 		int m_cursor_pos;

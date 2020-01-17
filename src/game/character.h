@@ -10,7 +10,7 @@
 namespace game
 {
 
-	class Character: public immutable_base<Character> {
+	class Character: public std::enable_shared_from_this<Character> {
 	public:
 		enum {
 			max_name_size = 14,
@@ -43,7 +43,7 @@ namespace game
 		ProtoIndex m_proto_idx;
 	};
 
-	class CharacterClass: public immutable_base<CharacterClass> {
+	class CharacterClass: public std::enable_shared_from_this<CharacterClass> {
 	public:
 		CharacterClass(const CharacterClass&) = default;
 		CharacterClass(XmlNode node, int id);
@@ -70,7 +70,7 @@ namespace game
 		int m_tier, m_id;
 	};
 
-	class PlayableCharacter: public immutable_base<PlayableCharacter> {
+	class PlayableCharacter: public std::enable_shared_from_this<PlayableCharacter> {
 	public:
 		PlayableCharacter(const Character &character, int class_id);
 		explicit PlayableCharacter(MemoryStream&);

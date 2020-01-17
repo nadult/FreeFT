@@ -81,7 +81,7 @@ namespace hud
 	protected:
 		FRect m_rect;
 		HudStyle m_style;
-		PFont m_font, m_big_font;
+		const Font *m_font = nullptr, *m_big_font = nullptr;
 		vector<PHudWidget> m_children;
 
 		float m_anim_speed;

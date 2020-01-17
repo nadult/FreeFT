@@ -75,7 +75,7 @@ namespace ui
 			if(!tiles[group_id] && (!only_uniform || tile_group.isGroupSurfaceUniform(group_id)))
 				tiles[group_id] = tile_group.entryTile(n);
 		}
-		tiles.resize(remove(tiles.begin(), tiles.end(), nullptr) - tiles.begin());
+		tiles.resize(std::remove(tiles.begin(), tiles.end(), nullptr) - tiles.begin());
 		return make_shared<VectorBasedModel>(tiles);
 	}
 

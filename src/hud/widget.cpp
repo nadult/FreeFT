@@ -88,8 +88,8 @@ namespace hud {
 	
 	void HudWidget::setStyle(const HudStyle &style) {
 		m_style = style;
-		m_font = res::getFont(style.font_name);
-		m_big_font = res::getFont(style.big_font_name);
+		m_font = &res::getFont(style.font_name);
+		m_big_font = &res::getFont(style.big_font_name);
 
 		for(auto &child: m_children)
 			child->setStyle(style);

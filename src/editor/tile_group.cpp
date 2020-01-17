@@ -121,9 +121,7 @@ void TileGroup::loadFromXML(const XmlDocument &doc) {
 
 	while(node) {
 		Entry entry;
-		PTile tile = res::getTile(node.attrib("tile"));
-
-		entry.tile = &*tile;
+		entry.tile = &res::getTile(node.attrib("tile"));
 		entry.group_id = node.attrib<int>("group_id");
 		entry.is_dirty = node.attrib<int>("is_dirty") != 0;
 		m_entries.push_back(entry);

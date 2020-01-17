@@ -356,9 +356,9 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 namespace res {
 static HashMap<string, PTexture> s_gui_textures, s_textures;
-static HashMap<string, game::PTile> s_tiles;
-static HashMap<string, PFontCore> s_fonts;
 static HashMap<string, PTexture> s_font_textures;
+static std::map<string, Dynamic<game::Tile>> s_tiles;
+static std::map<string, Font> s_fonts;
 
 static PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, Str suffix) {
 	auto it = map.find(str);
@@ -372,45 +372,40 @@ static PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, 
 	}
 	return it->second;
 }
-	
-PTexture getTexture(Str name) {
-	return getTexture(name, s_textures, "data/", "");
-}
+
+PTexture getTexture(Str name) { return getTexture(name, s_textures, "data/", ""); }
 
 PTexture getGuiTexture(Str name) {
-	return  getTexture(name, s_gui_textures, "data/gui/", ".zar");
+	return getTexture(name, s_gui_textures, "data/gui/", ".zar");
 }
 
-PFont getFont(Str name) {
+const Font &getFont(Str name) {
 	auto it = s_fonts.find(name);
 	if(it == s_fonts.end()) {
 		auto file_name = format("%%%", "data/fonts/", name, ".fnt");
 		Loader ldr(file_name);
 		auto core = fwk::make_immutable<FontCore>(file_name, ldr);
-		it = s_fonts.emplace(name, move(core)).first;
-	}
-	auto core = it->second;
-	auto tex = getTexture(core->textureName(), s_font_textures, "data/fonts/", "");
-	return uniquePtr<Font>(move(core), move(tex));
-}
-
-game::PTile getTile(Str name) {
-	auto it = s_tiles.find(name);
-	if(it == s_tiles.end()) {
-		auto file_name = format("%%%", "data/tiles/", name, ".tile");
-		Loader ldr(file_name);
-		auto tile = make_immutable<game::Tile>(name, ldr);
-		s_tiles.emplace(name, tile);
-		return tile;
+		auto tex = getTexture(core->textureName(), s_font_textures, "data/fonts/", "");
+		it = s_fonts.emplace(name, Font(move(core), move(tex))).first;
 	}
 	return it->second;
 }
 
-pair<Str, Str> tilePrefixSuffix() {
-	return {"data/tiles/", ".tile"};
+const game::Tile &getTile(Str name) {
+	auto it = s_tiles.find(name);
+	if(it == s_tiles.end()) {
+		auto file_name = format("%%%", "data/tiles/", name, ".tile");
+		Loader ldr(file_name);
+		Dynamic<game::Tile> tile;
+		tile.emplace(name, ldr);
+		it = s_tiles.emplace(name, move(tile)).first;
+	}
+	return *it->second;
 }
 
-const HashMap<string, game::PTile> &allTiles() { return s_tiles; }
+pair<Str, Str> tilePrefixSuffix() { return {"data/tiles/", ".tile"}; }
+
+const std::map<string, Dynamic<game::Tile>> &allTiles() { return s_tiles; }
 }
 
 string32 toUTF32Checked(Str ref) {

@@ -343,20 +343,18 @@ namespace io {
 		m_console->draw(ui_renderer);
 
 		if(!m_main_message.empty()) {
-			PFont font = res::getFont("transformers_48");
+			auto &font = res::getFont("transformers_48");
 			FRect rect(float2(resolution.x, 30.0f));
 			rect += float2(0.0f, m_console->rect().height());
 			auto text_color = mulAlpha(ColorId::white, m_main_message.anim_time);
 			auto shadow_color = mulAlpha(ColorId::black, m_main_message.anim_time);
-
-			font->draw(ui_renderer, rect, {text_color, shadow_color, HAlign::center},
-					   m_main_message.text());
+			font.draw(ui_renderer, rect, {text_color, shadow_color, HAlign::center}, m_main_message.text());
 		}
 		ui_renderer.render();
 	}
 
 	void Controller::drawDebugInfo(Renderer2D &out) const {
-		PFont font = res::getFont("liberation_16");
+		auto &font = res::getFont("liberation_16");
 
 		if(m_debug_ai) {
 			for(int n = 0; n < m_world->entityCount(); n++) {
@@ -369,8 +367,7 @@ namespace io {
 									  float2(screen_rect.center().x, screen_rect.y()) -
 									  float2(m_view_pos);
 					text_rect -= float2(text_rect.width() * 0.5f, 0.0f);
-					font->draw(out, text_rect, {ColorId::white, ColorId::black, HAlign::center},
-							   status);
+					font.draw(out, text_rect, {ColorId::white, ColorId::black, HAlign::center}, status);
 				}
 			}
 		}
@@ -410,10 +407,10 @@ namespace io {
 
 		fmt("%", s_profiler_stats);
 
-		int2 extents = font->evalExtents(fmt.text()).size();
+		int2 extents = font.evalExtents(fmt.text()).size();
 		extents.y = (extents.y + 19) / 20 * 20;
 		int2 pos = out.viewport().max() - extents - int2(4, 4);
 		out.addFilledRect(FRect((float2)pos, (float2)out.viewport().size()), FColor(0.0f, 0.0f, 0.0f, 0.3f));
-		font->draw(out, (float2)(pos + int2(2, 2)), {ColorId::white, ColorId::black}, fmt.text());
+		font.draw(out, (float2)(pos + int2(2, 2)), {ColorId::white, ColorId::black}, fmt.text());
 	}
 }

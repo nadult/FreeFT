@@ -6,9 +6,8 @@
 namespace ui {
 
 	EditBox::EditBox(const IRect &rect, int max_size, Str label, FColor col)
-		:Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size), m_label(toUTF32Checked(label)) {
-		m_font = res::getFont(WindowStyle::fonts[0]);
-	}
+		: Window(rect, col), m_is_editing(false), m_cursor_pos(0), m_max_size(max_size),
+		  m_label(toUTF32Checked(label)), m_font(res::getFont(WindowStyle::fonts[0])) {}
 
 	void EditBox::setText(string32 new_text) {
 		m_text = std::move(new_text);
@@ -17,13 +16,13 @@ namespace ui {
 	}
 
 	void EditBox::drawContents(Renderer2D &out) const {
-		int line_height = m_font->lineHeight();
+		int line_height = m_font.lineHeight();
 
 		int2 pos(5, height() / 2 - line_height / 2);
-		m_font->draw(out, (float2)pos, {ColorId::white, ColorId::black}, m_label + m_text);
+		m_font.draw(out, (float2)pos, {ColorId::white, ColorId::black}, m_label + m_text);
 
 		if(m_is_editing) {
-			IRect ext = m_font->evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
+			IRect ext = m_font.evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
 			out.addLine(pos + int2(ext.ex(), 0), pos + int2(ext.ex(), line_height), FColor(ColorId::white, 0.7f));
 			out.addRect(IRect(2, 1, width() - 1, height() - 2), FColor(ColorId::white, 0.3f));	
 		}
@@ -35,7 +34,7 @@ namespace ui {
 		//TODO: speed up
 		for(int n = 0; n < (int)m_text.size(); n++) {
 			auto text = m_label + m_text.substr(0, n);
-			IRect ext = m_font->evalExtents(text.c_str());
+			IRect ext = m_font.evalExtents(text.c_str());
 			if(ext.ex() + 8 > rect_pos.x) {
 				m_cursor_pos = max(0, n);
 				break;

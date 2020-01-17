@@ -29,13 +29,12 @@ namespace {
 }
 
 	GroupEditor::GroupEditor(IRect rect)
-		:ui::Window(rect, Color(0, 0, 0)), m_tile_list(rect.width(), 2) {
+		:ui::Window(rect, Color(0, 0, 0)), m_tile_list(rect.width(), 2), m_font(res::getFont(WindowStyle::fonts[1])) {
 		m_view = clippedRect();
 
 		m_tile_group = nullptr;
 		m_current_entry = nullptr;
 
-		m_font = res::getFont(WindowStyle::fonts[1]);
 		m_mode = mAddRemove;
 		memset(m_offset, 0, sizeof(m_offset));
 		m_selected_group_id = 0;
@@ -211,15 +210,15 @@ namespace {
 			out.addFilledRect(IRect(-half_size, half_size), FColor(0.3f, 0.3f, 0.3f));
 			drawBBox(out, IBox({-9, 0, -9}, {9, 1, 9}), ColorId::white);
 
-			auto font = res::getFont(WindowStyle::fonts[0]);
+			auto &font = res::getFont(WindowStyle::fonts[0]);
 
 			for(int n = 0; n < TileGroup::Group::side_count; n++) {
 				out.setViewPos(-center - worldToScreen(TileGroup::Group::s_side_offsets[n] * 9));
-				font->draw(out, float2(0, 0), {ColorId::white}, format("%", m_tile_group->groupSurface(m_selected_group_id, n)));
+				font.draw(out, float2(0, 0), {ColorId::white}, format("%", m_tile_group->groupSurface(m_selected_group_id, n)));
 			}
 				
 			out.setViewPos(-center +edit_rect.size() / 2);
-			font->draw(out, float2(0, 0), {ColorId::white}, format("setting surface: %", m_selected_surface_id));
+			font.draw(out, float2(0, 0), {ColorId::white}, format("setting surface: %", m_selected_surface_id));
 
 			/*
 			const char *names[] = {
@@ -236,13 +235,13 @@ namespace {
 
 			out.setViewPos(-int2(bottom_rect.ex() - 200, bottom_rect.y()));
 			for(int n = 0; n < arraySize(names); n++)
-				font->draw(int2(0, 10), ColorId::white,
+				font.draw(int2(0, 10), ColorId::white,
 						m_selected_surface_id == n? "%d: [%s]\n" : "%d: %s\n", n, names[n]); */
 			out.setViewPos(-clippedRect().min());
 		}
 
 		if(m_current_entry)
-			m_font->draw(out, float2(5, height() - 20), {ColorId::white, ColorId::black},
+			m_font.draw(out, float2(5, height() - 20), {ColorId::white, ColorId::black},
 					format("%", m_current_entry->tile->resourceName()));
 	}
 

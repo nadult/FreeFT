@@ -152,7 +152,7 @@ namespace io {
 
 	void MainMenuLoop::drawLoading(Renderer2D &out, float alpha) const {
 		const char *text = "Loading";
-		PFont font = res::getFont("transformers_30");
+		auto &font = res::getFont("transformers_30");
 		FColor color(1.0f, 0.8f, 0.2f, alpha);
 
 		int2 dims(m_loading->size());
@@ -160,7 +160,7 @@ namespace io {
 
 		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * pi * 2.0), 8.0) * 0.1;
 
-		FRect extents = font->draw(out, float2(0.0f, 0.0f), {color, ColorId::black, HAlign::right, VAlign::center}, text);
+		FRect extents = font.draw(out, float2(0.0f, 0.0f), {color, ColorId::black, HAlign::right, VAlign::center}, text);
 
 		out.pushViewMatrix();
 		out.mulViewMatrix(translation(extents.ex() + 8.0f + center.x, 0.0f, 0.0f));
@@ -214,8 +214,8 @@ namespace io {
 				}
 			}
 			/*catch(const Exception &ex) {
-				PFont font = res::getFont(WindowStyle::fonts[1]);
-				IRect extents = font->evalExtents(ex.what());
+				auto &font = res::getFont(WindowStyle::fonts[1]);
+				IRect extents = font.evalExtents(ex.what());
 				int2 pos = rect().center(), size(min(rect().width(), extents.width() + 50), 100);
 
 				PMessageBox message_box(make_shared<ui::MessageBox>(IRect(pos - size / 2, pos + size / 2), ex.what(), MessageBoxMode::ok));

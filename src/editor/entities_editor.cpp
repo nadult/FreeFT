@@ -352,9 +352,9 @@ namespace ui {
 		m_view.drawGrid(out);
 
 		out.setViewPos(-clippedRect().min());
-		auto font = res::getFont(WindowStyle::fonts[1]);
+		auto &font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
+		font.draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
 				stdFormat("Cursor: (%.0f, %.0f, %.0f)  Grid: %d Mode: %s\n",
 				m_cursor_pos.x, m_cursor_pos.y, m_cursor_pos.z, m_view.gridHeight(), s_mode_desc[m_mode]));
 	}

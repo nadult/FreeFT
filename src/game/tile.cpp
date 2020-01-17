@@ -54,6 +54,7 @@ namespace game
 	}
 
 	void TileFrame::cacheUpload(Texture &tex) const {
+		DASSERT(m_palette_ref);
 		m_texture.toTexture(tex, m_palette_ref->data(), m_palette_ref->size());
 	}
 

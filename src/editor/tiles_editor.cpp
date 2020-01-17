@@ -516,19 +516,19 @@ namespace ui {
 		}
 		
 		out.setViewPos(-clippedRect().min());
-		auto font = res::getFont(WindowStyle::fonts[1]);
+		auto &font = res::getFont(WindowStyle::fonts[1]);
 
-		font->draw(out, float2(0, 0), {ColorId::white, ColorId::black}, format("Tile count: %\n", m_tile_map.size()));
+		font.draw(out, float2(0, 0), {ColorId::white, ColorId::black}, format("Tile count: %\n", m_tile_map.size()));
 		if(isChangingOccluders() && m_current_occluder != -1) {
 			auto &occluder = m_tile_map.occluderMap()[m_current_occluder];
-			font->draw(out, float2(0, 25), {ColorId::white, ColorId::black},
+			font.draw(out, float2(0, 25), {ColorId::white, ColorId::black},
 						format("Occluder: % (% objects)\n", m_current_occluder, (int)occluder.objects.size()));
 		}
 
 		if(m_new_tile)
-			font->draw(out, float2(0, clippedRect().height() - 50), {ColorId::white, ColorId::black},
+			font.draw(out, float2(0, clippedRect().height() - 50), {ColorId::white, ColorId::black},
 					format("Tile: %\n", m_new_tile->resourceName()));
-		font->draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
+		font.draw(out, float2(0, clippedRect().height() - 25), {ColorId::white, ColorId::black},
 				stdFormat("Cursor: (%d, %d, %d)  Grid: %d Mode: %s\n",
 				m_selection.x(), m_selection.y(), m_selection.z(), m_view.gridHeight(), s_mode_strings[m_mode]));
 	}

@@ -52,14 +52,14 @@ class Resource {
 
 		Loader loader(current_dir / file_name);
 		if(m_type == ResType::tile) {
-			m_tile = make_immutable<Tile>("", loader);
+			m_tile.emplace("", loader);
 			m_rect_size = m_tile->rect().size() + int2(8, 8);
 		} else if(m_type == ResType::texture) {
 			m_texture = GlTexture::make("", loader);
 			m_rect_size = m_texture->size();
 		} else if(m_type == ResType::sprite) {
 			//	printf("Loading sprite: %s\n", file_name);
-			m_sprite = make_shared<Sprite>();
+			m_sprite.emplace();
 			m_sprite->setResourceName(file_name);
 			loader >> *m_sprite;
 			m_sprite->printInfo();
@@ -71,7 +71,7 @@ class Resource {
 		}
 	}
 
-	void printStats(Renderer2D &out, int2 pos, Font &font) const {
+	void printStats(Renderer2D &out, int2 pos, const Font &font) const {
 		TextFormatter fmt;
 
 		if(m_type == ResType::sprite) {
@@ -227,9 +227,9 @@ class Resource {
 	ResType m_type;
 
 	int2 m_rect_size;
-	PTile m_tile;
+	Dynamic<Tile> m_tile;
 	PTexture m_texture;
-	PSprite m_sprite;
+	Dynamic<Sprite> m_sprite;
 
 	vector<pair<const char *, double>> m_events;
 	double m_last_time;
@@ -240,9 +240,7 @@ class ResourceView : public Window {
   public:
 	virtual const char *className() const { return "ResourceView"; }
 	ResourceView(IRect rect, FilePath current_dir, vector<string> file_names)
-		: Window(rect), m_selected_id(-1) {
-		m_font = res::getFont(ui::WindowStyle::fonts[0]);
-
+		: Window(rect), m_selected_id(-1) ,m_font(res::getFont(ui::WindowStyle::fonts[0])) {
 		for(auto file_name : file_names) {
 			auto res_type = classifyFileName(file_name);
 			if(res_type != ResType::unknown) {
@@ -331,7 +329,7 @@ class ResourceView : public Window {
 
 		if(m_selected_id != -1) {
 			out.setViewPos(-clippedRect().min());
-			m_resources[m_selected_id]->printStats(out, int2(0, 0), *m_font);
+			m_resources[m_selected_id]->printStats(out, int2(0, 0), m_font);
 		}
 	}
 
@@ -345,7 +343,7 @@ class ResourceView : public Window {
 	int2 m_last_mouse_pos;
 	vector<Dynamic<Resource>> m_resources;
 	vector<int2> m_positions;
-	Dynamic<Font> m_font;
+	Font m_font;
 };
 
 enum class Command { empty, change_dir, exit };

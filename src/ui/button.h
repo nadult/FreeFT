@@ -27,7 +27,7 @@ namespace ui
 		bool m_mouse_press;
 		IRect m_text_extents;
 		string m_text;
-		PFont m_font;
+		const Font &m_font;
 	};
 
 	using PButton = shared_ptr<Button>;

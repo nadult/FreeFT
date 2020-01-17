@@ -9,11 +9,11 @@ namespace ui
 {
 
 	struct ImageButtonProto {
-		ImageButtonProto(const char *back_tex, const char *up_tex, const char *down_tex, const char *font_name, FRect text_area);
+		ImageButtonProto(Str back_tex, Str up_tex, Str down_tex, Str font_name, FRect text_area);
 
 		IRect rect, text_rect;
 		PTexture back, up, down;
-		PFont font;
+		const Font *font = nullptr;
 		string sound_name;
 	};
 
@@ -26,12 +26,12 @@ namespace ui
 			mode_toggle_on
 		};
 
-		ImageButton(const int2 &pos, ImageButtonProto proto, const char *text, Mode mode, int id = 0);
+		ImageButton(const int2 &pos, ImageButtonProto proto, Str text, Mode mode, int id = 0);
 		const char *typeName() const override { return "ImageButton"; }
 
 		void drawContents(Renderer2D&) const override;
 		bool onMouseDrag(const InputState&, int2, int2, int key, int is_final) override;
-		virtual void setText(const char *text);
+		virtual void setText(Str text);
 
 		bool isPressed() const { return m_mode != mode_normal && m_is_pressed; }
 		void press(bool is_pressed) { if(m_mode != mode_normal) m_is_pressed = is_pressed; }

@@ -209,7 +209,6 @@ using PPCController = shared_ptr<PCController>;
 using PGameMode = Dynamic<GameMode>;
 using PEntity = Dynamic<Entity>;
 using POrder = Dynamic<Order>;
-using PTile = immutable_ptr<Tile>;
 }
 
 namespace net {
@@ -235,11 +234,11 @@ struct TupleParser;
 namespace res {
 PTexture getTexture(Str);
 PTexture getGuiTexture(Str);
-PFont getFont(Str);
-game::PTile getTile(Str);
+const Font &getFont(Str);
+const game::Tile &getTile(Str);
 pair<Str, Str> tilePrefixSuffix();
 
-const HashMap<string, game::PTile> &allTiles();
+const std::map<string, Dynamic<game::Tile>> &allTiles();
 }
 
 void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos, bool fullscreen);

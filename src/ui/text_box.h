@@ -19,7 +19,7 @@ namespace ui {
 		void drawContents(Renderer2D&) const override;
 
 	private:
-		PFont m_font;
+		const Font *m_font = nullptr;
 		string m_text;
 		IRect m_text_extents;
 		bool m_is_centered;

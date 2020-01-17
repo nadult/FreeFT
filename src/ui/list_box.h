@@ -45,7 +45,7 @@ namespace ui {
 		int entryId(int2 pos) const;
 
 		vector<Entry> m_entries;
-		PFont m_font;
+		const Font &m_font;
 		int m_line_height;
 		int m_over_id, m_dragging_id;
 	};

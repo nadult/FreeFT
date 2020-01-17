@@ -32,7 +32,6 @@ namespace ui {
 		IRect evalBarPos() const;
 
 		string m_text;
-		PFont m_font;
 		float m_bar_size, m_pos, m_start_pos;
 		bool m_mouse_press, m_mouse_over;
 		bool m_is_horizontal;

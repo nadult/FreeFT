@@ -91,11 +91,11 @@ namespace game {
 
 		auto tnode = main_node.child("tile");
 		while(tnode) {
-			const Tile *tile = res::getTile(tnode.attrib("name")).get();
+			auto &tile = res::getTile(tnode.attrib("name"));
 			auto inode = tnode.child("i");
 			while(inode) {
 				int3 pos = inode.attrib<int3>("pos");
-				maybeAdd(*tile, pos);
+				maybeAdd(tile, pos);
 				inode = inode.sibling("i");
 			}
 			tnode = tnode.sibling("tile");

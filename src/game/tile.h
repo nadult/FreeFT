@@ -37,7 +37,7 @@ namespace game
 
 
 	// TODO: naming convention, attribute hiding
-	class Tile: public immutable_base<Tile> {
+	class Tile {
 	public:
 		Tile();
 		Tile(const string &resource_name, Stream&);

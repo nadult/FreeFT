@@ -10,7 +10,7 @@
 namespace game {
 
 	//TODO: naming: toTexture, getFrame etc
-	class Sprite: public immutable_base<Sprite> {
+	class Sprite {
 	public:
 		Sprite();
 		void legacyLoad(Stream &sr);
@@ -165,9 +165,6 @@ namespace game {
 		bool m_is_partial;
 		int m_index;
 	};
-
-	using PSprite = shared_ptr<Sprite>;
-
 };
 	
 SERIALIZE_AS_POD(game::Sprite::Frame);

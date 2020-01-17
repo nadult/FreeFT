@@ -10,7 +10,7 @@
 
 namespace ui
 {
-	ImageButtonProto::ImageButtonProto(const char *back_tex, const char *up_tex, const char *down_tex, const char *font_name, FRect text_area) {
+	ImageButtonProto::ImageButtonProto(Str back_tex, Str up_tex, Str down_tex, Str font_name, FRect text_area) {
 		DASSERT(up_tex && down_tex);
 
 		if(back_tex)
@@ -19,7 +19,7 @@ namespace ui
 		up = res::getGuiTexture(up_tex);
 		down = res::getGuiTexture(down_tex);
 		if(font_name)
-			font = res::getFont(font_name);
+			font = &res::getFont(font_name);
 
 		rect = IRect({0, 0}, back? back->size() : vmax(up->size(), down->size()));
 		text_rect = text_area.empty()? IRect() :
@@ -29,7 +29,7 @@ namespace ui
 					lerp(float(rect.y()), float(rect.ey()), text_area.ey()));
 	}
 
-	ImageButton::ImageButton(const int2 &pos, ImageButtonProto proto, const char *text, Mode mode, int id)
+	ImageButton::ImageButton(const int2 &pos, ImageButtonProto proto, Str text, Mode mode, int id)
 		:Window(IRect(pos, pos + proto.rect.size()), ColorId::transparent), m_proto(std::move(proto)), m_id(id), m_mode(mode) {
 		setBackground(m_proto.back);
 		setText(text);
@@ -39,7 +39,7 @@ namespace ui
 		m_mouse_press = false;
 	}
 
-	void ImageButton::setText(const char *text) {
+	void ImageButton::setText(Str text) {
 		if(m_proto.font) {
 			DASSERT(text);
 
