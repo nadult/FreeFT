@@ -65,8 +65,8 @@ namespace game {
 	inline constexpr FlagsType entityIdToFlag(EntityId id) { return (FlagsType)(1u << (4 + (uint)id)); }
 	inline constexpr FlagsType tileIdToFlag(TileId id) { return (FlagsType)(1u << (16 + (uint)id)); }
 
-	static_assert(count<EntityId>() <= 12, "Flag limit reached");
-	static_assert(count<TileId>() <= 8, "Flag limit reached");
+	static_assert(count<EntityId> <= 12, "Flag limit reached");
+	static_assert(count<TileId> <= 8, "Flag limit reached");
 
 	namespace Flags {
 		enum Type :unsigned {

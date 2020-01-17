@@ -105,7 +105,7 @@ namespace game {
 		bool is_alive;
 
 		// prone, crouch, walk, run
-		float speeds[count<Stance>() + 1];
+		float speeds[count<Stance> + 1];
 
 		float hit_points;
 

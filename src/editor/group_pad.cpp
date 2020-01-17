@@ -6,7 +6,9 @@
 namespace ui {
 	GroupPad::GroupPad(const IRect &rect, PGroupEditor editor, TileGroup *group)
 		: Window(rect), m_editor(editor), m_group(group) {
-		auto strings = transform(all<TileFilter>(), [](TileFilter f) { return toString(f); });
+		EnumMap<TileFilter, const char*> strings;
+		for(auto e : all<TileFilter>)
+			strings[e] = toString(e);
 		m_filter_box = make_shared<ComboBox>(IRect(0, 0, rect.width(), 22), 200, "Filter: ", strings);
 		attach(m_filter_box);
 		m_filter_box->selectEntry((int)editor->tileFilter());

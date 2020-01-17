@@ -25,13 +25,13 @@ namespace game {
 		class_id = fromString<DoorClassId>(parser("class_id"));
 		const char *sound_prefix = parser("sound_prefix");
 
-		for(auto dstype : all<DoorSoundType>()) {
+		for(auto dstype : all<DoorSoundType>) {
 			char name[256];
 			snprintf(name, sizeof(name), "%s%s", sound_prefix, toString(dstype));
 			sound_ids[dstype] = SoundId(name);
 		}
 		
-		for(auto ds : all<DoorState>())
+		for(auto ds : all<DoorState>)
 			seq_ids[ds] = sprite->findSequence(s_seq_names[ds]);
 		
 		if(seq_ids[DoorState::closed] == -1)

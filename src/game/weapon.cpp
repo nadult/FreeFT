@@ -38,7 +38,7 @@ namespace game {
 		accuracy = parser.get<float>("accuracy");
 
 		const char *sound_prefix = parser("sound_prefix");
-		for(auto wstype : all<WeaponSoundType>()) {
+		for(auto wstype : all<WeaponSoundType>) {
 			char name[256];
 			snprintf(name, sizeof(name), "%s%s", sound_prefix, s_suffixes[wstype]);
 			sound_ids[wstype] = SoundId(name);
@@ -73,20 +73,16 @@ namespace game {
 	}
 		
 	bool Weapon::hasMeleeAttack() const {
-		for(uint n = 0; n < count<AttackMode>(); n++) {
-			AttackMode mode = (AttackMode)n;
+		for(auto mode : all<AttackMode>)
 			if(isMelee(mode) && (proto().attack_modes & mode))
 				return true;
-		}
 		return false;
 	}
 
 	bool Weapon::hasRangedAttack() const {
-		for(uint n = 0; n < count<AttackMode>(); n++) {
-			AttackMode mode = (AttackMode)n;
+		for(auto mode : all<AttackMode>)
 			if(isRanged(mode) && (proto().attack_modes & mode))
 				return true;
-		}
 		return false;
 	}
 

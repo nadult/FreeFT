@@ -136,7 +136,7 @@ namespace game {
 	}
 	
 	static ProtoIndex findItemProto(const string &name) {
-		for(auto id : all<ProtoId>()) if(isItem(id)) {
+		for(auto id : all<ProtoId>) if(isItem(id)) {
 			ProtoIndex index = findProto(name, id);
 			if(index.isValid())
 				return index;
@@ -190,7 +190,7 @@ namespace game {
 		auto spreadsheet_node = body_node.child("office:spreadsheet");
 		ASSERT(spreadsheet_node);
 
-		for(auto p : all<ProtoId>()) {
+		for(auto p : all<ProtoId>) {
 			ProtoDef &def = s_protos[p];
 			if(!def.table_name)
 				continue;
@@ -206,7 +206,7 @@ namespace game {
 			def.count = (int)def.map.size();
 		}
 
-		for(auto p : all<ProtoId>()) {
+		for(auto p : all<ProtoId>) {
 			ProtoDef &def = s_protos[p];
 			for(int n = 0; n < def.count; n++) {
 				Proto &proto = s_protos[p].get_func(n);
@@ -229,7 +229,7 @@ namespace game {
 
 		if(verbose) {
 			int count = 0;
-			for(auto p : all<ProtoId>())
+			for(auto p : all<ProtoId>)
 				count += countProtos((ProtoId)p);
 			printf(" %d rows loaded (%.0f msec)\n", count, (getTime() - time) * 1000.0);
 		}

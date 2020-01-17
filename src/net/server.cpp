@@ -23,17 +23,17 @@ namespace net {
 	}
 
 	ServerConfig::ServerConfig(const CXmlNode &node) :ServerConfig() {
-		if(auto attrib = node.hasAttrib("max_players")) {
+		if(auto attrib = node.tryAttrib("max_players")) {
 			m_max_players = fromString<int>(attrib);
 			ASSERT(m_max_players >= 1 && m_max_players <= Server::max_remote_hosts);
 		}
-		if(auto attrib = node.hasAttrib("console_mode"))
+		if(auto attrib = node.tryAttrib("console_mode"))
 			m_console_mode = fromString<bool>(attrib);
-		if(auto attrib = node.hasAttrib("port")) {
+		if(auto attrib = node.tryAttrib("port")) {
 			m_port = fromString<int>(attrib);
 			ASSERT(m_port > 0 && m_port < 65536);
 		}
-		if(auto attrib = node.hasAttrib("password"))
+		if(auto attrib = node.tryAttrib("password"))
 			m_password = attrib;
 		m_map_name = node.attrib("map_name");
 		m_server_name = node.attrib("name");

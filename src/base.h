@@ -52,7 +52,7 @@ string toUTF8Checked(const string32 &);
 // TODO: validation of data from files / net / etc.
 // TODO: serialization of enum should automatically verify the enum
 template <class T, EnableIfEnum<T>...> bool validEnum(T value) {
-	return (int)value >= 0 && (int)value < count<T>();
+	return (int)value >= 0 && (int)value < count<T>;
 }
 
 // TODO: remove this mapping

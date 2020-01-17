@@ -68,13 +68,13 @@ namespace game {
 
 		initAnims();
 
-		for(auto w : all<WeaponClass>()) {
+		for(auto w : all<WeaponClass>) {
 			m_can_equip_weapon[w] = false;
 
-			for(auto s : all<Stance>()) {
+			for(auto s : all<Stance>) {
 				m_can_use_weapon[w][s] = false;
 
-				for(auto a : all<AttackMode>())
+				for(auto a : all<AttackMode>)
 					if(attackAnimId(a, s, w) != -1) {
 						m_can_equip_weapon[w] = true;
 						m_can_use_weapon[w][s] = true;
@@ -86,7 +86,7 @@ namespace game {
 		}
 
 		m_can_change_stance = true;
-		for(auto s : all<Stance>()) {
+		for(auto s : all<Stance>) {
 			if(animId(Action::idle, (Stance)s, WeaponClass::unarmed) == -1)
 				m_can_change_stance = false;
 			if(animId(Action::walk, (Stance)s, WeaponClass::unarmed) == -1)
@@ -119,8 +119,8 @@ namespace game {
 		ASSERT(actor);
 		armour.link();
 
-		for(auto st : all<Stance>())
-			for(auto su : all<SurfaceId>()) {
+		for(auto st : all<Stance>)
+			for(auto su : all<SurfaceId>) {
 				char name[256];
 				snprintf(name, sizeof(name), "%s%s%s%s",
 						st == Stance::prone? "prone" : "stand", actor->is_heavy? "heavy" : "normal",
@@ -178,7 +178,7 @@ namespace game {
 		kick_weapon.link();
 		
 		char text[256];
-		for(auto d : all<DeathId>()) {
+		for(auto d : all<DeathId>) {
 			snprintf(text, sizeof(text), "human%s", deathName(d));
 			human_death_sounds[d] = SoundId(text);
 		}
@@ -200,7 +200,7 @@ namespace game {
 
 			bool any_sound = false;
 
-			for(auto d : all<DeathId>()) {
+			for(auto d : all<DeathId>) {
 				snprintf(text, sizeof(text), "%s%s", var_name, deathName(d));
 				sounds.death[d] = SoundId(text);
 				any_sound |= sounds.death[d].isValid();
@@ -234,15 +234,15 @@ namespace game {
 
 		char text[256];
 
-		for(auto d : all<DeathId>()) {
+		for(auto d : all<DeathId>) {
 			snprintf(text, sizeof(text), "death%s", s_death_names[d]);
 			auto it = name_map.find(text);
 			m_death_idx[d] = it == name_map.end()? invalid_id : it->second;
 		}
 
-		for(auto w : all<WeaponClass>())
-			for(auto a : all<AttackMode>())
-				for(auto s : all<Stance>()) {
+		for(auto w : all<WeaponClass>)
+			for(auto a : all<AttackMode>)
+				for(auto s : all<Stance>) {
 					const char *attack_mode =	a == AttackMode::punch? "one" :
 												a == AttackMode::kick? "two" : toString(a);
 
@@ -254,9 +254,9 @@ namespace game {
 				}
 
 		for(int a = 0; a < Action::count; a++)
-			for(auto s : all<Stance>()) {
+			for(auto s : all<Stance>) {
 				if(Action::isNormal(a)) {
-					for(auto w : all<WeaponClass>()) {
+					for(auto w : all<WeaponClass>) {
 						snprintf(text, sizeof(text), "%s%s%s", toString(s), s_normal_names[a],
 									w == WeaponClass::unarmed? "" : toString(w));
 						auto it = name_map.find(text);
@@ -276,7 +276,7 @@ namespace game {
 			m_climb_idx[c] = it == name_map.end()? invalid_id : it->second;
 		}
 
-		for(auto w : all<WeaponClass>())
+		for(auto w : all<WeaponClass>)
 			for(auto s = Stance::prone; s <= Stance::crouch; s = next(s))
 			if(m_normal_idx[Action::walk][s][w] == invalid_id)
 				m_normal_idx[Action::walk][s][w] = m_normal_idx[Action::walk][s][WeaponClass::unarmed];

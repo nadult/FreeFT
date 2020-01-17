@@ -10,7 +10,9 @@ namespace ui {
 		:Window(rect, ColorId::transparent), m_editor(editor), m_group(group) {
 		int width = rect.width();
 
-		auto strings = transform(all<TileFilter>(), [](TileFilter f) { return toString(f); });
+		EnumMap<TileFilter, const char*> strings;
+		for(auto e : all<TileFilter>)
+			strings[e] = toString(e);
 		m_filter_box = make_shared<ComboBox>(IRect(0, 0, width/2, 22), 200, "Filter: ", strings);
 		m_filter_box->selectEntry(0);
 		m_dirty_bar = make_shared<ProgressBar>(IRect(width/2, 0, width, 22), true);

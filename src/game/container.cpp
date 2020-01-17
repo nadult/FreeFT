@@ -22,14 +22,14 @@ namespace game {
 		name = parser("name");
 
 		const char *sound_prefix = parser("sound_prefix");
-		for(auto cst : all<ContainerSoundType>()) {
+		for(auto cst : all<ContainerSoundType>) {
 			char name[256];
 			snprintf(name, sizeof(name), "%s%s", sound_prefix, toString(cst));
 			sound_ids[cst] = SoundId(name);
 		}
 
 		is_always_opened = false;
-		for(auto cs : all<ContainerState>()) {
+		for(auto cs : all<ContainerState>) {
 			seq_ids[cs] = sprite->findSequence(s_seq_names[cs]);
 			if(seq_ids[cs] == -1)
 				is_always_opened = true;

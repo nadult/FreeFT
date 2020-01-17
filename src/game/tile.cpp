@@ -110,8 +110,8 @@ namespace game
 
 		u8 ttype, material, flags;
 		sr.unpack(ttype, material, flags);
-		m_type_id = ttype >= count<TileId>()? TileId::unknown : (TileId)ttype;
-		m_surface_id = material >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)material;
+		m_type_id = ttype >= count<TileId>? TileId::unknown : (TileId)ttype;
+		m_surface_id = material >= count<SurfaceId>? SurfaceId::unknown : (SurfaceId)material;
 		m_see_through = flags & 8;
 		m_is_invisible = name.find("Invisible Tile") != -1;
 		if(m_is_invisible) {
@@ -162,8 +162,8 @@ namespace game
 		sr.signature("TILE");
 		unsigned char type_id, surface_id;
 		sr.unpack(type_id, surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
-		m_type_id = type_id >= count<TileId>()? TileId::unknown : (TileId)type_id;
-		m_surface_id = surface_id >= count<SurfaceId>()? SurfaceId::unknown : (SurfaceId)surface_id;
+		m_type_id = type_id >= count<TileId>? TileId::unknown : (TileId)type_id;
+		m_surface_id = surface_id >= count<SurfaceId>? SurfaceId::unknown : (SurfaceId)surface_id;
 		m_first_frame.load(sr).check(); // TODO: pass
 
 		u32 size = 0;

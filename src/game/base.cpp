@@ -32,7 +32,7 @@ namespace game {
 		}
 
 	Maybe<AttackMode> getFirst(AttackModeFlags flags) {
-		for(auto flag : all<AttackMode>())
+		for(auto flag : all<AttackMode>)
 			if(flags & flag)
 				return flag;
 		return none;

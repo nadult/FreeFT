@@ -76,7 +76,7 @@ namespace game {
 			&ThinkingEntity::handleOrderWrapper<GetHitOrder>,
 			&ThinkingEntity::handleOrderWrapper<DieOrder>
 		};
-		static_assert(arraySize(handlers) == count<OrderTypeId>(),
+		static_assert(arraySize(handlers) == count<OrderTypeId>,
 				      "Not all order classes are handled in ThinkingEntity::handleOrder");
 
 		if(!m_order->isFinished())

@@ -52,14 +52,14 @@ namespace game {
 
 		hit_points = parser.get<float>("hit_points");
 	
-		for(auto taction : all<TurretAction>()) {
+		for(auto taction : all<TurretAction>) {
 			int id = sprite->findSequence(s_seq_names[taction]);
 			anim_idx[taction] = id == -1 || id > 254? invalid_anim_id : id;
 		}
 		ASSERT(anim_idx[TurretAction::idle] != invalid_anim_id);
 		
 		string sound_prefix = parser("sound_prefix");
-		for(auto tsound : all<TurretSoundId>()) {
+		for(auto tsound : all<TurretSoundId>) {
 			string sound_name = sound_prefix + s_sounds[tsound].name;
 			sound_idx[tsound] = SoundId(sound_name.c_str(), s_sounds[tsound].index);
 		}

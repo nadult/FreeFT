@@ -65,7 +65,7 @@ void MemoryStream::reserve(int new_capacity) {
 
 	if(new_capacity <= m_capacity)
 		return;
-	PodVector<char> new_buffer(BaseVector::insertCapacity(m_capacity, 1, new_capacity));
+	PodVector<char> new_buffer(vectorInsertCapacity<char>(m_capacity, new_capacity));
 	copy(new_buffer, data());
 	m_data = new_buffer.data();
 	m_capacity = new_buffer.size();

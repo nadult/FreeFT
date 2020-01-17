@@ -95,7 +95,7 @@ namespace ui {
 
 	ItemPad::ItemPad(const IRect &max_rect) :EntityPad(max_rect, EntityId::item) {
 		m_type_id = addControl<ComboBox>(200, "Item type: ");
-		for(auto item : all<ItemType>())
+		for(auto item : all<ItemType>)
 			m_type_id->addEntry(toString(item));
 		m_type_id->selectEntry(0);
 		m_proto_id = addControl<ComboBox>(200, "Item id: ");
@@ -150,7 +150,7 @@ namespace ui {
 
 	TriggerPad::TriggerPad(const IRect &max_rect) :EntityPad(max_rect, EntityId::trigger) {
 		m_class_id = addControl<ComboBox>(200, "Trigger class: ");
-		for(auto tcid : all<TriggerClassId>())
+		for(auto tcid : all<TriggerClassId>)
 			m_class_id->addEntry(toString(tcid));
 		m_class_id->selectEntry(0);
 		m_faction_id = addControl<EditBox>(200, "Faction id: ");
@@ -182,7 +182,7 @@ namespace ui {
 		int width = rect.width();
 
 		m_editor_mode_box = make_shared<ComboBox>(IRect(0, 0, width, WindowStyle::line_height), 200, "Editing mode: ");
-		for(auto mode : all<Mode>())
+		for(auto mode : all<Mode>)
 			m_editor_mode_box->addEntry(describe(mode));
 		m_editor_mode_box->selectEntry((int)m_editor->mode());
 

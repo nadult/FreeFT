@@ -20,7 +20,7 @@ const char *TupleParser::get(const char *col_name) const {
 }
 
 static const char *getText(CXmlNode cell_node) {
-	auto val_type = cell_node.hasAttrib("office:value-type");
+	auto val_type = cell_node.tryAttrib("office:value-type");
 	if(val_type) {
 		auto text_node = cell_node.child("text:p");
 		if(!text_node)
