@@ -8,7 +8,7 @@
 #endif
 #include <AL/alc.h>
 #include <AL/al.h>
-#include <fwk_audio.h>
+#include <fwk/audio_base.h>
 
 namespace audio {
 

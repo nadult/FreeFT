@@ -11,7 +11,7 @@
 #include "ui/list_box.h"
 #include "ui/message_box.h"
 
-#include <fwk/filesystem.h>
+#include <fwk/sys/file_system.h>
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/gl_device.h>
 #include <fwk/gfx/opengl.h>
@@ -459,7 +459,7 @@ static bool main_loop(GlDevice &device, void*) {
 	if(command.first == Command::exit)
 		return false;
 	if(command.first == Command::change_dir)
-		main_window = uniquePtr<ResViewerWindow>(device.windowSize(), command.second);
+		main_window.emplace(device.windowSize(), command.second);
 	if(main_window->size() != device.windowSize())
 		main_window->resize(device.windowSize());
 
@@ -476,7 +476,7 @@ int main(int argc, char **argv) {
 	GlDevice gfx_device;
 	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 
-	main_window = uniquePtr<ResViewerWindow>(gfx_device.windowSize(), "data/");
+	main_window.emplace(gfx_device.windowSize(), "data/");
 	gfx_device.runMainLoop(main_loop);
 
 	main_window.reset();

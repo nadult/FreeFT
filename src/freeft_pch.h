@@ -15,7 +15,5 @@
 #include <fwk/math_base.h>
 #include <fwk/pod_vector.h>
 #include <fwk/sys/xml.h>
-#include <fwk/sys/unique_ptr.h>
-
-template <class T>
-using Dynamic = fwk::UniquePtr<T>;
+#include <fwk/dynamic.h>
+#include <fwk/index_range.h>

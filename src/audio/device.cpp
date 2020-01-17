@@ -4,10 +4,10 @@
 #include <string.h>
 #include "audio/device.h"
 #include "audio/internals.h"
-#include <fwk/filesystem.h>
+#include <fwk/sys/file_system.h>
 #include <fwk/enum_map.h>
 #include <fwk/sys/file_stream.h>
-#include <fwk_audio.h>
+#include <fwk/audio/sound.h>
 #include <map>
 
 namespace audio

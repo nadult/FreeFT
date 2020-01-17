@@ -118,7 +118,7 @@ public:
 		freeEditors();
 
 		IRect rect(m_left_width, 0, width(), height());
-		m_view = uniquePtr<View>(m_tile_map, m_entity_map, rect.size());
+		m_view.emplace(m_tile_map, m_entity_map, rect.size());
 		m_tiles_editor = make_shared<TilesEditor>(m_tile_map, *m_view.get(), rect);
 		m_entities_editor = make_shared<EntitiesEditor>(m_tile_map, m_entity_map, *m_view.get(), rect);
 		m_tiles_editor->setTileGroup(&m_group);

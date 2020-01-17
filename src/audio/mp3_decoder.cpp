@@ -5,6 +5,7 @@
 #include <mpg123.h>
 
 #include <fwk/sys/file_stream.h>
+#include <fwk/audio/sound.h>
 
 namespace audio {
 

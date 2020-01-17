@@ -2,8 +2,10 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "audio/device.h"
+
 #include "audio/internals.h"
 #include "audio/mp3_decoder.h"
+#include <fwk/audio/sound.h>
 
 namespace audio
 {

@@ -77,7 +77,7 @@ namespace net {
 
 
 	// TODO: lot's of redundant layers
-	InChunk::InChunk(const Chunk &chunk) :MemoryStream(chunk.data()), m_chunk(chunk) {
+	InChunk::InChunk(const Chunk &chunk) :MemoryStream(memoryLoader(chunk.data())), m_chunk(chunk) {
 		DASSERT(m_chunk.m_type != ChunkType::invalid);
 	}
 }

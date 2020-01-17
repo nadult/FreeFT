@@ -33,7 +33,7 @@ namespace game {
 		printf("unc size: %d type: %x\n", size1, (int)type);
 
 		vector<char> bytes;
-		zlibInflate(sr, bytes, sr.size() - sr.pos());
+		zlibInflate(sr, bytes, sr.size() - sr.pos()).check();
 
 		int map_manager = -1;
 		for(int n = 0; n < (int)bytes.size(); n++)

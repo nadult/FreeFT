@@ -4,7 +4,7 @@
 #include "game/sprite.h"
 #include <cstring>
 #include <cstdio>
-#include <fwk/filesystem.h>
+#include <fwk/sys/file_system.h>
 #include <fwk/sys/file_stream.h>
 #include <map>
 

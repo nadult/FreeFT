@@ -58,7 +58,7 @@ namespace ui {
 		
 	PEntity TurretPad::makeEntity() const {
 		const Proto& proto = getProto(m_proto_id->selectedText(), ProtoId::turret);
-		return uniquePtr<Turret>(proto);
+		return Dynamic<Turret>(proto);
 	}
 
 
@@ -73,7 +73,7 @@ namespace ui {
 	PEntity DoorPad::makeEntity() const {
 		const DoorProto &proto =
 			static_cast<const DoorProto&>(getProto(m_proto_id->selectedId(), ProtoId::door));
-		return uniquePtr<Door>(proto);
+		return Dynamic<Door>(proto);
 	}
 
 
@@ -88,7 +88,7 @@ namespace ui {
 	PEntity ContainerPad::makeEntity() const {
 		const ContainerProto &proto =
 			static_cast<const ContainerProto&>(getProto(m_proto_id->selectedId(), ProtoId::container));
-		return uniquePtr<Container>(proto);
+		return Dynamic<Container>(proto);
 	}
 
 
@@ -111,7 +111,7 @@ namespace ui {
 		ItemType type = (ItemType)m_type_id->selectedId();
 		ProtoId proto_id = toProtoId(type);
 		ProtoIndex index = findProto((*m_proto_id)[m_proto_id->selectedId()].text, proto_id);
-		return uniquePtr<ItemEntity>(Item(index), m_count_val);
+		return Dynamic<ItemEntity>(Item(index), m_count_val);
 	}
 
 	void ItemPad::updateItemIds() {
@@ -171,9 +171,10 @@ namespace ui {
 		return false;
 	}	
 	PEntity TriggerPad::makeEntity() const {
-		auto out = uniquePtr<Trigger>((TriggerClassId)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1));
+		Dynamic<Trigger> out;
+		out.emplace<Trigger>((TriggerClassId)m_class_id->selectedId(), FBox(0, 0, 0, 1, 1, 1));
 		out->setFactionId(m_faction_id_val);
-		return (PEntity)(out.release());
+		return out;
 	}
 
 	EntitiesPad::EntitiesPad(const IRect &rect, PEntitiesEditor editor)

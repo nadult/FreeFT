@@ -3,7 +3,7 @@
 
 #include "sys/config.h"
 
-#include <fwk/filesystem.h>
+#include <fwk/sys/file_system.h>
 
 Config::Config() : resolution(1280, 720), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
 
