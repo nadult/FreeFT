@@ -4,9 +4,8 @@
 #include "tile_map.h"
 
 #include "game/tile.h"
-#include <climits>
 #include <fwk/sys/file_stream.h>
-#include "memory_stream.h"
+#include <fwk/sys/memory_stream.h>
 
 //#define LOGGING
 
@@ -20,7 +19,7 @@ Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize);
 namespace game {
 
 	template <class InputStream>
-	void TileMap::legacyConvert(InputStream &sr, FileStream &out) {
+	Ex<void> TileMap::legacyConvert(InputStream &sr, FileStream &out) {
 		ASSERT(sr.isLoading());
 
 		sr.signature(Str("<world>\0", 8));
@@ -29,11 +28,10 @@ namespace game {
 
 		i32 size1, size2;
 		sr.unpack(type, dummy, size1, size2);
-
-		printf("unc size: %d type: %x\n", size1, (int)type);
+		//printf("unc size: %d type: %x\n", size1, (int)type);
 
 		vector<char> bytes;
-		zlibInflate(sr, bytes, sr.size() - sr.pos()).check();
+		EXPECT(zlibInflate(sr, bytes, sr.size() - sr.pos()));
 
 		int map_manager = -1;
 		for(int n = 0; n < (int)bytes.size(); n++)
@@ -188,7 +186,7 @@ namespace game {
 
 		XmlDocument doc;
 		saveToXML(doc);
-		doc.save(out).check(); // TODO: return Ex<> ?
+		EXPECT(doc.save(out));
 		clear();
 
 	//	Saver("mission.dec") & bytes;
@@ -215,9 +213,10 @@ namespace game {
 
 	//	for(int n = 0; n < bytes.size(); n++)
 	//		printf("%c", bytes[n] < 32? '.' : bytes[n]);
+		return {};
 	}
 	
-	template void TileMap::legacyConvert(MemoryStream &, FileStream &);
-	template void TileMap::legacyConvert(FileStream &, FileStream &);
+	template Ex<void> TileMap::legacyConvert(MemoryStream &, FileStream &);
+	template Ex<void> TileMap::legacyConvert(FileStream &, FileStream &);
 
 }

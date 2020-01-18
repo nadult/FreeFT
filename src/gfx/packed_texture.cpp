@@ -7,10 +7,9 @@
 #include <fwk/sys/file_stream.h>
 
 namespace {
-// TODO: fix error handling in all places with Ex<>
 Ex<Texture> loadZAR(FileStream &sr) {
 	Palette palette;
-	auto packed = EXPECT_PASS(PackedTexture::legacyLoad(sr, palette));
+	auto packed = EX_PASS(PackedTexture::legacyLoad(sr, palette));
 	Texture out(packed.size());
 	packed.decode(out.data(), palette.data(), palette.size());
 	return out;
@@ -55,9 +54,9 @@ Ex<Palette> Palette::load(FileStream &sr) {
 	u8 rgb[256 * 3], *ptr = rgb;
 	u16 size = 0;
 	sr >> size;
+	EXPECT(size <= 256);
 
 	sr.loadData(span(rgb, size * 3));
-	EXPECT_CATCH();
 
 	Palette out;
 	out.m_data.resize(size);
@@ -95,7 +94,7 @@ Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 		return ERROR("Wrong zar type: %d", (int)zar_type);
 
 	if(has_palette)
-		palette = EXPECT_PASS(Palette::legacyLoad(sr));
+		palette = EX_PASS(Palette::legacyLoad(sr));
 	else
 		palette.clear();
 

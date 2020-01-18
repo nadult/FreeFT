@@ -91,8 +91,8 @@ namespace ui {
 	void FileDialog::updateList() {
 		m_list_box->clear();
 
-		auto files = findFiles(m_dir_path, FindFiles::directory | FindFiles::regular_file |
-				                           FindFiles::relative | FindFiles::include_parent);
+		auto files = findFiles(m_dir_path, FindFileOpt::directory | FindFileOpt::regular_file |
+				                           FindFileOpt::relative | FindFileOpt::include_parent);
 
 		std::sort(files.begin(), files.end());
 		for(int n = 0; n < (int)files.size(); n++)

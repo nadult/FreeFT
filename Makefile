@@ -25,7 +25,7 @@ _dummy := $(shell mkdir -p $(addprefix $(BUILD_DIR)/,$(BUILD_SUBDIRS)))
 
 SHARED_SRC := \
 	gfx/texture_cache gfx/drawing gfx/scene_renderer gfx/packed_texture \
-	sys/frame_allocator sys/config sys/data_sheet \
+	sys/config sys/data_sheet \
 	net/socket net/base net/chunk net/host net/server net/client \
 	occluder_map base navi_map navi_heightmap grid grid_intersect \
 	game/tile game/sprite game/sprites game/sprite_legacy game/tile_map game/tile_map_legacy game/entity_map \
@@ -44,7 +44,9 @@ SHARED_SRC := \
 	audio/device audio/device_music audio/mp3_decoder \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
-	fwk_bit_vector memory_stream
+	fwk_bit_vector
+
+DEPRECATED_SRC:= temp/frame_allocator
 
 PROGRAM_SRC    := editor game res_viewer convert lobby_server
 

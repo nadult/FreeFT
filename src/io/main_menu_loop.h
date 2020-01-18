@@ -6,7 +6,6 @@
 #include "io/loop.h"
 #include "ui/window.h"
 #include <future>
-#include <thread>
 #include "hud/layer.h"
 
 namespace io {

@@ -49,7 +49,7 @@ namespace game
 
 	Ex<Sprite::Sequence> Sprite::Sequence::load(FileStream &sr) {
 		Sequence out;
-		out.name = EXPECT_PASS(loadString(sr));
+		out.name = EX_PASS(loadString(sr));
 		sr.unpack(out.frame_count, out.dir_count, out.first_frame, out.palette_id, out.overlay_id);
 		return out;
 	}
@@ -77,7 +77,7 @@ namespace game
 
 	Ex<void> Sprite::MultiImage::load(FileStream &sr) {
 		for(auto &image : images)
-			image = EXPECT_PASS(PackedTexture::load(sr));
+			image = EX_PASS(PackedTexture::load(sr));
 		sr.loadData(points);
 		sr >> rect;
 		return {};
@@ -149,7 +149,7 @@ namespace game
 		sr >> size;
 		m_sequences.reserve(size);
 		for(int n : intRange(size))
-			m_sequences.emplace_back(EXPECT_PASS(Sequence::load(sr)));
+			m_sequences.emplace_back(EX_PASS(Sequence::load(sr)));
 		sr >> size;
 		m_frames.resize(size);
 		sr.loadData(m_frames);
@@ -160,12 +160,12 @@ namespace game
 			sr >> size;
 			m_palettes.reserve(size);
 			for(int n : intRange(size))
-				m_palettes.emplace_back(EXPECT_PASS(MultiPalette::load(sr)));
+				m_palettes.emplace_back(EX_PASS(MultiPalette::load(sr)));
 			
 			sr >> size;
 			m_images.resize(size);
 			for(auto &image : m_images)
-				image.load(sr).check(); // TODO: pass
+				EXPECT(image.load(sr));
 		}
 		else {
 			m_palettes.clear();

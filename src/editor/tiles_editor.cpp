@@ -112,14 +112,7 @@ namespace ui {
 	void TilesEditor::removeAll(const IBox &box) {
 		vector<int> colliders;
 		m_tile_map.findAll(colliders, (FBox)box);
-		std::sort(colliders.begin(), colliders.end());
-
-		vector<int> new_selection(m_selected_ids.size());
-		vector<int>::iterator end_it = std::set_difference(m_selected_ids.begin(), m_selected_ids.end(),
-				colliders.begin(), colliders.end(), new_selection.begin());
-		new_selection.resize(end_it - new_selection.begin());
-		m_selected_ids.swap(new_selection);
-
+		m_selected_ids = setDifference(m_selected_ids, colliders);
 		for(int i = 0; i < (int)colliders.size(); i++)
 			m_tile_map.remove(colliders[i]);
 	}
@@ -277,26 +270,17 @@ namespace ui {
 				if(isSelecting()) {
 					vector<int> new_ids;
 					m_tile_map.findAll(new_ids, FBox((float3)m_selection.min(), float3(m_selection.max() + int3(0, 1, 0))));
-					std::sort(new_ids.begin(), new_ids.end());
+					makeSorted(new_ids);
 
 					if(m_mode == mode_selecting_normal)
 						m_selected_ids = new_ids;
 					else {
-						vector<int> out;
-						out.resize(new_ids.size() + m_selected_ids.size());
-
-						vector<int>::iterator end_it;
 						if(m_mode == mode_selecting_union)
-							end_it = std::set_union(m_selected_ids.begin(), m_selected_ids.end(),
-									new_ids.begin(), new_ids.end(), out.begin());
+							m_selected_ids = setUnion(m_selected_ids, new_ids);
 						else if(m_mode == mode_selecting_intersection)
-							end_it = std::set_intersection(m_selected_ids.begin(), m_selected_ids.end(),
-									new_ids.begin(), new_ids.end(), out.begin());
+							m_selected_ids = setIntersection(m_selected_ids, new_ids);
 						else if(m_mode == mode_selecting_difference)
-							end_it = std::set_difference(m_selected_ids.begin(), m_selected_ids.end(),
-									new_ids.begin(), new_ids.end(), out.begin());
-						out.resize(end_it - out.begin());
-						m_selected_ids = out;
+							m_selected_ids = setDifference(m_selected_ids, new_ids);
 					}
 				}
 				else if(isPlacing() && m_new_tile) {

@@ -12,6 +12,7 @@
 #include <fwk/sys/file_system.h>
 #include <fwk/sys/expected.h>
 #include <fwk/enum_map.h>
+#include <fwk/sys/on_fail.h>
 
 using game::Sprite;
 using game::Tile;
@@ -94,7 +95,6 @@ static const string locateFTPath() {
 #include <omp.h>
 #endif
 
-
 struct TileMapProxy: public TileMap {
 	void save(FileStream &sr) const {
 		XmlDocument doc;
@@ -151,45 +151,37 @@ static const EnumMap<ResTypeId, const char*> s_new_path = {{
 }};
 
 template <class InputStream>
-void convert(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
+Ex<void> convert(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
 	ASSERT(type != ResTypeId::archive);
+	ON_FAIL("While converting '%' -> '%' (type: %)", name, svr.name(), type);
 
-	// TODO: handle errors
-	//try {
-		if(type == ResTypeId::sprite) {
-			Sprite res;
-			res.legacyLoad(ldr, name).check();
-			res.save(svr);
-		}
-		else if(type == ResTypeId::tile) {
-			Tile res;
-			res.legacyLoad(ldr, name).check();
-			res.save(svr);
-		}
-		else if(type == ResTypeId::map) {
-			TileMapProxy res;
-			res.legacyConvert(ldr, svr);
-		}
-		else if(type == ResTypeId::image || type == ResTypeId::music) {
-			vector<char> buffer;
-			buffer.resize(ldr.size());
-			ldr.loadData(buffer);
-			svr.saveData(buffer);
-		}
-		else if(type == ResTypeId::sound) {
-			SoundProxy proxy;
-			proxy.legacyLoad(ldr, name).check();
-			proxy.save(svr);
-			/*char buffer[1024 * 16];
-			while(svr.pos() < ldr.size()) {
-				int to_copy = min((int)sizeof(buffer), (int)(ldr.size() - ldr.pos()));
-				ldr.loadData(buffer, to_copy);
-				svr.saveData(buffer, to_copy);
-			}*/
-		}
-	//} catch(const Exception &ex) {
-	//	printf("Error while converting %s:\n%s\n\n", ldr.name(), ex.what());
-	//}
+	if(type == ResTypeId::sprite) {
+		Sprite res;
+		EXPECT(res.legacyLoad(ldr, name));
+		res.save(svr);
+	}
+	else if(type == ResTypeId::tile) {
+		Tile res;
+		EXPECT(res.legacyLoad(ldr, name));
+		res.save(svr);
+	}
+	else if(type == ResTypeId::map) {
+		TileMapProxy res;
+		EXPECT(res.legacyConvert(ldr, svr));
+	}
+	else if(type == ResTypeId::image || type == ResTypeId::music) {
+		vector<char> buffer;
+		buffer.resize(ldr.size());
+		ldr.loadData(buffer);
+		svr.saveData(buffer);
+	}
+	else if(type == ResTypeId::sound) {
+		SoundProxy proxy;
+		EXPECT(proxy.legacyLoad(ldr, name));
+		proxy.save(svr);
+	}
+
+	return {};
 }
 
 template <class TResource>
@@ -198,7 +190,7 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 	FilePath main_path = FilePath(src_dir).absolute().get();
 	
 	printf("Scanning...\n");
-	auto file_names = findFiles(main_path, FindFiles::regular_file | FindFiles::recursive);
+	auto file_names = findFiles(main_path, FindFileOpt::regular_file | FindFileOpt::recursive);
 	std::sort(begin(file_names), end(file_names));
 	int total_before = 0, total_after = 0;
 
@@ -339,7 +331,7 @@ void convertAll(const char *fot_path, const string &filter) {
 	printf("FOT core: %s\n", core_path.c_str());
 
 	printf("Scanning...\n");
-	auto all_files = findFiles(core_path, FindFiles::regular_file | FindFiles::recursive);
+	auto all_files = findFiles(core_path, FindFileOpt::regular_file | FindFileOpt::recursive);
 	std::sort(begin(all_files), end(all_files));
 	printf("Found: %d files\n", (int)all_files.size());
 
@@ -385,10 +377,8 @@ void convertAll(const char *fot_path, const string &filter) {
 		}
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
-			char src_path[512], dst_path[512];
-			snprintf(src_path, sizeof(src_path), "%s/%s", core_path.c_str(), it->second.c_str());
-			snprintf(dst_path, sizeof(dst_path), "%s/%s%s",
-					s_new_path[type], it->first.c_str(), s_new_suffix[type]);
+			auto src_path = format("%/%", core_path, it->second);
+			auto dst_path = format("%/%%", s_new_path[type], it->first, s_new_suffix[type]);
 
 			auto ldr = move(fileLoader(src_path).get());
 			auto svr = move(fileSaver(dst_path).get());
@@ -400,7 +390,7 @@ void convertAll(const char *fot_path, const string &filter) {
 			}
 			else 
 				bytes += ldr.size();
-			convert(type, ldr, svr, src_path);
+			convert(type, ldr, svr, src_path).check(); // TODO
 		}
 	}
 	

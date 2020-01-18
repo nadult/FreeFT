@@ -344,6 +344,7 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 
 #include "game/tile.h"
 
+// TODO: fix error handling in all places with Ex<>
 // TODO: dynamic not needed in s_tiles; But: TileFrame depending on CachedTexture
 // causes problems in copy constructors & operator=
 // TODO: there is a need for data structure which doesn't move resources in memory
@@ -365,7 +366,7 @@ static PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, 
 		map.emplace(str, *tex);
 		return *tex;
 	}
-	return it->second;
+	return it->value;
 }
 
 PTexture getTexture(Str name) { return getTexture(name, s_textures, "data/", ""); }

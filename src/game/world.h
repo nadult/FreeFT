@@ -10,7 +10,6 @@
 #include "game/path.h"
 #include "game/trigger.h"
 #include "navi_map.h"
-#include <thread>
 
 namespace game {
 

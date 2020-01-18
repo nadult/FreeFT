@@ -66,8 +66,8 @@ namespace net {
 	}
 
 	Ex<Address> lobbyServerAddress() {
-		return Address(EXPECT_PASS(resolveName("localhost")), 50000);
-		return Address(EXPECT_PASS(resolveName("89.74.58.32")), 50000);
+		return Address(EX_PASS(resolveName("localhost")), 50000);
+		return Address(EX_PASS(resolveName("89.74.58.32")), 50000);
 	}
 
 	Address::Address(u16 port) :port(port), ip(htonl(INADDR_ANY)) { }

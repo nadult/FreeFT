@@ -273,7 +273,7 @@ public:
 
 void preloadTiles() {
 	printf("Enumerating tiles\n");
-	auto file_names = findFiles("data/tiles/", FindFiles::regular_file | FindFiles::recursive);
+	auto file_names = findFiles("data/tiles/", FindFileOpt::regular_file | FindFileOpt::recursive);
 
 	printf("Preloading tiles");
 	auto [prefix, suffix] = res::tilePrefixSuffix();

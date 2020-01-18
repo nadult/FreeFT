@@ -154,7 +154,7 @@ namespace game {
 		DASSERT(validEnum(*id));
 		const ProtoDef &def = s_protos[*id];
 		auto it = def.map.find(name);
-		return it == def.map.end()? ProtoIndex() : ProtoIndex(it->second, *id);
+		return it == def.map.end()? ProtoIndex() : ProtoIndex(it->value, *id);
 	}
 	
 	int countProtos(ProtoId id) {

@@ -29,7 +29,7 @@ namespace game {
 		void swap(const TileMap&);
 
 		template <class InputStream>
-		void legacyConvert(InputStream &in, FileStream &out);
+		Ex<void> legacyConvert(InputStream &in, FileStream &out);
 
 		OccluderMap &occluderMap() { return m_occluder_map; }
 		const OccluderMap &occluderMap() const { return m_occluder_map; }

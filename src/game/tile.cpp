@@ -44,7 +44,7 @@ namespace game
 
 	Ex<void> TileFrame::load(FileStream &sr) {
 		sr >> m_offset;
-		m_texture = EXPECT_PASS(PackedTexture::load(sr));
+		m_texture = EX_PASS(PackedTexture::load(sr));
 		return {};
 	}
 	void TileFrame::save(FileStream &sr) const {
@@ -133,7 +133,7 @@ namespace game
 		for(int n = 0; n < zar_count; n++) {
 			TileFrame frame(&m_palette);
 			Palette palette;
-			EXPECT_PASS(frame.m_texture.legacyLoad(sr, palette));
+			EX_PASS(frame.m_texture.legacyLoad(sr, palette));
 			i32 off_x, off_y;
 			sr.unpack(off_x, off_y);
 			frame.m_offset = int2(off_x, off_y);
@@ -148,7 +148,7 @@ namespace game
 			}
 		}
 
-		m_palette = EXPECT_PASS(Palette::legacyLoad(sr));
+		m_palette = EX_PASS(Palette::legacyLoad(sr));
 		ASSERT(first_pal == m_palette);
 
 		m_offset -= worldToScreen(int3(m_bbox.x, 0, m_bbox.z));
@@ -164,15 +164,15 @@ namespace game
 		sr.unpack(type_id, surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
 		m_type_id = type_id >= count<TileId>? TileId::unknown : (TileId)type_id;
 		m_surface_id = surface_id >= count<SurfaceId>? SurfaceId::unknown : (SurfaceId)surface_id;
-		m_first_frame.load(sr).check(); // TODO: pass
+		EXPECT(m_first_frame.load(sr));
 
 		u32 size = 0;
 		sr >> size;
 		EXPECT(size <= 4096); // TODO: checks for size everywhere where needed?
 		m_frames.resize(size);
 		for(auto &frame : m_frames)
-			frame.load(sr).check(); // TODO: pass
-		m_palette = EXPECT_PASS(Palette::load(sr));
+			EXPECT(frame.load(sr));
+		m_palette = EX_PASS(Palette::load(sr));
 
 		for(int n = 0; n < (int)m_frames.size(); n++)
 			m_frames[n].m_palette_ref = &m_palette;

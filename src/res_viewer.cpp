@@ -54,18 +54,18 @@ class Resource {
 
 		auto path = current_dir / file_name;
 		if(m_type == ResType::tile) {
-			auto loader = EXPECT_PASS(fileLoader(path));
+			auto loader = EX_PASS(fileLoader(path));
 			m_tile.emplace();
-			m_tile->load(loader).check(); // TODO: pass
+			EXPECT(m_tile->load(loader));
 			m_rect_size = m_tile->rect().size() + int2(8, 8);
 		} else if(m_type == ResType::texture) {
-			m_texture = EXPECT_PASS(GlTexture::load(path));
+			m_texture = EX_PASS(GlTexture::load(path));
 			m_rect_size = m_texture->size();
 		} else if(m_type == ResType::sprite) {
-			auto loader = EXPECT_PASS(fileLoader(path));
+			auto loader = EX_PASS(fileLoader(path));
 			//	printf("Loading sprite: %s\n", file_name);
 			m_sprite.emplace();
-			m_sprite->load(loader).check(); // TODO
+			EXPECT(m_sprite->load(loader));
 			m_sprite->setResourceName(file_name);
 			m_sprite->printInfo();
 			m_rect_size =
@@ -363,8 +363,8 @@ class ResViewerWindow : public Window {
 		m_dir_view = make_shared<ListBox>(IRect(0, 0, left_width, res.y));
 
 		// TODO: doesn't support links?
-		m_entries = findFiles(m_current_dir, FindFiles::regular_file | FindFiles::directory |
-												 FindFiles::relative | FindFiles::include_parent);
+		m_entries = findFiles(m_current_dir, FindFileOpt::regular_file | FindFileOpt::directory |
+												 FindFileOpt::relative | FindFileOpt::include_parent);
 		std::sort(m_entries.begin(), m_entries.end());
 		vector<string> names;
 

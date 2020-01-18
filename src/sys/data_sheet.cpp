@@ -16,7 +16,7 @@ const char *TupleParser::get(const char *col_name) const {
 	auto it = m_column_map.find(col_name);
 	if(it == m_column_map.end())
 		FATAL("missing column: %s", col_name);
-	return m_columns[it->second];
+	return m_columns[it->value];
 }
 
 static const char *getText(CXmlNode cell_node) {
@@ -69,7 +69,7 @@ void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_fun
 		auto it = column_map.find("id");
 		if(it == column_map.end())
 			FATAL("Id column must be defined");
-		id_column = it->second;
+		id_column = it->value;
 	}
 
 	ON_FAIL("Error while parsing sheet: %", table_node.attrib("table:name"));

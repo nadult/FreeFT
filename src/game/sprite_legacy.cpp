@@ -196,20 +196,20 @@ namespace game
 				return ERROR("Unknown spranim_img type: %d", (int)type);
 			collection.type = type;
 
-			bool plainType = type == '1';
+			bool plain_type = type == '1';
 			vector<char> data;
 			int size = (n == collection_count - 1? sr.size() : collections[n + 1].offset) -
 						collection.offset - 16;
 
-			if(plainType) {
+			if(plain_type) {
 				data.resize(size);
 				sr.loadData(data);
 			}
 			else {
-				i32 plainSize = 0;
-				sr >> plainSize;
-				zlibInflate(sr, data, size - 4).check(); // TODO: pass
-				DASSERT((int)data.size() == plainSize);
+				i32 plain_size = 0;
+				sr >> plain_size;
+				EXPECT(zlibInflate(sr, data, size - 4));
+				EXPECT(plain_size == data.size());
 			}
 
 			auto imgSr = memoryLoader(data);
@@ -234,7 +234,7 @@ namespace game
 					Palette palette;
 					i32 x, y; imgSr.unpack(x, y);
 					collection.points[n] = int2(x, y);
-					collection.images[n] = EXPECT_PASS(PackedTexture::legacyLoad(imgSr, palette));
+					collection.images[n] = EX_PASS(PackedTexture::legacyLoad(imgSr, palette));
 				}
 				else if(type == 0) { // empty image
 				}

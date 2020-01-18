@@ -34,7 +34,7 @@ namespace game {
 		if(!s_sprite_map.empty())
 			return;
 
-		auto file_entries = findFiles(s_prefix, FindFiles::regular_file | FindFiles::recursive);
+		auto file_entries = findFiles(s_prefix, FindFileOpt::regular_file | FindFileOpt::recursive);
 
 		string suffix = s_suffix;
 		int sprite_count = 0;
