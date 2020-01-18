@@ -7,9 +7,7 @@
 
 class NaviHeightmap {
 public:
-	enum {
-		invalid_value = 0
-	};
+	static constexpr int invalid_value = 0;
 
 	NaviHeightmap(const int2 &size);
 

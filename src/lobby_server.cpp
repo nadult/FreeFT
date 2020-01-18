@@ -45,7 +45,7 @@ public:
 			auto result = m_socket.receive(packet, source);
 			if(result == RecvResult::empty)
 				break;
-			if(result == RecvResult::invalid || !(packet.info.flags & PacketInfo::flag_lobby))
+			if(result == RecvResult::invalid || !(packet.info.flags & PacketFlag::lobby))
 				continue;
 
 			{ // TODO: proper error handling
@@ -81,14 +81,14 @@ public:
 						LOG("Punching through for: %s to: %s\n", source.toString().c_str(),
 							server_address.toString().c_str());
 
-						OutPacket out({0, -1, -1, PacketInfo::flag_lobby});
+						OutPacket out({0, -1, -1, PacketFlag::lobby});
 						out << LobbyChunkId::join_request;
 						out.pack(source.ip, source.port);
 						m_socket.send(out.data(), server_address);
 					}
 				} else if(chunk_id == LobbyChunkId::server_list_request) {
 					// TODO: These interfaces could be improved...
-					OutPacket out({0, -1, -1, PacketInfo::flag_lobby});
+					OutPacket out({0, -1, -1, PacketFlag::lobby});
 					out << LobbyChunkId::server_list;
 					LOG("Client wants info: %s\n", source.toString().c_str());
 

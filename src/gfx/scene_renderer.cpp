@@ -119,7 +119,7 @@ void SceneRenderer::render() {
 	//FWK_PROFILE("SceneRenderer::render");
 	Renderer2D out(m_viewport, Orient2D::y_down);
 
-	enum { node_size = 128 };
+	int node_size = 128;
 
 	out.setViewPos(m_view_pos - m_viewport.min());
 	IRect view(m_view_pos, m_view_pos + m_viewport.size());

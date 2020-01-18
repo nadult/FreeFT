@@ -39,9 +39,7 @@ namespace game {
 	template <class TOrder,  OrderTypeId type_id_>
 	class OrderImpl: public Order {
 	public:
-		enum {
-			type_id = (int)type_id_,
-		};
+		static constexpr int type_id = (int)type_id_;
 
 		OrderImpl() { }
 		OrderImpl(MemoryStream &sr) :Order(sr) { }

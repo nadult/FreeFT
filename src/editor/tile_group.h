@@ -17,7 +17,7 @@ public:
 	struct Group {
 		Group();
 
-		enum { side_count = 8 };
+		static constexpr int side_count = 8;
 		int m_entry_count;
 		int m_side_surf[side_count]; // order: CCW starting from '1' on keypad
 		static int3 s_side_offsets[side_count];

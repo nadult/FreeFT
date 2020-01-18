@@ -6,10 +6,7 @@
 
 namespace hud {
 
-	enum {
-		console_height = 22,
-		max_command_length = 128,
-	};
+	static constexpr int console_height = 22, max_command_length = 128;
 
 	HudConsole::HudConsole(const int2 &resolution) :HudLayer(FRect(0, 0, resolution.x, console_height), HudLayer::slide_top) {
 		m_edit_box = make_shared<HudEditBox>(rect(), max_command_length, HudEditBox::mode_console);

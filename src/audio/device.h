@@ -21,9 +21,7 @@ namespace audio {
 	//TODO: add upper limit for sound buffers memory
 	//TODO: add possibility to access specific sound variation (by it's name)
 
-	enum {
-		max_sources = 16,
-	};
+	static constexpr int max_sources = 16;
 
 	using Sound = fwk::Sound;
 
@@ -84,7 +82,7 @@ namespace audio {
 		bool isPlaying() const;
 
 	private:
-		enum { max_buffers = 4 };
+		static constexpr int max_buffers = 4;
 
 		enum Mode {
 			mode_playing,

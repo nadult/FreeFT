@@ -44,7 +44,7 @@ namespace net {
 	}
 
 	void Client::requestLobbyData() {
-		OutPacket request({0, -1, -1, PacketInfo::flag_lobby});
+		OutPacket request({0, -1, -1, PacketFlag::lobby});
 		request << LobbyChunkId::server_list_request;
 		sendLobbyPacket(request.data());
 	}
@@ -54,7 +54,7 @@ namespace net {
 			disconnect();
 
 		{
-			OutPacket punch_through({0, -1, -1, PacketInfo::flag_lobby});
+			OutPacket punch_through({0, -1, -1, PacketFlag::lobby});
 			punch_through << LobbyChunkId::join_request << address.ip << address.port;
 			sendLobbyPacket(punch_through.data());
 		}

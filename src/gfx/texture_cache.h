@@ -86,7 +86,7 @@ class TextureCache {
 		ListNode atlas_node {}; // shared by two lists: AtlasNode::list, m_atlas_queue
 	};
 
-	enum { node_size = 256 };
+	static constexpr int node_size = 256;
 
 	struct AtlasNode {
 		IRect rect;

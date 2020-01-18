@@ -5,7 +5,6 @@
 
 #include "net/socket.h"
 #include "net/chunk.h"
-#include "sys/aligned_allocator.h"
 #include <fwk/list_node.h>
 #include <list>
 
@@ -75,11 +74,10 @@ namespace net {
 	public:
 		RemoteHost(const Address &address, int max_bytes_per_frame, int current_id, int remote_id);
 
-		enum {
+		static constexpr int
 			max_channels = 8,
 			max_unacked_packets = 16, //TODO: max ack time would be better
-			max_ack_per_frame = max_unacked_packets * 2,
-		};
+			max_ack_per_frame = max_unacked_packets * 2;
 
 		struct Packet {
 			Packet() :packet_id(0) { }
@@ -146,7 +144,7 @@ namespace net {
 		void acceptPacket(int packet_idx);
 
 		Address m_address;
-		std::vector<Chunk, AlignedAllocator<Chunk, 128>> m_chunks;
+		vector<Chunk> m_chunks;
 		vector<UChunk> m_uchunks;
 		vector<Channel> m_channels;
 		vector<int> m_ichunk_indices;
@@ -187,10 +185,7 @@ namespace net {
 	//TODO: network data verification (so that the game won't crash under any circumstances)
 	class LocalHost {
 	public:
-		enum {
-			max_remote_hosts = 32,
-			max_unverified_hosts = 4,
-		};
+		static constexpr int max_remote_hosts = 32, max_unverified_hosts = 4;
 
 		LocalHost(const net::Address &address);
 

@@ -166,7 +166,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 
 	int level_count = heightmap.levelCount();
 
-	enum { max_levels = 256 };
+	static constexpr int max_levels = 256;
 
 	vector<PodVector<u8>> bitmaps(level_count);
 	vector<int> level_pixels(max_levels, 0);

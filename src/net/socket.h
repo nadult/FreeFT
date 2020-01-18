@@ -11,29 +11,28 @@ namespace net {
 	int randomPort();
 	Ex<Address> lobbyServerAddress();
 
+	// First: first packet for given frame, contains ack's
+	// Lobby: doesn't contain chunks, have to be handled differently
+	DEFINE_ENUM(PacketFlag, first, encrypted, compressed, lobby);
+	using PacketFlags = EnumFlags<PacketFlag>;
+
 	struct PacketInfo {
 		PacketInfo() {}
-		PacketInfo(SeqNumber packet_id, int current_id, int remote_id, int flags);
+		PacketInfo(SeqNumber packet_id, int current_id, int remote_id, PacketFlags);
 
 		bool valid() const { return protocol_id == valid_protocol_id; }
 
 		i16 protocol_id;
 		SeqNumber packet_id; //TODO: should we really save space here?
 		i8 current_id, remote_id;
-		i8 flags;
+		PacketFlags flags;
 
-		enum {
+		static constexpr int
 			max_size = limits::packet_size,
 			max_host_id = 127,
 			header_size = sizeof(protocol_id) + sizeof(packet_id) + sizeof(current_id) +
 						  sizeof(remote_id) + sizeof(flags),
-			valid_protocol_id = 0x1234,
-
-			flag_first = 1, // first packet for given frame, contains ack's
-			flag_encrypted = 2,
-			flag_compressed = 4,
-			flag_lobby = 8, // doesn't contain chunks, have to be handled differently
-		};
+			valid_protocol_id = 0x1234;
 
 		void save(MemoryStream &sr) const;
 		void load(MemoryStream &sr);
@@ -49,7 +48,7 @@ namespace net {
 
 		int currentId() const { return info.current_id; }
 		int packetId() const { return info.packet_id; }
-		int flags() const { return info.flags; }
+		PacketFlags flags() const { return info.flags; }
 		int decodeInt() { return ::decodeInt(*this); }
 
 		PacketInfo info;

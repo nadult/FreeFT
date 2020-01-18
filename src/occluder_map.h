@@ -8,7 +8,7 @@
 
 class OccluderMap {
 public:
-	enum { max_occluders = 32000 };
+	static constexpr int max_occluders = 32000;
 
 	OccluderMap(Grid&);
 

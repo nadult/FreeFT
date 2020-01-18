@@ -8,18 +8,16 @@
 #include <fwk/math/rotation.h>
 #include <fwk/sys/file_stream.h>
 
-enum {
-	// TODO: tune-able parameters?
+// TODO: tune-able parameters?
+static constexpr int
 	min0 = 16,
 	min1 = 1024 * 4,
 	min2 = 1024 * 1024,
 	min3 = 1024 * 1024 * 128,
-
 	max0 = 64,
 	max1 = 16 * 1024,
 	max2 = 1024 * 1024 * 4,
-	max3 = 1024 * 1024 * 512,
-};
+	max3 = 1024 * 1024 * 512;
 
 void encodeInt(MemoryStream &sr, int value) {
 	if(value >= -min0 && value < max0 - min0) {

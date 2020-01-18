@@ -12,10 +12,7 @@ namespace hud
 
 	class HudWidget {
 	public:
-		enum {
-			spacing = 15,
-			layer_spacing = 5
-		};
+		static constexpr int spacing = 15, layer_spacing = 5;
 
 		HudWidget(const FRect &rect);
 		HudWidget(const HudWidget&) = delete;

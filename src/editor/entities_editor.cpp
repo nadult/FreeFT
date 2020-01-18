@@ -98,7 +98,7 @@ namespace ui {
 		vector<int> temp;
 		temp.reserve(100);
 
-		enum { block_size = 64 };
+		static constexpr int block_size = 64;
 
 		for(int gy = m_selection.y(); gy <= m_selection.ey(); gy += block_size)
 			for(int gx = m_selection.x(); gx <= m_selection.ex(); gx += block_size) {

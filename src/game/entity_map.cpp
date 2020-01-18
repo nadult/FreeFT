@@ -110,7 +110,7 @@ namespace game
 		auto node = main_node.child();
 		while(node) {
 			Dynamic<Entity> new_entity(Entity::construct(node));
-			add(std::move(new_entity));
+			add(move(new_entity));
 			node = node.sibling();
 		}
 	}
@@ -119,7 +119,7 @@ namespace game
 		auto main_node = doc.addChild("entity_map");
 		main_node.addAttrib("size", dimensions());
 
-		std::vector<int> indices;
+		vector<int> indices;
 		indices.reserve(size());
 		for(int n = 0; n < size(); n++)
 			if((*this)[n].ptr)

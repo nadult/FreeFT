@@ -63,7 +63,7 @@ namespace hud
 
 	class HudInventory: public HudLayer {
 	public:
-		enum { item_spacing = 17 };
+		static constexpr int item_spacing = 17;
 
 		HudInventory(const FRect &target_rect);
 		~HudInventory();

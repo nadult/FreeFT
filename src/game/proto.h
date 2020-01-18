@@ -78,7 +78,7 @@ namespace game {
 		template <class... Args>
 		ProtoImpl(const Args&... args) :Base(args...) { }
 
-		enum { proto_id = (int)proto_id_ };
+		static constexpr int proto_id = (int)proto_id_;
 		virtual ProtoId protoId() const { return proto_id_; }
 		virtual bool validProtoId(ProtoId type) const { return type == proto_id_ || Base::validProtoId(type); }
 	};

@@ -91,7 +91,7 @@ namespace net {
 
 		m_out_packet_id++;
 		m_out_packet.clear();
-		m_out_packet << PacketInfo(m_out_packet_id, m_current_id, m_remote_id, is_first? PacketInfo::flag_first : 0);
+		m_out_packet << PacketInfo(m_out_packet_id, m_current_id, m_remote_id, mask(is_first, PacketFlag::first));
 
 		packet.packet_id = m_out_packet_id;
 		m_packet_idx = packet_idx;
@@ -297,7 +297,7 @@ namespace net {
 
 		logBegin(false, m_address, packet.packetId()); 
 
-		if(packet.flags() & PacketInfo::flag_first) {
+		if(packet.flags() & PacketFlag::first) {
 			int num_acks = packet.decodeInt();
 			if(num_acks < 0 || num_acks > max_ack_per_frame)
 				goto ERROR;
@@ -370,7 +370,7 @@ ERROR:;
 		int last_first = -1;
 
 		for(int idx = m_in_packets.head(); idx != -1; idx = m_in_packets.next(idx))
-			if(m_in_packets[idx].flags() & PacketInfo::flag_first) {
+			if(m_in_packets[idx].flags() & PacketFlag::first) {
 				if(idx == m_in_packets.tail())
 					break;
 				last_first = idx;
@@ -564,7 +564,7 @@ ERROR:;
 			if(result == RecvResult::invalid)
 				continue;
 			
-			if(packet.info.flags & PacketInfo::flag_lobby) {
+			if(packet.info.flags & PacketFlag::lobby) {
 				m_lobby_packets.emplace_back(move(packet));
 				continue;
 			}

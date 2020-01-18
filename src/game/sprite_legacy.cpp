@@ -8,13 +8,13 @@
 // source: http://www.zlib.net/zlib_how.html
 template <class InputStream>
 Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize) {
-	enum { CHUNK = 16 * 1024 };
+	int chunk_size = 16 * 1024;
 
 	int ret;
 	unsigned have;
 	z_stream strm;
-	unsigned char in[CHUNK];
-	unsigned char out[CHUNK];
+	unsigned char in[chunk_size];
+	unsigned char out[chunk_size];
 
 	dest.clear();
 
@@ -29,14 +29,14 @@ Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize) {
 
 	/* decompress until deflate stream ends or end of file */
 	do {
-		strm.avail_in = inSize < CHUNK? inSize : CHUNK;
+		strm.avail_in = inSize < chunk_size? inSize : chunk_size;
 		sr.loadData(span(in, strm.avail_in));
 		strm.next_in = in;
 		inSize -= strm.avail_in;
 
 		/* run inflate() on input until output buffer not full */
 		do {
-			strm.avail_out = CHUNK;
+			strm.avail_out = chunk_size;
 			strm.next_out = out;
 			ret = inflate(&strm, Z_NO_FLUSH);
 			DASSERT(ret != Z_STREAM_ERROR);  /* state not clobbered */
@@ -50,7 +50,7 @@ Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize) {
 				inflateEnd(&strm);
 				return ERROR("Z_MEM_ERROR while decompressing image data");
 			}
-			have = CHUNK - strm.avail_out;
+			have = chunk_size - strm.avail_out;
 			dest.resize(dest.size() + have);
 			memcpy(&dest[dest.size() - have], out, have);
 		} while (strm.avail_out == 0);
@@ -68,7 +68,7 @@ namespace game
 {
 	namespace {
 		struct Collection {
-			enum { layer_count = 4 };
+			static constexpr int layer_count = 4;
 			static_assert((int)layer_count <= (int)Sprite::layer_count, "Wrong layer count");
 
 			string name;

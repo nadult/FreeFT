@@ -23,7 +23,7 @@ namespace net {
 			playing,
 		};
 
-		enum { timeout = 5 };
+		static constexpr int timeout = 5;
 
 		Client(int port = 0);
 		~Client();

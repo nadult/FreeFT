@@ -44,12 +44,9 @@ namespace game {
 		return node;
 	}
 	
-	enum {
-		flag_compressed = 1,
-		flag_is_looped = 2,
-		flag_is_finished = 4,
-		flag_has_overlay = 8,
-	};
+	static constexpr int
+		flag_compressed = 1, flag_is_looped = 2,
+		flag_is_finished = 4, flag_has_overlay = 8;
 
 	Entity::Entity(const Sprite &sprite, MemoryStream &sr) :EntityWorldProxy(sr), m_sprite(sprite) {
 		resetAnimState();

@@ -36,7 +36,7 @@ namespace game {
 
 		static const char *eventIdToString(EventId id);
 
-		enum { layer_count = 4 };
+		static constexpr int layer_count = 4;
 
 		struct Frame {
 			Frame() :id(0) { memset(params, 0, sizeof(params)); }
@@ -167,4 +167,4 @@ namespace game {
 	};
 };
 	
-template<> constexpr bool fwk::is_flat_data<game::Sprite::Frame> = true;
+template<> inline constexpr bool fwk::is_flat_data<game::Sprite::Frame> = true;

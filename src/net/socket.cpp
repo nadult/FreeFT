@@ -81,11 +81,10 @@ namespace net {
 		return string(buf);
 	}
 
-	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, int flags_)
+	PacketInfo::PacketInfo(SeqNumber packet_id, int current_id_, int remote_id_, PacketFlags flags_)
 		: protocol_id(valid_protocol_id), packet_id(packet_id) {
 		DASSERT(current_id_ >= -1 && current_id <= max_host_id);
 		DASSERT(remote_id_ >= -1 && remote_id <= max_host_id);
-		DASSERT((flags_ & ~0xff) == 0);
 
 		current_id = current_id_;
 		remote_id = remote_id_;
@@ -93,10 +92,13 @@ namespace net {
 	}
 
 	void PacketInfo::save(MemoryStream &sr) const {
-		sr.pack(protocol_id, packet_id, current_id, remote_id, flags);
+		sr.pack(protocol_id, packet_id, current_id, remote_id, u8(flags));
 	}
 	void PacketInfo::load(MemoryStream &sr) {
-		sr.unpack(protocol_id, packet_id, current_id, remote_id, flags);
+		u8 flags_;
+		sr.unpack(protocol_id, packet_id, current_id, remote_id, flags_);
+		flags = PacketFlags(flags_);
+		// TODO: checks
 	}
 
 	InPacket::InPacket() : MemoryStream(cspan("", 0)) {}

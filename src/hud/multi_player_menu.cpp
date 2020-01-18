@@ -35,7 +35,7 @@ namespace hud {
 		
 	MultiPlayerMenu::MultiPlayerMenu(const FRect &rect, int2 window_size)
 		:HudLayer(rect, HudLayer::slide_top), m_please_refresh(true), m_window_size(window_size) {
-		enum { spacing = layer_spacing };
+		int spacing = layer_spacing;
 
 		setTitle("Connecting to server:");
 		m_visible_time = 0.0f;

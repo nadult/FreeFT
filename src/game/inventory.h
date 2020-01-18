@@ -17,7 +17,7 @@ namespace game {
 		Inventory(CXmlNode);
 
 		//TODO: remove this limit
-		enum { max_entries = 1024 };
+		static constexpr int max_entries = 1024;
 		
 		void save(XmlNode) const;
 

@@ -2,17 +2,32 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "audio/mp3_decoder.h"
+#ifndef FWK_PLATFORM_HTML
 #include <mpg123.h>
+#endif
 
 #include <fwk/sys/file_stream.h>
 #include <fwk/audio/sound.h>
 
+
 namespace audio {
 
+
+#ifdef FWK_PLATFORM_HTML
+// TODO: use browser mp3 decoder? But how?
+
+	MP3Decoder::MP3Decoder(const string &file_name)
+		:m_is_finished(true), m_sample_rate(44100), m_num_channels(1), m_need_data(false) { }
+	MP3Decoder::~MP3Decoder() { }
+		
+	bool MP3Decoder::decode(Sound &out, int max_size) {
+		out = {};
+		return true;
+	}
+#else
 	static int s_num_decoders = 0;
-
+	
 	//TODO: silence errors
-
 	MP3Decoder::MP3Decoder(const string &file_name) {
 		m_stream.emplace(move(fileLoader(file_name).get())); // TODO: pass it properly
 
@@ -64,10 +79,6 @@ namespace audio {
 		if(--s_num_decoders == 0)
 			mpg123_exit();
 	}
-		
-	int MP3Decoder::bytesPerSecond() const {
-		return m_sample_rate * m_num_channels * 2;
-	}
 
 	bool MP3Decoder::decode(Sound &out, int max_size) {
 		if(m_is_finished)
@@ -111,6 +122,11 @@ namespace audio {
 		out = {move(out_data), {m_sample_rate, 16, m_num_channels == 2}};
 
 		return m_is_finished;
+	}
+#endif
+	
+	int MP3Decoder::bytesPerSecond() const {
+		return m_sample_rate * m_num_channels * 2;
 	}
 
 }

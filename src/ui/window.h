@@ -38,9 +38,7 @@ namespace ui
 		static FColor gui_light;
 		static FColor gui_popup;
 		
-		enum {
-			line_height = 24
-		};
+		static constexpr int line_height = 24;
 
 		// Default font names: small, normal, big
 		static const char *fonts[3];

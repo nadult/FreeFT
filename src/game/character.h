@@ -12,10 +12,7 @@ namespace game
 
 	class Character: public std::enable_shared_from_this<Character> {
 	public:
-		enum {
-			max_name_size = 14,
-			max_icon_name_size = 32,
-		};
+		static constexpr int max_name_size = 14, max_icon_name_size = 32;
 
 		// TODO: different icons match different protos
 		Character(const string &name, const string &icon_name, const string &proto_name);

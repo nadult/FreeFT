@@ -13,10 +13,7 @@ namespace game {
 	ThinkingEntity::~ThinkingEntity() = default;
 	ThinkingEntity::ThinkingEntity(const Sprite &sprite, CXmlNode node) :Entity(sprite, node) { }
 	
-	enum {
-		flag_has_order = 1,
-		flag_has_following_orders = 2,
-	};
+	static constexpr int flag_has_order = 1, flag_has_following_orders = 2;
 
 	ThinkingEntity::ThinkingEntity(const Sprite &sprite, MemoryStream &sr) :Entity(sprite, sr) {
 		u8 flags;

@@ -14,7 +14,7 @@ namespace game {
 
 	class Trigger: public Entity {
 	public:
-		enum { type_id = (int)EntityId::trigger };
+		static constexpr int type_id = (int)EntityId::trigger;
 
 		Trigger(TriggerClassId class_id, const FBox &box);
 		Trigger(CXmlNode);

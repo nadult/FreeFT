@@ -63,7 +63,7 @@ namespace net {
 		//TODO: inform clients that server is closing
 		//TODO: proper error handling
 
-		OutPacket out({0, -1, -1, PacketInfo::flag_lobby});
+		OutPacket out({0, -1, -1, PacketFlag::lobby});
 		out << LobbyChunkId::server_down;
 		sendLobbyPacket(out.data());
 	}
@@ -218,7 +218,7 @@ namespace net {
 			packet >> target.ip >> target.port;
 
 			if(id == LobbyChunkId::join_request && target.isValid()) {
-				OutPacket punch({0, -1, -1, PacketInfo::flag_lobby});
+				OutPacket punch({0, -1, -1, PacketFlag::lobby});
 				punch << LobbyChunkId::punch_through;
 				m_socket.send(punch.data(), target);
 			}
@@ -284,7 +284,7 @@ namespace net {
 		m_replication_list.clear();
 
 		if(m_current_time >= m_lobby_timeout) {
-			OutPacket out({0, -1, -1, PacketInfo::flag_lobby});
+			OutPacket out({0, -1, -1, PacketFlag::lobby});
 			ServerStatusChunk chunk;
 			chunk.address = Address();
 			//TODO: send map title, which should be shorter

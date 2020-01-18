@@ -259,7 +259,7 @@ namespace game {
 			:Base(*init.sprite, sr), m_proto(*init.proto) { }
 
 	public:
-		enum { type_id = (int)entity_id };
+		static constexpr int type_id = (int)entity_id;
 		EntityImpl(const Proto &proto) :EntityImpl(Initializer(proto)) { }
 		EntityImpl(CXmlNode node) :EntityImpl(Initializer(node), node) { }
 		EntityImpl(MemoryStream &sr) :EntityImpl(Initializer(sr), sr) { }

@@ -7,8 +7,8 @@ CFLAGS         = -Isrc/ -fopenmp
 LDFLAGS_gcc    = -lgomp
 LDFLAGS_clang  = -fopenmp
 PCH_SOURCE    := src/freeft_pch.h
-LDFLAGS_linux := -lz -lmpg123 -lzip
-LDFLAGS_mingw := $(LDFLAGS_linux)
+LDFLAGS_linux := -lz -lmpg123 -lzip -Wl,--export-dynamic
+LDFLAGS_mingw := -lz -lmpg123 -lzip
 BUILD_DIR      = build/$(if $(findstring linux,$(PLATFORM)),,$(PLATFORM)_)$(MODE)
 
 include $(FWK_DIR)Makefile-shared
@@ -65,7 +65,7 @@ $(OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_TARGET)
 	$(COMPILER) -MMD $(CFLAGS) $(PCH_CFLAGS) -c src/$*.cpp -o $@
 
 $(PROGRAMS): %$(PROGRAM_SUFFIX): $(SHARED_OBJECTS) $(BUILD_DIR)/%.o $(FWK_LIB_FILE)
-	$(LINKER) -o $@ $^ -Wl,--export-dynamic $(LDFLAGS)
+	$(LINKER) -o $@ $^ $(LDFLAGS)
 	@echo MODE=$(MODE) COMPILER=$(COMPILER) > build/last_build.txt
 
 DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_TEMP).d

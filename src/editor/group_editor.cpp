@@ -89,7 +89,7 @@ namespace {
 				m_tile_list.update();
 			}
 			if(state.isKeyDown('A') && entry && m_selected_group_id == entry->group_id) {
-				enum { subgroup_count = 3 };
+				static constexpr int subgroup_count = 3;
 				const char *infixes[subgroup_count] = {
 					"CONCAVE_",
 					"CONVEX_",

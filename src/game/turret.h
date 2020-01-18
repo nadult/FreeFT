@@ -35,7 +35,7 @@ namespace game {
 
 		bool canHide() const;
 
-		enum { invalid_anim_id = 255 };
+		static constexpr int invalid_anim_id = 255;
 		EnumMap<TurretAction, u8> anim_idx;
 		EnumMap<TurretSoundId, SoundId> sound_idx;
 		float hit_points;

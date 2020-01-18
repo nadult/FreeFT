@@ -14,7 +14,7 @@ namespace hud
 
 	class HudCharacter: public HudLayer {
 	public:
-		enum { spacing = 17 };
+		static constexpr int spacing = 17;
 
 		HudCharacter(const FRect &target_rect);
 		~HudCharacter();

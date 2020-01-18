@@ -60,16 +60,17 @@ namespace net {
 	
 	protected:
 		u16 m_data_size;
-		enum { header_size = sizeof(m_left_over) + sizeof(m_node) + sizeof(m_chunk_id) +
-							 sizeof(m_data_size) + sizeof(m_type) + sizeof(m_channel_id) };
+		static constexpr int header_size =
+			sizeof(m_left_over) + sizeof(m_node) + sizeof(m_chunk_id) +
+			sizeof(m_data_size) + sizeof(m_type) + sizeof(m_channel_id);
 
 		char m_data[128 - header_size];
 
 		//TODO: make chunks smaller, so that 64 bytes will be enough
 		friend class InChunk;
-	} __attribute__((aligned(128)));
+	};
 
-	static_assert(sizeof(Chunk) == 128, "Chunk is not properly aligned");
+	static_assert(sizeof(Chunk) == 128, "Chunk is not properly sized");
 
 	class InChunk :public MemoryStream {
 	public:

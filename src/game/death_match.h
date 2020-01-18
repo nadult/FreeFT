@@ -10,9 +10,7 @@ namespace game {
 
 	class DeathMatchServer: public GameModeServer {
 	public:
-		enum {
-			respawn_delay = 5
-		};
+		static constexpr int respawn_delay = 5;
 
 		//TODO: decrease data sent over the net
 		DeathMatchServer(World &world);

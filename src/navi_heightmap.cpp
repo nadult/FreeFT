@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <fwk/gfx/texture.h>
 
-enum { max_levels = 16 };
+static constexpr int max_levels = 16;
 
 NaviHeightmap::NaviHeightmap(const int2 &size) {
 	DASSERT(size.x >= 0 && size.y >= 0);
@@ -109,7 +109,7 @@ void NaviHeightmap::addLevel() {
 }
 
 bool NaviHeightmap::test(int x, int y, int level, int extents) const {
-	enum { max_extents = 8};
+	int max_extents = 8;
 
 	DASSERT(level >= 0 && level < m_level_count);
 	DASSERT(extents <= max_extents);

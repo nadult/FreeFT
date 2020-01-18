@@ -17,13 +17,11 @@ class OccluderStatus;
 // for testing multiple objects at once
 class Grid {
 public:
-	enum {
+	static constexpr int
 		node_size = 24,
 		max_height = 256,
-
 		object_flags		= 0x00ffffff, // at least one of matched flag have to be set
-		functional_flags	= 0xff000000, // all of the matched flags have to be set
-	};
+		functional_flags	= 0xff000000; // all of the matched flags have to be set
 
 	template <typename PtrBase>
 	struct TObjectDef {

@@ -136,7 +136,7 @@ namespace hud {
 
 	void HudGrid::onLayout() {
 		FRect rect = this->rect();
-		enum { spacing = layer_spacing };
+		int spacing = layer_spacing;
 
 		float size_left = rect.width(), min_sum = 0.0f;
 		for(const auto &column : m_columns) {

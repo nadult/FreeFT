@@ -222,7 +222,7 @@ namespace game {
 			sounds.emplace_back(Sounds());
 	}
 
-	enum { invalid_id = 255 };
+	static constexpr int invalid_id = 255;
 
 	void ActorArmourProto::initAnims() {
 		ASSERT(sprite);

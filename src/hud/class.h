@@ -11,7 +11,7 @@ namespace hud
 
 	class HudClassButton: public HudRadioButton {
 	public:
-		enum { spacing = 17 };
+		static constexpr int spacing = 17;
 
 		HudClassButton(const FRect &rect);
 

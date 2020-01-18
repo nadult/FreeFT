@@ -4,7 +4,6 @@
 #pragma once
 
 #include "base.h"
-#include "sys/aligned_allocator.h"
 #include <fwk/list_node.h>
 
 class NaviHeightmap;
@@ -13,9 +12,7 @@ class NaviHeightmap;
 // with varying ceiling height we can provide ceiling heightmaps
 class NaviMap {
 public:
-	enum {
-		sector_size = 32,
-	};
+	static constexpr int sector_size = 32;
 
 	NaviMap(int agent_size);
 
@@ -78,7 +75,7 @@ private:
 
 	int m_agent_size;
 	int m_static_count;
-	std::vector<Quad, AlignedAllocator<Quad>> m_quads;
+	vector<Quad> m_quads;
 	vector<List> m_sectors;
 	int2 m_size; // in sectors
 };
