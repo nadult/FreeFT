@@ -28,13 +28,14 @@ class ResManager {
 	const game::Tile &getTile(Str);
 	const auto &allTiles() { return m_tiles; }
 	
-	static pair<Str, Str> tilePrefixSuffix();
+	Pair<string> tilePrefixSuffix();
 
   private:
 	PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, Str suffix);
 
 	static ResManager *g_instance;
 
+	string m_data_path;
 	FwdMember<HashMap<string, PTexture>> m_gui_textures, m_textures;
 	FwdMember<HashMap<string, PTexture>> m_font_textures;
 	std::map<string, Dynamic<game::Tile>> m_tiles;

@@ -456,7 +456,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				}
 				else 
 					bytes += ldr.size();
-				convert(type, ldr, svr, name);
+				convert(type, ldr, svr, name).check();
 			}
 				
 			printf("\n");
@@ -535,7 +535,8 @@ int main(int argc, char **argv) {
 	}
 
 	else if(command == "all") {
-		ASSERT(!path.empty());
+		if(path.empty())
+			path = "refs/";
 		if(!verifyFTPath(path)) {
 #ifdef _WIN32
 			MessageBox(0, "Invalid path specified!", "Error", MB_OK);

@@ -156,7 +156,7 @@ Ex<PackedTexture> PackedTexture::load(FileStream &sr) {
 
 void PackedTexture::save(FileStream &sr) const {
 	sr.pack(m_width, m_height, m_default_idx, m_max_idx);
-	sr << m_data.size();
+	sr << u32(m_data.size());
 	sr.saveData(m_data);
 }
 

@@ -216,10 +216,12 @@ namespace game
 			auto imgSr = memoryLoader(data);
 
 			for(int l = 0; l < 4; l++) {
-				i32 palSize; imgSr >> palSize;
-				collection.palettes[l].resize(palSize);
-				imgSr.loadData(span(&collection.palettes[l][0], palSize * 4));
-				for(int i = 0; i < palSize; i++)
+				i32 pal_size;
+				imgSr >> pal_size;
+				EXPECT(pal_size <= 256);
+				collection.palettes[l].resize(pal_size);
+				imgSr.loadData(span(&collection.palettes[l][0], pal_size));
+				for(int i = 0; i < pal_size; i++)
 					collection.palettes[l][i] = swapBR(collection.palettes[l][i]);
 			}
 

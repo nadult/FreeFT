@@ -97,9 +97,7 @@ namespace game
 
 		u8 size_x, size_y, size_z;
 		sr.unpack(size_z, size_y, size_x);
-		m_bbox.x = size_x;
-		m_bbox.y = size_y;
-		m_bbox.z = size_z;
+		m_bbox = {size_x, size_y, size_z};
 		
 		i32 posX, posY;
 		sr.unpack(posX, posY);
@@ -133,7 +131,7 @@ namespace game
 		for(int n = 0; n < zar_count; n++) {
 			TileFrame frame(&m_palette);
 			Palette palette;
-			EX_PASS(frame.m_texture.legacyLoad(sr, palette));
+			frame.m_texture = EX_PASS(PackedTexture::legacyLoad(sr, palette));
 			i32 off_x, off_y;
 			sr.unpack(off_x, off_y);
 			frame.m_offset = int2(off_x, off_y);
@@ -186,8 +184,10 @@ namespace game
 	void Tile::save(FileStream &sr) const {
 		sr.signature("TILE");
 		sr.pack(m_type_id, m_surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
+		DASSERT(!m_first_frame.m_texture.empty());
+
 		m_first_frame.save(sr);
-		sr.saveSize(m_frames.size());
+		sr << u32(m_frames.size());
 		for(auto &frame : m_frames)
 			frame.save(sr);
 		m_palette.save(sr);

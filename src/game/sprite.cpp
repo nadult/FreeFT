@@ -177,16 +177,16 @@ namespace game
 	void Sprite::save(FileStream &sr) const {
 		sr.signature("SPRITE");
 		sr.pack(m_offset, m_bbox);
-		sr.saveSize(m_sequences.size());
+		sr << u32(m_sequences.size());
 		for(auto &seq : m_sequences)
 			seq.save(sr);
 		sr << m_frames.size();
 		sr.saveData(m_frames);
 		sr << m_max_rect;
-		sr.saveSize(m_palettes.size());
+		sr << u32(m_palettes.size());
 		for(auto &pal : m_palettes)
 			pal.save(sr);
-		sr.saveSize(m_images.size());
+		sr << u32(m_images.size());
 		for(auto &image : m_images)
 			image.save(sr);
 	}

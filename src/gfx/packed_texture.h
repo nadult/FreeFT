@@ -40,6 +40,7 @@ class PackedTexture {
 	int width() const { return m_width; }
 	int height() const { return m_height; }
 	int2 size() const { return int2(m_width, m_height); }
+	bool empty() const { return m_width == 0 && m_height == 0; }
 	int memorySize() const;
 
 	void decode(Color *__restrict out_data, const Color *__restrict pal, int pal_size) const;
