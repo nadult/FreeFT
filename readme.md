@@ -17,14 +17,14 @@ To compile a linux environment with Clang 8.0 is recommended (G++ 9.0 or newer c
 Following libraries are required:
 
 * libfwk (included as submodule):
-	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)
-    This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2, libpng)
+	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)  
+    This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2, libpng).
 
 * zlib, OpenAL, mpg123, libzip:  
-	these should be available in your distro's package repositories
+	These should be available in your distro's package repositories.
 
-To build for windows, you have to cross-compile with MinGW.
-The easiest way is with MXE ([http://mxe.cc](http://mxe.cc)) with followinf flags:  
+To build for windows, you have to cross-compile with MinGW.  
+The easiest way is with MXE ([http://mxe.cc](http://mxe.cc)) with following flags:  
 
 	export MXE_TARGETS=x86_64-w64-mingw32.static.posix
 	export MXE_PLUGIN_DIRS=plugins/gcc9

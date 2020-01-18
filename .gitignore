@@ -11,6 +11,9 @@
 /res_viewer
 /convert
 /lobby_server
+/*.html
+/*.js
+/*.wasm
 /*.exe
 /data/config.xml
 /data/tiles
