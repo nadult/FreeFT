@@ -129,7 +129,7 @@ bool NaviHeightmap::test(int x, int y, int level, int extents) const {
 			if(fwk::abs(height - prev) > 1 || height == invalid_value)
 				for(int l = 0; l < m_level_count; l++) {
 					height = m_data[index(x + tx, y + ty, l)];
-					if(height >= 0 && fwk::abs(height - prev) <= 1)
+					if(fwk::abs(height - prev) <= 1)
 						break;
 				}
 			if(fwk::abs(height - prev) > 1 || height == invalid_value)

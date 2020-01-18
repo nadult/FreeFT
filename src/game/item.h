@@ -36,14 +36,13 @@ namespace game {
 	public:
 		Item(ProtoIndex);
 		Item(const ItemProto &proto) :m_proto(&proto) { }
-		Item(const Item &rhs) :m_proto(rhs.m_proto) { }
 		Item(MemoryStream &sr) :Item(ProtoIndex(sr)) { }
 		Item() { *this = dummy(); }
 
-		static const Item dummy();
-		static const Item dummyAmmo();
-		static const Item dummyArmour();
-		static const Item dummyWeapon();
+		static Item dummy();
+		static Item dummyAmmo();
+		static Item dummyArmour();
+		static Item dummyWeapon();
 
 		bool operator==(const Item &rhs) const { return index() == rhs.index(); }
 

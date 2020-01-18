@@ -47,19 +47,19 @@ namespace game {
 	Item::Item(ProtoIndex index)
 		:m_proto( (ASSERT(isItem(index.type())), ASSERT(index.isValid()), static_cast<const ItemProto*>(&getProto(index))) ) { }
 		
-	const Item Item::dummy() {
+	Item Item::dummy() {
 		return Item(findProto("_dummy_item", ProtoId::item));
 	}
 
-	const Item Item::dummyAmmo() {
+	Item Item::dummyAmmo() {
 		return Item(findProto("_dummy_ammo", ProtoId::ammo));
 	}
 
-	const Item Item::dummyArmour() {
+	Item Item::dummyArmour() {
 		return Item(findProto("_dummy_armour", ProtoId::armour));
 	}
 
-	const Item Item::dummyWeapon() {
+	Item Item::dummyWeapon() {
 		return Item(findProto("_dummy_weapon", ProtoId::weapon));
 	}
 		

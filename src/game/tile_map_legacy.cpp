@@ -55,7 +55,7 @@ namespace game {
 				int something[3];
 			} __attribute__((packed));
 			Header header;
-			dsr >> asPod(header);
+			dsr.loadData(asPod(header));
 
 			int proto_count = 0, zero;
 			dsr >> proto_count >> zero;
@@ -82,7 +82,7 @@ namespace game {
 			for(int n = 0; n < proto_count; n++) {
 				dsr.signature(Str("<tile>\00010\0", 10));
 				TileParams tile;
-				dsr >> asPod(tile);
+				dsr.loadData(asPod(tile));
 				tile_params.push_back(tile);
 			//	printf("TileParams [%d/%d]: %d %d %d\n", (int)tile_params.size(), proto_count, (int)tile.bbox_x, (int)tile.bbox_y, (int)tile.bbox_z);
 			}
@@ -138,7 +138,7 @@ namespace game {
 					static_assert(sizeof(TInstance) == 56, "Wrong instance size");
 
 					TInstance instance;
-					dsr >> asPod(instance);
+					dsr.loadData(asPod(instance));
 					int tile_id = (int)instance.tile_id - 1;
 					if(tile_id < 0)
 						continue;

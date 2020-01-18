@@ -1,5 +1,6 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
+
 #ifdef _WIN32
 
 typedef int socklen_t;
@@ -15,8 +16,8 @@ typedef int socklen_t;
 
 #endif
 
-#include "net/socket.h"
 #include <unistd.h>
+#include "net/socket.h"
 
 //#define RELIABILITY_TEST
 #ifdef RELIABILITY_TEST
@@ -24,7 +25,6 @@ static bool isDropped() {
 	return rand() % 1024 < 500;
 }
 #endif
-
 
 //#define LOG_PACKETS
 
@@ -49,7 +49,7 @@ namespace net {
 
 		struct hostent *hp = gethostbyname(name.c_str());
 		if(!hp)
-			return ERROR("Error while getting host name");
+			return Error("Error while getting host name");
 		sockaddr_in addr;
 		memset(&addr, 0, sizeof(addr));
 		memcpy(&addr.sin_addr, hp->h_addr_list[0], hp->h_length);
@@ -119,19 +119,23 @@ namespace net {
 		}
 #endif
 		auto fd = socket(AF_INET, SOCK_DGRAM, 0);
-		if(fd < 0)
-			return ERROR("Error while creating socket");
+#ifdef _WIN32
+		if(fd == INVALID_SOCKET)
+#else
+		if(fd == -1)
+#endif
+			return Error("Error while creating socket");
 
 		sockaddr_in addr;
 		toSockAddr(address, &addr);
 		if(bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 			::close(fd);
-			return ERROR("Error while binding address to socket");
+			return Error("Error while binding address to socket");
 		}
 
 #ifdef _WIN32
 		unsigned long int non_blocking = 1;
-		ioctlsocket(m_fd, FIONBIO, &non_blocking);
+		ioctlsocket(fd, FIONBIO, &non_blocking);
 #else
 		fcntl(fd, F_SETFL, O_NONBLOCK);
 #endif

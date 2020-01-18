@@ -87,4 +87,4 @@ namespace net {
 
 }
 
-template <> static constexpr bool fwk::is_flat_data<net::SeqNumber> = true;
+template <> inline constexpr bool fwk::is_flat_data<net::SeqNumber> = true;

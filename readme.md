@@ -26,8 +26,8 @@ Following libraries are required:
 To build for windows, you have to cross-compile with MinGW.
 The easiest way is with MXE ([http://mxe.cc](http://mxe.cc)) with followinf flags:  
 
-	export MXE\_TARGETS=x86_64-w64-mingw32.static
-	export MXE\_PLUGIN\_DIRS=plugins/gcc9
+	export MXE_TARGETS=x86_64-w64-mingw32.static.posix
+	export MXE_PLUGIN_DIRS=plugins/gcc9
 
 ## Running
 To run this program, resources from original Fallout Tactics are required.
