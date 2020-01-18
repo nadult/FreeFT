@@ -68,8 +68,8 @@ namespace game
 	}		
 
 	PTexture TileFrame::deviceTexture(FRect &tex_rect) const {
-		if(!getCache())
-			bindToCache(TextureCache::main_cache);
+		if(!isBind())
+			bindToCache();
 		return accessTexture(tex_rect);
 	}
 	

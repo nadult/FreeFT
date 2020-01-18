@@ -20,6 +20,9 @@
 #include <fwk/sys/on_fail.h>
 #include <fwk/sys/file_stream.h>
 #include <fwk/sys/backtrace.h>
+#include "res_manager.h"
+
+// TODO: replace old ui with imgui ?
 
 using namespace game;
 using namespace ui;
@@ -348,7 +351,7 @@ class ResourceView : public Window {
 	int2 m_last_mouse_pos;
 	vector<Dynamic<Resource>> m_resources;
 	vector<int2> m_positions;
-	Font m_font;
+	const Font &m_font;
 };
 
 enum class Command { empty, change_dir, exit };
@@ -395,11 +398,7 @@ class ResViewerWindow : public Window {
 	}
 
 	bool onEvent(const Event &ev) override {
-		if(ev.type == Event::window_closed && ev.source == popup) {
-			popup = nullptr;
-			if(ev.value == 1)
-				m_command = make_pair(Command::exit, string());
-		} else if(ev.type == Event::element_selected) {
+		if(ev.type == Event::element_selected) {
 			if(m_dir_view.get() == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
 				const FileEntry &entry = m_entries[ev.value];
 
@@ -419,12 +418,7 @@ class ResViewerWindow : public Window {
 				m_dir_view->selectEntry(id);
 			}
 		} else if(ev.type == Event::escape) {
-			if(!popup) {
-				IRect popup_rect = IRect(-150, -40, 150, 40) + center();
-				popup = make_shared<MessageBox>(popup_rect, "Do you want to quit?",
-												MessageBoxMode::yes_no);
-				attach(popup, true);
-			}
+			exit(0);
 		} else
 			return false;
 
@@ -438,18 +432,15 @@ class ResViewerWindow : public Window {
 
 	PListBox m_dir_view;
 	shared_ptr<ResourceView> m_res_view;
-
-	PWindow popup;
 };
 
-static Dynamic<ResViewerWindow> main_window;
 static double start_time = getTime();
 
-static bool main_loop(GlDevice &device, void*) {
-	DASSERT(main_window);
+static bool main_loop(GlDevice &device, void* pmain_window) {
+	auto &main_window = *(Dynamic<ResViewerWindow>*)pmain_window;
 
 	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
-	TextureCache::main_cache.nextFrame();
+	TextureCache::instance().nextFrame();
 
 	clearColor(Color(0, 0, 0));
 	Renderer2D out(IRect(device.windowSize()), Orient2D::y_down);
@@ -474,12 +465,12 @@ int main(int argc, char **argv) {
 	Config config("res_viewer");
 
 	GlDevice gfx_device;
+	ResManager res_mgr;
+	TextureCache tex_cache;
+
 	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
-
-	main_window.emplace(gfx_device.windowSize(), "data/");
-	gfx_device.runMainLoop(main_loop);
-
-	main_window.reset();
+	Dynamic<ResViewerWindow> window(gfx_device.windowSize(), "data/");
+	gfx_device.runMainLoop(main_loop, &window);
 
 	return 0;
 }

@@ -11,6 +11,7 @@
 #include "net/server.h"
 #include <fwk/gfx/gl_device.h>
 #include <fwk/sys/backtrace.h>
+#include "res_manager.h"
 
 using namespace game;
 
@@ -35,14 +36,13 @@ static bool main_loop(GlDevice &device, void*) {
 		return false;
 	s_main_loop->draw();
 
-	TextureCache::main_cache.nextFrame();
+	TextureCache::instance().nextFrame();
 	audio::tick();
 
 	return true;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	Config config("game");
 
 	Backtrace::t_default_mode = BacktraceMode::full;
@@ -51,7 +51,10 @@ int main(int argc, char **argv)
 	audio::initSoundMap();
 	game::loadData(true);
 
-	GlDevice gfx_device;
+	GlDevice gl_device;
+	ResManager res_mgr;
+	TextureCache tex_cache;
+
 	//adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
 
@@ -104,7 +107,7 @@ int main(int argc, char **argv)
 
 	bool console_mode = server_config.isValid() && server_config.m_console_mode;
 	if(!console_mode)
-		createWindow("game", gfx_device, res, window_pos, fullscreen);
+		createWindow("game", gl_device, res, window_pos, fullscreen);
 
 	// TODO: if errors happen here, run menu normally
 	if(server_config.isValid()) {
@@ -127,14 +130,14 @@ int main(int argc, char **argv)
 
 	if(!s_main_loop) {
 		if(console_mode)
-			createWindow("game", gfx_device, res, window_pos, config.fullscreen_on);
+			createWindow("game", gl_device, res, window_pos, config.fullscreen_on);
 		s_main_loop.reset(new io::MainMenuLoop);
 	}
 
-	gfx_device.runMainLoop(main_loop);
+	gl_device.runMainLoop(main_loop);
 	s_main_loop.reset(nullptr);
 
-/*	PTexture atlas = TextureCache::main_cache.atlas();
+/*	PTexture atlas = tex_cache.atlas();
 	Texture tex;
 	atlas->download(tex);
 	Saver("atlas.tga") << tex;*/

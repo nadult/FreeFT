@@ -17,9 +17,10 @@ class CachedTexture {
 	virtual ~CachedTexture();
 
 	PTexture accessTexture(FRect &, bool put_in_atlas = true) const;
-	TextureCache *getCache() const { return m_cache; }
 	int cacheId() const { return m_id; }
-	void bindToCache(TextureCache &) const;
+
+	bool isBind() const { return m_id != -1; }
+	void bindToCache() const;
 	void unbindFromCache() const;
 
 	virtual void cacheUpload(Texture &) const = 0;
@@ -29,7 +30,6 @@ class CachedTexture {
 	void onCacheDestroy();
 	friend class TextureCache;
 
-	mutable TextureCache *m_cache; // TODO: remove, use TextureCache::main_cache?
 	mutable int m_id;
 };
 
@@ -40,12 +40,20 @@ class CachedTexture {
 // - instead of round robin, select next AtlasNode based on active texture count, free space, etc.
 // - when packing textures, use some smarter algorithm to save space
 // - use PBO to copy textures from res.device_texture, and not from system memory
+//
+// Only single instance allowed
 class TextureCache {
   public:
-	TextureCache(int max_bytes);
+	TextureCache(int max_bytes = 32 * 1024 * 1024);
+	~TextureCache();
+	
 	TextureCache(const TextureCache &) = delete;
 	void operator=(const TextureCache &) = delete;
-	~TextureCache();
+
+	static TextureCache &instance() {
+		DASSERT(g_instance);
+		return *g_instance;
+	}
 
 	bool isValidId(int res_id) const { return res_id >= 0 && res_id < size(); }
 	int size() const { return (int)m_resources.size(); }
@@ -59,14 +67,13 @@ class TextureCache {
 	int memorySize() const { return m_memory_size; }
 	void nextFrame();
 
-	static TextureCache main_cache;
+  private:
+	static TextureCache *g_instance;
 
-  protected:
 	int add(CachedTexture *ptr, const int2 &size);
 	void remove(int res_id);
 	friend class CachedTexture;
 
-  protected:
 	struct Resource {
 		CachedTexture *res_ptr;
 		PTexture device_texture;

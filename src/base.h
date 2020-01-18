@@ -227,16 +227,14 @@ class Controller;
 using PController = Dynamic<Controller>;
 }
 
-struct TupleParser;
-
+// Implemented in ResManager
 namespace res {
 PTexture getTexture(Str);
 PTexture getGuiTexture(Str);
 const Font &getFont(Str);
 const game::Tile &getTile(Str);
-pair<Str, Str> tilePrefixSuffix();
-
-const std::map<string, Dynamic<game::Tile>> &allTiles();
 }
+	
+struct TupleParser;
 
 void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos, bool fullscreen);

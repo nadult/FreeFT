@@ -11,42 +11,44 @@
 
 //#define LOGGING
 
-CachedTexture::CachedTexture() : m_cache(nullptr), m_id(-1) {}
+CachedTexture::CachedTexture() : m_id(-1) {}
 CachedTexture::~CachedTexture() { unbindFromCache(); }
 
 PTexture CachedTexture::accessTexture(FRect &tex_rect, bool put_in_atlas) const {
-	DASSERT(m_cache && m_id != -1);
-	return m_cache->access(m_id, put_in_atlas, tex_rect);
+	DASSERT(m_id != -1);
+	return TextureCache::instance().access(m_id, put_in_atlas, tex_rect);
 }
 
 void CachedTexture::unbindFromCache() const {
-	if(m_cache && m_id != -1) {
-		m_cache->remove(m_id);
-		m_cache = nullptr;
+	if(m_id != -1) {
+		TextureCache::instance().remove(m_id);
+		m_id = -1;
 	}
 }
 
-void CachedTexture::bindToCache(TextureCache &cache) const {
-	if(m_cache == &cache)
-		return;
-	unbindFromCache();
-
-	m_cache = &cache; // TODO: const correctness
-	m_id = m_cache->add((CachedTexture *)this, textureSize());
+void CachedTexture::bindToCache() const {
+	if(m_id == -1) {
+		unbindFromCache();
+		m_id = TextureCache::instance().add((CachedTexture *)this, textureSize());
+	}
 }
 
 void CachedTexture::onCacheDestroy() {
 	m_id = -1;
-	m_cache = nullptr;
 }
 
 static int textureMemorySize(PTexture tex) {
 	return evalImageSize(tex->format(), tex->width(), tex->height());
 }
 
+TextureCache *TextureCache::g_instance = nullptr;
+
 TextureCache::TextureCache(int bytes)
 	: m_memory_limit(bytes), m_memory_size(0), m_last_update(0), m_last_node(0),
 	  m_atlas_counter(0) {
+	ASSERT(g_instance == nullptr);
+	g_instance = this;
+
 	int at_width = 2048, at_height = 2048;
 
 	while(at_width * at_height > bytes / 8) {
@@ -59,6 +61,9 @@ TextureCache::TextureCache(int bytes)
 }
 
 TextureCache::~TextureCache() {
+	ASSERT(g_instance == this);
+	g_instance = nullptr;
+
 	for(int n = 0; n < (int)m_resources.size(); n++)
 		if(m_resources[n].res_ptr)
 			m_resources[n].res_ptr->onCacheDestroy();
@@ -272,5 +277,3 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 				FRect() : FRect(float2(), float2(res.size) / float2(dev_size));
 	return res.device_texture;
 }
-
-TextureCache TextureCache::main_cache(32 * 1024 * 1024);

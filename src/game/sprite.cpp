@@ -124,7 +124,7 @@ namespace game
 
 	PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect, bool put_in_atlas) const {
 		if(cacheId() == -1) {
-			bindToCache(TextureCache::main_cache);
+			bindToCache();
 			prev_palette = &palette;
 		}
 
@@ -165,7 +165,7 @@ namespace game
 			sr >> size;
 			m_images.resize(size);
 			for(auto &image : m_images)
-				EXPECT(image.load(sr));
+					EXPECT(image.load(sr));
 		}
 		else {
 			m_palettes.clear();

@@ -27,6 +27,7 @@
 #include <fwk/gfx/gl_device.h>
 #include <fwk/gfx/opengl.h>
 #include <fwk/sys/on_fail.h>
+#include "res_manager.h"
 
 using namespace ui;
 using game::Tile;
@@ -229,7 +230,7 @@ public:
 		static double s_start_time = getTime();
 
 		Tile::setFrameCounter((int)((getTime() - s_start_time) * 15.0));
-		TextureCache::main_cache.nextFrame();
+		TextureCache::instance().nextFrame();
 
 		clearColor(Color(0, 0, 0));
 		Renderer2D out(IRect(device.windowSize()), Orient2D::y_down);
@@ -276,7 +277,7 @@ void preloadTiles() {
 	auto file_names = findFiles("data/tiles/", FindFileOpt::regular_file | FindFileOpt::recursive);
 
 	printf("Preloading tiles");
-	auto [prefix, suffix] = res::tilePrefixSuffix();
+	auto [prefix, suffix] = ResManager::tilePrefixSuffix();
 	auto current_path = FilePath::current().get(); // TODO
 	FilePath tiles_path = FilePath(prefix).absolute(current_path);
 
@@ -291,7 +292,7 @@ void preloadTiles() {
 		FilePath tile_path = file_names[n].path.absolute(current_path).relative(tiles_path);
 		string tile_name = tile_path;
 		if(removeSuffix(tile_name, suffix))
-			res::getTile(tile_name);
+			ResManager::instance().getTile(tile_name);
 	}
 	printf("\n");
 }
@@ -301,11 +302,14 @@ int main(int argc, char **argv) {
 	preloadTiles();
 	game::loadData(true);
 
-	GlDevice gfx_device;
-	createWindow("editor", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
+	GlDevice gl_device;
+	ResManager res_mgr;
+	TextureCache tex_cache;
 
-	EditorWindow window(gfx_device.windowSize());
-	gfx_device.runMainLoop(EditorWindow::mainLoop, &window);
+	createWindow("editor", gl_device, config.resolution, config.window_pos, config.fullscreen_on);
+
+	EditorWindow window(gl_device.windowSize());
+	gl_device.runMainLoop(EditorWindow::mainLoop, &window);
 
 	return 0;
 }

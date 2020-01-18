@@ -44,7 +44,7 @@ SHARED_SRC := \
 	audio/device audio/device_music audio/mp3_decoder \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\
 	editor/tiles_pad editor/group_pad editor/tile_group editor/view editor/entities_pad \
-	fwk_bit_vector
+	fwk_bit_vector res_manager
 
 DEPRECATED_SRC:= temp/frame_allocator
 

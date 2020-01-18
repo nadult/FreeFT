@@ -1,3 +1,6 @@
+// Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
+// This file is part of FreeFT. See license.txt for details.
+
 #pragma once
 
 #include <algorithm>
@@ -16,4 +19,5 @@
 #include <fwk/sys/memory_stream.h>
 #include <fwk/sys/xml.h>
 #include <map>
-#include <mutex>
+
+#define DUMP FWK_DUMP

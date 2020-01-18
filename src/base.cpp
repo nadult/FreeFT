@@ -3,9 +3,7 @@
 
 #include "base.h"
 
-#include <fwk/gfx/font.h>
 #include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/gl_texture.h>
 #include <fwk/math/plane.h>
 #include <fwk/math/rotation.h>
 #include <fwk/sys/file_stream.h>
@@ -340,76 +338,6 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 	for(auto &corner : corners)
 		corner = asXZY(rotateVector(corner.xz() - xz_origin, angle) + xz_origin, corner.y);
 	return enclose(corners);
-}
-
-#include "game/tile.h"
-
-// TODO: fix error handling in all places with Ex<>
-// TODO: dynamic not needed in s_tiles; But: TileFrame depending on CachedTexture
-// causes problems in copy constructors & operator=
-// TODO: there is a need for data structure which doesn't move resources in memory
-// after thet are created
-
-namespace res {
-static HashMap<string, PTexture> s_gui_textures, s_textures;
-static HashMap<string, PTexture> s_font_textures;
-static std::map<string, Dynamic<game::Tile>> s_tiles;
-static std::map<string, Font> s_fonts;
-
-static PTexture getTexture(Str str, HashMap<string, PTexture> &map, Str prefix, Str suffix) {
-	auto it = map.find(str);
-	if(it == map.end()) {
-		auto file_name = format("%%%", prefix, str, suffix);
-		auto tex = GlTexture::load(file_name);
-		// TODO: check errors
-		DASSERT(tex);
-		map.emplace(str, *tex);
-		return *tex;
-	}
-	return it->value;
-}
-
-PTexture getTexture(Str name) { return getTexture(name, s_textures, "data/", ""); }
-
-PTexture getGuiTexture(Str name) {
-	return getTexture(name, s_gui_textures, "data/gui/", ".zar");
-}
-
-const Font &getFont(Str name) {
-	auto it = s_fonts.find(name);
-	if(it == s_fonts.end()) {
-		auto file_name = format("%%%", "data/fonts/", name, ".fnt");
-		auto vcore = FontCore::load(file_name);
-		// TODO: check ?
-		FontCore core(move(*vcore));
-		auto tex = getTexture(core.textureName(), s_font_textures, "data/fonts/", "");
-		it = s_fonts.emplace(name, Font(move(core), move(tex))).first;
-	}
-	return it->second;
-}
-
-const game::Tile &getTile(Str name) {
-	auto it = s_tiles.find(name);
-	if(it == s_tiles.end()) {
-		auto file_name = format("%%%", "data/tiles/", name, ".tile");
-		auto ldr = fileLoader(file_name);
-		if(!ldr) {
-			ldr.error().print();
-			FATAL("cannot open file\n");
-		}
-		// TODO: ldr.check()
-		Dynamic<game::Tile> tile;
-		tile.emplace();
-		auto result = tile->load(*ldr);
-		result.check();
-		it = s_tiles.emplace(name, move(tile)).first;
-	}
-	return *it->second;
-}
-
-pair<Str, Str> tilePrefixSuffix() { return {"data/tiles/", ".tile"}; }
-
-const std::map<string, Dynamic<game::Tile>> &allTiles() { return s_tiles; }
 }
 
 string32 toUTF32Checked(Str ref) {

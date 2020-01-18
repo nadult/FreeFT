@@ -6,6 +6,7 @@
 #include "editor/tile_group.h"
 #include "game/tile.h"
 #include <fwk/enum_map.h>
+#include "res_manager.h"
 
 using namespace game;
 
@@ -62,7 +63,7 @@ namespace ui
 
 	PTileListModel allTilesModel() {
 		vector<const Tile*> tiles;
-		for(auto &[name, tile] : res::allTiles())
+		for(auto &[name, tile] : ResManager::instance().allTiles())
 			tiles.emplace_back(tile.get());
 		return make_shared<VectorBasedModel>(tiles);
 	}
