@@ -11,14 +11,14 @@
 #include "ui/list_box.h"
 #include "ui/message_box.h"
 
-#include <fwk/sys/file_system.h>
+#include <fwk/io/file_system.h>
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/gl_device.h>
 #include <fwk/gfx/opengl.h>
 #include <fwk/gfx/texture.h>
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 #include <fwk/sys/backtrace.h>
 #include "res_manager.h"
 

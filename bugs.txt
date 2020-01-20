@@ -21,6 +21,10 @@ Mustfix: -----------------------------------------------------------------------
 
 - HudStats are a little too big (20 pixels bigger than HudMainPanel)
 
+Na koniec gry:
+malloc(): unsorted double linked list corrupted
+Aborted (core dumped)
+
 
 Nice to fix: --------------------------------------------------------------------------------------
 

@@ -6,7 +6,7 @@
 #include <fwk/gfx/gl_device.h>
 #include <fwk/math/plane.h>
 #include <fwk/math/rotation.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 
 // TODO: tune-able parameters?
 static constexpr int

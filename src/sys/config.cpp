@@ -3,7 +3,7 @@
 
 #include "sys/config.h"
 
-#include <fwk/sys/file_system.h>
+#include <fwk/io/file_system.h>
 
 Config::Config() : resolution(1280, 720), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
 
@@ -13,7 +13,8 @@ Config::Config(const char *config_name) : Config() {
 	auto file_name = "data/config.xml";
 	if(access(file_name)) {
 		XmlDocument doc;
-		doc.load(file_name);
+		if(!doc.load(file_name))
+			return;
 
 		auto node = doc.child(config_name);
 		if(!node)

@@ -4,10 +4,10 @@
 #include "gfx/packed_texture.h"
 
 #include <fwk/gfx/texture.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 
 namespace {
-Ex<Texture> loadZAR(FileStream &sr) {
+Ex<Texture> loadZAR(Stream &sr) {
 	Palette palette;
 	auto packed = EX_PASS(PackedTexture::legacyLoad(sr, palette));
 	Texture out(packed.size());
@@ -50,7 +50,7 @@ Ex<Palette> Palette::legacyLoad(Stream &sr) {
 template Ex<Palette> Palette::legacyLoad(MemoryStream&);
 template Ex<Palette> Palette::legacyLoad(FileStream&);
 
-Ex<Palette> Palette::load(FileStream &sr) {
+Ex<Palette> Palette::load(Stream &sr) {
 	u8 rgb[256 * 3], *ptr = rgb;
 	u16 size = 0;
 	sr >> size;
@@ -84,7 +84,7 @@ PackedTexture::PackedTexture() : m_width(0), m_height(0), m_default_idx(0), m_ma
 
 template <class Stream>
 Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
-	sr.signature(Str("<zar>\0", 6));
+	sr.signature({"<zar>\0", 6});
 
 	char zar_type, dummy1, has_palette;
 	int width, height;
@@ -144,7 +144,7 @@ Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 template Ex<PackedTexture> PackedTexture::legacyLoad(MemoryStream&, Palette&);
 template Ex<PackedTexture> PackedTexture::legacyLoad(FileStream&, Palette&);
 
-Ex<PackedTexture> PackedTexture::load(FileStream &sr) {
+Ex<PackedTexture> PackedTexture::load(Stream &sr) {
 	PackedTexture out;
 	sr.unpack(out.m_width, out.m_height, out.m_default_idx, out.m_max_idx);
 	u32 size = 0;

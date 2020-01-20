@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <fwk/gfx/texture.h>
 #include <fwk/gfx/renderer2d.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 
 namespace game
 {
@@ -87,7 +87,7 @@ namespace game
 	Ex<void> Tile::legacyLoad(InputStream &sr, Str name) {
 		ASSERT(sr.isLoading());
 
-		sr.signature(Str("<tile>\0", 7));
+		sr.signature({"<tile>\0", 7});
 		i16 type; sr >> type;
 
 		if(type == 0x3031) {
@@ -121,7 +121,7 @@ namespace game
 		int unk_size = type == '9'? 0 : type == '7'? 2 : type == '6'? 3 : 1;
 		sr.loadData(span(unknown, unk_size));
 
-		sr.signature(Str("<tiledata>\0001\0", 12));
+		sr.signature({"<tiledata>\0001\0", 12});
 		u8 dummy2;
 		i32 zar_count;
 		sr.unpack(dummy2, zar_count);

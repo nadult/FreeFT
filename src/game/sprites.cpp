@@ -4,8 +4,8 @@
 #include "game/sprite.h"
 #include <cstring>
 #include <cstdio>
-#include <fwk/sys/file_system.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_system.h>
+#include <fwk/io/file_stream.h>
 #include <map>
 
 namespace game {

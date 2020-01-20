@@ -44,7 +44,6 @@ static bool main_loop(GlDevice &device, void*) {
 
 int main(int argc, char **argv) {
 	Config config("game");
-
 	Backtrace::t_default_mode = BacktraceMode::full;
 
 	srand((int)getTime());

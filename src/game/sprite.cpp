@@ -5,7 +5,7 @@
 
 #include <fwk/gfx/texture.h>
 #include <fwk/math/rotation.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 
 namespace game
 {

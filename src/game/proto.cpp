@@ -17,7 +17,7 @@
 #include "game/character.h"
 
 #include <fwk/sys/on_fail.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 
 namespace game {
 

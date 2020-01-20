@@ -3,7 +3,7 @@
 
 #include "game/sprite.h"
 #include <zlib.h>
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 
 // source: http://www.zlib.net/zlib_how.html
 template <class InputStream>
@@ -95,7 +95,7 @@ namespace game
 	template <class InputStream>
 	Ex<void> Sprite::legacyLoad(InputStream &sr, Str) {
 		ASSERT(sr.isLoading());
-		sr.signature(Str("<sprite>\0", 9));
+		sr.signature({"<sprite>\0", 9});
 		
 		clear();
 
@@ -161,7 +161,7 @@ namespace game
 		for(int n = 0; n < collection_count; n++) {
 			Collection &collection = collections[n];
 
-			sr.signature(Str("<spranim>\0001\0", 12));
+			sr.signature({"<spranim>\0001\0", 12});
 			i32 offset; sr >> offset;
 			collection.offset = offset;
 
@@ -190,7 +190,7 @@ namespace game
 
 			sr.seek(collection.offset);
 
-			sr.signature(Str("<spranim_img>\0", 14));
+			sr.signature({"<spranim_img>\0", 14});
 			i16 type; sr >> type;
 
 			if(type != '1' && type != '2')

@@ -6,12 +6,11 @@
 #include <mpg123.h>
 #endif
 
-#include <fwk/sys/file_stream.h>
+#include <fwk/io/file_stream.h>
 #include <fwk/audio/sound.h>
 
 
 namespace audio {
-
 
 #ifdef FWK_PLATFORM_HTML
 // TODO: use browser mp3 decoder? But how?

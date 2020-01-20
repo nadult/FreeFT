@@ -4,8 +4,8 @@
 #include "tile_map.h"
 
 #include "game/tile.h"
-#include <fwk/sys/file_stream.h>
-#include <fwk/sys/memory_stream.h>
+#include <fwk/io/file_stream.h>
+#include <fwk/io/memory_stream.h>
 
 //#define LOGGING
 
@@ -22,7 +22,7 @@ namespace game {
 	Ex<void> TileMap::legacyConvert(InputStream &sr, FileStream &out) {
 		ASSERT(sr.isLoading());
 
-		sr.signature(Str("<world>\0", 8));
+		sr.signature({"<world>\0", 8});
 		u16 type;
 		char dummy;
 
@@ -80,7 +80,7 @@ namespace game {
 
 			vector<TileParams> tile_params;
 			for(int n = 0; n < proto_count; n++) {
-				dsr.signature(Str("<tile>\00010\0", 10));
+				dsr.signature({"<tile>\00010\0", 10});
 				TileParams tile;
 				dsr.loadData(asPod(tile));
 				tile_params.push_back(tile);
@@ -107,7 +107,7 @@ namespace game {
 			IBox box(INT_MAX, INT_MAX, INT_MAX, INT_MIN, INT_MIN, INT_MIN);
 
 			for(int n = 0; n < region_count; n++) {
-				dsr.signature(Str("<region>\0008\0", 11));
+				dsr.signature({"<region>\0008\0", 11});
 				int elem_count;
 
 				dsr >> elem_count;

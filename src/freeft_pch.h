@@ -16,7 +16,7 @@
 #include <fwk/math/segment.h>
 #include <fwk/math_base.h>
 #include <fwk/pod_vector.h>
-#include <fwk/sys/memory_stream.h>
+#include <fwk/io/memory_stream.h>
 #include <fwk/sys/xml.h>
 #include <map>
 
