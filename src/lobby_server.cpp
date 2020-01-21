@@ -24,7 +24,9 @@ using namespace net;
 class LobbyServer {
 public:
 	// TODO: socket only on specific interface?
-	LobbyServer(int port) :m_socket(port) { }
+	LobbyServer(int port) {
+		m_socket = move(Socket::make(port).get());
+	}
 
 	struct ServerInfo: public ServerStatusChunk {
 		ServerInfo(ServerStatusChunk chunk) :ServerStatusChunk(chunk), last_update_time(getTime()) { }
@@ -128,7 +130,7 @@ void onCtrlC() {
 }
 
 int main(int argc, char **argv) {
-	int port = lobbyServerAddress().port;
+	int port = lobbyServerAddress()->port;
 
 	if(argc >= 3 && strcmp(argv[1], "-p") == 0) {
 		int tport = atoi(argv[2]);
