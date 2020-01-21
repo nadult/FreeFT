@@ -8,7 +8,7 @@
 #include <fwk/fwd_member.h>
 #include <map>
 
-DEFINE_ENUM(ResType, tile, sprite, font, texture);
+DEFINE_ENUM(ResType, tile, sprite, font, texture, other);
 
 // Only single instance allowed
 class ResManager {
@@ -28,6 +28,10 @@ class ResManager {
 	const Font &getFont(Str);
 	const game::Tile &getTile(Str);
 	const auto &allTiles() { return m_tiles; }
+
+	// Other resource will only be stored in manager with loadResource.
+	// Otherwise it will simply be loaded from file every time when getOther() is called.
+	vector<char> getOther(Str) const;
 	
 	Ex<void> loadResource(Str name, Stream&, ResType);
 	Ex<void> loadResource(Str name, CSpan<char> data, ResType);
@@ -35,7 +39,9 @@ class ResManager {
 	Maybe<ResType> classifyPath(Str, bool ignore_prefix = false) const;
 	// Will return none if path doesn't match resource prefix & suffix
 	Maybe<string> resourceName(Str path, ResType) const;
+
 	string fullPath(Str res_name, ResType) const;
+	const auto &dataPath() const { return m_data_path; }
 
 	Pair<Str> prefixSuffix(ResType type) const { return m_paths[type]; }
 
@@ -47,4 +53,5 @@ class ResManager {
 	FwdMember<HashMap<string, PTexture>>  m_textures;
 	std::map<string, Dynamic<game::Tile>> m_tiles;
 	std::map<string, Font> m_fonts;
+	std::map<string, vector<char>> m_others;
 };

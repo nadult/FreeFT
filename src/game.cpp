@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
 			printf("Press Ctrl+C to exit...\n");
 	}
 	else if(!map_name.empty()) {
-		printf("Loading: %s\n", map_name.c_str());
+		printf("Loading map: %s\n", map_name.c_str());
 		game::PWorld world(new World(map_name, World::Mode::single_player));
 		s_main_loop.reset(new io::GameLoop(world, false));
 	}

@@ -16,8 +16,10 @@ namespace game
 
 		// Loads maps from .xml and .mod files; .mod maps are essentially
 		// ed scripts that are applied to .xml map with the same base name
-		void load(const char *file_name);
-		void save(const char *file_name) const;
+		// Example map name: demo_map.xml
+		// file data/maps/demo_map.xml will be loaded
+		void load(string map_name);
+		void save(string map_name) const;
 
 		TileMap tile_map;
 		EntityMap entity_map;

@@ -67,6 +67,7 @@ class EditorWindow: public Window
 public:
 	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), ColorId::transparent),
 	  m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
+		m_maps_path = FilePath(ResManager::instance().dataPath()) / "maps";
 		m_left_width = width() / 5;
 
 		m_mode = editing_tiles;
@@ -188,13 +189,19 @@ public:
 		return true;
 	}
 
-	void loadMap(const char *file_name) {
-		printf("Loading Map: %s ", file_name);
+	string mapName(FilePath path) const {
+		if(path.isRelative())
+			path = path.absolute().get();
+		return FilePath(path).relative(m_maps_path);
+	}
+
+	void loadMap(Str file_name) {
+		print("Loading Map: % ", file_name);
 		fflush(stdout);
 		double time = getTime();
 
 		if(access(file_name)) {
-			m_level.load(file_name);
+			m_level.load(mapName(file_name));
 			recreateEditors();
 		}
 		printf("(%.2f sec)\n", getTime() - time);
@@ -209,11 +216,11 @@ public:
 		}
 	}
 
-	void saveMap(const char *file_name) const {
-		printf("Saving Map: %s ", file_name);
+	void saveMap(Str file_name) const {
+		print("Saving Map: % ", file_name);
 		fflush(stdout);
 		double time = getTime();
-		m_level.save(file_name);
+		m_level.save(mapName(file_name));
 		printf(" (%.2f sec)\n", getTime() - time);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
@@ -270,6 +277,7 @@ public:
 	PGroupEditor	m_group_editor;
 
 	int m_left_width;
+	FilePath m_maps_path;
 };
 
 void preloadTiles() {

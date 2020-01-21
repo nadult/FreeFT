@@ -4,6 +4,7 @@
 #include "game/character.h"
 
 #include "game/inventory.h"
+#include "res_manager.h"
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/sys/xml.h>
 
@@ -50,7 +51,8 @@ namespace game {
 	}
 		
 	const vector<pair<ProtoIndex, string>> Character::findIcons() {
-		auto doc = move(XmlDocument::load("data/char_icons.xml").get()); //TODO
+		auto xml_data = ResManager::instance().getOther("char_icons.xml");
+		auto doc = move(XmlDocument::make(xml_data).get()); //TODO
 
 		vector<pair<ProtoIndex, string>> out;
 
@@ -107,7 +109,8 @@ namespace game {
 		if(!s_classes.empty())
 			return;
 		
-		auto doc = move(XmlDocument::load("data/char_classes.xml").get()); // TODO
+		auto xml_data = ResManager::instance().getOther("char_classes.xml");
+		auto doc = move(XmlDocument::make(xml_data).get()); // TODO
 		
 		auto class_node = doc.child("char_class");
 		int counter = 0;

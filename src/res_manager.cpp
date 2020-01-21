@@ -28,6 +28,7 @@ static const EnumMap<ResType, Pair<const char*>> default_paths = {{
 	{ResType::sprite, {"sprites/", ".sprite"}},
 	{ResType::font, {"fonts/", ".fnt"}},
 	{ResType::texture, {"", ""}},
+	{ResType::other, {"", ""}},
 }};
 
 ResManager::ResManager(bool absolute_paths) {
@@ -90,6 +91,16 @@ const game::Tile &ResManager::getTile(Str name) {
 	return *it->second;
 }
 	
+vector<char> ResManager::getOther(Str name)  const{
+	auto it = m_others.find(name);
+	if(it == m_others.end()) {
+		auto data = loadFile(format("%%", m_data_path, name));
+		data.check();
+		return move(*data);
+	}
+	return it->second;
+}
+	
 Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 	DASSERT(sr.isLoading());
 
@@ -116,6 +127,12 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 			return ERROR("Texture without extension: '%'", name);
 		auto tex = EX_PASS(Texture::load(sr, *ext));
 		m_textures[name] = GlTexture::make(tex);
+	}
+	else if(type == ResType::other) {
+		vector<char> data(sr.size());
+		sr.loadData(data);
+		EX_CATCH();
+		m_others[name] = move(data);
 	}
 
 	return {};

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <zlib.h>
 #include <fwk/io/file_system.h>
+#include "res_manager.h"
 
 namespace game {
 
@@ -106,17 +107,16 @@ namespace game {
 		return out;
 	}
 
-	Level::Level() :entity_map(tile_map) {
-	}
+	Level::Level() :entity_map(tile_map) {}
 
 	// TODO: return Ex<>
-
-	void Level::load(const char *file_name) {
+	// TODO: simplify different kinds of paths ?
+	void Level::load(string map_name) {
 		XmlDocument doc;
 
-		int len = strlen(file_name);
-		if(len > 4 && strcmp(file_name + len - 4, ".mod") == 0) {
-			string orig_file_name(file_name, file_name + len - 4);
+		auto file_name = "maps/" + map_name;
+		if(file_name.ends_with(".mod")) {
+			string orig_file_name = file_name.substr(0, file_name.size() - 4);
 			orig_file_name += ".xml";
 
 			// TODO: Ex<>
@@ -126,18 +126,19 @@ namespace game {
 			doc = move(XmlDocument::make(patched).get());
 		}
 		else {
-			doc = move(XmlDocument::load(file_name).get());
+			auto xml_data = ResManager::instance().getOther(file_name);
+			doc = move(XmlDocument::make(xml_data).get());
 		}
 
 		tile_map.loadFromXML(doc);
 		entity_map.loadFromXML(doc);
 	}
 
-	void Level::save(const char *file_name) const {
+	void Level::save(string file_name) const {
 		XmlDocument doc;
 		tile_map.saveToXML(doc);
 		entity_map.saveToXML(doc);
-		doc.save(file_name).check();
+		doc.save("data/maps/" + file_name).check();
 	}
 
 }

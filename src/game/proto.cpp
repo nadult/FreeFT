@@ -18,6 +18,7 @@
 
 #include <fwk/sys/on_fail.h>
 #include <fwk/io/file_stream.h>
+#include "res_manager.h"
 
 namespace game {
 
@@ -173,13 +174,13 @@ namespace game {
 		return getProto(index);
 	}
 
-	static void loadProtos(const char *file_name) {
+	static void loadProtos(Str file_name) {
 		if(s_is_loaded)
 			FATAL("Proto-tables have already been loaded");
 		s_is_loaded = true;
 
-		// TODO: check
-		auto doc = move(XmlDocument::load(file_name).get());
+		auto xml_data = ResManager::instance().getOther(file_name);
+		auto doc = move(XmlDocument::make(xml_data).get());
 		
 		auto doc_node = doc.child("office:document");
 		ASSERT(doc_node);
@@ -225,7 +226,7 @@ namespace game {
 			printf("Loading tables: ");
 		}
 
-		loadProtos("data/tables.fods");
+		loadProtos("tables.fods");
 
 		if(verbose) {
 			int count = 0;

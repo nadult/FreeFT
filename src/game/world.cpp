@@ -18,8 +18,8 @@ namespace game {
 		m_anim_frame(0), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map), m_replicator(nullptr) {
 
 		ASSERT(!map_name.empty());
-		string file_name = format("data/maps/%", map_name);
-		m_level.load(file_name.c_str());
+		m_level.load(map_name);
+
 		for(int n = 0; n < m_tile_map.size(); n++) {
 			//TODO: leave them and use them
 			if(m_tile_map[n].ptr->isInvisible())
