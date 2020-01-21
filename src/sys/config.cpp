@@ -10,15 +10,12 @@ Config::Config() : resolution(1280, 720), window_pos(0, 0), fullscreen_on(false)
 Config::Config(CXmlNode node) : Config() { load(node); }
 
 Config::Config(const char *config_name) : Config() {
+	// TODO: load XML files through ResManager?
 	auto file_name = "data/config.xml";
-	if(access(file_name)) {
-		XmlDocument doc;
-		if(!doc.load(file_name))
-			return;
-
-		auto node = doc.child(config_name);
+	if(auto doc = XmlDocument::load(file_name)) {
+		auto node = doc->child(config_name);
 		if(!node)
-			node = doc.child("default");
+			node = doc->child("default");
 		if(node)
 			load(node);
 	}
@@ -26,8 +23,8 @@ Config::Config(const char *config_name) : Config() {
 
 void Config::load(CXmlNode node) {
 	DASSERT(node);
-	resolution = node.attrib<int2>("res", int2());
-	window_pos = node.attrib<int2>("window_pos", int2());
-	fullscreen_on = node.attrib<bool>("fullscreen", false);
-	profiler_on = node.attrib<bool>("profiler", false);
+	resolution = node.attrib<int2>("res", resolution);
+	window_pos = node.attrib<int2>("window_pos", window_pos);
+	fullscreen_on = node.attrib<bool>("fullscreen", fullscreen_on);
+	profiler_on = node.attrib<bool>("profiler", profiler_on);
 }
