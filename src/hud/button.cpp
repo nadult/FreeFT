@@ -4,7 +4,6 @@
 #include "hud/button.h"
 
 #include "gfx/drawing.h"
-#include <fwk/enum_map.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {

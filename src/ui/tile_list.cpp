@@ -5,7 +5,6 @@
 
 #include "editor/tile_group.h"
 #include "game/tile.h"
-#include <fwk/enum_map.h>
 #include "res_manager.h"
 
 using namespace game;

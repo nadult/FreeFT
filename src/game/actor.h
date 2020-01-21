@@ -6,7 +6,6 @@
 #include "game/inventory.h"
 #include "game/path.h"
 #include "game/thinking_entity.h"
-#include <fwk/enum_map.h>
 
 namespace game {
 

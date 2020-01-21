@@ -5,7 +5,6 @@
 
 #include "game/item.h"
 #include "game/projectile.h"
-#include <fwk/enum_map.h>
 
 namespace game {
 

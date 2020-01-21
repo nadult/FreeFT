@@ -11,6 +11,7 @@
 #include <fwk/gfx_base.h>
 #include <fwk/index_range.h>
 #include <fwk/math/box.h>
+#include <fwk/enum_map.h>
 #include <fwk/math/constants.h>
 #include <fwk/math/ray.h>
 #include <fwk/math/segment.h>

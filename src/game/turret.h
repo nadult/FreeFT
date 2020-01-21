@@ -4,7 +4,6 @@
 #pragma once
 
 #include "game/thinking_entity.h"
-#include <fwk/enum_map.h>
 
 namespace game {
 

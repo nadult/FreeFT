@@ -3,8 +3,6 @@
 
 #include "net/base.h"
 
-#include <fwk/enum_map.h>
-
 namespace net {
 
 	static const EnumMap<RefuseReason, const char*> s_descs = {{
