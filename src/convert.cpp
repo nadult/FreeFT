@@ -90,20 +90,6 @@ static const string locateFTPath() {
 
 #endif
 
-#ifdef USE_OPENMP
-#include <omp.h>
-#endif
-
-struct TileMapProxy: public TileMap {
-	void save(FileStream &sr) const {
-		XmlDocument doc;
-		saveToXML(doc);
-		doc.save(sr).check();
-	}
-	// TODO: whats that for?
-	void setResourceName(const char*) { }
-};
-
 struct SoundProxy {
 	vector<char> data;
 
@@ -150,7 +136,7 @@ static const EnumMap<ResTypeId, const char*> s_new_path = {{
 }};
 
 template <class InputStream>
-Ex<void> convert(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
+Ex<void> convertResource(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
 	ASSERT(type != ResTypeId::archive);
 	ON_FAIL("While converting '%' -> '%' (type: %)", name, svr.name(), type);
 
@@ -165,8 +151,7 @@ Ex<void> convert(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
 		res.save(svr);
 	}
 	else if(type == ResTypeId::map) {
-		TileMapProxy res;
-		EXPECT(res.legacyConvert(ldr, svr));
+		EXPECT(TileMap::legacyConvert(ldr, svr));
 	}
 	else if(type == ResTypeId::image || type == ResTypeId::music) {
 		vector<char> buffer;
@@ -183,19 +168,36 @@ Ex<void> convert(ResTypeId type, InputStream &ldr, FileStream &svr, Str name) {
 	return {};
 }
 
-template <class TResource>
-void convert(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
+Pair<i64> convertResource(ResTypeId res_type, ZStr src_file_name, ZStr dst_file_name, Str name) {
+	// TODO: errors
+	auto source = fileLoader(src_file_name);
+	if(!source)
+		print("Error while opening file for reading: '%'\n", src_file_name);
+	
+	auto target = fileSaver(dst_file_name);
+	if(!target)
+		print("Error while opening file for writing: '%'\n", dst_file_name);
+	auto result = convertResource(res_type, *source, *target, name);
+	if(!result) {
+		print("Error while converting % '%' -> '%':\n", res_type, src_file_name, dst_file_name);
+		result.error().print();
+	}
+	return {source? source->size() : 0, target? target->size() : 0};
+}
+
+template <ResTypeId res_type>
+void convertDir(const char *src_dir, const char *dst_dir, const char *old_ext, const char *new_ext,
 			bool detailed, const string &filter) {
 	FilePath main_path = FilePath(src_dir).absolute().get();
 	
 	printf("Scanning...\n");
 	auto file_names = findFiles(main_path, FindFileOpt::regular_file | FindFileOpt::recursive);
-	std::sort(begin(file_names), end(file_names));
+	makeSorted(file_names);
 	int total_before = 0, total_after = 0;
 
 	printf("Recreating directories...\n");
-	for(int n = 0; n < (int)file_names.size(); n++) {
-		FilePath path = file_names[n].path.relative(main_path);
+	for(auto &fname : file_names) {
+		FilePath path = fname.path.relative(main_path);
 		FilePath dir = FilePath(dst_dir) / path.parent();
 		if(access(dir.c_str(), R_OK) != 0)
 			mkdirRecursive(dir.c_str()).check();
@@ -206,7 +208,6 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 		fflush(stdout);
 	}
 
-#pragma omp parallel for
 	for(int n = 0; n < file_names.size(); n++) {
 		if(!detailed && n * 100 / file_names.size() > (n - 1) * 100 / file_names.size()) {
 			printf(".");
@@ -216,45 +217,27 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 		if(((const string&)full_path).find(filter) == string::npos)
 			continue;
 		
-#pragma omp task
-		{	
-			FilePath path = full_path.relative(main_path);
-			string name = path.fileName();
-			string lo_name = toLower(name);
+		FilePath path = full_path.relative(main_path);
+		string name = path.fileName();
+		string lo_name = toLower(name);
 
-			if(removeSuffix(lo_name, old_ext)) {
-				name.resize(lo_name.size());
+		if(removeSuffix(lo_name, old_ext)) {
+			name.resize(lo_name.size());
 
-				FilePath new_path = FilePath(dst_dir) / path.parent() / (name + new_ext);
-				FilePath parent = new_path.parent();
+			FilePath new_path = FilePath(dst_dir) / path.parent() / (name + new_ext);
+			FilePath parent = new_path.parent();
 
-				// TODO: handle errors
-				//try {
-					TResource resource;
-					auto source = move(fileLoader(full_path).get());
-					double time = getTime();
-					resource.legacyLoad(source, name).check();
-					auto target = move(fileSaver(new_path).get());
-					resource.save(target);
-					string file_name = FilePath(name).fileName();
-					resource.setResourceName(file_name.c_str()); // TODO: this isprobably not needed
-
-					if(detailed)
-						printf("%40s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
-								(int)(source.size()/1024), (int)(target.size()/1024), (getTime() - time) * 1024.0);
-
-#pragma omp atomic
-						total_before += source.size();
-#pragma omp atomic
-						total_after += target.size();
-				//} catch(const Exception &ex) {
-				//	printf("Error while converting: %s:\n%s\n%s\n\n", full_path.c_str(), ex.what(), ex.backtrace().c_str());
-				//}
-			}
+			double time = getTime();
+			auto [src_size, dst_size] = convertResource(res_type, full_path, new_path, name);
+			time = getTime() - time;
+			if(detailed)
+				printf("%40s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
+						(int)(src_size/1024), (int)(dst_size/1024), time * 1024.0);
+			total_before += src_size;
+			total_after += dst_size;
 		}
 	}
 
-#pragma omp barrier
 	if(!detailed)
 		printf("\n");
 	printf("Total: %6dKB -> %6dKB\n", total_before/1024, total_after/1024);
@@ -270,6 +253,7 @@ static ResPath s_paths[] = {
 	{ "sprites/", ResTypeId::sprite },
 	{ "campaigns/missions/core/", ResTypeId::map },
 	{ "campaigns/missions/tutorials/", ResTypeId::map },
+	{ "campaigns/missions/demo/", ResTypeId::map },
 	{ "missions/", ResTypeId::map },
 	{ "sound/game/", ResTypeId::sound },
 	{ "gui/", ResTypeId::image },
@@ -379,18 +363,21 @@ void convertAll(const char *fot_path, const string &filter) {
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			auto src_path = format("%/%", core_path, it->second);
 			auto dst_path = format("%/%%", s_new_path[type], it->first, s_new_suffix[type]);
-
-			auto ldr = move(fileLoader(src_path).get());
-			auto svr = move(fileSaver(dst_path).get());
+			auto [src_size, dst_size] = convertResource(type, src_path, dst_path, src_path);
 
 			if(type != ResTypeId::tile || bytes > 1024 * 1024) {
-				if(type == ResTypeId::tile) { printf("."); fflush(stdout); }
-				else printf("%s\n", it->first.c_str());
+				if(type == ResTypeId::tile) {
+					printf(".");
+					fflush(stdout);
+				}
+				else {
+					printf("%s\n", it->first.c_str());
+				}
 				bytes = 0;
 			}
-			else 
-				bytes += ldr.size();
-			convert(type, ldr, svr, src_path).check(); // TODO
+			else  {
+				bytes += src_size;
+			}
 		}
 	}
 	
@@ -450,13 +437,16 @@ void convertAll(const char *fot_path, const string &filter) {
 						printf(".");
 						fflush(stdout);
 					}
-					else
+					else {
 						printf("%s\n", name.c_str());
+					}
 					bytes = 0;
 				}
 				else 
 					bytes += ldr.size();
-				convert(type, ldr, svr, name).check();
+				auto result = convertResource(type, ldr, svr, name);
+				if(!result)
+					result.error().print();
 			}
 				
 			printf("\n");
@@ -475,13 +465,6 @@ int main(int argc, char **argv) {
 			ASSERT(filter.empty());
 			filter = argv[++n];
 		}
-#ifdef USE_OPENMP
-		else if(strcmp(argv[n], "-j") == 0 && n + 1 < argc) {
-			ASSERT(jobs == 0);
-			jobs = atoi(argv[++n]);
-			ASSERT(jobs >= 1);
-		}
-#endif
 		else if(strcmp(argv[n], "-p") == 0 && n + 1 < argc) {
 			ASSERT(path.empty());
 			path = argv[++n];
@@ -506,32 +489,25 @@ int main(int argc, char **argv) {
 	}
 #endif
 
-#ifdef USE_OPENMP
-	if(command == "maps") // ResourceManager<Tile> is single-threaded (used in tile_map_legacy.cpp)
-		jobs = 1;
-	if(jobs)
-		omp_set_num_threads(jobs);
-#endif
-
 	if(command == "tiles") {
 		if(path.empty())
 			path = "refs/tiles/";
-		convert<Tile>(path.c_str(), "data/tiles", ".til", ".tile", 0, filter);
+		convertDir<ResTypeId::tile>(path.c_str(), "data/tiles", ".til", ".tile", 0, filter);
 	}
-//	else if(command == "maps") {
-//		if(path.empty())
-//			path = "refs/maps/";
-//		convert<TileMapProxy>(path.c_str(), "data/maps/", ".mis", ".xml", 1, filter);
-//	}
+	else if(command == "maps") {
+		if(path.empty())
+			path = "refs/maps/";
+		convertDir<ResTypeId::map>(path.c_str(), "data/maps/", ".mis", ".xml", 1, filter);
+	}
 	else if(command == "sprites") {
 		if(path.empty())
 			path = "refs/sprites/";
-		convert<Sprite>(path.c_str(), "data/sprites/", ".spr", ".sprite", 1, filter);
+		convertDir<ResTypeId::sprite>(path.c_str(), "data/sprites/", ".spr", ".sprite", 1, filter);
 	}
 	else if(command == "sounds") {
 		if(path.empty())
 			path = "refs/sound/game/";
-		convert<SoundProxy>(path.c_str(), "data/sounds/", ".wav", ".wav", 1, filter);
+		convertDir<ResTypeId::sound>(path.c_str(), "data/sounds/", ".wav", ".wav", 1, filter);
 	}
 
 	else if(command == "all") {
@@ -563,9 +539,6 @@ int main(int argc, char **argv) {
 				"Options:\n"
 				"-f filter    Converting only those files that match given filter\n"
 				"-p path      Specify different path\n"
-#ifdef USE_OPENMP
-				"-j jobcnt    Use jobcnt threads during conversion\n"
-#endif
 				"\n", argv[0]);
 		return 0;
 	}

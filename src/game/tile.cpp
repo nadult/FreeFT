@@ -5,7 +5,6 @@
 
 #include "gfx/drawing.h"
 #include "gfx/scene_renderer.h"
-#include <algorithm>
 #include <fwk/gfx/texture.h>
 #include <fwk/gfx/renderer2d.h>
 #include <fwk/io/file_stream.h>

@@ -16,8 +16,7 @@
 
 namespace game {
 
-	template <class InputStream>
-	Ex<void> TileMap::legacyConvert(InputStream &sr, FileStream &out) {
+	Ex<void> TileMap::legacyConvert(Stream &sr, FileStream &sr_out) {
 		ASSERT(sr.isLoading());
 
 		sr.signature({"<world>\0", 8});
@@ -42,13 +41,12 @@ namespace game {
 			}
 	
 		vector<Tile> tiles;
+		TileMap out;
 
 		{
 			ASSERT(map_manager != -1);
 			int offset = map_manager + 13;
 			MemoryStream dsr(cspan(bytes.data() + offset, bytes.size() - offset));
-
-			clear();
 
 			struct Header {
 				u16 type;
@@ -105,7 +103,8 @@ namespace game {
 			};
 			vector<Instance> instances;
 
-			IBox box(INT_MAX, INT_MAX, INT_MAX, INT_MIN, INT_MIN, INT_MIN);
+			int3 box_min(INT_MAX, INT_MAX, INT_MAX);
+			int3 box_max(INT_MIN, INT_MIN, INT_MIN);
 
 			for(int n = 0; n < region_count; n++) {
 				dsr.signature({"<region>\0008\0", 11});
@@ -161,36 +160,29 @@ namespace game {
 				//		printf("%d %d %d | %d %d %d | %d %d %d\n", size.x, size.y, size.z, tile_size.x, tile_size.y, tile_size.z, tile_psize.x, tile_psize.y, tile_psize.z);
 				//	ASSERT(tile_size == size && size == tile_psize);
 
-					box = { vmin(box.min(), pos), vmax(box.max(), pos + size)};
+					box_min = vmin(box_min, pos);
+					box_max = vmax(box_max, pos + size);
 
 					instances.push_back(Instance{pos, size, tile_id});
 				}
 
 			//	printf("Region: %d  elems: %d\n", n, elem_count);
 			}
-			printf("Regions: %d\noffset: %d / %d\n", region_count, (int)dsr.pos(), (int)dsr.size());
-
-			printf("Map dimensions: (%d %d %d - %d %d %d)\n", box.x(), box.y(), box.z(), box.ex(), box.ey(), box.ez());
-			resize(box.size().xz());
+			print("Regions: %\noffset: % / %\n", region_count, dsr.pos(), dsr.size());
+			print("Map dimensions: (% - %)\n", box_min, box_max);
+			out.resize((box_max - box_min).xz());
 
 			printf("Constructing... from: %d elements\n", (int)instances.size());
 			for(int n = 0; n < (int)instances.size(); n++) {
 				Instance &inst = instances[n];
 
-				float3 pos = float3(inst.pos - box.min());
+				float3 pos = float3(inst.pos - box_min);
 				TileParams &params = tile_params[inst.tile_id];
 				FBox bbox(pos, pos + float3(params.bbox_x, params.bbox_y, params.bbox_z));
-				if(findAny(bbox) == -1)
-					Grid::add(findFreeObject(), Grid::ObjectDef(&tiles[inst.tile_id], bbox, IRect(0, 0, 32, 32), 0xffffffff));
+				if(out.findAny(bbox) == -1)
+					out.Grid::add(out.findFreeObject(), Grid::ObjectDef(&tiles[inst.tile_id], bbox, IRect(0, 0, 32, 32), ~0u));
 			}
 		}
-
-		XmlDocument doc;
-		saveToXML(doc);
-		EXPECT(doc.save(out));
-		clear();
-
-	//	Saver("mission.dec") & bytes;
 
 		/*int tex_id = 0;
 		for(int n = 0; n < (int)bytes.size() - 6; n++) {
@@ -212,12 +204,13 @@ namespace game {
 			catch(...) { }
 		}*/
 
+		return out.save(sr_out);
+	}
+
+	//	Saver("mission.dec") & bytes;
+
+	
 	//	for(int n = 0; n < bytes.size(); n++)
 	//		printf("%c", bytes[n] < 32? '.' : bytes[n]);
-		return {};
-	}
-	
-	template Ex<void> TileMap::legacyConvert(MemoryStream &, FileStream &);
-	template Ex<void> TileMap::legacyConvert(FileStream &, FileStream &);
 
 }

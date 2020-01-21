@@ -6,6 +6,8 @@
 #include <algorithm>
 
 OccluderMap::OccluderMap(Grid &grid) :m_grid(grid) { }
+OccluderMap::OccluderMap(OccluderMap&&) = default;
+FWK_MOVE_ASSIGN_RECONSTRUCT(OccluderMap);
 
 int OccluderMap::addOccluder(int representative_id, int min_height) {
 	DASSERT(representative_id >= 0 && representative_id < m_grid.size());

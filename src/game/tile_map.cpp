@@ -4,6 +4,7 @@
 #include "game/tile_map.h"
 
 #include "game/tile.h"
+#include <fwk/io/file_stream.h>
 
 namespace game {
 
@@ -150,7 +151,13 @@ namespace game {
 
 		m_occluder_map.saveToXML(tile_ids, doc);
 	}
-		
+
+	Ex<void> TileMap::save(FileStream &sr) const {
+		XmlDocument doc;
+		saveToXML(doc);
+		return doc.save(sr);
+	}
+
 	void TileMap::updateVisibility(const OccluderConfig &config) {
 		config.setVisibilityFlag(*(Grid*)this, Flags::visible);
 		updateNodes();

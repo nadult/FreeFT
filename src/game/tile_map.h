@@ -24,12 +24,12 @@ namespace game {
 		
 		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 
+		static Ex<void> legacyConvert(Stream &, FileStream&);
 		void loadFromXML(const XmlDocument&);
 		void saveToXML(XmlDocument&) const;
-		void swap(const TileMap&);
+		Ex<void> save(FileStream &) const;
 
-		template <class InputStream>
-		Ex<void> legacyConvert(InputStream &in, FileStream &out);
+		void swap(const TileMap&);
 
 		OccluderMap &occluderMap() { return m_occluder_map; }
 		const OccluderMap &occluderMap() const { return m_occluder_map; }
@@ -41,5 +41,4 @@ namespace game {
 	private:
 		OccluderMap m_occluder_map;
 	};
-
 }

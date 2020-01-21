@@ -11,6 +11,8 @@ public:
 	static constexpr int max_occluders = 32000;
 
 	OccluderMap(Grid&);
+	OccluderMap(OccluderMap&&);
+	OccluderMap &operator=(OccluderMap&&);
 
 	int addOccluder(int representative_id, int min_height);
 	void removeOccluder(int occluder_id);
