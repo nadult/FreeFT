@@ -6,15 +6,13 @@
 #include "game/tile.h"
 #include <fwk/io/file_stream.h>
 #include <fwk/io/memory_stream.h>
+#include <fwk/io/gzip_stream.h>
 
 //#define LOGGING
 
 #ifndef LOGGING
 #define printf(...)	
 #endif
-
-template <class InputStream>
-Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize);
 
 namespace game {
 
@@ -31,7 +29,10 @@ namespace game {
 		//printf("unc size: %d type: %x\n", size1, (int)type);
 
 		vector<char> bytes;
-		EXPECT(zlibInflate(sr, bytes, sr.size() - sr.pos()));
+		{
+			auto gz_stream = EX_PASS(GzipStream::loader(sr, sr.size() - sr.pos()));
+			bytes = EX_PASS(gz_stream.loadData());
+		}
 
 		int map_manager = -1;
 		for(int n = 0; n < (int)bytes.size(); n++)

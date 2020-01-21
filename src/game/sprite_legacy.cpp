@@ -4,65 +4,7 @@
 #include "game/sprite.h"
 #include <zlib.h>
 #include <fwk/io/file_stream.h>
-
-// source: http://www.zlib.net/zlib_how.html
-template <class InputStream>
-Ex<void> zlibInflate(InputStream &sr, vector<char> &dest, int inSize) {
-	int chunk_size = 16 * 1024;
-
-	int ret;
-	unsigned have;
-	z_stream strm;
-	unsigned char in[chunk_size];
-	unsigned char out[chunk_size];
-
-	dest.clear();
-
-	/* allocate inflate state */
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
-	strm.avail_in = 0;
-	strm.next_in = Z_NULL;
-	if(inflateInit(&strm) != Z_OK)
-		return ERROR("Error while decompressing image data");
-
-	/* decompress until deflate stream ends or end of file */
-	do {
-		strm.avail_in = inSize < chunk_size? inSize : chunk_size;
-		sr.loadData(span(in, strm.avail_in));
-		strm.next_in = in;
-		inSize -= strm.avail_in;
-
-		/* run inflate() on input until output buffer not full */
-		do {
-			strm.avail_out = chunk_size;
-			strm.next_out = out;
-			ret = inflate(&strm, Z_NO_FLUSH);
-			DASSERT(ret != Z_STREAM_ERROR);  /* state not clobbered */
-
-			switch (ret) {
-			case Z_NEED_DICT:
-				ret = Z_DATA_ERROR;
-				[[fallthrough]];
-			case Z_DATA_ERROR:
-			case Z_MEM_ERROR:
-				inflateEnd(&strm);
-				return ERROR("Z_MEM_ERROR while decompressing image data");
-			}
-			have = chunk_size - strm.avail_out;
-			dest.resize(dest.size() + have);
-			memcpy(&dest[dest.size() - have], out, have);
-		} while (strm.avail_out == 0);
-		/* done when inflate() says it's done */
-	} while (ret != Z_STREAM_END && inSize);
-	
-	inflateEnd(&strm);
-
-	if(ret != Z_STREAM_END)
-		return ERROR("Error while decompressing image data");
-	return {};
-}
+#include <fwk/io/gzip_stream.h>
 
 namespace game
 {
@@ -209,7 +151,8 @@ namespace game
 			else {
 				i32 plain_size = 0;
 				sr >> plain_size;
-				EXPECT(zlibInflate(sr, data, size - 4));
+				auto gz_stream = EX_PASS(GzipStream::loader(sr, size - 4));
+				data = EX_PASS(gz_stream.loadData());
 				EXPECT(plain_size == data.size());
 			}
 
