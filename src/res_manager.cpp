@@ -83,6 +83,7 @@ const game::Tile &ResManager::getTile(Str name) {
 		Dynamic<game::Tile> tile;
 		tile.emplace();
 		auto result = tile->load(*ldr);
+		tile->setResourceName(name);
 		result.check();
 		it = m_tiles.emplace(name, move(tile)).first;
 	}
@@ -96,6 +97,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		Dynamic<game::Tile> tile;
 		tile.emplace();
 		EXPECT(tile->load(sr));
+		tile->setResourceName(name);
 		m_tiles[name] = move(tile);
 	}
 	else if(type == ResType::sprite) {
