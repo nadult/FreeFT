@@ -299,12 +299,13 @@ void preloadTiles() {
 
 int main(int argc, char **argv) {
 	Config config("editor");
-	preloadTiles();
-	game::loadData(true);
 
 	GlDevice gl_device;
 	ResManager res_mgr;
 	TextureCache tex_cache;
+
+	preloadTiles();
+	game::loadData(true);
 
 	createWindow("editor", gl_device, config.resolution, config.window_pos, config.fullscreen_on);
 
