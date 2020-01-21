@@ -42,7 +42,7 @@ namespace game
 		m_offset = rhs.m_offset;
 	}
 
-	Ex<void> TileFrame::load(FileStream &sr) {
+	Ex<void> TileFrame::load(Stream &sr) {
 		sr >> m_offset;
 		m_texture = EX_PASS(PackedTexture::load(sr));
 		return {};
@@ -156,7 +156,7 @@ namespace game
 		return {};
 	}
 
-	Ex<void> Tile::load(FileStream &sr) {
+	Ex<void> Tile::load(Stream &sr) {
 		sr.signature("TILE");
 		unsigned char type_id, surface_id;
 		sr.unpack(type_id, surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);

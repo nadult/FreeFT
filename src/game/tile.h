@@ -15,7 +15,7 @@ namespace game
 		TileFrame(const Palette *palette = nullptr) :m_palette_ref(palette) { }
 		TileFrame(const TileFrame&);
 		void operator=(const TileFrame&);
-		Ex<void> load(FileStream&);
+		Ex<void> load(Stream&);
 		void save(FileStream&) const;
 
 		virtual void cacheUpload(Texture&) const;
@@ -42,7 +42,7 @@ namespace game
 		Tile();
 		template <class InputStream>
 		Ex<void> legacyLoad(InputStream &, Str name);
-		Ex<void> load(FileStream &);
+		Ex<void> load(Stream &);
 		void save(FileStream &) const;
 		
 		FlagsType flags() const;

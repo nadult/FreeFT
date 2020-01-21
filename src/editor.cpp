@@ -277,7 +277,7 @@ void preloadTiles() {
 	auto file_names = findFiles("data/tiles/", FindFileOpt::regular_file | FindFileOpt::recursive);
 
 	printf("Preloading tiles");
-	auto [prefix, suffix] = ResManager::instance().tilePrefixSuffix();
+	auto [prefix, suffix] = ResManager::instance().prefixSuffix(ResType::tile);
 	auto current_path = FilePath::current().get(); // TODO
 	FilePath tiles_path = FilePath(prefix).absolute(current_path);
 

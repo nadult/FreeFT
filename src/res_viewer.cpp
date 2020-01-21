@@ -27,33 +27,13 @@
 using namespace game;
 using namespace ui;
 
-enum class ResType {
-	unknown,
-	tile,
-	sprite,
-	texture,
-};
-
-ResType classifyFileName(const string &file_name) {
-	auto locase_name = toLower(file_name);
-
-	if(removeSuffix(locase_name, ".zar") || removeSuffix(locase_name, ".png"))
-		return ResType::texture;
-	else if(removeSuffix(locase_name, ".tile"))
-		return ResType::tile;
-	else if(removeSuffix(locase_name, ".sprite"))
-		return ResType::sprite;
-
-	return ResType::unknown;
-}
-
 class Resource {
   public:
 	Resource() = default;
 	Ex<void> load(const FilePath &current_dir, const string &file_name) {
 		m_file_name = file_name;
-		m_type = classifyFileName(file_name);
-		EXPECT(m_type != ResType::unknown);
+		m_type = ResManager::instance().classifyPath(file_name, true);
+		EXPECT(m_type);
 
 		auto path = current_dir / file_name;
 		if(m_type == ResType::tile) {
@@ -227,13 +207,13 @@ class Resource {
 		}
 	}
 
-	ResType type() const { return m_type; }
+	auto type() const { return m_type; }
 	int2 rectSize() const { return m_rect_size; }
 	const string &fileName() const { return m_file_name; }
 
   private:
 	string m_file_name;
-	ResType m_type = ResType::unknown;
+	Maybe<ResType> m_type;
 
 	int2 m_rect_size;
 	Dynamic<Tile> m_tile;
@@ -251,8 +231,7 @@ class ResourceView : public Window {
 	ResourceView(IRect rect, FilePath current_dir, vector<string> file_names)
 		: Window(rect), m_selected_id(-1) ,m_font(res::getFont(ui::WindowStyle::fonts[0])) {
 		for(auto file_name : file_names) {
-			auto res_type = classifyFileName(file_name);
-			if(res_type != ResType::unknown) {
+			if(ResManager::instance().classifyPath(file_name, true)) {
 				ON_FAIL("Error while loading file: %", file_name);
 
 				Resource new_resource;

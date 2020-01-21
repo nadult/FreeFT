@@ -236,7 +236,8 @@ void convert(const char *src_dir, const char *dst_dir, const char *old_ext, cons
 					resource.legacyLoad(source, name).check();
 					auto target = move(fileSaver(new_path).get());
 					resource.save(target);
-					resource.setResourceName((FilePath(name).fileName()).c_str()); // TODO: this isprobably not needed
+					string file_name = FilePath(name).fileName();
+					resource.setResourceName(file_name.c_str()); // TODO: this isprobably not needed
 
 					if(detailed)
 						printf("%40s  %6dKB -> %6dKB   %9.4f ms\n", name.c_str(),
