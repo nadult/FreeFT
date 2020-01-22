@@ -75,16 +75,16 @@ namespace game {
 			   flags);
 	}
 
-	void TileMap::loadFromXML(const XmlDocument &doc) {
+	Ex<void> TileMap::loadFromXML(const XmlDocument &doc) {
 		auto main_node = doc.child("tile_map");
-		ASSERT(main_node);
+		EXPECT(main_node);
 
 		clear();
 
 		int2 size = main_node.attrib<int2>("size");
 		int tile_count = main_node.attrib<int>("tile_count");
 
-		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
+		EXPECT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 		resize(size);
 
 		auto tnode = main_node.child("tile");
@@ -99,7 +99,8 @@ namespace game {
 			tnode = tnode.sibling("tile");
 		}
 
-		m_occluder_map.loadFromXML(doc);
+		EX_CATCH();
+		return m_occluder_map.loadFromXML(doc);
 	}
 
 	void TileMap::saveToXML(XmlDocument &doc) const {

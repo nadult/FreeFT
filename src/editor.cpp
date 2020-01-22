@@ -201,7 +201,9 @@ public:
 		double time = getTime();
 
 		if(access(file_name)) {
-			m_level.load(mapName(file_name));
+			auto result = m_level.load(mapName(file_name));
+			if(!result)
+				result.error().print();
 			recreateEditors();
 		}
 		printf("(%.2f sec)\n", getTime() - time);
@@ -220,7 +222,9 @@ public:
 		print("Saving Map: % ", file_name);
 		fflush(stdout);
 		double time = getTime();
-		m_level.save(mapName(file_name));
+		auto result = m_level.save(mapName(file_name));
+		if(!result)
+			result.error().print();
 		printf(" (%.2f sec)\n", getTime() - time);
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}

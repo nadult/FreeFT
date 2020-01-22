@@ -18,7 +18,7 @@ public:
 	void removeOccluder(int occluder_id);
 	void clear();
 
-	void loadFromXML(const XmlDocument&);
+	Ex<void> loadFromXML(const XmlDocument&);
 	void saveToXML(const PodVector<int> &tile_ids, XmlDocument&) const;
 
 	struct Occluder {

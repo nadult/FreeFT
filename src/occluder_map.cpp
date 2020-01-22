@@ -198,7 +198,7 @@ bool OccluderMap::verifyBBoxes(int occluder_id, const vector<FBox> &bboxes) cons
 	return bobjects == objects;
 }
 
-void OccluderMap::loadFromXML(const XmlDocument &doc) {
+Ex<void> OccluderMap::loadFromXML(const XmlDocument &doc) {
 	clear();
 
 	for(int n = 0; n < m_grid.size(); n++)
@@ -218,7 +218,7 @@ void OccluderMap::loadFromXML(const XmlDocument &doc) {
 			Occluder &occluder = m_occluders.back();
 			
 			int object_count = occluder_node.attrib<int>("object_count");
-			ASSERT(object_count < m_grid.size() && object_count > 0);
+			EXPECT(object_count < m_grid.size() && object_count > 0);
 			occluder.objects.resize(object_count, -1);
 
 			auto box_node = occluder_node.child("box");
@@ -244,14 +244,15 @@ void OccluderMap::loadFromXML(const XmlDocument &doc) {
 			if(occ_id != -1 && m_grid[n].ptr) {
 				Occluder &occluder = m_occluders[occ_id];
 				int count = counts[occ_id];
-				ASSERT(count < (int)occluder.objects.size());
+				EXPECT(count < (int)occluder.objects.size());
 				occluder.objects[count++] = n;
 				counts[occ_id] = count;
 			}
 		}
 		for(int n = 0; n < (int)counts.size(); n++)
-			ASSERT(counts[n] == (int)m_occluders[n].objects.size());
+			EXPECT(counts[n] == (int)m_occluders[n].objects.size());
 	}
+	return {};
 }
 
 void OccluderMap::saveToXML(const PodVector<int> &tile_ids, XmlDocument &doc) const {

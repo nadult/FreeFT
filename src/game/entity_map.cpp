@@ -89,22 +89,20 @@ namespace game
 			updateOccluderId(index);
 	}
 
-	void EntityMap::loadFromXML(const XmlDocument &doc) {
-		//TODO: exception safety when loading...
+	Ex<void> EntityMap::loadFromXML(const XmlDocument &doc) {
 		auto main_node = doc.child("entity_map");
 	
 		clear();
-		
 		if(!main_node) {
 			resize(m_tile_map.dimensions());
-			return;
+			return {};
 		}
 
 		int2 size = main_node.attrib<int2>("size");
 		int tile_count = main_node.attrib<int>("entity_count");
 
 		//TODO: duplicated code here and in TileMap
-		ASSERT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
+		EXPECT(size.x > 0 && size.y > 0 && size.x <= 16 * 1024 && size.y <= 16 * 1024);
 		resize(size);
 
 		auto node = main_node.child();
@@ -113,6 +111,7 @@ namespace game
 			add(move(new_entity));
 			node = node.sibling();
 		}
+		return {};
 	}
 
 	void EntityMap::saveToXML(XmlDocument &doc) const {

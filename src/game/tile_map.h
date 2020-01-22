@@ -25,7 +25,7 @@ namespace game {
 		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 
 		static Ex<void> legacyConvert(Stream &, FileStream&);
-		void loadFromXML(const XmlDocument&);
+		Ex<void> loadFromXML(const XmlDocument&);
 		void saveToXML(XmlDocument&) const;
 		Ex<void> save(FileStream &) const;
 

@@ -109,36 +109,35 @@ namespace game {
 
 	Level::Level() :entity_map(tile_map) {}
 
-	// TODO: return Ex<>
-	// TODO: simplify different kinds of paths ?
-	void Level::load(string map_name) {
+	Ex<void> Level::load(ZStr map_name) {
 		XmlDocument doc;
 
-		auto file_name = "maps/" + map_name;
+		auto &res_mgr = ResManager::instance();
+
+		auto file_name = format("maps/%", map_name);
 		if(file_name.ends_with(".mod")) {
 			string orig_file_name = file_name.substr(0, file_name.size() - 4);
 			orig_file_name += ".xml";
 
-			// TODO: Ex<>
-			auto orig = loadFile(orig_file_name).get();
-			auto mod = loadFile(file_name).get();
+			auto orig = res_mgr.getOther(orig_file_name);
+			auto mod = res_mgr.getOther(file_name);
 			vector<char> patched = applyPatch(orig, mod);
-			doc = move(XmlDocument::make(patched).get());
+			doc = EX_PASS(XmlDocument::make(patched));
 		}
 		else {
-			auto xml_data = ResManager::instance().getOther(file_name);
-			doc = move(XmlDocument::make(xml_data).get());
+			auto xml_data = res_mgr.getOther(file_name);
+			doc = EX_PASS(XmlDocument::make(xml_data));
 		}
 
-		tile_map.loadFromXML(doc);
-		entity_map.loadFromXML(doc);
+		EXPECT(tile_map.loadFromXML(doc));
+		return entity_map.loadFromXML(doc);
 	}
 
-	void Level::save(string file_name) const {
+	Ex<void> Level::save(ZStr file_name) const {
 		XmlDocument doc;
 		tile_map.saveToXML(doc);
 		entity_map.saveToXML(doc);
-		doc.save("data/maps/" + file_name).check();
+		return doc.save(format("data/maps/%", file_name));
 	}
 
 }

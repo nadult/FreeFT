@@ -35,7 +35,7 @@ namespace game
 		
 		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 		
-		void loadFromXML(const XmlDocument&);
+		Ex<void> loadFromXML(const XmlDocument&);
 		void saveToXML(XmlDocument&) const;
 		void updateVisibility(const OccluderConfig&);
 
