@@ -19,9 +19,12 @@ namespace game {
 		if(Str(string) == "")
 			return {};
 		TextParser parser(string);
-		EnumFlags<AttackMode> flags;
-		parser >> flags;
-		return flags;
+		EnumFlags<AttackMode> flags, out;
+		while(!parser.empty()) {
+			parser >> flags;
+			out |= flags;
+		}
+		return out;
 	}
 
 	WeaponProto::WeaponProto(const TupleParser &parser) :ProtoImpl(parser) {
