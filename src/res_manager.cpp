@@ -1,9 +1,6 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include <fwk/gfx/gl_texture.h>
-#include <fwk/hash_map.h>
-
 #include "res_manager.h"
 
 #include "game/tile.h"
@@ -14,6 +11,9 @@
 #include <fwk/io/memory_stream.h>
 #include <fwk/io/url_fetch.h>
 #include <fwk/io/gzip_stream.h>
+#include <fwk/gfx/gl_texture.h>
+#include <fwk/hash_map.h>
+#include <map>
 
 #ifdef FWK_PLATFORM_HTML
 #include <emscripten.h>
@@ -29,6 +29,13 @@
 // after thet are created
 //
 // TODO: dont return references but identifiers (TileId: u16)
+
+struct ResManager::Impl {
+	FwdMember<HashMap<string, PTexture>>  textures;
+	std::map<string, Dynamic<game::Tile>> tiles;
+	std::map<string, Font> fonts;
+	std::map<string, vector<char>> others;
+};
 
 ResManager *ResManager::g_instance = nullptr;
 
@@ -56,10 +63,8 @@ ResManager::ResManager(bool console_mode) :m_console_mode(console_mode) {
 	for(auto rtype : all<ResType>)
 		m_paths[rtype] = {m_data_path + default_paths[rtype].first, default_paths[rtype].second};
 
-	// TODO: these packages should be loaded through main loop
+	m_impl.emplace();
 	preloadEmbedded();
-	if(platform == Platform::html)
-		preloadPackages();
 }
 
 ResManager::~ResManager() {
@@ -73,34 +78,37 @@ void fixGrayTransTexture(Texture &tex) {
 }
 
 PTexture ResManager::getTexture(Str name, bool font_tex) {
-	auto it = m_textures.find(name);
-	if(it == m_textures.end()) {
+	auto &textures = m_impl->textures;
+	auto it = textures.find(name);
+	if(it == textures.end()) {
 		auto tex = Texture::load(fullPath(name, ResType::texture));
 		tex.check();
 		if(font_tex)
 			fixGrayTransTexture(*tex);
 		auto gl_tex = GlTexture::make(*tex);
-		m_textures.emplace(name, gl_tex);
+		textures.emplace(name, gl_tex);
 		return gl_tex;
 	}
 	return it->value;
 }
 
 const Font &ResManager::getFont(Str name) {
-	auto it = m_fonts.find(name);
-	if(it == m_fonts.end()) {
+	auto &fonts = m_impl->fonts;
+	auto it = fonts.find(name);
+	if(it == fonts.end()) {
 		auto vcore = FontCore::load(fullPath(name, ResType::font));
 		vcore.check();
 		FontCore core(move(*vcore));
 		auto tex = getTexture("fonts/" + core.textureName(), true);
-		it = m_fonts.emplace(name, Font(move(core), move(tex))).first;
+		it = fonts.emplace(name, Font(move(core), move(tex))).first;
 	}
 	return it->second;
 }
 
 const game::Tile &ResManager::getTile(Str name) {
-	auto it = m_tiles.find(name);
-	if(it == m_tiles.end()) {
+	auto &tiles = m_impl->tiles;
+	auto it = tiles.find(name);
+	if(it == tiles.end()) {
 		auto ldr = fileLoader(fullPath(name, ResType::tile));
 		ldr.check();
 		Dynamic<game::Tile> tile;
@@ -108,20 +116,22 @@ const game::Tile &ResManager::getTile(Str name) {
 		auto result = tile->load(*ldr);
 		tile->setResourceName(name);
 		result.check();
-		it = m_tiles.emplace(name, move(tile)).first;
+		it = tiles.emplace(name, move(tile)).first;
 	}
 	return *it->second;
 }
 	
 vector<char> ResManager::getOther(Str name)  const{
-	auto it = m_others.find(name);
-	if(it == m_others.end()) {
+	auto it = m_impl->others.find(name);
+	if(it == m_impl->others.end()) {
 		auto data = loadFile(format("%%", m_data_path, name));
 		data.check();
 		return move(*data);
 	}
 	return it->second;
 }
+	
+const std::map<string, Dynamic<game::Tile>> &ResManager::allTiles() { return m_impl->tiles; }
 	
 Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 	DASSERT(sr.isLoading());
@@ -131,7 +141,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		tile.emplace();
 		EXPECT(tile->load(sr));
 		tile->setResourceName(name);
-		m_tiles[name] = move(tile);
+		m_impl->tiles[name] = move(tile);
 	}
 	else if(type == ResType::sprite) {
 		FATAL("write me");
@@ -140,21 +150,21 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		auto tex = getTexture(format("fonts/%", name), true);
 		auto doc = EX_PASS(XmlDocument::load(sr));
 		auto core = EX_PASS(FontCore::load(doc));
-		m_fonts.erase(name);
-		m_fonts.emplace(name, Font(move(core), move(tex)));
+		m_impl->fonts.erase(name);
+		m_impl->fonts.emplace(name, Font(move(core), move(tex)));
 	}
 	else if(type == ResType::texture) {
 		auto ext = fileExtension(name);
 		if(!ext)
 			return ERROR("Texture without extension: '%'", name);
 		auto tex = EX_PASS(Texture::load(sr, *ext));
-		m_textures[name] = GlTexture::make(tex);
+		m_impl->textures[name] = GlTexture::make(tex);
 	}
 	else if(type == ResType::other) {
 		vector<char> data(sr.size());
 		sr.loadData(data);
 		EX_CATCH();
-		m_others[name] = move(data);
+		m_impl->others[name] = move(data);
 	}
 
 	return {};
@@ -258,22 +268,22 @@ void ResManager::preloadEmbedded() {
 		tex.check();
 		if(fix)
 			fixGrayTransTexture(*tex);
-		m_textures[name] = GlTexture::make(*tex);
+		m_impl->textures[name] = GlTexture::make(*tex);
 	}
 }
 
-void ResManager::preloadPackages() {
-	Pair<const char*> packages[] = {
-		{"data", "data/"},
-		{"fonts", "data/fonts/"},
-		{"gui", "data/gui/"},
-		{"sprites", "data/sprites/"},
-		{"tiles", "data/tiles/"},
-	};
+static const Pair<const char*> preload_packages[] = {
+	{"data", "data/"},
+	{"gui", "data/gui/"},
+	{"sprites", "data/sprites/"},
+	{"tiles", "data/tiles/"},
+};
 
-	// TODO: UI with progress bar should be available while data is loading ?
-	for(auto [name, prefix] : packages)
-		loadPackage(name, prefix).check();
+void ResManager::beginPreloading() {
+}
+
+bool ResManager::preloadingStep() {
+	return true;
 }
 
 namespace res {

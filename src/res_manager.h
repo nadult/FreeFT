@@ -5,9 +5,6 @@
 
 #include "base.h"
 
-#include <fwk/fwd_member.h>
-#include <map>
-
 DEFINE_ENUM(ResType, tile, sprite, font, texture, other);
 
 // Only single instance allowed
@@ -27,7 +24,7 @@ class ResManager {
 	PTexture getTexture(Str, bool font_tex);
 	const Font &getFont(Str);
 	const game::Tile &getTile(Str);
-	const auto &allTiles() { return m_tiles; }
+	const std::map<string, Dynamic<game::Tile>> &allTiles();
 
 	// Other resource will only be stored in manager with loadResource.
 	// Otherwise it will simply be loaded from file every time when getOther() is called.
@@ -45,18 +42,18 @@ class ResManager {
 
 	Pair<Str> prefixSuffix(ResType type) const { return m_paths[type]; }
 
+	void beginPreloading();
+	bool preloadingStep();
+
   private:
 	void preloadEmbedded();
-	void preloadPackages();
 	Ex<void> loadPackage(Str, Str);
 
 	static ResManager *g_instance;
+	struct Impl;
+	Dynamic<Impl> m_impl;
 
 	EnumMap<ResType, Pair<string, string>> m_paths;
 	string m_data_path;
-	FwdMember<HashMap<string, PTexture>>  m_textures;
-	std::map<string, Dynamic<game::Tile>> m_tiles;
-	std::map<string, Font> m_fonts;
-	std::map<string, vector<char>> m_others;
 	bool m_console_mode;
 };
