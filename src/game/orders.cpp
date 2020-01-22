@@ -53,8 +53,10 @@ namespace game {
 					(m_is_finished? 2 : 0) |
 					(m_please_cancel? 4 : 0);
 		sr << flags;
-		if(m_followup)
-			sr << m_followup->typeId() << *m_followup;
+		if(m_followup) {
+			sr << m_followup->typeId();
+			m_followup->save(sr);
+		}
 	}
 
 	void ThinkingEntity::handleOrder(EntityEvent event, const EntityEventParams &params) {

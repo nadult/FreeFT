@@ -6,7 +6,7 @@ FWK_MODE      ?= release-paranoid
 CFLAGS         = -Isrc/ -fopenmp
 PCH_SOURCE    := src/freeft_pch.h
 LDFLAGS_linux := -lz -lmpg123 -lzip -Wl,--export-dynamic
-LDFLAGS_mingw := -lz -lmpg123 -lzip
+LDFLAGS_mingw := -lz -lmpg123 -lzip -lbcrypt
 BUILD_DIR      = build/$(if $(findstring linux,$(PLATFORM)),,$(PLATFORM)_)$(MODE)
 
 include $(FWK_DIR)Makefile-shared

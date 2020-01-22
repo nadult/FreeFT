@@ -37,28 +37,28 @@ static int CALLBACK browseFolderCB(HWND hwnd, UINT msg, LPARAM lparam, LPARAM da
 }
 
 string browseFolder(const char *message, string starting_path) {
-    TCHAR path[MAX_PATH];
+	TCHAR path[MAX_PATH];
 
-    BROWSEINFO bi = { 0 };
-    bi.lpszTitle  = message;
-    bi.ulFlags    = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-    bi.lpfn       = browseFolderCB;
-    bi.lParam     = (LPARAM)starting_path.c_str();
+	BROWSEINFO bi;
+	memset(&bi, 0, sizeof(bi));
+	bi.lpszTitle  = message;
+	bi.ulFlags	= BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+	bi.lpfn		= browseFolderCB;
+	bi.lParam	= (LPARAM)starting_path.c_str();
 
-    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-    if (pidl != 0) {
-        SHGetPathFromIDList(pidl, path);
+	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+	if (pidl != 0) {
+		SHGetPathFromIDList(pidl, path);
 
-        IMalloc *imalloc = 0;
-        if(SUCCEEDED(SHGetMalloc(&imalloc))) {
-            imalloc->Free(pidl);
-            imalloc->Release();
-        }
+		IMalloc *imalloc = 0;
+		if(SUCCEEDED(SHGetMalloc(&imalloc))) {
+			imalloc->Free(pidl);
+			imalloc->Release();
+		}
 
-        return path;
-    }
-
-    return "";
+		return path;
+	}
+	return "";
 }
 
 static const string locateFTPath() {
@@ -85,7 +85,8 @@ static const string locateFTPath() {
 		if(verifyFTPath(std_paths[n]))
 			return std_paths[n];
 
-	return browseFolder("Please select folder in which Fallout Tactics is installed:", FilePath::current());
+	auto current = FilePath::current().get();
+	return browseFolder("Please select folder in which Fallout Tactics is installed:", current);
 }
 
 #endif

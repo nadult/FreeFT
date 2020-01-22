@@ -300,7 +300,8 @@ namespace game {
 
 		auto temp = memorySaver();
 		temp << MessageId::actor_order;
-		temp << entity_ref << order->typeId() << *order;
+		temp << entity_ref << order->typeId();
+		order->save(temp);
 		m_world.sendMessage(temp.data());
 		return true;
 	}

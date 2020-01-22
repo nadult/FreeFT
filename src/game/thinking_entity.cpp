@@ -42,12 +42,16 @@ namespace game {
 					(!m_following_orders.empty()? flag_has_following_orders : 0);
 		sr << flags;
 
-		if(flags & flag_has_order)
-			sr << m_order->typeId() << *m_order;
+		if(flags & flag_has_order) {
+			sr << m_order->typeId();
+			m_order->save(sr);
+		}
 		if(flags & flag_has_following_orders) {
 			encodeInt(sr, (int)m_following_orders.size());
-			for(int n = 0; n < (int)m_following_orders.size(); n++)
-				sr << m_following_orders[n]->typeId() << *m_following_orders[n];
+			for(int n = 0; n < (int)m_following_orders.size(); n++) {
+				sr << m_following_orders[n]->typeId();
+				m_following_orders[n]->save(sr);
+			}
 		}
 	}
 	

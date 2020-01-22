@@ -27,6 +27,14 @@ Aborted (core dumped)
 
 - Raz się zdarzyło że po zaaakowaniu przez wroga gra się zwiesiła (mission02_mod.xml)
 
+Bug pod windowsem (mapka mission02_mod.xml):
+src/grid.cpp:116: Assertion failed: overlap_id != -1
+fwk::assertFailed(char const*, int, char const*) at /home/kjakubowski/freeft/libfwk/src/sys/assert.cpp:59
+listRemove<Grid::remove(int)::<lambda(int)> > at /home/kjakubowski/freeft/libfwk/include/fwk/list_node.h:61
+Grid::update(int, Grid::TObjectDef<void> const&) at /home/kjakubowski/freeft/src/grid.cpp:150
+game::EntityMap::update(int) at /home/kjakubowski/freeft/src/game/entity_map.cpp:88
+game::World::simulate(double) at /home/kjakubowski/freeft/src/game/world.cpp:149
+
 
 Nice to fix: --------------------------------------------------------------------------------------
 

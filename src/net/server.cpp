@@ -184,8 +184,10 @@ namespace net {
 					const Entity *entity = m_world->refEntity(idx);
 
 					auto temp = memorySaver(buffer);
-					if(entity)
-						temp << entity->typeId() << *entity;
+					if(entity) {
+						temp << entity->typeId();
+						entity->save(temp);
+					}
 					if(host.enqueUChunk(temp.data(), entity? ChunkType::entity_full : ChunkType::entity_delete, idx, 1))
 						map[idx] = false;
 					else
