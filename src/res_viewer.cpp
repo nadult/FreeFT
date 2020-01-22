@@ -346,13 +346,14 @@ class ResViewerWindow : public Window {
 
 		// TODO: doesn't support links?
 		m_entries = findFiles(m_current_dir, FindFileOpt::regular_file | FindFileOpt::directory |
-												 FindFileOpt::relative | FindFileOpt::include_parent);
-		std::sort(m_entries.begin(), m_entries.end());
+							FindFileOpt::link | FindFileOpt::relative | FindFileOpt::include_parent);
+		makeSorted(m_entries);
 		vector<string> names;
 
 		for(auto entry : m_entries) {
-			m_dir_view->addEntry(entry.path.c_str(), entry.is_dir ? ColorId::yellow : ColorId::white);
-			if(!entry.is_dir)
+			auto color = entry.is_dir || entry.is_link ? ColorId::yellow : ColorId::white;
+			m_dir_view->addEntry(entry.path.c_str(), color);
+			if(!entry.is_dir &&  !entry.is_link)
 				names.emplace_back(entry.path);
 		}
 
@@ -381,11 +382,10 @@ class ResViewerWindow : public Window {
 			if(m_dir_view.get() == ev.source && ev.value >= 0 && ev.value < (int)m_entries.size()) {
 				const FileEntry &entry = m_entries[ev.value];
 
-				if(entry.is_dir) {
+				if(entry.is_dir || entry.is_link)
 					m_command = {Command::change_dir, m_current_dir / entry.path};
-				} else {
+				else
 					m_res_view->select((*m_dir_view)[ev.value].text);
-				}
 			} else if(m_res_view.get() == ev.source) {
 				int id = ev.value;
 				if(id != -1) {
@@ -444,10 +444,11 @@ int main(int argc, char **argv) {
 	Config config("res_viewer");
 
 	GlDevice gfx_device;
+	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
+
 	ResManager res_mgr;
 	TextureCache tex_cache;
 
-	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
 	Dynamic<ResViewerWindow> window(gfx_device.windowSize(), "data/");
 	gfx_device.runMainLoop(main_loop, &window);
 
