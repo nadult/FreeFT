@@ -66,7 +66,7 @@ $(PROGRAMS): %$(PROGRAM_SUFFIX): $(SHARED_OBJECTS) $(BUILD_DIR)/%.o $(FWK_LIB_FI
 	$(LINKER) -o $@ $^ $(LDFLAGS)
 	@echo MODE=$(MODE) COMPILER=$(COMPILER) > build/last_build.txt
 
-build/res_embedded.cpp: data/fonts/*.png data/*.png make_embedded.sh
+build/res_embedded.cpp: data_embed/fonts/* data_embed/* make_embedded.sh
 	./make_embedded.sh
 src/res_manager.cpp: build/res_embedded.cpp
 
