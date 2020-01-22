@@ -49,7 +49,7 @@ namespace net {
 
 		struct hostent *hp = gethostbyname(name.c_str());
 		if(!hp)
-			return Error("Error while getting host name");
+			return FWK_ERROR("Error while getting host name");
 		sockaddr_in addr;
 		memset(&addr, 0, sizeof(addr));
 		memcpy(&addr.sin_addr, hp->h_addr_list[0], hp->h_length);
@@ -126,13 +126,13 @@ namespace net {
 #else
 		if(fd == -1)
 #endif
-			return Error("Error while creating socket");
+			return FWK_ERROR("Error while creating socket");
 
 		sockaddr_in addr;
 		toSockAddr(address, &addr);
 		if(bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 			::close(fd);
-			return Error("Error while binding address to socket");
+			return FWK_ERROR("Error while binding address to socket");
 		}
 
 #ifdef _WIN32

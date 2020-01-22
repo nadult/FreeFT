@@ -25,6 +25,8 @@ Na koniec gry:
 malloc(): unsorted double linked list corrupted
 Aborted (core dumped)
 
+- Raz się zdarzyło że po zaaakowaniu przez wroga gra się zwiesiła (mission02_mod.xml)
+
 
 Nice to fix: --------------------------------------------------------------------------------------
 
