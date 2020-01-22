@@ -229,8 +229,8 @@ using PController = Dynamic<Controller>;
 
 // Implemented in ResManager
 namespace res {
-PTexture getTexture(Str);
-PTexture getGuiTexture(Str);
+PTexture getTexture(Str, bool fix_transparent = false);
+PTexture getGuiTexture(Str, bool fix_transparent = false);
 const Font &getFont(Str);
 const game::Tile &getTile(Str);
 }

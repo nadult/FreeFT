@@ -232,7 +232,7 @@ Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 
 void ResManager::preloadEmbedded() {
 #define TEX(prefix, name, fix_trans) \
-	{prefix #name "_0.png", cspan(name##_0_png, name##_0_png_len).template reinterpret<char>(), fix_trans}
+	{prefix #name ".png", cspan(name##_png, name##_png_len).template reinterpret<char>(), fix_trans}
 	struct Tex {
 		Str name;
 		CSpan<char> data;
@@ -240,13 +240,15 @@ void ResManager::preloadEmbedded() {
 	};
 
 	Tex textures[] = {
-		TEX("fonts/", liberation_16, true),
-		TEX("fonts/", liberation_24, true),
-		TEX("fonts/", liberation_32, true),
-		TEX("fonts/", liberation_48, true),
-		TEX("fonts/", transformers_20, true),
-		TEX("fonts/", transformers_30, true),
-		TEX("fonts/", transformers_48, true),
+		TEX("fonts/", liberation_16_0, true),
+		TEX("fonts/", liberation_24_0, true),
+		TEX("fonts/", liberation_32_0, true),
+		TEX("fonts/", liberation_48_0, true),
+		TEX("fonts/", transformers_20_0, true),
+		TEX("fonts/", transformers_30_0, true),
+		TEX("fonts/", transformers_48_0, true),
+		TEX("", loading_bar, true),
+		TEX("", icons, true)
 	};
 #undef TEX
 
@@ -275,8 +277,14 @@ void ResManager::preloadPackages() {
 }
 
 namespace res {
-PTexture getTexture(Str name) { return ResManager::instance().getTexture(name, false); }
-PTexture getGuiTexture(Str name) { return ResManager::instance().getTexture(format("gui/%.zar", name), false); }
+PTexture getTexture(Str name, bool fix_trans) {
+	return ResManager::instance().getTexture(name, fix_trans);
+}
+
+PTexture getGuiTexture(Str name, bool fix_trans) {
+	return ResManager::instance().getTexture(format("gui/%.zar", name), fix_trans);
+}
+
 const Font &getFont(Str name) { return ResManager::instance().getFont(name); }
 const game::Tile &getTile(Str name) { return ResManager::instance().getTile(name); }
 }
