@@ -24,7 +24,7 @@ class ResManager {
 		return *g_instance;
 	}
 
-	PTexture getTexture(Str);
+	PTexture getTexture(Str, bool font_tex);
 	const Font &getFont(Str);
 	const game::Tile &getTile(Str);
 	const auto &allTiles() { return m_tiles; }

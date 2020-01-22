@@ -59,13 +59,21 @@ ResManager::~ResManager() {
 	g_instance = nullptr;
 }
 
-PTexture ResManager::getTexture(Str name) {
+void fixFontTexture(Texture &tex) {
+	for(int n : intRange(tex.pixelCount()))
+		tex[n] = IColor(u8(255), u8(255), u8(255), tex[n].r);
+}
+
+PTexture ResManager::getTexture(Str name, bool font_tex) {
 	auto it = m_textures.find(name);
 	if(it == m_textures.end()) {
-		auto tex = GlTexture::load(fullPath(name, ResType::texture));
+		auto tex = Texture::load(fullPath(name, ResType::texture));
 		tex.check();
-		m_textures.emplace(name, *tex);
-		return *tex;
+		if(font_tex)
+			fixFontTexture(*tex);
+		auto gl_tex = GlTexture::make(*tex);
+		m_textures.emplace(name, gl_tex);
+		return gl_tex;
 	}
 	return it->value;
 }
@@ -76,7 +84,7 @@ const Font &ResManager::getFont(Str name) {
 		auto vcore = FontCore::load(fullPath(name, ResType::font));
 		vcore.check();
 		FontCore core(move(*vcore));
-		auto tex = getTexture("fonts/" + core.textureName());
+		auto tex = getTexture("fonts/" + core.textureName(), true);
 		it = m_fonts.emplace(name, Font(move(core), move(tex))).first;
 	}
 	return it->second;
@@ -121,7 +129,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		FATAL("write me");
 	}
 	else if(type == ResType::font) {
-		auto tex = getTexture(format("fonts/%", name));
+		auto tex = getTexture(format("fonts/%", name), true);
 		auto doc = EX_PASS(XmlDocument::load(sr));
 		auto core = EX_PASS(FontCore::load(doc));
 		m_fonts.erase(name);
@@ -229,8 +237,8 @@ void ResManager::preloadPackages() {
 }
 
 namespace res {
-PTexture getTexture(Str name) { return ResManager::instance().getTexture(name); }
-PTexture getGuiTexture(Str name) { return ResManager::instance().getTexture(format("gui/%.zar", name)); }
+PTexture getTexture(Str name) { return ResManager::instance().getTexture(name, false); }
+PTexture getGuiTexture(Str name) { return ResManager::instance().getTexture(format("gui/%.zar", name), false); }
 const Font &getFont(Str name) { return ResManager::instance().getFont(name); }
 const game::Tile &getTile(Str name) { return ResManager::instance().getTile(name); }
 }
