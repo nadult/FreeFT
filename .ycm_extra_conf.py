@@ -9,7 +9,7 @@ flags = [
 
 '-DFWK_PARANOID',
 
-'-Isrc/', '-Iinclude/', '-Ilibfwk/include'
+'-Isrc/', '-Ibuild/', '-Ilibfwk/include'
 ]
 
 def appendSystemPaths():

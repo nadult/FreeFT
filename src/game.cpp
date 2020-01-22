@@ -48,15 +48,6 @@ int main(int argc, char **argv) {
 
 	srand((int)getTime());
 
-	GlDevice gl_device;
-	ResManager res_mgr(platform != Platform::html);
-	if(platform == Platform::html)
-		res_mgr.preloadPackages();
-	TextureCache tex_cache;
-	
-	audio::initSoundMap();
-	game::loadData(true);
-
 	//adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
 
@@ -109,9 +100,16 @@ int main(int argc, char **argv) {
 	if(init_audio)
 		audio::initDevice();
 
+	GlDevice gl_device;
+	TextureCache tex_cache;
+	audio::initSoundMap();
+
 	bool console_mode = server_config.isValid() && server_config.m_console_mode;
 	if(!console_mode)
 		createWindow("game", gl_device, res, window_pos, fullscreen);
+	
+	ResManager res_mgr(console_mode);
+	game::loadData(true);
 
 	// TODO: if errors happen here, run menu normally
 	if(server_config.isValid()) {

@@ -14,13 +14,13 @@ Compiled binaries can be downloaded from SourceForge
 
 ## Building
 To compile a linux environment with Clang 8.0 is recommended (G++ 9.0 or newer can also be used).
-Following libraries are required:
+Following libraries/tools are required:
 
 * libfwk (included as submodule):
 	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)  
     This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2, libpng).
 
-* zlib, OpenAL, mpg123, libzip:  
+* zlib, OpenAL, mpg123, libzip, xxd:  
 	These should be available in your distro's package repositories.
 
 To build for windows, you have to cross-compile with MinGW.  

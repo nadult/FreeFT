@@ -13,7 +13,7 @@ DEFINE_ENUM(ResType, tile, sprite, font, texture, other);
 // Only single instance allowed
 class ResManager {
   public:
-	ResManager(bool absolute_paths = true);
+	ResManager(bool console_mode = false);
 	~ResManager();
 
 	ResManager(const ResManager &) = delete;
@@ -45,9 +45,9 @@ class ResManager {
 
 	Pair<Str> prefixSuffix(ResType type) const { return m_paths[type]; }
 
-	void preloadPackages();
-
   private:
+	void preloadEmbedded();
+	void preloadPackages();
 	Ex<void> loadPackage(Str, Str);
 
 	static ResManager *g_instance;
@@ -58,4 +58,5 @@ class ResManager {
 	std::map<string, Dynamic<game::Tile>> m_tiles;
 	std::map<string, Font> m_fonts;
 	std::map<string, vector<char>> m_others;
+	bool m_console_mode;
 };

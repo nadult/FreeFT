@@ -3,7 +3,7 @@ all: programs
 FWK_DIR        = libfwk/
 MODE          ?= debug
 FWK_MODE      ?= release-paranoid
-CFLAGS         = -Isrc/ -fopenmp
+CFLAGS         = -Isrc/ -Ibuild/ -fopenmp
 PCH_SOURCE    := src/freeft_pch.h
 LDFLAGS_linux := -lz -lmpg123 -lzip -Wl,--export-dynamic
 LDFLAGS_mingw := -lz -lmpg123 -lzip -lbcrypt
@@ -66,11 +66,15 @@ $(PROGRAMS): %$(PROGRAM_SUFFIX): $(SHARED_OBJECTS) $(BUILD_DIR)/%.o $(FWK_LIB_FI
 	$(LINKER) -o $@ $^ $(LDFLAGS)
 	@echo MODE=$(MODE) COMPILER=$(COMPILER) > build/last_build.txt
 
+build/res_embedded.cpp: data/fonts/*.png
+	./make_embedded.sh
+src/res_manager.cpp: build/res_embedded.cpp
+
 DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_TEMP).d
 
 # --- Clean targets -------------------------------------------------------------------------------
 
-JUNK          := $(OBJECTS) $(PROGRAMS) $(DEPS) $(PCH_JUNK)
+JUNK          := $(OBJECTS) $(PROGRAMS) $(DEPS) $(PCH_JUNK) build/res_embedded.cpp
 EXISTING_JUNK := $(call filter-existing,$(SUBDIRS),$(JUNK))
 print-junk:
 	@echo $(EXISTING_JUNK)

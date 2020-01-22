@@ -313,13 +313,12 @@ int main(int argc, char **argv) {
 	Config config("editor");
 
 	GlDevice gl_device;
+	createWindow("editor", gl_device, config.resolution, config.window_pos, config.fullscreen_on);
+	
 	ResManager res_mgr;
 	TextureCache tex_cache;
-
 	preloadTiles();
 	game::loadData(true);
-
-	createWindow("editor", gl_device, config.resolution, config.window_pos, config.fullscreen_on);
 
 	EditorWindow window(gl_device.windowSize());
 	gl_device.runMainLoop(EditorWindow::mainLoop, &window);

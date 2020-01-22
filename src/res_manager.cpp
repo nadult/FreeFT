@@ -19,6 +19,9 @@
 #include <emscripten.h>
 #endif
 
+// This file should be automatically generated
+#include "res_embedded.cpp"
+
 // TODO: fix error handling in all places with Ex<>
 // TODO: dynamic not needed in s_tiles; But: TileFrame depending on CachedTexture
 // causes problems in copy constructors & operator=
@@ -37,11 +40,11 @@ static const EnumMap<ResType, Pair<const char*>> default_paths = {{
 	{ResType::other, {"", ""}},
 }};
 
-ResManager::ResManager(bool absolute_paths) {
+ResManager::ResManager(bool console_mode) :m_console_mode(console_mode) {
 	ASSERT(g_instance == nullptr);
 	g_instance = this;
 
-	if(absolute_paths) {
+	if(platform != Platform::html) {
 		m_data_path = FilePath(executablePath()).parent() / "data";
 		if(!m_data_path.ends_with('/'))
 			m_data_path += '/';
@@ -52,6 +55,11 @@ ResManager::ResManager(bool absolute_paths) {
 
 	for(auto rtype : all<ResType>)
 		m_paths[rtype] = {m_data_path + default_paths[rtype].first, default_paths[rtype].second};
+
+	// TODO: these packages should be loaded through main loop
+	preloadEmbedded();
+	if(platform == Platform::html)
+		preloadPackages();
 }
 
 ResManager::~ResManager() {
@@ -59,7 +67,7 @@ ResManager::~ResManager() {
 	g_instance = nullptr;
 }
 
-void fixFontTexture(Texture &tex) {
+void fixGrayTransTexture(Texture &tex) {
 	for(int n : intRange(tex.pixelCount()))
 		tex[n] = IColor(u8(255), u8(255), u8(255), tex[n].r);
 }
@@ -70,7 +78,7 @@ PTexture ResManager::getTexture(Str name, bool font_tex) {
 		auto tex = Texture::load(fullPath(name, ResType::texture));
 		tex.check();
 		if(font_tex)
-			fixFontTexture(*tex);
+			fixGrayTransTexture(*tex);
 		auto gl_tex = GlTexture::make(*tex);
 		m_textures.emplace(name, gl_tex);
 		return gl_tex;
@@ -220,6 +228,36 @@ Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 #else
 	return ERROR("Not supported yet");
 #endif
+}
+
+void ResManager::preloadEmbedded() {
+#define TEX(prefix, name, fix_trans) \
+	{prefix #name "_0.png", cspan(name##_0_png, name##_0_png_len).template reinterpret<char>(), fix_trans}
+	struct Tex {
+		Str name;
+		CSpan<char> data;
+		bool fix_trans;
+	};
+
+	Tex textures[] = {
+		TEX("fonts/", liberation_16, true),
+		TEX("fonts/", liberation_24, true),
+		TEX("fonts/", liberation_32, true),
+		TEX("fonts/", liberation_48, true),
+		TEX("fonts/", transformers_20, true),
+		TEX("fonts/", transformers_30, true),
+		TEX("fonts/", transformers_48, true),
+	};
+#undef TEX
+
+	if(!m_console_mode) for(auto [name, data, fix] : textures) {
+		auto ldr = memoryLoader(data);
+		auto tex = Texture::load(ldr, TextureFileType::png);
+		tex.check();
+		if(fix)
+			fixGrayTransTexture(*tex);
+		m_textures[name] = GlTexture::make(*tex);
+	}
 }
 
 void ResManager::preloadPackages() {
