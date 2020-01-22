@@ -3,7 +3,7 @@
 
 #include "sys/data_sheet.h"
 
-#include <fwk/sys/xml.h>
+#include <fwk/io/xml.h>
 #include <fwk/sys/on_fail.h>
 
 // TODO: report errors with Ex<> ?

@@ -18,7 +18,7 @@
 #include <fwk/math_base.h>
 #include <fwk/pod_vector.h>
 #include <fwk/io/memory_stream.h>
-#include <fwk/sys/xml.h>
+#include <fwk/io/xml.h>
 #include <map>
 
 #define DUMP FWK_DUMP

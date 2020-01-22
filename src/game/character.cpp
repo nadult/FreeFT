@@ -6,7 +6,7 @@
 #include "game/inventory.h"
 #include "res_manager.h"
 #include <fwk/gfx/gl_texture.h>
-#include <fwk/sys/xml.h>
+#include <fwk/io/xml.h>
 
 namespace game {
 

@@ -66,7 +66,6 @@ $(OBJECTS): $(BUILD_DIR)/%.o:  src/%.cpp $(PCH_TARGET)
 
 $(PROGRAMS): %$(PROGRAM_SUFFIX): $(SHARED_OBJECTS) $(BUILD_DIR)/%.o $(FWK_LIB_FILE)
 	$(LINKER) -o $@ $^ $(LDFLAGS)
-	@echo MODE=$(MODE) COMPILER=$(COMPILER) > build/last_build.txt
 
 build/res_embedded.cpp: data_embed/fonts/* data_embed/* make_embedded.sh $(PACKAGER)
 	./make_embedded.sh
