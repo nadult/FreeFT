@@ -151,8 +151,8 @@ namespace game
 			else {
 				i32 plain_size = 0;
 				sr >> plain_size;
-				auto gz_stream = EX_PASS(GzipStream::loader(sr, size - 4));
-				data = EX_PASS(gz_stream.loadData());
+				auto gz_stream = EX_PASS(GzipStream::decompressor(sr, size - 4));
+				data = EX_PASS(gz_stream.decompress());
 				EXPECT(plain_size == data.size());
 			}
 

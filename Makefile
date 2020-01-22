@@ -11,6 +11,8 @@ BUILD_DIR      = build/$(if $(findstring linux,$(PLATFORM)),,$(PLATFORM)_)$(MODE
 
 include $(FWK_DIR)Makefile-shared
 
+PACKAGER      := $(FWK_DIR)tools/packager
+
 # --- Creating necessary sub-directories ----------------------------------------------------------
 
 SUBDIRS        = build
@@ -66,9 +68,12 @@ $(PROGRAMS): %$(PROGRAM_SUFFIX): $(SHARED_OBJECTS) $(BUILD_DIR)/%.o $(FWK_LIB_FI
 	$(LINKER) -o $@ $^ $(LDFLAGS)
 	@echo MODE=$(MODE) COMPILER=$(COMPILER) > build/last_build.txt
 
-build/res_embedded.cpp: data_embed/fonts/* data_embed/* make_embedded.sh
+build/res_embedded.cpp: data_embed/fonts/* data_embed/* make_embedded.sh $(PACKAGER)
 	./make_embedded.sh
 src/res_manager.cpp: build/res_embedded.cpp
+
+$(PACKAGER): $(FWK_LIB_FILE) .FORCE
+	$(MAKE) $(FWK_MAKE_ARGS) tools/packager
 
 DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_TEMP).d
 

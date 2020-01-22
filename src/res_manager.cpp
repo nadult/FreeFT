@@ -13,6 +13,7 @@
 #include <fwk/io/gzip_stream.h>
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/hash_map.h>
+#include <fwk/io/package_file.h>
 #include <map>
 
 #ifdef FWK_PLATFORM_HTML
@@ -64,7 +65,11 @@ ResManager::ResManager(bool console_mode) :m_console_mode(console_mode) {
 		m_paths[rtype] = {m_data_path + default_paths[rtype].first, default_paths[rtype].second};
 
 	m_impl.emplace();
-	preloadEmbedded();
+	double time = getTime();
+	if(!m_console_mode)
+		preloadEmbedded();
+	time = getTime() - time;
+	printf("Loaded embedded resources in: %.2f msec\n", time * 1000.0);
 }
 
 ResManager::~ResManager() {
@@ -147,9 +152,9 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		FATAL("write me");
 	}
 	else if(type == ResType::font) {
-		auto tex = getTexture(format("fonts/%", name), true);
 		auto doc = EX_PASS(XmlDocument::load(sr));
 		auto core = EX_PASS(FontCore::load(doc));
+		auto tex = getTexture(format("fonts/%", core.textureName()), true);
 		m_impl->fonts.erase(name);
 		m_impl->fonts.emplace(name, Font(move(core), move(tex)));
 	}
@@ -262,13 +267,27 @@ void ResManager::preloadEmbedded() {
 	};
 #undef TEX
 
-	if(!m_console_mode) for(auto [name, data, fix] : textures) {
+	for(auto [name, data, fix] : textures) {
 		auto ldr = memoryLoader(data);
 		auto tex = Texture::load(ldr, TextureFileType::png);
 		tex.check();
 		if(fix)
 			fixGrayTransTexture(*tex);
 		m_impl->textures[name] = GlTexture::make(*tex);
+	}
+
+	{
+		auto fonts_gz_data = CSpan<u8>(fonts_pack_gz, fonts_pack_gz_len).reinterpret<char>();
+		auto fonts_data = gzipDecompress(fonts_gz_data).get();
+		auto loader = memoryLoader(fonts_data);
+
+		auto pkg_file = PackageFile::load(loader).get();
+		for(int n : intRange(pkg_file.size())) {
+			auto font_loader = memoryLoader(pkg_file.data(n));
+			string name = pkg_file[n].name;
+			removeSuffix(name, ".fnt");
+			loadResource(name, font_loader, ResType::font).check();
+		}
 	}
 }
 

@@ -3,7 +3,7 @@
   <info face="Liberation Sans" size="48" bold="0" italic="0" charset="" unicode="1" stretchH="100" smooth="1" aa="2" padding="2,2,2,2" spacing="0,0" outline="0"/>
   <common lineHeight="48" base="39" scaleW="512" scaleH="256" pages="1" packed="0" alphaChnl="1" redChnl="0" greenChnl="0" blueChnl="0"/>
   <pages>
-    <page id="0" file="times_48_0.png" />
+    <page id="0" file="liberation_48_0.png" />
   </pages>
   <chars count="123">
     <char id="32" x="505" y="106" width="6" height="5" xoffset="-2" yoffset="45" xadvance="12" page="0" chnl="15" />

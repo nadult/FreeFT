@@ -29,8 +29,8 @@ namespace game {
 
 		vector<char> bytes;
 		{
-			auto gz_stream = EX_PASS(GzipStream::loader(sr, sr.size() - sr.pos()));
-			bytes = EX_PASS(gz_stream.loadData());
+			auto gz_stream = EX_PASS(GzipStream::decompressor(sr, sr.size() - sr.pos()));
+			bytes = EX_PASS(gz_stream.decompress());
 		}
 
 		int map_manager = -1;
