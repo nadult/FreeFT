@@ -15,6 +15,7 @@
 /*.js
 /*.wasm
 /*.exe
+/data/demo
 /data/config.xml
 /data/tiles
 /data/sprites

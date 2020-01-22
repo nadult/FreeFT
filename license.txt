@@ -1,4 +1,4 @@
-Copyright (c) 2013-2016, Krzysztof Jakubowski
+Copyright (c) 2013-2020, Krzysztof Jakubowski
 All rights reserved.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
