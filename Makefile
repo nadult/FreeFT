@@ -37,7 +37,7 @@ SHARED_SRC := \
 	hud/char_icon hud/weapon hud/inventory hud/hud hud/main_panel hud/options hud/class hud/character hud/stats \
 	hud/multi_player_menu \
 	ui/window ui/button ui/tile_list ui/progress_bar ui/list_box ui/text_box ui/message_box \
-	ui/file_dialog ui/edit_box ui/combo_box ui/image_button \
+	ui/file_dialog ui/edit_box ui/combo_box ui/image_button ui/loading_bar \
 	io/controller io/loop io/main_menu_loop io/game_loop \
 	audio/device audio/device_music audio/mp3_decoder \
 	editor/tile_selector editor/tiles_editor editor/entities_editor editor/group_editor\

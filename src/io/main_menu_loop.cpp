@@ -41,9 +41,7 @@ namespace io {
 	MainMenuLoop::MainMenuLoop()
 		:Window(IRect(GlDevice::instance().windowSize()), ColorId::transparent), m_mode(mode_normal), m_next_mode(mode_normal) {
 		m_back = res::getGuiTexture("back/flaminghelmet");
-		m_loading = res::getGuiTexture("misc/worldm/OLD_moving");
 
-		m_anim_pos = 0.0;
 		m_blend_time = 1.0;
 
 		IRect rect = localRect();
@@ -152,28 +150,6 @@ namespace io {
 		return false;
 	}
 
-	void MainMenuLoop::drawLoading(Renderer2D &out, float alpha) const {
-		const char *text = "Loading";
-		auto &font = res::getFont("transformers_30");
-		FColor color(1.0f, 0.8f, 0.2f, alpha);
-
-		int2 dims(m_loading->size());
-		float2 center = float2(dims.x * 0.49f, dims.y * 0.49f);
-
-		float scale = 1.0f + pow(sin(m_anim_pos * 0.5 * pi * 2.0), 8.0) * 0.1;
-
-		FRect extents = font.draw(out, float2(0.0f, 0.0f), {color, ColorId::black, HAlign::right, VAlign::center}, text);
-
-		out.pushViewMatrix();
-		out.mulViewMatrix(translation(extents.ex() + 8.0f + center.x, 0.0f, 0.0f));
-		out.mulViewMatrix(scaling(scale));
-		out.mulViewMatrix(rotation(float3(0, 0, 1), m_anim_pos * 2.0f * pi));
-		out.mulViewMatrix(translation(-center.x, -center.y, 0.0f));
-
-		out.addFilledRect(IRect(dims), {m_loading, color});
-		out.popViewMatrix();
-	}
-
 	void MainMenuLoop::onTransitionFinished() {
 		DASSERT(m_mode == mode_transitioning);
 		m_mode = m_next_mode;
@@ -280,9 +256,7 @@ namespace io {
 			m_server->finishFrame();
 		}
 
-		m_anim_pos += time_diff;
-		if(m_anim_pos > 1.0)
-			m_anim_pos -= 1.0;
+		m_loading.animate(time_diff);
 
 		return m_mode != mode_quitting;
 	}
@@ -304,10 +278,8 @@ namespace io {
 		if(m_sub_menu)
 			m_sub_menu->draw(renderer);
 
-		if(m_mode == mode_loading) {
-			renderer.setViewPos(-(viewport.size() - int2(180, 50)));
-			drawLoading(renderer, 1.0);
-		}
+		if(m_mode == mode_loading)
+			m_loading.draw(renderer, viewport.size() - int2(180, 50));
 		renderer.render();
 	}
 

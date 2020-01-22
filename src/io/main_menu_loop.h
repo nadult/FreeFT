@@ -7,6 +7,7 @@
 #include "ui/window.h"
 #include <future>
 #include "hud/layer.h"
+#include "ui/loading_bar.h"
 
 namespace io {
 
@@ -17,7 +18,6 @@ namespace io {
 
 		void stopMusic();
 		void startMusic();
-		void drawLoading(Renderer2D&, float alpha = 1.0f) const;
 
 	private:
 		bool onTick(double) override;
@@ -52,15 +52,15 @@ namespace io {
 
 		audio::PPlayback m_music;
 
-		PTexture m_back, m_loading;
+		PTexture m_back;
 		IRect m_back_rect;
 	
 		std::future<game::PWorld> m_future_world;
 		net::PClient m_client;
 		net::PServer m_server;	
 		PLoop m_sub_loop;
+		ui::LoadingBar m_loading;
 
-		double m_anim_pos;
 		double m_blend_time;
 		double m_start_music_time;
 	};
