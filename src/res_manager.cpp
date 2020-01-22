@@ -12,6 +12,12 @@
 #include <fwk/io/file_stream.h>
 #include <fwk/io/file_system.h>
 #include <fwk/io/memory_stream.h>
+#include <fwk/io/url_fetch.h>
+#include <fwk/io/gzip_stream.h>
+
+#ifdef FWK_PLATFORM_HTML
+#include <emscripten.h>
+#endif
 
 // TODO: fix error handling in all places with Ex<>
 // TODO: dynamic not needed in s_tiles; But: TileFrame depending on CachedTexture
@@ -171,6 +177,55 @@ Maybe<string> ResManager::resourceName(Str path, ResType type) const {
 string ResManager::fullPath(Str res_name, ResType type) const {
 	auto &paths = m_paths[type];
 	return format("%%%", paths.first, res_name, paths.second);
+}
+	
+Ex<void> ResManager::loadPackage(Str name, Str prefix) {
+#ifdef FWK_PLATFORM_HTML
+	print("Loading package: %\n", name);
+
+	// TODO: setup timeout ?
+	auto fetch = EX_PASS(UrlFetch::make(format("res/%.pack.gz", name)));	
+
+	auto fetch_func = [](void *arg) {
+		auto &fetch = *(UrlFetch*)arg;
+		auto [a, b] = fetch.progress();
+		auto status = fetch.status();
+		print("Progress: % / % status:%\n", a, b, status);
+		if(status != UrlFetchStatus::downloading)
+			emscripten_cancel_main_loop();
+		print("here...\n");
+	};
+
+	emscripten_set_main_loop_arg(fetch_func, &fetch, 15, 1);
+	print("FInished loop!\n");
+	return {};
+
+	vector<char> data; {
+		auto gz_data = EX_PASS(UrlFetch::finish(move(fetch)));
+		auto mem_loader = memoryLoader(move(gz_data));
+		auto gz_loader = EX_PASS(GzipStream::loader(mem_loader));
+		data = EX_PASS(gz_loader.loadData());
+	}
+
+	print("Unpacked data: %\n", data.size());
+	return {};
+#else
+	return ERROR("Not supported yet");
+#endif
+}
+
+void ResManager::preloadPackages() {
+	Pair<const char*> packages[] = {
+		{"data", "data/"},
+		{"fonts", "data/fonts/"},
+		{"gui", "data/gui/"},
+		{"sprites", "data/sprites/"},
+		{"tiles", "data/tiles/"},
+	};
+
+	// TODO: UI with progress bar should be available while data is loading ?
+	for(auto [name, prefix] : packages)
+		loadPackage(name, prefix).check();
 }
 
 namespace res {

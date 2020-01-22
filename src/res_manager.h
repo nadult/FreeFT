@@ -45,7 +45,11 @@ class ResManager {
 
 	Pair<Str> prefixSuffix(ResType type) const { return m_paths[type]; }
 
+	void preloadPackages();
+
   private:
+	Ex<void> loadPackage(Str, Str);
+
 	static ResManager *g_instance;
 
 	EnumMap<ResType, Pair<string, string>> m_paths;

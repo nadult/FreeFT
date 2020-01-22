@@ -47,12 +47,15 @@ int main(int argc, char **argv) {
 	Backtrace::t_default_mode = BacktraceMode::full;
 
 	srand((int)getTime());
-	audio::initSoundMap();
-	game::loadData(true);
 
 	GlDevice gl_device;
-	ResManager res_mgr;
+	ResManager res_mgr(platform != Platform::html);
+	if(platform == Platform::html)
+		res_mgr.preloadPackages();
 	TextureCache tex_cache;
+	
+	audio::initSoundMap();
+	game::loadData(true);
 
 	//adjustWindowSize(config.resolution, config.fullscreen_on);
 	int2 res = config.resolution;
@@ -97,9 +100,11 @@ int main(int argc, char **argv) {
 		else {
 			map_name = argv[a];
 		}
-
 	}
 	res = vmax(res, int2(640, 480));
+
+	if(platform == Platform::html)
+		map_name = "demo_map.xml";
 
 	if(init_audio)
 		audio::initDevice();
@@ -116,8 +121,10 @@ int main(int argc, char **argv) {
 		PWorld world(new World(map_name, World::Mode::server));
 		server->setWorld(world);
 		s_main_loop.reset(new io::GameLoop(std::move(server), false));
+#ifndef FWK_PLATFORM_HTML
 		if(server_config.m_console_mode)
 			handleCtrlC(ctrlCHandler);
+#endif
 		if(console_mode)
 			printf("Press Ctrl+C to exit...\n");
 	}
