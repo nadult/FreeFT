@@ -2,7 +2,7 @@ all: programs
 
 FWK_DIR        = libfwk/
 MODE          ?= debug
-FWK_MODE      ?= release-paranoid
+FWK_MODE      ?= devel
 CFLAGS         = -Isrc/ -Ibuild/ -fopenmp
 PCH_SOURCE    := src/freeft_pch.h
 LDFLAGS_linux := -lz -lmpg123 -lzip -Wl,--export-dynamic
@@ -18,8 +18,10 @@ PACKAGER      := $(FWK_DIR)tools/packager
 SUBDIRS        = build
 BUILD_SUBDIRS  = gfx ui sys net audio io game game/orders hud editor
 
+ifndef JUNK_GATHERING
 _dummy := $(shell mkdir -p $(SUBDIRS))
 _dummy := $(shell mkdir -p $(addprefix $(BUILD_DIR)/,$(BUILD_SUBDIRS)))
+endif
 
 # --- Lists of source files -----------------------------------------------------------------------
 
@@ -76,30 +78,8 @@ $(PACKAGER): $(FWK_LIB_FILE) .FORCE
 
 DEPS:=$(ALL_SRC:%=$(BUILD_DIR)/%.d) $(PCH_TEMP).d
 
-# --- Clean targets -------------------------------------------------------------------------------
-
-JUNK          := $(OBJECTS) $(PROGRAMS) $(DEPS) $(PCH_JUNK) build/res_embedded.cpp
-EXISTING_JUNK := $(call filter-existing,$(SUBDIRS),$(JUNK))
-print-junk:
-	@echo $(EXISTING_JUNK)
-ALL_JUNK = $(sort $(shell \
-	for platform in $(VALID_PLATFORMS) ; do for mode in $(VALID_MODES) ; do \
-		$(MAKE) PLATFORM=$$platform MODE=$$mode print-junk -s ; \
-	done ; done))
-
-clean:
-ifneq ($(EXISTING_JUNK),)
-	-rm -f $(EXISTING_JUNK)
-endif
-	find $(SUBDIRS) -type d -empty -delete
-
-clean-all:
-	-rm -f $(ALL_JUNK)
-	find $(SUBDIRS) -type d -empty -delete
-	$(MAKE) $(FWK_MAKE_ARGS) clean-all
-
-clean-libfwk:
-	$(MAKE) $(FWK_MAKE_ARGS) clean
+JUNK_FILES    := $(OBJECTS) $(PROGRAMS) $(DEPS) build/res_embedded.cpp
+JUNK_DIRS     := $(SUBDIRS)
 
 # --- Other stuff ---------------------------------------------------------------------------------
 
@@ -108,7 +88,6 @@ depends: $(PCH_FILE_MAIN)
 	@echo $(ALL_SRC) | tr '\n' ' ' | xargs -P16 -t -d' ' -I '{}' $(COMPILER) $(CFLAGS) $(PCH_CFLAGS) \
 		src/'{}'.cpp -MM -MF $(BUILD_DIR)/'{}'.d -MT $(BUILD_DIR)/'{}'.o -E > /dev/null
 
-.PHONY: clean clean-libfwk clean-all
-
+ifndef JUNK_GATHERING
 -include $(DEPS)
-
+endif
