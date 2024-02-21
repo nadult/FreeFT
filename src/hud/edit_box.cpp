@@ -55,7 +55,7 @@ namespace hud {
 				handled = true;
 			}
 			else if(isEnabled()) {
-				if(event.type() == InputEvent::key_char) {
+				if(event.type() == InputEventType::key_char) {
 					int key = event.keyChar();
 					if(isValidChar(key) && (int)m_text.size() < m_max_size)
 						m_text.insert(m_cursor_pos++, 1, m_mode == mode_locase_nick? tolower(key) : key);

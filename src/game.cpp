@@ -10,7 +10,6 @@
 #include "io/controller.h"
 #include "net/server.h"
 #include <fwk/gfx/gl_device.h>
-#include <fwk/sys/backtrace.h>
 #include "res_manager.h"
 
 using namespace game;
@@ -44,7 +43,6 @@ static bool main_loop(GlDevice &device, void*) {
 
 int main(int argc, char **argv) {
 	Config config("game");
-	Backtrace::t_default_mode = BacktraceMode::full;
 
 	srand((int)getTime());
 
@@ -78,7 +76,7 @@ int main(int argc, char **argv) {
 			fullscreen = true;
 		else if(strcmp(argv[a], "-server") == 0) {
 			ASSERT(a + 1 < argc);
-			auto xml_config = move(XmlDocument::load(argv[a + 1]).get()); // TODO
+			auto xml_config = std::move(XmlDocument::load(argv[a + 1]).get()); // TODO
 			auto server_node = xml_config.child("server");
 			ASSERT(server_node);
 

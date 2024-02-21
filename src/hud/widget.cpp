@@ -42,7 +42,7 @@ namespace hud {
 	
 	bool HudWidget::handleInput(const InputEvent &event) {
 		if(!m_is_visible)
-			if(!isOneOf(event.type(), InputEvent::key_up, InputEvent::mouse_button_up, InputEvent::mouse_over))
+			if(!isOneOf(event.type(), InputEventType::key_up, InputEventType::mouse_button_up, InputEventType::mouse_over))
 				return false;
 
 		InputEvent cevent = event;

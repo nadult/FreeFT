@@ -103,9 +103,9 @@ const Font &ResManager::getFont(Str name) {
 	if(it == fonts.end()) {
 		auto vcore = FontCore::load(fullPath(name, ResType::font));
 		vcore.check();
-		FontCore core(move(*vcore));
+		FontCore core(std::move(*vcore));
 		auto tex = getTexture("fonts/" + core.textureName(), true);
-		it = fonts.emplace(name, Font(move(core), move(tex))).first;
+		it = fonts.emplace(name, Font(std::move(core), std::move(tex))).first;
 	}
 	return it->second;
 }
@@ -121,7 +121,7 @@ const game::Tile &ResManager::getTile(Str name) {
 		auto result = tile->load(*ldr);
 		tile->setResourceName(name);
 		result.check();
-		it = tiles.emplace(name, move(tile)).first;
+		it = tiles.emplace(name, std::move(tile)).first;
 	}
 	return *it->second;
 }
@@ -131,7 +131,7 @@ vector<char> ResManager::getOther(Str name)  const{
 	if(it == m_impl->others.end()) {
 		auto data = loadFile(format("%%", m_data_path, name));
 		data.check();
-		return move(*data);
+		return std::move(*data);
 	}
 	return it->second;
 }
@@ -146,7 +146,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		tile.emplace();
 		EXPECT(tile->load(sr));
 		tile->setResourceName(name);
-		m_impl->tiles[name] = move(tile);
+		m_impl->tiles[name] = std::move(tile);
 	}
 	else if(type == ResType::sprite) {
 		FATAL("write me");
@@ -156,10 +156,10 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		auto core = EX_PASS(FontCore::load(doc));
 		auto tex = getTexture(format("fonts/%", core.textureName()), true);
 		m_impl->fonts.erase(name);
-		m_impl->fonts.emplace(name, Font(move(core), move(tex)));
+		m_impl->fonts.emplace(name, Font(std::move(core), std::move(tex)));
 	}
 	else if(type == ResType::texture) {
-		auto ext = fileExtension(name);
+		auto ext = fileNameExtension(name);
 		if(!ext)
 			return ERROR("Texture without extension: '%'", name);
 		auto tex = EX_PASS(Texture::load(sr, *ext));
@@ -169,7 +169,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		vector<char> data(sr.size());
 		sr.loadData(data);
 		EX_CATCH();
-		m_impl->others[name] = move(data);
+		m_impl->others[name] = std::move(data);
 	}
 
 	return {};
@@ -232,8 +232,8 @@ Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 	return {};
 
 	vector<char> data; {
-		auto gz_data = EX_PASS(UrlFetch::finish(move(fetch)));
-		auto mem_loader = memoryLoader(move(gz_data));
+		auto gz_data = EX_PASS(UrlFetch::finish(std::move(fetch)));
+		auto mem_loader = memoryLoader(std::move(gz_data));
 		auto gz_loader = EX_PASS(GzipStream::loader(mem_loader));
 		data = EX_PASS(gz_loader.loadData());
 	}

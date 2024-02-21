@@ -1,3 +1,15 @@
+- Bug when running in single player:
+src/base_vector.cpp:200: FATAL: Index 31 out of range: <0; 31)
+/home/nadult/freeft/game   Grid::add(int, Grid::TObjectDef<void> const&)
+/home/nadult/freeft/game   Grid::update(int, Grid::TObjectDef<void> const&)
+/home/nadult/freeft/game   game::EntityMap::update(int)
+/home/nadult/freeft/game   game::World::simulate(double)
+/home/nadult/freeft/game   io::GameLoop::onTick(double)
+/home/nadult/freeft/game   io::MainMenuLoop::onTick(double)
+/home/nadult/freeft/game   ???
+/home/nadult/freeft/game   fwk::GlDevice::runMainLoop(bool (*)(fwk::GlDevice&, void*), void*)
+/home/nadult/freeft/game   main
+
 - Segfault in server (on the client as well):
 libfwk/include/fwk_vector.h:145: Assertion failed: inRange(idx)
 Backtrace:

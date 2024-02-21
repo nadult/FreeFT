@@ -19,7 +19,6 @@
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
 #include <fwk/io/file_stream.h>
-#include <fwk/sys/backtrace.h>
 #include "res_manager.h"
 
 // TODO: replace old ui with imgui ?
@@ -440,7 +439,6 @@ static bool main_loop(GlDevice &device, void* pmain_window) {
 }
 
 int main(int argc, char **argv) {
-	Backtrace::t_default_mode = BacktraceMode::full;
 	Config config("res_viewer");
 
 	GlDevice gfx_device;
