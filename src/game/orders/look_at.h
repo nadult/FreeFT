@@ -7,13 +7,13 @@
 
 namespace game {
 
-	class LookAtOrder: public OrderImpl<LookAtOrder, OrderTypeId::look_at> {
-	public:
-		LookAtOrder(float3);
-		LookAtOrder(MemoryStream&);
-		void save(MemoryStream&) const;
+class LookAtOrder : public OrderImpl<LookAtOrder, OrderTypeId::look_at> {
+  public:
+	LookAtOrder(float3);
+	LookAtOrder(MemoryStream &);
+	void save(MemoryStream &) const;
 
-		float3 m_target;
-	};
+	float3 m_target;
+};
 
 }

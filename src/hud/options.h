@@ -5,19 +5,18 @@
 
 #include "hud/layer.h"
 
-namespace hud
-{
+namespace hud {
 
-	class HudOptions: public HudLayer {
-	public:
-		HudOptions(const FRect &target_rect);
-		~HudOptions() { }
+class HudOptions : public HudLayer {
+  public:
+	HudOptions(const FRect &target_rect);
+	~HudOptions() {}
 
-	protected:
-		bool onEvent(const HudEvent&) override;
+  protected:
+	bool onEvent(const HudEvent &) override;
 
-		PHudButton m_exit_to_menu;
-		PHudButton m_exit_to_system;
-	};
+	PHudButton m_exit_to_menu;
+	PHudButton m_exit_to_system;
+};
 
 }

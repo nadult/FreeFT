@@ -5,23 +5,22 @@
 
 #include "hud/layer.h"
 
-namespace hud
-{
+namespace hud {
 
-	class HudStats: public HudLayer {
-	public:
-		HudStats(const FRect &target_rect);
-		~HudStats();
+class HudStats : public HudLayer {
+  public:
+	HudStats(const FRect &target_rect);
+	~HudStats();
 
-		bool canShow() const override;
+	bool canShow() const override;
 
-	protected:
-		void onUpdate(double time_diff) override;
-		void onDraw(Renderer2D&) const override;
-		void updateData();
+  protected:
+	void onUpdate(double time_diff) override;
+	void onDraw(Renderer2D &) const override;
+	void updateData();
 
-		PHudGrid m_grid;
-		string m_stats;
-	};
+	PHudGrid m_grid;
+	string m_stats;
+};
 
 }

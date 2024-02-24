@@ -7,15 +7,15 @@
 
 namespace game {
 
-	class ChangeStanceOrder: public OrderImpl<ChangeStanceOrder, OrderTypeId::change_stance> {
-	public:
-		ChangeStanceOrder(Stance target_stance);
-		ChangeStanceOrder(MemoryStream&);
+class ChangeStanceOrder : public OrderImpl<ChangeStanceOrder, OrderTypeId::change_stance> {
+  public:
+	ChangeStanceOrder(Stance target_stance);
+	ChangeStanceOrder(MemoryStream &);
 
-		void save(MemoryStream&) const;
+	void save(MemoryStream &) const;
 
-		Stance m_target_stance;
-		bool m_stance_up;
-	};
+	Stance m_target_stance;
+	bool m_stance_up;
+};
 
 }

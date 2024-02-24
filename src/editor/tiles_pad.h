@@ -3,37 +3,36 @@
 
 #pragma once
 
-#include "editor/tiles_editor.h"
-#include "editor/tile_selector.h"
 #include "editor/tile_group.h"
+#include "editor/tile_selector.h"
+#include "editor/tiles_editor.h"
 #include "ui/combo_box.h"
 #include "ui/progress_bar.h"
 
 namespace ui {
 
-	class TilesPad: public Window
-	{
-	public:
-		TilesPad(const IRect &rect, PTilesEditor editor, TileGroup *group);
+class TilesPad : public Window {
+  public:
+	TilesPad(const IRect &rect, PTilesEditor editor, TileGroup *group);
 
-		TileFilter currentFilter() const;
-		void updateTileList();
-		void updateDirtyBar();
-		virtual bool onEvent(const Event &ev);
-		void updateEditor(PTilesEditor);
+	TileFilter currentFilter() const;
+	void updateTileList();
+	void updateDirtyBar();
+	virtual bool onEvent(const Event &ev);
+	void updateEditor(PTilesEditor);
 
-		TileGroup		*m_group;
+	TileGroup *m_group;
 
-		PTilesEditor	m_editor;
-		PComboBox		m_filter_box;
-		PProgressBar 	m_dirty_bar;
-		PTileSelector	m_selector;
+	PTilesEditor m_editor;
+	PComboBox m_filter_box;
+	PProgressBar m_dirty_bar;
+	PTileSelector m_selector;
 
-		PComboBox		m_editor_mode_box;
+	PComboBox m_editor_mode_box;
 
-		bool			m_is_grouped_model;
-	};
-	
-	using PTilesPad = shared_ptr<TilesPad>;
+	bool m_is_grouped_model;
+};
+
+using PTilesPad = shared_ptr<TilesPad>;
 
 }

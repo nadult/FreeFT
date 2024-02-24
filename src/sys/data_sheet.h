@@ -8,20 +8,19 @@
 
 struct TupleParser {
 	using ColumnMap = HashMap<Str, int>;
-	TupleParser( const char **columns, int num_columns, const ColumnMap&);
+	TupleParser(const char **columns, int num_columns, const ColumnMap &);
 
 	const char *get(const char *name) const;
 	const char *operator()(const char *name) const { return get(name); }
 
-	template <class T>
-	T get(const char *name) const {
+	template <class T> T get(const char *name) const {
 		auto *string = get(name);
 		if(!string[0])
 			return T();
 		return fromString<T>(string);
 	}
 
-private:
+  private:
 	friend class DataSheet;
 
 	const ColumnMap &m_column_map;
@@ -29,4 +28,4 @@ private:
 	int m_num_columns;
 };
 
-void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_func)(TupleParser&));
+void loadDataSheet(CXmlNode table_node, HashMap<string, int> &map, int (*add_func)(TupleParser &));

@@ -8,38 +8,36 @@
 
 namespace ui {
 
+class ProgressBar : public Window {
+  public:
+	ProgressBar(const IRect &rect, bool is_horizontal);
+	const char *typeName() const override { return "ProgressBar"; }
 
-	class ProgressBar: public Window {
-	public:
-		ProgressBar(const IRect &rect, bool is_horizontal);
-		const char *typeName() const override { return "ProgressBar"; }
+	void setText(const char *);
 
-		void setText(const char*);
+	// range: <0; 1>
+	void setBarSize(float size);
+	// range: <0; 1>
+	void setPos(float pos);
 
-		// range: <0; 1>
-		void setBarSize(float size);
-		// range: <0; 1>
-		void setPos(float pos);
+	float pos() const { return m_pos; }
+	float barSize() const { return m_bar_size; }
 
-		float pos() const { return m_pos; }
-		float barSize() const { return m_bar_size; }
+	void drawContents(Renderer2D &) const override;
+	bool onMouseDrag(const InputState &, int2 start, int2 current, int key, int is_final) override;
 
-		void drawContents(Renderer2D&) const override;
-		bool onMouseDrag(const InputState&, int2 start, int2 current, int key, int is_final) override;
+  protected:
+	float evalBarSize() const;
+	IRect evalBarPos() const;
 
-	protected:
-		float evalBarSize() const;
-		IRect evalBarPos() const;
+	string m_text;
+	float m_bar_size, m_pos, m_start_pos;
+	bool m_mouse_press, m_mouse_over;
+	bool m_is_horizontal;
+};
 
-		string m_text;
-		float m_bar_size, m_pos, m_start_pos;
-		bool m_mouse_press, m_mouse_over;
-		bool m_is_horizontal;
-	};
-
-	using PProgressBar = shared_ptr<ProgressBar>;
+using PProgressBar = shared_ptr<ProgressBar>;
 
 }
-
 
 #endif

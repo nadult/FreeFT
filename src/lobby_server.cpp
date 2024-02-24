@@ -1,40 +1,36 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
-#include <memory.h>
-#include <cstdio>
-#include "sys/config.h"
-#include "net/socket.h"
 #include "net/base.h"
-#include <list>
+#include "net/socket.h"
+#include "sys/config.h"
 #include <algorithm>
+#include <cstdio>
+#include <list>
 #include <map>
+#include <memory.h>
 
 using namespace net;
 
 #define LOGGING
 
 #ifdef LOGGING
-	#define LOG(...)	printf(__VA_ARGS__)
+#define LOG(...) printf(__VA_ARGS__)
 #else
-	#define LOG(...)
+#define LOG(...)
 #endif
 
-
 class LobbyServer {
-public:
+  public:
 	// TODO: socket only on specific interface?
-	LobbyServer(int port) {
-		m_socket = move(Socket::make(port).get());
-	}
+	LobbyServer(int port) { m_socket = move(Socket::make(port).get()); }
 
-	struct ServerInfo: public ServerStatusChunk {
-		ServerInfo(ServerStatusChunk chunk) :ServerStatusChunk(chunk), last_update_time(getTime()) { }
+	struct ServerInfo : public ServerStatusChunk {
+		ServerInfo(ServerStatusChunk chunk)
+			: ServerStatusChunk(chunk), last_update_time(getTime()) {}
 		double last_update_time;
 
-		bool operator<(const ServerInfo &rhs) const {
-			return address < rhs.address;
-		}
+		bool operator<(const ServerInfo &rhs) const { return address < rhs.address; }
 	};
 
 	void tick() {
@@ -58,7 +54,7 @@ public:
 					ServerStatusChunk chunk;
 					chunk.load(packet);
 					chunk.address = source;
-					
+
 					auto it = m_servers.find(chunk.address);
 					if(it == m_servers.end()) {
 						it = m_servers.emplace(chunk.address, ServerInfo(chunk)).first;
@@ -66,15 +62,14 @@ public:
 							source.toString().c_str());
 					} else
 						it->second = chunk;
-				}
-				else if(chunk_id == LobbyChunkId::server_down) {
+				} else if(chunk_id == LobbyChunkId::server_down) {
 					auto it = m_servers.find(source);
 					if(it != m_servers.end()) {
-						LOG("Server going down: %s (%s)\n", it->second.server_name.c_str(), it->second.address.toString().c_str());
+						LOG("Server going down: %s (%s)\n", it->second.server_name.c_str(),
+							it->second.address.toString().c_str());
 						m_servers.erase(it);
 					}
-				}
-				else if(chunk_id == LobbyChunkId::join_request) {
+				} else if(chunk_id == LobbyChunkId::join_request) {
 					Address server_address;
 					packet.unpack(server_address.ip, server_address.port);
 					auto it = m_servers.find(server_address);
@@ -110,24 +105,22 @@ public:
 		auto it = m_servers.begin();
 		while(it != m_servers.end()) {
 			if(it->second.last_update_time + 20.0 < time) {
-				LOG("Server timeout: %s (%s)\n", it->second.server_name.c_str(), it->second.address.toString().c_str());
+				LOG("Server timeout: %s (%s)\n", it->second.server_name.c_str(),
+					it->second.address.toString().c_str());
 				it = m_servers.erase(it);
-			}
-			else
+			} else
 				it++;
 		}
 	}
 
-private:
+  private:
 	Socket m_socket;
 	std::map<Address, ServerInfo> m_servers;
 };
 
 static bool s_is_closing = false;
 
-void onCtrlC() {
-	s_is_closing = true;
-}
+void onCtrlC() { s_is_closing = true; }
 
 int main(int argc, char **argv) {
 	int port = lobbyServerAddress()->port;

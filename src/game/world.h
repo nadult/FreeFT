@@ -4,157 +4,157 @@
 #pragma once
 
 #include "game/entity.h"
-#include "game/tile_map.h"
 #include "game/entity_map.h"
 #include "game/level.h"
 #include "game/path.h"
+#include "game/tile_map.h"
 #include "game/trigger.h"
 #include "navi_map.h"
 
 namespace game {
 
-	class Replicator {
-	public:
-		virtual ~Replicator() = default;
-		virtual void replicateEntity(int entity_id) { }
-		virtual void replicateOrder(POrder&&, EntityRef) { }
-		virtual void sendMessage(CSpan<char> data, int target_id) = 0;
-		//TODO: inform replicator about entity priorities
-		// most basic: which entity belongs to which client
+class Replicator {
+  public:
+	virtual ~Replicator() = default;
+	virtual void replicateEntity(int entity_id) {}
+	virtual void replicateOrder(POrder &&, EntityRef) {}
+	virtual void sendMessage(CSpan<char> data, int target_id) = 0;
+	//TODO: inform replicator about entity priorities
+	// most basic: which entity belongs to which client
+};
+
+class GameMode;
+
+class World {
+  public:
+	enum class Mode { //TODO: better name
+		client,
+		server,
+		single_player,
 	};
 
-	class GameMode;
+	World(string map_name, Mode mode = Mode::single_player);
+	~World();
 
-	class World {
-	public:
-		enum class Mode { //TODO: better name
-			client,
-			server,
-			single_player,
-		};
+	const char *mapName() const { return m_map_name.c_str(); }
 
-		World(string map_name, Mode mode = Mode::single_player);
-		~World();
+	// Use safer versions (with EntityRef & ObjectRef)
+	Entity *refEntity(int index);
 
-		const char *mapName() const { return m_map_name.c_str(); }
+	int tileCount() const { return m_tile_map.size(); }
+	int entityCount() const { return m_entity_map.size(); }
 
-		// Use safer versions (with EntityRef & ObjectRef)
-		Entity *refEntity(int index);
+	template <class TEntity, class... Args>
+	EntityRef addNewEntity(const float3 &pos, const Args &...args) {
+		PEntity entity(new TEntity(args...));
+		entity->setPos(pos);
+		return addEntity(std::move(entity));
+	}
 
-		int tileCount() const { return m_tile_map.size(); }
-		int entityCount() const { return m_entity_map.size(); }
-	
-		template <class TEntity, class ...Args>
-		EntityRef addNewEntity(const float3 &pos, const Args&... args) {
-			PEntity entity(new TEntity(args...));
-			entity->setPos(pos);
-			return addEntity(std::move(entity));
-		}
+	// Takes ownership of entity
+	EntityRef addEntity(PEntity &&, int index = -1);
 
-		// Takes ownership of entity
-		EntityRef addEntity(PEntity&&, int index = -1);
+	void removeEntity(EntityRef);
 
-		void removeEntity(EntityRef);
+	void simulate(double time_diff);
 
-		void simulate(double time_diff);
+	void updateNaviMap(bool full_recompute);
 
-		void updateNaviMap(bool full_recompute);
-	
-		double timeDelta() const { return m_time_delta; }
-		double currentTime() const { return m_current_time; }
-		float random();
-	
-		bool findClosestPos(int3 &out, const int3 &source, const IBox &target_box, EntityRef agent) const;
-		bool findPath(Path &out, const int3 &start, const int3 &end, EntityRef agent) const;
+	double timeDelta() const { return m_time_delta; }
+	double currentTime() const { return m_current_time; }
+	float random();
 
-		TileMap &tileMap() { return m_level.tile_map; }
-		const TileMap &tileMap() const { return m_level.tile_map; }
-		
-		//TODO: updating navi map on demand
-		const NaviMap *naviMap(int agent_size) const;
-		const NaviMap *naviMap(EntityRef agent) const;
-		const NaviMap *naviMap(const FBox &agent_box) const;
+	bool findClosestPos(int3 &out, const int3 &source, const IBox &target_box,
+						EntityRef agent) const;
+	bool findPath(Path &out, const int3 &start, const int3 &end, EntityRef agent) const;
 
-		const Grid::ObjectDef *refDesc(ObjectRef) const;
-		const EntityMap::ObjectDef *refEntityDesc(int index) const;
-		const TileMap::ObjectDef   *refTileDesc  (int index) const;
+	TileMap &tileMap() { return m_level.tile_map; }
+	const TileMap &tileMap() const { return m_level.tile_map; }
 
-		const FBox refBBox(ObjectRef) const;
-		const Tile *refTile(ObjectRef) const;
-		Entity *refEntity(ObjectRef);
-		Entity *refEntity(EntityRef);
+	//TODO: updating navi map on demand
+	const NaviMap *naviMap(int agent_size) const;
+	const NaviMap *naviMap(EntityRef agent) const;
+	const NaviMap *naviMap(const FBox &agent_box) const;
 
-		EntityRef toEntityRef(ObjectRef) const;
-		EntityRef toEntityRef(int index) const;
+	const Grid::ObjectDef *refDesc(ObjectRef) const;
+	const EntityMap::ObjectDef *refEntityDesc(int index) const;
+	const TileMap::ObjectDef *refTileDesc(int index) const;
 
-		template <class TEntity, class TRef>
-		TEntity *refEntity(TRef ref) {
-			return dynamic_cast<TEntity*>(refEntity(ref));
-		}
+	const FBox refBBox(ObjectRef) const;
+	const Tile *refTile(ObjectRef) const;
+	Entity *refEntity(ObjectRef);
+	Entity *refEntity(EntityRef);
 
-		ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
-		void findAll(vector<ObjectRef> &out, const FBox &box, const FindFilter &filter = FindFilter()) const;
-		Intersection trace(const Segment3F &, const FindFilter &filter = FindFilter()) const;
-		void traceCoherent(const vector<Segment3F> &, vector<Intersection> &out, const FindFilter &filter = FindFilter()) const;
+	EntityRef toEntityRef(ObjectRef) const;
+	EntityRef toEntityRef(int index) const;
 
-		bool isInside(const FBox&) const;
-		bool isVisible(const float3 &eye_pos, EntityRef target, EntityRef ignore, int density) const;
+	template <class TEntity, class TRef> TEntity *refEntity(TRef ref) {
+		return dynamic_cast<TEntity *>(refEntity(ref));
+	}
 
-		Mode mode() const { return m_mode; }
-		bool isClient() const { return m_mode == Mode::client; }
-		bool isServer() const { return m_mode == Mode::server; }
+	ObjectRef findAny(const FBox &box, const FindFilter &filter = FindFilter()) const;
+	void findAll(vector<ObjectRef> &out, const FBox &box,
+				 const FindFilter &filter = FindFilter()) const;
+	Intersection trace(const Segment3F &, const FindFilter &filter = FindFilter()) const;
+	void traceCoherent(const vector<Segment3F> &, vector<Intersection> &out,
+					   const FindFilter &filter = FindFilter()) const;
 
-		template <class TGameMode, class ...Args>
-		void assignGameMode(const Args&... args) {
-			ASSERT(!m_game_mode);
-			m_game_mode.reset(new TGameMode(*this, args...));
-		}
-		GameMode *gameMode() const { return m_game_mode.get(); }
-		Maybe<GameModeId> gameModeId() const;
+	bool isInside(const FBox &) const;
+	bool isVisible(const float3 &eye_pos, EntityRef target, EntityRef ignore, int density) const;
 
-		void setReplicator(Replicator*);
-		void replicate(int entity_id);
-		void replicate(const Entity*);
-		void onMessage(MemoryStream&, int source_id);
+	Mode mode() const { return m_mode; }
+	bool isClient() const { return m_mode == Mode::client; }
+	bool isServer() const { return m_mode == Mode::server; }
 
-		//TODO: single function with replication as a parameter
-		// in some objects we can check if sound is played in the first frame or not
-		void playSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
-		void replicateSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
+	template <class TGameMode, class... Args> void assignGameMode(const Args &...args) {
+		ASSERT(!m_game_mode);
+		m_game_mode.reset(new TGameMode(*this, args...));
+	}
+	GameMode *gameMode() const { return m_game_mode.get(); }
+	Maybe<GameModeId> gameModeId() const;
 
-		bool sendOrder(Order*, EntityRef actor_ref);
-		bool sendOrder(POrder &&order, EntityRef actor_ref);
-		void sendMessage(CSpan<char> data, int target_id = -1);
-		
-		int filterIgnoreIndex(const FindFilter &filter) const;
+	void setReplicator(Replicator *);
+	void replicate(int entity_id);
+	void replicate(const Entity *);
+	void onMessage(MemoryStream &, int source_id);
 
-	private:
-		const Mode m_mode;
-		string m_map_name;
+	//TODO: single function with replication as a parameter
+	// in some objects we can check if sound is played in the first frame or not
+	void playSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
+	void replicateSound(SoundId, const float3 &pos, SoundType sound_type = SoundType::normal);
 
-		double m_time_delta;
-		double m_current_time;
-		double m_last_time;
+	bool sendOrder(Order *, EntityRef actor_ref);
+	bool sendOrder(POrder &&order, EntityRef actor_ref);
+	void sendMessage(CSpan<char> data, int target_id = -1);
 
-		double m_last_anim_frame_time;
-		int m_anim_frame;
+	int filterIgnoreIndex(const FindFilter &filter) const;
 
+  private:
+	const Mode m_mode;
+	string m_map_name;
 
-		//TODO: remove level
-		Level		m_level;
-		TileMap		&m_tile_map;
-		EntityMap	&m_entity_map;
+	double m_time_delta;
+	double m_current_time;
+	double m_last_time;
 
-		vector<NaviMap> m_navi_maps;
-		
-		vector<pair<Dynamic<Entity>, int>> m_replace_list;
+	double m_last_anim_frame_time;
+	int m_anim_frame;
 
-		PGameMode m_game_mode;
+	//TODO: remove level
+	Level m_level;
+	TileMap &m_tile_map;
+	EntityMap &m_entity_map;
 
-		Replicator *m_replicator;
-		friend class EntityWorldProxy;
-	};
+	vector<NaviMap> m_navi_maps;
 
-	using PWorld = shared_ptr<World>;
+	vector<pair<Dynamic<Entity>, int>> m_replace_list;
+
+	PGameMode m_game_mode;
+
+	Replicator *m_replicator;
+	friend class EntityWorldProxy;
+};
+
+using PWorld = shared_ptr<World>;
 
 }

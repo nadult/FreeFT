@@ -6,7 +6,7 @@
 #include "base.h"
 
 class NaviHeightmap {
-public:
+  public:
 	static constexpr int invalid_value = 0;
 
 	NaviHeightmap(const int2 &size);
@@ -28,7 +28,7 @@ public:
 	void saveLevels() const;
 	void printInfo() const;
 
-private:
+  private:
 	void addLevel();
 
 	vector<u8> m_data;

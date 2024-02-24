@@ -7,15 +7,15 @@
 
 namespace game {
 
-	class IdleOrder: public OrderImpl<IdleOrder, OrderTypeId::idle> {
-	public:
-		IdleOrder();
-		IdleOrder(MemoryStream&);
+class IdleOrder : public OrderImpl<IdleOrder, OrderTypeId::idle> {
+  public:
+	IdleOrder();
+	IdleOrder(MemoryStream &);
 
-		void save(MemoryStream&) const override;
-		void cancel() override;
+	void save(MemoryStream &) const override;
+	void cancel() override;
 
-		float m_fancy_anim_time;
-	};
+	float m_fancy_anim_time;
+};
 
 }

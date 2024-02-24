@@ -3,41 +3,40 @@
 
 #pragma once
 
-#include "hud/layer.h"
 #include "hud/button.h"
+#include "hud/layer.h"
 
-namespace hud
-{
+namespace hud {
 
-	class HudClassButton: public HudRadioButton {
-	public:
-		static constexpr int spacing = 17;
+class HudClassButton : public HudRadioButton {
+  public:
+	static constexpr int spacing = 17;
 
-		HudClassButton(const FRect &rect);
+	HudClassButton(const FRect &rect);
 
-		void onDraw(Renderer2D&) const override;
-		Color backgroundColor() const override;
-	};
+	void onDraw(Renderer2D &) const override;
+	Color backgroundColor() const override;
+};
 
-	using PHudClassButton = shared_ptr<HudClassButton>;
+using PHudClassButton = shared_ptr<HudClassButton>;
 
-	class HudClass: public HudLayer {
-	public:
-		HudClass(const FRect &target_rect);
-		~HudClass();
+class HudClass : public HudLayer {
+  public:
+	HudClass(const FRect &target_rect);
+	~HudClass();
 
-		bool canShow() const override;
+	bool canShow() const override;
 
-	private:
-		void onUpdate(double time_diff) override;
-		bool onEvent(const HudEvent&) override;
-		void onLayout() override;
-		void onPCControllerSet() override;
+  private:
+	void onUpdate(double time_diff) override;
+	bool onEvent(const HudEvent &) override;
+	void onLayout() override;
+	void onPCControllerSet() override;
 
-		vector<int> m_class_ids;
-		vector<PHudClassButton> m_buttons;
-		PHudButton m_button_up, m_button_down;
-		int m_offset;
-	};
+	vector<int> m_class_ids;
+	vector<PHudClassButton> m_buttons;
+	PHudButton m_button_up, m_button_down;
+	int m_offset;
+};
 
 }

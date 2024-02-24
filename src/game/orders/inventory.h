@@ -3,58 +3,58 @@
 
 #pragma once
 
-#include "game/orders.h"
 #include "game/inventory.h"
+#include "game/orders.h"
 
 namespace game {
 
-	class DropItemOrder: public OrderImpl<DropItemOrder, OrderTypeId::drop_item> {
-	public:
-		DropItemOrder(Item item, int count);
-		DropItemOrder(MemoryStream&);
+class DropItemOrder : public OrderImpl<DropItemOrder, OrderTypeId::drop_item> {
+  public:
+	DropItemOrder(Item item, int count);
+	DropItemOrder(MemoryStream &);
 
-		void save(MemoryStream&) const;
+	void save(MemoryStream &) const;
 
-		Item m_item;
-		int m_count;
-	};
+	Item m_item;
+	int m_count;
+};
 
-	class EquipItemOrder: public OrderImpl<EquipItemOrder, OrderTypeId::equip_item> {
-	public:
-		EquipItemOrder(Item item);
-		EquipItemOrder(MemoryStream&);
+class EquipItemOrder : public OrderImpl<EquipItemOrder, OrderTypeId::equip_item> {
+  public:
+	EquipItemOrder(Item item);
+	EquipItemOrder(MemoryStream &);
 
-		void save(MemoryStream&) const;
+	void save(MemoryStream &) const;
 
-		Item m_item;
-	};
+	Item m_item;
+};
 
-	class UnequipItemOrder: public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item> {
-	public:
-		UnequipItemOrder(ItemType);
-		UnequipItemOrder(MemoryStream&);
+class UnequipItemOrder : public OrderImpl<UnequipItemOrder, OrderTypeId::unequip_item> {
+  public:
+	UnequipItemOrder(ItemType);
+	UnequipItemOrder(MemoryStream &);
 
-		void save(MemoryStream&) const;
-		
-		ItemType m_item_type;
-	};
+	void save(MemoryStream &) const;
 
-	enum TransferMode: char {
-		transfer_to,
-		transfer_from,
-	};
+	ItemType m_item_type;
+};
 
-	class TransferItemOrder: public OrderImpl<TransferItemOrder, OrderTypeId::transfer_item> {
-	public:
-		TransferItemOrder(EntityRef target, TransferMode mode, Item item, int count);
-		TransferItemOrder(MemoryStream&);
+enum TransferMode : char {
+	transfer_to,
+	transfer_from,
+};
 
-		void save(MemoryStream&) const;
-		
-		EntityRef m_target;
-		TransferMode m_mode;
-		Item m_item;
-		int m_count;
-	};
+class TransferItemOrder : public OrderImpl<TransferItemOrder, OrderTypeId::transfer_item> {
+  public:
+	TransferItemOrder(EntityRef target, TransferMode mode, Item item, int count);
+	TransferItemOrder(MemoryStream &);
+
+	void save(MemoryStream &) const;
+
+	EntityRef m_target;
+	TransferMode m_mode;
+	Item m_item;
+	int m_count;
+};
 
 }

@@ -5,8 +5,8 @@
 
 #include <fwk/gfx/gl_format.h>
 #include <fwk/gfx/gl_texture.h>
-#include <fwk/gfx/opengl.h>
 #include <fwk/gfx/image.h>
+#include <fwk/gfx/opengl.h>
 #include <limits.h>
 
 //#define LOGGING
@@ -33,9 +33,7 @@ void CachedTexture::bindToCache() const {
 	}
 }
 
-void CachedTexture::onCacheDestroy() {
-	m_id = -1;
-}
+void CachedTexture::onCacheDestroy() { m_id = -1; }
 
 static int textureMemorySize(PTexture tex) {
 	return imageSize(tex->format(), tex->width(), tex->height());
@@ -69,11 +67,15 @@ TextureCache::~TextureCache() {
 			m_resources[n].res_ptr->onCacheDestroy();
 }
 
-#define ATLAS_INSERT(list, idx) listInsert([&](int i) -> ListNode& { return m_resources[i].atlas_node; }, list, idx)
-#define ATLAS_REMOVE(list, idx) listRemove([&](int i) -> ListNode& { return m_resources[i].atlas_node; }, list, idx)
+#define ATLAS_INSERT(list, idx)                                                                    \
+	listInsert([&](int i) -> ListNode & { return m_resources[i].atlas_node; }, list, idx)
+#define ATLAS_REMOVE(list, idx)                                                                    \
+	listRemove([&](int i) -> ListNode & { return m_resources[i].atlas_node; }, list, idx)
 
-#define MAIN_INSERT(list, idx) listInsert([&](int i) -> ListNode& { return m_resources[i].main_node; }, list, idx)
-#define MAIN_REMOVE(list, idx) listRemove([&](int i) -> ListNode& { return m_resources[i].main_node; }, list, idx)
+#define MAIN_INSERT(list, idx)                                                                     \
+	listInsert([&](int i) -> ListNode & { return m_resources[i].main_node; }, list, idx)
+#define MAIN_REMOVE(list, idx)                                                                     \
+	listRemove([&](int i) -> ListNode & { return m_resources[i].main_node; }, list, idx)
 
 void TextureCache::nextFrame() {
 	if(!m_atlas) {
@@ -158,7 +160,8 @@ void TextureCache::nextFrame() {
 			res.res_ptr->cacheUpload(tex);
 			DASSERT(tex.size() == res.size);
 			res.atlas_pos = pos + atlas_node.rect.min();
-			m_atlas->upload(tex.format(), tex.data().reinterpret<u8>(), IRect(tex.size()) + res.atlas_pos, 0);
+			m_atlas->upload(tex.format(), tex.data().reinterpret<u8>(),
+							IRect(tex.size()) + res.atlas_pos, 0);
 
 			if(res.atlas_node_id == -1) {
 #ifdef LOGGING
@@ -219,7 +222,8 @@ void TextureCache::unload(int res_id) {
 void TextureCache::remove(int res_id) {
 	DASSERT(isValidId(res_id));
 	Resource &res = m_resources[res_id];
-	ATLAS_REMOVE(res.atlas_node_id == -1 ? m_atlas_queue : m_atlas_nodes[res.atlas_node_id].list, res_id);
+	ATLAS_REMOVE(res.atlas_node_id == -1 ? m_atlas_queue : m_atlas_nodes[res.atlas_node_id].list,
+				 res_id);
 	if(res.atlas_node_id != -1) {
 		m_atlas_counter--;
 		res.atlas_node_id = -1;
@@ -273,7 +277,8 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 	}
 
 	auto dev_size = res.device_texture->size();
-	tex_rect = dev_size.x == 0 || dev_size.y == 0?
-				FRect() : FRect(float2(), float2(res.size) / float2(dev_size));
+	tex_rect = dev_size.x == 0 || dev_size.y == 0 ?
+				   FRect() :
+				   FRect(float2(), float2(res.size) / float2(dev_size));
 	return res.device_texture;
 }

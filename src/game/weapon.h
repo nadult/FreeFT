@@ -8,66 +8,59 @@
 
 namespace game {
 
-	//TODO: melee sounds
+//TODO: melee sounds
 
-	DEFINE_ENUM(WeaponSoundType,
-		normal,
-		fire_single,
-		fire_burst,
-		reload,
-		out_of_ammo
-	);
+DEFINE_ENUM(WeaponSoundType, normal, fire_single, fire_burst, reload, out_of_ammo);
 
-	struct WeaponProto: public ProtoImpl<WeaponProto, ItemProto, ProtoId::weapon> {
-		ItemType itemType() const { return ItemType::weapon; }
-		WeaponProto(const TupleParser&);
-		void link();
+struct WeaponProto : public ProtoImpl<WeaponProto, ItemProto, ProtoId::weapon> {
+	ItemType itemType() const { return ItemType::weapon; }
+	WeaponProto(const TupleParser &);
+	void link();
 
-		string ammo_class_id;
+	string ammo_class_id;
 
-		float melee_range;
-		float ranged_range;
-		float accuracy;
+	float melee_range;
+	float ranged_range;
+	float accuracy;
 
-		ProtoRef<ProjectileProto> projectile;
-		ProtoRef<ImpactProto> impact;
+	ProtoRef<ProjectileProto> projectile;
+	ProtoRef<ImpactProto> impact;
 
-		WeaponClass class_id;
-		float damage_mod;
-		AttackModeFlags attack_modes;
-		int max_ammo, burst_ammo;
+	WeaponClass class_id;
+	float damage_mod;
+	AttackModeFlags attack_modes;
+	int max_ammo, burst_ammo;
 
-		EnumMap<WeaponSoundType, SoundId> sound_ids;
-	};
+	EnumMap<WeaponSoundType, SoundId> sound_ids;
+};
 
-	struct Weapon: public Item
-	{
-	public:
-		Weapon(const WeaponProto &proto) :Item(proto) { }
-		Weapon(const Item &item) :Item((DASSERT(item.type() == ItemType::weapon), item)) { }
-		Weapon() { *this = dummyWeapon(); }
-		
-		const string paramDesc() const;
-		
-		const ProjectileProto *projectileProto() const			{ return proto().projectile; }
+struct Weapon : public Item {
+  public:
+	Weapon(const WeaponProto &proto) : Item(proto) {}
+	Weapon(const Item &item) : Item((DASSERT(item.type() == ItemType::weapon), item)) {}
+	Weapon() { *this = dummyWeapon(); }
 
-		float range(AttackMode mode) const;
-		bool canKick() const;
+	const string paramDesc() const;
 
-		bool hasMeleeAttack() const;
-		bool hasRangedAttack() const;
-		float estimateDamage(bool include_burst = true) const;
-		float estimateProjectileTime(float distance) const;
+	const ProjectileProto *projectileProto() const { return proto().projectile; }
 
-		WeaponClass classId() const						{ return proto().class_id; }
-		const SoundId soundId(WeaponSoundType type) const	{ return proto().sound_ids[type]; }
-		auto attackModes() const							{ return proto().attack_modes; }
+	float range(AttackMode mode) const;
+	bool canKick() const;
 
-		int maxAmmo() const { return proto().max_ammo; }
-		bool needAmmo() const { return !proto().ammo_class_id.empty(); }
-		bool canUseAmmo(const Item &item) const;
+	bool hasMeleeAttack() const;
+	bool hasRangedAttack() const;
+	float estimateDamage(bool include_burst = true) const;
+	float estimateProjectileTime(float distance) const;
 
-		const WeaponProto &proto() const { return static_cast<const WeaponProto&>(*m_proto); }
-	};
+	WeaponClass classId() const { return proto().class_id; }
+	const SoundId soundId(WeaponSoundType type) const { return proto().sound_ids[type]; }
+	auto attackModes() const { return proto().attack_modes; }
+
+	int maxAmmo() const { return proto().max_ammo; }
+	bool needAmmo() const { return !proto().ammo_class_id.empty(); }
+	bool canUseAmmo(const Item &item) const;
+
+	const WeaponProto &proto() const { return static_cast<const WeaponProto &>(*m_proto); }
+};
 
 }

@@ -4,8 +4,8 @@
 #pragma once
 
 #include "base.h"
-#include <fwk/list_node.h>
 #include <fwk/gfx/gl_ref.h>
+#include <fwk/list_node.h>
 
 class TextureCache;
 
@@ -46,7 +46,7 @@ class TextureCache {
   public:
 	TextureCache(int max_bytes = 32 * 1024 * 1024);
 	~TextureCache();
-	
+
 	TextureCache(const TextureCache &) = delete;
 	void operator=(const TextureCache &) = delete;
 
@@ -82,15 +82,15 @@ class TextureCache {
 		int atlas_node_id;
 		int last_update;
 
-		ListNode main_node {};  // shared by two lists: m_main_list, m_free_list
-		ListNode atlas_node {}; // shared by two lists: AtlasNode::list, m_atlas_queue
+		ListNode main_node{}; // shared by two lists: m_main_list, m_free_list
+		ListNode atlas_node{}; // shared by two lists: AtlasNode::list, m_atlas_queue
 	};
 
 	static constexpr int node_size = 256;
 
 	struct AtlasNode {
 		IRect rect;
-		List list {};
+		List list{};
 	};
 
 	PodVector<AtlasNode> m_atlas_nodes;

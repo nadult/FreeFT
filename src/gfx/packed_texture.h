@@ -9,8 +9,7 @@
 class Palette {
   public:
 	static Ex<Palette> load(Stream &);
-	template <class Stream>
-	static Ex<Palette> legacyLoad(Stream &);
+	template <class Stream> static Ex<Palette> legacyLoad(Stream &);
 	void save(FileStream &) const;
 
 	void resize(int size);
@@ -33,8 +32,7 @@ class PackedTexture {
   public:
 	PackedTexture();
 
-	template <class Stream>
-	static Ex<PackedTexture> legacyLoad(Stream &, Palette &);
+	template <class Stream> static Ex<PackedTexture> legacyLoad(Stream &, Palette &);
 	static Ex<PackedTexture> load(Stream &);
 	void save(FileStream &) const;
 

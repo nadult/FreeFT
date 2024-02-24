@@ -3,15 +3,18 @@
 
 #include "grid.h"
 
-#define INSERT(list, id) listInsert([&](int idx) -> ListNode& { return m_objects[idx].node; }, list, id)
-#define REMOVE(list, id) listRemove([&](int idx) -> ListNode& { return m_objects[idx].node; }, list, id)
+#define INSERT(list, id)                                                                           \
+	listInsert([&](int idx) -> ListNode & { return m_objects[idx].node; }, list, id)
+#define REMOVE(list, id)                                                                           \
+	listRemove([&](int idx) -> ListNode & { return m_objects[idx].node; }, list, id)
 
-#define OV_INSERT(list, id) listInsert([&](int idx) -> ListNode& { return m_overlaps[idx].node; }, list, id)
-#define OV_REMOVE(list, id) listRemove([&](int idx) -> ListNode& { return m_overlaps[idx].node; }, list, id)
+#define OV_INSERT(list, id)                                                                        \
+	listInsert([&](int idx) -> ListNode & { return m_overlaps[idx].node; }, list, id)
+#define OV_REMOVE(list, id)                                                                        \
+	listRemove([&](int idx) -> ListNode & { return m_overlaps[idx].node; }, list, id)
 
-//TODO: better names, refactoring, remove copy&pasted code in intersection functions 
-Grid::Node::Node()
-	:size(0), is_dirty(false), bbox(FBox()), rect(IRect()), obj_flags(0) { }
+//TODO: better names, refactoring, remove copy&pasted code in intersection functions
+Grid::Node::Node() : size(0), is_dirty(false), bbox(FBox()), rect(IRect()), obj_flags(0) {}
 
 Grid::Grid(const int2 &size) {
 	m_bounding_box = FBox();
@@ -35,7 +38,7 @@ int Grid::findFreeObject() {
 
 	return m_free_objects.head;
 }
-	
+
 int Grid::findFreeOverlap() {
 	if(m_free_overlaps.empty()) {
 		m_overlaps.emplace_back(Overlap());
@@ -56,19 +59,19 @@ void Grid::add(int object_id, const ObjectDef &def) {
 
 	REMOVE(m_free_objects, object_id);
 
-	m_bounding_box = m_bounding_box.empty()? def.bbox : enclose(m_bounding_box, def.bbox);
+	m_bounding_box = m_bounding_box.empty() ? def.bbox : enclose(m_bounding_box, def.bbox);
 	IRect grid_box = nodeCoords(def.bbox);
 
 	for(int y = grid_box.y(); y <= grid_box.ey(); y++) {
 		int2 &min_max = m_row_rects[y];
-		min_max = min_max.y == min_max.x?
-				int2(def.rect_pos.y, def.rect_pos.y + def.rect_size.y) :
-				int2(min(min_max.x, def.rect_pos.y), max(min_max.y, def.rect_pos.y + def.rect_size.y));
+		min_max = min_max.y == min_max.x ? int2(def.rect_pos.y, def.rect_pos.y + def.rect_size.y) :
+										   int2(min(min_max.x, def.rect_pos.y),
+												max(min_max.y, def.rect_pos.y + def.rect_size.y));
 	}
 
 	Object &object = m_objects[object_id];
 	DASSERT(object.ptr == nullptr);
-	((ObjectDef&)object) = def;
+	((ObjectDef &)object) = def;
 
 	if(grid_box.min() == grid_box.max()) {
 		int node_id = nodeAt(grid_box.min());
@@ -79,8 +82,7 @@ void Grid::add(int object_id, const ObjectDef &def) {
 
 		updateNode(node_id, def);
 		node.size++;
-	}
-	else {
+	} else {
 		for(int y = grid_box.y(); y <= grid_box.ey(); y++)
 			for(int x = grid_box.x(); x <= grid_box.ex(); x++) {
 				int node_id = nodeAt(int2(x, y));
@@ -125,8 +127,7 @@ void Grid::remove(int idx) {
 					overlap_id = overlap.node.next;
 				}
 			}
-	}
-	else {
+	} else {
 		Node &node = m_nodes[object.node_id];
 		REMOVE(node.object_list, idx);
 		object.node_id = -1;
@@ -144,7 +145,7 @@ bool Grid::update(int idx, const ObjectDef &object) {
 	DASSERT(object.ptr == old_object.ptr);
 
 	if(old_object.bbox != object.bbox || old_object.rect_pos != object.rect_pos ||
-		old_object.rect_size != object.rect_size || old_object.flags != object.flags) {
+	   old_object.rect_size != object.rect_size || old_object.flags != object.flags) {
 		//TODO: speed up; in most cases it can be done fast, coz we have a pointer to node
 		remove(idx);
 		add(idx, object);
@@ -190,8 +191,7 @@ void Grid::updateNode(int id) const {
 			updateNode(id, m_objects[overlap.object_id]);
 			overlap_id = overlap.node.next;
 		}
-	}
-	else {
+	} else {
 		node.bbox = FBox();
 		node.rect = IRect();
 		node.obj_flags = 0;
@@ -201,9 +201,9 @@ void Grid::updateNode(int id) const {
 }
 
 const IRect Grid::nodeCoords(const FBox &box) const {
-	auto pmin = worldToGrid( vmax(int2(0, 0), int2(box.x(), box.z())) );
+	auto pmin = worldToGrid(vmax(int2(0, 0), int2(box.x(), box.z())));
 	auto pmax = vmin(m_size - int2(1, 1),
-						worldToGrid( int2(box.ex() - big_epsilon, box.ez() - big_epsilon) ));
+					 worldToGrid(int2(box.ex() - big_epsilon, box.ez() - big_epsilon)));
 	pmax = vmax(pmin, pmax);
 	return IRect(pmin, pmax);
 }
@@ -213,7 +213,8 @@ bool Grid::isInside(const float3 &pos) const {
 }
 
 bool Grid::isInside(const FBox &box) const {
-	return box.x() >= 0 && box.z() >= 0 && box.ex() <= m_size.x * node_size && box.ez() <= m_size.y * node_size;
+	return box.x() >= 0 && box.z() >= 0 && box.ex() <= m_size.x * node_size &&
+		   box.ez() <= m_size.y * node_size;
 }
 
 int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int flags) const {
@@ -242,9 +243,12 @@ int Grid::extractObjects(int node_id, const Object **out, int ignored_id, int fl
 
 void Grid::printInfo() const {
 	printf("Grid(%d, %d):\n", m_size.x, m_size.y);
-	printf("       nodes(%d): %.2f KB\n", (int)m_nodes.size(), (float)m_nodes.size() * sizeof(Node) / 1024.0);
-	printf("     objects(%d): %.2f KB\n", (int)m_objects.size(), (float)m_objects.size() * sizeof(Object) / 1024.0);
-	printf("    overlaps(%d): %.2f KB\n", (int)m_overlaps.size(), (float)m_overlaps.size() * sizeof(Overlap) / 1024.0);
+	printf("       nodes(%d): %.2f KB\n", (int)m_nodes.size(),
+		   (float)m_nodes.size() * sizeof(Node) / 1024.0);
+	printf("     objects(%d): %.2f KB\n", (int)m_objects.size(),
+		   (float)m_objects.size() * sizeof(Object) / 1024.0);
+	printf("    overlaps(%d): %.2f KB\n", (int)m_overlaps.size(),
+		   (float)m_overlaps.size() * sizeof(Overlap) / 1024.0);
 	printf("  sizeof(Node): %d\n", (int)sizeof(Node));
 	printf("  sizeof(Object): %d\n", (int)sizeof(Object));
 }
@@ -257,7 +261,7 @@ void Grid::swap(Grid &rhs) {
 	m_overlaps.swap(rhs.m_overlaps);
 	m_nodes.swap(rhs.m_nodes);
 	m_objects.swap(rhs.m_objects);
-	
+
 	std::swap(m_free_objects, rhs.m_free_objects);
 	std::swap(m_free_overlaps, rhs.m_free_overlaps);
 

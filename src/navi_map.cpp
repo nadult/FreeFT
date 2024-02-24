@@ -9,22 +9,25 @@
 #include <cstring>
 #include <fwk/pod_vector.h>
 
-NaviMap::NaviMap(int extend) :m_size(0, 0), m_agent_size(extend) { }
+NaviMap::NaviMap(int extend) : m_size(0, 0), m_agent_size(extend) {}
 
-#define ACC_QUAD [&](int idx) -> ListNode& { return m_quads[idx].node; }
-	
-static IRect findBestRect(const short *counts, const short *skip_list, int2 size) __attribute__((noinline));
+#define ACC_QUAD [&](int idx) -> ListNode & { return m_quads[idx].node; }
+
+static IRect findBestRect(const short *counts, const short *skip_list, int2 size)
+	__attribute__((noinline));
 static IRect findBestRect(const short *counts, const short *skip_list, int2 size) {
 	IRect best;
 	int best_score = -1;
 
 	for(int sy = 0; sy < size.y; sy++) {
-		struct Element { int sx, height; } stack[NaviMap::sector_size];
+		struct Element {
+			int sx, height;
+		} stack[NaviMap::sector_size];
 		int sp = 0;
 
 		for(int sx = 0; sx <= size.x;) {
 			int offset = sx + sy * NaviMap::sector_size;
-			int height = sx == size.x? 0 : counts[offset];
+			int height = sx == size.x ? 0 : counts[offset];
 			int min_sx = sx;
 
 			while(sp && stack[sp - 1].height > height) {
@@ -44,7 +47,7 @@ static IRect findBestRect(const short *counts, const short *skip_list, int2 size
 			if(height)
 				stack[sp++] = Element{min_sx, height};
 
-			sx += height || sx == size.x? 1 : skip_list[offset];
+			sx += height || sx == size.x ? 1 : skip_list[offset];
 		}
 	}
 
@@ -62,10 +65,9 @@ void NaviMap::extractQuads(const PodVector<u8> &bitmap, const int2 &bsize, int s
 		int yoff = y * sector_size;
 		for(int x = 0; x < size.x; x++) {
 			if(bitmap[sx + x + (sy + y) * bsize.x]) {
-				counts[x + yoff] = 1 + (y > 0? counts[x + yoff - sector_size] : 0);
+				counts[x + yoff] = 1 + (y > 0 ? counts[x + yoff - sector_size] : 0);
 				pixels++;
-			}
-			else
+			} else
 				counts[x + yoff] = 0;
 		}
 
@@ -79,7 +81,7 @@ void NaviMap::extractQuads(const PodVector<u8> &bitmap, const int2 &bsize, int s
 
 	while(pixels > 0) {
 		IRect best = findBestRect(&counts[0], &skips[0], size);
-	//	printf("%d %d %d %d +(%d %d)\n", best.x(), best.y(), best.width(), best.height(), sx, sy);
+		//	printf("%d %d %d %d +(%d %d)\n", best.x(), best.y(), best.width(), best.height(), sx, sy);
 
 		for(int y = best.y(); y < best.ey(); y++) {
 			int yoff = y * sector_size;
@@ -91,16 +93,16 @@ void NaviMap::extractQuads(const PodVector<u8> &bitmap, const int2 &bsize, int s
 			for(int x = best.x(); x < best.ex(); x++)
 				skips[x + yoff] = next - x;
 		}
-		
+
 		for(int x = best.x(); x < best.ex(); x++) {
 			for(int y = best.ey(); y < size.y; y++) {
 				int offset = x + y * sector_size;
-				counts[offset] = counts[offset]? counts[offset - sector_size] + 1 : 0;
+				counts[offset] = counts[offset] ? counts[offset - sector_size] + 1 : 0;
 				if(!counts[offset])
 					break;
 			}
 		}
-		
+
 		IRect rect = best + int2(sx, sy);
 		u8 min_height = bitmap[rect.x() + rect.y() * bsize.x];
 		u8 max_height = min_height;
@@ -129,8 +131,7 @@ static const IRect computeEdge(const IRect &quad1, const IRect &quad2) {
 			emin.y--;
 			emax.y--;
 		}
-	}
-	else {
+	} else {
 		emax.y--;
 		if(quad1.x() > quad2.x()) {
 			emin.x--;
@@ -148,7 +149,8 @@ void NaviMap::addAdjacencyInfo(int quad1_id, int quad2_id) {
 	Quad &quad1 = m_quads[quad1_id];
 	Quad &quad2 = m_quads[quad2_id];
 
-	if(quad1.min_height <= quad2.max_height + 1 && quad2.min_height <= quad1.max_height + 1 && areAdjacent(quad1.rect, quad2.rect)) {
+	if(quad1.min_height <= quad2.max_height + 1 && quad2.min_height <= quad1.max_height + 1 &&
+	   areAdjacent(quad1.rect, quad2.rect)) {
 		quad1.neighbours.push_back(quad2_id);
 		quad2.neighbours.push_back(quad1_id);
 	}
@@ -161,7 +163,8 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 
 	m_sectors.resize(m_size.x * m_size.y);
 
-	printf("Creating navigation map: "); fflush(stdout);
+	printf("Creating navigation map: ");
+	fflush(stdout);
 	double time = getTime();
 
 	int level_count = heightmap.levelCount();
@@ -213,7 +216,7 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 			int hmin, hmax;
 
 			for(int y = start_line; y < bsize.y; y++) {
-				for(int x = 0; x < bsize.x; x++) 
+				for(int x = 0; x < bsize.x; x++)
 					if(bitmap[x + y * bsize.x]) {
 						hmin = hmax = bitmap[x + y * bsize.x];
 						positions.push_back(int2(x, y));
@@ -245,19 +248,12 @@ void NaviMap::update(const NaviHeightmap &heightmap) {
 				subbitmap[offset] = height;
 				pixel_count--;
 
-				int2 offsets[4] = {
-					int2(-1, 0),
-					int2(0, -1),
-					int2(1, 0),
-					int2(0, 1)
-				};
+				int2 offsets[4] = {int2(-1, 0), int2(0, -1), int2(1, 0), int2(0, 1)};
 
-				int neighbours[4] = {
-					pos.x > 0? bitmap[offset - 1] : 0,
-					pos.y > 0? bitmap[offset - bsize.x] : 0,
-					pos.x < bsize.x - 1? bitmap[offset + 1] : 0,
-					pos.y < bsize.y - 1? bitmap[offset + bsize.x] : 0
-				};
+				int neighbours[4] = {pos.x > 0 ? bitmap[offset - 1] : 0,
+									 pos.y > 0 ? bitmap[offset - bsize.x] : 0,
+									 pos.x < bsize.x - 1 ? bitmap[offset + 1] : 0,
+									 pos.y < bsize.y - 1 ? bitmap[offset + bsize.x] : 0};
 
 				for(int n = 0; n < 4; n++) {
 					int height = neighbours[n];
@@ -338,7 +334,7 @@ void NaviMap::addCollider(const IBox &box, int collider_id) {
 	IBox ext_box(box.min() - int3(m_agent_size - 1, 2, m_agent_size - 1), box.max());
 	IRect ext_rect(ext_box.min().xz(), ext_box.max().xz());
 	vector<int> indices;
-	
+
 	findQuads(ext_box, indices);
 	for(int n = 0; n < (int)indices.size(); n++) {
 		const Quad &quad = m_quads[indices[n]];
@@ -361,7 +357,7 @@ void NaviMap::removeColliders() {
 		quad.collider_id = -1;
 	}
 }
-	
+
 void NaviMap::updateReachability() {
 	//TODO: this is probably too slow
 	//FWK_PROFILE("NaviMap::updateReachability");
@@ -406,7 +402,7 @@ void NaviMap::updateReachability() {
 }
 
 bool NaviMap::isReachable(int src_id, int target_id) const {
-	int quad_id[2] = { src_id, target_id };
+	int quad_id[2] = {src_id, target_id};
 
 	if(quad_id[0] == -1 || quad_id[1] == -1)
 		return false;
@@ -435,13 +431,11 @@ bool NaviMap::isReachable(int src_id, int target_id) const {
 							}
 						if(!found)
 							to_visit.push_back(tquad.neighbours[n]);
-					}
-					else
+					} else
 						groups[p].push_back(neighbour.group_id);
 				}
 			}
-		}
-		else
+		} else
 			groups[p].push_back(quad.group_id);
 	}
 
@@ -449,7 +443,7 @@ bool NaviMap::isReachable(int src_id, int target_id) const {
 		for(int j = 0; j < (int)groups[1].size(); j++)
 			if(groups[0][i] == groups[1][j])
 				return true;
-	
+
 	return false;
 }
 
@@ -457,12 +451,13 @@ bool NaviMap::isReachable(const int3 &source, const int3 &target) const {
 	return isReachable(findQuad(source, -1, true), findQuad(target, -1, true));
 }
 
-bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, const IBox &target_box) const {
+bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height,
+							 const IBox &target_box) const {
 	IBox enlarged_box = target_box.enlarge(int3(1, source_height - 1, 1), int3(1, 0, 1));
 
 	vector<int> quads;
 	findQuads(enlarged_box, quads);
-	
+
 	int3 closest_pos = pos;
 	float min_distance = inf, min_distance2 = 0.0f;
 	FRect ftarget_rect((float2)target_box.min().xz(), (float2)target_box.max().xz());
@@ -481,16 +476,20 @@ bool NaviMap::findClosestPos(int3 &out, const int3 &pos, int source_height, cons
 
 	for(int n = 0; n < (int)quads.size(); n++) {
 		const Quad &quad = m_quads[quads[n]];
-		if(quad.min_height > enlarged_box.ey() || quad.max_height < enlarged_box.y() || quad.is_disabled)
+		if(quad.min_height > enlarged_box.ey() || quad.max_height < enlarged_box.y() ||
+		   quad.is_disabled)
 			continue;
-		
-		int3 new_pos = vclamp(clip_pos,	asXZY(quad.rect.min(), quad.min_height),
-								 		asXZY(quad.rect.max() - int2(1, 1), quad.max_height));
 
-		float dist  = distanceSq(ftarget_rect, FRect((float2)new_pos.xz(), float2(new_pos.xz()) + float2(m_agent_size, m_agent_size)));
+		int3 new_pos = vclamp(clip_pos, asXZY(quad.rect.min(), quad.min_height),
+							  asXZY(quad.rect.max() - int2(1, 1), quad.max_height));
+
+		float dist = distanceSq(
+			ftarget_rect,
+			FRect((float2)new_pos.xz(), float2(new_pos.xz()) + float2(m_agent_size, m_agent_size)));
 		float dist2 = distanceSq((float3)new_pos, (float3)pos);
 
-		if(dist < min_distance || (fabs(dist - min_distance) <= big_epsilon && dist2 < min_distance2)) {
+		if(dist < min_distance ||
+		   (fabs(dist - min_distance) <= big_epsilon && dist2 < min_distance2)) {
 			if(isReachable(src_quad, quads[n])) {
 				closest_pos = new_pos;
 				min_distance = dist;
@@ -512,7 +511,10 @@ void NaviMap::findQuads(const IBox &box, vector<int> &out, bool cheap_filter) co
 			int node = m_sectors[x + y * m_size.x].head;
 			while(node != -1) {
 				const Quad &quad = m_quads[node];
-				if(cheap_filter || areOverlapping(IBox(asXZY(quad.rect.min(), (int)quad.min_height), asXZY(quad.rect.max(), (int)quad.max_height)), box))
+				if(cheap_filter ||
+				   areOverlapping(IBox(asXZY(quad.rect.min(), (int)quad.min_height),
+									   asXZY(quad.rect.max(), (int)quad.max_height)),
+								  box))
 					out.push_back(node);
 				node = quad.node.next;
 			}
@@ -531,8 +533,9 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 
 	while(node != -1) {
 		const Quad &quad = m_quads[node];
-		if(quad.rect.containsCell(pos.xz()) && (!quad.is_disabled || quad.collider_id == filter_collider || find_disabled)
-				&& pos.y >= quad.min_height) {
+		if(quad.rect.containsCell(pos.xz()) &&
+		   (!quad.is_disabled || quad.collider_id == filter_collider || find_disabled) &&
+		   pos.y >= quad.min_height) {
 
 			if(pos.y <= quad.max_height)
 				return node;
@@ -547,13 +550,12 @@ int NaviMap::findQuad(const int3 &pos, int filter_collider, bool find_disabled) 
 
 	return best_quad;
 }
-	
+
 // powoduje problemy jak się przechodzi diagonalnie przez rogi encji
 // (gracz się zatrzymuje bo jest kolizja)
 // This should be solved by creating paths that are trying to be in the middle
 // between colliders
 //#define WALK_DIAGONAL_THROUGH_CORNERS
-
 
 static float distance(const int2 &a, const int2 &b) {
 	int dist_x = fwk::abs(a.x - b.x), dist_y = fwk::abs(a.y - b.y);
@@ -563,118 +565,117 @@ static float distance(const int2 &a, const int2 &b) {
 
 namespace {
 
-	struct SearchData {
-		int2 entry_pos;
-		int src_quad;
-		int heap_pos : 31;
-		int is_finished : 1;
-		float dist, est_dist;
-	};
+struct SearchData {
+	int2 entry_pos;
+	int src_quad;
+	int heap_pos : 31;
+	int is_finished : 1;
+	float dist, est_dist;
+};
 
-	struct HeapData {
-		HeapData(SearchData *ptr) :ptr(ptr), value(ptr->dist + ptr->est_dist) { }
-		HeapData() = default;
+struct HeapData {
+	HeapData(SearchData *ptr) : ptr(ptr), value(ptr->dist + ptr->est_dist) {}
+	HeapData() = default;
 
-		bool operator<(const HeapData &rhs) const { return value < rhs.value; }
+	bool operator<(const HeapData &rhs) const { return value < rhs.value; }
 
-		SearchData *ptr;
-		float value;
-	};
+	SearchData *ptr;
+	float value;
+};
 
-	bool heapInvariant(HeapData *heap, int size) {
-		for(int n = 1; n < size; n++)
-			if(heap[n] < heap[n / 2])
-				return false;
-		return true;
+bool heapInvariant(HeapData *heap, int size) {
+	for(int n = 1; n < size; n++)
+		if(heap[n] < heap[n / 2])
+			return false;
+	return true;
+}
+
+void printHeap(HeapData *heap, int size) {
+	for(int n = 0; n < size; n++)
+		printf("%.0f ", heap[n].value);
+	printf("\n");
+}
+
+#define UPDATE(id) heap[id].ptr->heap_pos = id;
+void heapify(HeapData *heap, int size, int id) {
+	int l = id * 2;
+	int r = id * 2 + 1;
+
+	int smallest = l < size && heap[l] < heap[id] ? l : id;
+	if(r < size && heap[r] < heap[smallest])
+		smallest = r;
+	if(smallest != id) {
+		swap(heap[id], heap[smallest]);
+		UPDATE(id);
+		UPDATE(smallest);
+		heapify(heap, size, smallest);
+	}
+}
+
+HeapData extractMin(HeapData *heap, int &size) {
+	DASSERT(size > 0);
+	HeapData min = heap[0];
+
+	heap[0] = heap[--size];
+	UPDATE(0);
+	heapify(heap, size, 0);
+	return min;
+}
+
+void updateKey(HeapData *heap, int &size, SearchData *ptr) {
+	int pos = ptr->heap_pos;
+	DASSERT(pos == -1 || heap[pos].ptr == ptr);
+
+	HeapData new_key(ptr);
+	if(pos == -1)
+		heap[pos = size++].value = new_key.value;
+
+	if(new_key.value > heap[pos].value) {
+		heap[pos].value = new_key.value;
+		heapify(heap, size, pos);
+		return;
 	}
 
-	void printHeap(HeapData *heap, int size) {
-		for(int n = 0; n < size; n++)
-			printf("%.0f ", heap[n].value);
-		printf("\n");
-	}
-
-#define UPDATE(id)	heap[id].ptr->heap_pos = id;
-	void heapify(HeapData *heap, int size, int id) {
-		int l = id * 2;
-		int r = id * 2 + 1;
-
-		int smallest = l < size && heap[l] < heap[id]? l : id;
-		if(r < size && heap[r] < heap[smallest])
-			smallest = r;
-		if(smallest != id) {
-			swap(heap[id], heap[smallest]);
-			UPDATE(id);
-			UPDATE(smallest);
-			heapify(heap, size, smallest);
-		}
-	}
-
-	HeapData extractMin(HeapData *heap, int &size) {
-		DASSERT(size > 0);
-		HeapData min = heap[0];
-
-		heap[0] = heap[--size];
-		UPDATE(0);
-		heapify(heap, size, 0);
-		return min;
-	}
-
-	void updateKey(HeapData *heap, int &size, SearchData *ptr) {
-		int pos = ptr->heap_pos;
-		DASSERT(pos == -1 || heap[pos].ptr == ptr);
-
-		HeapData new_key(ptr);
-		if(pos == -1)
-			heap[pos = size++].value = new_key.value;
-
-		if(new_key.value > heap[pos].value) {
-			heap[pos].value = new_key.value;
-			heapify(heap, size, pos);
-			return;
-		}
-
-		while(pos > 0 && new_key < heap[pos / 2]) {
-			heap[pos] = heap[pos / 2];
-			UPDATE(pos);
-			pos = pos / 2;
-		}
-		heap[pos] = new_key;
+	while(pos > 0 && new_key < heap[pos / 2]) {
+		heap[pos] = heap[pos / 2];
 		UPDATE(pos);
+		pos = pos / 2;
+	}
+	heap[pos] = new_key;
+	UPDATE(pos);
+}
+
+struct SearchInfo {
+	SearchInfo(int count) : m_data(count), m_init_map((count + 31) / 32) { fill(m_init_map, 0); }
+
+	SearchData &operator[](int idx) {
+		int map_idx = idx / 32;
+		int bit = 1 << (idx & 31);
+
+		SearchData &out = m_data[idx];
+
+		if(!(m_init_map[map_idx] & bit)) {
+			m_init_map[map_idx] |= bit;
+			out.dist = inf;
+			out.heap_pos = -1;
+			out.is_finished = false;
+		}
+
+		return out;
 	}
 
-	struct SearchInfo {
-		SearchInfo(int count) :m_data(count), m_init_map((count + 31) / 32) {
-			fill(m_init_map, 0);
-		}
-
-		SearchData &operator[](int idx) {
-			int map_idx = idx / 32;
-			int bit = 1 << (idx & 31);
-
-			SearchData &out = m_data[idx];
-
-			if(!(m_init_map[map_idx] & bit)) {
-				m_init_map[map_idx] |= bit;
-				out.dist = inf;
-				out.heap_pos = -1;
-				out.is_finished = false;
-			}
-
-			return out;
-		}
-
-		PodVector<SearchData> m_data;
-		PodVector<int> m_init_map;
-	};
+	PodVector<SearchData> m_data;
+	PodVector<int> m_init_map;
+};
 
 #undef UPDATE
 }
 
-vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, int start_id, int end_id,
-											bool do_refining, int filter_collider) const {
+vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, int start_id,
+											int end_id, bool do_refining,
+											int filter_collider) const {
 	vector<PathNode> out;
-	
+
 	if(filter_collider == -1)
 		filter_collider = -2;
 
@@ -713,28 +714,32 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 
 			if(data2.is_finished || (quad2.is_disabled && quad2.collider_id != filter_collider))
 				continue;
-			
+
 			IRect edge = computeEdge(quad1.rect, quad2.rect);
 
 			int2 edge_end_pos = vclamp(end, edge.min(), edge.max());
 			MoveVector vec(data1.entry_pos, edge_end_pos);
 
-			int2 closest_pos = vclamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min(), quad2.rect.max() - int2(1, 1));
+			int2 closest_pos = vclamp(data1.entry_pos + vec.vec * vec.ddiag, quad2.rect.min(),
+									  quad2.rect.max() - int2(1, 1));
 
 			closest_pos = vclamp(closest_pos, quad1.rect.min() - int2(1, 1), quad1.rect.max());
 
 #ifndef WALK_DIAGONAL_THROUGH_CORNERS
 			// fixing problem with diagonal moves through obstacle corners
 			if(quad1.rect.ex() > quad2.rect.x() && quad1.rect.x() < quad2.rect.ex()) {
-				if(data1.entry_pos.x < closest_pos.x && closest_pos.x == quad2.rect.x() && closest_pos.x < quad2.rect.ex() - 1)
+				if(data1.entry_pos.x < closest_pos.x && closest_pos.x == quad2.rect.x() &&
+				   closest_pos.x < quad2.rect.ex() - 1)
 					closest_pos.x++;
-				if(data1.entry_pos.x > closest_pos.x && closest_pos.x == quad2.rect.ex() - 1 && closest_pos.x > quad2.rect.x())
+				if(data1.entry_pos.x > closest_pos.x && closest_pos.x == quad2.rect.ex() - 1 &&
+				   closest_pos.x > quad2.rect.x())
 					closest_pos.x--;
-			}
-			else {
-				if(data1.entry_pos.y < closest_pos.y && closest_pos.y == quad2.rect.y() && closest_pos.y < quad2.rect.ey() - 1)
+			} else {
+				if(data1.entry_pos.y < closest_pos.y && closest_pos.y == quad2.rect.y() &&
+				   closest_pos.y < quad2.rect.ey() - 1)
 					closest_pos.y++;
-				if(data1.entry_pos.y > closest_pos.y && closest_pos.y == quad2.rect.ey() - 1 && closest_pos.y > quad2.rect.y())
+				if(data1.entry_pos.y > closest_pos.y && closest_pos.y == quad2.rect.ey() - 1 &&
+				   closest_pos.y > quad2.rect.y())
 					closest_pos.y--;
 			}
 #endif
@@ -747,7 +752,7 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 				dist += est_dist;
 			}
 
-			if(do_refining? data2.dist <= dist : data2.dist + data2.est_dist <= dist + est_dist)
+			if(do_refining ? data2.dist <= dist : data2.dist + data2.est_dist <= dist + est_dist)
 				continue;
 
 			data2.dist = dist;
@@ -767,13 +772,13 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 			out.push_back({data[quad_id].entry_pos, quad_id});
 	}
 	std::reverse(out.begin(), out.end());
-	
+
 	//TODO: it's very costly
 	if(do_refining) {
 		for(int n = 0; n < (int)out.size() - 3; n++) {
-			float dist =	distance(out[n + 0].point, out[n + 1].point) +
-							distance(out[n + 1].point, out[n + 2].point) +
-							distance(out[n + 2].point, out[n + 3].point);
+			float dist = distance(out[n + 0].point, out[n + 1].point) +
+						 distance(out[n + 1].point, out[n + 2].point) +
+						 distance(out[n + 2].point, out[n + 3].point);
 			float sdist = distance(out[n].point, out[n + 3].point);
 			if(sdist * 1.001f >= dist)
 				continue;
@@ -781,10 +786,12 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 			int height1 = m_quads[out[n].quad_id].max_height;
 			int height2 = m_quads[out[n].quad_id].min_height;
 
-			vector<PathNode> other = findPath(out[n].point, out[n+3].point, out[n].quad_id, out[n+3].quad_id, false, filter_collider);
+			vector<PathNode> other = findPath(out[n].point, out[n + 3].point, out[n].quad_id,
+											  out[n + 3].quad_id, false, filter_collider);
 
 			if(!other.empty()) {
-				ASSERT(other.front().point == out[n].point && other.back().point == out[n + 3].point);
+				ASSERT(other.front().point == out[n].point &&
+					   other.back().point == out[n + 3].point);
 
 				float odist = 0;
 				for(int i = 0; i < (int)other.size() - 1; i++)
@@ -794,7 +801,8 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 
 					out.erase(out.begin() + n + 1);
 					out.erase(out.begin() + n + 1);
-					out.insert(out.begin() + n + 1, other.begin() + 1, other.begin() + other.size() - 1);
+					out.insert(out.begin() + n + 1, other.begin() + 1,
+							   other.begin() + other.size() - 1);
 					n--;
 				}
 			}
@@ -804,7 +812,8 @@ vector<NaviMap::PathNode> NaviMap::findPath(const int2 &start, const int2 &end, 
 	return out;
 }
 
-bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, int filter_collider) const {
+bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end,
+					   int filter_collider) const {
 	//FWK_PROFILE_RARE("NaviMap::findPath");
 
 	int start_id = findQuad(start, filter_collider);
@@ -813,8 +822,9 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 	if(!isReachable(start_id, end_id))
 		return false;
 
-	vector<PathNode> input = findPath(start.xz(), end.xz(), start_id, end_id, true, filter_collider);
-	
+	vector<PathNode> input =
+		findPath(start.xz(), end.xz(), start_id, end_id, true, filter_collider);
+
 	vector<int3> path;
 	path.reserve(input.size() * 3);
 
@@ -828,8 +838,8 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 		int2 src = input[n + 0].point;
 		int2 dst = input[n + 1].point;
 		MoveVector vec(src, dst);
-		MoveVector prev_vec = path.empty()? MoveVector() : MoveVector(path.back().xz(), src);
-		
+		MoveVector prev_vec = path.empty() ? MoveVector() : MoveVector(path.back().xz(), src);
+
 		bool is_horizontal = src_quad.ex() > dst_quad.x() && src_quad.x() < dst_quad.ex();
 
 		bool prev_diag = prev_vec.ddiag != 0;
@@ -837,17 +847,23 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 
 		int2 pdst = dst;
 		if(input[n].quad_id != input[n + 1].quad_id && vec.ddiag &&
-				(!(prev_diag || prev_dx != !!vec.dx) || (vec.dx == 0 && vec.dy == 0))) {
-			if(src.x < pdst.x) pdst.x--; else if(src.x > pdst.x) pdst.x++;
-			if(src.y < pdst.y) pdst.y--; else if(src.y > pdst.y) pdst.y++;
+		   (!(prev_diag || prev_dx != !!vec.dx) || (vec.dx == 0 && vec.dy == 0))) {
+			if(src.x < pdst.x)
+				pdst.x--;
+			else if(src.x > pdst.x)
+				pdst.x++;
+			if(src.y < pdst.y)
+				pdst.y--;
+			else if(src.y > pdst.y)
+				pdst.y++;
 		}
-		pdst = vclamp(pdst, src_quad.min(), src_quad.max() - int2(1,1));
+		pdst = vclamp(pdst, src_quad.min(), src_quad.max() - int2(1, 1));
 
 #ifndef WALK_DIAGONAL_THROUGH_CORNERS
 		if(is_horizontal)
-				pdst.x = clamp(pdst.x, dst_quad.x(), dst_quad.ex() - 1);
+			pdst.x = clamp(pdst.x, dst_quad.x(), dst_quad.ex() - 1);
 		else
-				pdst.y = clamp(pdst.y, dst_quad.y(), dst_quad.ey() - 1);
+			pdst.y = clamp(pdst.y, dst_quad.y(), dst_quad.ey() - 1);
 #endif
 
 		vec = MoveVector(src, pdst);
@@ -856,9 +872,8 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 		if((prev_diag || prev_dx != !!vec.dx) && vec.ddiag) {
 			mid += vec.vec * vec.ddiag;
 			prev_diag = vec.dx == 0 && vec.dy == 0;
-		}
-		else {
-			mid += vec.dx? int2(vec.vec.x * vec.dx, 0) : int2(0, vec.vec.y * vec.dy);
+		} else {
+			mid += vec.dx ? int2(vec.vec.x * vec.dx, 0) : int2(0, vec.vec.y * vec.dy);
 			vec.dx = vec.dy = 0;
 			prev_diag = vec.ddiag != 0;
 		}
@@ -886,8 +901,7 @@ bool NaviMap::findPath(vector<int3> &out, const int3 &start, const int3 &end, in
 		if(cur_vec != last_vec || cur.y != prev.y) {
 			simplified.push_back(cur);
 			last_vec = cur_vec;
-		}
-		else
+		} else
 			prev = cur;
 	}
 
@@ -920,11 +934,13 @@ void NaviMap::printInfo() const {
 	printf("  quads(%d): %.0f KB\n", (int)m_quads.size(), double(bytes) / 1024.0);
 	printf("  sizeof(Quad): %d\n", (int)sizeof(Quad));
 
-	if(0) for(int n = 0; n < (int)m_quads.size(); n++) {
-		const Quad &quad = m_quads[n];
-		printf("%d: (%d %d %d %d): ", n, quad.rect.x(), quad.rect.y(), quad.rect.ex(), quad.rect.ey());
-		for(int i = 0; i < (int)quad.neighbours.size(); i++)
-			printf("%d ", quad.neighbours[i]);
-		printf("\n");
-	}
+	if(0)
+		for(int n = 0; n < (int)m_quads.size(); n++) {
+			const Quad &quad = m_quads[n];
+			printf("%d: (%d %d %d %d): ", n, quad.rect.x(), quad.rect.y(), quad.rect.ex(),
+				   quad.rect.ey());
+			for(int i = 0; i < (int)quad.neighbours.size(); i++)
+				printf("%d ", quad.neighbours[i]);
+			printf("\n");
+		}
 }

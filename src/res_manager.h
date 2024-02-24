@@ -29,8 +29,8 @@ class ResManager {
 	// Other resource will only be stored in manager with loadResource.
 	// Otherwise it will simply be loaded from file every time when getOther() is called.
 	vector<char> getOther(Str) const;
-	
-	Ex<void> loadResource(Str name, Stream&, ResType);
+
+	Ex<void> loadResource(Str name, Stream &, ResType);
 	Ex<void> loadResource(Str name, CSpan<char> data, ResType);
 
 	Maybe<ResType> classifyPath(Str, bool ignore_prefix = false) const;

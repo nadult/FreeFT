@@ -6,18 +6,11 @@
 using namespace game;
 
 int3 TileGroup::Group::s_side_offsets[TileGroup::Group::side_count] = {
-	{  0, 0,  1 },
-	{  1, 0,  1 },
-	{  1, 0,  0 },
-	{  1, 0, -1 },
-	{  0, 0, -1 },
-	{ -1, 0, -1 },
-	{ -1, 0,  0 },
-	{ -1, 0,  1 } };
+	{0, 0, 1}, {1, 0, 1}, {1, 0, 0}, {1, 0, -1}, {0, 0, -1}, {-1, 0, -1}, {-1, 0, 0}, {-1, 0, 1}};
 
-TileGroup::Group::Group() :m_entry_count(0) {
+TileGroup::Group::Group() : m_entry_count(0) {
 	for(int n = 0; n < side_count; n++)
-	   m_side_surf[n] = -1;	
+		m_side_surf[n] = -1;
 }
 
 void TileGroup::addEntry(const Tile *tile) {
@@ -30,7 +23,6 @@ void TileGroup::addEntry(const Tile *tile) {
 	m_entries.push_back(new_entry);
 	m_groups.push_back(Group());
 	m_groups.back().m_entry_count++;
-
 }
 
 int TileGroup::findEntry(const Tile *tile) const {
@@ -147,5 +139,3 @@ void TileGroup::loadFromXML(const XmlDocument &doc) {
 		m_groups[m_entries[n].group_id].m_entry_count++;
 	}
 }
-
-

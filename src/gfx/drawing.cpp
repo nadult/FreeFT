@@ -13,7 +13,7 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 
 	float2 pt[8] = {
 		pos + vx + vy, pos + vx + vy + vz, pos + vz + vy, pos + vy,
-		pos + vx,	  pos + vx + vz,	  pos + vz,	  pos,
+		pos + vx,	   pos + vx + vz,	   pos + vz,	  pos,
 	};
 
 	bool is_flat = box.height() < big_epsilon;

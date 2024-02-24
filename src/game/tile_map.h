@@ -9,36 +9,37 @@
 
 namespace game {
 
-	class TileMap: public Grid {
-	public:
-		typedef Grid::TObjectDef<const Tile> ObjectDef;
+class TileMap : public Grid {
+  public:
+	typedef Grid::TObjectDef<const Tile> ObjectDef;
 
-		const ObjectDef &operator [](int idx) const
-			{ return reinterpret_cast<const ObjectDef&>(Grid::operator[](idx)); }
+	const ObjectDef &operator[](int idx) const {
+		return reinterpret_cast<const ObjectDef &>(Grid::operator[](idx));
+	}
 
-		explicit TileMap(const int2 &dimensions = int2(0, 0));
-		void resize(const int2 &new_dims);
+	explicit TileMap(const int2 &dimensions = int2(0, 0));
+	void resize(const int2 &new_dims);
 
-		void remove(int idx);
-		void update(int idx);
-		
-		int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
+	void remove(int idx);
+	void update(int idx);
 
-		static Ex<void> legacyConvert(Stream &, FileStream&);
-		Ex<void> loadFromXML(const XmlDocument&);
-		void saveToXML(XmlDocument&) const;
-		Ex<void> save(FileStream &) const;
+	int pixelIntersect(const int2 &pos, FlagsType flags = Flags::all) const;
 
-		void swap(const TileMap&);
+	static Ex<void> legacyConvert(Stream &, FileStream &);
+	Ex<void> loadFromXML(const XmlDocument &);
+	void saveToXML(XmlDocument &) const;
+	Ex<void> save(FileStream &) const;
 
-		OccluderMap &occluderMap() { return m_occluder_map; }
-		const OccluderMap &occluderMap() const { return m_occluder_map; }
-		void updateVisibility(const OccluderConfig&);
+	void swap(const TileMap &);
 
-		int add(const Tile*, const int3 &pos);
-		int maybeAdd(const Tile&, const int3&);
+	OccluderMap &occluderMap() { return m_occluder_map; }
+	const OccluderMap &occluderMap() const { return m_occluder_map; }
+	void updateVisibility(const OccluderConfig &);
 
-	private:
-		OccluderMap m_occluder_map;
-	};
+	int add(const Tile *, const int3 &pos);
+	int maybeAdd(const Tile &, const int3 &);
+
+  private:
+	OccluderMap m_occluder_map;
+};
 }

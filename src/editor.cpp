@@ -23,18 +23,18 @@
 #include "ui/text_box.h"
 #include "ui/window.h"
 
+#include "res_manager.h"
 #include "sys/config.h"
 #include <fwk/gfx/gl_device.h>
 #include <fwk/gfx/opengl.h>
 #include <fwk/sys/on_fail.h>
-#include "res_manager.h"
 
 using namespace ui;
-using game::Tile;
-using game::Sprite;
-using game::TileMap;
 using game::EntityMap;
 using game::Level;
+using game::Sprite;
+using game::Tile;
+using game::TileMap;
 
 enum EditorMode {
 	editing_tiles,
@@ -62,11 +62,11 @@ static const char *s_load_dialog_names[] = {
 	"Loading tile groups",
 };
 
-class EditorWindow: public Window
-{
-public:
-	EditorWindow(int2 res) :Window(IRect(0, 0, res.x, res.y), ColorId::transparent),
-	  m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
+class EditorWindow : public Window {
+  public:
+	EditorWindow(int2 res)
+		: Window(IRect(0, 0, res.x, res.y), ColorId::transparent), m_tile_map(m_level.tile_map),
+		  m_entity_map(m_level.entity_map) {
 		m_maps_path = FilePath(ResManager::instance().dataPath()) / "maps";
 		m_left_width = width() / 5;
 
@@ -78,14 +78,18 @@ public:
 		m_group_editor = make_shared<GroupEditor>(IRect(m_left_width, 0, res.x, res.y));
 		m_group_editor->setTarget(&m_group);
 
-		m_mode_box = make_shared<ComboBox>(IRect(0, 0, m_left_width * 1 / 2, 22), 0,
-				"Mode: ", s_mode_names);
-		m_save_button = make_shared<Button>(IRect(m_left_width * 1 / 2, 0, m_left_width * 3 / 4, 22), "Save");
-		m_load_button = make_shared<Button>(IRect(m_left_width * 3 / 4, 0, m_left_width, 22), "Load");
+		m_mode_box =
+			make_shared<ComboBox>(IRect(0, 0, m_left_width * 1 / 2, 22), 0, "Mode: ", s_mode_names);
+		m_save_button =
+			make_shared<Button>(IRect(m_left_width * 1 / 2, 0, m_left_width * 3 / 4, 22), "Save");
+		m_load_button =
+			make_shared<Button>(IRect(m_left_width * 3 / 4, 0, m_left_width, 22), "Load");
 
-		m_group_pad = make_shared<GroupPad>(IRect(0, 22, m_left_width, res.y), m_group_editor, &m_group);
+		m_group_pad =
+			make_shared<GroupPad>(IRect(0, 22, m_left_width, res.y), m_group_editor, &m_group);
 
-		m_left_window = make_shared<Window>(IRect(0, 0, m_left_width, res.y), WindowStyle::gui_dark);
+		m_left_window =
+			make_shared<Window>(IRect(0, 0, m_left_width, res.y), WindowStyle::gui_dark);
 		m_left_window->attach(m_mode_box);
 		m_left_window->attach(m_save_button);
 		m_left_window->attach(m_load_button);
@@ -121,17 +125,20 @@ public:
 		IRect rect(m_left_width, 0, width(), height());
 		m_view.emplace(m_tile_map, m_entity_map, rect.size());
 		m_tiles_editor = make_shared<TilesEditor>(m_tile_map, *m_view.get(), rect);
-		m_entities_editor = make_shared<EntitiesEditor>(m_tile_map, m_entity_map, *m_view.get(), rect);
+		m_entities_editor =
+			make_shared<EntitiesEditor>(m_tile_map, m_entity_map, *m_view.get(), rect);
 		m_tiles_editor->setTileGroup(&m_group);
 
-		m_tiles_pad = make_shared<TilesPad>(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
-		m_entities_pad = make_shared<EntitiesPad>(IRect(0, 22, m_left_width, height()), m_entities_editor);
-		
+		m_tiles_pad =
+			make_shared<TilesPad>(IRect(0, 22, m_left_width, height()), m_tiles_editor, &m_group);
+		m_entities_pad =
+			make_shared<EntitiesPad>(IRect(0, 22, m_left_width, height()), m_entities_editor);
+
 		attach(m_tiles_editor);
 		attach(m_entities_editor);
 		m_left_window->attach(m_tiles_pad);
 		m_left_window->attach(m_entities_pad);
-		
+
 		updateVisibility();
 	}
 
@@ -153,37 +160,33 @@ public:
 		else if(ev.type == Event::element_selected && m_mode_box.get() == ev.source) {
 			m_mode = (EditorMode)(ev.value);
 			updateVisibility();
-		}
-		else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
+		} else if(ev.type == Event::button_clicked && m_load_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			m_file_dialog = make_shared<FileDialog>(dialog_rect, s_load_dialog_names[m_mode], FileDialogMode::opening_file);
+			m_file_dialog = make_shared<FileDialog>(dialog_rect, s_load_dialog_names[m_mode],
+													FileDialogMode::opening_file);
 			m_file_dialog->setPath("data/");
 			attach(m_file_dialog, true);
-		}
-		else if(ev.type == Event::button_clicked && m_save_button.get() == ev.source) {
+		} else if(ev.type == Event::button_clicked && m_save_button.get() == ev.source) {
 			IRect dialog_rect = IRect(-200, -150, 200, 150) + center();
-			m_file_dialog = make_shared<FileDialog>(dialog_rect, s_save_dialog_names[m_mode], FileDialogMode::saving_file);
+			m_file_dialog = make_shared<FileDialog>(dialog_rect, s_save_dialog_names[m_mode],
+													FileDialogMode::saving_file);
 			m_file_dialog->setPath("data/");
 			attach(m_file_dialog, true);
-		}
-		else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
+		} else if(ev.type == Event::window_closed && m_file_dialog.get() == ev.source) {
 			if(ev.value && m_file_dialog->mode() == FileDialogMode::saving_file) {
 				if(m_mode == editing_tiles || m_mode == editing_entities)
 					saveMap(m_file_dialog->path().c_str());
 				else
 					saveTileGroup(m_file_dialog->path().c_str());
-			}
-			else if(ev.value && m_file_dialog->mode() == FileDialogMode::opening_file) {
+			} else if(ev.value && m_file_dialog->mode() == FileDialogMode::opening_file) {
 				if(m_mode == editing_tiles || m_mode == editing_entities)
 					loadMap(m_file_dialog->path().c_str());
 				else
 					loadTileGroup(m_file_dialog->path().c_str());
-
 			}
 
 			m_file_dialog = nullptr;
-		}
-		else
+		} else
 			return false;
 
 		return true;
@@ -208,7 +211,6 @@ public:
 		}
 		printf("(%.2f sec)\n", getTime() - time);
 	}
-
 
 	void loadTileGroup(const char *file_name) {
 		printf("Loading TileGroup: %s\n", file_name);
@@ -255,30 +257,30 @@ public:
 	}
 
 	static bool mainLoop(GlDevice &device, void *pthis) {
-		return ((EditorWindow*)pthis)->mainLoop(device);
+		return ((EditorWindow *)pthis)->mainLoop(device);
 	}
 
-	EditorMode	m_mode;
+	EditorMode m_mode;
 
-	Level		m_level;
-	TileMap		&m_tile_map;
-	EntityMap	&m_entity_map;
-	TileGroup	m_group;
-	
-	PComboBox	m_mode_box;
-	PButton		m_save_button;
-	PButton		m_load_button;
+	Level m_level;
+	TileMap &m_tile_map;
+	EntityMap &m_entity_map;
+	TileGroup m_group;
+
+	PComboBox m_mode_box;
+	PButton m_save_button;
+	PButton m_load_button;
 	PFileDialog m_file_dialog;
 
-	PWindow			m_left_window;
-	PGroupPad		m_group_pad;
-	PTilesPad		m_tiles_pad;
-	PEntitiesPad	m_entities_pad;
+	PWindow m_left_window;
+	PGroupPad m_group_pad;
+	PTilesPad m_tiles_pad;
+	PEntitiesPad m_entities_pad;
 
-	PView			m_view;
-	PTilesEditor	m_tiles_editor;
-	PEntitiesEditor	m_entities_editor;
-	PGroupEditor	m_group_editor;
+	PView m_view;
+	PTilesEditor m_tiles_editor;
+	PEntitiesEditor m_entities_editor;
+	PGroupEditor m_group_editor;
 
 	int m_left_width;
 	FilePath m_maps_path;
@@ -314,7 +316,7 @@ int main(int argc, char **argv) {
 
 	GlDevice gl_device;
 	createWindow("editor", gl_device, config.resolution, config.window_pos, config.fullscreen_on);
-	
+
 	ResManager res_mgr;
 	TextureCache tex_cache;
 	preloadTiles();

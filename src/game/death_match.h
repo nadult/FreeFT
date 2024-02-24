@@ -8,54 +8,54 @@
 
 namespace game {
 
-	class DeathMatchServer: public GameModeServer {
-	public:
-		static constexpr int respawn_delay = 5;
+class DeathMatchServer : public GameModeServer {
+  public:
+	static constexpr int respawn_delay = 5;
 
-		//TODO: decrease data sent over the net
-		DeathMatchServer(World &world);
+	//TODO: decrease data sent over the net
+	DeathMatchServer(World &world);
 
-		GameModeId typeId() const override { return GameModeId::death_match; }
-		void tick(double time_diff) override;
-		void onMessage(MemoryStream&, MessageId, int source_id) override;
+	GameModeId typeId() const override { return GameModeId::death_match; }
+	void tick(double time_diff) override;
+	void onMessage(MemoryStream &, MessageId, int source_id) override;
 
-		struct ClientInfo {
-			ClientInfo();
-			void save(MemoryStream&) const;
-			void load(MemoryStream&);
+	struct ClientInfo {
+		ClientInfo();
+		void save(MemoryStream &) const;
+		void load(MemoryStream &);
 
-			double next_respawn_time;
-			int kills, self_kills, deaths;
-			bool is_respawning;
-		};
-		
-	private:
-		void onClientConnected(int client_id, const string &nick_name) override;
-		void onClientDisconnected(int client_id) override;
-		void onKill(EntityRef target, EntityRef killer) override;
-		void replicateClientInfo(int client_id, int target_id);
-
-		std::map<int, ClientInfo> m_client_infos;
+		double next_respawn_time;
+		int kills, self_kills, deaths;
+		bool is_respawning;
 	};
 
-	class DeathMatchClient: public GameModeClient {
-	public:
-		typedef DeathMatchServer::ClientInfo ClientInfo;
+  private:
+	void onClientConnected(int client_id, const string &nick_name) override;
+	void onClientDisconnected(int client_id) override;
+	void onKill(EntityRef target, EntityRef killer) override;
+	void replicateClientInfo(int client_id, int target_id);
 
-		DeathMatchClient(World &world, int client_id, const string &nick_name);
+	std::map<int, ClientInfo> m_client_infos;
+};
 
-		GameModeId typeId() const override { return GameModeId::death_match; }
-		void tick(double time_diff) override;
-		void onMessage(MemoryStream&, MessageId, int source_id) override;
-		
-		const vector<GameClientStats> stats() const override;
-		const UserMessage userMessage(UserMessageType) override;
+class DeathMatchClient : public GameModeClient {
+  public:
+	typedef DeathMatchServer::ClientInfo ClientInfo;
 
-	private:
-		void onClientDisconnected(int client_id) override;
+	DeathMatchClient(World &world, int client_id, const string &nick_name);
 
-		ClientInfo m_current_info;
-		std::map<int, ClientInfo> m_client_infos;
-	};
+	GameModeId typeId() const override { return GameModeId::death_match; }
+	void tick(double time_diff) override;
+	void onMessage(MemoryStream &, MessageId, int source_id) override;
+
+	const vector<GameClientStats> stats() const override;
+	const UserMessage userMessage(UserMessageType) override;
+
+  private:
+	void onClientDisconnected(int client_id) override;
+
+	ClientInfo m_current_info;
+	std::map<int, ClientInfo> m_client_infos;
+};
 
 }

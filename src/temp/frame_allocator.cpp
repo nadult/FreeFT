@@ -39,7 +39,7 @@ void FrameAllocator::beginFrame() {
 
 	if(allocatedBlocks)
 		FAIL("BeginFrame", "There is still some data allocated from last frame (%d blocks)",
-			   int(allocatedBlocks));
+			 int(allocatedBlocks));
 	allocatedBlocks = 0;
 
 	size_t newReserve = min(max(reserve, maxAllocated), maxReserve);
@@ -119,7 +119,8 @@ void FrameAllocator::free(void *ptr) {
 		return;
 	}
 	if(allocatedBlocks)
-		FAIL("Free",
+		FAIL(
+			"Free",
 			"We have a problem! You are probably trying to free data allocated in frame allocator, "
 			"but the\n frame allocator was destroyed!");
 	free(ptr);
