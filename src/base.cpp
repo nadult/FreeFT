@@ -359,6 +359,6 @@ void createWindow(const char *name, GlDevice &device, const int2 &res, const int
 	GlDeviceConfig config{flags};
 	config.profile = GlProfile::compatibility;
 	config.version = 2.1;
-	device.createWindow(title, res, config);
+	device.createWindow(title, IRect(res) + int2(100, 100), config);
 	device.grabMouse(false);
 }
