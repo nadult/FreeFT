@@ -15,7 +15,7 @@
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/gl_device.h>
 #include <fwk/gfx/opengl.h>
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
 #include <fwk/io/file_stream.h>
@@ -41,7 +41,7 @@ class Resource {
 			EXPECT(m_tile->load(loader));
 			m_rect_size = m_tile->rect().size() + int2(8, 8);
 		} else if(m_type == ResType::texture) {
-			m_texture = EX_PASS(GlTexture::load(path));
+			m_texture = EX_PASS(GlTexture::load(path, false));
 			m_rect_size = m_texture->size();
 		} else if(m_type == ResType::sprite) {
 			auto loader = EX_PASS(fileLoader(path));
@@ -140,7 +140,7 @@ class Resource {
 				removeSuffix(name, ".zar");
 				name += ".tga";
 				printf("Exporting: %s\n", name.c_str());
-				Texture tex;
+				Image tex;
 				m_texture->download(tex);
 				tex.saveTGA(name).check();
 			}

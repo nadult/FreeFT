@@ -4,14 +4,15 @@
 #include "game/tile.h"
 #include "game/sprite.h"
 #include "game/tile_map.h"
-#include <unistd.h>
-#include <algorithm>
-#include <set>
-#include <zip.h>
+
 #include <fwk/io/file_stream.h>
 #include <fwk/io/file_system.h>
 #include <fwk/sys/expected.h>
 #include <fwk/sys/on_fail.h>
+
+#include <algorithm>
+#include <set>
+#include <zip.h>
 
 using game::Sprite;
 using game::Tile;
@@ -23,9 +24,22 @@ static bool verifyFTPath(string path) {
 
 #ifdef _WIN32
 
-#define __msxml_h__
 #include <windows.h>
 #include <shlobj.h>
+
+static int toUnicode(Str src, Span<WCHAR> dst) {
+	int result = MultiByteToWideChar(CP_UTF8, 0, src.data(), src.size() + 1, dst.data(), dst.size());
+	ASSERT(result > 0);
+	return result - 1;
+}
+
+static string fromUnicode(Span<WCHAR> src) {
+	int dst_len = WideCharToMultiByte(CP_UTF8, 0, src.data(), -1, nullptr, 0, 0, 0); 
+	vector<char> out(dst_len + 1, 0);
+	int result = WideCharToMultiByte(CP_UTF8, 0, src.data(), -1, out.data(), out.size() + 1, 0, 0); 
+	ASSERT(result > 0);
+	return out.data();
+}
 
 static int CALLBACK browseFolderCB(HWND hwnd, UINT msg, LPARAM lparam, LPARAM data) {
 	if (msg == BFFM_INITIALIZED) {
@@ -37,11 +51,13 @@ static int CALLBACK browseFolderCB(HWND hwnd, UINT msg, LPARAM lparam, LPARAM da
 }
 
 string browseFolder(const char *message, string starting_path) {
-	TCHAR path[MAX_PATH];
+	WCHAR wmessage[1024];
+	toUnicode(message, wmessage);
+	WCHAR path[MAX_PATH];
 
 	BROWSEINFO bi;
 	memset(&bi, 0, sizeof(bi));
-	bi.lpszTitle  = message;
+	bi.lpszTitle  = wmessage;
 	bi.ulFlags	= BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 	bi.lpfn		= browseFolderCB;
 	bi.lParam	= (LPARAM)starting_path.c_str();
@@ -56,37 +72,37 @@ string browseFolder(const char *message, string starting_path) {
 			imalloc->Release();
 		}
 
-		return path;
+		return fromUnicode(path);
 	}
 	return "";
 }
 
-static const string locateFTPath() {
+static const string locateFT() {
+	vector<string> paths;
 	HKEY key;
-
-	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\GOG.com\\GOGFALLOUTTACTICS\\"), 0, KEY_READ, &key) == ERROR_SUCCESS) {
-		DWORD type;
-		char path[1024];
-		DWORD path_size = sizeof(path) - 1;
-		if(RegQueryValueEx(key, "PATH", NULL, &type, (BYTE*)path, &path_size) == ERROR_SUCCESS) {
-			path[path_size] = 0;
-			if(verifyFTPath(path))
-				return path;
+	
+	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\WOW6432Node\\GOG.com\\Games\\1440152063\\"), 0, KEY_READ, &key) == ERROR_SUCCESS) {
+		std::byte data[1024 + 1];
+		DWORD data_size = sizeof(data) - 1;
+		if(RegGetValue(key, NULL, L"PATH", RRF_RT_REG_SZ , NULL, data, &data_size) == ERROR_SUCCESS) {
+			Span<WCHAR> wchars((WCHAR*)data, data_size + 1);
+			wchars[data_size] = 0;
+			paths.emplace_back(fromUnicode(wchars));
 		}
 		RegCloseKey(key);
 	}
 
-	const char *std_paths[] = {
-		"c:\\Program Files\\14 Degrees East\\Fallout Tactics\\",
-		"c:\\Program Files (x86)\\14 Degrees East\\Fallout Tactics\\",
-	};
+	insertBack(paths,{
+		"C:\\Program Files\\14 Degrees East\\Fallout Tactics\\",
+		"C:\\Program Files (x86)\\14 Degrees East\\Fallout Tactics\\",
+	});
 
-	for(int n = 0; n < arraySize(std_paths); n++)
-		if(verifyFTPath(std_paths[n]))
-			return std_paths[n];
+	for(auto path : paths)
+		if(verifyFTPath(path))
+			return path;
 
 	auto current = FilePath::current().get();
-	return browseFolder("Please select folder in which Fallout Tactics is installed:", current);
+	return browseFolder("Please select the folder in which Fallout Tactics is installed:", current);
 }
 
 #endif
@@ -200,8 +216,7 @@ void convertDir(const char *src_dir, const char *dst_dir, const char *old_ext, c
 	for(auto &fname : file_names) {
 		FilePath path = fname.path.relative(main_path);
 		FilePath dir = FilePath(dst_dir) / path.parent();
-		if(access(dir.c_str(), R_OK) != 0)
-			mkdirRecursive(dir.c_str()).check();
+		mkdirRecursive(dir).check();
 	}
 	
 	if(!detailed) {
@@ -324,7 +339,7 @@ void convertAll(const char *fot_path, const string &filter) {
 	bool only_archives = 0;
 	unsigned long long bytes = 0;
 	
-	for(int n = 0; n < (int)all_files.size(); n++) {
+	for(int n = 0; n < all_files.size(); n++) {
 		for(int t = 0; t < arraySize(s_paths); t++) {
 			if(only_archives && s_paths[t].type != ResTypeId::archive)
 				continue;
@@ -357,8 +372,7 @@ void convertAll(const char *fot_path, const string &filter) {
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
 			FilePath dir = target_dir / FilePath(it->first).parent();
-			if(access(dir.c_str(), R_OK) != 0)
-				mkdirRecursive(dir.c_str()).check();
+			mkdirRecursive(dir).check();
 		}
 
 		for(auto it = files[t].begin(); it != files[t].end(); ++it) {
@@ -427,8 +441,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				snprintf(dst_path, sizeof(dst_path), "%s/%s%s", s_new_path[type], name.c_str(), s_new_suffix[type]);
 
 				FilePath dir = FilePath(dst_path).parent();
-				if(access(dir.c_str(), R_OK) != 0)
-					mkdirRecursive(dir.c_str()).check();
+				mkdirRecursive(dir).check();
 
 				auto ldr = memoryLoader(data);
 				auto svr = move(fileSaver(dst_path).get());
@@ -478,7 +491,7 @@ int main(int argc, char **argv) {
 
 #ifdef _WIN32
 	if(argc == 1) {
-		path = locateFTPath();
+		path = locateFT();
 
 		if(path.empty()) {
 			printf("Cannot find Fallout Tactics installation. Please install FT and then rerun this program.\n");
@@ -516,7 +529,7 @@ int main(int argc, char **argv) {
 			path = "refs/";
 		if(!verifyFTPath(path)) {
 #ifdef _WIN32
-			MessageBox(0, "Invalid path specified!", "Error", MB_OK);
+			MessageBox(0, L"Invalid path specified!", L"Error", MB_OK);
 #endif
 			printf("Invalid path specified\n");
 			return 0;
@@ -524,7 +537,7 @@ int main(int argc, char **argv) {
 		convertAll(path.c_str(), filter);
 
 #ifdef _WIN32
-		MessageBox(0, "All done!", "Message", MB_OK);
+		MessageBox(0, L"All done!", L"Message", MB_OK);
 #endif
 	}
 	else {

@@ -304,9 +304,6 @@
     <ClCompile Include="..\src\base.cpp">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\game.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\net\client.cpp">
       <Filter>net</Filter>
     </ClCompile>

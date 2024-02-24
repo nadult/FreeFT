@@ -19,7 +19,7 @@ namespace game {
 	Ex<void> TileMap::legacyConvert(Stream &sr, FileStream &sr_out) {
 		ASSERT(sr.isLoading());
 
-		sr.saveSignature({"<world>\0", 8});
+		sr.loadSignature({"<world>\0", 8});
 		u16 type;
 		char dummy;
 
