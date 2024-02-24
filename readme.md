@@ -1,7 +1,4 @@
-# FreeFT
-
-
-
+# FreeFT [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Introduction
 FreeFT is an open-source, real-time, isometric action game engine
@@ -39,7 +36,9 @@ path to original Fallout Tactics. The conversion shouldn't take more than
 a few minutes.  
 
 To convert resources under linux, you can use this command:
-./convert -p "/home/user\_name/.wine/drive\_c/tactics/" all
+
+	./convert -p "/home/user\_name/.wine/drive\_c/tactics/" all
+
 
 ## Basic controls in the game
 
@@ -75,12 +74,6 @@ Inventory (bottom left corner):
 
   BMFont was used to convert fonts to bitmaps  
   [http://www.angelcode.com/products/bmfont/](http://www.angelcode.com/products/bmfont/)
-
-
-## License
-
-The code if freely available but if you want to use it, commercially or not, please
-contact the author (e-mail: nadult (at) fastmail.fm).
 
 
 ## Screenshots
