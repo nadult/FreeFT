@@ -95,7 +95,7 @@ namespace game {
 		auto temp = memorySaver();
 		temp << MessageId::update_client_info;
 		encodeInt(temp, client_id);
-		temp << m_client_infos[client_id];
+		m_client_infos[client_id].save(temp);
 		m_world.sendMessage(temp.data(), target_id);
 	}
 		
@@ -128,7 +128,7 @@ namespace game {
 		if(msg_type == MessageId::update_client_info) {
 			ClientInfo new_info;
 			int client_id = decodeInt(sr);
-			sr >> new_info;
+			new_info.load(sr);
 			m_client_infos[client_id] = new_info;
 			if(client_id == m_current_id)
 				m_current_info = new_info;

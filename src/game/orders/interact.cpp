@@ -14,12 +14,14 @@ namespace game {
 	}
 
 	InteractOrder::InteractOrder(MemoryStream &sr) :OrderImpl(sr) {
-		sr >> m_target >> m_mode >> m_is_followup;
+		m_target.load(sr);
+		sr >> m_mode >> m_is_followup;
 	}
 
 	void InteractOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_target << m_mode << m_is_followup;
+		m_target.save(sr);
+		sr << m_mode << m_is_followup;
 	}
 
 	bool Actor::handleOrder(InteractOrder &order, EntityEvent event, const EntityEventParams &params) {

@@ -76,7 +76,7 @@ namespace game {
 			MultiImage(const MultiImage &rhs);
 			void operator=(const MultiImage&);
 
-			virtual void cacheUpload(Texture&) const;
+			virtual void cacheUpload(Image&) const;
 			virtual int2 textureSize() const { return rect.size(); }
 
 			Ex<void> load(FileStream&);
@@ -106,7 +106,7 @@ namespace game {
 		PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect, bool put_in_atlas = true) const;
 		
 		// Search is case-insensitive
-		int findSequence(const char *name) const;
+		int findSequence(Str name) const;
 
 		int memorySize() const;
 		void printInfo() const;

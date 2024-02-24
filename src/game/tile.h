@@ -18,11 +18,11 @@ namespace game
 		Ex<void> load(Stream&);
 		void save(FileStream&) const;
 
-		virtual void cacheUpload(Texture&) const;
+		virtual void cacheUpload(Image&) const;
 		virtual int2 textureSize() const;
 
 		int2 dimensions() const { return m_texture.size(); }	
-		Texture texture() const;
+		Image texture() const;
 		PTexture deviceTexture(FRect &tex_rect) const;
 	
 		const IRect rect() const;

@@ -2,30 +2,30 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "audio/mp3_decoder.h"
-#ifndef FWK_PLATFORM_HTML
+// TODO: enable this
+#ifndef FWK_PLATFORM_WINDOWS
 #include <mpg123.h>
 #endif
 
-#include <fwk/io/file_stream.h>
 #include <fwk/audio/sound.h>
-
+#include <fwk/io/file_stream.h>
 
 namespace audio {
 
-#ifdef FWK_PLATFORM_HTML
-// TODO: use browser mp3 decoder? But how?
+#ifdef FWK_PLATFORM_WINDOWS
+	// TODO: use browser mp3 decoder? But how?
 
 	MP3Decoder::MP3Decoder(const string &file_name)
-		:m_is_finished(true), m_sample_rate(44100), m_num_channels(1), m_need_data(false) { }
-	MP3Decoder::~MP3Decoder() { }
-		
+		: m_is_finished(true), m_sample_rate(44100), m_num_channels(1), m_need_data(false) {}
+	MP3Decoder::~MP3Decoder() {}
+
 	bool MP3Decoder::decode(Sound &out, int max_size) {
 		out = {};
 		return true;
 	}
 #else
 	static int s_num_decoders = 0;
-	
+
 	//TODO: silence errors
 	MP3Decoder::MP3Decoder(const string &file_name) {
 		m_stream.emplace(move(fileLoader(file_name).get())); // TODO: pass it properly
@@ -52,8 +52,7 @@ namespace audio {
 				PodVector<u8> input(min(4096, (int)(m_stream->size() - m_stream->pos())));
 				m_stream->loadData(input);
 				ret = mpg123_decode(handle, input.data(), input.size(), 0, 0, &size);
-			}
-			else {
+			} else {
 				ret = mpg123_decode(handle, 0, 0, 0, 0, &size);
 			}
 
@@ -74,7 +73,7 @@ namespace audio {
 
 	MP3Decoder::~MP3Decoder() {
 		if(m_handle)
-			mpg123_delete((mpg123_handle*)m_handle);
+			mpg123_delete((mpg123_handle *)m_handle);
 		if(--s_num_decoders == 0)
 			mpg123_exit();
 	}
@@ -85,7 +84,7 @@ namespace audio {
 
 		PodVector<char> temp(max_size);
 		int out_pos = 0;
-		auto handle = (mpg123_handle*)m_handle;
+		auto handle = (mpg123_handle *)m_handle;
 
 		int ret = 0;
 		do {
@@ -100,11 +99,11 @@ namespace audio {
 				PodVector<char> input(min(4096, bytes_left));
 
 				m_stream->loadData(input);
-				ret = mpg123_decode(handle, (u8*)input.data(), input.size(), (u8*)temp.data() + out_pos,
-						max_size - out_pos, &size);
-			}
-			else {
-				ret = mpg123_decode(handle, 0, 0, (u8*)temp.data() + out_pos, max_size - out_pos, &size);
+				ret = mpg123_decode(handle, (u8 *)input.data(), input.size(),
+									(u8 *)temp.data() + out_pos, max_size - out_pos, &size);
+			} else {
+				ret = mpg123_decode(handle, 0, 0, (u8 *)temp.data() + out_pos, max_size - out_pos,
+									&size);
 			}
 
 			m_need_data = ret == MPG123_NEED_MORE;
@@ -123,9 +122,7 @@ namespace audio {
 		return m_is_finished;
 	}
 #endif
-	
-	int MP3Decoder::bytesPerSecond() const {
-		return m_sample_rate * m_num_channels * 2;
-	}
+
+	int MP3Decoder::bytesPerSecond() const { return m_sample_rate * m_num_channels * 2; }
 
 }

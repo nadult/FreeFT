@@ -25,3 +25,5 @@
 /data/maps/*/*.xml
 /data/gui
 /media
+/windows/.vs
+*.vcxproj.user

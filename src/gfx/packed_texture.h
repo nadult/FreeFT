@@ -28,6 +28,7 @@ class Palette {
 };
 
 // Pallettized, RLE - encoded (as in ZAR) texture
+// TODO: rename to PackedImage
 class PackedTexture {
   public:
 	PackedTexture();
@@ -44,8 +45,8 @@ class PackedTexture {
 	int memorySize() const;
 
 	void decode(Color *__restrict out_data, const Color *__restrict pal, int pal_size) const;
-	void toTexture(Texture &, const Color *pal, int pal_size) const;
-	void blit(Texture &, const int2 &offset, const Color *palette, int size) const;
+	void toTexture(Image &, const Color *pal, int pal_size) const;
+	void blit(Image &, const int2 &offset, const Color *palette, int size) const;
 	bool testPixel(const int2 &pixel) const;
 
   protected:

@@ -34,13 +34,13 @@ namespace game {
 
 	Projectile::Projectile(MemoryStream &sr) :EntityImpl(sr) {
 		sr.unpack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_distance, m_impact_created);
-		sr >> m_spawner;
+		m_spawner.load(sr);
 	}
 
 	void Projectile::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		sr.pack(m_dir, m_speed, m_frame_count, m_target_angle, m_damage_mod, m_distance, m_impact_created);
-		sr << m_spawner;
+		m_spawner.save(sr);
 	}
 		
 	XmlNode Projectile::save(XmlNode parent) const {

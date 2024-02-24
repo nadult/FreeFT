@@ -12,14 +12,20 @@ namespace game {
 	}
 
 	TrackOrder::TrackOrder(MemoryStream &sr) :OrderImpl(sr) {
-		sr >> m_target >> m_min_distance >> m_please_run;
-		sr >> m_path >> m_path_pos >> m_time_for_update;
+		m_target.load(sr);
+		sr >> m_min_distance >> m_please_run;
+		m_path.load(sr);
+		m_path_pos.load(sr);
+		sr >> m_time_for_update;
 	}
 
 	void TrackOrder::save(MemoryStream &sr) const {
 		Order::save(sr);
-		sr << m_target << m_min_distance << m_please_run;
-		sr << m_path << m_path_pos << m_time_for_update;
+		m_target.save(sr);
+		sr << m_min_distance << m_please_run;
+		m_path.save(sr);
+		m_path_pos.save(sr);
+		sr << m_time_for_update;
 	}
 
 	bool Actor::handleOrder(TrackOrder &order, EntityEvent event, const EntityEventParams &params) {

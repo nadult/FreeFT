@@ -5,7 +5,7 @@
 
 #include "game/tile.h"
 #include <fwk/gfx/font.h>
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 #include <fwk/io/file_stream.h>
 #include <fwk/io/file_system.h>
 #include <fwk/io/memory_stream.h>
@@ -69,7 +69,7 @@ ResManager::~ResManager() {
 	g_instance = nullptr;
 }
 
-void fixGrayTransTexture(Texture &tex) {
+void fixGrayTransTexture(Image &tex) {
 	for(int n : intRange(tex.pixelCount()))
 		tex[n] = IColor(u8(255), u8(255), u8(255), tex[n].r);
 }
@@ -78,7 +78,7 @@ PTexture ResManager::getTexture(Str name, bool font_tex) {
 	auto &textures = m_impl->textures;
 	auto it = textures.find(name);
 	if(it == textures.end()) {
-		auto tex = Texture::load(fullPath(name, ResType::texture));
+		auto tex = Image::load(fullPath(name, ResType::texture));
 		tex.check();
 		if(font_tex)
 			fixGrayTransTexture(*tex);
@@ -153,8 +153,8 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 	else if(type == ResType::texture) {
 		auto ext = fileNameExtension(name);
 		if(!ext)
-			return ERROR("Texture without extension: '%'", name);
-		auto tex = EX_PASS(Texture::load(sr, *ext));
+			return ERROR("Image without extension: '%'", name);
+		auto tex = EX_PASS(Image::load(sr, *ext));
 		m_impl->textures[name] = GlTexture::make(tex);
 	}
 	else if(type == ResType::other) {

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freeft", "freeft.vcxproj", "{12336274-6333-403E-82AB-E6C94D20F1EC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfwk", "..\libfwk\windows\libfwk.vcxproj", "{D58F34BE-FFCB-485F-9294-460EA261D0ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12336274-6333-403E-82AB-E6C94D20F1EC}.Debug|x64.ActiveCfg = Debug|x64
+		{12336274-6333-403E-82AB-E6C94D20F1EC}.Debug|x64.Build.0 = Debug|x64
+		{12336274-6333-403E-82AB-E6C94D20F1EC}.Release|x64.ActiveCfg = Release|x64
+		{12336274-6333-403E-82AB-E6C94D20F1EC}.Release|x64.Build.0 = Release|x64
+		{D58F34BE-FFCB-485F-9294-460EA261D0ED}.Debug|x64.ActiveCfg = Debug|x64
+		{D58F34BE-FFCB-485F-9294-460EA261D0ED}.Debug|x64.Build.0 = Debug|x64
+		{D58F34BE-FFCB-485F-9294-460EA261D0ED}.Release|x64.ActiveCfg = Release|x64
+		{D58F34BE-FFCB-485F-9294-460EA261D0ED}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {72C0C156-AC02-45A0-9FBA-78A6CE11BD43}
+	EndGlobalSection
+EndGlobal

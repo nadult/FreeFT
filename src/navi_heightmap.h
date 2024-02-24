@@ -24,7 +24,7 @@ public:
 
 	bool test(int x, int y, int level, int agent_size) const;
 
-	Texture toTexture(int level) const;
+	Image toImage(int level) const;
 	void saveLevels() const;
 	void printInfo() const;
 

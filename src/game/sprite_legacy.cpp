@@ -37,7 +37,7 @@ namespace game
 	template <class InputStream>
 	Ex<void> Sprite::legacyLoad(InputStream &sr, Str) {
 		ASSERT(sr.isLoading());
-		sr.signature({"<sprite>\0", 9});
+		EXPECT(sr.loadSignature({"<sprite>\0", 9}));
 		
 		clear();
 
@@ -103,7 +103,7 @@ namespace game
 		for(int n = 0; n < collection_count; n++) {
 			Collection &collection = collections[n];
 
-			sr.signature({"<spranim>\0001\0", 12});
+			EXPECT(sr.loadSignature({"<spranim>\0001\0", 12}));
 			i32 offset; sr >> offset;
 			collection.offset = offset;
 
@@ -132,7 +132,7 @@ namespace game
 
 			sr.seek(collection.offset);
 
-			sr.signature({"<spranim_img>\0", 14});
+			EXPECT(sr.loadSignature({"<spranim_img>\0", 14}));
 			i16 type; sr >> type;
 
 			if(type != '1' && type != '2')

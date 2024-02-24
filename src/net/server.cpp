@@ -129,7 +129,7 @@ namespace net {
 
 				auto temp = memorySaver(buffer);
 				encodeInt(temp, client_id);
-				temp << LevelInfoChunk{ m_world->mapName(), m_world->gameModeId() };
+				LevelInfoChunk{ m_world->mapName(), m_world->gameModeId() }.save(temp);
 				host.enqueChunk(temp.data(), ChunkType::join_accept, 0);
 
 				printf("Client connected (%d / %d): %s (%s)\n", numActiveClients(), maxPlayers(),
@@ -296,7 +296,8 @@ namespace net {
 			chunk.max_players = maxPlayers();
 			chunk.is_passworded = !m_config.m_password.empty();
 			chunk.game_mode = m_game_mode->typeId();
-			out << LobbyChunkId::server_status << chunk;
+			out << LobbyChunkId::server_status;
+			chunk.save(out);
 			sendLobbyPacket(out.data());
 			m_lobby_timeout = m_current_time + 10.0;
 		}

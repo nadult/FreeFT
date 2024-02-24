@@ -3,19 +3,19 @@
 
 #include "gfx/packed_texture.h"
 
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 #include <fwk/io/file_stream.h>
 
 namespace {
-Ex<Texture> loadZAR(Stream &sr) {
+Ex<Image> loadZAR(Stream &sr) {
 	Palette palette;
 	auto packed = EX_PASS(PackedTexture::legacyLoad(sr, palette));
-	Texture out(packed.size());
-	packed.decode(out.data(), palette.data(), palette.size());
+	Image out(packed.size());
+	packed.decode(&out(0, 0), palette.data(), palette.size());
 	return out;
 }
 
-Texture::RegisterLoader zar_loader("zar", loadZAR);
+Image::RegisterLoader zar_loader("zar", loadZAR);
 }
 
 bool Palette::operator==(const Palette &rhs) const {
@@ -84,7 +84,7 @@ PackedTexture::PackedTexture() : m_width(0), m_height(0), m_default_idx(0), m_ma
 
 template <class Stream>
 Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
-	sr.signature({"<zar>\0", 6});
+	EXPECT(sr.loadSignature({"<zar>\0", 6}));
 
 	char zar_type, dummy1, has_palette;
 	int width, height;
@@ -171,12 +171,12 @@ static const Color blend(Color dst, Color src) {
 				 ((sb - db) * sa + (db << 8)) >> 8, ((256 - da) * sa + (da << 8)) >> 8);
 }
 
-void PackedTexture::blit(Texture &out, const int2 &pos, const Color *__restrict pal,
+void PackedTexture::blit(Image &out, const int2 &pos, const Color *__restrict pal,
 						 int pal_size) const {
 	DASSERT(pos.x + m_width <= out.width() && pos.y + m_height <= out.height());
 	DASSERT(pos.x >= 0 && pos.y >= 0);
 
-	Color *dst = out.line(pos.y) + pos.x;
+	Color *dst = &out(pos);
 	int pixels = m_width * m_height, stride = out.width() - m_width;
 
 	DASSERT(pal && m_max_idx < pal_size);
@@ -249,10 +249,10 @@ void PackedTexture::decode(Color *__restrict dst, const Color *__restrict pal, i
 	}
 }
 
-void PackedTexture::toTexture(Texture &out, const Color *pal, int pal_size) const {
+void PackedTexture::toTexture(Image &out, const Color *pal, int pal_size) const {
 	DASSERT(m_width > 0 && m_height > 0);
 	out.resize({m_width, m_height});
-	decode(out.line(0), pal, pal_size);
+	decode(&out(0, 0), pal, pal_size);
 }
 
 bool PackedTexture::testPixel(const int2 &pixel) const {

@@ -1,6 +1,8 @@
 // Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
 // This file is part of FreeFT. See license.txt for details.
 
+#include "net/socket.h"
+
 #ifdef _WIN32
 
 typedef int socklen_t;
@@ -13,11 +15,9 @@ typedef int socklen_t;
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #endif
-
-#include <unistd.h>
-#include "net/socket.h"
 
 //#define RELIABILITY_TEST
 #ifdef RELIABILITY_TEST
@@ -92,7 +92,7 @@ namespace net {
 	}
 
 	void PacketInfo::save(MemoryStream &sr) const {
-		sr.pack(protocol_id, packet_id, current_id, remote_id, u8(flags));
+		sr.pack(protocol_id, packet_id, current_id, remote_id, flags.bits);
 	}
 	void PacketInfo::load(MemoryStream &sr) {
 		u8 flags_;
@@ -102,13 +102,13 @@ namespace net {
 	}
 
 	InPacket::InPacket() : MemoryStream(cspan("", 0)) {}
-	InPacket::InPacket(PodVector<char> data) : MemoryStream(move(data), true) { *this >> info; }
+	InPacket::InPacket(PodVector<char> data) : MemoryStream(move(data), true) { info.load(*this); }
 	InPacket::InPacket(InPacket &&) = default;
 	InPacket &InPacket::operator=(InPacket &&rhs) = default;
 
 	OutPacket::OutPacket(PacketInfo info)
 		: MemoryStream(memorySaver(limits::packet_size)), info(info) {
-		*this << info;
+		info.save(*this);
 	}
 
 	Ex<Socket> Socket::make(const Address &address) {
@@ -131,7 +131,11 @@ namespace net {
 		sockaddr_in addr;
 		toSockAddr(address, &addr);
 		if(bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+#ifdef _WIN32
+			closesocket(fd);
+#else
 			::close(fd);
+#endif
 			return FWK_ERROR("Error while binding address to socket");
 		}
 
@@ -152,7 +156,11 @@ namespace net {
 
 	void Socket::close() {
 		if(m_fd) {
+#ifdef _WIN32
+			closesocket(m_fd);
+#else
 			::close(m_fd);
+#endif
 			m_fd = 0;
 		}
 	}

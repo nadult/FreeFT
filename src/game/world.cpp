@@ -442,7 +442,8 @@ namespace game {
 			if(isClient()) {
 				audio::SoundIndex sound_id;
 				SoundType sound_type;
-				sr >> sound_type >> sound_id;
+				sr >> sound_type;
+				sound_id.load(sr);
 				float3 pos = (float3)net::decodeInt3(sr);
 				audio::playSound(sound_id, sound_type, pos);
 			}
@@ -461,7 +462,8 @@ namespace game {
 
 		if(m_mode == Mode::server) {
 			auto temp = memorySaver();
-			temp << MessageId::sound << sound_type << audio::SoundIndex((int)sound_id, 1);
+			temp << MessageId::sound << sound_type;
+			audio::SoundIndex((int)sound_id, 1).save(temp);
 			net::encodeInt3(temp, int3(pos));
 			sendMessage(temp.data());
 			// TODO: send unreliable packet with short life span

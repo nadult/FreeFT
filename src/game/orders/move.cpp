@@ -13,13 +13,17 @@ namespace game {
 
 	MoveOrder::MoveOrder(MemoryStream &sr) :OrderImpl(sr) {
 		m_target_pos = net::decodeInt3(sr);
-		sr >> m_please_run >> m_path >> m_path_pos;
+		sr >> m_please_run;
+		m_path.load(sr);
+		m_path_pos.load(sr);
 	}
 
 	void MoveOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
 		net::encodeInt3(sr, m_target_pos);
-		sr << m_please_run << m_path << m_path_pos;
+		sr << m_please_run;
+		m_path.save(sr);
+		m_path_pos.save(sr);
 	}	
 
 	bool Actor::handleOrder(MoveOrder &order, EntityEvent event, const EntityEventParams &params) {

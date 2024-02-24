@@ -39,7 +39,7 @@ namespace game {
 	Container::Container(MemoryStream &sr) :EntityImpl(sr) {
 		sr.unpack(m_state, m_target_state);
 		m_update_anim = false;
-		sr >> m_inventory;
+		m_inventory.load(sr);
 	}
 
 	Container::Container(CXmlNode node) :EntityImpl(node) {
@@ -52,7 +52,7 @@ namespace game {
 	void Container::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
 		sr.pack(m_state, m_target_state);
-		sr << m_inventory;
+		m_inventory.save(sr);
 	}
 
 	XmlNode Container::save(XmlNode parent) const {

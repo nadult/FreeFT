@@ -84,7 +84,7 @@ namespace game {
 		encodeInt(sr, size());
 		for(int n = 0; n < size(); n++) {
 			encodeInt(sr, m_entries[n].count);
-			sr << m_entries[n].item;
+			m_entries[n].item.save(sr);
 		}
 	}
 
@@ -251,11 +251,11 @@ namespace game {
 					(!m_ammo.item.isDummy()? 4 : 0) );
 
 		if(!m_weapon.isDummy())
-			sr << m_weapon;
+			m_weapon.save(sr);
 		if(!m_armour.isDummy())
-			sr << m_armour;
+			m_armour.save(sr);
 		if(!m_ammo.item.isDummy()) {
-			sr << m_ammo.item;
+			m_ammo.item.save(sr);
 			encodeInt(sr, m_ammo.count);
 		}
 	}

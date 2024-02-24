@@ -356,6 +356,9 @@ void createWindow(const char *name, GlDevice &device, const int2 &res, const int
 	auto flags = GlDeviceOpt::resizable | GlDeviceOpt::vsync;
 	if(fullscreen)
 		flags |= GlDeviceOpt::fullscreen;
-	device.createWindow(title, res, flags, GlProfile::compatibility, 2.1);
+	GlDeviceConfig config{flags};
+	config.profile = GlProfile::compatibility;
+	config.version = 2.1;
+	device.createWindow(title, res, config);
 	device.grabMouse(false);
 }

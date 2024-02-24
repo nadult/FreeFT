@@ -6,7 +6,7 @@
 #include <fwk/gfx/gl_format.h>
 #include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/opengl.h>
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 #include <limits.h>
 
 //#define LOGGING
@@ -38,7 +38,7 @@ void CachedTexture::onCacheDestroy() {
 }
 
 static int textureMemorySize(PTexture tex) {
-	return evalImageSize(tex->format(), tex->width(), tex->height());
+	return imageSize(tex->format(), tex->width(), tex->height());
 }
 
 TextureCache *TextureCache::g_instance = nullptr;
@@ -83,7 +83,7 @@ void TextureCache::nextFrame() {
 		m_atlas_size = vmin(m_atlas_size, int2(max_size, max_size));
 		ASSERT(m_atlas_size.x >= node_size && m_atlas_size.y >= node_size);
 
-		m_atlas = GlTexture::make(GlFormat::rgba, m_atlas_size);
+		m_atlas = GlTexture::make(TextureType::tex_2d, GlFormat::rgba8, int3(m_atlas_size, 1), 1);
 		m_memory_limit -= textureMemorySize(m_atlas);
 #ifdef LOGGING
 		printf("Atlas size: %dKB\n", textureMemorySize(PTexture(&m_atlas)) / 1024);
@@ -154,11 +154,11 @@ void TextureCache::nextFrame() {
 				continue;
 			}
 
-			Texture tex;
+			Image tex;
 			res.res_ptr->cacheUpload(tex);
 			DASSERT(tex.size() == res.size);
 			res.atlas_pos = pos + atlas_node.rect.min();
-			m_atlas->upload(tex, res.atlas_pos);
+			m_atlas->upload(tex.format(), tex.data().reinterpret<u8>(), IRect(tex.size()) + res.atlas_pos, 0);
 
 			if(res.atlas_node_id == -1) {
 #ifdef LOGGING
@@ -251,7 +251,7 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 
 	if(!res.device_texture) {
 		DASSERT(res.res_ptr);
-		Texture temp_tex;
+		Image temp_tex;
 		res.res_ptr->cacheUpload(temp_tex);
 		res.device_texture = GlTexture::make(temp_tex);
 		res.size = int2(temp_tex.width(), temp_tex.height());

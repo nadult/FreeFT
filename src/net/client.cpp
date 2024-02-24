@@ -32,7 +32,7 @@ namespace net {
 			if(chunk_id == LobbyChunkId::server_list) {
 				while(!packet.atEnd()) {
 					ServerStatusChunk chunk;
-					packet >> chunk;
+					chunk.load(packet);
 					if(chunk.address.isValid())
 						out.push_back(chunk);
 				}
@@ -118,7 +118,7 @@ namespace net {
 				if(chunk.type() == ChunkType::join_accept) {
 					host->verify(true);
 					m_client_id = decodeInt(chunk);
-					chunk >> m_level_info;
+					m_level_info.load(chunk);
 					m_mode = Mode::waiting_for_world_update;
 				}
 				else if(chunk.type() == ChunkType::join_refuse) {
@@ -143,7 +143,7 @@ namespace net {
 					entityUpdate(chunk);
 				else if(chunk.type() == ChunkType::level_info) {
 					LevelInfoChunk new_info;
-					chunk >> new_info;
+					new_info.load(chunk);
 					if(new_info.map_name != m_level_info.map_name)
 						m_mode = Mode::waiting_for_world_update;
 					m_level_info = new_info;

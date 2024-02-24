@@ -17,7 +17,7 @@ namespace game {
 		sr << nick_name;
 		encodeInt(sr, (int)pcs.size());
 		for(const auto &pc : pcs)
-			sr << pc;
+			pc.save(sr);
 	}
 
 	void GameClient::load(MemoryStream &sr) {
@@ -214,7 +214,7 @@ namespace game {
 		if(msg_type == MessageId::actor_order) {
 			EntityRef actor_ref;
 			POrder order;
-			sr >> actor_ref;
+			actor_ref.load(sr);
 			order.reset(Order::construct(sr));
 
 			auto it = m_clients.find(source_id);
@@ -227,7 +227,7 @@ namespace game {
 			}
 		}
 		else if(msg_type == MessageId::update_client) {
-			sr >> m_clients[source_id];
+			m_clients[source_id].load(sr);
 			//TODO: verification?
 			replicateClient(source_id);
 		}
@@ -237,7 +237,7 @@ namespace game {
 		auto temp = memorySaver();
 		temp << MessageId::update_client;
 		encodeInt(temp, client_id);
-		temp << m_clients[client_id];
+		m_clients[client_id].save(temp);
 		m_world.sendMessage(temp.data(), target_id);
 	}
 	
@@ -279,7 +279,7 @@ namespace game {
 		if(msg_type == MessageId::update_client) {
 			GameClient new_client;
 			int new_id = decodeInt(sr);
-			sr >> new_client;
+			new_client.load(sr);
 			m_clients[new_id] = new_client;
 
 			if(new_id == m_current_id)
@@ -300,7 +300,8 @@ namespace game {
 
 		auto temp = memorySaver();
 		temp << MessageId::actor_order;
-		temp << entity_ref << order->typeId();
+		entity_ref.save(temp);
+		temp << order->typeId();
 		order->save(temp);
 		m_world.sendMessage(temp.data());
 		return true;
@@ -317,7 +318,7 @@ namespace game {
 		m_current.pcs.push_back(new_char);	
 		auto temp = memorySaver();
 		temp << MessageId::update_client;
-		temp << m_current;
+		m_current.save(temp);
 		m_world.sendMessage(temp.data());
 		return true;
 	}
@@ -328,7 +329,7 @@ namespace game {
 				pc.setClassId(class_id);
 				auto temp = memorySaver();
 				temp << MessageId::update_client;
-				temp << m_current;
+				m_current.save(temp);
 				m_world.sendMessage(temp.data());
 				return true;
 			}

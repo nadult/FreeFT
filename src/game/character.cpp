@@ -27,7 +27,8 @@ namespace game {
 	}
 
 	void Character::save(MemoryStream &sr) const {
-		sr << m_name << m_icon_name << m_proto_idx;
+		sr << m_name << m_icon_name;
+		m_proto_idx.save(sr);
 	}
 
 	void Character::load(MemoryStream &sr) {
@@ -138,13 +139,14 @@ namespace game {
 	PlayableCharacter::~PlayableCharacter() { }
 		
 	PlayableCharacter::PlayableCharacter(MemoryStream &sr) :m_character(sr), m_class_id(CharacterClass::defaultId()) {
-		sr >> m_entity_ref;
+		m_entity_ref.load(sr);
 		m_class_id = decodeInt(sr);
 		ASSERT(CharacterClass::isValidId(m_class_id));
 	}
 
 	void PlayableCharacter::save(MemoryStream &sr) const {
-		sr << m_character << m_entity_ref;
+		m_character.save(sr);
+		m_entity_ref.save(sr);
 		encodeInt(sr, m_class_id);
 	}
 

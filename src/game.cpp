@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
 	s_main_loop.reset(nullptr);
 
 /*	PTexture atlas = tex_cache.atlas();
-	Texture tex;
+	Image tex;
 	atlas->download(tex);
 	Saver("atlas.tga") << tex;*/
 

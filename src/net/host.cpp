@@ -90,8 +90,9 @@ namespace net {
 		Packet &packet = m_packets[packet_idx];
 
 		m_out_packet_id++;
-		m_out_packet.clear();
-		m_out_packet << PacketInfo(m_out_packet_id, m_current_id, m_remote_id, mask(is_first, PacketFlag::first));
+		m_out_packet.seek(0);
+		DASSERT(m_out_packet.isValid());
+		PacketInfo(m_out_packet_id, m_current_id, m_remote_id, mask(is_first, PacketFlag::first)).save(m_out_packet);
 
 		packet.packet_id = m_out_packet_id;
 		m_packet_idx = packet_idx;

@@ -3,7 +3,7 @@
 
 #include "game/sprite.h"
 
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 #include <fwk/math/rotation.h>
 #include <fwk/io/file_stream.h>
 
@@ -111,14 +111,14 @@ namespace game
 		return bytes;
 	}
 
-	void Sprite::MultiImage::cacheUpload(Texture &tex) const {
+	void Sprite::MultiImage::cacheUpload(Image &image) const {
 		DASSERT(prev_palette);
 
-		tex.resize(rect.size());
-		if(!tex.empty()) {
-			memset(tex.line(0), 0, rect.width() * rect.height() * sizeof(Color));
+		image.resize(rect.size());
+		if(!image.empty()) {
+			image.fill(IColor(0, 0, 0, 0));
 			for(int l = 0; l < Sprite::layer_count; l++)
-				images[l].blit(tex, points[l], prev_palette->access(l), prev_palette->size(l));
+				images[l].blit(image, points[l], prev_palette->access(l), prev_palette->size(l));
 		}
 	}
 
@@ -142,7 +142,7 @@ namespace game
 
 
 	Ex<void> Sprite::load(FileStream &sr, bool full_load) {
-		sr.signature("SPRITE");
+		EXPECT(sr.loadSignature("SPRITE"));
 
 		sr.unpack(m_offset, m_bbox);
 		u32 size;
@@ -175,7 +175,7 @@ namespace game
 	}
 
 	void Sprite::save(FileStream &sr) const {
-		sr.signature("SPRITE");
+		sr.saveSignature("SPRITE");
 		sr.pack(m_offset, m_bbox);
 		sr << u32(m_sequences.size());
 		for(auto &seq : m_sequences)
@@ -252,9 +252,9 @@ namespace game
 		return image.testPixel(screen_pos + m_offset);
 	}
 
-	int Sprite::findSequence(const char *name) const {
+	int Sprite::findSequence(Str name) const {
 		for(int n = 0; n < (int)m_sequences.size(); n++)
-			if(strcasecmp(m_sequences[n].name.c_str(), name) == 0)
+			if(name.compareIgnoreCase(m_sequences[n].name) == 0)
 				return n;
 		return -1;
 	}

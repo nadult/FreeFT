@@ -5,7 +5,7 @@
 
 #include "gfx/drawing.h"
 #include "gfx/scene_renderer.h"
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 #include <fwk/gfx/renderer2d.h>
 #include <fwk/io/file_stream.h>
 
@@ -55,13 +55,13 @@ namespace game
 		return m_texture.size();
 	}
 
-	void TileFrame::cacheUpload(Texture &tex) const {
+	void TileFrame::cacheUpload(Image &tex) const {
 		DASSERT(m_palette_ref);
 		m_texture.toTexture(tex, m_palette_ref->data(), m_palette_ref->size());
 	}
 
-	Texture TileFrame::texture() const {
-		Texture out;
+	Image TileFrame::texture() const {
+		Image out;
 		m_texture.toTexture(out, m_palette_ref->data(), m_palette_ref->size());
 		return out;
 	}		
@@ -86,7 +86,7 @@ namespace game
 	Ex<void> Tile::legacyLoad(InputStream &sr, Str name) {
 		ASSERT(sr.isLoading());
 
-		sr.signature({"<tile>\0", 7});
+		EXPECT(sr.loadSignature({"<tile>\0", 7}));
 		i16 type; sr >> type;
 
 		if(type == 0x3031) {
@@ -120,7 +120,7 @@ namespace game
 		int unk_size = type == '9'? 0 : type == '7'? 2 : type == '6'? 3 : 1;
 		sr.loadData(span(unknown, unk_size));
 
-		sr.signature({"<tiledata>\0001\0", 12});
+		EXPECT(sr.loadSignature({"<tiledata>\0001\0", 12}));
 		u8 dummy2;
 		i32 zar_count;
 		sr.unpack(dummy2, zar_count);
@@ -156,7 +156,7 @@ namespace game
 	}
 
 	Ex<void> Tile::load(Stream &sr) {
-		sr.signature("TILE");
+		EXPECT(sr.loadSignature("TILE"));
 		unsigned char type_id, surface_id;
 		sr.unpack(type_id, surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
 		m_type_id = type_id >= count<TileId>? TileId::unknown : (TileId)type_id;
@@ -181,7 +181,7 @@ namespace game
 	template Ex<void> Tile::legacyLoad(FileStream&, Str);
 
 	void Tile::save(FileStream &sr) const {
-		sr.signature("TILE");
+		sr.saveSignature("TILE");
 		sr.pack(m_type_id, m_surface_id, m_bbox, m_offset, m_see_through, m_walk_through, m_is_invisible);
 		DASSERT(!m_first_frame.m_texture.empty());
 

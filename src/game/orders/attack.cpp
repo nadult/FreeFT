@@ -23,7 +23,7 @@ namespace game {
 		m_is_kick_weapon = flags & 1;
 		m_is_followup = flags & 2;
 		if(flags & 4)
-			sr >> m_target;
+			m_target.load(sr);
 		else
 			sr >> m_target_pos;
 	}
@@ -36,7 +36,7 @@ namespace game {
 		sr << flags << m_mode;
 		encodeInt(sr, m_burst_mode);
 		if(m_target)
-			sr << m_target;
+			m_target.save(sr);
 		else
 			sr << m_target_pos;
 	}

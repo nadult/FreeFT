@@ -32,7 +32,7 @@ namespace game {
 			sr >> m_target_angle;
 		else
 			m_target_angle = dirAngle();
-		sr >> m_inventory;
+		m_inventory.load(sr);
 	}
 
 	Actor::Actor(CXmlNode node)
@@ -117,7 +117,7 @@ namespace game {
 
 		if(flags & 1)
 			sr << m_target_angle;
-		sr << m_inventory;
+		m_inventory.save(sr);
 	}
 
 	FlagsType Actor::flags() const {

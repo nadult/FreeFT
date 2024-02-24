@@ -19,7 +19,8 @@ namespace game {
 
 	void DropItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_item << m_count;
+		m_item.save(sr);
+		sr << m_count;
 	}
 
 	bool Actor::handleOrder(DropItemOrder &order, EntityEvent event, const EntityEventParams &params) {
@@ -51,7 +52,7 @@ namespace game {
 
 	void EquipItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_item;
+		m_item.save(sr);
 	}
 
 	bool Actor::handleOrder(EquipItemOrder &order, EntityEvent event, const EntityEventParams &params) {
@@ -137,12 +138,15 @@ namespace game {
 	}
 
 	TransferItemOrder::TransferItemOrder(MemoryStream &sr) :OrderImpl(sr), m_item(sr) {
-		sr >> m_target >> m_mode >> m_count;
+		m_target.load(sr);
+		sr >> m_mode >> m_count;
 	}
 
 	void TransferItemOrder::save(MemoryStream &sr) const {
 		OrderImpl::save(sr);
-		sr << m_item << m_target << m_mode << m_count;
+		m_item.save(sr);
+		m_target.save(sr);
+		sr << m_mode << m_count;
 	}
 	
 	bool Actor::handleOrder(TransferItemOrder &order, EntityEvent event, const EntityEventParams &params) {

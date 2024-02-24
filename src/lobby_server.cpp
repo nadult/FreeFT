@@ -56,7 +56,7 @@ public:
 
 				if(chunk_id == LobbyChunkId::server_status) {
 					ServerStatusChunk chunk;
-					packet >> chunk;
+					chunk.load(packet);
 					chunk.address = source;
 					
 					auto it = m_servers.find(chunk.address);

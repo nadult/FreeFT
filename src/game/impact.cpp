@@ -20,13 +20,15 @@ namespace game {
 	}
 
 	Impact::Impact(MemoryStream &sr) :EntityImpl(sr), m_played_sound(false) {
-		sr >> m_source >> m_target;
+		m_source.load(sr);
+		m_target.load(sr);
 		sr.unpack(m_damage_mod, m_applied_damage);
 	}
 
 	void Impact::save(MemoryStream &sr) const {
 		EntityImpl::save(sr);
-		sr << m_source << m_target;
+		m_source.save(sr);
+		m_target.save(sr);
 		sr.pack(m_damage_mod, m_applied_damage);
 	}
 	

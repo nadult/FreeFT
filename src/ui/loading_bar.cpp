@@ -12,7 +12,7 @@ namespace ui {
 
 	LoadingBar::LoadingBar()
 		: m_font(&res::getFont("transformers_30")), m_tex(res::getTexture("loading_bar.png", true)) {
-		m_tex->setFlags(TextureOpt::filtered);
+		m_tex->setFiltering(TextureFilterOpt::linear);
 	}
 	FWK_COPYABLE_CLASS_IMPL(LoadingBar)
 

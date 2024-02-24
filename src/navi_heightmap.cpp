@@ -5,7 +5,7 @@
 
 #include "grid.h"
 #include <algorithm>
-#include <fwk/gfx/texture.h>
+#include <fwk/gfx/image.h>
 
 static constexpr int max_levels = 16;
 
@@ -76,8 +76,8 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 	}
 }
 	
-Texture NaviHeightmap::toTexture(int level) const {
-	Texture out(m_size);
+Image NaviHeightmap::toImage(int level) const {
+	Image out(m_size);
 
 	for(int y = 0; y < m_size.y; y++)
 		for(int x = 0; x < m_size.x; x++) {
@@ -91,7 +91,7 @@ Texture NaviHeightmap::toTexture(int level) const {
 
 void NaviHeightmap::saveLevels() const {
 	for(int n = 0; n < m_level_count; n++) {
-		Texture tex = toTexture(n);
+		Image tex = toImage(n);
 		tex.saveTGA(format("level%.tga", n)).check();
 	}
 }

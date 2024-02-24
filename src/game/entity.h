@@ -271,7 +271,7 @@ namespace game {
 			return entity_id;
 		}
 		virtual void save(MemoryStream &sr) const {
-			sr << m_proto.index();
+			m_proto.index().save(sr);
 			Base::save(sr);
 		}
 

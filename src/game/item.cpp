@@ -69,7 +69,7 @@ namespace game {
 	}
 
 	void Item::save(MemoryStream &sr) const {
-		sr << index();
+		index().save(sr);
 	}
 
 	ItemEntity::ItemEntity(const Item &item, int count)

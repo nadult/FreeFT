@@ -23,7 +23,7 @@ class CachedTexture {
 	void bindToCache() const;
 	void unbindFromCache() const;
 
-	virtual void cacheUpload(Texture &) const = 0;
+	virtual void cacheUpload(Image &) const = 0;
 	virtual int2 textureSize() const = 0;
 
   private:

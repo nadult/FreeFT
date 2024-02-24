@@ -19,7 +19,7 @@ namespace game {
 	Ex<void> TileMap::legacyConvert(Stream &sr, FileStream &sr_out) {
 		ASSERT(sr.isLoading());
 
-		sr.signature({"<world>\0", 8});
+		sr.saveSignature({"<world>\0", 8});
 		u16 type;
 		char dummy;
 
@@ -79,7 +79,7 @@ namespace game {
 
 			vector<TileParams> tile_params;
 			for(int n = 0; n < proto_count; n++) {
-				dsr.signature({"<tile>\00010\0", 10});
+				dsr.saveSignature({"<tile>\00010\0", 10});
 				TileParams tile;
 				dsr.loadData(asPod(tile));
 				tile_params.push_back(tile);
@@ -107,7 +107,7 @@ namespace game {
 			int3 box_max(INT_MIN, INT_MIN, INT_MIN);
 
 			for(int n = 0; n < region_count; n++) {
-				dsr.signature({"<region>\0008\0", 11});
+				dsr.saveSignature({"<region>\0008\0", 11});
 				int elem_count;
 
 				dsr >> elem_count;
@@ -194,7 +194,7 @@ namespace game {
 				Loader ldr(data_str);
 				PackedTexture packed;
 				packed.legacyLoad(ldr);
-				Texture unpacked;
+				Image unpacked;
 				packed.toTexture(unpacked);
 				char name[100];
 				sprintf(name, "texture%d.tga", tex_id++);
