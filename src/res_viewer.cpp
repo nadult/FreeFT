@@ -11,15 +11,15 @@
 #include "ui/list_box.h"
 #include "ui/message_box.h"
 
-#include <fwk/io/file_system.h>
-#include <fwk/gfx/gl_texture.h>
+#include "res_manager.h"
 #include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/opengl.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/image.h>
+#include <fwk/gfx/opengl.h>
+#include <fwk/io/file_stream.h>
+#include <fwk/io/file_system.h>
 #include <fwk/str.h>
 #include <fwk/sys/on_fail.h>
-#include <fwk/io/file_stream.h>
-#include "res_manager.h"
 
 // TODO: replace old ui with imgui ?
 
@@ -228,7 +228,7 @@ class ResourceView : public Window {
   public:
 	virtual const char *className() const { return "ResourceView"; }
 	ResourceView(IRect rect, FilePath current_dir, vector<string> file_names)
-		: Window(rect), m_selected_id(-1) ,m_font(res::getFont(ui::WindowStyle::fonts[0])) {
+		: Window(rect), m_selected_id(-1), m_font(res::getFont(ui::WindowStyle::fonts[0])) {
 		for(auto file_name : file_names) {
 			if(ResManager::instance().classifyPath(file_name, true)) {
 				ON_FAIL("Error while loading file: %", file_name);
@@ -236,8 +236,8 @@ class ResourceView : public Window {
 				Resource new_resource;
 				if(auto result = new_resource.load(current_dir, file_name))
 					m_resources.emplace_back(move(new_resource));
-				 else
-					 result.error().print();
+				else
+					result.error().print();
 			}
 		}
 
@@ -337,7 +337,8 @@ enum class Command { empty, change_dir, exit };
 class ResViewerWindow : public Window {
   public:
 	ResViewerWindow(int2 res, const string &path)
-		: Window(IRect(res), WindowStyle::gui_light), m_current_dir(FilePath(path).absolute().get()) {
+		: Window(IRect(res), WindowStyle::gui_light),
+		  m_current_dir(FilePath(path).absolute().get()) {
 		m_command = make_pair(Command::empty, string());
 
 		int left_width = 300;
@@ -345,14 +346,15 @@ class ResViewerWindow : public Window {
 
 		// TODO: doesn't support links?
 		m_entries = findFiles(m_current_dir, FindFileOpt::regular_file | FindFileOpt::directory |
-							FindFileOpt::link | FindFileOpt::relative | FindFileOpt::include_parent);
+												 FindFileOpt::link | FindFileOpt::relative |
+												 FindFileOpt::include_parent);
 		makeSorted(m_entries);
 		vector<string> names;
 
 		for(auto entry : m_entries) {
 			auto color = entry.is_dir || entry.is_link ? ColorId::yellow : ColorId::white;
 			m_dir_view->addEntry(entry.path.c_str(), color);
-			if(!entry.is_dir &&  !entry.is_link)
+			if(!entry.is_dir && !entry.is_link)
 				names.emplace_back(entry.path);
 		}
 
@@ -414,8 +416,8 @@ class ResViewerWindow : public Window {
 
 static double start_time = getTime();
 
-static bool main_loop(GlDevice &device, void* pmain_window) {
-	auto &main_window = *(Dynamic<ResViewerWindow>*)pmain_window;
+static bool main_loop(GlDevice &device, void *pmain_window) {
+	auto &main_window = *(Dynamic<ResViewerWindow> *)pmain_window;
 
 	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
 	TextureCache::instance().nextFrame();
@@ -442,7 +444,8 @@ int main(int argc, char **argv) {
 	Config config("res_viewer");
 
 	GlDevice gfx_device;
-	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos, config.fullscreen_on);
+	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos,
+				 config.fullscreen_on);
 
 	ResManager res_mgr;
 	TextureCache tex_cache;

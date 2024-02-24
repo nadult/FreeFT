@@ -7,15 +7,15 @@
 
 namespace game {
 
-	class DieOrder: public OrderImpl<DieOrder, OrderTypeId::die> {
-	public:
-		DieOrder(DeathId death_id);
-		DieOrder(MemoryStream&);
+class DieOrder : public OrderImpl<DieOrder, OrderTypeId::die> {
+  public:
+	DieOrder(DeathId death_id);
+	DieOrder(MemoryStream &);
 
-		void save(MemoryStream&) const;
-		
-		DeathId m_death_id;
-		bool m_is_dead;
-	};
+	void save(MemoryStream &) const;
+
+	DeathId m_death_id;
+	bool m_is_dead;
+};
 
 }

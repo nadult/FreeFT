@@ -3,90 +3,87 @@
 
 #pragma once
 
+#include "game/base.h"
 #include "gfx/packed_texture.h"
 #include "gfx/texture_cache.h"
-#include "game/base.h"
 
-namespace game
-{
+namespace game {
 
-	class TileFrame: public CachedTexture {
-	public:
-		TileFrame(const Palette *palette = nullptr) :m_palette_ref(palette) { }
-		TileFrame(const TileFrame&);
-		void operator=(const TileFrame&);
-		Ex<void> load(Stream&);
-		void save(FileStream&) const;
+class TileFrame : public CachedTexture {
+  public:
+	TileFrame(const Palette *palette = nullptr) : m_palette_ref(palette) {}
+	TileFrame(const TileFrame &);
+	void operator=(const TileFrame &);
+	Ex<void> load(Stream &);
+	void save(FileStream &) const;
 
-		virtual void cacheUpload(Image&) const;
-		virtual int2 textureSize() const;
+	virtual void cacheUpload(Image &) const;
+	virtual int2 textureSize() const;
 
-		int2 dimensions() const { return m_texture.size(); }	
-		Image texture() const;
-		PTexture deviceTexture(FRect &tex_rect) const;
-	
-		const IRect rect() const;
+	int2 dimensions() const { return m_texture.size(); }
+	Image texture() const;
+	PTexture deviceTexture(FRect &tex_rect) const;
 
-	protected:
-		const Palette *m_palette_ref;
-		PackedTexture m_texture;
-		int2 m_offset;
+	const IRect rect() const;
 
-		friend class Tile;
-	};
+  protected:
+	const Palette *m_palette_ref;
+	PackedTexture m_texture;
+	int2 m_offset;
 
+	friend class Tile;
+};
 
-	// TODO: naming convention, attribute hiding
-	class Tile {
-	public:
-		Tile();
-		template <class InputStream>
-		Ex<void> legacyLoad(InputStream &, Str name);
-		Ex<void> load(Stream &);
-		void save(FileStream &) const;
-		
-		FlagsType flags() const;
+// TODO: naming convention, attribute hiding
+class Tile {
+  public:
+	Tile();
+	template <class InputStream> Ex<void> legacyLoad(InputStream &, Str name);
+	Ex<void> load(Stream &);
+	void save(FileStream &) const;
 
-		TileId type() const { return m_type_id; }
-		SurfaceId surfaceId() const { return m_surface_id; }
+	FlagsType flags() const;
 
-		const IRect rect(int frame_id) const;
-		const IRect &rect() const { return m_max_rect; }
+	TileId type() const { return m_type_id; }
+	SurfaceId surfaceId() const { return m_surface_id; }
 
-		static void setFrameCounter(int frame_counter);
+	const IRect rect(int frame_id) const;
+	const IRect &rect() const { return m_max_rect; }
 
-		void draw(Renderer2D&, const int2 &pos, Color color = ColorId::white) const;
-		void addToRender(SceneRenderer&, const int3 &pos, Color color = ColorId::white) const;
-		bool testPixel(const int2 &pos) const;
+	static void setFrameCounter(int frame_counter);
 
-		const int3 &bboxSize() const { return m_bbox; }
+	void draw(Renderer2D &, const int2 &pos, Color color = ColorId::white) const;
+	void addToRender(SceneRenderer &, const int3 &pos, Color color = ColorId::white) const;
+	bool testPixel(const int2 &pos) const;
 
-		mutable uint m_temp;
+	const int3 &bboxSize() const { return m_bbox; }
 
-		bool isAnimated() const { return !m_frames.empty(); }
-		bool isInvisible() const { return m_is_invisible; }
-		
-		const TileFrame &accessFrame(int frame_counter) const;
-		int frameCount() const { return 1 + (int)m_frames.size(); }
+	mutable uint m_temp;
 
-		const string &resourceName() const { return m_resource_name; }
-		void setResourceName(const string &name) { m_resource_name = name; }
+	bool isAnimated() const { return !m_frames.empty(); }
+	bool isInvisible() const { return m_is_invisible; }
 
-	protected:
-		void updateMaxRect();
+	const TileFrame &accessFrame(int frame_counter) const;
+	int frameCount() const { return 1 + (int)m_frames.size(); }
 
-		Palette m_palette;
-		TileFrame m_first_frame;
-		vector<TileFrame> m_frames;
-		int2 m_offset;
-		int3 m_bbox;
-		IRect m_max_rect;
-		string m_resource_name;
+	const string &resourceName() const { return m_resource_name; }
+	void setResourceName(const string &name) { m_resource_name = name; }
 
-		TileId m_type_id;
-		SurfaceId m_surface_id;
-		bool m_see_through;
-		bool m_walk_through;
-		bool m_is_invisible;
-	};
+  protected:
+	void updateMaxRect();
+
+	Palette m_palette;
+	TileFrame m_first_frame;
+	vector<TileFrame> m_frames;
+	int2 m_offset;
+	int3 m_bbox;
+	IRect m_max_rect;
+	string m_resource_name;
+
+	TileId m_type_id;
+	SurfaceId m_surface_id;
+	bool m_see_through;
+	bool m_walk_through;
+	bool m_is_invisible;
+};
 }

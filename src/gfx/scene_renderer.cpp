@@ -4,8 +4,8 @@
 #include "gfx/scene_renderer.h"
 
 #include "gfx/drawing.h"
-#include <fwk/gfx/renderer2d.h>
 #include <algorithm>
+#include <fwk/gfx/renderer2d.h>
 
 SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
 	: m_viewport(viewport), m_view_pos(view_pos) {

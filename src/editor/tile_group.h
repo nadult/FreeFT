@@ -5,13 +5,13 @@
 
 #include "game/tile.h"
 
-
 class TileGroup {
-public:	
+  public:
 	struct Entry {
 		const game::Tile *tile;
 		int group_id;
-		bool is_dirty; // like a floor tile with rubble; dirty tiles shouldnt be too dense on the map
+		bool
+			is_dirty; // like a floor tile with rubble; dirty tiles shouldnt be too dense on the map
 	};
 
 	struct Group {
@@ -23,11 +23,13 @@ public:
 		static int3 s_side_offsets[side_count];
 	};
 
-	void addEntry(const game::Tile*);
-	int findEntry(const game::Tile*) const;
+	void addEntry(const game::Tile *);
+	int findEntry(const game::Tile *) const;
 
 	bool isValidEntryId(int id) const { return id >= 0 && id < entryCount(); }
-	bool isValidEntryId(int id, const game::Tile *tile) const { return isValidEntryId(id) && entryTile(id) == tile; }
+	bool isValidEntryId(int id, const game::Tile *tile) const {
+		return isValidEntryId(id) && entryTile(id) == tile;
+	}
 
 	void setEntryGroup(int entry_id, int group_id);
 	void removeEntry(int entry_id);
@@ -41,19 +43,21 @@ public:
 
 	void clear();
 
-	void setGroupSurface(int group_id, int side, int surface) { m_groups[group_id].m_side_surf[side] = surface; }
-	int  groupSurface(int group_id, int side) const { return m_groups[group_id].m_side_surf[side]; }
-	const int* groupSurface(int group_id) const { return m_groups[group_id].m_side_surf; }
+	void setGroupSurface(int group_id, int side, int surface) {
+		m_groups[group_id].m_side_surf[side] = surface;
+	}
+	int groupSurface(int group_id, int side) const { return m_groups[group_id].m_side_surf[side]; }
+	const int *groupSurface(int group_id) const { return m_groups[group_id].m_side_surf; }
 	bool isGroupSurfaceUniform(int group_id) const;
 
 	int entryCount() const { return (int)m_entries.size(); }
 	int groupCount() const { return (int)m_groups.size(); }
 	int groupEntryCount(int group_id) const { return m_groups[group_id].m_entry_count; }
 
-	void saveToXML(XmlDocument&) const;
-	void loadFromXML(const XmlDocument&);
+	void saveToXML(XmlDocument &) const;
+	void loadFromXML(const XmlDocument &);
 
-protected:
+  protected:
 	void decGroupEntryCount(int group_id);
 
 	vector<Entry> m_entries;

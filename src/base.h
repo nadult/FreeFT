@@ -78,8 +78,8 @@ const Box<float3> rotateY(const Box<float3> &box, const float3 &origin, float an
 void encodeInt(MemoryStream &sr, int value);
 int decodeInt(MemoryStream &sr);
 
-void saveString(FileStream&, Str);
-Ex<string> loadString(FileStream&);
+void saveString(FileStream &, Str);
+Ex<string> loadString(FileStream &);
 
 struct MoveVector {
 	MoveVector(const int2 &start, const int2 &end);
@@ -135,12 +135,16 @@ float3 perturbVector(const float3 &vec, float rand1, float rand2, float strength
 
 // TODO: use one from libfwk
 struct IntervalF {
-	IntervalF(float value) :min(value), max(value) { }
-	IntervalF(float min, float max) :min(min), max(max) { }
-	IntervalF() { }
+	IntervalF(float value) : min(value), max(value) {}
+	IntervalF(float min, float max) : min(min), max(max) {}
+	IntervalF() {}
 
-	IntervalF operator+(const IntervalF &rhs) const { return IntervalF(min + rhs.min, max + rhs.max); }
-	IntervalF operator-(const IntervalF &rhs) const { return IntervalF(min - rhs.max, max - rhs.min); }
+	IntervalF operator+(const IntervalF &rhs) const {
+		return IntervalF(min + rhs.min, max + rhs.max);
+	}
+	IntervalF operator-(const IntervalF &rhs) const {
+		return IntervalF(min - rhs.max, max - rhs.min);
+	}
 	IntervalF operator*(const IntervalF &rhs) const;
 	IntervalF operator*(float) const;
 	IntervalF operator/(float val) const { return operator*(1.0f / val); }
@@ -150,14 +154,15 @@ struct IntervalF {
 	float min, max;
 };
 
-IntervalF abs(const IntervalF&);
-IntervalF floor(const IntervalF&);
-IntervalF min(const IntervalF&, const IntervalF&);
-IntervalF max(const IntervalF&, const IntervalF&);
+IntervalF abs(const IntervalF &);
+IntervalF floor(const IntervalF &);
+IntervalF min(const IntervalF &, const IntervalF &);
+IntervalF max(const IntervalF &, const IntervalF &);
 
 float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box<float3> &box);
 
-bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot, const Box<float3> &box);
+bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot,
+					 const Box<float3> &box);
 
 namespace ui {
 class Window;
@@ -234,7 +239,8 @@ PTexture getGuiTexture(Str, bool fix_transparent = false);
 const Font &getFont(Str);
 const game::Tile &getTile(Str);
 }
-	
+
 struct TupleParser;
 
-void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos, bool fullscreen);
+void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos,
+				  bool fullscreen);

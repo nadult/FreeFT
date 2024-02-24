@@ -8,56 +8,57 @@
 
 namespace game {
 
-	MoveOrder::MoveOrder(const int3 &target_pos, bool run)
-		:m_target_pos(target_pos), m_please_run(run) { }
+MoveOrder::MoveOrder(const int3 &target_pos, bool run)
+	: m_target_pos(target_pos), m_please_run(run) {}
 
-	MoveOrder::MoveOrder(MemoryStream &sr) :OrderImpl(sr) {
-		m_target_pos = net::decodeInt3(sr);
-		sr >> m_please_run;
-		m_path.load(sr);
-		m_path_pos.load(sr);
+MoveOrder::MoveOrder(MemoryStream &sr) : OrderImpl(sr) {
+	m_target_pos = net::decodeInt3(sr);
+	sr >> m_please_run;
+	m_path.load(sr);
+	m_path_pos.load(sr);
+}
+
+void MoveOrder::save(MemoryStream &sr) const {
+	OrderImpl::save(sr);
+	net::encodeInt3(sr, m_target_pos);
+	sr << m_please_run;
+	m_path.save(sr);
+	m_path_pos.save(sr);
+}
+
+bool Actor::handleOrder(MoveOrder &order, EntityEvent event, const EntityEventParams &params) {
+	if(event == EntityEvent::init_order) {
+		int3 cur_pos = (int3)pos();
+		if(cur_pos == order.m_target_pos)
+			return false;
+
+		if(!world()->findPath(order.m_path, cur_pos, order.m_target_pos, ref()))
+			return false;
+
+		if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
+			order.m_please_run = 0;
+
+		if(!animate(order.m_please_run ? Action::run : Action::walk))
+			return false;
+	}
+	if(event == EntityEvent::think) {
+		if(order.needCancel()) {
+			fixPosition();
+			return false;
+		}
+		if(followPath(order.m_path, order.m_path_pos, order.m_please_run) !=
+		   FollowPathResult::moved)
+			return false;
+	}
+	if(event == EntityEvent::anim_finished && m_stance == Stance::crouch) {
+		animate(m_action);
+	}
+	if(event == EntityEvent::step) {
+		SurfaceId standing_surface = surfaceUnder();
+		playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
 	}
 
-	void MoveOrder::save(MemoryStream &sr) const {
-		OrderImpl::save(sr);
-		net::encodeInt3(sr, m_target_pos);
-		sr << m_please_run;
-		m_path.save(sr);
-		m_path_pos.save(sr);
-	}	
-
-	bool Actor::handleOrder(MoveOrder &order, EntityEvent event, const EntityEventParams &params) {
-		if(event == EntityEvent::init_order) {
-			int3 cur_pos = (int3)pos();
-			if(cur_pos == order.m_target_pos)
-				return false;
-
-			if(!world()->findPath(order.m_path, cur_pos, order.m_target_pos, ref()))
-				return false;
-		
-			if(order.m_please_run && m_proto.simpleAnimId(Action::run, m_stance) == -1)
-				order.m_please_run = 0;
-
-			if(!animate(order.m_please_run? Action::run : Action::walk))
-				return false;
-		}
-		if(event == EntityEvent::think) {
-			if(order.needCancel()) {
-				fixPosition();
-				return false;
-			}
-			if(followPath(order.m_path, order.m_path_pos, order.m_please_run) != FollowPathResult::moved)
-				return false;
-		}
-		if(event == EntityEvent::anim_finished && m_stance == Stance::crouch) {
-			animate(m_action);
-		}
-		if(event == EntityEvent::step) {
-			SurfaceId standing_surface = surfaceUnder();
-			playSound(m_proto.step_sounds[m_stance][standing_surface], pos());
-		}
-
-		return true;
-	}
+	return true;
+}
 
 }

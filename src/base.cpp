@@ -4,20 +4,13 @@
 #include "base.h"
 
 #include <fwk/gfx/gl_device.h>
+#include <fwk/io/file_stream.h>
 #include <fwk/math/plane.h>
 #include <fwk/math/rotation.h>
-#include <fwk/io/file_stream.h>
 
 // TODO: tune-able parameters?
-static constexpr int
-	min0 = 16,
-	min1 = 1024 * 4,
-	min2 = 1024 * 1024,
-	min3 = 1024 * 1024 * 128,
-	max0 = 64,
-	max1 = 16 * 1024,
-	max2 = 1024 * 1024 * 4,
-	max3 = 1024 * 1024 * 512;
+static constexpr int min0 = 16, min1 = 1024 * 4, min2 = 1024 * 1024, min3 = 1024 * 1024 * 128,
+					 max0 = 64, max1 = 16 * 1024, max2 = 1024 * 1024 * 4, max3 = 1024 * 1024 * 512;
 
 void encodeInt(MemoryStream &sr, int value) {
 	if(value >= -min0 && value < max0 - min0) {
@@ -271,7 +264,7 @@ IntervalF IntervalF::operator*(const IntervalF &rhs) const {
 	float c = max * rhs.min, d = max * rhs.max;
 
 	return IntervalF(fwk::min(fwk::min(a, b), fwk::min(c, d)),
-					fwk::max(fwk::max(a, b), fwk::max(c, d)));
+					 fwk::max(fwk::max(a, b), fwk::max(c, d)));
 }
 
 IntervalF IntervalF::operator*(float val) const {
@@ -281,8 +274,8 @@ IntervalF IntervalF::operator*(float val) const {
 
 IntervalF abs(const IntervalF &value) {
 	if(value.min < 0.0f)
-		return value.max < 0.0f ? IntervalF(-value.max, -value.min)
-								: IntervalF(0.0f, max(-value.min, value.max));
+		return value.max < 0.0f ? IntervalF(-value.max, -value.min) :
+								  IntervalF(0.0f, max(-value.min, value.max));
 	return value;
 }
 
@@ -350,7 +343,8 @@ string toUTF8Checked(const string32 &str) {
 	FATAL("Error while converting string to UTF8");
 }
 
-void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos, bool fullscreen) {
+void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos,
+				  bool fullscreen) {
 	// TODO: date is refreshed only when game.o is being rebuilt
 	auto title = format("FreeFT::%; built " __DATE__ " " __TIME__, name);
 	auto flags = GlDeviceOpt::resizable | GlDeviceOpt::vsync;

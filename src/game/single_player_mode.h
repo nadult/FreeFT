@@ -7,15 +7,15 @@
 
 namespace game {
 
-	class SinglePlayerMode: public GameMode {
-	public:
-		SinglePlayerMode(World &world, Character character);
+class SinglePlayerMode : public GameMode {
+  public:
+	SinglePlayerMode(World &world, Character character);
 
-		GameModeId typeId() const override { return GameModeId::single_player; }
-		void tick(double time_diff) override;
+	GameModeId typeId() const override { return GameModeId::single_player; }
+	void tick(double time_diff) override;
 
-	private:
-		PlayableCharacter *m_pc;
-	};
+  private:
+	PlayableCharacter *m_pc;
+};
 
 }

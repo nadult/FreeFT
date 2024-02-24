@@ -2,11 +2,11 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "occluder_map.h"
-#include <map>
 #include <algorithm>
+#include <map>
 
-OccluderMap::OccluderMap(Grid &grid) :m_grid(grid) { }
-OccluderMap::OccluderMap(OccluderMap&&) = default;
+OccluderMap::OccluderMap(Grid &grid) : m_grid(grid) {}
+OccluderMap::OccluderMap(OccluderMap &&) = default;
 FWK_MOVE_ASSIGN_RECONSTRUCT(OccluderMap);
 
 int OccluderMap::addOccluder(int representative_id, int min_height) {
@@ -36,9 +36,9 @@ int OccluderMap::addOccluder(int representative_id, int min_height) {
 		FBox box = m_grid[object_id].bbox;
 		occluder.bbox = enclose(occluder.bbox, box);
 
-		box = box.enlarge( float3(1, 0, 1), float3(1, 256, 1));
+		box = box.enlarge(float3(1, 0, 1), float3(1, 256, 1));
 		box = {float3(box.x(), max(box.y() - 1, (float)min_height), box.z()), box.max()};
-	
+
 		temp.clear();
 		m_grid.findAll(temp, box, object_id);
 
@@ -58,7 +58,13 @@ int OccluderMap::addOccluder(int representative_id, int min_height) {
 
 void OccluderMap::removeOccluder(int occluder_id) {
 	DASSERT(occluder_id >= 0 && occluder_id < (int)m_occluders.size());
-#define FIX_INDEX(ref) { if(ref == occluder_id) ref = -1; else if(ref > occluder_id) ref--; }
+#define FIX_INDEX(ref)                                                                             \
+	{                                                                                              \
+		if(ref == occluder_id)                                                                     \
+			ref = -1;                                                                              \
+		else if(ref > occluder_id)                                                                 \
+			ref--;                                                                                 \
+	}
 
 	for(int n = 0; n < m_grid.size(); n++) {
 		auto &object = m_grid[n];
@@ -80,13 +86,11 @@ void OccluderMap::clear() {
 }
 
 static bool bboxOrderYXZ(const FBox &a, const FBox &b) {
-	return a.y() == b.y()? a.x() == b.x()?
-		a.z() < b.z() : a.x() < b.x() : a.y() < b.y();
+	return a.y() == b.y() ? a.x() == b.x() ? a.z() < b.z() : a.x() < b.x() : a.y() < b.y();
 }
 
 static bool bboxOrderYZX(const FBox &a, const FBox &b) {
-	return a.y() == b.y()? a.z() == b.z()?
-		a.x() < b.x() : a.z() < b.z() : a.y() < b.y();
+	return a.y() == b.y() ? a.z() == b.z() ? a.x() < b.x() : a.z() < b.z() : a.y() < b.y();
 }
 
 vector<FBox> OccluderMap::computeBBoxes(int occluder_id, bool minimize) const {
@@ -104,8 +108,8 @@ vector<FBox> OccluderMap::computeBBoxes(int occluder_id, bool minimize) const {
 	float3 cmin = bboxes[0].min(), cmax = bboxes[0].max();
 	for(int n = 1; n < count; n++) {
 		FBox next = bboxes[n];
-		if(cmin.y == next.y() && cmax.y == next.ey() &&
-			cmin.x == next.x() && cmax.x == next.ex() && cmax.z == next.z())
+		if(cmin.y == next.y() && cmax.y == next.ey() && cmin.x == next.x() && cmax.x == next.ex() &&
+		   cmax.z == next.z())
 			cmax.z = next.ez();
 		else {
 			temp[tcount++] = {cmin, cmax};
@@ -119,11 +123,12 @@ vector<FBox> OccluderMap::computeBBoxes(int occluder_id, bool minimize) const {
 	std::sort(bboxes.data(), bboxes.data() + count, bboxOrderYZX);
 
 	tcount = 0;
-	cmin = bboxes[0].min(); cmax = bboxes[0].max();
+	cmin = bboxes[0].min();
+	cmax = bboxes[0].max();
 	for(int n = 1; n < count; n++) {
 		FBox next = bboxes[n];
-		if(cmin.y == next.y() && cmax.y == next.ey() &&
-			cmin.z == next.z() && cmax.z == next.ez() && cmax.x == next.x())
+		if(cmin.y == next.y() && cmax.y == next.ey() && cmin.z == next.z() && cmax.z == next.ez() &&
+		   cmax.x == next.x())
 			cmax.x = next.ex();
 		else {
 			temp[tcount++] = {cmin, cmax};
@@ -216,7 +221,7 @@ Ex<void> OccluderMap::loadFromXML(const XmlDocument &doc) {
 			int occluder_id = size();
 			m_occluders.push_back(Occluder());
 			Occluder &occluder = m_occluders.back();
-			
+
 			int object_count = occluder_node.attrib<int>("object_count");
 			EXPECT(object_count < m_grid.size() && object_count > 0);
 			occluder.objects.resize(object_count, -1);
@@ -225,7 +230,7 @@ Ex<void> OccluderMap::loadFromXML(const XmlDocument &doc) {
 			bool first = true;
 			while(box_node) {
 				FBox bbox(box_node.attrib<float3>("min"), box_node.attrib<float3>("max"));
-				occluder.bbox = first? bbox : enclose(occluder.bbox, bbox);
+				occluder.bbox = first ? bbox : enclose(occluder.bbox, bbox);
 				first = false;
 
 				temp.clear();
@@ -234,7 +239,7 @@ Ex<void> OccluderMap::loadFromXML(const XmlDocument &doc) {
 					m_grid[temp[n]].occluder_id = occluder_id;
 				box_node = box_node.sibling("box");
 			}
-			
+
 			occluder_node = occluder_node.sibling("occluder");
 		}
 
@@ -282,15 +287,15 @@ bool OccluderMap::isUnder(int lower_id, int upper_id) const {
 
 	if(lower.bbox.y() >= upper.bbox.ey())
 		return false;
-	if(!areOverlapping(	FRect(lower.bbox.min().xz(), lower.bbox.max().xz()),
-						FRect(upper.bbox.min().xz(), upper.bbox.max().xz())))
+	if(!areOverlapping(FRect(lower.bbox.min().xz(), lower.bbox.max().xz()),
+					   FRect(upper.bbox.min().xz(), upper.bbox.max().xz())))
 		return false;
 	if(lower_id == upper_id)
 		return false;
 
 	vector<int> temp;
 	temp.reserve(1024);
-	
+
 	FBox bbox = upper.bbox;
 	bbox = {bbox.x(), 0, bbox.z(), bbox.x(), bbox.y(), bbox.z()};
 	m_grid.findAll(temp, bbox);
@@ -300,12 +305,9 @@ bool OccluderMap::isUnder(int lower_id, int upper_id) const {
 			return true;
 	return false;
 }
-	
-OccluderConfig::OccluderConfig(const OccluderMap &map)
-	:m_map(map) {
-	update();
-}
-	
+
+OccluderConfig::OccluderConfig(const OccluderMap &map) : m_map(map) { update(); }
+
 bool OccluderConfig::update() {
 	if((int)m_states.size() != m_map.size()) {
 		m_states.resize(m_map.size());
@@ -361,7 +363,7 @@ bool OccluderConfig::update(const FBox &bbox) {
 			for(int i = 0; i < (int)temp2.size(); i++) {
 				const auto &object = grid[temp2[i]];
 				if(object.occluder_id == n)
-					local_box = local_box.empty()? object.bbox : enclose(local_box, object.bbox);
+					local_box = local_box.empty() ? object.bbox : enclose(local_box, object.bbox);
 			}
 
 			is_overlapping = local_box.y() > mid_point.y;
@@ -376,10 +378,10 @@ bool OccluderConfig::update(const FBox &bbox) {
 	if(!vis_changed)
 		return false;
 
-	for(int n= 0; n < (int)m_states.size(); n++)
+	for(int n = 0; n < (int)m_states.size(); n++)
 		m_states[n].is_visible = !m_states[n].is_overlapping;
 
-//TODO: isUnder can be precomputed
+	//TODO: isUnder can be precomputed
 	for(int n = 0; n < (int)m_states.size(); n++) {
 		if(!m_states[n].is_visible)
 			continue;
@@ -395,11 +397,11 @@ bool OccluderConfig::update(const FBox &bbox) {
 }
 
 bool OccluderConfig::isVisible(int occluder_id) const {
-	return occluder_id < 0 || occluder_id >= (int)m_states.size() || m_states[occluder_id].is_visible;
+	return occluder_id < 0 || occluder_id >= (int)m_states.size() ||
+		   m_states[occluder_id].is_visible;
 }
 
 void OccluderConfig::setVisible(int occluder_id, bool is_visible) {
 	if(occluder_id >= 0 && occluder_id < (int)m_states.size())
-	   m_states[occluder_id].is_visible = is_visible;
+		m_states[occluder_id].is_visible = is_visible;
 }
-

@@ -6,19 +6,19 @@
 #ifdef _WIN32
 #define AL_LIBTYPE_STATIC
 #endif
-#include <AL/alc.h>
 #include <AL/al.h>
+#include <AL/alc.h>
 #include <fwk/audio_base.h>
 
 namespace audio {
 
-	const char *errorToString(int id);
-	void testError(const char *message);
+const char *errorToString(int id);
+void testError(const char *message);
 
-	void uploadToBuffer(const fwk::Sound &, unsigned buffer_id);
+void uploadToBuffer(const fwk::Sound &, unsigned buffer_id);
 
-	void tickMusic(double time_delta);
-	void freeMusicDevice();
-	void initMusicDevice();
+void tickMusic(double time_delta);
+void freeMusicDevice();
+void initMusicDevice();
 
 }

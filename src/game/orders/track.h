@@ -8,21 +8,21 @@
 
 namespace game {
 
-	class TrackOrder: public OrderImpl<TrackOrder, OrderTypeId::track> {
-	public:
-		TrackOrder(EntityRef target, float min_distance, bool run);
-		TrackOrder(MemoryStream&);
+class TrackOrder : public OrderImpl<TrackOrder, OrderTypeId::track> {
+  public:
+	TrackOrder(EntityRef target, float min_distance, bool run);
+	TrackOrder(MemoryStream &);
 
-		void save(MemoryStream&) const;
+	void save(MemoryStream &) const;
 
-		int m_next_update;
-		EntityRef m_target;
-		PathPos m_path_pos;
-		Path m_path;
+	int m_next_update;
+	EntityRef m_target;
+	PathPos m_path_pos;
+	Path m_path;
 
-		float m_time_for_update;
-		float m_min_distance;
-		bool m_please_run;
-	};
+	float m_time_for_update;
+	float m_min_distance;
+	bool m_please_run;
+};
 
 }

@@ -31,8 +31,7 @@ void Palette::resize(int size) {
 
 void Palette::clear() { m_data.clear(); }
 
-template <class Stream>
-Ex<Palette> Palette::legacyLoad(Stream &sr) {
+template <class Stream> Ex<Palette> Palette::legacyLoad(Stream &sr) {
 	i32 pal_size;
 	sr >> pal_size;
 	ASSERT(pal_size <= 256);
@@ -47,8 +46,8 @@ Ex<Palette> Palette::legacyLoad(Stream &sr) {
 	return out;
 }
 
-template Ex<Palette> Palette::legacyLoad(MemoryStream&);
-template Ex<Palette> Palette::legacyLoad(FileStream&);
+template Ex<Palette> Palette::legacyLoad(MemoryStream &);
+template Ex<Palette> Palette::legacyLoad(FileStream &);
 
 Ex<Palette> Palette::load(Stream &sr) {
 	u8 rgb[256 * 3], *ptr = rgb;
@@ -82,8 +81,7 @@ void Palette::save(FileStream &sr) const {
 
 PackedTexture::PackedTexture() : m_width(0), m_height(0), m_default_idx(0), m_max_idx(0) {}
 
-template <class Stream>
-Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
+template <class Stream> Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 	EXPECT(sr.loadSignature({"<zar>\0", 6}));
 
 	char zar_type, dummy1, has_palette;
@@ -141,8 +139,8 @@ Ex<PackedTexture> PackedTexture::legacyLoad(Stream &sr, Palette &palette) {
 	return out;
 }
 
-template Ex<PackedTexture> PackedTexture::legacyLoad(MemoryStream&, Palette&);
-template Ex<PackedTexture> PackedTexture::legacyLoad(FileStream&, Palette&);
+template Ex<PackedTexture> PackedTexture::legacyLoad(MemoryStream &, Palette &);
+template Ex<PackedTexture> PackedTexture::legacyLoad(FileStream &, Palette &);
 
 Ex<PackedTexture> PackedTexture::load(Stream &sr) {
 	PackedTexture out;
@@ -207,9 +205,9 @@ void PackedTexture::blit(Image &out, const int2 &pos, const Color *__restrict pa
 				 data += to_copy;)
 		} else if(command == 2) {
 			LOOP(for(int i = 0; i < to_copy; i++) {
-					 Color col(pal[data[i * 2 + 0]], data[i * 2 + 1]);
-					 dst[i] = dst[i].a ? blend(dst[i], col) : col;
-				 } data += to_copy * 2;)
+				Color col(pal[data[i * 2 + 0]], data[i * 2 + 1]);
+				dst[i] = dst[i].a ? blend(dst[i], col) : col;
+			} data += to_copy * 2;)
 		} else if(command == 3) {
 			LOOP(for(int i = 0; i < to_copy; i++) dst[i] =
 					 blend(dst[i], Color(default_col, data[i]));

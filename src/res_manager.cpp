@@ -5,15 +5,15 @@
 
 #include "game/tile.h"
 #include <fwk/gfx/font.h>
+#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/image.h>
+#include <fwk/hash_map.h>
 #include <fwk/io/file_stream.h>
 #include <fwk/io/file_system.h>
-#include <fwk/io/memory_stream.h>
-#include <fwk/io/url_fetch.h>
 #include <fwk/io/gzip_stream.h>
-#include <fwk/gfx/gl_texture.h>
-#include <fwk/hash_map.h>
+#include <fwk/io/memory_stream.h>
 #include <fwk/io/package_file.h>
+#include <fwk/io/url_fetch.h>
 #include <map>
 
 #ifdef FWK_PLATFORM_HTML
@@ -29,7 +29,7 @@
 // TODO: dont return references but identifiers (TileId: u16)
 
 struct ResManager::Impl {
-	FwdMember<HashMap<string, PTexture>>  textures;
+	FwdMember<HashMap<string, PTexture>> textures;
 	std::map<string, Dynamic<game::Tile>> tiles;
 	std::map<string, Font> fonts;
 	std::map<string, vector<char>> others;
@@ -37,7 +37,7 @@ struct ResManager::Impl {
 
 ResManager *ResManager::g_instance = nullptr;
 
-static const EnumMap<ResType, Pair<const char*>> default_paths = {{
+static const EnumMap<ResType, Pair<const char *>> default_paths = {{
 	{ResType::tile, {"tiles/", ".tile"}},
 	{ResType::sprite, {"sprites/", ".sprite"}},
 	{ResType::font, {"fonts/", ".fnt"}},
@@ -45,7 +45,7 @@ static const EnumMap<ResType, Pair<const char*>> default_paths = {{
 	{ResType::other, {"", ""}},
 }};
 
-ResManager::ResManager(bool console_mode) :m_console_mode(console_mode) {
+ResManager::ResManager(bool console_mode) : m_console_mode(console_mode) {
 	ASSERT(g_instance == nullptr);
 	g_instance = this;
 
@@ -53,8 +53,7 @@ ResManager::ResManager(bool console_mode) :m_console_mode(console_mode) {
 		m_data_path = FilePath(executablePath()).parent() / "data";
 		if(!m_data_path.ends_with('/'))
 			m_data_path += '/';
-	}
-	else {
+	} else {
 		m_data_path = "data/";
 	}
 
@@ -117,8 +116,8 @@ const game::Tile &ResManager::getTile(Str name) {
 	}
 	return *it->second;
 }
-	
-vector<char> ResManager::getOther(Str name)  const{
+
+vector<char> ResManager::getOther(Str name) const {
 	auto it = m_impl->others.find(name);
 	if(it == m_impl->others.end()) {
 		auto data = loadFile(format("%%", m_data_path, name));
@@ -127,9 +126,9 @@ vector<char> ResManager::getOther(Str name)  const{
 	}
 	return it->second;
 }
-	
+
 const std::map<string, Dynamic<game::Tile>> &ResManager::allTiles() { return m_impl->tiles; }
-	
+
 Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 	DASSERT(sr.isLoading());
 
@@ -139,25 +138,21 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		EXPECT(tile->load(sr));
 		tile->setResourceName(name);
 		m_impl->tiles[name] = std::move(tile);
-	}
-	else if(type == ResType::sprite) {
+	} else if(type == ResType::sprite) {
 		FATAL("write me");
-	}
-	else if(type == ResType::font) {
+	} else if(type == ResType::font) {
 		auto doc = EX_PASS(XmlDocument::load(sr));
 		auto core = EX_PASS(FontCore::load(doc));
 		auto tex = getTexture(format("fonts/%", core.textureName()), true);
 		m_impl->fonts.erase(name);
 		m_impl->fonts.emplace(name, Font(std::move(core), std::move(tex)));
-	}
-	else if(type == ResType::texture) {
+	} else if(type == ResType::texture) {
 		auto ext = fileNameExtension(name);
 		if(!ext)
 			return ERROR("Image without extension: '%'", name);
 		auto tex = EX_PASS(Image::load(sr, *ext));
 		m_impl->textures[name] = GlTexture::make(tex);
-	}
-	else if(type == ResType::other) {
+	} else if(type == ResType::other) {
 		vector<char> data(sr.size());
 		sr.loadData(data);
 		EX_CATCH();
@@ -166,7 +161,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 
 	return {};
 }
-	
+
 Ex<void> ResManager::loadResource(Str name, CSpan<char> data, ResType type) {
 	auto mem_loader = memoryLoader(data);
 	return loadResource(name, mem_loader, type);
@@ -196,21 +191,21 @@ Maybe<string> ResManager::resourceName(Str path, ResType type) const {
 		return none;
 	return out;
 }
-	
+
 string ResManager::fullPath(Str res_name, ResType type) const {
 	auto &paths = m_paths[type];
 	return format("%%%", paths.first, res_name, paths.second);
 }
-	
+
 Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 #ifdef FWK_PLATFORM_HTML
 	print("Loading package: %\n", name);
 
 	// TODO: setup timeout ?
-	auto fetch = EX_PASS(UrlFetch::make(format("res/%.pack.gz", name)));	
+	auto fetch = EX_PASS(UrlFetch::make(format("res/%.pack.gz", name)));
 
 	auto fetch_func = [](void *arg) {
-		auto &fetch = *(UrlFetch*)arg;
+		auto &fetch = *(UrlFetch *)arg;
 		auto [a, b] = fetch.progress();
 		auto status = fetch.status();
 		print("Progress: % / % status:%\n", a, b, status);
@@ -223,7 +218,8 @@ Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 	print("FInished loop!\n");
 	return {};
 
-	vector<char> data; {
+	vector<char> data;
+	{
 		auto gz_data = EX_PASS(UrlFetch::finish(std::move(fetch)));
 		auto mem_loader = memoryLoader(std::move(gz_data));
 		auto gz_loader = EX_PASS(GzipStream::loader(mem_loader));

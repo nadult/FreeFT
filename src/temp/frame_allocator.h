@@ -60,7 +60,9 @@ template <class T> class TFrameAllocator {
 	typedef const T &const_reference;
 	typedef T value_type;
 
-	template <class U> struct rebind { typedef TFrameAllocator<T> other; };
+	template <class U> struct rebind {
+		typedef TFrameAllocator<T> other;
+	};
 
 	template <class U> inline bool operator==(const TFrameAllocator &other) { return true; }
 	template <class U> inline bool operator!=(const TFrameAllocator &other) { return false; }
@@ -73,6 +75,6 @@ template <class T> class TFrameAllocator {
 		return (pointer)FrameAllocator::alloc(n * sizeof(T));
 	}
 	inline void deallocate(pointer p, size_type n) { FrameAllocator::free(p); }
-	inline void construct(pointer p, const_reference c) { new (reinterpret_cast<void *>(p)) T(c); }
+	inline void construct(pointer p, const_reference c) { new(reinterpret_cast<void *>(p)) T(c); }
 	inline void destroy(pointer p) { (p)->~T(); }
 };

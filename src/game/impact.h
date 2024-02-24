@@ -7,44 +7,41 @@
 #include "sys/data_sheet.h"
 
 namespace game {
-	
-	DEFINE_ENUM(ImpactType,
-		ranged,
-		melee,
-		area,
-		area_safe // Safe for spawner
-	);
 
-	struct ImpactProto: public ProtoImpl<ImpactProto, EntityProto, ProtoId::impact> {
-		ImpactProto(const TupleParser &parser);
+DEFINE_ENUM(ImpactType, ranged, melee, area,
+			area_safe // Safe for spawner
+);
 
-		SoundId sound_idx;
-		DamageType damage_type;
-		float damage, force, range;
-		ImpactType type;
-		bool is_invisible;
-	};
+struct ImpactProto : public ProtoImpl<ImpactProto, EntityProto, ProtoId::impact> {
+	ImpactProto(const TupleParser &parser);
 
-	class Impact: public EntityImpl<Impact, ImpactProto, EntityId::impact> {
-	public:
-		Impact(const ImpactProto&, EntityRef source, EntityRef target, float damage_mod);
-		Impact(MemoryStream&);
+	SoundId sound_idx;
+	DamageType damage_type;
+	float damage, force, range;
+	ImpactType type;
+	bool is_invisible;
+};
 
-		void save(MemoryStream&) const override;
-		XmlNode save(XmlNode parent) const override;
-		void addToRender(SceneRenderer &out, Color color) const override;
+class Impact : public EntityImpl<Impact, ImpactProto, EntityId::impact> {
+  public:
+	Impact(const ImpactProto &, EntityRef source, EntityRef target, float damage_mod);
+	Impact(MemoryStream &);
 
-		FlagsType flags() const override { return Flags::impact | Flags::dynamic_entity; }
-	
-	protected:
-		void onAnimFinished() override;
-		void think() override;
-		void applyDamage();
+	void save(MemoryStream &) const override;
+	XmlNode save(XmlNode parent) const override;
+	void addToRender(SceneRenderer &out, Color color) const override;
 
-		EntityRef m_target, m_source;
-		float m_damage_mod;
-		bool m_played_sound;
-		bool m_applied_damage;
-	};
+	FlagsType flags() const override { return Flags::impact | Flags::dynamic_entity; }
+
+  protected:
+	void onAnimFinished() override;
+	void think() override;
+	void applyDamage();
+
+	EntityRef m_target, m_source;
+	float m_damage_mod;
+	bool m_played_sound;
+	bool m_applied_damage;
+};
 
 }

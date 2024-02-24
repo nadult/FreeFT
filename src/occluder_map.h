@@ -7,19 +7,19 @@
 #include "grid.h"
 
 class OccluderMap {
-public:
+  public:
 	static constexpr int max_occluders = 32000;
 
-	OccluderMap(Grid&);
-	OccluderMap(OccluderMap&&);
-	OccluderMap &operator=(OccluderMap&&);
+	OccluderMap(Grid &);
+	OccluderMap(OccluderMap &&);
+	OccluderMap &operator=(OccluderMap &&);
 
 	int addOccluder(int representative_id, int min_height);
 	void removeOccluder(int occluder_id);
 	void clear();
 
-	Ex<void> loadFromXML(const XmlDocument&);
-	void saveToXML(const PodVector<int> &tile_ids, XmlDocument&) const;
+	Ex<void> loadFromXML(const XmlDocument &);
+	void saveToXML(const PodVector<int> &tile_ids, XmlDocument &) const;
 
 	struct Occluder {
 		FBox bbox;
@@ -33,9 +33,9 @@ public:
 	bool isUnder(int lower_id, int upper_id) const;
 
 	vector<FBox> computeBBoxes(int occluder_id, bool minimize) const;
-	bool verifyBBoxes(int occluder_id, const vector<FBox>&) const;
+	bool verifyBBoxes(int occluder_id, const vector<FBox> &) const;
 
-private:
+  private:
 	vector<Occluder> m_occluders;
 	Grid &m_grid;
 
@@ -43,7 +43,7 @@ private:
 };
 
 class OccluderConfig {
-public:
+  public:
 	OccluderConfig(const OccluderMap &map);
 
 	bool update();
@@ -59,17 +59,16 @@ public:
 		indices.resize(count);
 	}
 
-	template <class Container>
-	void setVisibilityFlag(Container &elements, int flag) const {
+	template <class Container> void setVisibilityFlag(Container &elements, int flag) const {
 		for(int n = 0; n < (int)elements.size(); n++) {
 			auto &element = elements[n];
 			bool is_visible = isVisible(element.occluder_id);
-			element.flags = (element.flags & ~flag) | (is_visible? flag : 0);
+			element.flags = (element.flags & ~flag) | (is_visible ? flag : 0);
 		}
 	}
 
 	struct OccluderState {
-		OccluderState() :is_visible(true), is_overlapping(true) { }
+		OccluderState() : is_visible(true), is_overlapping(true) {}
 
 		bool is_visible : 1;
 		bool is_overlapping : 1;
@@ -78,8 +77,7 @@ public:
 	void setVisible(int occluder_id, bool is_visible);
 	bool isVisible(int occluder_id) const;
 
-private:
+  private:
 	const OccluderMap &m_map;
 	vector<OccluderState> m_states;
-
 };
