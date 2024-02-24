@@ -42,11 +42,7 @@ class ResManager {
 
 	Pair<Str> prefixSuffix(ResType type) const { return m_paths[type]; }
 
-	void beginPreloading();
-	bool preloadingStep();
-
   private:
-	void preloadEmbedded();
 	Ex<void> loadPackage(Str, Str);
 
 	static ResManager *g_instance;

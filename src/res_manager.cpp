@@ -20,9 +20,6 @@
 #include <emscripten.h>
 #endif
 
-// This file should be automatically generated
-#include "res_embedded.cpp"
-
 // TODO: fix error handling in all places with Ex<>
 // TODO: dynamic not needed in s_tiles; But: TileFrame depending on CachedTexture
 // causes problems in copy constructors & operator=
@@ -65,11 +62,6 @@ ResManager::ResManager(bool console_mode) :m_console_mode(console_mode) {
 		m_paths[rtype] = {m_data_path + default_paths[rtype].first, default_paths[rtype].second};
 
 	m_impl.emplace();
-	double time = getTime();
-	if(!m_console_mode)
-		preloadEmbedded();
-	time = getTime() - time;
-	printf("Loaded embedded resources in: %.2f msec\n", time * 1000.0);
 }
 
 ResManager::~ResManager() {
@@ -243,66 +235,6 @@ Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 #else
 	return ERROR("Not supported yet");
 #endif
-}
-
-void ResManager::preloadEmbedded() {
-#define TEX(prefix, name, fix_trans) \
-	{prefix #name ".png", cspan(name##_png, name##_png_len).template reinterpret<char>(), fix_trans}
-	struct Tex {
-		Str name;
-		CSpan<char> data;
-		bool fix_trans;
-	};
-
-	Tex textures[] = {
-		TEX("fonts/", liberation_16_0, true),
-		TEX("fonts/", liberation_24_0, true),
-		TEX("fonts/", liberation_32_0, true),
-		TEX("fonts/", liberation_48_0, true),
-		TEX("fonts/", transformers_20_0, true),
-		TEX("fonts/", transformers_30_0, true),
-		TEX("fonts/", transformers_48_0, true),
-		TEX("", loading_bar, true),
-		TEX("", icons, true)
-	};
-#undef TEX
-
-	for(auto [name, data, fix] : textures) {
-		auto ldr = memoryLoader(data);
-		auto tex = Texture::load(ldr, TextureFileType::png);
-		tex.check();
-		if(fix)
-			fixGrayTransTexture(*tex);
-		m_impl->textures[name] = GlTexture::make(*tex);
-	}
-
-	{
-		auto fonts_gz_data = CSpan<u8>(fonts_pack_gz, fonts_pack_gz_len).reinterpret<char>();
-		auto fonts_data = gzipDecompress(fonts_gz_data).get();
-		auto loader = memoryLoader(fonts_data);
-
-		auto pkg_file = PackageFile::load(loader).get();
-		for(int n : intRange(pkg_file.size())) {
-			auto font_loader = memoryLoader(pkg_file.data(n));
-			string name = pkg_file[n].name;
-			removeSuffix(name, ".fnt");
-			loadResource(name, font_loader, ResType::font).check();
-		}
-	}
-}
-
-static const Pair<const char*> preload_packages[] = {
-	{"data", "data/"},
-	{"gui", "data/gui/"},
-	{"sprites", "data/sprites/"},
-	{"tiles", "data/tiles/"},
-};
-
-void ResManager::beginPreloading() {
-}
-
-bool ResManager::preloadingStep() {
-	return true;
 }
 
 namespace res {
