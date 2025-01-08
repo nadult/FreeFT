@@ -99,7 +99,7 @@ void PacketInfo::load(MemoryStream &sr) {
 }
 
 InPacket::InPacket() : MemoryStream(cspan("", 0)) {}
-InPacket::InPacket(PodVector<char> data) : MemoryStream(move(data), true) { info.load(*this); }
+InPacket::InPacket(PodVector<char> data) : MemoryStream(std::move(data), true) { info.load(*this); }
 InPacket::InPacket(InPacket &&) = default;
 InPacket &InPacket::operator=(InPacket &&rhs) = default;
 
@@ -196,7 +196,7 @@ RecvResult Socket::receive(InPacket &packet, Address &source) {
 		return RecvResult::invalid;
 
 	data.resize(new_size);
-	packet = move(data);
+	packet = std::move(data);
 	return packet.info.valid() ? RecvResult::valid : RecvResult::invalid;
 }
 

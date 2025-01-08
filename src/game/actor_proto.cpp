@@ -196,7 +196,7 @@ void ActorProto::link() {
 		snprintf(text, sizeof(text), "%shit", var_name);
 		sounds.hit = text;
 
-		any_sound |= sounds.get_up.isValid() | sounds.hit.isValid();
+		any_sound |= sounds.get_up.isValid() || sounds.hit.isValid();
 
 		if(!any_sound && n >= 1)
 			break;

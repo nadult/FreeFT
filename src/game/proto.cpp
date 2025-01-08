@@ -181,7 +181,7 @@ static void loadProtos(Str file_name) {
 	s_is_loaded = true;
 
 	auto xml_data = ResManager::instance().getOther(file_name);
-	auto doc = move(XmlDocument::make(xml_data).get());
+	auto doc = std::move(XmlDocument::make(xml_data).get());
 
 	auto doc_node = doc.child("office:document");
 	ASSERT(doc_node);

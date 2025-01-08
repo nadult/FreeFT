@@ -113,7 +113,7 @@ Ex<void> EntityMap::loadFromXML(const XmlDocument &doc) {
 	auto node = main_node.child();
 	while(node) {
 		Dynamic<Entity> new_entity(Entity::construct(node));
-		add(move(new_entity));
+		add(std::move(new_entity));
 		node = node.sibling();
 	}
 	return {};
