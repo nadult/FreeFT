@@ -6,14 +6,13 @@
 #include "base.h"
 
 struct Config {
-	Config();
 	Config(CXmlNode);
 	Config(const char *config_name);
 
 	void load(CXmlNode);
 
-	int2 resolution;
-	int2 window_pos;
-	bool fullscreen_on;
-	bool profiler_on;
+	int2 resolution = {1280, 720};
+	int2 window_pos = {100, 100};
+	bool fullscreen_on = false;
+	bool profiler_on = false;
 };

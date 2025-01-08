@@ -5,12 +5,9 @@
 
 #include <fwk/io/file_system.h>
 
-Config::Config()
-	: resolution(1280, 720), window_pos(0, 0), fullscreen_on(false), profiler_on(false) {}
+Config::Config(CXmlNode node) { load(node); }
 
-Config::Config(CXmlNode node) : Config() { load(node); }
-
-Config::Config(const char *config_name) : Config() {
+Config::Config(const char *config_name) {
 	// TODO: load XML files through ResManager?
 	auto file_name = "data/config.xml";
 	if(auto doc = XmlDocument::load(file_name)) {
