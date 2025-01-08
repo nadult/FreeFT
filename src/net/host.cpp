@@ -297,7 +297,7 @@ void RemoteHost::receive(InPacket packet, int timestamp, double time) {
 
 	m_out_acks.push_back(packet.packetId());
 	int idx = m_in_packets.alloc();
-	m_in_packets[idx] = move(packet);
+	m_in_packets[idx] = std::move(packet);
 }
 
 void RemoteHost::handlePacket(InPacket &packet) {
@@ -327,7 +327,7 @@ void RemoteHost::handlePacket(InPacket &packet) {
 
 				m_in_acks[offset + i] = SeqNumber(int(m_in_acks[offset + i - 1]) + diff);
 				for(int j = 1; j < count; j++)
-					m_in_acks[offset + i + j] = SeqNumber(m_in_acks[offset + i + j - 1] + 1);
+					m_in_acks[offset + i + j] = SeqNumber(int(m_in_acks[offset + i + j - 1]) + 1);
 				i += count;
 			}
 
@@ -517,7 +517,7 @@ LocalHost::LocalHost(const net::Address &in_address)
 	int retries = 0;
 	while(!m_socket.isValid()) {
 		if(auto result = Socket::make(address))
-			m_socket = move(*result);
+			m_socket = std::move(*result);
 		else {
 			address = Address(address.ip, randomPort());
 			if(++retries == 100) {
@@ -532,7 +532,7 @@ LocalHost::LocalHost(const net::Address &in_address)
 bool LocalHost::getLobbyPacket(InPacket &out) {
 	if(m_lobby_packets.empty())
 		return false;
-	out = move(m_lobby_packets.front());
+	out = std::move(m_lobby_packets.front());
 	m_lobby_packets.pop_front();
 	return true;
 }
@@ -568,7 +568,7 @@ void LocalHost::receive() {
 			continue;
 
 		if(packet.info.flags & PacketFlag::lobby) {
-			m_lobby_packets.emplace_back(move(packet));
+			m_lobby_packets.emplace_back(std::move(packet));
 			continue;
 		}
 
@@ -591,7 +591,7 @@ void LocalHost::receive() {
 		if(current_id >= 0 && current_id < numRemoteHosts()) {
 			RemoteHost *remote = m_remote_hosts[current_id].get();
 			if(remote && remote->address() == source)
-				m_remote_hosts[current_id]->receive(move(packet), m_timestamp, current_time);
+				m_remote_hosts[current_id]->receive(std::move(packet), m_timestamp, current_time);
 		}
 	}
 

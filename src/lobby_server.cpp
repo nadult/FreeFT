@@ -23,7 +23,7 @@ using namespace net;
 class LobbyServer {
   public:
 	// TODO: socket only on specific interface?
-	LobbyServer(int port) { m_socket = move(Socket::make(port).get()); }
+	LobbyServer(int port) { m_socket = std::move(Socket::make(port).get()); }
 
 	struct ServerInfo : public ServerStatusChunk {
 		ServerInfo(ServerStatusChunk chunk)

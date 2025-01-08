@@ -103,7 +103,7 @@ class Resource {
 		int id;
 		while((id = m_sprite->frame(m_seq_id, m_frame_id).id) < 0) {
 			const char *event_name = Sprite::eventIdToString((Sprite::EventId)id);
-			if(id == Sprite::ev_overlay)
+			if(id == int(Sprite::ev_overlay))
 				event_name = "overlay";
 			if(event_name)
 				m_events.emplace_back(event_name, getTime());

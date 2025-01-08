@@ -413,7 +413,7 @@ void convertAll(const char *fot_path, const string &filter) {
 				mkdirRecursive(dir).check();
 
 				auto ldr = memoryLoader(data);
-				auto svr = move(fileSaver(dst_path).get());
+				auto svr = std::move(fileSaver(dst_path).get());
 
 				if((type != ResTypeId::tile && type != ResTypeId::sound) || bytes > 1024 * 1024) {
 					if(type == ResTypeId::tile || type == ResTypeId::sound) {

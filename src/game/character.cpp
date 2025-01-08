@@ -51,7 +51,7 @@ PTexture Character::emptyIcon() { return res::getGuiTexture(string(s_icon_folder
 
 const vector<pair<ProtoIndex, string>> Character::findIcons() {
 	auto xml_data = ResManager::instance().getOther("char_icons.xml");
-	auto doc = move(XmlDocument::make(xml_data).get()); //TODO
+	auto doc = std::move(XmlDocument::make(xml_data).get()); //TODO
 
 	vector<pair<ProtoIndex, string>> out;
 
@@ -108,7 +108,7 @@ void CharacterClass::loadAll() {
 		return;
 
 	auto xml_data = ResManager::instance().getOther("char_classes.xml");
-	auto doc = move(XmlDocument::make(xml_data).get()); // TODO
+	auto doc = std::move(XmlDocument::make(xml_data).get()); // TODO
 
 	auto class_node = doc.child("char_class");
 	int counter = 0;

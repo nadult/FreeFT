@@ -77,8 +77,8 @@ namespace {
 			Sound sound;
 			{
 				auto ldr =
-					move(fileLoader(format("%%%", s_prefix, m_name, s_suffix)).get()); // TODO
-				sound = move(Sound::load(ldr).get()); // TODO
+					std::move(fileLoader(format("%%%", s_prefix, m_name, s_suffix)).get()); // TODO
+				sound = std::move(Sound::load(ldr).get()); // TODO
 			}
 
 			if(m_id == 0) {
