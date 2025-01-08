@@ -18,7 +18,7 @@ void Button::setText(const char *text) {
 	m_text_extents = {m_text_extents.x(), 0, m_text_extents.ex(), m_font.lineHeight()};
 }
 
-void Button::drawContents(Renderer2D &out) const {
+void Button::drawContents(Canvas2D &out) const {
 	drawWindow(out, IRect(int2(0, 0), size()),
 			   isMouseOver() && m_is_enabled ? WindowStyle::gui_light : WindowStyle::gui_dark,
 			   m_mouse_press ? -2 : 2);

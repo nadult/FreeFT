@@ -20,7 +20,7 @@ void TextBox::setText(const char *text) {
 	m_text_extents = m_font->evalExtents(text);
 }
 
-void TextBox::drawContents(Renderer2D &out) const {
+void TextBox::drawContents(Canvas2D &out) const {
 	int2 pos = (size() - m_text_extents.size()) / 2 - m_text_extents.min();
 	if(!m_is_centered)
 		pos.x = 5;

@@ -3,7 +3,6 @@
 
 #include "base.h"
 
-#include <fwk/gfx/gl_device.h>
 #include <fwk/io/file_stream.h>
 #include <fwk/math/plane.h>
 #include <fwk/math/rotation.h>
@@ -343,6 +342,8 @@ string toUTF8Checked(const string32 &str) {
 	FATAL("Error while converting string to UTF8");
 }
 
+// TODO: turn into a class
+/*
 void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos,
 				  bool fullscreen) {
 	// TODO: date is refreshed only when game.o is being rebuilt
@@ -355,4 +356,4 @@ void createWindow(const char *name, GlDevice &device, const int2 &res, const int
 	config.version = 2.1;
 	device.createWindow(title, IRect(res) + int2(100, 100), config);
 	device.grabMouse(false);
-}
+}*/

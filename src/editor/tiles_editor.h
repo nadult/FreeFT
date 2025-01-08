@@ -18,7 +18,7 @@ class TilesEditor : public ui::Window {
 	void setTileGroup(const TileGroup *tile_group) { m_tile_group = tile_group; }
 	void setNewTile(const game::Tile *tile) { m_new_tile = tile; }
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	void onInput(const InputState &) override;
 	bool onMouseDrag(const InputState &, int2 start, int2 current, int key, int is_final) override;
 
@@ -75,7 +75,7 @@ class TilesEditor : public ui::Window {
 
 	int findAt(const int3 &pos) const;
 
-	void drawBoxHelpers(Renderer2D &, const IBox &box) const;
+	void drawBoxHelpers(Canvas2D &, const IBox &box) const;
 	const IBox computeCursor(const int2 &start, const int2 &end) const;
 
 	IBox m_selection;

@@ -50,7 +50,7 @@ struct Item {
 	const ItemProto &proto() const { return *m_proto; }
 	ProtoIndex index() const { return m_proto->index(); }
 
-	PTexture guiImage(bool small, FRect &tex_rect) const;
+	PVImageView guiImage(bool small, FRect &tex_rect) const;
 
 	void save(MemoryStream &) const;
 
@@ -66,7 +66,7 @@ class ItemEntity : public EntityImpl<ItemEntity, ItemProto, EntityId::item> {
 
 	FlagsType flags() const { return Flags::item | Flags::static_entity; }
 
-	PTexture guiImage(bool small, FRect &tex_rect) const;
+	PVImageView guiImage(bool small, FRect &tex_rect) const;
 	const Item &item() const { return m_item; }
 	Item &item() { return m_item; }
 

@@ -5,7 +5,7 @@
 
 #include "gfx/drawing.h"
 #include <algorithm>
-#include <fwk/gfx/renderer2d.h>
+#include <fwk/gfx/canvas_2d.h>
 
 SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
 	: m_viewport(viewport), m_view_pos(view_pos) {
@@ -13,7 +13,7 @@ SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
 	m_elements.reserve(1024);
 }
 
-bool SceneRenderer::add(PTexture texture, IRect rect, float3 pos, FBox bbox, Color color,
+bool SceneRenderer::add(PVImageView texture, IRect rect, float3 pos, FBox bbox, Color color,
 						FRect tex_rect, bool is_overlay) {
 	DASSERT(texture);
 
@@ -115,13 +115,13 @@ int fastDrawingOrder(const FBox &a, const FBox &b) {
 	return 0;
 }
 
-void SceneRenderer::render() {
+void SceneRenderer::render(Canvas2D &canvas) {
 	//FWK_PROFILE("SceneRenderer::render");
-	Renderer2D out(m_viewport, Orient2D::y_down);
+	//Canvas2D canvas(m_viewport, Orient2D::y_down);
 
 	int node_size = 128;
 
-	out.setViewPos(m_view_pos - m_viewport.min());
+	canvas.setViewPos(m_view_pos - m_viewport.min());
 	IRect view(m_view_pos, m_view_pos + m_viewport.size());
 
 	int xNodes = (m_viewport.width() + node_size - 1) / node_size;
@@ -235,16 +235,19 @@ void SceneRenderer::render() {
 		int2 grid_tl = m_viewport.min() + int2(grid_x * node_size, grid_y * node_size);
 		IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
 		grid_rect = {grid_rect.min(), vmin(grid_rect.max(), m_viewport.max())};
-		out.setScissorRect(grid_rect);
+		// TODO: fixme
+		//canvas.setScissorRect(grid_rect);
 
 		//FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);
 		for(int i = count - 1; i >= 0; i--) {
 			const Element &elem = m_elements[gdata[i].second];
 
-			if(elem.texture)
-				out.addFilledRect(FRect(elem.rect), elem.tex_rect, {elem.texture, elem.color});
-			else
-				drawBBox(out, elem.bbox, elem.color, true);
+			if(elem.texture) {
+				canvas.setMaterial({elem.texture, elem.color});
+				canvas.addFilledRect(FRect(elem.rect), elem.tex_rect);
+			} else {
+				drawBBox(canvas, elem.bbox, elem.color, true);
+			}
 		}
 
 		g += count;
@@ -252,14 +255,14 @@ void SceneRenderer::render() {
 
 	//	printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
-	out.setScissorRect(m_viewport);
+	// TODO: fixme
+	//canvas.setScissorRect(m_viewport);
 	for(int n = 0; n < (int)m_lines.size(); n++) {
 		const LineElement &line = m_lines[n];
-		out.addLine(worldToScreen(line.begin), worldToScreen(line.end), line.color);
+		canvas.addSegment(worldToScreen(line.begin), worldToScreen(line.end), line.color);
 	}
 	for(int n = 0; n < (int)m_wire_boxes.size(); n++) {
 		const BoxElement &elem = m_wire_boxes[n];
-		drawBBox(out, elem.bbox, elem.color);
+		drawBBox(canvas, elem.bbox, elem.color);
 	}
-	out.render();
 }

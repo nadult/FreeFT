@@ -58,7 +58,7 @@ void HudConsole::onUpdate(double time_diff) {
 		m_edit_box->setText("");
 }
 
-void HudConsole::onDraw(Renderer2D &out) const { HudLayer::onDraw(out); }
+void HudConsole::onDraw(Canvas2D &out) const { HudLayer::onDraw(out); }
 
 const string HudConsole::getCommand() {
 	string out;

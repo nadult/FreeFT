@@ -19,7 +19,7 @@ class HudCharIcon : public HudButton {
 	}
 	void setCharacter(PCharacter character) { m_character = character; }
 
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
   private:
 	PCharacter m_character;

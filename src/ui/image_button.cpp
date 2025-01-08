@@ -5,7 +5,7 @@
 
 #include "audio/device.h"
 #include "gfx/drawing.h"
-#include <fwk/gfx/gl_texture.h>
+#include <fwk/vulkan/vulkan_image.h>
 
 namespace ui {
 ImageButtonProto::ImageButtonProto(Str back_tex, Str up_tex, Str down_tex, Str font_name,
@@ -20,7 +20,7 @@ ImageButtonProto::ImageButtonProto(Str back_tex, Str up_tex, Str down_tex, Str f
 	if(font_name)
 		font = &res::getFont(font_name);
 
-	rect = IRect({0, 0}, back ? back->size() : vmax(up->size(), down->size()));
+	rect = IRect({0, 0}, back ? back->size2D() : vmax(up->size2D(), down->size2D()));
 	text_rect = text_area.empty() ? IRect() :
 									IRect(lerp(float(rect.x()), float(rect.ex()), text_area.x()),
 										  lerp(float(rect.y()), float(rect.ey()), text_area.y()),
@@ -49,15 +49,15 @@ void ImageButton::setText(Str text) {
 	}
 }
 
-void ImageButton::drawContents(Renderer2D &out) const {
+void ImageButton::drawContents(Canvas2D &out) const {
 	bool is_pressed = m_mode == mode_toggle	   ? m_is_pressed ^ m_mouse_press :
 					  m_mode == mode_toggle_on ? m_is_pressed || m_mouse_press :
 												 m_mouse_press;
 
-	if(is_pressed)
-		out.addFilledRect(IRect(m_proto.down->size()), m_proto.down);
-	else
-		out.addFilledRect(IRect(m_proto.up->size()), m_proto.up);
+	auto image = is_pressed ? m_proto.down : m_proto.up;
+	out.setMaterial(image);
+	out.addFilledRect(IRect(image->size2D()));
+	out.setMaterial({});
 
 	if(m_proto.font) {
 		int2 rect_center = size() / 2;

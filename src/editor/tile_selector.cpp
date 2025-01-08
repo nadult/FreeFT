@@ -34,7 +34,7 @@ void TileSelector::setSelection(const game::Tile *tile) {
 		}
 }
 
-void TileSelector::drawContents(Renderer2D &out) const {
+void TileSelector::drawContents(Canvas2D &out) const {
 	int2 offset = innerOffset();
 	IRect clip_rect(int2(0, 0), clippedRect().size());
 

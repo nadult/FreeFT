@@ -37,7 +37,7 @@ IRect ProgressBar::evalBarPos() const {
 			   IRect(0, rect_size.y * pos, rect_size.x, rect_size.y * (pos + bar_size));
 }
 
-void ProgressBar::drawContents(Renderer2D &out) const {
+void ProgressBar::drawContents(Canvas2D &out) const {
 	//TODO: fixme
 	/*
 		drawWindow(IRect(int2(0, 0), size()), WindowStyle::gui_medium, 1);

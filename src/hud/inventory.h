@@ -32,7 +32,7 @@ class HudItemDesc : public HudLayer {
 	float alpha() const override;
 
   protected:
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
 	Item m_item;
 };
@@ -52,7 +52,7 @@ class HudItemButton : public HudButton {
   protected:
 	bool onInput(const InputEvent &) override;
 	void onUpdate(double time_diff) override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
 	HudItemEntry m_entry;
 	double m_drop_count;
@@ -76,7 +76,7 @@ class HudInventory : public HudLayer {
 	bool onEvent(const HudEvent &) override;
 	void onUpdate(double time_diff) override;
 	void onLayout() override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
   private:
 	int m_row_offset, m_max_row_offset;

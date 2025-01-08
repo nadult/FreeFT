@@ -16,7 +16,7 @@ class TileSelector : public Window {
   public:
 	TileSelector(IRect rect);
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	bool onMouseDrag(const InputState &, int2 start, int2 current, int key, int is_final) override;
 
 	void setModel(PTileListModel);

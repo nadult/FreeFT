@@ -23,7 +23,7 @@ class HudTargetInfo : public HudLayer {
 	void setName(const string &name) { m_name = name; }
 
   protected:
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 	void onUpdate(double) override;
 
 	PHudCharIcon m_char_icon;

@@ -356,7 +356,7 @@ bool TilesEditor::onMouseDrag(const InputState &state, int2 start, int2 current,
 	return false;
 }
 
-void TilesEditor::drawBoxHelpers(Renderer2D &out, const IBox &box) const {
+void TilesEditor::drawBoxHelpers(Canvas2D &out, const IBox &box) const {
 	int3 pos = box.min(), bbox = box.max() - box.min();
 	int3 tsize = asXZY(m_tile_map.dimensions(), 32);
 
@@ -380,7 +380,7 @@ void TilesEditor::drawBoxHelpers(Renderer2D &out, const IBox &box) const {
 			 Color(0, 0, 255, 127));
 }
 
-void TilesEditor::drawContents(Renderer2D &out) const {
+void TilesEditor::drawContents(Canvas2D &out) const {
 	m_view.updateVisibility(m_cursor_offset);
 	SceneRenderer renderer(clippedRect(), m_view.pos());
 

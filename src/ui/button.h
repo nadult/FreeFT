@@ -12,7 +12,7 @@ class Button : public Window {
 	Button(IRect rect, const char *text, int id = 0);
 	const char *typeName() const override { return "Button"; }
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	bool onMouseDrag(const InputState &, int2, int2, int key, int is_final) override;
 	virtual void setText(const char *text);
 

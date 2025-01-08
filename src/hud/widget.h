@@ -23,7 +23,7 @@ class HudWidget {
 	void needsLayout();
 	void layout();
 	void update(double time_diff);
-	void draw(Renderer2D &) const;
+	void draw(Canvas2D &) const;
 
 	bool handleInput(const InputEvent &);
 	bool handleEvent(const HudEvent &);
@@ -67,7 +67,7 @@ class HudWidget {
 	virtual void onLayout() {}
 	virtual bool onInput(const InputEvent &) { return false; }
 	virtual bool onEvent(const HudEvent &) { return false; }
-	virtual void onDraw(Renderer2D &) const {}
+	virtual void onDraw(Canvas2D &) const {}
 
 	HudWidget *parent() const { return m_parent; }
 

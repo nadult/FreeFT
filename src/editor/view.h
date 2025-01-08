@@ -14,7 +14,7 @@ class View {
   public:
 	View(game::TileMap &, game::EntityMap &, const int2 &view_size);
 
-	void drawGrid(Renderer2D &) const;
+	void drawGrid(Canvas2D &) const;
 	void update(const InputState &);
 
 	void setGridHeight(int new_height) { m_height = new_height; }

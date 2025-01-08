@@ -31,7 +31,7 @@ class HudGrid : public HudWidget {
 
   protected:
 	bool onInput(const InputEvent &) override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 	void onLayout() override;
 	void onUpdate(double time_diff) override;
 

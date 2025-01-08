@@ -20,7 +20,7 @@ class HudConsole : public HudLayer {
 	void onUpdate(double time_diff) override;
 	bool onInput(const InputEvent &) override;
 	bool onEvent(const HudEvent &) override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
 	PHudEditBox m_edit_box;
 	vector<string> m_commands;

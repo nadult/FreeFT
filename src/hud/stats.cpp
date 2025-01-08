@@ -55,6 +55,6 @@ void HudStats::updateData() {
 	}
 }
 
-void HudStats::onDraw(Renderer2D &out) const { HudLayer::onDraw(out); }
+void HudStats::onDraw(Canvas2D &out) const { HudLayer::onDraw(out); }
 
 }

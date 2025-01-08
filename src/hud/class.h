@@ -14,7 +14,7 @@ class HudClassButton : public HudRadioButton {
 
 	HudClassButton(const FRect &rect);
 
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 	Color backgroundColor() const override;
 };
 

@@ -36,7 +36,7 @@ class HudLayer : public HudWidget {
 	virtual bool canShow() const { return true; }
 
   protected:
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
 	game::PWorld m_world;
 	game::PPCController m_pc_controller;

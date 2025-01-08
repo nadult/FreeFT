@@ -164,21 +164,9 @@ float intersection(const IntervalF idir[3], const IntervalF origin[3], const Box
 bool isInsideFrustum(const float3 &eye_pos, const float3 &eye_dir, float min_dot,
 					 const Box<float3> &box);
 
-namespace ui {
-class Window;
-class Button;
-class ImageButton;
-class FileDialog;
-class MessageBox;
-class EditBox;
-using PWindow = shared_ptr<Window>;
-using PButton = shared_ptr<Button>;
-using PImageButton = shared_ptr<ImageButton>;
-using PFileDialog = shared_ptr<FileDialog>;
-using PMessageBox = shared_ptr<MessageBox>;
-};
-
 class SceneRenderer;
+
+// TODO: replace shared_ptr with Dynamic
 
 namespace game {
 class Tile;
@@ -232,15 +220,26 @@ class Controller;
 using PController = Dynamic<Controller>;
 }
 
+namespace ui {
+class Window;
+class Button;
+class ImageButton;
+class FileDialog;
+class MessageBox;
+class EditBox;
+using PWindow = shared_ptr<Window>;
+using PButton = shared_ptr<Button>;
+using PImageButton = shared_ptr<ImageButton>;
+using PFileDialog = shared_ptr<FileDialog>;
+using PMessageBox = shared_ptr<MessageBox>;
+};
+
 // Implemented in ResManager
 namespace res {
-PTexture getTexture(Str, bool fix_transparent = false);
-PTexture getGuiTexture(Str, bool fix_transparent = false);
+PVImageView getTexture(Str, bool fix_transparent = false);
+PVImageView getGuiTexture(Str, bool fix_transparent = false);
 const Font &getFont(Str);
 const game::Tile &getTile(Str);
 }
 
 struct TupleParser;
-
-void createWindow(const char *name, GlDevice &device, const int2 &res, const int2 &pos,
-				  bool fullscreen);

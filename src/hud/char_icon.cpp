@@ -6,6 +6,8 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/drawing.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -17,14 +19,14 @@ HudCharIcon::HudCharIcon(const FRect &target_rect)
 
 HudCharIcon::~HudCharIcon() {}
 
-void HudCharIcon::onDraw(Renderer2D &out) const {
+void HudCharIcon::onDraw(Canvas2D &out) const {
 	HudButton::onDraw(out);
 	FRect rect = this->rect();
 
-	PTexture icon = m_character ? m_character->icon() : Character::emptyIcon();
+	PVImageView icon = m_character ? m_character->icon() : Character::emptyIcon();
 	//TODO: use mipmapped textures
 
-	float2 icon_size(icon->size());
+	float2 icon_size(icon->size2D());
 	float scale = min(1.0f, 1.0f / max(icon_size.x / rect.width(), icon_size.y / rect.height()));
 	icon_size = icon_size * scale;
 	float2 pos = rect.center() - icon_size * 0.5f;
@@ -33,7 +35,8 @@ void HudCharIcon::onDraw(Renderer2D &out) const {
 	FColor color(lerp(FColor(ColorId::red), FColor(ColorId::green), hp_value));
 	color = lerp(color, FColor(m_style.enabled_color), 0.5f);
 
-	out.addFilledRect(FRect(pos, pos + icon_size), {icon, mulAlpha(color, alpha())});
+	out.setMaterial({icon, IColor(mulAlpha(color, alpha()))});
+	out.addFilledRect(FRect(pos, pos + icon_size));
 
 	if(m_max_hp) {
 		auto text = hp_value <= 0.0f ? "DEAD" : format("%/%", m_current_hp, m_max_hp);

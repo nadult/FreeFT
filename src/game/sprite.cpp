@@ -114,7 +114,7 @@ void Sprite::MultiImage::cacheUpload(Image &image) const {
 	}
 }
 
-PTexture Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect,
+PVImageView Sprite::MultiImage::toTexture(const MultiPalette &palette, FRect &tex_rect,
 									   bool put_in_atlas) const {
 	if(cacheId() == -1) {
 		bindToCache();
@@ -215,7 +215,7 @@ int Sprite::imageIndex(int seq_id, int frame_id, int dir_id) const {
 	return out;
 }
 
-PTexture Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect,
+PVImageView Sprite::getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect,
 						  bool put_in_atlas) const {
 	DASSERT(!isPartial());
 

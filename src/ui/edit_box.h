@@ -16,7 +16,7 @@ class EditBox : public Window {
 	const string32 &text() const { return m_text; }
 	void reset(bool is_editing);
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	void onInput(const InputState &) override;
 	bool onEvent(const Event &) override;
 	//TODO: what if text character is not available in the font?

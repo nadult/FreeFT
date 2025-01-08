@@ -28,42 +28,6 @@
     <ClCompile Include="..\src\res_manager.cpp">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ui\button.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\combo_box.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\edit_box.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\file_dialog.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\image_button.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\list_box.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\loading_bar.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\message_box.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\progress_bar.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\text_box.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\tile_list.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ui\window.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\hud\base.cpp">
       <Filter>hud</Filter>
     </ClCompile>
@@ -271,18 +235,6 @@
     <ClCompile Include="..\src\gfx\texture_cache.cpp">
       <Filter>gfx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\io\controller.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\io\game_loop.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\io\loop.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\io\main_menu_loop.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\net\base.cpp">
       <Filter>net</Filter>
     </ClCompile>
@@ -310,32 +262,41 @@
     <ClCompile Include="..\src\net\server.cpp">
       <Filter>net</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\entities_editor.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\button.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\entities_pad.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\combo_box.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\group_editor.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\edit_box.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\group_pad.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\file_dialog.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\tile_group.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\image_button.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\tile_selector.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\list_box.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\tiles_editor.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\loading_bar.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\tiles_pad.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\message_box.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\editor\view.cpp">
-      <Filter>editor</Filter>
+    <ClCompile Include="..\src\ui\progress_bar.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\text_box.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\tile_list.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ui\window.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -365,42 +326,6 @@
     </ClInclude>
     <ClInclude Include="..\src\res_manager.h">
       <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\button.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\combo_box.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\edit_box.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\file_dialog.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\image_button.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\list_box.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\loading_bar.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\message_box.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\progress_bar.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\text_box.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\tile_list.h">
-      <Filter>ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\ui\window.h">
-      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="..\src\hud\base.h">
       <Filter>hud</Filter>
@@ -594,18 +519,6 @@
     <ClInclude Include="..\src\gfx\texture_cache.h">
       <Filter>gfx</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\io\controller.h">
-      <Filter>io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\io\game_loop.h">
-      <Filter>io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\io\loop.h">
-      <Filter>io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\io\main_menu_loop.h">
-      <Filter>io</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\net\base.h">
       <Filter>net</Filter>
     </ClInclude>
@@ -636,32 +549,41 @@
     <ClInclude Include="..\src\net\server.h">
       <Filter>net</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\entities_editor.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\button.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\entities_pad.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\combo_box.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\group_editor.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\edit_box.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\group_pad.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\file_dialog.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\tile_group.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\image_button.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\tile_selector.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\list_box.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\tiles_editor.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\loading_bar.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\tiles_pad.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\message_box.h">
+      <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\editor\view.h">
-      <Filter>editor</Filter>
+    <ClInclude Include="..\src\ui\progress_bar.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\text_box.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\tile_list.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ui\window.h">
+      <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -677,17 +599,11 @@
     <Filter Include="hud">
       <UniqueIdentifier>{259f034c-f22d-4f38-8f06-1e91efd4c790}</UniqueIdentifier>
     </Filter>
-    <Filter Include="io">
-      <UniqueIdentifier>{eb740cbc-dc6a-49a6-ac2f-b3ca9ee6182a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="net">
       <UniqueIdentifier>{6159a790-cccc-46fa-a604-268f7b5796d7}</UniqueIdentifier>
     </Filter>
     <Filter Include="sys">
       <UniqueIdentifier>{a6f8e6af-b1b6-4d80-b3c0-a97c0f7be747}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ui">
-      <UniqueIdentifier>{d0154317-2dc7-488c-a8b0-13ff0a167b10}</UniqueIdentifier>
     </Filter>
     <Filter Include="base">
       <UniqueIdentifier>{1afaf9fd-bb5a-4b9b-83fc-5b33589e6811}</UniqueIdentifier>
@@ -695,8 +611,8 @@
     <Filter Include="game\orders">
       <UniqueIdentifier>{6aae1c58-6f92-4973-8a3a-c28d2bd5fa5a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="editor">
-      <UniqueIdentifier>{3f6fb9db-6347-412b-aec3-45862a9b4992}</UniqueIdentifier>
+    <Filter Include="ui">
+      <UniqueIdentifier>{3290784c-9720-4571-a2eb-80754ebc91de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

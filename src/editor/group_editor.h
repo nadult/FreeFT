@@ -15,7 +15,7 @@ class GroupEditor : public ui::Window {
   public:
 	GroupEditor(IRect rect);
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	void onInput(const InputState &) override;
 	bool onMouseDrag(const InputState &, int2 start, int2 current, int key, int is_final) override;
 

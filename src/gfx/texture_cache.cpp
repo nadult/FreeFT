@@ -3,18 +3,17 @@
 
 #include "gfx/texture_cache.h"
 
-#include <fwk/gfx/gl_format.h>
-#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/image.h>
-#include <fwk/gfx/opengl.h>
-#include <limits.h>
+#include <fwk/vulkan/vulkan_device.h>
+#include <fwk/vulkan/vulkan_image.h>
+#include <fwk/vulkan/vulkan_internal.h>
 
 //#define LOGGING
 
 CachedTexture::CachedTexture() : m_id(-1) {}
 CachedTexture::~CachedTexture() { unbindFromCache(); }
 
-PTexture CachedTexture::accessTexture(FRect &tex_rect, bool put_in_atlas) const {
+PVImageView CachedTexture::accessTexture(FRect &tex_rect, bool put_in_atlas) const {
 	DASSERT(m_id != -1);
 	return TextureCache::instance().access(m_id, put_in_atlas, tex_rect);
 }
@@ -35,14 +34,16 @@ void CachedTexture::bindToCache() const {
 
 void CachedTexture::onCacheDestroy() { m_id = -1; }
 
-static int textureMemorySize(PTexture tex) {
-	return imageSize(tex->format(), tex->width(), tex->height());
+static int textureMemorySize(PVImageView image) {
+	auto format = fromVk(image->format());
+	DASSERT(format);
+	return imageByteSize(*format, image->size2D());
 }
 
 TextureCache *TextureCache::g_instance = nullptr;
 
-TextureCache::TextureCache(int bytes)
-	: m_memory_limit(bytes), m_memory_size(0), m_last_update(0), m_last_node(0),
+TextureCache::TextureCache(VulkanDevice &device, int bytes)
+	: m_device(device), m_memory_limit(bytes), m_memory_size(0), m_last_update(0), m_last_node(0),
 	  m_atlas_counter(0) {
 	ASSERT(g_instance == nullptr);
 	g_instance = this;
@@ -77,18 +78,19 @@ TextureCache::~TextureCache() {
 #define MAIN_REMOVE(list, idx)                                                                     \
 	listRemove([&](int i) -> ListNode & { return m_resources[i].main_node; }, list, idx)
 
-void TextureCache::nextFrame() {
+Ex<> TextureCache::nextFrame() {
 	if(!m_atlas) {
-		int max_size = 2048;
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+		int max_size = 4096;
 
 		m_atlas_size = vmin(m_atlas_size, int2(max_size, max_size));
 		ASSERT(m_atlas_size.x >= node_size && m_atlas_size.y >= node_size);
 
-		m_atlas = GlTexture::make(TextureType::tex_2d, GlFormat::rgba8, int3(m_atlas_size, 1), 1);
+		auto image =
+			EX_PASS(VulkanImage::create(m_device.ref(), {VFormat::rgba8_unorm, m_atlas_size}));
+		m_atlas = VulkanImageView::create(m_device.ref(), image);
 		m_memory_limit -= textureMemorySize(m_atlas);
 #ifdef LOGGING
-		printf("Atlas size: %dKB\n", textureMemorySize(PTexture(&m_atlas)) / 1024);
+		printf("Atlas size: %dKB\n", textureMemorySize(PVImageView(&m_atlas)) / 1024);
 #endif
 
 		int x_nodes = m_atlas_size.x / node_size, y_nodes = m_atlas_size.y / node_size;
@@ -160,8 +162,9 @@ void TextureCache::nextFrame() {
 			res.res_ptr->cacheUpload(tex);
 			DASSERT(tex.size() == res.size);
 			res.atlas_pos = pos + atlas_node.rect.min();
-			m_atlas->upload(tex.format(), tex.data().reinterpret<u8>(),
-							IRect(tex.size()) + res.atlas_pos, 0);
+
+			// TODO: scissor rect is not supported
+			EXPECT(m_atlas->image()->upload(tex, res.atlas_pos, 0, VImageLayout::general));
 
 			if(res.atlas_node_id == -1) {
 #ifdef LOGGING
@@ -189,11 +192,12 @@ void TextureCache::nextFrame() {
 		m_last_update = 0;
 	}
 	m_last_update++;
+	return {};
 }
 
 int TextureCache::add(CachedTexture *res_ptr, const int2 &size) {
 	DASSERT(res_ptr);
-	Resource new_res{res_ptr, PTexture(), size, int2(0, 0), -1, 0};
+	Resource new_res{res_ptr, PVImageView(), size, int2(0, 0), -1, 0};
 	if(m_free_list.empty()) {
 		m_resources.push_back(new_res);
 		return (int)m_resources.size() - 1;
@@ -234,11 +238,13 @@ void TextureCache::remove(int res_id) {
 	m_resources[res_id].res_ptr = nullptr;
 }
 
-PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
+PVImageView TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 	DASSERT(isValidId(res_id));
 
 	Resource &res = m_resources[res_id];
 	res.last_update = m_last_update;
+	if(res.res_ptr->textureSize() == int2(0))
+		return {};
 
 	if(res.atlas_node_id != -1) {
 		if(res.device_texture)
@@ -257,7 +263,11 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 		DASSERT(res.res_ptr);
 		Image temp_tex;
 		res.res_ptr->cacheUpload(temp_tex);
-		res.device_texture = GlTexture::make(temp_tex);
+
+		auto image = VulkanImage::createAndUpload(m_device.ref(), temp_tex);
+		// TODO: pass errors?
+		image.check();
+		res.device_texture = VulkanImageView::create(m_device.ref(), *image);
 		res.size = int2(temp_tex.width(), temp_tex.height());
 
 		int new_size = textureMemorySize(res.device_texture);
@@ -279,6 +289,6 @@ PTexture TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect) {
 	auto dev_size = res.device_texture->size();
 	tex_rect = dev_size.x == 0 || dev_size.y == 0 ?
 				   FRect() :
-				   FRect(float2(), float2(res.size) / float2(dev_size));
+				   FRect(float2(), float2(res.size) / float2(dev_size.xy()));
 	return res.device_texture;
 }

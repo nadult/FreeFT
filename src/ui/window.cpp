@@ -3,7 +3,7 @@
 
 #include "ui/window.h"
 #include "gfx/drawing.h"
-#include <fwk/gfx/gl_texture.h>
+#include <fwk/vulkan/vulkan_image.h>
 
 namespace ui {
 
@@ -24,7 +24,7 @@ const char *WindowStyle::fonts[3] = {
 	"liberation_32",
 };
 
-void Window::drawWindow(Renderer2D &out, IRect rect, FColor color, int outline) {
+void Window::drawWindow(Canvas2D &out, IRect rect, FColor color, int outline) {
 	FColor lighter(color.rgb() * 1.2f, color.a);
 	FColor darker(color.rgb() * 0.8f, color.a);
 	int aoutline = fwk::abs(outline);
@@ -58,7 +58,7 @@ Window::Window(const IRect &rect, FColor background_color)
 	setRect(rect);
 }
 
-void Window::setBackground(PTexture background) { m_background = background; }
+void Window::setBackground(PVImageView background) { m_background = background; }
 
 void Window::setBackgroundColor(FColor col) { m_background_color = col; }
 
@@ -178,14 +178,18 @@ void Window::process(const InputState &state) {
 		m_dragging_mode = 0;
 }
 
-void Window::draw(Renderer2D &out) const {
+void Window::draw(Canvas2D &out) const {
 	out.setViewPos(-m_clipped_rect.min());
-	out.setScissorRect(m_clipped_rect);
+	// TODO: fixme
+	//out.setScissorRect(m_clipped_rect);
 
-	if(m_background_color.a > 0.0f && !(m_background && m_background->size() == m_rect.size()))
+	if(m_background_color.a > 0.0f && !(m_background && m_background->size2D() == m_rect.size()))
 		out.addFilledRect(IRect(m_clipped_rect.size()), m_background_color);
-	if(m_background)
-		out.addFilledRect(IRect(m_background->size()), m_background);
+	if(m_background) {
+		out.setMaterial(m_background);
+		out.addFilledRect(IRect(m_background->size2D()));
+		out.setMaterial({});
+	}
 
 	drawContents(out);
 
@@ -222,8 +226,10 @@ void Window::draw(Renderer2D &out) const {
 	for(int n = 0; n < (int)m_children.size(); n++)
 		if(m_children[n]->isVisible())
 			m_children[n]->draw(out);
-	if(!m_parent)
-		out.setScissorRect(none);
+	if(!m_parent) {
+		// TODO: fixme
+		//out.setScissorRect(none);
+	}
 }
 
 void Window::attach(PWindow child, bool as_popup) {

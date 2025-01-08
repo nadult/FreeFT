@@ -2,12 +2,6 @@
 // This file is part of FreeFT. See license.txt for details.
 
 #include "game/world.h"
-#include "ui/file_dialog.h"
-#include "ui/image_button.h"
-#include "ui/message_box.h"
-#include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/gl_texture.h>
-#include <fwk/gfx/opengl.h>
 
 #include "io/game_loop.h"
 #include "io/main_menu_loop.h"
@@ -267,7 +261,7 @@ void MainMenuLoop::onDraw() {
 
 	clearColor(Color(0, 0, 0));
 	IRect viewport(GlDevice::instance().windowSize());
-	Renderer2D renderer(viewport, Orient2D::y_down);
+	Canvas2D renderer(viewport, Orient2D::y_down);
 
 	renderer.addFilledRect(m_back_rect, m_back);
 	Window::draw(renderer);

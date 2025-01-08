@@ -79,13 +79,15 @@ void NaviHeightmap::update(const vector<IBox> &walkable, const vector<IBox> &blo
 Image NaviHeightmap::toImage(int level) const {
 	Image out(m_size);
 
-	for(int y = 0; y < m_size.y; y++)
+	for(int y = 0; y < m_size.y; y++) {
+		auto row = out.row<IColor>(y);
 		for(int x = 0; x < m_size.x; x++) {
 			short height = m_data[index(x, y, level)];
 			bool ok = test(x, y, level, 3);
-			out(x, y) = height == invalid_value ? Color(255, 0, 0) :
-												  Color(ok ? height : 255, height, height);
+			row[x] = height == invalid_value ? IColor(255, 0, 0) :
+											   IColor(ok ? height : 255, height, height);
 		}
+	}
 
 	return out;
 }

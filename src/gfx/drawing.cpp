@@ -3,9 +3,10 @@
 
 #include "gfx/drawing.h"
 
-#include "fwk/gfx/renderer2d.h"
+#include <fwk/gfx/canvas_2d.h>
+#include <fwk/gfx/color.h>
 
-void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
+void drawBBox(Canvas2D &out, const FBox &box, Color col, bool is_filled) {
 	float2 vx = worldToScreen(float3(box.width(), 0, 0));
 	float2 vy = worldToScreen(float3(0, box.height(), 0));
 	float2 vz = worldToScreen(float3(0, 0, box.depth()));
@@ -24,18 +25,18 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 		int count = is_flat ? 6 : arraySize(front);
 		for(int n = 0; n < count; n++)
 			verts[n] = pt[front[n]];
-		out.addTris(CSpan<float2>(verts, verts + count), {}, {}, FColor(col));
+		out.addTris(CSpan<float2>(verts, verts + count), {}, {col});
 	} else {
 		static const int back[] = {7, 3, 7, 6, 7, 4};
 		static const int front[] = {5, 4, 5, 6, 5, 1, 6, 2, 0, 4, 0, 1, 1, 2, 2, 3, 3, 0};
 		static const int front_flat[] = {0, 1, 1, 2, 2, 3, 3, 0};
-		Color col_back(col.r / 2, col.g / 2, col.b / 2, col.a / 2);
+		IColor col_back(col.r / 2, col.g / 2, col.b / 2, col.a / 2);
 
 		if(!is_flat) {
 			vector<float2> verts;
 			for(auto id : back)
 				verts.emplace_back(pt[id]);
-			out.addLines(verts, {}, col_back);
+			out.addSegments(verts, {col_back});
 		}
 
 		vector<float2> verts;
@@ -45,14 +46,14 @@ void drawBBox(Renderer2D &out, const FBox &box, Color col, bool is_filled) {
 		else
 			for(auto id : front)
 				verts.emplace_back(pt[id]);
-		out.addLines(verts, {}, col);
+		out.addSegments(verts, {col});
 	}
 }
 
-void drawBBox(Renderer2D &out, const IBox &wbox, Color col, bool is_filled) {
+void drawBBox(Canvas2D &out, const IBox &wbox, Color col, bool is_filled) {
 	drawBBox(out, FBox(wbox), col, is_filled);
 }
 
-void drawLine(Renderer2D &out, int3 wp1, int3 wp2, Color color) {
-	out.addLine(worldToScreen(wp1), worldToScreen(wp2), color);
+void drawLine(Canvas2D &out, int3 wp1, int3 wp2, Color color) {
+	out.addSegment(worldToScreen(wp1), worldToScreen(wp2), color);
 }

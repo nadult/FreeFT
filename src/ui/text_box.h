@@ -15,7 +15,7 @@ class TextBox : public Window {
 
 	void setFont(const char *font_name);
 	void setText(const char *text);
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 
   private:
 	const Font *m_font = nullptr;

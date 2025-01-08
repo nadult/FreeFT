@@ -19,6 +19,7 @@
 #include <fwk/math/segment.h>
 #include <fwk/math_base.h>
 #include <fwk/pod_vector.h>
+#include <fwk/vulkan/vulkan_image.h>
 #include <map>
 
 #define DUMP FWK_DUMP

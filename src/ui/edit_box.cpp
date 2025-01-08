@@ -15,7 +15,7 @@ void EditBox::setText(string32 new_text) {
 		m_text.resize(m_max_size);
 }
 
-void EditBox::drawContents(Renderer2D &out) const {
+void EditBox::drawContents(Canvas2D &out) const {
 	int line_height = m_font.lineHeight();
 
 	int2 pos(5, height() / 2 - line_height / 2);
@@ -23,8 +23,8 @@ void EditBox::drawContents(Renderer2D &out) const {
 
 	if(m_is_editing) {
 		IRect ext = m_font.evalExtents((m_label + m_text.substr(0, m_cursor_pos)).c_str());
-		out.addLine(pos + int2(ext.ex(), 0), pos + int2(ext.ex(), line_height),
-					FColor(ColorId::white, 0.7f));
+		out.addSegment(pos + int2(ext.ex(), 0), pos + int2(ext.ex(), line_height),
+					   FColor(ColorId::white, 0.7f));
 		out.addRect(IRect(2, 1, width() - 1, height() - 2), FColor(ColorId::white, 0.3f));
 	}
 }

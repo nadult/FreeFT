@@ -4,8 +4,8 @@
 #include "io/loop.h"
 
 #include "gfx/drawing.h"
-#include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/renderer2d.h>
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/sys/input.h>
 
 namespace io {
@@ -36,7 +36,7 @@ void Loop::startTransition(Color from, Color to, TransitionMode mode, float leng
 bool Loop::isTransitioning() const { return m_is_transitioning; }
 
 void Loop::Transition::draw(const IRect &rect) {
-	Renderer2D renderer(rect, Orient2D::y_down);
+	Canvas2D renderer(rect, Orient2D::y_down);
 
 	if(mode == trans_normal) {
 		renderer.addFilledRect(rect, lerp(from, to, pos / length));
@@ -56,7 +56,8 @@ void Loop::Transition::draw(const IRect &rect) {
 		FRect uv_rect(0, 0, 1, 1);
 
 		renderer.addFilledRect(rects[0], col1);
-		renderer.addFilledRect(rects[1], uv_rect, mid_colors, FColor(ColorId::white));
+		renderer.addFilledRect(rects[1], uv_rect, mid_colors);
+		renderer.addRect(rects[1], FColor(ColorId::white));
 		renderer.addFilledRect(rects[2], col2);
 	}
 	renderer.render();

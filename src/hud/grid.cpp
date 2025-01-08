@@ -4,6 +4,8 @@
 #include "hud/grid.h"
 
 #include "gfx/drawing.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -91,7 +93,7 @@ bool HudGrid::onInput(const InputEvent &event) {
 	return false;
 }
 
-void HudGrid::onDraw(Renderer2D &out) const {
+void HudGrid::onDraw(Canvas2D &out) const {
 	for(int col = 0; col < (int)m_columns.size(); col++) {
 		const Column &column = m_columns[col];
 		FRect rect = column.rect;

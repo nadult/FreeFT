@@ -23,7 +23,7 @@ class HudEditBox : public HudButton {
 
   protected:
 	void onUpdate(double time_diff) override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 	bool onInput(const InputEvent &) override;
 	void onInputFocus(bool is_focused) override;
 	void setCursorPos(const float2 &rect_pos);

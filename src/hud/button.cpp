@@ -4,6 +4,8 @@
 #include "hud/button.h"
 
 #include "gfx/drawing.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -40,7 +42,7 @@ void HudButton::onUpdate(double time_diff) {
 	m_highlighted_time = max(m_highlighted_time, m_enabled_time);
 }
 
-void HudButton::onDraw(Renderer2D &out) const {
+void HudButton::onDraw(Canvas2D &out) const {
 	FRect rect = this->rect();
 	out.addFilledRect(rect, (FColor)backgroundColor());
 
@@ -58,8 +60,10 @@ void HudButton::onDraw(Renderer2D &out) const {
 					 m_label);
 	}
 
-	if(m_icon_id)
-		out.addFilledRect(rect, s_icons[*m_icon_id].uv_rect, {m_icons_tex, textColor()});
+	if(m_icon_id) {
+		out.setMaterial({m_icons_tex, textColor()});
+		out.addFilledRect(rect, s_icons[*m_icon_id].uv_rect);
+	}
 }
 
 bool HudButton::onInput(const InputEvent &event) {
