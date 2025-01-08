@@ -11,7 +11,7 @@ ListBox::ListBox(const IRect &rect, FColor color)
 	m_line_height = m_font.lineHeight();
 }
 
-void ListBox::drawContents(Renderer2D &out) const {
+void ListBox::drawContents(Canvas2D &out) const {
 	int2 offset = innerOffset();
 	int2 vis_entries = visibleEntriesIds();
 
@@ -19,7 +19,7 @@ void ListBox::drawContents(Renderer2D &out) const {
 		const Entry &entry = m_entries[n];
 		IRect rect = entryRect(n) - offset;
 
-		out.addLine(int2(rect.x(), rect.ey()), rect.max(), WindowStyle::gui_medium);
+		out.addSegment(int2(rect.x(), rect.ey()), rect.max(), WindowStyle::gui_medium);
 
 		FColor col = ColorId::transparent;
 
@@ -37,8 +37,8 @@ void ListBox::drawContents(Renderer2D &out) const {
 
 	for(int n = vis_entries.x; n < vis_entries.y; n++) {
 		int2 pos = int2(0, m_line_height * n) - offset;
-		m_font.draw(out, (float2)(pos + int2(5, 0)), {m_entries[n].color, ColorId::black},
-					m_entries[n].text);
+		FontStyle style{IColor(m_entries[n].color), ColorId::black};
+		m_font.draw(out, (float2)(pos + int2(5, 0)), style, m_entries[n].text);
 	}
 }
 

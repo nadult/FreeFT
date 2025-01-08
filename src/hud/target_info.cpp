@@ -45,7 +45,7 @@ void HudTargetInfo::onUpdate(double time_diff) {
 	m_char_icon->setVisible(m_is_visible);
 }
 
-void HudTargetInfo::onDraw(Renderer2D &out) const {
+void HudTargetInfo::onDraw(Canvas2D &out) const {
 	HudLayer::onDraw(out);
 
 	HealthStatus health = healthStatusFromHP(m_health);

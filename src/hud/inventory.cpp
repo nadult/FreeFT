@@ -8,7 +8,9 @@
 #include "game/pc_controller.h"
 #include "game/world.h"
 #include "gfx/drawing.h"
+
 #include <algorithm>
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -43,7 +45,7 @@ void HudItemDesc::setItem(const Item &item) {
 	setTitle(m_item.proto().name);
 }
 
-void HudItemDesc::onDraw(Renderer2D &out) const {
+void HudItemDesc::onDraw(Canvas2D &out) const {
 	HudLayer::onDraw(out);
 	FRect rect = this->rect();
 
@@ -52,11 +54,12 @@ void HudItemDesc::onDraw(Renderer2D &out) const {
 
 		FRect uv_rect;
 		auto texture = m_item.guiImage(false, uv_rect);
-		float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
+		auto tex_size = texture->size2D();
+		float2 size(tex_size.x * uv_rect.width(), tex_size.y * uv_rect.height());
 
 		float2 pos = (float2)(int2)(float2(rect.center().x - size.x * 0.5f, ypos));
-		out.addFilledRect(FRect(pos, pos + size), uv_rect,
-						  {texture, mulAlpha(ColorId::white, alpha())});
+		out.setMaterial({texture, IColor(mulAlpha(ColorId::white, alpha()))});
+		out.addFilledRect(FRect(pos, pos + size), uv_rect);
 
 		ypos += size.y + 10.0f;
 		FRect desc_rect(rect.x() + 5.0f, ypos, rect.ex() - 5.0f, rect.ey() - 5.0f);
@@ -87,17 +90,19 @@ void HudItemButton::setEntry(const HudItemEntry &entry) {
 	setEnabled(entry.is_equipped, false);
 }
 
-void HudItemButton::onDraw(Renderer2D &out) const {
+void HudItemButton::onDraw(Canvas2D &out) const {
 	HudButton::onDraw(out);
 	FRect rect = this->rect();
 
 	if(!m_entry.item.isDummy()) {
 		FRect uv_rect;
 		auto texture = m_entry.item.guiImage(true, uv_rect);
-		float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
+		auto tex_size = texture->size2D();
+		float2 size(tex_size.x * uv_rect.width(), tex_size.y * uv_rect.height());
 
 		float2 pos = (float2)(int2)(rect.center() - size / 2);
-		out.addFilledRect(FRect(pos, pos + size), texture);
+		out.setMaterial(texture);
+		out.addFilledRect(FRect(pos, pos + size));
 
 		if(m_entry.count > 1)
 			m_font->draw(out, rect, {textColor(), textShadowColor(), HAlign::right},
@@ -324,7 +329,7 @@ void HudInventory::onUpdate(double time_diff) {
 	m_item_desc->layout();
 }
 
-void HudInventory::onDraw(Renderer2D &out) const {
+void HudInventory::onDraw(Canvas2D &out) const {
 	HudLayer::onDraw(out);
 	m_item_desc->draw(out);
 }

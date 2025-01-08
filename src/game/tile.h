@@ -22,7 +22,7 @@ class TileFrame : public CachedTexture {
 
 	int2 dimensions() const { return m_texture.size(); }
 	Image texture() const;
-	PTexture deviceTexture(FRect &tex_rect) const;
+	PVImageView deviceTexture(FRect &tex_rect) const;
 
 	const IRect rect() const;
 
@@ -52,7 +52,7 @@ class Tile {
 
 	static void setFrameCounter(int frame_counter);
 
-	void draw(Renderer2D &, const int2 &pos, Color color = ColorId::white) const;
+	void draw(Canvas2D &, const int2 &pos, Color color = ColorId::white) const;
 	void addToRender(SceneRenderer &, const int3 &pos, Color color = ColorId::white) const;
 	bool testPixel(const int2 &pos) const;
 

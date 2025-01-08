@@ -48,11 +48,11 @@ class HudButton : public HudWidget {
 
   protected:
 	void onUpdate(double time_diff) override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 	bool onInput(const InputEvent &) override;
 	void onClick();
 
-	PTexture m_icons_tex;
+	PVImageView m_icons_tex;
 	Maybe<HudIcon> m_icon_id;
 
 	string m_label;

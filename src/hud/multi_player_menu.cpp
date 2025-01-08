@@ -8,6 +8,8 @@
 #include "hud/grid.h"
 #include "net/client.h"
 #include "sys/config.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 using namespace net;
@@ -269,7 +271,7 @@ void MultiPlayerMenu::updateGrid() {
 	}
 }
 
-void MultiPlayerMenu::onDraw(Renderer2D &out) const {
+void MultiPlayerMenu::onDraw(Canvas2D &out) const {
 	FRect back_quad((float2)m_window_size);
 
 	out.addFilledRect(back_quad, mulAlpha(ColorId::black, m_visible_time * 0.8f));
@@ -279,11 +281,11 @@ void MultiPlayerMenu::onDraw(Renderer2D &out) const {
 		double msg_time = getTime() - m_message_time;
 		double alpha = min(1.0, 5.0 - msg_time);
 
-		if(msg_time < 5.0)
-			m_font->draw(out, rect() + float2(spacing, 0.0f),
-						 {mulAlpha(m_message_color, alpha), mulAlpha(ColorId::black, alpha),
-						  HAlign::left, VAlign::bottom},
-						 m_message);
+		if(msg_time < 5.0) {
+			FontStyle style{(IColor)mulAlpha(m_message_color, alpha),
+							(IColor)mulAlpha(ColorId::black, alpha), HAlign::left, VAlign::bottom};
+			m_font->draw(out, rect() + float2(spacing, 0.0f), style, m_message);
+		}
 	}
 }
 

@@ -4,8 +4,8 @@
 #pragma once
 
 #include "base.h"
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
-#include <fwk/gfx/renderer2d.h>
 #include <fwk/sys/input.h>
 #include <memory>
 
@@ -53,7 +53,7 @@ class Window {
 	void operator=(const Window &) = delete;
 
 	virtual void process(const InputState &);
-	virtual void draw(Renderer2D &) const;
+	virtual void draw(Canvas2D &) const;
 
 	void close(int return_value);
 
@@ -77,8 +77,8 @@ class Window {
 	FColor backgroundColor() const { return m_background_color; }
 	void setBackgroundColor(FColor);
 
-	void setBackground(PTexture);
-	PTexture background() const { return m_background; }
+	void setBackground(PVImageView);
+	PVImageView background() const { return m_background; }
 
 	Window *parent() const { return m_parent; }
 	Window *mainWindow() { return m_parent ? m_parent->mainWindow() : this; }
@@ -101,12 +101,12 @@ class Window {
 	// Override this method to receive events
 	virtual bool onEvent(const Event &event) { return false; }
 
-	static void drawWindow(Renderer2D &, IRect, FColor, int outline);
+	static void drawWindow(Canvas2D &, IRect, FColor, int outline);
 
 	void setInnerOffset(const int2 &);
 
   protected:
-	virtual void drawContents(Renderer2D &) const {}
+	virtual void drawContents(Canvas2D &) const {}
 	virtual void onInput(const InputState &) {}
 
 	// each on*** function should return true if the event was handled
@@ -131,7 +131,7 @@ class Window {
 
 	Window *m_parent;
 	vector<PWindow> m_children;
-	PTexture m_background;
+	PVImageView m_background;
 
 	IRect m_inner_rect; // if its bigger than m_rect then progress bars will be added
 	IRect m_rect; // coordinates relative to parent window

@@ -81,7 +81,7 @@ class Sprite {
 		Ex<void> load(FileStream &);
 		void save(FileStream &) const;
 
-		PTexture toTexture(const MultiPalette &, FRect &, bool put_in_atlas = true) const;
+		PVImageView toTexture(const MultiPalette &, FRect &, bool put_in_atlas = true) const;
 		bool testPixel(const int2 &) const;
 		int memorySize() const;
 
@@ -102,7 +102,7 @@ class Sprite {
 	void updateMaxRect();
 	bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 
-	PTexture getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect,
+	PVImageView getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect,
 					  bool put_in_atlas = true) const;
 
 	// Search is case-insensitive

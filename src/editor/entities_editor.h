@@ -21,7 +21,7 @@ class EntitiesEditor : public ui::Window {
 
 	EntitiesEditor(game::TileMap &, game::EntityMap &, View &, IRect rect);
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	void onInput(const InputState &) override;
 	bool onMouseDrag(const InputState &, int2 start, int2 current, int key, int is_final) override;
 
@@ -42,7 +42,7 @@ class EntitiesEditor : public ui::Window {
 	game::PEntity m_proto;
 	int m_proto_angle;
 
-	void drawBoxHelpers(Renderer2D &, const IBox &box) const;
+	void drawBoxHelpers(Canvas2D &, const IBox &box) const;
 	void computeCursor(int2 start, int2 end, bool floor_mode);
 
 	IRect m_selection;

@@ -34,7 +34,7 @@ class Controller {
   protected:
 	void updatePC();
 	void onInput(const InputEvent &);
-	void drawDebugInfo(Renderer2D &) const;
+	void drawDebugInfo(Canvas2D &) const;
 
 	void sendOrder(game::POrder &&);
 

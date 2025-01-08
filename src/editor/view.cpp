@@ -17,7 +17,7 @@ View::View(game::TileMap &tile_map, game::EntityMap &entity_map, const int2 &vie
 	updateVisibility();
 }
 
-void View::drawGrid(Renderer2D &out) const {
+void View::drawGrid(Canvas2D &out) const {
 	if(!m_is_visible)
 		return;
 

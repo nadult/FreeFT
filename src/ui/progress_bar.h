@@ -23,7 +23,7 @@ class ProgressBar : public Window {
 	float pos() const { return m_pos; }
 	float barSize() const { return m_bar_size; }
 
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	bool onMouseDrag(const InputState &, int2 start, int2 current, int key, int is_final) override;
 
   protected:

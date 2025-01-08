@@ -9,7 +9,9 @@
 
 #include "game/world.h"
 #include "gfx/drawing.h"
+
 #include <algorithm>
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -24,7 +26,7 @@ namespace {
 
 HudClassButton::HudClassButton(const FRect &rect) : HudRadioButton(rect, -1, 1) {}
 
-void HudClassButton::onDraw(Renderer2D &out) const {
+void HudClassButton::onDraw(Canvas2D &out) const {
 	HudButton::onDraw(out);
 	FRect rect = this->rect();
 
@@ -56,14 +58,16 @@ void HudClassButton::onDraw(Renderer2D &out) const {
 		for(auto &item : items) {
 			FRect uv_rect;
 			auto texture = item.first.guiImage(true, uv_rect);
-			float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
+			auto tex_size = texture->size2D();
+			float2 size(tex_size.x * uv_rect.width(), tex_size.y * uv_rect.height());
 
 			FRect irect(pos.x, rect.y(), pos.x + max(s_min_item_width, size.x), rect.ey());
 			if(irect.ex() > rect.width())
 				break;
 
+			out.setMaterial(texture);
 			out.addFilledRect(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f),
-							  uv_rect, texture);
+							  uv_rect);
 
 			if(item.second > 1) {
 				FRect trect = {irect.min(), {irect.ex(), irect.ey() - 5.0f}};

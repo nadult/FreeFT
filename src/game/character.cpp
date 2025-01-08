@@ -5,7 +5,6 @@
 
 #include "game/inventory.h"
 #include "res_manager.h"
-#include <fwk/gfx/gl_texture.h>
 #include <fwk/io/xml.h>
 
 namespace game {
@@ -37,7 +36,7 @@ void Character::load(MemoryStream &sr) {
 	validate();
 }
 
-PTexture Character::icon() const {
+PVImageView Character::icon() const {
 	if(!m_icon_name.empty()) {
 		{
 			return res::getGuiTexture(string(s_icon_folder) + m_icon_name);
@@ -47,7 +46,9 @@ PTexture Character::icon() const {
 	return emptyIcon();
 }
 
-PTexture Character::emptyIcon() { return res::getGuiTexture(string(s_icon_folder) + s_empty_name); }
+PVImageView Character::emptyIcon() {
+	return res::getGuiTexture(string(s_icon_folder) + s_empty_name);
+}
 
 const vector<pair<ProtoIndex, string>> Character::findIcons() {
 	auto xml_data = ResManager::instance().getOther("char_icons.xml");

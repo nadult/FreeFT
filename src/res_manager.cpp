@@ -4,8 +4,8 @@
 #include "res_manager.h"
 
 #include "game/tile.h"
+
 #include <fwk/gfx/font.h>
-#include <fwk/gfx/gl_texture.h>
 #include <fwk/gfx/image.h>
 #include <fwk/hash_map.h>
 #include <fwk/io/file_stream.h>
@@ -29,7 +29,7 @@
 // TODO: dont return references but identifiers (TileId: u16)
 
 struct ResManager::Impl {
-	FwdMember<HashMap<string, PTexture>> textures;
+	FwdMember<HashMap<string, PVImageView>> textures;
 	std::map<string, Dynamic<game::Tile>> tiles;
 	std::map<string, Font> fonts;
 	std::map<string, vector<char>> others;
@@ -45,7 +45,8 @@ static const EnumMap<ResType, Pair<const char *>> default_paths = {{
 	{ResType::other, {"", ""}},
 }};
 
-ResManager::ResManager(bool console_mode) : m_console_mode(console_mode) {
+ResManager::ResManager(VDeviceRef device, bool console_mode)
+	: m_device(device), m_console_mode(console_mode) {
 	ASSERT(g_instance == nullptr);
 	g_instance = this;
 
@@ -69,11 +70,11 @@ ResManager::~ResManager() {
 }
 
 void fixGrayTransTexture(Image &tex) {
-	for(int n : intRange(tex.pixelCount()))
-		tex[n] = IColor(u8(255), u8(255), u8(255), tex[n].r);
+	for(auto &pixel : tex.pixels<IColor>())
+		pixel = IColor(u8(255), u8(255), u8(255), pixel.r);
 }
 
-PTexture ResManager::getTexture(Str name, bool font_tex) {
+Ex<PVImageView> ResManager::getTexture(Str name, bool font_tex) {
 	auto &textures = m_impl->textures;
 	auto it = textures.find(name);
 	if(it == textures.end()) {
@@ -81,9 +82,10 @@ PTexture ResManager::getTexture(Str name, bool font_tex) {
 		tex.check();
 		if(font_tex)
 			fixGrayTransTexture(*tex);
-		auto gl_tex = GlTexture::make(*tex);
-		textures.emplace(name, gl_tex);
-		return gl_tex;
+		auto vk_image = EX_PASS(VulkanImage::createAndUpload(m_device, *tex));
+		auto vk_image_view = VulkanImageView::create(m_device, vk_image);
+		textures.emplace(name, vk_image_view);
+		return vk_image_view;
 	}
 	return it->value;
 }
@@ -96,7 +98,8 @@ const Font &ResManager::getFont(Str name) {
 		vcore.check();
 		FontCore core(std::move(*vcore));
 		auto tex = getTexture("fonts/" + core.textureName(), true);
-		it = fonts.emplace(name, Font(std::move(core), std::move(tex))).first;
+		tex.check(); // TODO: remove check
+		it = fonts.emplace(name, Font(std::move(core), std::move(*tex))).first;
 	}
 	return it->second;
 }
@@ -143,7 +146,7 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 	} else if(type == ResType::font) {
 		auto doc = EX_PASS(XmlDocument::load(sr));
 		auto core = EX_PASS(FontCore::load(doc));
-		auto tex = getTexture(format("fonts/%", core.textureName()), true);
+		auto tex = EX_PASS(getTexture(format("fonts/%", core.textureName()), true));
 		m_impl->fonts.erase(name);
 		m_impl->fonts.emplace(name, Font(std::move(core), std::move(tex)));
 	} else if(type == ResType::texture) {
@@ -151,7 +154,8 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		if(!ext)
 			return ERROR("Image without extension: '%'", name);
 		auto tex = EX_PASS(Image::load(sr, *ext));
-		m_impl->textures[name] = GlTexture::make(tex);
+		auto vk_image = EX_PASS(VulkanImage::createAndUpload(m_device, tex));
+		m_impl->textures[name] = VulkanImageView::create(m_device, vk_image);
 	} else if(type == ResType::other) {
 		vector<char> data(sr.size());
 		sr.loadData(data);
@@ -234,12 +238,14 @@ Ex<void> ResManager::loadPackage(Str name, Str prefix) {
 }
 
 namespace res {
-PTexture getTexture(Str name, bool fix_trans) {
-	return ResManager::instance().getTexture(name, fix_trans);
+PVImageView getTexture(Str name, bool fix_trans) {
+	// TODO: pass EX<>?
+	return ResManager::instance().getTexture(name, fix_trans).get();
 }
 
-PTexture getGuiTexture(Str name, bool fix_trans) {
-	return ResManager::instance().getTexture(format("gui/%.zar", name), fix_trans);
+PVImageView getGuiTexture(Str name, bool fix_trans) {
+	// TODO: pass EX<>?
+	return ResManager::instance().getTexture(format("gui/%.zar", name), fix_trans).get();
 }
 
 const Font &getFont(Str name) { return ResManager::instance().getFont(name); }

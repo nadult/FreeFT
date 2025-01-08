@@ -18,7 +18,7 @@ class HudWeapon : public HudButton {
 	void setAmmoCount(int count) { m_ammo_count = count; }
 	void setAttackMode(AttackMode mode) { m_attack_mode = mode; }
 
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
   private:
 	Weapon m_weapon;

@@ -230,7 +230,7 @@ bool EntitiesEditor::onMouseDrag(const InputState &state, int2 start, int2 curre
 	return false;
 }
 
-void EntitiesEditor::drawBoxHelpers(Renderer2D &out, const IBox &box) const {
+void EntitiesEditor::drawBoxHelpers(Canvas2D &out, const IBox &box) const {
 	int3 pos = box.min(), bbox = box.max() - box.min();
 	int3 tsize = asXZY(m_tile_map.dimensions(), 32);
 
@@ -267,7 +267,7 @@ FBox EntitiesEditor::computeOvergroundBox(const FBox &bbox) const {
 	return FBox();
 }
 
-void EntitiesEditor::drawContents(Renderer2D &out) const {
+void EntitiesEditor::drawContents(Canvas2D &out) const {
 	m_view.updateVisibility();
 	SceneRenderer renderer(clippedRect(), m_view.pos());
 

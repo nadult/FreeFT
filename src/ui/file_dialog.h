@@ -18,7 +18,7 @@ class FileDialog : public Window {
 	typedef FileDialogMode Mode;
 
 	FileDialog(const IRect &rect, const char *title, Mode mode);
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 	bool onEvent(const Event &event) override;
 
 	Mode mode() const { return m_mode; }

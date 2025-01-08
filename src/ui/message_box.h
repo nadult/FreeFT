@@ -16,7 +16,7 @@ class MessageBox : public Window {
 	const char *typeName() const override { return "MessageBox"; }
 
 	bool onEvent(const Event &event) override;
-	void drawContents(Renderer2D &) const override;
+	void drawContents(Canvas2D &) const override;
 
   private:
 	Mode m_mode;

@@ -170,7 +170,7 @@ bool GroupEditor::onMouseDrag(const InputState &, int2 start, int2 current, int 
 	return false;
 }
 
-void GroupEditor::drawContents(Renderer2D &out) const {
+void GroupEditor::drawContents(Canvas2D &out) const {
 	int2 offset = innerOffset();
 
 	for(int n = 0; n < m_tile_group->entryCount(); n++)

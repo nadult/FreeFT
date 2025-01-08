@@ -8,6 +8,8 @@
 #include "game/pc_controller.h"
 #include "game/world.h"
 #include "gfx/drawing.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -56,7 +58,7 @@ Color HudLayer::titleColor() const {
 
 Color HudLayer::titleShadowColor() const { return Color(ColorId::black, titleColor().a); }
 
-void HudLayer::onDraw(Renderer2D &out) const {
+void HudLayer::onDraw(Canvas2D &out) const {
 	FRect rect = this->rect();
 
 	out.addFilledRect(rect, (FColor)backColor());

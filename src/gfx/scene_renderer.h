@@ -5,14 +5,15 @@
 
 #include "base.h"
 
-#include <fwk/gfx/gl_ref.h>
+#include <fwk/vulkan/vulkan_image.h>
+#include <fwk/vulkan_base.h>
 
 class SceneRenderer {
   public:
 	SceneRenderer(IRect viewport, int2 view_pos);
-	bool add(PTexture tex, IRect rect, float3 pos, FBox bbox, Color col = ColorId::white,
+	bool add(PVImageView tex, IRect rect, float3 pos, FBox bbox, Color col = ColorId::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false);
-	bool add(PTexture tex, IRect rect, float3 pos, int3 bbox, Color col = ColorId::white,
+	bool add(PVImageView tex, IRect rect, float3 pos, int3 bbox, Color col = ColorId::white,
 			 FRect tex_rect = FRect(0, 0, 1, 1), bool is_overlay = false) {
 		return add(tex, rect, pos, FBox(float3(0, 0, 0), float3(bbox)), col, tex_rect, is_overlay);
 	}
@@ -22,13 +23,13 @@ class SceneRenderer {
 		addBox((FBox)box, col, is_filled);
 	}
 	void addLine(int3, int3, Color = ColorId::white);
-	void render();
+	void render(Canvas2D &);
 
 	const IRect &targetRect() const { return m_target_rect; }
 
   protected:
 	struct Element {
-		PTexture texture;
+		PVImageView texture;
 		IRect rect;
 		FBox bbox;
 		FRect tex_rect;

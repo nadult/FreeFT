@@ -4,16 +4,16 @@
 #pragma once
 
 #include "game/base.h"
-#include <fwk/gfx/gl_texture.h>
-#include <fwk/gfx/renderer2d.h>
+
+#include <fwk/gfx_base.h>
 
 namespace hud {
 
 using namespace game;
 
-void drawGradQuad(Renderer2D &, const FRect &rect, Color a, Color b, bool is_vertical);
-void drawLine(Renderer2D &, float2 p1, float2 p2, Color a, Color b);
-void drawBorder(Renderer2D &, const FRect &rect, Color color, const float2 &offset, float width);
+void drawGradQuad(Canvas2D &, const FRect &rect, IColor a, IColor b, bool is_vertical);
+void drawLine(Canvas2D &, float2 p1, float2 p2, IColor a, IColor b);
+void drawBorder(Canvas2D &, const FRect &rect, IColor color, const float2 &offset, float width);
 void animateValue(float &value, float speed, bool maximize);
 
 DEFINE_ENUM(HudSound, none, button, item_equip, error);

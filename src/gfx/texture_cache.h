@@ -4,8 +4,9 @@
 #pragma once
 
 #include "base.h"
-#include <fwk/gfx/gl_ref.h>
 #include <fwk/list_node.h>
+#include <fwk/vulkan/vulkan_image.h>
+#include <fwk/vulkan_base.h>
 
 class TextureCache;
 
@@ -16,7 +17,7 @@ class CachedTexture {
 	void operator=(const CachedTexture &);
 	virtual ~CachedTexture();
 
-	PTexture accessTexture(FRect &, bool put_in_atlas = true) const;
+	PVImageView accessTexture(FRect &, bool put_in_atlas = true) const;
 	int cacheId() const { return m_id; }
 
 	bool isBind() const { return m_id != -1; }
@@ -44,7 +45,7 @@ class CachedTexture {
 // Only single instance allowed
 class TextureCache {
   public:
-	TextureCache(int max_bytes = 32 * 1024 * 1024);
+	TextureCache(VulkanDevice &, int max_bytes = 32 * 1024 * 1024);
 	~TextureCache();
 
 	TextureCache(const TextureCache &) = delete;
@@ -59,13 +60,13 @@ class TextureCache {
 	int size() const { return (int)m_resources.size(); }
 
 	void unload(int res_id);
-	PTexture access(int res_id, bool put_in_atlas, FRect &);
-	PTexture atlas() { return m_atlas; }
+	PVImageView access(int res_id, bool put_in_atlas, FRect &);
+	PVImageView atlas() { return m_atlas; }
 
 	void setMemoryLimit(int bytes) { m_memory_limit = bytes; }
 	int memoryLimit() const { return m_memory_limit; }
 	int memorySize() const { return m_memory_size; }
-	void nextFrame();
+	Ex<> nextFrame();
 
   private:
 	static TextureCache *g_instance;
@@ -76,7 +77,7 @@ class TextureCache {
 
 	struct Resource {
 		CachedTexture *res_ptr;
-		PTexture device_texture;
+		PVImageView device_texture;
 
 		int2 size, atlas_pos;
 		int atlas_node_id;
@@ -93,8 +94,9 @@ class TextureCache {
 		List list{};
 	};
 
+	VulkanDevice &m_device;
 	PodVector<AtlasNode> m_atlas_nodes;
-	PTexture m_atlas;
+	PVImageView m_atlas;
 	int2 m_atlas_size;
 	int m_atlas_counter;
 

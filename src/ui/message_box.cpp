@@ -36,7 +36,7 @@ bool MessageBox::onEvent(const Event &event) {
 	return true;
 }
 
-void MessageBox::drawContents(Renderer2D &out) const {
+void MessageBox::drawContents(Canvas2D &out) const {
 	drawWindow(out, IRect({0, 0}, rect().size()), WindowStyle::gui_dark, 3);
 }
 

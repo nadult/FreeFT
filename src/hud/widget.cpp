@@ -3,6 +3,7 @@
 
 #include "hud/widget.h"
 
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -146,7 +147,7 @@ void HudWidget::update(double time_diff) {
 	layout();
 }
 
-void HudWidget::draw(Renderer2D &out) const {
+void HudWidget::draw(Canvas2D &out) const {
 	DASSERT(!m_needs_layout);
 
 	if(isVisible()) {

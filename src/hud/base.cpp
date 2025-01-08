@@ -6,16 +6,20 @@
 #include "audio/device.h"
 #include "gfx/drawing.h"
 
+#include <fwk/gfx/canvas_2d.h>
+
 namespace hud {
 
-void drawGradQuad(Renderer2D &out, const FRect &rect, Color a, Color b, bool is_vertical) {
+void drawGradQuad(Canvas2D &out, const FRect &rect, IColor a, IColor b, bool is_vertical) {
 	FColor colors[4] = {a, a, b, b};
 	if(is_vertical)
 		swap(colors[1], colors[3]);
-	out.addFilledRect(rect, FRect(0, 0, 1, 1), colors, FColor(ColorId::white));
+
+	out.addFilledRect(rect, FRect(0, 0, 1, 1), colors);
+	out.addRect(rect, ColorId::white);
 }
 
-void drawLine(Renderer2D &out, float2 p1, float2 p2, Color a, Color b) {
+void drawLine(Canvas2D &out, float2 p1, float2 p2, IColor a, IColor b) {
 	if(p1.x > p2.x) {
 		swap(p1.x, p2.x);
 		swap(a, b);
@@ -38,13 +42,10 @@ void drawLine(Renderer2D &out, float2 p1, float2 p2, Color a, Color b) {
 	drawGradQuad(out, FRect(p1, p2), a, b, is_vertical);
 }
 
-void drawBorder(Renderer2D &out, const FRect &rect, Color color, const float2 &offset,
-				float width) {
+void drawBorder(Canvas2D &out, const FRect &rect, IColor color, const float2 &offset, float width) {
 	float2 min = rect.min() - offset, max = rect.max() + offset;
 	width = fwk::min(width, (max.x - min.x) * 0.5f - 2.0f);
 	Color transparent = Color(color, 0);
-
-	GlTexture::unbind();
 
 	// left
 	drawLine(out, float2(min.x, min.y), float2(min.x, max.y), color, color);

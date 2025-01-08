@@ -50,7 +50,7 @@ Item Item::dummyArmour() { return Item(findProto("_dummy_armour", ProtoId::armou
 
 Item Item::dummyWeapon() { return Item(findProto("_dummy_weapon", ProtoId::weapon)); }
 
-PTexture Item::guiImage(bool small, FRect &tex_rect) const {
+PVImageView Item::guiImage(bool small, FRect &tex_rect) const {
 	const Sprite &sprite = Sprite::get(m_proto->sprite->index());
 	return sprite.getFrame(m_proto->seq_ids[small ? 2 : 1], 0, 0, tex_rect, false);
 }
@@ -95,7 +95,7 @@ void ItemEntity::setCount(int count) {
 	m_count = count;
 }
 
-PTexture ItemEntity::guiImage(bool small, FRect &tex_rect) const {
+PVImageView ItemEntity::guiImage(bool small, FRect &tex_rect) const {
 	return m_item.guiImage(small, tex_rect);
 }
 

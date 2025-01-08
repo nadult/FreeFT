@@ -26,7 +26,7 @@ class MultiPlayerMenu : public HudLayer {
 	void onUpdate(double time_diff) override;
 	bool onInput(const InputEvent &) override;
 	bool onEvent(const HudEvent &) override;
-	void onDraw(Renderer2D &) const override;
+	void onDraw(Canvas2D &) const override;
 
 	const string cellText(int server_id, int col_id) const;
 	void setMessage(const string &, Color color);

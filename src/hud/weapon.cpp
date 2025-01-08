@@ -6,7 +6,10 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/drawing.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
+#include <fwk/vulkan/vulkan_image.h>
 
 namespace hud {
 
@@ -14,17 +17,18 @@ HudWeapon::HudWeapon(const FRect &target_rect) : HudButton(target_rect) {
 	setClickSound(HudSound::none);
 }
 
-void HudWeapon::onDraw(Renderer2D &out) const {
+void HudWeapon::onDraw(Canvas2D &out) const {
 	HudButton::onDraw(out);
 	FRect rect = this->rect();
 
 	if(!m_weapon.isDummy()) {
 		FRect uv_rect;
 		auto texture = m_weapon.guiImage(false, uv_rect);
-		float2 size(texture->width() * uv_rect.width(), texture->height() * uv_rect.height());
+		float2 size(texture->size2D().x * uv_rect.width(), texture->size2D().y * uv_rect.height());
 
 		float2 pos = (float2)(int2)(rect.center() - size / 2);
-		out.addFilledRect(FRect(pos, pos + size), uv_rect, {texture, ColorId::white});
+		out.setMaterial({texture, ColorId::white});
+		out.addFilledRect(FRect(pos, pos + size), uv_rect);
 
 		//TODO: print current attack mode
 		if(m_weapon.proto().max_ammo) {

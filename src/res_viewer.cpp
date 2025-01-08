@@ -5,21 +5,29 @@
 
 #include "game/sprite.h"
 #include "game/tile.h"
-
+#include "res_manager.h"
 #include "sys/config.h"
 #include "ui/button.h"
 #include "ui/list_box.h"
 #include "ui/message_box.h"
 
-#include "res_manager.h"
-#include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/gl_texture.h>
+#include <fwk/gfx/canvas_2d.h>
+#include <fwk/gfx/font.h>
 #include <fwk/gfx/image.h>
-#include <fwk/gfx/opengl.h>
+#include <fwk/gfx/shader_compiler.h>
 #include <fwk/io/file_stream.h>
 #include <fwk/io/file_system.h>
 #include <fwk/str.h>
+#include <fwk/sys/input.h>
 #include <fwk/sys/on_fail.h>
+#include <fwk/vulkan/vulkan_command_queue.h>
+#include <fwk/vulkan/vulkan_device.h>
+#include <fwk/vulkan/vulkan_image.h>
+#include <fwk/vulkan/vulkan_instance.h>
+#include <fwk/vulkan/vulkan_swap_chain.h>
+#include <fwk/vulkan/vulkan_window.h>
+
+#include <fwk/libs_msvc.h>
 
 // TODO: replace old ui with imgui ?
 
@@ -29,7 +37,7 @@ using namespace ui;
 class Resource {
   public:
 	Resource() = default;
-	Ex<void> load(const FilePath &current_dir, const string &file_name) {
+	Ex<void> load(VDeviceRef device, const FilePath &current_dir, const string &file_name) {
 		m_file_name = file_name;
 		m_type = ResManager::instance().classifyPath(file_name, true);
 		EXPECT(m_type);
@@ -41,8 +49,10 @@ class Resource {
 			EXPECT(m_tile->load(loader));
 			m_rect_size = m_tile->rect().size() + int2(8, 8);
 		} else if(m_type == ResType::texture) {
-			m_texture = EX_PASS(GlTexture::load(path, false));
-			m_rect_size = m_texture->size();
+			auto image = EX_PASS(Image::load(path));
+			m_rect_size = image.size();
+			auto vimage = EX_PASS(VulkanImage::createAndUpload(device, {std::move(image)}));
+			m_texture = VulkanImageView::create(device, vimage);
 		} else if(m_type == ResType::sprite) {
 			auto loader = EX_PASS(fileLoader(path));
 			//	printf("Loading sprite: %s\n", file_name);
@@ -60,7 +70,7 @@ class Resource {
 		return {};
 	}
 
-	void printStats(Renderer2D &out, int2 pos, const Font &font) const {
+	void printStats(Canvas2D &out, int2 pos, const Font &font) const {
 		TextFormatter fmt;
 
 		if(m_type == ResType::sprite) {
@@ -86,7 +96,7 @@ class Resource {
 			double time = getTime();
 			for(int n = 0; n < (int)m_events.size(); n++) {
 				FColor col((float)(m_events[n].second - time + 1.0), 0.0f, 0.0f);
-				font.draw(out, (float2)pos, {col, ColorId::black}, m_events[n].first);
+				font.draw(out, (float2)pos, {IColor(col), ColorId::black}, m_events[n].first);
 				pos.y += font.lineHeight();
 			}
 
@@ -137,12 +147,12 @@ class Resource {
 			if(state.isKeyDown('E')) {
 				string name = FilePath(m_file_name).relativeToCurrent().get();
 				FATAL("fixme");
-				removeSuffix(name, ".zar");
+				/*removeSuffix(name, ".zar");
 				name += ".tga";
 				printf("Exporting: %s\n", name.c_str());
 				Image tex;
 				m_texture->download(tex);
-				tex.saveTGA(name).check();
+				tex.saveTGA(name).check();*/
 			}
 		}
 		if(m_type == ResType::sprite) {
@@ -170,17 +180,20 @@ class Resource {
 		}
 	}
 
-	void draw(Renderer2D &out, int2 pos, bool is_selected) const {
+	void draw(Canvas2D &out, int2 pos, bool is_selected) const {
 		Color outline_col = is_selected ? ColorId::red : Color(255, 255, 255, 100);
 
 		if(m_type == ResType::tile) {
 			out.setViewPos(-pos + m_tile->rect().min());
 			IBox box(int3(0, 0, 0), m_tile->bboxSize());
 			m_tile->draw(out, int2(0, 0));
+			out.setMaterial({});
 			drawBBox(out, box, outline_col);
 		} else if(m_type == ResType::texture) {
 			out.setViewPos(-pos);
-			out.addFilledRect(IRect(m_rect_size), m_texture);
+			out.setMaterial(m_texture);
+			out.addFilledRect(IRect(m_rect_size));
+			out.setMaterial({});
 			out.addRect(IRect({0, 0}, m_rect_size), outline_col);
 		} else if(m_type == ResType::sprite) {
 			bool is_gui_image = (*m_sprite)[m_seq_id].name.find("gui") != string::npos;
@@ -197,7 +210,9 @@ class Resource {
 				brect -= brect.min();
 			}
 			out.setViewPos(brect.min() - pos);
-			out.addFilledRect(FRect(rect), tex_rect, dtex);
+			out.setMaterial({dtex, ColorId::white, none, SimpleBlendingMode::normal});
+			out.addFilledRect(FRect(rect), tex_rect);
+			out.setMaterial({});
 
 			if(is_gui_image)
 				out.addRect(rect, outline_col);
@@ -216,7 +231,7 @@ class Resource {
 
 	int2 m_rect_size;
 	Dynamic<Tile> m_tile;
-	PTexture m_texture;
+	PVImageView m_texture;
 	Dynamic<Sprite> m_sprite;
 
 	vector<pair<const char *, double>> m_events;
@@ -227,15 +242,15 @@ class Resource {
 class ResourceView : public Window {
   public:
 	virtual const char *className() const { return "ResourceView"; }
-	ResourceView(IRect rect, FilePath current_dir, vector<string> file_names)
+	ResourceView(VDeviceRef vdevice, IRect rect, FilePath current_dir, vector<string> file_names)
 		: Window(rect), m_selected_id(-1), m_font(res::getFont(ui::WindowStyle::fonts[0])) {
 		for(auto file_name : file_names) {
 			if(ResManager::instance().classifyPath(file_name, true)) {
 				ON_FAIL("Error while loading file: %", file_name);
 
 				Resource new_resource;
-				if(auto result = new_resource.load(current_dir, file_name))
-					m_resources.emplace_back(move(new_resource));
+				if(auto result = new_resource.load(vdevice, current_dir, file_name))
+					m_resources.emplace_back(std::move(new_resource));
 				else
 					result.error().print();
 			}
@@ -298,7 +313,7 @@ class ResourceView : public Window {
 			sendEvent(this, Event::element_selected, m_selected_id);
 	}
 
-	void drawContents(Renderer2D &out) const override {
+	void drawContents(Canvas2D &out) const override {
 		int2 offset = innerOffset() - clippedRect().min();
 
 		for(int n = 0; n < (int)m_resources.size(); n++) {
@@ -336,14 +351,17 @@ enum class Command { empty, change_dir, exit };
 
 class ResViewerWindow : public Window {
   public:
-	ResViewerWindow(int2 res, const string &path)
-		: Window(IRect(res), WindowStyle::gui_light),
-		  m_current_dir(FilePath(path).absolute().get()) {
-		m_command = make_pair(Command::empty, string());
+	static constexpr int left_width = 300;
 
-		int left_width = 300;
+	ResViewerWindow(VulkanDevice &device, int2 res, const string &path)
+		: Window(IRect(res), WindowStyle::gui_light), m_device(device) {
 		m_dir_view = make_shared<ListBox>(IRect(0, 0, left_width, res.y));
+		attach(m_dir_view);
+		setDir(path);
+	}
 
+	void setDir(const string &path) {
+		m_current_dir = FilePath(path).absolute().get();
 		// TODO: doesn't support links?
 		m_entries = findFiles(m_current_dir, FindFileOpt::regular_file | FindFileOpt::directory |
 												 FindFileOpt::link | FindFileOpt::relative |
@@ -351,18 +369,19 @@ class ResViewerWindow : public Window {
 		makeSorted(m_entries);
 		vector<string> names;
 
+		m_dir_view->clear();
 		for(auto entry : m_entries) {
 			auto color = entry.is_dir || entry.is_link ? ColorId::yellow : ColorId::white;
 			m_dir_view->addEntry(entry.path.c_str(), color);
 			if(!entry.is_dir && !entry.is_link)
 				names.emplace_back(entry.path);
 		}
-
-		m_res_view =
-			make_shared<ResourceView>(IRect(left_width + 2, 0, res.x, res.y), m_current_dir, names);
-
-		attach(m_dir_view);
+		if(m_res_view)
+			detach(m_res_view);
+		m_res_view.reset(new ResourceView(m_device.ref(), IRect({left_width + 2, 0}, size()),
+										  m_current_dir, names));
 		attach(m_res_view);
+		m_command = {Command::empty, {}};
 	}
 
 	void resize(const int2 &new_size) {
@@ -405,53 +424,122 @@ class ResViewerWindow : public Window {
 		return true;
 	}
 
+	Ex<> drawFrame(VulkanWindow &vulkan_window, Canvas2D &canvas) {
+		auto &cmds = m_device.cmdQueue();
+		auto swap_chain = m_device.swapChain();
+		// Not drawing if swap chain is not available
+		if(swap_chain->status() != VSwapChainStatus::image_acquired)
+			return {};
+
+		auto render_pass =
+			m_device.getRenderPass({{swap_chain->format(), 1, VColorSyncStd::clear_present}});
+		auto dc = EX_PASS(canvas.genDrawCall(m_compiler, m_device, render_pass));
+		auto fb = m_device.getFramebuffer({swap_chain->acquiredImage()});
+
+		cmds.beginRenderPass(fb, render_pass, none, {FColor(0.0, 0.0, 0.0)});
+		cmds.setViewport(IRect(swap_chain->size()));
+		cmds.setScissor(none);
+
+		dc.render(m_device);
+		cmds.endRenderPass();
+		return {};
+	}
+
+	bool main_loop(VulkanWindow &vwindow) {
+		Tile::setFrameCounter((int)((getTime() - m_start_time) * 15.0));
+		TextureCache::instance().nextFrame().check();
+
+		Canvas2D canvas(IRect(vwindow.size()), Orient2D::y_up);
+
+		process(vwindow.inputState());
+		auto command = this->command();
+		if(command.first == Command::exit)
+			return false;
+		if(command.first == Command::change_dir)
+			setDir(command.second);
+		if(size() != vwindow.size())
+			resize(vwindow.size());
+
+		m_device.beginFrame().check();
+		draw(canvas);
+		drawFrame(vwindow, canvas).check();
+		m_device.finishFrame().check();
+
+		return true;
+	}
+
+	static bool main_loop(VulkanWindow &vulkan_window, void *viewer_window) {
+		return ((ResViewerWindow *)viewer_window)->main_loop(vulkan_window);
+	}
+
   private:
+	ShaderCompiler m_compiler;
+	VulkanDevice &m_device;
 	vector<FileEntry> m_entries;
 	FilePath m_current_dir;
-	pair<Command, string> m_command;
+	pair<Command, string> m_command = {Command::empty, string()};
 
 	PListBox m_dir_view;
 	shared_ptr<ResourceView> m_res_view;
+	double m_start_time;
 };
 
-static double start_time = getTime();
+Ex<int> exMain() {
+	Config config("res_viewer");
+	IRect window_rect = IRect(config.resolution) + config.window_pos;
 
-static bool main_loop(GlDevice &device, void *pmain_window) {
-	auto &main_window = *(Dynamic<ResViewerWindow> *)pmain_window;
+	VInstanceSetup setup;
+	setup.debug_levels = all<VDebugLevel>;
+	setup.debug_types = VDebugType::general | VDebugType::validation;
+	auto window_flags = VWindowFlag::resizable | VWindowFlag::centered | VWindowFlag::allow_hidpi |
+						VWindowFlag::sleep_when_minimized;
 
-	Tile::setFrameCounter((int)((getTime() - start_time) * 15.0));
-	TextureCache::instance().nextFrame();
+	VSwapChainSetup swap_chain_setup;
+	// TODO: UI is configured for Unorm, shouldn't we use SRGB by default?
+	swap_chain_setup.preferred_formats = {{VK_FORMAT_B8G8R8A8_UNORM}};
+	swap_chain_setup.preferred_present_mode = VPresentMode::immediate;
+	swap_chain_setup.usage =
+		VImageUsage::color_att | VImageUsage::storage | VImageUsage::transfer_dst;
+	swap_chain_setup.initial_layout = VImageLayout::general;
 
-	clearColor(Color(0, 0, 0));
-	Renderer2D out(IRect(device.windowSize()), Orient2D::y_down);
+	bool debug_mode = false;
+	if(debug_mode) {
+		setup.debug_levels = VDebugLevel::warning | VDebugLevel::error;
+		setup.debug_types = all<VDebugType>;
+	}
 
-	main_window->process(device.inputState());
-	auto command = main_window->command();
-	if(command.first == Command::exit)
-		return false;
-	if(command.first == Command::change_dir)
-		main_window.emplace(device.windowSize(), command.second);
-	if(main_window->size() != device.windowSize())
-		main_window->resize(device.windowSize());
+	// TODO: create instance on a thread, in the meantime load resources?
+	auto instance = EX_PASS(VulkanInstance::create(setup));
 
-	main_window->draw(out);
-	out.render();
+	// TODO: better window setup
+	auto window =
+		EX_PASS(VulkanWindow::create(instance, "FreeFT::res_viewer", window_rect, window_flags));
 
-	return true;
+	// TODO: prefer integrated device
+	VDeviceSetup dev_setup;
+	auto pref_device = instance->preferredDevice(window->surfaceHandle(), &dev_setup.queues);
+	if(!pref_device)
+		return ERROR("Couldn't find a suitable Vulkan device");
+	auto device = EX_PASS(instance->createDevice(*pref_device, dev_setup));
+	auto phys_info = instance->info(device->physId());
+	print("Selected Vulkan physical device: %\nDriver version: %\n",
+		  phys_info.properties.deviceName, phys_info.properties.driverVersion);
+	device->addSwapChain(EX_PASS(VulkanSwapChain::create(device, window, swap_chain_setup)));
+
+	ResManager res_mgr(device);
+	TextureCache tex_cache(*device);
+
+	ResViewerWindow res_viewer_window(*device, window->size(), "data/");
+	window->runMainLoop(&ResViewerWindow::main_loop, &res_viewer_window);
+	return 0;
 }
 
 int main(int argc, char **argv) {
-	Config config("res_viewer");
+	auto result = exMain();
 
-	GlDevice gfx_device;
-	createWindow("res_viewer", gfx_device, config.resolution, config.window_pos,
-				 config.fullscreen_on);
-
-	ResManager res_mgr;
-	TextureCache tex_cache;
-
-	Dynamic<ResViewerWindow> window(gfx_device.windowSize(), "data/");
-	gfx_device.runMainLoop(main_loop, &window);
-
-	return 0;
+	if(!result) {
+		result.error().print();
+		return 1;
+	}
+	return *result;
 }

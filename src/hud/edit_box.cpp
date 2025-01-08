@@ -6,6 +6,8 @@
 #include "game/actor.h"
 #include "game/world.h"
 #include "gfx/drawing.h"
+
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
 
 namespace hud {
@@ -106,7 +108,7 @@ const FRect HudEditBox::evalExtents(const string &text) const {
 	return FRect(m_font->evalExtents(m_label + text));
 }
 
-void HudEditBox::onDraw(Renderer2D &out) const {
+void HudEditBox::onDraw(Canvas2D &out) const {
 	HudButton::onDraw(out);
 
 	int line_height = m_font->lineHeight();
@@ -119,7 +121,7 @@ void HudEditBox::onDraw(Renderer2D &out) const {
 	if(isEnabled() && tick <= 1) {
 		FRect ext = evalExtents(m_text.substr(0, m_cursor_pos));
 		int2 pos = (int2)target_rect.min() + int2(ext.ex() + 2.0f, 0);
-		out.addLine(pos, pos + int2(0, line_height), Color(255, 255, 255, 180));
+		out.addSegment(pos, pos + int2(0, line_height), Color(255, 255, 255, 180));
 	}
 }
 

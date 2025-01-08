@@ -10,7 +10,7 @@ DEFINE_ENUM(ResType, tile, sprite, font, texture, other);
 // Only single instance allowed
 class ResManager {
   public:
-	ResManager(bool console_mode = false);
+	ResManager(VDeviceRef, bool console_mode = false);
 	~ResManager();
 
 	ResManager(const ResManager &) = delete;
@@ -21,7 +21,7 @@ class ResManager {
 		return *g_instance;
 	}
 
-	PTexture getTexture(Str, bool font_tex);
+	Ex<PVImageView> getTexture(Str, bool font_tex);
 	const Font &getFont(Str);
 	const game::Tile &getTile(Str);
 	const std::map<string, Dynamic<game::Tile>> &allTiles();
@@ -49,6 +49,7 @@ class ResManager {
 	struct Impl;
 	Dynamic<Impl> m_impl;
 
+	VDeviceRef m_device;
 	EnumMap<ResType, Pair<string, string>> m_paths;
 	string m_data_path;
 	bool m_console_mode;

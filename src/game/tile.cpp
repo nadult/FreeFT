@@ -5,8 +5,8 @@
 
 #include "gfx/drawing.h"
 #include "gfx/scene_renderer.h"
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/image.h>
-#include <fwk/gfx/renderer2d.h>
 #include <fwk/io/file_stream.h>
 
 namespace game {
@@ -56,7 +56,7 @@ Image TileFrame::texture() const {
 	return out;
 }
 
-PTexture TileFrame::deviceTexture(FRect &tex_rect) const {
+PVImageView TileFrame::deviceTexture(FRect &tex_rect) const {
 	if(!isBind())
 		bindToCache();
 	return accessTexture(tex_rect);
@@ -181,11 +181,12 @@ void Tile::save(FileStream &sr) const {
 	m_palette.save(sr);
 }
 
-void Tile::draw(Renderer2D &out, const int2 &pos, Color col) const {
+void Tile::draw(Canvas2D &out, const int2 &pos, Color col) const {
 	const TileFrame &TileFrame = accessFrame(s_frame_counter);
 	FRect tex_coords;
 	auto tex = TileFrame.deviceTexture(tex_coords);
-	out.addFilledRect(FRect(TileFrame.rect() + (pos - m_offset)), tex_coords, {tex, col});
+	out.setMaterial({tex, col, none, SimpleBlendingMode::normal});
+	out.addFilledRect(FRect(TileFrame.rect() + (pos - m_offset)), tex_coords);
 }
 
 void Tile::addToRender(SceneRenderer &renderer, const int3 &pos, Color color) const {

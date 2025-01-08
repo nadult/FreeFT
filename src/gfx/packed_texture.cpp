@@ -11,7 +11,7 @@ Ex<Image> loadZAR(Stream &sr) {
 	Palette palette;
 	auto packed = EX_PASS(PackedTexture::legacyLoad(sr, palette));
 	Image out(packed.size());
-	packed.decode(&out(0, 0), palette.data(), palette.size());
+	packed.decode(&out.pixels<IColor>()[0], palette.data(), palette.size());
 	return out;
 }
 
@@ -174,7 +174,7 @@ void PackedTexture::blit(Image &out, const int2 &pos, const Color *__restrict pa
 	DASSERT(pos.x + m_width <= out.width() && pos.y + m_height <= out.height());
 	DASSERT(pos.x >= 0 && pos.y >= 0);
 
-	Color *dst = &out(pos);
+	Color *dst = &out.pixels<IColor>()(pos);
 	int pixels = m_width * m_height, stride = out.width() - m_width;
 
 	DASSERT(pal && m_max_idx < pal_size);
@@ -250,7 +250,7 @@ void PackedTexture::decode(Color *__restrict dst, const Color *__restrict pal, i
 void PackedTexture::toTexture(Image &out, const Color *pal, int pal_size) const {
 	DASSERT(m_width > 0 && m_height > 0);
 	out.resize({m_width, m_height});
-	decode(&out(0, 0), pal, pal_size);
+	decode(&out.pixels<IColor>()[0], pal, pal_size);
 }
 
 bool PackedTexture::testPixel(const int2 &pixel) const {

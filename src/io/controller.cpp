@@ -19,8 +19,6 @@
 #include "hud/target_info.h"
 
 #include <fwk/gfx/font.h>
-#include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/opengl.h>
 
 using namespace game;
 
@@ -328,7 +326,7 @@ void Controller::draw() const {
 	m_last_path.visualize(3, scene_renderer);
 	scene_renderer.render();
 
-	Renderer2D ui_renderer(viewport, Orient2D::y_down);
+	Canvas2D ui_renderer(viewport, Orient2D::y_down);
 
 	if(m_show_debug_info)
 		drawDebugInfo(ui_renderer);
@@ -349,7 +347,7 @@ void Controller::draw() const {
 	ui_renderer.render();
 }
 
-void Controller::drawDebugInfo(Renderer2D &out) const {
+void Controller::drawDebugInfo(Canvas2D &out) const {
 	auto &font = res::getFont("liberation_16");
 
 	if(m_debug_ai) {

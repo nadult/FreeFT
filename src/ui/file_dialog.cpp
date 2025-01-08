@@ -49,7 +49,7 @@ void FileDialog::setPath(const FilePath &path) {
 
 FilePath FileDialog::path() const { return m_dir_path / toUTF8Checked(m_edit_box->text()); }
 
-void FileDialog::drawContents(Renderer2D &out) const {
+void FileDialog::drawContents(Canvas2D &out) const {
 	drawWindow(out, IRect({0, 0}, rect().size()), WindowStyle::gui_dark, 3);
 }
 

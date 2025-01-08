@@ -5,8 +5,6 @@
 
 #include "hud/layer.h"
 #include "io/loop.h"
-#include "ui/loading_bar.h"
-#include "ui/window.h"
 #include <future>
 
 namespace io {
@@ -52,7 +50,7 @@ class MainMenuLoop : public ui::Window, public Loop {
 
 	audio::PPlayback m_music;
 
-	PTexture m_back;
+	PVImageView m_back;
 	IRect m_back_rect;
 
 	std::future<game::PWorld> m_future_world;
