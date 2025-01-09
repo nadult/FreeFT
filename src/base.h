@@ -243,3 +243,5 @@ const game::Tile &getTile(Str);
 }
 
 struct TupleParser;
+
+struct GfxDevice;

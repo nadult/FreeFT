@@ -12,7 +12,7 @@ struct Config {
 	void load(CXmlNode);
 
 	int2 resolution = {1280, 720};
-	int2 window_pos = {100, 100};
+	Maybe<int2> window_pos;
 	bool fullscreen_on = false;
 	bool profiler_on = false;
 };

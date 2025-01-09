@@ -45,7 +45,7 @@ static const EnumMap<ResType, Pair<const char *>> default_paths = {{
 	{ResType::other, {"", ""}},
 }};
 
-ResManager::ResManager(VDeviceRef device, bool console_mode)
+ResManager::ResManager(Maybe<VDeviceRef> device, bool console_mode)
 	: m_device(device), m_console_mode(console_mode) {
 	ASSERT(g_instance == nullptr);
 	g_instance = this;
@@ -82,8 +82,10 @@ Ex<PVImageView> ResManager::getTexture(Str name, bool font_tex) {
 		tex.check();
 		if(font_tex)
 			fixGrayTransTexture(*tex);
-		auto vk_image = EX_PASS(VulkanImage::createAndUpload(m_device, *tex));
-		auto vk_image_view = VulkanImageView::create(m_device, vk_image);
+
+		DASSERT(m_device);
+		auto vk_image = EX_PASS(VulkanImage::createAndUpload(*m_device, *tex));
+		auto vk_image_view = VulkanImageView::create(*m_device, vk_image);
 		textures.emplace(name, vk_image_view);
 		return vk_image_view;
 	}
@@ -154,8 +156,10 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		if(!ext)
 			return ERROR("Image without extension: '%'", name);
 		auto tex = EX_PASS(Image::load(sr, *ext));
-		auto vk_image = EX_PASS(VulkanImage::createAndUpload(m_device, tex));
-		m_impl->textures[name] = VulkanImageView::create(m_device, vk_image);
+
+		DASSERT(m_device);
+		auto vk_image = EX_PASS(VulkanImage::createAndUpload(*m_device, tex));
+		m_impl->textures[name] = VulkanImageView::create(*m_device, vk_image);
 	} else if(type == ResType::other) {
 		vector<char> data(sr.size());
 		sr.loadData(data);

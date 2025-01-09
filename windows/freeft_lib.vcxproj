@@ -179,6 +179,10 @@
     <ClCompile Include="..\src\hud\target_info.cpp" />
     <ClCompile Include="..\src\hud\weapon.cpp" />
     <ClCompile Include="..\src\hud\widget.cpp" />
+    <ClCompile Include="..\src\io\controller.cpp" />
+    <ClCompile Include="..\src\io\game_loop.cpp" />
+    <ClCompile Include="..\src\io\loop.cpp" />
+    <ClCompile Include="..\src\io\main_menu_loop.cpp" />
     <ClCompile Include="..\src\navi_heightmap.cpp" />
     <ClCompile Include="..\src\navi_map.cpp" />
     <ClCompile Include="..\src\net\base.cpp" />
@@ -191,6 +195,7 @@
     <ClCompile Include="..\src\res_manager.cpp" />
     <ClCompile Include="..\src\sys\config.cpp" />
     <ClCompile Include="..\src\sys\data_sheet.cpp" />
+    <ClCompile Include="..\src\sys\gfx_device.cpp" />
     <ClCompile Include="..\src\ui\button.cpp" />
     <ClCompile Include="..\src\ui\combo_box.cpp" />
     <ClCompile Include="..\src\ui\edit_box.cpp" />
@@ -275,6 +280,10 @@
     <ClInclude Include="..\src\hud\target_info.h" />
     <ClInclude Include="..\src\hud\weapon.h" />
     <ClInclude Include="..\src\hud\widget.h" />
+    <ClInclude Include="..\src\io\controller.h" />
+    <ClInclude Include="..\src\io\game_loop.h" />
+    <ClInclude Include="..\src\io\loop.h" />
+    <ClInclude Include="..\src\io\main_menu_loop.h" />
     <ClInclude Include="..\src\navi_heightmap.h" />
     <ClInclude Include="..\src\navi_map.h" />
     <ClInclude Include="..\src\net\base.h" />
@@ -288,6 +297,7 @@
     <ClInclude Include="..\src\sys\aligned_allocator.h" />
     <ClInclude Include="..\src\sys\config.h" />
     <ClInclude Include="..\src\sys\data_sheet.h" />
+    <ClInclude Include="..\src\sys\gfx_device.h" />
     <ClInclude Include="..\src\ui\button.h" />
     <ClInclude Include="..\src\ui\combo_box.h" />
     <ClInclude Include="..\src\ui\edit_box.h" />

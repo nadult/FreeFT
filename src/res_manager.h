@@ -10,7 +10,8 @@ DEFINE_ENUM(ResType, tile, sprite, font, texture, other);
 // Only single instance allowed
 class ResManager {
   public:
-	ResManager(VDeviceRef, bool console_mode = false);
+	// To access textures device_ref has to be present
+	ResManager(Maybe<VDeviceRef>, bool console_mode = false);
 	~ResManager();
 
 	ResManager(const ResManager &) = delete;
@@ -49,7 +50,7 @@ class ResManager {
 	struct Impl;
 	Dynamic<Impl> m_impl;
 
-	VDeviceRef m_device;
+	Maybe<VDeviceRef> m_device;
 	EnumMap<ResType, Pair<string, string>> m_paths;
 	string m_data_path;
 	bool m_console_mode;

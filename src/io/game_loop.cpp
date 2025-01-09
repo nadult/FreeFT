@@ -29,29 +29,34 @@ GameLoop::GameLoop(const char *config_name, bool from_main)
 	}
 }
 
-GameLoop::GameLoop(net::PServer &&server, bool from_main) : GameLoop("server", from_main) {
+GameLoop::GameLoop(GfxDevice *gfx_device, net::PServer &&server, bool from_main)
+	: GameLoop("server", from_main) {
 	DASSERT(server && server->world());
 	m_server = std::move(server);
 	m_world = m_server->world();
 
-	if(!m_server->config().m_console_mode)
-		m_controller.reset(new Controller(m_world, m_config.profiler_on));
+	if(!m_server->config().m_console_mode) {
+		DASSERT(gfx_device);
+		m_controller.reset(new Controller(*gfx_device, m_world, m_config.profiler_on));
+	}
 }
 
-GameLoop::GameLoop(net::PClient &&client, bool from_main) : GameLoop("client", from_main) {
+GameLoop::GameLoop(GfxDevice &gfx_device, net::PClient &&client, bool from_main)
+	: GameLoop("client", from_main) {
 	DASSERT(client && client->world());
 	m_client = std::move(client);
 	m_world = m_client->world();
 
 	//TODO: wait until initial entity information is loaded?
-	m_controller.reset(new Controller(m_world, m_config.profiler_on));
+	m_controller.reset(new Controller(gfx_device, m_world, m_config.profiler_on));
 }
 
-GameLoop::GameLoop(game::PWorld world, bool from_main) : GameLoop("game", from_main) {
+GameLoop::GameLoop(GfxDevice &gfx_device, game::PWorld world, bool from_main)
+	: GameLoop("game", from_main) {
 	DASSERT(world && world->mode() == World::Mode::single_player);
 	m_world = world;
 	m_world->assignGameMode<SinglePlayerMode>(Character("Player", "CORE_prefab2", "male"));
-	m_controller.reset(new Controller(m_world, m_config.profiler_on));
+	m_controller.reset(new Controller(gfx_device, m_world, m_config.profiler_on));
 }
 
 GameLoop::~GameLoop() {}
@@ -107,9 +112,9 @@ bool GameLoop::onTick(double time_diff) {
 	return m_mode != mode_exiting_to_main;
 }
 
-void GameLoop::onDraw() {
+void GameLoop::onDraw(Canvas2D &canvas) {
 	if(m_controller)
-		m_controller->draw();
+		m_controller->draw(canvas);
 }
 
 void GameLoop::onTransitionFinished() {

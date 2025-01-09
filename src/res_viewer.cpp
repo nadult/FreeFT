@@ -7,6 +7,7 @@
 #include "game/tile.h"
 #include "res_manager.h"
 #include "sys/config.h"
+#include "sys/gfx_device.h"
 #include "ui/button.h"
 #include "ui/list_box.h"
 #include "ui/message_box.h"
@@ -28,8 +29,6 @@
 #include <fwk/vulkan/vulkan_window.h>
 
 #include <fwk/libs_msvc.h>
-
-// TODO: replace old ui with imgui ?
 
 using namespace game;
 using namespace ui;
@@ -353,8 +352,8 @@ class ResViewerWindow : public Window {
   public:
 	static constexpr int left_width = 300;
 
-	ResViewerWindow(VulkanDevice &device, int2 res, const string &path)
-		: Window(IRect(res), WindowStyle::gui_light), m_device(device) {
+	ResViewerWindow(GfxDevice &gfx, int2 res, const string &path)
+		: Window(IRect(res), WindowStyle::gui_light), m_gfx(gfx) {
 		m_dir_view = make_shared<ListBox>(IRect(0, 0, left_width, res.y));
 		attach(m_dir_view);
 		setDir(path);
@@ -378,7 +377,7 @@ class ResViewerWindow : public Window {
 		}
 		if(m_res_view)
 			detach(m_res_view);
-		m_res_view.reset(new ResourceView(m_device.ref(), IRect({left_width + 2, 0}, size()),
+		m_res_view.reset(new ResourceView(m_gfx.device_ref, IRect({left_width + 2, 0}, size()),
 										  m_current_dir, names));
 		attach(m_res_view);
 		m_command = {Command::empty, {}};
@@ -424,32 +423,9 @@ class ResViewerWindow : public Window {
 		return true;
 	}
 
-	Ex<> drawFrame(VulkanWindow &vulkan_window, Canvas2D &canvas) {
-		auto &cmds = m_device.cmdQueue();
-		auto swap_chain = m_device.swapChain();
-		// Not drawing if swap chain is not available
-		if(swap_chain->status() != VSwapChainStatus::image_acquired)
-			return {};
-
-		auto render_pass =
-			m_device.getRenderPass({{swap_chain->format(), 1, VColorSyncStd::clear_present}});
-		auto dc = EX_PASS(canvas.genDrawCall(m_compiler, m_device, render_pass));
-		auto fb = m_device.getFramebuffer({swap_chain->acquiredImage()});
-
-		cmds.beginRenderPass(fb, render_pass, none, {FColor(0.0, 0.0, 0.0)});
-		cmds.setViewport(IRect(swap_chain->size()));
-		cmds.setScissor(none);
-
-		dc.render(m_device);
-		cmds.endRenderPass();
-		return {};
-	}
-
 	bool main_loop(VulkanWindow &vwindow) {
 		Tile::setFrameCounter((int)((getTime() - m_start_time) * 15.0));
 		TextureCache::instance().nextFrame().check();
-
-		Canvas2D canvas(IRect(vwindow.size()), Orient2D::y_up);
 
 		process(vwindow.inputState());
 		auto command = this->command();
@@ -460,10 +436,9 @@ class ResViewerWindow : public Window {
 		if(size() != vwindow.size())
 			resize(vwindow.size());
 
-		m_device.beginFrame().check();
+		Canvas2D canvas(IRect(vwindow.size()), Orient2D::y_up);
 		draw(canvas);
-		drawFrame(vwindow, canvas).check();
-		m_device.finishFrame().check();
+		m_gfx.drawFrame(canvas).check();
 
 		return true;
 	}
@@ -473,8 +448,7 @@ class ResViewerWindow : public Window {
 	}
 
   private:
-	ShaderCompiler m_compiler;
-	VulkanDevice &m_device;
+	GfxDevice &m_gfx;
 	vector<FileEntry> m_entries;
 	FilePath m_current_dir;
 	pair<Command, string> m_command = {Command::empty, string()};
@@ -486,57 +460,17 @@ class ResViewerWindow : public Window {
 
 Ex<int> exMain() {
 	Config config("res_viewer");
-	IRect window_rect = IRect(config.resolution) + config.window_pos;
+	auto gfx = EX_PASS(GfxDevice::create("res_viewer", config));
+	ResManager res_mgr(gfx.device_ref);
+	TextureCache tex_cache(*gfx.device_ref);
 
-	VInstanceSetup setup;
-	setup.debug_levels = all<VDebugLevel>;
-	setup.debug_types = VDebugType::general | VDebugType::validation;
-	auto window_flags = VWindowFlag::resizable | VWindowFlag::centered | VWindowFlag::allow_hidpi |
-						VWindowFlag::sleep_when_minimized;
-
-	VSwapChainSetup swap_chain_setup;
-	// TODO: UI is configured for Unorm, shouldn't we use SRGB by default?
-	swap_chain_setup.preferred_formats = {{VK_FORMAT_B8G8R8A8_UNORM}};
-	swap_chain_setup.preferred_present_mode = VPresentMode::immediate;
-	swap_chain_setup.usage =
-		VImageUsage::color_att | VImageUsage::storage | VImageUsage::transfer_dst;
-	swap_chain_setup.initial_layout = VImageLayout::general;
-
-	bool debug_mode = false;
-	if(debug_mode) {
-		setup.debug_levels = VDebugLevel::warning | VDebugLevel::error;
-		setup.debug_types = all<VDebugType>;
-	}
-
-	// TODO: create instance on a thread, in the meantime load resources?
-	auto instance = EX_PASS(VulkanInstance::create(setup));
-
-	// TODO: better window setup
-	auto window =
-		EX_PASS(VulkanWindow::create(instance, "FreeFT::res_viewer", window_rect, window_flags));
-
-	// TODO: prefer integrated device
-	VDeviceSetup dev_setup;
-	auto pref_device = instance->preferredDevice(window->surfaceHandle(), &dev_setup.queues);
-	if(!pref_device)
-		return ERROR("Couldn't find a suitable Vulkan device");
-	auto device = EX_PASS(instance->createDevice(*pref_device, dev_setup));
-	auto phys_info = instance->info(device->physId());
-	print("Selected Vulkan physical device: %\nDriver version: %\n",
-		  phys_info.properties.deviceName, phys_info.properties.driverVersion);
-	device->addSwapChain(EX_PASS(VulkanSwapChain::create(device, window, swap_chain_setup)));
-
-	ResManager res_mgr(device);
-	TextureCache tex_cache(*device);
-
-	ResViewerWindow res_viewer_window(*device, window->size(), "data/");
-	window->runMainLoop(&ResViewerWindow::main_loop, &res_viewer_window);
+	ResViewerWindow res_viewer_window(gfx, gfx.window_ref->size(), "data/");
+	gfx.window_ref->runMainLoop(&ResViewerWindow::main_loop, &res_viewer_window);
 	return 0;
 }
 
 int main(int argc, char **argv) {
 	auto result = exMain();
-
 	if(!result) {
 		result.error().print();
 		return 1;

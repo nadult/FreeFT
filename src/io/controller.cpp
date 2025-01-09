@@ -3,6 +3,7 @@
 
 #include "io/controller.h"
 
+#include "audio/device.h"
 #include "game/actor.h"
 #include "game/all_orders.h"
 #include "game/brain.h"
@@ -10,15 +11,15 @@
 #include "game/item.h"
 #include "game/pc_controller.h"
 #include "game/visibility.h"
-
-#include "audio/device.h"
 #include "gfx/scene_renderer.h"
-
 #include "hud/console.h"
 #include "hud/hud.h"
 #include "hud/target_info.h"
+#include "sys/gfx_device.h"
 
+#include <fwk/gfx/canvas_2d.h>
 #include <fwk/gfx/font.h>
+#include <fwk/vulkan/vulkan_window.h>
 
 using namespace game;
 
@@ -31,15 +32,14 @@ static string s_profiler_stats;
 
 void Controller::setProfilerStats(string stats) { s_profiler_stats = std::move(stats); }
 
-Controller::Controller(PWorld world, bool debug_info)
-	: m_world(world), m_viewer(world), m_view_pos(0, 0), m_show_debug_info(debug_info),
-	  m_debug_navi(false), m_debug_ai(false), m_is_exiting(0), m_time_multiplier(1.0),
-	  m_screen_ray(float3(), float3(0, 0, 1)) {
-	auto resolution = GlDevice::instance().windowSize();
-
+Controller::Controller(GfxDevice &gfx_device, PWorld world, bool debug_info)
+	: m_gfx_device(gfx_device), m_world(world), m_viewer(world), m_view_pos(0, 0),
+	  m_show_debug_info(debug_info), m_debug_navi(false), m_debug_ai(false), m_is_exiting(0),
+	  m_time_multiplier(1.0), m_screen_ray(float3(), float3(0, 0, 1)) {
 	DASSERT(world);
-	m_console = make_shared<hud::HudConsole>(resolution);
-	m_hud = make_shared<hud::Hud>(world, resolution);
+	int2 resolution = m_gfx_device.window_ref->size();
+	m_console = std::make_shared<hud::HudConsole>(resolution);
+	m_hud = std::make_shared<hud::Hud>(world, resolution);
 	m_target_info = make_shared<hud::HudTargetInfo>(FRect(target_info_size));
 	m_target_info->setVisible(false, false);
 
@@ -49,7 +49,6 @@ Controller::Controller(PWorld world, bool debug_info)
 
 	if(const Actor *actor = getActor())
 		m_view_pos = int2(worldToScreen(actor->pos())) - resolution / 2;
-
 	m_last_look_at = float3(0, 0, 0);
 
 	if(m_world->isClient())
@@ -201,8 +200,7 @@ void Controller::onInput(const InputEvent &event) {
 void Controller::update(double time_diff) {
 	updatePC();
 
-	auto &device = GlDevice::instance();
-	auto resolution = device.windowSize();
+	auto resolution = m_gfx_device.window_ref->size();
 	Actor *actor = m_world->refEntity<Actor>(m_actor_ref);
 	if(actor)
 		audio::setListener(actor->pos(), actor->estimateMove(1.0f), normalize(float3(-1, 0, -1)));
@@ -219,7 +217,7 @@ void Controller::update(double time_diff) {
 		actor = nullptr;
 
 	if(!m_is_exiting) {
-		for(auto event : device.inputEvents())
+		for(auto event : m_gfx_device.window_ref->inputEvents())
 			onInput(event);
 		m_is_exiting = m_hud->exitRequested();
 	}
@@ -307,11 +305,8 @@ void Controller::update(double time_diff) {
 
 void Controller::updateView(double time_diff) { m_viewer.update(time_diff); }
 
-void Controller::draw() const {
-	clearColor(Color(0, 0, 0));
-
-	auto resolution = GlDevice::instance().windowSize();
-	IRect viewport(resolution);
+void Controller::draw(Canvas2D &canvas) const {
+	auto viewport = canvas.viewport();
 	SceneRenderer scene_renderer(viewport, m_view_pos);
 	m_viewer.addToRender(scene_renderer);
 
@@ -324,27 +319,22 @@ void Controller::draw() const {
 			navi_map->visualize(scene_renderer, false);
 	}
 	m_last_path.visualize(3, scene_renderer);
-	scene_renderer.render();
-
-	Canvas2D ui_renderer(viewport, Orient2D::y_down);
 
 	if(m_show_debug_info)
-		drawDebugInfo(ui_renderer);
+		drawDebugInfo(canvas);
 
-	m_hud->draw(ui_renderer);
-	m_target_info->draw(ui_renderer);
-	m_console->draw(ui_renderer);
+	m_hud->draw(canvas);
+	m_target_info->draw(canvas);
+	m_console->draw(canvas);
 
 	if(!m_main_message.empty()) {
 		auto &font = res::getFont("transformers_48");
-		FRect rect(float2(resolution.x, 30.0f));
+		FRect rect(float2(viewport.width(), 30.0f));
 		rect += float2(0.0f, m_console->rect().height());
-		auto text_color = mulAlpha(ColorId::white, m_main_message.anim_time);
-		auto shadow_color = mulAlpha(ColorId::black, m_main_message.anim_time);
-		font.draw(ui_renderer, rect, {text_color, shadow_color, HAlign::center},
-				  m_main_message.text());
+		auto text_color = (IColor)mulAlpha(ColorId::white, m_main_message.anim_time);
+		auto shadow_color = (IColor)mulAlpha(ColorId::black, m_main_message.anim_time);
+		font.draw(canvas, rect, {text_color, shadow_color, HAlign::center}, m_main_message.text());
 	}
-	ui_renderer.render();
 }
 
 void Controller::drawDebugInfo(Canvas2D &out) const {

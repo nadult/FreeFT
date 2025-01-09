@@ -15,7 +15,7 @@ class Loop {
 	virtual ~Loop();
 
 	bool tick(double time_diff);
-	void draw();
+	void draw(Canvas2D &);
 	void exit();
 
 	void startTransition(Color from, Color to, TransitionMode mode, float length);
@@ -23,12 +23,12 @@ class Loop {
 
   protected:
 	virtual bool onTick(double) = 0;
-	virtual void onDraw() = 0;
+	virtual void onDraw(Canvas2D &) = 0;
 	virtual void onTransitionFinished() {}
 
   private:
 	struct Transition {
-		void draw(const IRect &rect);
+		void draw(Canvas2D &, const IRect &rect) const;
 
 		FColor from, to;
 		TransitionMode mode;

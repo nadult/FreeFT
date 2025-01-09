@@ -8,7 +8,7 @@ Micro Forte.
 Compiled binaries can be downloaded from SourceForge
 [https://sourceforge.net/projects/freeft](https://sourceforge.net/projects/freeft/files)
 
-Note: master branch is currently unstable, because FreeFT is updated to the latest version of libfwk.
+Note: master branch is currently unstable, because FreeFT is being updated to the latest version of libfwk.
 
 ## Building
 To compile a linux environment with Clang 8.0 is recommended (G++ 9.0 or newer can also be used).

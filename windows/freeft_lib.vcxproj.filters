@@ -298,6 +298,21 @@
     <ClCompile Include="..\src\ui\window.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\sys\gfx_device.cpp">
+      <Filter>sys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\io\controller.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\io\game_loop.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\io\loop.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\io\main_menu_loop.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\audio\device.h">
@@ -585,6 +600,21 @@
     <ClInclude Include="..\src\ui\window.h">
       <Filter>ui</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\sys\gfx_device.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\io\controller.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\io\game_loop.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\io\loop.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\io\main_menu_loop.h">
+      <Filter>io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="audio">
@@ -613,6 +643,9 @@
     </Filter>
     <Filter Include="ui">
       <UniqueIdentifier>{3290784c-9720-4571-a2eb-80754ebc91de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{f277dbbd-301a-4554-90ed-5ed373b6c9ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

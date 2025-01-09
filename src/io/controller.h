@@ -18,12 +18,12 @@ namespace io {
 
 class Controller {
   public:
-	Controller(game::PWorld world, bool debug_info);
+	Controller(GfxDevice &, game::PWorld world, bool debug_info);
 	~Controller();
 
 	void updateView(double time_diff);
 	void update(double time_diff);
-	void draw() const;
+	void draw(Canvas2D &) const;
 
 	int exitRequested() const { return m_is_exiting; }
 
@@ -51,6 +51,7 @@ class Controller {
 		float anim_time;
 	};
 
+	GfxDevice &m_gfx_device;
 	//TODO: m_world can be a reference, not a pointer
 	game::PWorld m_world;
 	game::WorldViewer m_viewer;

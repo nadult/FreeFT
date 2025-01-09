@@ -22,7 +22,8 @@ Config::Config(const char *config_name) {
 void Config::load(CXmlNode node) {
 	DASSERT(node);
 	resolution = node.attrib<int2>("res", resolution);
-	window_pos = node.attrib<int2>("window_pos", window_pos);
+	if(node.hasAttrib("window_pos"))
+		window_pos = node.attrib<int2>("window_pos", int2(0, 0));
 	fullscreen_on = node.attrib<bool>("fullscreen", fullscreen_on);
 	profiler_on = node.attrib<bool>("profiler", profiler_on);
 }

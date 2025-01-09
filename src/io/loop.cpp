@@ -35,11 +35,9 @@ void Loop::startTransition(Color from, Color to, TransitionMode mode, float leng
 
 bool Loop::isTransitioning() const { return m_is_transitioning; }
 
-void Loop::Transition::draw(const IRect &rect) {
-	Canvas2D renderer(rect, Orient2D::y_down);
-
+void Loop::Transition::draw(Canvas2D &canvas, const IRect &rect) const {
 	if(mode == trans_normal) {
-		renderer.addFilledRect(rect, lerp(from, to, pos / length));
+		canvas.addFilledRect(rect, lerp(from, to, pos / length));
 	} else {
 		FColor col1 = from, col2 = to;
 		if(mode == trans_right)
@@ -55,19 +53,17 @@ void Loop::Transition::draw(const IRect &rect) {
 		FColor mid_colors[4] = {col1, col1, col2, col2};
 		FRect uv_rect(0, 0, 1, 1);
 
-		renderer.addFilledRect(rects[0], col1);
-		renderer.addFilledRect(rects[1], uv_rect, mid_colors);
-		renderer.addRect(rects[1], FColor(ColorId::white));
-		renderer.addFilledRect(rects[2], col2);
+		canvas.addFilledRect(rects[0], col1);
+		canvas.addFilledRect(rects[1], uv_rect, mid_colors);
+		canvas.addRect(rects[1], FColor(ColorId::white));
+		canvas.addFilledRect(rects[2], col2);
 	}
-	renderer.render();
 }
 
-void Loop::draw() {
-	onDraw();
-
+void Loop::draw(Canvas2D &canvas) {
+	onDraw(canvas);
 	if(m_is_transitioning)
-		m_transition.draw(IRect(GlDevice::instance().windowSize()));
+		m_transition.draw(canvas, canvas.viewport());
 }
 
 }

@@ -5,13 +5,15 @@
 
 #include "hud/layer.h"
 #include "io/loop.h"
+#include "ui/loading_bar.h"
+#include "ui/window.h"
 #include <future>
 
 namespace io {
 
 class MainMenuLoop : public ui::Window, public Loop {
   public:
-	MainMenuLoop();
+	MainMenuLoop(GfxDevice &);
 	~MainMenuLoop();
 
 	void stopMusic();
@@ -20,9 +22,10 @@ class MainMenuLoop : public ui::Window, public Loop {
   private:
 	bool onTick(double) override;
 	bool onEvent(const ui::Event &ev) override;
-	void onDraw() override;
+	void onDraw(Canvas2D &) override;
 	void onTransitionFinished() override;
 
+	GfxDevice &m_gfx_device;
 	ui::PImageButton m_single_player;
 	ui::PImageButton m_multi_player;
 	ui::PImageButton m_create_server;

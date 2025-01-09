@@ -3,18 +3,22 @@
 
 #include "game/world.h"
 
+#include "audio/device.h"
+#include "hud/multi_player_menu.h"
 #include "io/game_loop.h"
 #include "io/main_menu_loop.h"
-
-#include "hud/multi_player_menu.h"
-
-#include "audio/device.h"
 #include "net/client.h"
 #include "net/server.h"
+#include "sys/gfx_device.h"
+#include "ui/file_dialog.h"
+#include "ui/image_button.h"
 
 #ifdef MessageBox // Yea.. TODO: remove windows.h from includes
 #undef MessageBox
 #endif
+
+#include <fwk/io/file_system.h>
+#include <fwk/vulkan/vulkan_window.h>
 
 using namespace ui;
 using namespace game;
@@ -33,16 +37,16 @@ static PImageButton makeButton(const int2 &pos, const char *title) {
 	return make_shared<ImageButton>(pos, std::move(proto), title, ImageButton::mode_normal);
 }
 
-MainMenuLoop::MainMenuLoop()
-	: Window(IRect(GlDevice::instance().windowSize()), ColorId::transparent), m_mode(mode_normal),
-	  m_next_mode(mode_normal) {
+MainMenuLoop::MainMenuLoop(GfxDevice &gfx_device)
+	: Window(IRect(gfx_device.window_ref->size()), ColorId::transparent), m_gfx_device(gfx_device),
+	  m_mode(mode_normal), m_next_mode(mode_normal) {
 	m_back = res::getGuiTexture("back/flaminghelmet");
 
 	m_blend_time = 1.0;
 
 	IRect rect = localRect();
-	m_back_rect = (IRect)FRect(float2(rect.center()) - float2(m_back->size()) * 0.5f,
-							   float2(rect.center()) + float2(m_back->size()) * 0.5f);
+	m_back_rect = (IRect)FRect(float2(rect.center()) - float2(m_back->size2D()) * 0.5f,
+							   float2(rect.center()) + float2(m_back->size2D()) * 0.5f);
 
 	m_single_player = makeButton(m_back_rect.min() + int2(500, 70), "Single player");
 	m_multi_player = makeButton(m_back_rect.min() + int2(500, 115), "Multi player");
@@ -100,7 +104,7 @@ bool MainMenuLoop::onEvent(const Event &ev) {
 			attach(m_file_dialog, true);
 		} else if(ev.source == m_multi_player.get()) {
 			FRect rect = FRect(float2(790, 550));
-			auto window_size = GlDevice::instance().windowSize();
+			auto window_size = m_gfx_device.window_ref->size();
 			rect += float2(window_size) * 0.5f - rect.size() * 0.5f;
 			m_multi_menu = make_shared<hud::MultiPlayerMenu>(rect, window_size);
 			m_sub_menu = m_multi_menu;
@@ -171,13 +175,13 @@ bool MainMenuLoop::onTick(double time_diff) {
 				if(m_client) {
 					PWorld world = m_future_world.get();
 					m_client->setWorld(world);
-					new_loop.reset(new GameLoop(std::move(m_client), true));
+					new_loop.reset(new GameLoop(m_gfx_device, std::move(m_client), true));
 				} else if(m_server) {
 					PWorld world = m_future_world.get();
 					m_server->setWorld(world);
-					new_loop.reset(new GameLoop(std::move(m_server), true));
+					new_loop.reset(new GameLoop(&m_gfx_device, std::move(m_server), true));
 				} else {
-					new_loop.reset(new GameLoop(m_future_world.get(), true));
+					new_loop.reset(new GameLoop(m_gfx_device, m_future_world.get(), true));
 				}
 			}
 		}
@@ -214,11 +218,10 @@ bool MainMenuLoop::onTick(double time_diff) {
 	}
 
 	if(m_mode != mode_quitting && m_mode != mode_transitioning && !m_sub_menu)
-		process(GlDevice::instance().inputState());
+		process(m_gfx_device.window_ref->inputState());
 	if(m_sub_menu) {
 		if(m_mode != mode_transitioning) {
-			auto &device = GlDevice::instance();
-			for(auto &event : device.inputEvents())
+			for(auto &event : m_gfx_device.window_ref->inputEvents())
 				m_sub_menu->handleInput(event);
 		}
 
@@ -253,26 +256,23 @@ bool MainMenuLoop::onTick(double time_diff) {
 	return m_mode != mode_quitting;
 }
 
-void MainMenuLoop::onDraw() {
+void MainMenuLoop::onDraw(Canvas2D &canvas) {
 	if(m_sub_loop && m_mode != mode_transitioning) {
-		m_sub_loop->draw();
+		m_sub_loop->draw(canvas);
 		return;
 	}
 
-	clearColor(Color(0, 0, 0));
-	IRect viewport(GlDevice::instance().windowSize());
-	Canvas2D renderer(viewport, Orient2D::y_down);
+	canvas.setMaterial(m_back);
+	canvas.addFilledRect(m_back_rect);
+	canvas.setMaterial({});
+	Window::draw(canvas);
 
-	renderer.addFilledRect(m_back_rect, m_back);
-	Window::draw(renderer);
-
-	renderer.setViewPos(float2());
+	canvas.setViewPos(float2());
 	if(m_sub_menu)
-		m_sub_menu->draw(renderer);
+		m_sub_menu->draw(canvas);
 
 	if(m_mode == mode_loading)
-		m_loading.draw(renderer, viewport.size() - int2(180, 50));
-	renderer.render();
+		m_loading.draw(canvas, canvas.viewport().size() - int2(180, 50));
 }
 
 }

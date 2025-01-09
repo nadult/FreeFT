@@ -10,16 +10,16 @@ namespace io {
 
 class GameLoop : public Loop {
   public:
-	GameLoop(net::PServer &&, bool from_main_menu);
-	GameLoop(net::PClient &&, bool from_main_menu);
-	GameLoop(game::PWorld, bool from_main_menu);
+	GameLoop(GfxDevice *, net::PServer &&, bool from_main_menu);
+	GameLoop(GfxDevice &, net::PClient &&, bool from_main_menu);
+	GameLoop(GfxDevice &, game::PWorld, bool from_main_menu);
 	~GameLoop();
 
   protected:
 	GameLoop(const char *config_name, bool from_main_menu);
 
 	bool onTick(double) override;
-	void onDraw() override;
+	void onDraw(Canvas2D &) override;
 	void onTransitionFinished() override;
 
 	enum Mode {
