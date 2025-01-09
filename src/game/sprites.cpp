@@ -15,6 +15,7 @@ namespace {
 	const char *s_suffix = ".sprite";
 
 	std::map<string, int> s_sprite_map;
+	std::map<string, int> s_locase_sprite_map;
 	vector<Sprite> s_sprites;
 }
 
@@ -49,15 +50,26 @@ void Sprite::initMap() {
 	}
 
 	s_sprites.resize(sprite_count);
-	for(auto it = s_sprite_map.begin(); it != s_sprite_map.end(); ++it)
-		s_sprites[it->second].setResourceName(it->first.c_str());
+	for(auto &pair : s_sprite_map)
+		s_sprites[pair.second].setResourceName(pair.first.c_str());
+
+	for(auto &pair : s_sprite_map) {
+		string locase = toLower(pair.first);
+		if(s_locase_sprite_map.find(locase) != s_locase_sprite_map.end())
+			print("Warning: locase name collision: %\n", locase);
+		s_locase_sprite_map[locase] = pair.second;
+	}
 }
 
 int Sprite::count() { return (int)s_sprites.size(); }
 
 int Sprite::find(const string &name) {
 	auto it = s_sprite_map.find(name);
-	return it == s_sprite_map.end() ? -1 : it->second;
+	if(it == s_sprite_map.end()) {
+		it = s_locase_sprite_map.find(toLower(name));
+		return it == s_locase_sprite_map.end() ? -1 : it->second;
+	}
+	return it->second;
 }
 
 const Sprite &Sprite::get(int idx) {
@@ -89,5 +101,4 @@ const Sprite &Sprite::getPartial(const string &name) {
 }
 
 bool Sprite::isValidIndex(int idx) { return idx >= 0 && idx < (int)s_sprites.size(); }
-
 }
