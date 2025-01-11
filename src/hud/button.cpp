@@ -44,6 +44,7 @@ void HudButton::onUpdate(double time_diff) {
 
 void HudButton::onDraw(Canvas2D &out) const {
 	FRect rect = this->rect();
+	out.setMaterial({ColorId::white, SimpleBlendingMode::normal});
 	out.addFilledRect(rect, (FColor)backgroundColor());
 
 	Color border_color = borderColor();
@@ -61,9 +62,10 @@ void HudButton::onDraw(Canvas2D &out) const {
 	}
 
 	if(m_icon_id) {
-		out.setMaterial({m_icons_tex, textColor()});
+		out.setMaterial({m_icons_tex, textColor(), SimpleBlendingMode::normal});
 		out.addFilledRect(rect, s_icons[*m_icon_id].uv_rect);
 	}
+	out.setMaterial({});
 }
 
 bool HudButton::onInput(const InputEvent &event) {

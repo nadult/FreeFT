@@ -55,7 +55,7 @@ void ImageButton::drawContents(Canvas2D &out) const {
 												 m_mouse_press;
 
 	auto image = is_pressed ? m_proto.down : m_proto.up;
-	out.setMaterial(image);
+	out.setMaterial({image, ColorId::white, SimpleBlendingMode::normal});
 	out.addFilledRect(IRect(image->size2D()));
 	out.setMaterial({});
 

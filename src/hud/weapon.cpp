@@ -27,7 +27,7 @@ void HudWeapon::onDraw(Canvas2D &out) const {
 		float2 size(texture->size2D().x * uv_rect.width(), texture->size2D().y * uv_rect.height());
 
 		float2 pos = (float2)(int2)(rect.center() - size / 2);
-		out.setMaterial({texture, ColorId::white});
+		out.setMaterial({texture, ColorId::white, SimpleBlendingMode::normal});
 		out.addFilledRect(FRect(pos, pos + size), uv_rect);
 
 		//TODO: print current attack mode

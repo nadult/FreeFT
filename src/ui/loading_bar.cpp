@@ -36,8 +36,9 @@ void LoadingBar::draw(Canvas2D &out, int2 pos, Maybe<float> progress) const {
 	out.mulViewMatrix(rotation(float3(0, 0, 1), m_anim_pos * 2.0f * pi));
 	out.mulViewMatrix(translation(-center.x, -center.y, 0.0f));
 
-	out.setMaterial(m_tex);
+	out.setMaterial({m_tex, ColorId::white, SimpleBlendingMode::normal});
 	out.addFilledRect(FRect(IRect(dims)), color);
+	out.setMaterial({});
 	out.popViewMatrix();
 }
 

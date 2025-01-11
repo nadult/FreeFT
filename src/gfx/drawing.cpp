@@ -19,6 +19,7 @@ void drawBBox(Canvas2D &out, const FBox &box, Color col, bool is_filled) {
 
 	bool is_flat = box.height() < big_epsilon;
 
+	out.setMaterial({ColorId::white, SimpleBlendingMode::normal});
 	if(is_filled) {
 		static const int front[] = {0, 1, 2, 0, 2, 3, 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2};
 		float2 verts[arraySize(front)];

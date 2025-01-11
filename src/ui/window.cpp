@@ -180,8 +180,7 @@ void Window::process(const InputState &state) {
 
 void Window::draw(Canvas2D &out) const {
 	out.setViewPos(-m_clipped_rect.min());
-	// TODO: fixme
-	//out.setScissorRect(m_clipped_rect);
+	out.setScissorRect(m_clipped_rect);
 
 	if(m_background_color.a > 0.0f && !(m_background && m_background->size2D() == m_rect.size()))
 		out.addFilledRect(IRect(m_clipped_rect.size()), m_background_color);
@@ -226,10 +225,8 @@ void Window::draw(Canvas2D &out) const {
 	for(int n = 0; n < (int)m_children.size(); n++)
 		if(m_children[n]->isVisible())
 			m_children[n]->draw(out);
-	if(!m_parent) {
-		// TODO: fixme
-		//out.setScissorRect(none);
-	}
+	if(!m_parent)
+		out.setScissorRect(none);
 }
 
 void Window::attach(PWindow child, bool as_popup) {

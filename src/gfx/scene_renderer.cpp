@@ -15,7 +15,8 @@ SceneRenderer::SceneRenderer(IRect viewport, int2 view_pos)
 
 bool SceneRenderer::add(PVImageView texture, IRect rect, float3 pos, FBox bbox, Color color,
 						FRect tex_rect, bool is_overlay) {
-	DASSERT(texture);
+	if(!texture || rect.empty())
+		return false;
 
 	rect += (int2)worldToScreen(pos);
 	if(!areOverlapping(rect, m_target_rect))
@@ -117,10 +118,10 @@ int fastDrawingOrder(const FBox &a, const FBox &b) {
 
 void SceneRenderer::render(Canvas2D &canvas) {
 	//FWK_PROFILE("SceneRenderer::render");
-	//Canvas2D canvas(m_viewport, Orient2D::y_down);
 
 	int node_size = 128;
 
+	canvas.pushViewMatrix();
 	canvas.setViewPos(m_view_pos - m_viewport.min());
 	IRect view(m_view_pos, m_view_pos + m_viewport.size());
 
@@ -235,15 +236,14 @@ void SceneRenderer::render(Canvas2D &canvas) {
 		int2 grid_tl = m_viewport.min() + int2(grid_x * node_size, grid_y * node_size);
 		IRect grid_rect(grid_tl, grid_tl + int2(node_size, node_size));
 		grid_rect = {grid_rect.min(), vmin(grid_rect.max(), m_viewport.max())};
-		// TODO: fixme
-		//canvas.setScissorRect(grid_rect);
+		canvas.setScissorRect(grid_rect);
 
 		//FWK_PROFILE_COUNTER("SceneRenderer::rendered_count", count);
 		for(int i = count - 1; i >= 0; i--) {
 			const Element &elem = m_elements[gdata[i].second];
 
 			if(elem.texture) {
-				canvas.setMaterial({elem.texture, elem.color});
+				canvas.setMaterial({elem.texture, elem.color, SimpleBlendingMode::normal});
 				canvas.addFilledRect(FRect(elem.rect), elem.tex_rect);
 			} else {
 				drawBBox(canvas, elem.bbox, elem.color, true);
@@ -255,8 +255,7 @@ void SceneRenderer::render(Canvas2D &canvas) {
 
 	//	printf("\nGrid overhead: %.2f\n", (double)grid.size() / (double)m_elements.size());
 
-	// TODO: fixme
-	//canvas.setScissorRect(m_viewport);
+	canvas.setScissorRect(m_viewport);
 	for(int n = 0; n < (int)m_lines.size(); n++) {
 		const LineElement &line = m_lines[n];
 		canvas.addSegment(worldToScreen(line.begin), worldToScreen(line.end), line.color);
@@ -265,4 +264,7 @@ void SceneRenderer::render(Canvas2D &canvas) {
 		const BoxElement &elem = m_wire_boxes[n];
 		drawBBox(canvas, elem.bbox, elem.color);
 	}
+
+	canvas.setScissorRect(none);
+	canvas.popViewMatrix();
 }

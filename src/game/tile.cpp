@@ -185,7 +185,7 @@ void Tile::draw(Canvas2D &out, const int2 &pos, Color col) const {
 	const TileFrame &TileFrame = accessFrame(s_frame_counter);
 	FRect tex_coords;
 	auto tex = TileFrame.deviceTexture(tex_coords);
-	out.setMaterial({tex, col, none, SimpleBlendingMode::normal});
+	out.setMaterial({tex, col, SimpleBlendingMode::normal});
 	out.addFilledRect(FRect(TileFrame.rect() + (pos - m_offset)), tex_coords);
 }
 

@@ -14,9 +14,7 @@ void drawGradQuad(Canvas2D &out, const FRect &rect, IColor a, IColor b, bool is_
 	FColor colors[4] = {a, a, b, b};
 	if(is_vertical)
 		swap(colors[1], colors[3]);
-
 	out.addFilledRect(rect, FRect(0, 0, 1, 1), colors);
-	out.addRect(rect, ColorId::white);
 }
 
 void drawLine(Canvas2D &out, float2 p1, float2 p2, IColor a, IColor b) {

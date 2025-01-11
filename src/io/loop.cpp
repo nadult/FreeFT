@@ -36,6 +36,7 @@ void Loop::startTransition(Color from, Color to, TransitionMode mode, float leng
 bool Loop::isTransitioning() const { return m_is_transitioning; }
 
 void Loop::Transition::draw(Canvas2D &canvas, const IRect &rect) const {
+	canvas.setMaterial({ColorId::white, SimpleBlendingMode::normal});
 	if(mode == trans_normal) {
 		canvas.addFilledRect(rect, lerp(from, to, pos / length));
 	} else {
@@ -55,9 +56,9 @@ void Loop::Transition::draw(Canvas2D &canvas, const IRect &rect) const {
 
 		canvas.addFilledRect(rects[0], col1);
 		canvas.addFilledRect(rects[1], uv_rect, mid_colors);
-		canvas.addRect(rects[1], FColor(ColorId::white));
 		canvas.addFilledRect(rects[2], col2);
 	}
+	canvas.setMaterial({});
 }
 
 void Loop::draw(Canvas2D &canvas) {

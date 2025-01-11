@@ -319,6 +319,7 @@ void Controller::draw(Canvas2D &canvas) const {
 			navi_map->visualize(scene_renderer, false);
 	}
 	m_last_path.visualize(3, scene_renderer);
+	scene_renderer.render(canvas);
 
 	if(m_show_debug_info)
 		drawDebugInfo(canvas);

@@ -58,7 +58,8 @@ void HudItemDesc::onDraw(Canvas2D &out) const {
 		float2 size(tex_size.x * uv_rect.width(), tex_size.y * uv_rect.height());
 
 		float2 pos = (float2)(int2)(float2(rect.center().x - size.x * 0.5f, ypos));
-		out.setMaterial({texture, IColor(mulAlpha(ColorId::white, alpha()))});
+		IColor color(mulAlpha(ColorId::white, alpha()));
+		out.setMaterial({texture, color, SimpleBlendingMode::normal});
 		out.addFilledRect(FRect(pos, pos + size), uv_rect);
 
 		ypos += size.y + 10.0f;
@@ -101,7 +102,7 @@ void HudItemButton::onDraw(Canvas2D &out) const {
 		float2 size(tex_size.x * uv_rect.width(), tex_size.y * uv_rect.height());
 
 		float2 pos = (float2)(int2)(rect.center() - size / 2);
-		out.setMaterial(texture);
+		out.setMaterial({texture, ColorId::white, SimpleBlendingMode::normal});
 		out.addFilledRect(FRect(pos, pos + size));
 
 		if(m_entry.count > 1)

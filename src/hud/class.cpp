@@ -65,7 +65,7 @@ void HudClassButton::onDraw(Canvas2D &out) const {
 			if(irect.ex() > rect.width())
 				break;
 
-			out.setMaterial(texture);
+			out.setMaterial({texture, ColorId::white, SimpleBlendingMode::normal});
 			out.addFilledRect(FRect(irect.center() - size * 0.5f, irect.center() + size * 0.5f),
 							  uv_rect);
 
