@@ -14,6 +14,12 @@
 #include <fwk/libs_msvc.h>
 #include <fwk/vulkan/vulkan_window.h>
 
+#ifdef FWK_PLATFORM_WINDOWS
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "mpg123.lib")
+#pragma comment(lib, "OpenAL32.lib")
+#endif
+
 using namespace game;
 
 static bool s_is_closing = false;
