@@ -47,7 +47,7 @@ struct GameApp {
 		Canvas2D canvas(IRect(window_size), Orient2D::y_up);
 		m_main_loop->draw(canvas);
 		m_gfx_device.drawFrame(canvas).check();
-		TextureCache::instance().nextFrame();
+		TextureCache::instance().nextFrame().check();
 		audio::tick();
 		return true;
 	}

@@ -7,6 +7,71 @@ on:
   workflow_call:
 
 jobs:
+  build-windows:
+    runs-on: windows-2022
+    env:
+      VS_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise
+      MSBUILD_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+            cache-name: cache-deps
+        with:
+            path: libfwk/windows/libraries
+            key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('libfwk/tools/install_deps.py', 'libfwk/dependencies.json', 'dependencies.json') }}-v1
+
+      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        name: Install dependencies
+        shell: cmd
+        run: |
+          pip install conan
+          python libfwk/tools/install_deps.py
+          cd libfwk
+          python tools/install_deps.py
+
+      - name: Build freeft
+        shell: cmd
+        run: |
+          "%MSBUILD_PATH%" windows\freeft.sln /p:Platform=x64 /p:Configuration=Release /p:ClCompileArgs="/MP" /maxcpucount:8
+          cp libfwk\windows\libraries\bin\OpenAL32.dll .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeFT-${{ github.sha }}
+          path: |
+            data/
+            *.exe
+            *.dll
+
+
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Install Dependencies
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt update
+          sudo apt-get install libsdl2-dev libfreetype-dev libvorbis-dev libogg-dev libopenal-dev libdwarf-dev libelf-dev
+          wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+          sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+          sudo apt update
+          sudo apt install libvulkan-dev shaderc glslang-dev vulkan-headers libmpg123-dev libzip-dev
+
+      - name: Build freeft
+        run: |
+          make -j8 game res_viewer
+
   check-formatting:
     runs-on: ubuntu-22.04
     steps:
