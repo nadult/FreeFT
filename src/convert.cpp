@@ -10,9 +10,17 @@
 #include <fwk/sys/expected.h>
 #include <fwk/sys/on_fail.h>
 
+#include <fwk/libs_msvc.h>
+
 #include <algorithm>
 #include <set>
 #include <zip.h>
+
+#ifdef FWK_PLATFORM_WINDOWS
+#pragma comment(lib, "lzma.lib")
+#pragma comment(lib, "zstd_static.lib")
+#pragma comment(lib, "zip.lib")
+#endif
 
 using game::Sprite;
 using game::Tile;
