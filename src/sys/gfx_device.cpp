@@ -4,7 +4,6 @@
 #include "gfx_device.h"
 
 #include <fwk/gfx/canvas_2d.h>
-#include <fwk/gfx/shader_compiler.h>
 #include <fwk/vulkan/vulkan_command_queue.h>
 #include <fwk/vulkan/vulkan_device.h>
 #include <fwk/vulkan/vulkan_image.h>
