@@ -1,0 +1,32 @@
+name: test
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_call:
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Install Dependencies
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main'
+          sudo apt update
+          sudo apt install clang-format-17
+          pip install black
+
+      - name: Check C++ formatting
+        run: |
+          python tools/format.py -c
+
+      - name: Check Python formatting
+        if: '!cancelled()'
+        run: |
+          python -m black tools/* --check --color --diff -l 100
