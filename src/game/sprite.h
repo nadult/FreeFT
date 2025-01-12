@@ -103,7 +103,7 @@ class Sprite {
 	bool testPixel(const int2 &screen_pos, int seq_id, int frame_id, int dir_id) const;
 
 	PVImageView getFrame(int seq_id, int frame_id, int dir_id, FRect &tex_rect,
-					  bool put_in_atlas = true) const;
+						 bool put_in_atlas = true) const;
 
 	// Search is case-insensitive
 	int findSequence(Str name) const;
