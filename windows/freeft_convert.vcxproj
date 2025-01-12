@@ -75,7 +75,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>OpenAL32.lib;WSock32.lib;SDL2.lib;Opengl32.lib;zlib.lib;winmm.lib;imm32.lib;version.lib;dbghelp.lib;setupapi.lib;bz2.lib;zstd_static.lib;lzma.lib;zip.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)..\$(TargetName)_dbg$(TargetExt)</OutputFile>
     </Link>
     <Manifest>
@@ -101,7 +101,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>OpenAL32.lib;WSock32.lib;SDL2.lib;Opengl32.lib;zlib.lib;winmm.lib;imm32.lib;version.lib;dbghelp.lib;setupapi.lib;bz2.lib;zstd_static.lib;lzma.lib;zip.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)..\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <Manifest>

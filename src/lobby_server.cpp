@@ -4,6 +4,9 @@
 #include "net/base.h"
 #include "net/socket.h"
 #include "sys/config.h"
+
+#include <fwk/libs_msvc.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <list>
@@ -11,6 +14,13 @@
 #include <memory.h>
 
 using namespace net;
+
+#ifdef FWK_PLATFORM_WINDOWS
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "mpg123.lib")
+#pragma comment(lib, "OpenAL32.lib")
+#pragma comment(lib, "Ws2_32.lib")
+#endif
 
 #define LOGGING
 

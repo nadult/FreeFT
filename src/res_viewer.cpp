@@ -209,7 +209,7 @@ class Resource {
 				brect -= brect.min();
 			}
 			out.setViewPos(brect.min() - pos);
-			out.setMaterial({dtex, ColorId::white, none, SimpleBlendingMode::normal});
+			out.setMaterial({dtex, ColorId::white, SimpleBlendingMode::normal});
 			out.addFilledRect(FRect(rect), tex_rect);
 			out.setMaterial({});
 
