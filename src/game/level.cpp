@@ -9,62 +9,39 @@
 
 namespace game {
 
-struct Line {
-	const char *ptr;
-	int size;
-};
-
-static vector<Line> divideIntoLines(vector<char> &data) {
-	vector<Line> lines;
-	Line line{data.data(), 0};
-
-	for(int n = 0; n < (int)data.size(); n++) {
-		if(data[n] == '\n') {
-			data[n] = 0;
-			lines.push_back(line);
-			line = Line{data.data() + n + 1, 0};
-		} else
-			line.size++;
-	}
-	if(line.size != 0)
-		lines.push_back(line);
-
-	return lines;
-}
-
 static vector<char> applyPatch(vector<char> &orig, vector<char> &patch) {
-	vector<Line> patch_lines = divideIntoLines(patch);
-	vector<Line> out_lines;
+	auto patch_lines = splitLines({patch.data(), patch.size()});
+	vector<Str> out_lines;
 
-	Line checksum_line = patch_lines.front();
+	Str checksum_line = patch_lines.front();
 	patch_lines.erase(patch_lines.begin());
 
 	{
-		char func_name[32] = "";
+		char func_name[64] = "";
 		unsigned int target_checksum = ~0u;
-		sscanf(checksum_line.ptr, "%32s %x", func_name, &target_checksum);
+		sscanf(checksum_line.data(), "%32s %x", func_name, &target_checksum);
 
 		ASSERT(strcmp(func_name, "CRC32") == 0);
 		unsigned int checksum = crc32(0, (const unsigned char *)orig.data(), orig.size());
 
 		if(checksum != target_checksum)
-			print("Warning: Checksum test failed. Expected: %08x got: %08x\n"
-				  "Make sure that map version is correct.",
-				  target_checksum, checksum);
+			printf("Warning: Checksum test failed (expected: %08x got: %08x). "
+				   "Make sure that map version is correct.\n",
+				   target_checksum, checksum);
 	}
 
-	vector<Line> orig_lines = divideIntoLines(orig);
+	vector<Str> orig_lines = splitLines({orig.data(), orig.size()});
 	if(orig_lines.empty())
-		orig_lines.push_back(Line{"", 0});
+		orig_lines.push_back("");
 
-	int optr = (int)orig_lines.size() - 1;
-	for(int n = 0; n < (int)patch_lines.size(); n++) {
+	int optr = orig_lines.size() - 1;
+	for(int n = 0; n < patch_lines.size(); n++) {
 		int line = -1, end_line = -1;
 		char command = 0;
 
-		sscanf(patch_lines[n].ptr, "%d%c", &line, &command);
+		sscanf(patch_lines[n].data(), "%d%c", &line, &command);
 		if(command == ',')
-			sscanf(strchr(patch_lines[n].ptr, ',') + 1, "%d%c", &end_line, &command);
+			sscanf(strchr(patch_lines[n].data(), ',') + 1, "%d%c", &end_line, &command);
 
 		if(end_line == -1)
 			end_line = line;
@@ -81,7 +58,7 @@ static vector<char> applyPatch(vector<char> &orig, vector<char> &patch) {
 
 		if(command == 'c' || command == 'a') {
 			int first_line = ++n;
-			while(n < (int)patch_lines.size() && strcmp(patch_lines[n].ptr, ".") != 0)
+			while(n < patch_lines.size() && patch_lines[n] != ".")
 				n++;
 			for(int i = n - 1; i >= first_line; i--)
 				out_lines.push_back(patch_lines[i]);
@@ -100,7 +77,7 @@ static vector<char> applyPatch(vector<char> &orig, vector<char> &patch) {
 	vector<char> out;
 	std::reverse(out_lines.begin(), out_lines.end());
 	for(int n = 0; n < (int)out_lines.size(); n++) {
-		out.insert(out.end(), out_lines[n].ptr, out_lines[n].ptr + out_lines[n].size);
+		out.insert(out.end(), out_lines[n].begin(), out_lines[n].end());
 		out.push_back('\n');
 	}
 
