@@ -39,12 +39,12 @@ jobs:
         shell: cmd
         run: |
           "%MSBUILD_PATH%" windows\freeft.sln /p:Platform=x64 /p:Configuration=Release /p:ClCompileArgs="/MP" /maxcpucount:8
-          cp libfwk\windows\libraries\bin\OpenAL32.dll .
+          cp libfwk/windows/libraries/bin/*.dll .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: FreeFT-${{ github.sha }}
+          name: FreeFT-windows-${{ github.sha }}
           path: |
             data/
             *.exe
