@@ -48,8 +48,8 @@ static vector<char> applyPatch(vector<char> &orig, vector<char> &patch) {
 		unsigned int checksum = crc32(0, (const unsigned char *)orig.data(), orig.size());
 
 		if(checksum != target_checksum)
-			FATAL("Checksum test failed. Expected: %08x got: %08x\nMake sure that map version is "
-				  "correct.",
+			print("Warning: Checksum test failed. Expected: %08x got: %08x\n"
+				  "Make sure that map version is correct.",
 				  target_checksum, checksum);
 	}
 
