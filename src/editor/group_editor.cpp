@@ -6,7 +6,6 @@
 #include "gfx/drawing.h"
 #include <algorithm>
 #include <cstring>
-#include <fwk/gfx/gl_texture.h>
 #include <tuple>
 
 using namespace game;
@@ -191,7 +190,6 @@ void GroupEditor::drawContents(Canvas2D &out) const {
 			entry.tile->draw(out, pos);
 	}
 
-	GlTexture::unbind();
 	for(int n = 0; n < (int)m_tile_list.size(); n++) {
 		const ui::TileList::Entry &entry = m_tile_list[n];
 		if(!entry.is_selected)

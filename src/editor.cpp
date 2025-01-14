@@ -25,9 +25,20 @@
 
 #include "res_manager.h"
 #include "sys/config.h"
-#include <fwk/gfx/gl_device.h>
-#include <fwk/gfx/opengl.h>
+
+#include "sys/gfx_device.h"
+
 #include <fwk/sys/on_fail.h>
+#include <fwk/vulkan/vulkan_window.h>
+
+#include <fwk/libs_msvc.h>
+#include <fwk/vulkan/vulkan_window.h>
+
+#ifdef FWK_PLATFORM_WINDOWS
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "mpg123.lib")
+#pragma comment(lib, "OpenAL32.lib")
+#endif
 
 using namespace ui;
 using game::EntityMap;
@@ -64,11 +75,12 @@ static const char *s_load_dialog_names[] = {
 
 class EditorWindow : public Window {
   public:
-	EditorWindow(int2 res)
-		: Window(IRect(0, 0, res.x, res.y), ColorId::transparent), m_tile_map(m_level.tile_map),
-		  m_entity_map(m_level.entity_map) {
+	EditorWindow(GfxDevice &gfx_device)
+		: Window(IRect(gfx_device.window_ref->size()), ColorId::transparent),
+		  m_gfx_device(gfx_device), m_tile_map(m_level.tile_map), m_entity_map(m_level.entity_map) {
 		m_maps_path = FilePath(ResManager::instance().dataPath()) / "maps";
 		m_left_width = width() / 5;
+		int2 res = gfx_device.window_ref->size();
 
 		m_mode = editing_tiles;
 		m_tile_map.resize(int2(1024, 1024));
@@ -99,7 +111,7 @@ class EditorWindow : public Window {
 		attach(m_group_editor);
 
 		//loadMap("data/maps/Assault/Lost Vault_mod.xml");
-		loadMap("data/maps/mission05_mod.xml");
+		loadMap("data/maps/mission02.mod");
 
 		recreateEditors();
 	}
@@ -215,7 +227,7 @@ class EditorWindow : public Window {
 	void loadTileGroup(const char *file_name) {
 		printf("Loading TileGroup: %s\n", file_name);
 		if(access(file_name)) {
-			auto doc = move(XmlDocument::load(file_name).get()); //TODO
+			auto doc = std::move(XmlDocument::load(file_name).get()); //TODO
 			m_group.loadFromXML(doc);
 		}
 	}
@@ -239,27 +251,25 @@ class EditorWindow : public Window {
 		//TODO: nie ma warninga ze nie udalo sie zapisac
 	}
 
-	bool mainLoop(GlDevice &device) {
-		static double s_start_time = getTime();
-
-		Tile::setFrameCounter((int)((getTime() - s_start_time) * 15.0));
+	bool mainLoop() {
+		Tile::setFrameCounter((int)((getTime() - m_start_time) * 15.0));
 		TextureCache::instance().nextFrame();
 
-		clearColor(Color(0, 0, 0));
-		Renderer2D out(IRect(device.windowSize()), Orient2D::y_down);
-
-		process(device.inputState());
-		draw(out);
-
-		out.render();
+		process(m_gfx_device.window_ref->inputState());
+		int2 window_size = m_gfx_device.window_ref->size();
+		Canvas2D canvas(IRect(window_size), Orient2D::y_up);
+		draw(canvas);
+		m_gfx_device.drawFrame(canvas).check();
+		TextureCache::instance().nextFrame().check();
 
 		return true;
 	}
 
-	static bool mainLoop(GlDevice &device, void *pthis) {
-		return ((EditorWindow *)pthis)->mainLoop(device);
+	static bool mainLoop(VulkanWindow &window, void *pthis) {
+		return ((EditorWindow *)pthis)->mainLoop();
 	}
 
+	GfxDevice &m_gfx_device;
 	EditorMode m_mode;
 
 	Level m_level;
@@ -284,6 +294,7 @@ class EditorWindow : public Window {
 
 	int m_left_width;
 	FilePath m_maps_path;
+	double m_start_time = getTime();
 };
 
 void preloadTiles() {
@@ -311,19 +322,27 @@ void preloadTiles() {
 	printf("\n");
 }
 
-int main(int argc, char **argv) {
+Ex<int> exMain() {
 	Config config("editor");
 
-	GlDevice gl_device;
-	createWindow("editor", gl_device, config.resolution, config.window_pos, config.fullscreen_on);
+	auto gfx_device = EX_PASS(GfxDevice::create("editor", config));
 
-	ResManager res_mgr;
-	TextureCache tex_cache;
+	ResManager res_mgr(gfx_device.device_ref);
+	TextureCache tex_cache(*gfx_device.device_ref);
 	preloadTiles();
 	game::loadData(true);
 
-	EditorWindow window(gl_device.windowSize());
-	gl_device.runMainLoop(EditorWindow::mainLoop, &window);
+	EditorWindow window(gfx_device);
+	gfx_device.window_ref->runMainLoop(&EditorWindow::mainLoop, &window);
 
 	return 0;
+}
+
+int main(int argc, char **argv) {
+	auto result = exMain();
+	if(!result) {
+		result.error().print();
+		return 1;
+	}
+	return *result;
 }

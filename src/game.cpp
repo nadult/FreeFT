@@ -33,7 +33,7 @@ struct GameApp {
 	GameApp(GfxDevice &gfx_device, io::PLoop main_loop)
 		: m_gfx_device(gfx_device), m_main_loop(std::move(main_loop)) {}
 
-	bool main_loop() {
+	bool mainLoop() {
 		double time = getTime();
 		double time_diff = (time - m_last_time);
 		m_last_time = time;
@@ -52,7 +52,7 @@ struct GameApp {
 		return true;
 	}
 
-	static bool main_loop(VulkanWindow &, void *ptr) { return ((GameApp *)ptr)->main_loop(); }
+	static bool mainLoop(VulkanWindow &, void *ptr) { return ((GameApp *)ptr)->mainLoop(); }
 
   private:
 	GfxDevice &m_gfx_device;
@@ -146,7 +146,7 @@ Ex<int> exMain(int argc, char **argv) {
 	}
 
 	GameApp app(*gfx_device, std::move(main_loop));
-	gfx_device->window_ref->runMainLoop(&GameApp::main_loop, &app);
+	gfx_device->window_ref->runMainLoop(&GameApp::mainLoop, &app);
 
 	/*	PTexture atlas = tex_cache.atlas();
 	Image tex;

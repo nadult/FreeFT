@@ -356,7 +356,7 @@ void EntitiesEditor::drawContents(Canvas2D &out) const {
 			renderer.addBox(overground_box, ColorId::yellow);
 	}
 
-	renderer.render();
+	renderer.render(out);
 	if(m_mode == Mode::selecting && m_is_selecting)
 		out.addRect(m_selection - m_view.pos(), ColorId::white);
 

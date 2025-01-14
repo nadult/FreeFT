@@ -26,4 +26,5 @@
 /data/gui
 /media
 /windows/.vs
+/.vscode
 *.vcxproj.user
