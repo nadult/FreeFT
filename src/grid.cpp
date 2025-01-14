@@ -21,7 +21,7 @@ Grid::Grid(const int2 &size) {
 	m_size = worldToGrid(size + int2(node_size - 1, node_size - 1));
 	if(m_size.x * m_size.y > 0) {
 		m_nodes.resize(m_size.x * m_size.y);
-		m_row_rects.resize(m_size.y, int2(0, 0));
+		m_row_rects.resize(m_size.y + 1, int2(0, 0));
 		//TODO: row_rects not updated when removing objects, this will degrade performance
 		// when drawing entitiy grids
 

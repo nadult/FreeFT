@@ -213,7 +213,7 @@ void Turret::fireProjectile(const FBox &target_box, const Weapon &weapon, float 
 	Ray3F best_ray = *computeBestShootingRay(target_box, weapon).asRay();
 
 	if(randomness > 0.0f) {
-		float3 dir = perturbVector(best_ray.dir(), random(), random(), randomness);
+		float3 dir = normalize(perturbVector(best_ray.dir(), random(), random(), randomness));
 		best_ray = Ray3F(best_ray.origin(), dir);
 	}
 
