@@ -471,7 +471,7 @@ void TilesEditor::drawContents(Canvas2D &out) const {
 			renderer.addBox(m_tile_map[m_selected_ids[i]].bbox);
 		}
 	}
-	renderer.render();
+	renderer.render(out);
 
 	out.setScissorRect(clippedRect());
 	out.setViewPos(-clippedRect().min() + m_view.pos());

@@ -267,4 +267,5 @@ void SceneRenderer::render(Canvas2D &canvas) {
 
 	canvas.setScissorRect(none);
 	canvas.popViewMatrix();
+	canvas.setMaterial({});
 }
