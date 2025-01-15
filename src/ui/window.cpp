@@ -256,8 +256,8 @@ void Window::setRect(const IRect &rect) {
 
 void Window::setInnerRect(const IRect &rect) {
 	int2 isize = rect.size();
-	m_inner_rect = {vmax(vmin(rect.min(), {0, 0}), vmin(-isize + m_rect.size(), {0, 0})),
-					m_inner_rect.min() + isize};
+	m_inner_rect.setMin(vmax(vmin(rect.min(), {0, 0}), vmin(-isize + m_rect.size(), {0, 0})));
+	m_inner_rect.setMax(m_inner_rect.min() + isize);
 	m_has_inner_rect = isize.x > m_rect.width() || isize.y > m_rect.height();
 }
 
@@ -301,5 +301,4 @@ void Window::updateRects() {
 	for(int n = 0; n < (int)m_children.size(); n++)
 		m_children[n]->updateRects();
 }
-
 }

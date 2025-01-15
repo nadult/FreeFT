@@ -13,10 +13,6 @@
 #include "ui/file_dialog.h"
 #include "ui/image_button.h"
 
-#ifdef MessageBox // Yea.. TODO: remove windows.h from includes
-#undef MessageBox
-#endif
-
 #include <fwk/io/file_system.h>
 #include <fwk/vulkan/vulkan_window.h>
 
