@@ -128,7 +128,11 @@ class Grid {
 		return p.x >= 0 && p.y >= 0 && p.x < m_size.x && p.y < m_size.y;
 	}
 
-	int nodeAt(const int2 &grid_pos) const { return grid_pos.x + grid_pos.y * m_size.x; }
+	int nodeAt(const int2 &grid_pos) const {
+		PASSERT(isInsideGrid(grid_pos));
+		return grid_pos.x + grid_pos.y * m_size.x;
+	}
+
 	void updateNode(int node_id) const __attribute((noinline));
 	void updateNode(int node_id, const ObjectDef &) const __attribute((noinline));
 	int extractObjects(int node_id, const Object **out, int ignored_id = -1, int flags = 0) const;
