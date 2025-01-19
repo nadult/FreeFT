@@ -202,9 +202,8 @@ void Grid::updateNode(int id) const {
 
 const IRect Grid::nodeCoords(const FBox &box) const {
 	auto pmin = worldToGrid(vmax(int2(0, 0), int2(box.x(), box.z())));
-	auto pmax = vmin(m_size - int2(1, 1),
-					 worldToGrid(int2(box.ex() - big_epsilon, box.ez() - big_epsilon)));
-	pmax = vmax(pmin, pmax);
+	auto pmax = worldToGrid(int2(box.ex() - big_epsilon, box.ez() - big_epsilon));
+	pmax = vmin(vmax(pmin, pmax), m_size - int2(1, 1));
 	return IRect(pmin, pmax);
 }
 
