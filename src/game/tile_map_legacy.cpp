@@ -4,6 +4,8 @@
 #include "tile_map.h"
 
 #include "game/tile.h"
+
+#include <climits>
 #include <fwk/io/file_stream.h>
 #include <fwk/io/gzip_stream.h>
 #include <fwk/io/memory_stream.h>

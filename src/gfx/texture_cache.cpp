@@ -3,6 +3,7 @@
 
 #include "gfx/texture_cache.h"
 
+#include <climits>
 #include <fwk/gfx/image.h>
 #include <fwk/vulkan/vulkan_device.h>
 #include <fwk/vulkan/vulkan_image.h>
