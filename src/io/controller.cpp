@@ -146,8 +146,7 @@ void Controller::onInput(const InputEvent &event) {
 
 		if(!m_full_isect.empty() && actor) {
 			// TODO: send it only, when no other order is in progress (or has been sent and
-			// wasn't
-			// finished)
+			// wasn't finished)
 			if(m_full_isect.distance() < (float)inf && m_full_isect.distance() > (float)-inf) {
 				float3 look_at = m_screen_ray.at(m_full_isect.distance());
 				if(look_at != m_last_look_at &&

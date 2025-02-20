@@ -50,8 +50,8 @@ class Resource {
 		} else if(m_type == ResType::texture) {
 			auto image = EX_PASS(Image::load(path));
 			m_rect_size = image.size();
-			auto vimage = EX_PASS(VulkanImage::createAndUpload(device, {std::move(image)}));
-			m_texture = VulkanImageView::create(device, vimage);
+			auto vimage = EX_PASS(VulkanImage::createAndUpload(*device, {std::move(image)}));
+			m_texture = VulkanImageView::create(vimage);
 		} else if(m_type == ResType::sprite) {
 			auto loader = EX_PASS(fileLoader(path));
 			//	printf("Loading sprite: %s\n", file_name);
