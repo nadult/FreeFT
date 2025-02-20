@@ -86,9 +86,8 @@ Ex<> TextureCache::nextFrame() {
 		m_atlas_size = vmin(m_atlas_size, int2(max_size, max_size));
 		ASSERT(m_atlas_size.x >= node_size && m_atlas_size.y >= node_size);
 
-		auto image =
-			EX_PASS(VulkanImage::create(m_device.ref(), {VFormat::rgba8_unorm, m_atlas_size}));
-		m_atlas = VulkanImageView::create(m_device.ref(), image);
+		auto image = EX_PASS(VulkanImage::create(m_device, {VFormat::rgba8_unorm, m_atlas_size}));
+		m_atlas = VulkanImageView::create(image);
 		m_memory_limit -= textureMemorySize(m_atlas);
 #ifdef LOGGING
 		printf("Atlas size: %dKB\n", textureMemorySize(PVImageView(&m_atlas)) / 1024);
@@ -265,10 +264,10 @@ PVImageView TextureCache::access(int res_id, bool put_in_atlas, FRect &tex_rect)
 		Image temp_tex;
 		res.res_ptr->cacheUpload(temp_tex);
 
-		auto image = VulkanImage::createAndUpload(m_device.ref(), temp_tex);
+		auto image = VulkanImage::createAndUpload(m_device, temp_tex);
 		// TODO: pass errors?
 		image.check();
-		res.device_texture = VulkanImageView::create(m_device.ref(), *image);
+		res.device_texture = VulkanImageView::create(*image);
 		res.size = int2(temp_tex.width(), temp_tex.height());
 
 		int new_size = textureMemorySize(res.device_texture);

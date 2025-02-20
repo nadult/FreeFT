@@ -84,8 +84,8 @@ Ex<PVImageView> ResManager::getTexture(Str name, bool font_tex) {
 			fixGrayTransTexture(*tex);
 
 		DASSERT(m_device);
-		auto vk_image = EX_PASS(VulkanImage::createAndUpload(*m_device, *tex));
-		auto vk_image_view = VulkanImageView::create(*m_device, vk_image);
+		auto vk_image = EX_PASS(VulkanImage::createAndUpload(**m_device, *tex));
+		auto vk_image_view = VulkanImageView::create(vk_image);
 		textures.emplace(name, vk_image_view);
 		return vk_image_view;
 	}
@@ -158,8 +158,8 @@ Ex<void> ResManager::loadResource(Str name, Stream &sr, ResType type) {
 		auto tex = EX_PASS(Image::load(sr, *ext));
 
 		DASSERT(m_device);
-		auto vk_image = EX_PASS(VulkanImage::createAndUpload(*m_device, tex));
-		m_impl->textures[name] = VulkanImageView::create(*m_device, vk_image);
+		auto vk_image = EX_PASS(VulkanImage::createAndUpload(**m_device, tex));
+		m_impl->textures[name] = VulkanImageView::create(vk_image);
 	} else if(type == ResType::other) {
 		vector<char> data(sr.size());
 		sr.loadData(data);

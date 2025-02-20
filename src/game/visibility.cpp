@@ -186,7 +186,7 @@ void WorldViewer::addToRender(SceneRenderer &renderer) const {
 	const TileMap &tile_map = m_world->tileMap();
 	tile_map.findAll(inds, renderer.targetRect(), Flags::all | Flags::visible);
 
-	for(int n = 0; n < (int)inds.size(); n++)
+	for(int n = 0; n < inds.size(); n++)
 		tile_map[inds[n]].ptr->addToRender(renderer, (int3)tile_map[inds[n]].bbox.min());
 
 	for(int n = 0; n < (int)m_entities.size(); n++) {

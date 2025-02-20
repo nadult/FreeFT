@@ -28,7 +28,12 @@ Ex<GfxDevice> GfxDevice::create(ZStr name, const Config &config) {
 		VImageUsage::color_att | VImageUsage::storage | VImageUsage::transfer_dst;
 	swap_chain_setup.initial_layout = VImageLayout::general;
 
+#ifdef NDEBUG
 	bool debug_mode = false;
+#else
+	bool debug_mode = true;
+#endif
+
 	if(debug_mode) {
 		setup.debug_levels = all<VDebugLevel>;
 		setup.debug_types = all<VDebugType>;
@@ -45,6 +50,7 @@ Ex<GfxDevice> GfxDevice::create(ZStr name, const Config &config) {
 
 	// TODO: prefer integrated device
 	VDeviceSetup dev_setup;
+	dev_setup.allow_descriptor_update_after_bind = true;
 	auto pref_device = instance->preferredDevice(window->surfaceHandle(), &dev_setup.queues);
 	if(!pref_device)
 		return ERROR("Couldn't find a suitable Vulkan device");
@@ -52,7 +58,7 @@ Ex<GfxDevice> GfxDevice::create(ZStr name, const Config &config) {
 	auto phys_info = instance->info(device->physId());
 	print("Selected Vulkan physical device: %\nDriver version: %\n",
 		  phys_info.properties.deviceName, phys_info.properties.driverVersion);
-	device->addSwapChain(EX_PASS(VulkanSwapChain::create(device, window, swap_chain_setup)));
+	device->addSwapChain(EX_PASS(VulkanSwapChain::create(*device, window, swap_chain_setup)));
 
 	Dynamic<ShaderCompiler> compiler;
 	compiler.emplace();
