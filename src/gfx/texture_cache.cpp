@@ -36,9 +36,9 @@ void CachedTexture::bindToCache() const {
 void CachedTexture::onCacheDestroy() { m_id = -1; }
 
 static int textureMemorySize(PVImageView image) {
-	auto format = fromVk(image->format());
-	DASSERT(format);
-	return imageByteSize(*format, image->size2D());
+	auto format = image->format();
+	DASSERT(format.is<VColorFormat>());
+	return imageByteSize(format.get<VColorFormat>(), image->size2D());
 }
 
 TextureCache *TextureCache::g_instance = nullptr;
@@ -86,7 +86,8 @@ Ex<> TextureCache::nextFrame() {
 		m_atlas_size = vmin(m_atlas_size, int2(max_size, max_size));
 		ASSERT(m_atlas_size.x >= node_size && m_atlas_size.y >= node_size);
 
-		auto image = EX_PASS(VulkanImage::create(m_device, {VFormat::rgba8_unorm, m_atlas_size}));
+		auto image =
+			EX_PASS(VulkanImage::create(m_device, {VColorFormat::rgba8_unorm, m_atlas_size}));
 		m_atlas = VulkanImageView::create(image);
 		m_memory_limit -= textureMemorySize(m_atlas);
 #ifdef LOGGING

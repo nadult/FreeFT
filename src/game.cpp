@@ -44,7 +44,7 @@ struct GameApp {
 			return false;
 
 		int2 window_size = m_gfx_device.window_ref->size();
-		Canvas2D canvas(IRect(window_size), Orient2D::y_up);
+		Canvas2D canvas(IRect(window_size), Orient2D::y_down);
 		m_main_loop->draw(canvas);
 		m_gfx_device.drawFrame(canvas).check();
 		TextureCache::instance().nextFrame().check();

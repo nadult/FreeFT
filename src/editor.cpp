@@ -253,11 +253,11 @@ class EditorWindow : public Window {
 
 	bool mainLoop() {
 		Tile::setFrameCounter((int)((getTime() - m_start_time) * 15.0));
-		TextureCache::instance().nextFrame();
+		TextureCache::instance().nextFrame().check();
 
 		process(m_gfx_device.window_ref->inputState());
 		int2 window_size = m_gfx_device.window_ref->size();
-		Canvas2D canvas(IRect(window_size), Orient2D::y_up);
+		Canvas2D canvas(IRect(window_size), Orient2D::y_down);
 		draw(canvas);
 		m_gfx_device.drawFrame(canvas).check();
 		TextureCache::instance().nextFrame().check();

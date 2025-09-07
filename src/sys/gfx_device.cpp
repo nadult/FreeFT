@@ -18,7 +18,7 @@ Ex<GfxDevice> GfxDevice::create(ZStr name, const Config &config) {
 	auto window_flags = VWindowFlag::resizable | VWindowFlag::allow_hidpi |
 						VWindowFlag::sleep_when_minimized |
 						mask(!config.window_pos, VWindowFlag::centered) |
-						mask(config.fullscreen_on, VWindowFlag::fullscreen_desktop);
+						mask(config.fullscreen_on, VWindowFlag::fullscreen);
 
 	VSwapChainSetup swap_chain_setup;
 	// TODO: UI is configured for Unorm, shouldn't we use SRGB by default?
@@ -74,7 +74,7 @@ Ex<> GfxDevice::drawFrame(Canvas2D &canvas) {
 	if(swap_chain->status() == VSwapChainStatus::image_acquired) {
 		// Drawing only if swap chain is available
 		auto render_pass =
-			device.getRenderPass({{swap_chain->format(), 1, VColorSyncStd::clear_present}});
+			device.getRenderPass({{swap_chain->format(), VSimpleSync::clear_present}});
 		auto dc = EX_PASS(canvas.genDrawCall(*compiler, device, render_pass));
 		auto fb = device.getFramebuffer({swap_chain->acquiredImage()});
 

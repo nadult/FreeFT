@@ -436,7 +436,7 @@ class ResViewerWindow : public Window {
 		if(size() != vwindow.size())
 			resize(vwindow.size());
 
-		Canvas2D canvas(IRect(vwindow.size()), Orient2D::y_up);
+		Canvas2D canvas(IRect(vwindow.size()), Orient2D::y_down);
 		draw(canvas);
 		m_gfx.drawFrame(canvas).check();
 
