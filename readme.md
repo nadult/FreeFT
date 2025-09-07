@@ -5,27 +5,21 @@ FreeFT is an open-source, real-time, isometric action game engine
 inspired by Fallout Tactics, a game from 2001 created by an Australian company,
 Micro Forte.
  
-Compiled binaries can be downloaded from SourceForge
+Old compiled binaries for Windows can be downloaded from SourceForge
 [https://sourceforge.net/projects/freeft](https://sourceforge.net/projects/freeft/files)
 
-Note: master branch is currently unstable, because FreeFT is being updated to the latest version of libfwk.
+Note: FreeFT is far from being finished. Many features are missing in FreeFT, for example:
+lighting system, RPG elements, dialogues or scripting system.
 
 ## Building
-To compile a linux environment with Clang 8.0 is recommended (G++ 9.0 or newer can also be used).
-Following libraries/tools are required:
 
-* libfwk (included as submodule):
-	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)  
-    This library also depends on few other libs (SDL2, libogg, libvorbis, freetype2, libpng).
+FreeFT is based on libfwk framework (which is included as a submodule) and requires the same
+tools / dependencies as libfwk. Please take a look at libfwk README first. Besides that,
+FreeFT has some additional dependencies: mpg123, libzip, xxd, xz_utils. Those can be installed
+by running `libfwk/tools/install_deps.py` in FreeFT directory. Once all dependencies are installed,
+FreeFT can be built with Visual Studio 2022. Solution & project files is in `windows/` subdirectory.
 
-* zlib, OpenAL, mpg123, libzip, xxd, gzip:  
-	These should be available in your distro's package repositories.
-
-To build for windows, you have to cross-compile with MinGW.  
-The easiest way is with MXE ([http://mxe.cc](http://mxe.cc)) with following flags:  
-
-	export MXE_TARGETS=x86_64-w64-mingw32.static.posix
-	export MXE_PLUGIN_DIRS=plugins/gcc9
+Note: libfwk is currently being cleaned-up and during this time linux builds might not work.
 
 ## Running
 To run this program, resources from original Fallout Tactics are required.
@@ -38,7 +32,7 @@ a few minutes.
 
 To convert resources under linux, you can use this command:
 
-	./convert -p "/home/user\_name/.wine/drive\_c/tactics/" all
+	./convert -p "/home/user_name/.wine/drive_c/tactics/" all
 
 
 ## Basic controls in the game
