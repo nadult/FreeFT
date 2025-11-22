@@ -1,12 +1,9 @@
-*.swp
-*.vim
-/.ycm_extra_conf.pyc
-/Makefile.local
+/build
+/dependencies
 /editor
 /game
 /client
 /server
-/build
 /refs
 /res_viewer
 /convert
@@ -15,6 +12,7 @@
 /*.js
 /*.wasm
 /*.exe
+/*.exe.manifest
 /data/demo
 /data/config.xml
 /data/tiles
@@ -25,6 +23,6 @@
 /data/maps/*/*.xml
 /data/gui
 /media
-/windows/.vs
 /.vscode
-*.vcxproj.user
+*.swp
+*.vim

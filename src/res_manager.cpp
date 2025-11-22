@@ -29,7 +29,7 @@
 // TODO: dont return references but identifiers (TileId: u16)
 
 struct ResManager::Impl {
-	FwdMember<HashMap<string, PVImageView>> textures;
+	HashMap<string, PVImageView> textures;
 	std::map<string, Dynamic<game::Tile>> tiles;
 	std::map<string, Font> fonts;
 	std::map<string, vector<char>> others;

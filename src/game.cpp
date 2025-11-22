@@ -9,16 +9,8 @@
 #include "res_manager.h"
 #include "sys/config.h"
 #include "sys/gfx_device.h"
-#include "sys/libs_msvc.h"
 
-#include <fwk/libs_msvc.h>
 #include <fwk/vulkan/vulkan_window.h>
-
-#ifdef FWK_PLATFORM_WINDOWS
-#pragma comment(lib, "shlwapi.lib")
-#pragma comment(lib, "mpg123.lib")
-#pragma comment(lib, "OpenAL32.lib")
-#endif
 
 using namespace game;
 
