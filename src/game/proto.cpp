@@ -54,14 +54,12 @@ namespace {
 		{HashMap<string, int>(), 0, 0, 0, 0},
 
 #define PROTO_DEF(table_name, container)                                                           \
-	{                                                                                              \
-		HashMap<string, int>(), 0, table_name,                                                     \
-			[](TupleParser &parser) {                                                              \
-				container.emplace_back(parser);                                                    \
-				return (container.back().idx = (int)container.size() - 1);                         \
-			},                                                                                     \
-			[](int idx) -> Proto & { return container[idx]; }                                      \
-	}
+	{HashMap<string, int>(), 0, table_name,                                                        \
+	 [](TupleParser &parser) {                                                                     \
+		 container.emplace_back(parser);                                                           \
+		 return (container.back().idx = (int)container.size() - 1);                                \
+	 },                                                                                            \
+	 [](int idx) -> Proto & { return container[idx]; }}
 
 		PROTO_DEF("weapons", s_weapons),
 		PROTO_DEF("armours", s_armours),
