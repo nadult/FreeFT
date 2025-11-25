@@ -1,0 +1,20 @@
+# Copyright (C) Krzysztof Jakubowski <nadult@fastmail.fm>
+# This file is part of libfwk. See license.txt for details.
+
+name: Build dependencies
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dependencies.json'
+      - '.github/workflows/build-package*.yml'
+
+jobs:
+  build-packages:
+    uses: nadult/libfwk/.github/workflows/build-packages.yml@main
+    with:
+      libfwk_path: libfwk
