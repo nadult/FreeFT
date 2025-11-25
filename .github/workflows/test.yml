@@ -6,12 +6,12 @@ on:
       - '**'
   workflow_call:
 
+env:
+  PYTHONUNBUFFERED: 1
+
 jobs:
   build-windows:
     runs-on: windows-2022
-    env:
-      VS_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise
-      MSBUILD_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,22 +24,23 @@ jobs:
             cache-name: cache-deps
         with:
             path: libfwk/windows/libraries
-            key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('libfwk/tools/install_deps.py', 'libfwk/dependencies.json', 'dependencies.json') }}-v1
+            key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('libfwk/tools/configure.py', 'libfwk/dependencies.json', 'dependencies.json') }}
 
       - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         name: Install dependencies
         shell: cmd
         run: |
           pip install conan
-          python libfwk/tools/install_deps.py
-          cd libfwk
-          python tools/install_deps.py
+          conan profile detect
+          python libfwk/tools/configure.py download-deps freetype ogg openal-soft sdl
+          python libfwk/tools/configure.py download-deps shaderc-combined vorbis vulkan-headers zlib
+          python libfwk/tools/configure.py build-deps mpg123 libzip
 
-      - name: Build freeft
-        shell: cmd
-        run: |
-          "%MSBUILD_PATH%" windows\freeft.sln /p:Platform=x64 /p:Configuration=Release /p:ClCompileArgs="/MP" /maxcpucount:8
-          cp libfwk/windows/libraries/bin/*.dll .
+      - name: Configure freeft & libfwk
+        run: python libfwk/tools/configure.py configure -T Release -G ninja-clang-cl
+
+      - name: Build freeft & libfwk
+        run:  cmake --build build -j 8
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -48,7 +49,6 @@ jobs:
           path: |
             data/
             *.exe
-            *.dll
 
 
   build-linux:
@@ -56,42 +56,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: 'true'
+          submodules: 'recursive'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo apt update
-          sudo apt-get install libsdl2-dev libfreetype-dev libvorbis-dev libogg-dev libopenal-dev libdwarf-dev libelf-dev
-          wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-          sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
-          sudo apt update
-          sudo apt install libvulkan-dev shaderc glslang-dev vulkan-headers libmpg123-dev libzip-dev
+          pip install conan
+          conan profile detect
+          python libfwk/tools/configure.py download-deps freetype ogg openal-soft sdl
+          python libfwk/tools/configure.py download-deps shaderc-combined vorbis vulkan-headers zlib
+          python libfwk/tools/configure.py build-deps mpg123 libzip
 
-      - name: Build freeft
-        run: |
-          make -j8 game res_viewer
+      - name: Configure freeft & libfwk
+        run:  python libfwk/tools/configure.py configure -T Release -G ninja
+
+      - name: Build freeft & libfwk
+        run:  cmake --build build -j 8
 
   check-formatting:
-    runs-on: ubuntu-22.04
+    runs-on: windows-2025
     steps:
+      - name: Disable git autocrlf
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+
       - name: Install Dependencies
-        run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main'
-          sudo apt update
-          sudo apt install clang-format-17
-          pip install black
+        run:  pip install black
 
       - name: Check C++ formatting
-        run: |
-          python tools/format.py -c
+        run:  python tools/format.py -c
 
       - name: Check Python formatting
-        if: '!cancelled()'
-        run: |
-          python -m black tools/* --check --color --diff -l 100
+        if:   '!cancelled()'
+        run:  python -m black tools/* --check --color --diff -l 100

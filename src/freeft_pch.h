@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <fwk/sys/intellisense_fix.h>
+
 #include <algorithm>
+#include <map>
+
 #include <fwk/dynamic.h>
 #include <fwk/enum.h>
 #include <fwk/enum_map.h>
@@ -20,6 +24,6 @@
 #include <fwk/math_base.h>
 #include <fwk/pod_vector.h>
 #include <fwk/vulkan/vulkan_image.h>
-#include <map>
 
+#define ERROR FWK_ERROR
 #define DUMP FWK_DUMP

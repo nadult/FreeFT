@@ -1,29 +1,19 @@
 {
-  "packages": [
+  "includes": [
+    "libfwk/dependencies.json"
+  ],
+  "dependencies": [
+    "mpg123",
+    "libzip"
+  ],
+  "conan-recipes": [
     {
-      "name": "mpg123",
-      "version": "1.31.2",
-      "query": "os=Windows and arch=x86_64 and options.shared=False"
+      "package": "mpg123:1.31.2",
+      "options": [ "shared=False" ]
     },
     {
-      "name": "xz_utils",
-      "version": "5.4.5",
-      "query": "os=Windows and arch=x86_64 and options.shared=False"
-    },
-    {
-      "name": "zstd",
-      "version": "1.5.5",
-      "query": "os=Windows and arch=x86_64 and options.shared=False"
-    },
-    {
-      "name": "openssl",
-      "version": "3.3.2",
-      "query": "os=Windows and arch=x86_64 and options.shared=False"
-    },
-    {
-      "name": "libzip",
-      "version": "1.11.1",
-      "query": "os=Windows and arch=x86_64 and options.shared=False"
+      "package": "libzip:1.11.4",
+      "options": [ "shared=False", "with_lzma=False", "with_zstd=False", "with_bzip2=False" ]
     }
   ]
 }
