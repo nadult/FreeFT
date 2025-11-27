@@ -15,6 +15,8 @@ on:
 
 jobs:
   build-packages:
-    uses: nadult/libfwk/.github/workflows/build-packages.yml@main
+    uses: nadult/libfwk/.github/workflows/build-packages.yml@427a632db883b05fa5f1bbc4e30873bcd57c2493
     with:
       libfwk_path: libfwk
+      deps_windows: '["mpg123", "libzip"]'
+      deps_linux: '["mpg123", "libzip"]'
