@@ -29,12 +29,7 @@ jobs:
       - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         name: Install dependencies
         shell: cmd
-        run: |
-          pip install conan
-          conan profile detect
-          python libfwk/tools/configure.py download-deps freetype ogg openal-soft sdl
-          python libfwk/tools/configure.py download-deps shaderc-combined vorbis vulkan-headers zlib
-          python libfwk/tools/configure.py build-deps mpg123 libzip
+        run: python libfwk/tools/configure.py download-deps
 
       - name: Configure freeft & libfwk
         run: python libfwk/tools/configure.py configure -T Release -G ninja-clang-cl
@@ -59,12 +54,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Install dependencies
-        run: |
-          pip install conan
-          conan profile detect
-          python libfwk/tools/configure.py download-deps freetype ogg openal-soft sdl
-          python libfwk/tools/configure.py download-deps shaderc-combined vorbis vulkan-headers zlib
-          python libfwk/tools/configure.py build-deps mpg123 libzip
+        run:  python libfwk/tools/configure.py download-deps
 
       - name: Configure freeft & libfwk
         run:  python libfwk/tools/configure.py configure -T Release -G ninja

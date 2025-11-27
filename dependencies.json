@@ -6,6 +6,26 @@
     "mpg123",
     "libzip"
   ],
+  "package-caches": [
+    {
+      "type": "github_release",
+      "platform": "windows",
+      "url": "https://github.com/nadult/freeft/releases/download/windows-deps-1/",
+      "packages": [
+        "libzip:1.11.4:0ad0573130200a72",
+        "mpg123:1.31.2:067cb2ceac09ab18"
+      ]
+    },
+    {
+      "type": "github_release",
+      "platform": "linux",
+      "url": "https://github.com/nadult/freeft/releases/download/linux-deps-1/",
+      "packages": [
+        "libzip:1.11.4:05674aa528305cb2",
+        "mpg123:1.31.2:307c9759c7cd1176"
+      ]
+    }
+  ],
   "conan-recipes": [
     {
       "package": "mpg123:1.31.2",
