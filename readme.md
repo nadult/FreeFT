@@ -1,34 +1,36 @@
-# FreeFT [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+# FreeFT [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Build status](https://github.com/nadult/freeft/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/nadult/freeft/actions)
 
 ## Introduction
-FreeFT is an open-source, real-time, isometric action game engine
-inspired by Fallout Tactics, a game from 2001 created by an Australian company,
-Micro Forte.
+FreeFT is an open-source, real-time, isometric action game engine strongly inspired by Fallout
+Tactics, a game from 2001 created by an Australian company, Micro Forte.
  
 Old compiled binaries for Windows can be downloaded from SourceForge
 [https://sourceforge.net/projects/freeft](https://sourceforge.net/projects/freeft/files)
 
-Note: FreeFT is far from being finished. Many features are missing in FreeFT, for example:
-lighting system, RPG elements, dialogues or scripting system.
+**Important note: FreeFT is far from being finished and is not being actively developed. Many
+features are missing, for example: lighting system, RPG elements, dialogues or scripting
+system.**
 
 ## Building
 
-FreeFT is based on libfwk framework (which is included as a submodule) and requires the same
-tools / dependencies as libfwk. Please take a look at libfwk README first. Besides that,
-FreeFT has some additional dependencies: mpg123, libzip, xxd, xz_utils. Those can be installed
-by running `libfwk/tools/install_deps.py` in FreeFT directory. Once all dependencies are installed,
-FreeFT can be built with Visual Studio 2022. Solution & project files is in `windows/` subdirectory.
+FreeFT is based on CMake and [libfwk](https://github.com/nadult/libfwk) (which is included as a
+submodule) and requires the same tools / dependencies as libfwk. Please take a look at libfwk README
+first to learn how to build it. Besides libfwk, FreeFT has some additional dependencies: mpg123,
+libzip. Those can be installed by using libfwk's
+[configure.py](https://github.com/nadult/libfwk/blob/main/tools/configure.py) script for
+downloading/building dependencies. 
 
-Note: libfwk is currently being cleaned-up and during this time linux builds might not work.
+There are [github actions](https://github.com/nadult/FreeFT/blob/main/.github/workflows/test.yml)
+available which build FreeFT for Windows & linux. They are a good reference of what is required to
+properly build this project.
 
 ## Running
-To run this program, resources from original Fallout Tactics are required.
-You can buy it on GOG or Steam.
+To run this program, resources from original Fallout Tactics are required. You can buy it on GOG,
+Steam or in Epic Store.
 
-FT has to be installed and resources converted with a convert program.
-After instaling FT just run convert.exe. It might ask you to provide a
-path to original Fallout Tactics. The conversion shouldn't take more than
-a few minutes.  
+FT has to be installed and resources converted with a convert program. After instaling FT just run
+convert.exe. It might ask you to provide a path to original Fallout Tactics. The conversion
+shouldn't take more than a few minutes.  
 
 To convert resources under linux, you can use this command:
 
@@ -52,19 +54,20 @@ Inventory (bottom left corner):
 * E key: equip / unequip selected item
 
 ## Used libraries and resources
-* **mpg123**  
-	[http://www.mpg123.de/index.shtml](http://www.mpg123.de/index.shtml)
+* **libfwk and all of its dependencies**  
+  Used under MIT license.  
+	[https://github.com/nadult/libfwk](https://github.com/nadult/libfwk)
 
-* **zlib**  
-	[http://www.gzip.org/zlib/](http://www.gzip.org/zlib/)
+* **mpg123**  
+  Used under LGPL 2.1 license.  
+	[https://www.mpg123.de/](https://www.mpg123.de/)
 
 * **libzip**  
+  Used under BSD 3-clause license.  
 	[http://www.nih.at/libzip/](http://www.nih.at/libzip/)
 
-* **OpenAL**
-
 * **Fonts**  
-  Liberation (licensed under SIL Open Font License)  
+  Liberation (used under SIL Open Font License)  
   Transformers (freeware)  
 
   BMFont was used to convert fonts to bitmaps  
@@ -97,13 +100,11 @@ Early version of game editor:
 
 ## Disclaimer
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
